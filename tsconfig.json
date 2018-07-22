@@ -1,0 +1,22 @@
+{
+    "include": [
+      "./src/**/*",
+      "./node_modules/web3-typescript-typings/index.d.ts",
+      "./node_modules/types-bn/index.d.ts",
+      "./node_modules/types-ethereumjs-util/index.d.ts"
+    ],
+    "compilerOptions": {
+        "outDir": "lib",
+        "noImplicitThis": false,
+        "module": "commonjs",
+        "target": "es5",
+        "types": ["node"],
+        "lib": ["es2017", "dom"],
+        "sourceMap": true,
+        "declaration": true,
+        "experimentalDecorators": true,
+        "noImplicitReturns": true,
+        "pretty": true,
+        "strict": true
+    }
+}
