@@ -17,7 +17,7 @@ This project uses [semantic versioning](https://semver.org/).
 
 #### Setup
 
-[Node >= v8.11.2](https://nodejs.org/en/) and [Yarn](https://yarnpkg.com/en/) required.
+[Node >= v8.11.2](https://nodejs.org/en/) required.
 
 Before any development, install the required NPM dependencies:
 
