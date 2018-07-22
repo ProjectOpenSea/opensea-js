@@ -1,4 +1,4 @@
-![OpenSea Logo](https://media.githubusercontent.com/media/ProjectWyvern/wyvern-branding/master/logo/logo-square-red-transparent-200x200.png?raw=true "OpenSea Logo")
+![OpenSea Logo](https://opensea.io/static/images/logos/opensea-logo.png "OpenSea Logo")
 
 ## OpenSea Javascript SDK
 
@@ -21,7 +21,18 @@ This project uses [semantic versioning](https://semver.org/).
 Before any development, install the required NPM dependencies:
 
 ```bash
-yarn
+npm install
+```
+
+Then, build the library:
+
+```bash
+npm run build
+```
+
+Or run the barebones tests:
+```bash
+npm test
 ```
 
 #### Contributing
