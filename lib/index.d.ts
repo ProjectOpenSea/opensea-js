@@ -1,8 +1,11 @@
-export default class OpenSea {
-    constructor(web3Provider: any, { networkName, gasPrice }: {
-        networkName?: string;
-        gasPrice?: number;
-    });
+import * as Web3 from 'web3';
+import { ECSignature, OpenSeaAPIConfig, SaleKind } from './types';
+export declare class OpenSea {
+    private web3;
+    private networkName;
+    private wyvernProtocol;
+    private api;
+    constructor(provider: Web3.Provider, apiConfig?: OpenSeaAPIConfig);
     wrapEth({ amountInEth, accountAddress, awaitConfirmation }: {
         amountInEth: any;
         accountAddress: any;
@@ -35,7 +38,7 @@ export default class OpenSea {
     cancelOrder({ order, accountAddress }: {
         order: any;
         accountAddress: any;
-    }): Promise<any>;
+    }): Promise<string>;
     getApprovedTokenCount({ accountAddress, tokenAddress }: {
         accountAddress: any;
         tokenAddress: any;
@@ -46,45 +49,45 @@ export default class OpenSea {
         accountAddress: any;
         proxyAddress: any;
         tokenAbi?: ({
-            "constant": boolean;
-            "inputs": {
-                "name": string;
-                "type": string;
+            'constant': boolean;
+            'inputs': {
+                'name': string;
+                'type': string;
             }[];
-            "name": string;
-            "outputs": {
-                "name": string;
-                "type": string;
+            'name': string;
+            'outputs': {
+                'name': string;
+                'type': string;
             }[];
-            "payable": boolean;
-            "stateMutability": string;
-            "type": string;
-            "anonymous"?: undefined;
+            'payable': boolean;
+            'stateMutability': string;
+            'type': string;
+            'anonymous'?: undefined;
         } | {
-            "inputs": {
-                "name": string;
-                "type": string;
+            'inputs': {
+                'name': string;
+                'type': string;
             }[];
-            "payable": boolean;
-            "stateMutability": string;
-            "type": string;
-            "constant"?: undefined;
-            "name"?: undefined;
-            "outputs"?: undefined;
-            "anonymous"?: undefined;
+            'payable': boolean;
+            'stateMutability': string;
+            'type': string;
+            'constant'?: undefined;
+            'name'?: undefined;
+            'outputs'?: undefined;
+            'anonymous'?: undefined;
         } | {
-            "anonymous": boolean;
-            "inputs": {
-                "indexed": boolean;
-                "name": string;
-                "type": string;
+            'anonymous': boolean;
+            'inputs': {
+                'indexed': boolean;
+                'name': string;
+                'type': string;
             }[];
-            "name": string;
-            "type": string;
-            "constant"?: undefined;
-            "outputs"?: undefined;
-            "payable"?: undefined;
-            "stateMutability"?: undefined;
+            'name': string;
+            'type': string;
+            'constant'?: undefined;
+            'outputs'?: undefined;
+            'payable'?: undefined;
+            'stateMutability'?: undefined;
         })[];
     }): Promise<void>;
     approveFungibleToken({ accountAddress, tokenAddress }: {
@@ -95,7 +98,7 @@ export default class OpenSea {
      * Gets the price for the order using the contract
      * @param {object} order Wyvern order object
      */
-    getCurrentPrice(order: any): Promise<any>;
+    getCurrentPrice(order: any): Promise<import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber>;
     /**
      * Helper methods
      */
@@ -118,7 +121,7 @@ export default class OpenSea {
         feeMethod: any;
         feeRecipient: string;
         side: number;
-        saleKind: number;
+        saleKind: SaleKind;
         target: any;
         howToCall: any;
         calldata: any;
@@ -133,74 +136,70 @@ export default class OpenSea {
         salt: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber;
         metadata: any;
     }>;
-    _getProxy(accountAddress: any): Promise<any>;
-    _initializeProxy(accountAddress: any): Promise<any>;
+    _getProxy(accountAddress: any): Promise<string>;
+    _initializeProxy(accountAddress: any): Promise<string>;
     _validateSellOrderParameters({ order, accountAddress }: {
-        order: any;
-        accountAddress: any;
+        Order: any;
+        string: any;
     }): Promise<void>;
     _validateBuyOrderParameters({ order, accountAddress }: {
-        order: any;
-        accountAddress: any;
+        Order: any;
+        string: any;
     }): Promise<void>;
     _getTokenBalance({ accountAddress, tokenAddress, tokenAbi }: {
         accountAddress: any;
         tokenAddress: any;
         tokenAbi?: ({
-            "constant": boolean;
-            "inputs": {
-                "name": string;
-                "type": string;
+            'constant': boolean;
+            'inputs': {
+                'name': string;
+                'type': string;
             }[];
-            "name": string;
-            "outputs": {
-                "name": string;
-                "type": string;
+            'name': string;
+            'outputs': {
+                'name': string;
+                'type': string;
             }[];
-            "payable": boolean;
-            "type": string;
-            "anonymous"?: undefined;
+            'payable': boolean;
+            'type': string;
+            'anonymous'?: undefined;
         } | {
-            "inputs": {
-                "name": string;
-                "type": string;
+            'inputs': {
+                'name': string;
+                'type': string;
             }[];
-            "type": string;
-            "constant"?: undefined;
-            "name"?: undefined;
-            "outputs"?: undefined;
-            "payable"?: undefined;
-            "anonymous"?: undefined;
+            'type': string;
+            'constant'?: undefined;
+            'name'?: undefined;
+            'outputs'?: undefined;
+            'payable'?: undefined;
+            'anonymous'?: undefined;
         } | {
-            "payable": boolean;
-            "type": string;
-            "constant"?: undefined;
-            "inputs"?: undefined;
-            "name"?: undefined;
-            "outputs"?: undefined;
-            "anonymous"?: undefined;
+            'payable': boolean;
+            'type': string;
+            'constant'?: undefined;
+            'inputs'?: undefined;
+            'name'?: undefined;
+            'outputs'?: undefined;
+            'anonymous'?: undefined;
         } | {
-            "anonymous": boolean;
-            "inputs": {
-                "indexed": boolean;
-                "name": string;
-                "type": string;
+            'anonymous': boolean;
+            'inputs': {
+                'indexed': boolean;
+                'name': string;
+                'type': string;
             }[];
-            "name": string;
-            "type": string;
-            "constant"?: undefined;
-            "outputs"?: undefined;
-            "payable"?: undefined;
+            'name': string;
+            'type': string;
+            'constant'?: undefined;
+            'outputs'?: undefined;
+            'payable'?: undefined;
         })[];
     }): Promise<import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber>;
     _validateAndPostOrder(order: any): Promise<void>;
     _signOrder({ order }: {
         order: any;
-    }): Promise<{
-        v: any;
-        r: any;
-        s: any;
-    }>;
+    }): ECSignature;
     _getSchema(schemaName?: string): any;
     _getWyvernAsset(schema: any, { tokenId, tokenAddress }: {
         tokenId: any;

@@ -59,7 +59,7 @@
         "prefer-function-over-method": true,
         "promise-function-async": true,
         "quotemark": [true, "single", "avoid-escape", "jsx-double"],
-        "semicolon": [false, "always"],
+        "semicolon": [true, "never"],
         "space-before-function-paren": [
             true,
             {

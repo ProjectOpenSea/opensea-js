@@ -430,4 +430,4 @@ export const ERC721 = [
     'name': 'ApprovalForAll',
     'type': 'event',
   },
-];
+]
