@@ -1,7 +1,7 @@
-import BigNumber from 'bignumber.js'
-import { WyvernProtocol } from 'wyvern-js/lib'
-import * as WyvernSchemas from 'wyvern-schemas'
-import _ from 'lodash'
+import BigNumber from 'bignumber.js';
+import _ from 'lodash';
+import { WyvernProtocol } from 'wyvern-js/lib';
+import * as WyvernSchemas from 'wyvern-schemas';
 
 import * as ethUtil from 'ethereumjs-util';
 
@@ -9,91 +9,91 @@ import * as ethUtil from 'ethereumjs-util';
 
 export const orderSide = {
   BUY: 0,
-  SELL: 1
-}
+  SELL: 1,
+};
 
 export const saleKind = {
   FIXED_PRICE: 0,
-  DUTCH_AUCTION: 1
-}
+  DUTCH_AUCTION: 1,
+};
 
 export const howToCall = {
   CALL: 0,
-  DELEGATE_CALL: 1
-}
+  DELEGATE_CALL: 1,
+};
 
 export const feeMethod = {
   PROTOCOL_FEE: 0,
-  SPLIT_FEE: 1
-}
+  SPLIT_FEE: 1,
+};
 
-export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
+export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
-export const feeRecipient = "0x5b3256965e7C3cF26E11FCAf296DfC8807C01073"
+export const feeRecipient = '0x5b3256965e7C3cF26E11FCAf296DfC8807C01073';
 // WyvernExchange.feeRecipient
 
 // OTHER
 
-var txCallbacks = {}
+const txCallbacks = {};
 
-export const encodeCall = WyvernSchemas.encodeCall
+export const encodeCall = WyvernSchemas.encodeCall;
 
-export const promisify = (inner) =>
+export const promisify = inner =>
   new Promise((resolve, reject) =>
     inner((err, res) => {
-      if (err) { reject(err) }
-      resolve(res)
-    })
-  )
+      if (err) { reject(err); }
+      resolve(res);
+    }),
+  );
 
 const track = (web3, {txHash}, onFinalized) => {
   if (txCallbacks[txHash]) {
-    txCallbacks[txHash].push(onFinalized)
+    txCallbacks[txHash].push(onFinalized);
   } else {
-    txCallbacks[txHash] = [onFinalized]
+    txCallbacks[txHash] = [onFinalized];
     const poll = async () => {
       // if (!web3) {
       //   setTimeout(poll, 1000)
       //   return
       // }
-      const tx = await promisify(c => web3.eth.getTransaction(txHash, c))
+      const tx = await promisify(c => web3.eth.getTransaction(txHash, c));
       if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
-        const receipt = await promisify(c => web3.eth.getTransactionReceipt(txHash, c))
+        const receipt = await promisify(c => web3.eth.getTransactionReceipt(txHash, c));
         if (!receipt) {
           // Hack: assume success if no receipt
-          console.warn("No receipt found for ", txHash)
+          console.warn('No receipt found for ', txHash);
         }
         const status = receipt
           ? parseInt(receipt.status) === 1
-          : true
-        txCallbacks[txHash].map(f => f(status))
-        delete txCallbacks[txHash]
+          : true;
+        txCallbacks[txHash].map(f => f(status));
+        delete txCallbacks[txHash];
       } else {
-        setTimeout(poll, 1000)
+        setTimeout(poll, 1000);
       }
-    }
-    poll()
+    };
+    poll();
   }
-}
+};
 
 export const confirmTransaction = async (web3, {txHash, onConfirmation}) => {
   await new Promise((resolve, reject) => {
-    track(web3, {txHash}, (didSucceed) => {
+    track(web3, {txHash}, didSucceed => {
       if (didSucceed) {
-        resolve("Transaction complete")
+        resolve('Transaction complete');
       } else {
-        reject("Transaction failed")
+        reject('Transaction failed');
       }
-    })
-  })
-}
+    });
+  });
+};
 
-export const orderFromJSON = (order) => {
-  const hash = WyvernProtocol.getOrderHashHex(order)
+export const orderFromJSON = order => {
+  const hash = WyvernProtocol.getOrderHashHex(order);
   if (hash !== order.hash) {
-    console.error("Invalid order hash")
+    console.error('Invalid order hash');
   }
-  var fromJSON = {
+  const fromJSON = {
     hash: order.hash,
     cancelledOrFinalized: order.cancelledOrFinalized,
     markedInvalid: order.markedInvalid,
@@ -123,18 +123,18 @@ export const orderFromJSON = (order) => {
     salt: new BigNumber(order.salt),
     v: parseInt(order.v),
     r: order.r,
-    s: order.s
-  }
+    s: order.s,
+  };
 
-  fromJSON.currentPrice = computeCurrentPrice(order)
+  fromJSON.currentPrice = computeCurrentPrice(order);
 
-  if (order.asset) fromJSON.asset = assetFromJSON(order.asset)
-  if (order.settlement) fromJSON.settlement = settlementFromJSON(order.settlement)
-  return fromJSON
-}
+  if (order.asset) { fromJSON.asset = assetFromJSON(order.asset); }
+  if (order.settlement) { fromJSON.settlement = settlementFromJSON(order.settlement); }
+  return fromJSON;
+};
 
-export const orderToJSON = (order) => {
-  var asJSON = {
+export const orderToJSON = order => {
+  const asJSON = {
     exchange: order.exchange.toLowerCase(),
     maker: order.maker.toLowerCase(),
     taker: order.taker.toLowerCase(),
@@ -157,83 +157,83 @@ export const orderToJSON = (order) => {
     extra: order.extra.toString(),
     listingTime: order.listingTime.toString(),
     expirationTime: order.expirationTime.toString(),
-    salt: order.salt.toString()
-  }
-  const hash = WyvernProtocol.getOrderHashHex(asJSON)
-  asJSON.hash = hash
-  asJSON.metadata = order.metadata
-  return asJSON
-}
+    salt: order.salt.toString(),
+  };
+  const hash = WyvernProtocol.getOrderHashHex(asJSON);
+  asJSON.hash = hash;
+  asJSON.metadata = order.metadata;
+  return asJSON;
+};
 
-export const findAsset = async (account, proxy, wyAsset, schema) => {
-  var owner
-  const ownerOf = schema.functions.ownerOf
+export const findAsset = async (web3, {account, proxy, wyAsset, schema}) => {
+  let owner;
+  const ownerOf = schema.functions.ownerOf;
   if (ownerOf) {
-    const abi = ownerOf(wyAsset)
-    const contract = web3.eth.contract([abi]).at(abi.target)
+    const abi = ownerOf(wyAsset);
+    const contract = web3.eth.contract([abi]).at(abi.target);
     if (abi.inputs.filter(x => x.value === undefined).length === 0) {
-      owner = await promisify(c => contract[abi.name].call(...abi.inputs.map(i => i.value.toString()), c))
-      owner = owner.toLowerCase()
+      owner = await promisify(c => contract[abi.name].call(...abi.inputs.map(i => i.value.toString()), c));
+      owner = owner.toLowerCase();
     }
   }
 
   /* This is a bit Ethercraft-specific. */
-  var proxyCount
-  var myCount
-  const countOf = schema.functions.countOf
+  let proxyCount;
+  let myCount;
+  const countOf = schema.functions.countOf;
   if (countOf) {
-    const abi = countOf(wyAsset)
-    const contract = web3.eth.contract([abi]).at(abi.target)
+    const abi = countOf(wyAsset);
+    const contract = web3.eth.contract([abi]).at(abi.target);
     if (proxy) {
-      proxyCount = await promisify(c => contract[abi.name].call([proxy], c))
-      proxyCount = proxyCount.toNumber()
+      proxyCount = await promisify(c => contract[abi.name].call([proxy], c));
+      proxyCount = proxyCount.toNumber();
     } else {
-      proxyCount = 0
+      proxyCount = 0;
     }
-    myCount = await promisify(c => contract[abi.name].call([account], c))
-    myCount = myCount.toNumber()
+    myCount = await promisify(c => contract[abi.name].call([account], c));
+    myCount = myCount.toNumber();
   }
   if (owner !== undefined) {
     if (proxy && owner.toLowerCase() === proxy.toLowerCase()) {
-      return 'proxy'
+      return 'proxy';
     } else if (owner.toLowerCase() === account.toLowerCase()) {
-      return 'account'
+      return 'account';
     } else if (owner === '0x') {
-      return 'unknown'
+      return 'unknown';
     } else {
-      return 'other'
+      return 'other';
     }
   } else if (myCount !== undefined && proxyCount !== undefined) {
     if (proxyCount >= 1000000000000000000) {
-      return 'proxy'
+      return 'proxy';
     } else if (myCount >= 1000000000000000000) {
-      return 'account'
+      return 'account';
     } else {
-      return 'other'
+      return 'other';
     }
   }
-  return 'unknown'
-}
+  return 'unknown';
+};
 
 export async function personalSignAsync(web3, {message, signerAddress}) {
   const signature = await promisify(c => web3.currentProvider.sendAsync({
       method: 'personal_sign', // 'eth_signTypedData',
       params: [message, signerAddress],
       from: signerAddress,
-    }, c)
-  )
+    }, c),
+  );
 
-  return parseSignatureHex(signature.result, message, signerAddress)
+  return parseSignatureHex(signature.result, message, signerAddress);
 }
 
 export function makeBigNumber(number) {
   // Zero sometimes returned as 0x from contracts
   if (number === '0x') {
-    number = 0 
+    number = 0;
   }
   // fix "new BigNumber() number type has more than 15 significant digits"
-  number = number.toString()
-  return new BigNumber(number)
+  number = number.toString();
+  return new BigNumber(number);
 }
 
 export async function sendRawTransaction(web3, {fromAddress, toAddress, data, value = 0, awaitConfirmation = true}) {
@@ -241,33 +241,33 @@ export async function sendRawTransaction(web3, {fromAddress, toAddress, data, va
   const txHash = await promisify(c => web3.eth.sendTransaction({
     from: fromAddress,
     to: toAddress,
-    value: value,
-    data: data
-  }, c))
+    value,
+    data,
+  }, c));
 
   if (awaitConfirmation) {
-    await confirmTransaction(web3, {txHash})
+    await confirmTransaction(web3, {txHash});
   }
 
-  return txHash
+  return txHash;
 }
 
 function assetFromJSON(asset) {
   if (asset.buyOrders) {
-    asset.buyOrders = asset.buyOrders.map(orderFromJSON)
+    asset.buyOrders = asset.buyOrders.map(orderFromJSON);
   }
   if (asset.sellOrders) {
-    asset.sellOrders = asset.sellOrders.map(orderFromJSON)
+    asset.sellOrders = asset.sellOrders.map(orderFromJSON);
   }
-  return asset
+  return asset;
 }
 
 function settlementFromJSON(settlement) {
-  settlement.price = makeBigNumber(settlement.price)
+  settlement.price = makeBigNumber(settlement.price);
   if (settlement.order) {
-    settlement.order = orderFromJSON(settlement.order)
+    settlement.order = orderFromJSON(settlement.order);
   }
-  return settlement
+  return settlement;
 }
 
 // sourced from 0x.js:
@@ -290,7 +290,7 @@ function parseSignatureHex(signature, orderHash, signerAddress) {
     return ecSignatureVRS;
   }
 
-  throw new Error("Invalid signature");
+  throw new Error('Invalid signature');
 
   function _parseSignatureHexAsVRS(signatureHex) {
     const signatureBuffer = ethUtil.toBuffer(signatureHex);
@@ -307,7 +307,7 @@ function parseSignatureHex(signature, orderHash, signerAddress) {
     };
     return ecSignature;
   }
-  
+
   function _parseSignatureHexAsRSV(signatureHex) {
     const { v, r, s } = ethUtil.fromRpcSig(signatureHex);
     const ecSignature = {
@@ -325,25 +325,25 @@ function parseSignatureHex(signature, orderHash, signerAddress) {
  * @param {object} cachedOrder Store order object
  */
 export function computeCurrentPrice(order) {
-  let { basePrice, listingTime, expirationTime, side, extra } = order
+  let { basePrice, listingTime, expirationTime, side, extra } = order;
 
-  const now = new BigNumber(Date.now() / 1000)
-  basePrice = new BigNumber(basePrice)
-  listingTime = new BigNumber(listingTime)
-  expirationTime = new BigNumber(expirationTime)
-  extra = new BigNumber(extra)
+  const now = new BigNumber(Date.now() / 1000);
+  basePrice = new BigNumber(basePrice);
+  listingTime = new BigNumber(listingTime);
+  expirationTime = new BigNumber(expirationTime);
+  extra = new BigNumber(extra);
 
   if (order.saleKind == saleKind.FIXED_PRICE) {
-    return basePrice
+    return basePrice;
   } else if (order.saleKind == saleKind.DUTCH_AUCTION) {
     const diff = extra.times(now.minus(listingTime))
-                  .dividedBy(expirationTime.minus(listingTime))
+                  .dividedBy(expirationTime.minus(listingTime));
     if (side == orderSide.SELL) {
       /* Sell-side - start price: basePrice. End price: basePrice - extra. */
-      return basePrice.minus(diff)
+      return basePrice.minus(diff);
     } else {
       /* Buy-side - start price: basePrice. End price: basePrice + extra. */
-      return basePrice.plus(diff)
+      return basePrice.plus(diff);
     }
   }
 }
