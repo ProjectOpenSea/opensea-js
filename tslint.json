@@ -37,7 +37,7 @@
         "no-empty-interface": false,
         "no-floating-promises": true,
         "no-non-null-assertion": true,
-        "no-parameter-reassignment": true,
+        "no-parameter-reassignment": false,
         "no-redundant-jsdoc": true,
         "no-return-await": true,
         "no-string-throw": true,
@@ -54,6 +54,7 @@
                 "grouped-imports": true
             }
         ],
+        "trailing-comma": false,
         "prefer-const": true,
         "prefer-for-of": true,
         "prefer-function-over-method": true,

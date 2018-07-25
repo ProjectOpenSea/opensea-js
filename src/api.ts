@@ -2,11 +2,12 @@ import * as fetch from 'isomorphic-unfetch'
 
 import { Network,  OpenSeaAPIConfig, Order } from './types'
 
+const ORDERBOOK_PATH = `/wyvern/v0`
+
 export class OpenSeaAPI {
 
   private apiKey: string | undefined
   private apiBaseUrl: string
-  private orderbookPath: string
 
   constructor({apiKey, networkName}: OpenSeaAPIConfig) {
     this.apiKey = apiKey
@@ -20,13 +21,11 @@ export class OpenSeaAPI {
         this.apiBaseUrl = 'https://api.opensea.io'
         break
     }
-
-    this.orderbookPath = `/wyvern/v0`
   }
 
   public async postOrder(order: Order) {
     return this.post(
-      `${this.orderbookPath}/orders/post`,
+      `${ORDERBOOK_PATH}/orders/post`,
       order,
     )
   }

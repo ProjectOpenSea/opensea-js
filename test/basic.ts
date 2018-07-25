@@ -5,127 +5,35 @@ import {
 import {
   suite,
   test,
-} from 'mocha-typescript';
+} from 'mocha-typescript'
 
-import OpenSea from '../src/index';
+import { OpenSea } from '../src/index'
+import * as Web3 from 'web3'
+import { Network } from '../src/types';
+const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
-// import * as ordersAndHashesJSON from './ordersAndHashes.json';
-// const ordersAndHashes = ordersAndHashesJSON as any;
+const ordersAndHashes: object[] = require('./ordersAndHashes.json')
 
-// suite('basic', () => {
-//   test('Null address is correct', () => {
-//     assert.equal(OpenSea.NULL_ADDRESS, '0x0000000000000000000000000000000000000000');
-//   });
+const client = new OpenSea(provider, {
+  networkName: Network.Main
+})
 
-//   test('Max uint256 is correct', () => {
-//     assert.equal(OpenSea.MAX_UINT_256.toString(), '115792089237316195423570985008687907853269984665640564039457584007913129639935');
-//   });
+suite('basic', () => {
 
-//   ordersAndHashes.map((orderAndHash: any, index: number) => {
-//     test('Order #' + index + ' hash is correct', () => {
-//       const hash = OpenSea.getOrderHashHex(orderAndHash.order);
-//       assert.equal(hash, orderAndHash.hash);
-//     });
-//   });
+  test('Constructor is correct', () => {
 
-//   test('First replacementPattern encoding is correct', () => {
-//     const annotatedABI = {
-//       type: AbiType.Function,
-//       name: 'testFunction',
-//       target: '',
-//       inputs: [
-//       ],
-//       outputs: [
-//       ],
-//       constant: false,
-//       stateMutability: StateMutability.Payable,
-//       payable: true,
-//     };
-//     const encoded = OpenSea.encodeReplacementPattern(annotatedABI);
-//     assert.equal(encoded, '0x00000000');
-//     const methodID = '0x' + ethABI.methodID('testFunction', []).toString('hex');
-//     assert.equal(methodID, '0xe16b4a9b');
-//   });
+    assert.equal(OpenSea.NULL_ADDRESS, '0x0000000000000000000000000000000000000000')
+  })
 
-//   test('Second complex replacementPattern encoding is correct', () => {
-//     const annotatedABI = {
-//       type: AbiType.Function,
-//       name: 'testFunction',
-//       target: '',
-//       inputs: [
-//         {
-//           name: 'index',
-//           type: 'uint256',
-//           kind: FunctionInputKind.Replaceable,
-//         },
-//       ],
-//       outputs: [
-//       ],
-//       constant: false,
-//       stateMutability: StateMutability.Payable,
-//       payable: true,
-//     };
-//     const encoded = OpenSea.encodeReplacementPattern(annotatedABI);
-//     assert.equal(encoded, '0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-//   });
+  test('Max uint256 is correct', () => {
+    assert.equal(OpenSea.MAX_UINT_256.toString(), '115792089237316195423570985008687907853269984665640564039457584007913129639935')
+  })
 
-//   test('Third replacementPattern encoding is correct', () => {
-//     const annotatedABI = {
-//       type: AbiType.Function,
-//       name: 'testFunction',
-//       target: '',
-//       inputs: [
-//         {
-//           name: 'index',
-//           type: 'uint256',
-//           kind: FunctionInputKind.Replaceable,
-//         },
-//         {
-//           name: 'address',
-//           type: 'address',
-//           kind: FunctionInputKind.Owner,
-//         },
-//       ],
-//       outputs: [
-//       ],
-//       constant: false,
-//       stateMutability: StateMutability.Payable,
-//       payable: true,
-//     };
-//     const encoded = OpenSea.encodeReplacementPattern(annotatedABI);
-//     assert.equal(encoded, '0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000');
-//   });
+  ordersAndHashes.map((orderAndHash: any, index: number) => {
+    test('Order #' + index + ' hash is correct', () => {
+      const hash = OpenSea.getOrderHashHex(orderAndHash.order)
+      assert.equal(hash, orderAndHash.hash)
+    })
+  })
 
-//   test('Fourth replacementPattern encoding is correct', () => {
-//     const annotatedABI = {
-//       type: AbiType.Function,
-//       name: 'testFunction',
-//       target: '',
-//       inputs: [
-//         {
-//           name: 'index',
-//           type: 'uint256',
-//           kind: FunctionInputKind.Replaceable,
-//         },
-//         {
-//           name: 'addr',
-//           type: 'address',
-//           kind: FunctionInputKind.Owner,
-//         },
-//         {
-//           name: 'bytes',
-//           type: 'bytes32',
-//           kind: FunctionInputKind.Replaceable,
-//         },
-//       ],
-//       outputs: [
-//       ],
-//       constant: false,
-//       stateMutability: StateMutability.Payable,
-//       payable: true,
-//     };
-//     const encoded = OpenSea.encodeReplacementPattern(annotatedABI);
-//     assert.equal(encoded, '0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-//   });
-
-// });
+})
