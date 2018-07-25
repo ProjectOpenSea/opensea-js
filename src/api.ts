@@ -6,8 +6,9 @@ const ORDERBOOK_PATH = `/wyvern/v0`
 
 export class OpenSeaAPI {
 
+  public apiBaseUrl: string
+
   private apiKey: string | undefined
-  private apiBaseUrl: string
 
   constructor({apiKey, networkName}: OpenSeaAPIConfig) {
     this.apiKey = apiKey
