@@ -7,8 +7,8 @@ import {
   test,
 } from 'mocha-typescript'
 
-import { Network } from '../src/types'
 import { OpenSeaAPI } from '../src/api'
+import { Network } from '../src/types'
 
 const mainApi = new OpenSeaAPI({
   networkName: Network.Main

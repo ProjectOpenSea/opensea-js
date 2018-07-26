@@ -1,4 +1,8 @@
 import BigNumber from 'bignumber.js'
+import * as Web3 from 'web3'
+
+export type NodeCallback = (err: Error | null, result: any) => void
+export type Web3Callback = (err: Error, result: Web3.JSONRPCResponsePayload) => void
 
 export interface OpenSeaAPIConfig {
   networkName?: Network

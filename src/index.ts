@@ -73,7 +73,7 @@ export class OpenSea {
   public async createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, expirationTime = 0 }) {
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
     const schema = this._getSchema()
-    const wyAsset = this._getWyvernAsset(schema, { tokenId, tokenAddress })
+    const wyAsset = _getWyvernAsset(schema, { tokenId, tokenAddress })
     const metadata = {
       asset: wyAsset,
       schema: schema.name,
@@ -732,11 +732,11 @@ export class OpenSea {
     }
     return schema
   }
+}
 
-  public _getWyvernAsset(schema, { tokenId, tokenAddress }) {
-    return schema.assetFromFields({
-      'ID': tokenId.toString(),
-      'Address': tokenAddress,
-    })
-  }
+function _getWyvernAsset(schema, { tokenId, tokenAddress }) {
+  return schema.assetFromFields({
+    'ID': tokenId.toString(),
+    'Address': tokenAddress,
+  })
 }

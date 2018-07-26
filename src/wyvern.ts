@@ -1,10 +1,11 @@
 import BigNumber from 'bignumber.js'
-import * as Web3 from 'web3'
+import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
+import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js/lib'
 import * as WyvernSchemas from 'wyvern-schemas'
-import * as ethUtil from 'ethereumjs-util'
-import { ECSignature, SaleKind, OrderSide, Order } from './types';
+
+import { ECSignature, Order, OrderSide, SaleKind, NodeCallback } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
@@ -17,12 +18,12 @@ const txCallbacks = {}
 
 export const encodeCall = WyvernSchemas.encodeCall
 
-export const promisify = inner =>
+export const promisify = (inner: (fn: NodeCallback) => void) =>
   new Promise((resolve, reject) =>
-    inner((err, res) => {
+    inner((err: Error | null, res: any) => {
       if (err) { reject(err) }
       resolve(res)
-    }),
+    })
   )
 
 const track = (web3, {txHash}, onFinalized) => {
@@ -144,7 +145,7 @@ export const orderToJSON = order => {
   return asJSON
 }
 
-export const findAsset = async (web3, {account, proxy, wyAsset, schema} : {string, string, WyvernAsset, WyvernSchema}) => {
+export const findAsset = async (web3, {account, proxy, wyAsset, schema}: {string, string, WyvernAsset, WyvernSchema}) => {
   let owner
   const ownerOf = schema.functions.ownerOf
   if (ownerOf) {
@@ -194,7 +195,7 @@ export const findAsset = async (web3, {account, proxy, wyAsset, schema} : {strin
   return 'unknown'
 }
 
-export async function personalSignAsync(web3, {message, signerAddress}) : Promise<ECSignature> {
+export async function personalSignAsync(web3, {message, signerAddress}): Promise<ECSignature> {
   const signature = await promisify(c => web3.currentProvider.sendAsync({
       method: 'personal_sign', // 'eth_signTypedData',
       params: [message, signerAddress],
@@ -271,7 +272,7 @@ function parseSignatureHex(signature: string, orderHash: string, signerAddress: 
 
   throw new Error('Invalid signature')
 
-  function _parseSignatureHexAsVRS(signatureHex : string) {
+  function _parseSignatureHexAsVRS(signatureHex: string) {
     const signatureBuffer = ethUtil.toBuffer(signatureHex)
     let v = signatureBuffer[0]
     if (v < 27) {
@@ -287,7 +288,7 @@ function parseSignatureHex(signature: string, orderHash: string, signerAddress: 
     return ecSignature
   }
 
-  function _parseSignatureHexAsRSV(signatureHex : string) {
+  function _parseSignatureHexAsRSV(signatureHex: string) {
     const { v, r, s } = ethUtil.fromRpcSig(signatureHex)
     const ecSignature = {
         v,
