@@ -3,6 +3,16 @@ import * as Web3 from 'web3';
 export declare type NodeCallback<T> = (err: Error | null, result: T) => void;
 export declare type Web3Callback = NodeCallback<Web3.JSONRPCResponsePayload>;
 export declare type TxnCallback = (result: boolean) => void;
+export declare type ABI = Array<{
+    type: string;
+    name?: string;
+    inputs?: object[];
+    outputs?: object[];
+    payable?: boolean;
+    constant?: boolean;
+    anonymous?: boolean;
+    stateMutability?: string;
+}>;
 export interface OpenSeaAPIConfig {
     networkName?: Network;
     apiKey?: string;

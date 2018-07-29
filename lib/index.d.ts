@@ -49,47 +49,16 @@ export declare class OpenSea {
         tokenAddress: any;
         accountAddress: any;
         proxyAddress: any;
-        tokenAbi?: ({
-            'constant': boolean;
-            'inputs': {
-                'name': string;
-                'type': string;
-            }[];
-            'name': string;
-            'outputs': {
-                'name': string;
-                'type': string;
-            }[];
-            'payable': boolean;
-            'stateMutability': string;
-            'type': string;
-            'anonymous'?: undefined;
-        } | {
-            'inputs': {
-                'name': string;
-                'type': string;
-            }[];
-            'payable': boolean;
-            'stateMutability': string;
-            'type': string;
-            'constant'?: undefined;
-            'name'?: undefined;
-            'outputs'?: undefined;
-            'anonymous'?: undefined;
-        } | {
-            'anonymous': boolean;
-            'inputs': {
-                'indexed': boolean;
-                'name': string;
-                'type': string;
-            }[];
-            'name': string;
-            'type': string;
-            'constant'?: undefined;
-            'outputs'?: undefined;
-            'payable'?: undefined;
-            'stateMutability'?: undefined;
-        })[];
+        tokenAbi?: {
+            type: string;
+            name?: string | undefined;
+            inputs?: object[] | undefined;
+            outputs?: object[] | undefined;
+            payable?: boolean | undefined;
+            constant?: boolean | undefined;
+            anonymous?: boolean | undefined;
+            stateMutability?: string | undefined;
+        }[];
     }): Promise<void>;
     approveFungibleToken({ accountAddress, tokenAddress }: {
         accountAddress: any;
@@ -150,52 +119,16 @@ export declare class OpenSea {
     _getTokenBalance({ accountAddress, tokenAddress, tokenAbi }: {
         accountAddress: any;
         tokenAddress: any;
-        tokenAbi?: ({
-            'constant': boolean;
-            'inputs': {
-                'name': string;
-                'type': string;
-            }[];
-            'name': string;
-            'outputs': {
-                'name': string;
-                'type': string;
-            }[];
-            'payable': boolean;
-            'type': string;
-            'anonymous'?: undefined;
-        } | {
-            'inputs': {
-                'name': string;
-                'type': string;
-            }[];
-            'type': string;
-            'constant'?: undefined;
-            'name'?: undefined;
-            'outputs'?: undefined;
-            'payable'?: undefined;
-            'anonymous'?: undefined;
-        } | {
-            'payable': boolean;
-            'type': string;
-            'constant'?: undefined;
-            'inputs'?: undefined;
-            'name'?: undefined;
-            'outputs'?: undefined;
-            'anonymous'?: undefined;
-        } | {
-            'anonymous': boolean;
-            'inputs': {
-                'indexed': boolean;
-                'name': string;
-                'type': string;
-            }[];
-            'name': string;
-            'type': string;
-            'constant'?: undefined;
-            'outputs'?: undefined;
-            'payable'?: undefined;
-        })[];
+        tokenAbi?: {
+            type: string;
+            name?: string | undefined;
+            inputs?: object[] | undefined;
+            outputs?: object[] | undefined;
+            payable?: boolean | undefined;
+            constant?: boolean | undefined;
+            anonymous?: boolean | undefined;
+            stateMutability?: string | undefined;
+        }[];
     }): Promise<BigNumber>;
     _validateAndPostOrder(order: any): Promise<void>;
     _signOrder({ order }: {

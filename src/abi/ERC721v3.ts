@@ -1,4 +1,6 @@
-export const ERC721 = [
+import { ABI } from "../types"
+
+export const ERC721: ABI = [
   {
     'constant': true,
     'inputs': [],

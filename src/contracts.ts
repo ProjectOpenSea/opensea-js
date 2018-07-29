@@ -1,8 +1,10 @@
-export const getMethod = (abi: object, name: string) => {
+import { ABI } from './types'
+
+export const getMethod = (abi: ABI, name: string) => {
   return abi.filter(x => x.type == 'function' && x.name == name)[0]
 }
 
-export const event = (abi: object, name: string) => {
+export const event = (abi: ABI, name: string) => {
   return abi.filter(x => x.type == 'event' && x.name == name)[0]
 }
 
