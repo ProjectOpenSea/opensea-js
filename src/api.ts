@@ -1,6 +1,6 @@
 import * as fetch from 'isomorphic-unfetch'
 
-import { Network,  OpenSeaAPIConfig, Order } from './types'
+import { Network, OpenSeaAPIConfig, Order } from './types'
 
 const ORDERBOOK_PATH = `/wyvern/v0`
 
@@ -38,7 +38,7 @@ export class OpenSeaAPI {
    * body can be an object and will get JSON-stringified. Like with
    * `fetch`, it can't be present when the method is "GET"
    */
-  public async post(apiPath: string, body: any, opts = {}) {
+  public async post(apiPath: string, body: any, opts: {body?: any} = {}) {
 
     const fetchOpts = {
       method: 'POST', ...opts,
@@ -56,7 +56,7 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param opts RequestInit opts, similar to Fetch API
    */
-  public async _fetch(apiPath, opts = {}) {
+  public async _fetch(apiPath: string, opts: {headers?: any} = {}) {
 
     const apiBase = this.apiBaseUrl
     const apiKey = this.apiKey
@@ -70,8 +70,8 @@ export class OpenSeaAPI {
   }
 }
 
-function throwOnUnauth(response) {
-  if (!response.ok && response.status === 401) {
+function throwOnUnauth(response: fetch.IsomorphicResponse) {
+  if (!response.ok && response.status == 401) {
     throw new Error('Unauthorized')
   }
   return response

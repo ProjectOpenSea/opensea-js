@@ -1,9 +1,9 @@
 export const getMethod = (abi: object, name: string) => {
-  return abi.filter(x => x.type === 'function' && x.name === name)[0]
+  return abi.filter(x => x.type == 'function' && x.name == name)[0]
 }
 
 export const event = (abi: object, name: string) => {
-  return abi.filter(x => x.type === 'event' && x.name === name)[0]
+  return abi.filter(x => x.type == 'event' && x.name == name)[0]
 }
 
 export const DECENTRALAND_AUCTION_CONFIG = {

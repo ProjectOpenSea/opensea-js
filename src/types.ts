@@ -1,8 +1,9 @@
 import BigNumber from 'bignumber.js'
 import * as Web3 from 'web3'
 
-export type NodeCallback = (err: Error | null, result: any) => void
-export type Web3Callback = (err: Error, result: Web3.JSONRPCResponsePayload) => void
+export type NodeCallback<T> = (err: Error | null, result: T) => void
+export type Web3Callback = NodeCallback<Web3.JSONRPCResponsePayload>
+export type TxnCallback = (result: boolean) => void
 
 export interface OpenSeaAPIConfig {
   networkName?: Network
@@ -68,7 +69,14 @@ export interface Order {
   listingTime: BigNumber
   expirationTime: BigNumber
   salt: BigNumber
-  r?: string,
-  s?: string,
+  r?: string
+  s?: string
   v?: number
+
+  // Appends
+  hash?: string
+  metadata?: object
+  currentPrice?: BigNumber
+  asset: object,
+  settlement: object
 }

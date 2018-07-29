@@ -1,5 +1,6 @@
 import * as Web3 from 'web3';
 import { ECSignature, OpenSeaAPIConfig, SaleKind } from './types';
+import BigNumber from 'bignumber.js';
 export declare class OpenSea {
     private web3;
     private networkName;
@@ -42,7 +43,7 @@ export declare class OpenSea {
     getApprovedTokenCount({ accountAddress, tokenAddress }: {
         accountAddress: any;
         tokenAddress: any;
-    }): Promise<import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber>;
+    }): Promise<BigNumber>;
     approveNonFungibleToken({ tokenId, tokenAddress, accountAddress, proxyAddress, tokenAbi }: {
         tokenId: any;
         tokenAddress: any;
@@ -98,7 +99,7 @@ export declare class OpenSea {
      * Gets the price for the order using the contract
      * @param {object} order Wyvern order object
      */
-    getCurrentPrice(order: any): Promise<import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber>;
+    getCurrentPrice(order: any): Promise<BigNumber>;
     /**
      * Helper methods
      */
@@ -114,10 +115,10 @@ export declare class OpenSea {
         exchange: any;
         maker: any;
         taker: string;
-        makerRelayerFee: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber;
-        takerRelayerFee: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber;
-        makerProtocolFee: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber;
-        takerProtocolFee: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber;
+        makerRelayerFee: BigNumber;
+        takerRelayerFee: BigNumber;
+        makerProtocolFee: BigNumber;
+        takerProtocolFee: BigNumber;
         feeMethod: any;
         feeRecipient: string;
         side: number;
@@ -131,9 +132,9 @@ export declare class OpenSea {
         paymentToken: any;
         basePrice: any;
         extra: number;
-        listingTime: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber;
-        expirationTime: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber;
-        salt: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber;
+        listingTime: BigNumber;
+        expirationTime: BigNumber;
+        salt: BigNumber;
         metadata: any;
     }>;
     _getProxy(accountAddress: any): Promise<string>;
@@ -195,14 +196,10 @@ export declare class OpenSea {
             'outputs'?: undefined;
             'payable'?: undefined;
         })[];
-    }): Promise<import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber>;
+    }): Promise<BigNumber>;
     _validateAndPostOrder(order: any): Promise<void>;
     _signOrder({ order }: {
         order: any;
-    }): ECSignature;
+    }): Promise<ECSignature>;
     _getSchema(schemaName?: string): any;
-    _getWyvernAsset(schema: any, { tokenId, tokenAddress }: {
-        tokenId: any;
-        tokenAddress: any;
-    }): any;
 }

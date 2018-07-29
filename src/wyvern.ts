@@ -5,7 +5,7 @@ import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js/lib'
 import * as WyvernSchemas from 'wyvern-schemas'
 
-import { ECSignature, Order, OrderSide, SaleKind, NodeCallback } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, NodeCallback, TxnCallback } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
@@ -14,11 +14,11 @@ export const feeRecipient = '0x5b3256965e7C3cF26E11FCAf296DfC8807C01073'
 
 // OTHER
 
-const txCallbacks = {}
+const txCallbacks: {[key: string]: TxnCallback[]} = {}
 
 export const encodeCall = WyvernSchemas.encodeCall
 
-export const promisify = (inner: (fn: NodeCallback) => void) =>
+export const promisify = (inner: (fn: NodeCallback<any>) => void) =>
   new Promise((resolve, reject) =>
     inner((err: Error | null, res: any) => {
       if (err) { reject(err) }
@@ -26,7 +26,7 @@ export const promisify = (inner: (fn: NodeCallback) => void) =>
     })
   )
 
-const track = (web3, {txHash}, onFinalized) => {
+const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
   if (txCallbacks[txHash]) {
     txCallbacks[txHash].push(onFinalized)
   } else {
@@ -36,15 +36,15 @@ const track = (web3, {txHash}, onFinalized) => {
       //   setTimeout(poll, 1000)
       //   return
       // }
-      const tx = await promisify(c => web3.eth.getTransaction(txHash, c))
+      const tx: Web3.Transaction = await promisify(c => web3.eth.getTransaction(txHash, c))
       if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
-        const receipt = await promisify(c => web3.eth.getTransactionReceipt(txHash, c))
+        const receipt: Web3.TransactionReceipt = await promisify(c => web3.eth.getTransactionReceipt(txHash, c))
         if (!receipt) {
           // Hack: assume success if no receipt
           console.warn('No receipt found for ', txHash)
         }
         const status = receipt
-          ? parseInt(receipt.status) === 1
+          ? parseInt((receipt.status || "0").toString()) == 1
           : true
         txCallbacks[txHash].map(f => f(status))
         delete txCallbacks[txHash]
@@ -56,9 +56,9 @@ const track = (web3, {txHash}, onFinalized) => {
   }
 }
 
-export const confirmTransaction = async (web3: Web3, {txHash}: {txHash: string}) => {
+export const confirmTransaction = async (web3: Web3, txHash: string) => {
   return new Promise((resolve, reject) => {
-    track(web3, {txHash}, (didSucceed: boolean) => {
+    track(web3, txHash, (didSucceed: boolean) => {
       if (didSucceed) {
         resolve('Transaction complete')
       } else {
@@ -113,7 +113,7 @@ export const orderFromJSON = order => {
   return fromJSON
 }
 
-export const orderToJSON = order => {
+export const orderToJSON = (order: Order) => {
   const asJSON = {
     exchange: order.exchange.toLowerCase(),
     maker: order.maker.toLowerCase(),
@@ -137,7 +137,7 @@ export const orderToJSON = order => {
     extra: order.extra.toString(),
     listingTime: order.listingTime.toString(),
     expirationTime: order.expirationTime.toString(),
-    salt: order.salt.toString(),
+    salt: order.salt.toString()
   }
   const hash = WyvernProtocol.getOrderHashHex(asJSON)
   asJSON.hash = hash
@@ -195,7 +195,7 @@ export const findAsset = async (web3, {account, proxy, wyAsset, schema}: {string
   return 'unknown'
 }
 
-export async function personalSignAsync(web3, {message, signerAddress}): Promise<ECSignature> {
+export async function personalSignAsync(web3: Web3, {message, signerAddress}: {message: string; signerAddress: string}): Promise<ECSignature> {
   const signature = await promisify(c => web3.currentProvider.sendAsync({
       method: 'personal_sign', // 'eth_signTypedData',
       params: [message, signerAddress],
@@ -301,7 +301,6 @@ function parseSignatureHex(signature: string, orderHash: string, signerAddress: 
 
 /**
  * Gets the price for the API data or cached order passed in
- * @param order API data about order
  */
 export function computeCurrentPrice(order: Order): BigNumber {
   let { basePrice, listingTime, expirationTime, extra } = order

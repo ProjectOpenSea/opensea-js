@@ -9,8 +9,9 @@ import {
   confirmTransaction, encodeCall, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
-  sendRawTransaction,
+  sendRawTransaction, computeCurrentPrice
 } from './wyvern'
+import BigNumber from 'bignumber.js'
 
 export class OpenSea {
 
@@ -200,8 +201,8 @@ export class OpenSea {
   public async fulfillOrder({ order, accountAddress }) {
     const orderToMatch = await this._makeMatchingOrder({ order, accountAddress })
 
-    const buy = order.side === OrderSide.Buy ? order : orderToMatch
-    const sell = order.side === OrderSide.Buy ? orderToMatch : order
+    const buy = order.side == OrderSide.Buy ? order : orderToMatch
+    const sell = order.side == OrderSide.Buy ? orderToMatch : order
     const txHash = await this._atomicMatch({ buy, sell, accountAddress })
     return txHash
   }
@@ -249,7 +250,7 @@ export class OpenSea {
 
     let isApprovedCheckData = erc721.isApprovedForAll.getData(accountAddress, proxyAddress)
     // Decentraland reverses the arguments to isApprovedForAll, so we need to special case that. :(
-    if (erc721.address === DECENTRALAND_AUCTION_CONFIG['1']) {
+    if (erc721.address == DECENTRALAND_AUCTION_CONFIG['1']) {
       isApprovedCheckData = erc721.isApprovedForAll.getData(proxyAddress, accountAddress)
     }
 
@@ -390,7 +391,7 @@ export class OpenSea {
     }
 
     // Case: user is the seller (and fulfilling a buy order)
-    if (sell.maker.toLowerCase() === accountAddress.toLowerCase() && sell.feeRecipient === WyvernProtocol.NULL_ADDRESS) {
+    if (sell.maker.toLowerCase() == accountAddress.toLowerCase() && sell.feeRecipient == WyvernProtocol.NULL_ADDRESS) {
       // USER IS THE SELLER
       await this._validateSellOrderParameters({ order: sell, accountAddress })
 
@@ -415,7 +416,7 @@ export class OpenSea {
     }
 
     // Case: user is the buyer.
-    if (buy.maker.toLowerCase() === accountAddress.toLowerCase()) {
+    if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
       // USER IS THE BUYER
       await this._validateBuyOrderParameters({ order: buy, accountAddress })
 
@@ -439,7 +440,8 @@ export class OpenSea {
       // If using ETH to pay, set the value of the transaction to the current price
       if (buy.paymentToken == WyvernProtocol.NULL_ADDRESS) {
         const currentPrice = await this.getCurrentPrice(sell)
-        value = currentPrice
+        const estimatedPrice = await computeCurrentPrice(sell)
+        value = BigNumber.max(currentPrice, estimatedPrice)
       }
 
       orderLookupHash = sell.hash
@@ -500,7 +502,7 @@ export class OpenSea {
   public async _makeMatchingOrder({ order, accountAddress }) {
     const schema = this._getSchema()
     const listingTime = Math.round(Date.now() / 1000 - 1000)
-    const { target, calldata, replacementPattern } = order.side === OrderSide.Buy
+    const { target, calldata, replacementPattern } = order.side == OrderSide.Buy
       ? WyvernSchemas.encodeSell(schema, order.metadata.asset, accountAddress)
       : WyvernSchemas.encodeBuy(schema, order.metadata.asset, accountAddress)
     return {
@@ -566,7 +568,7 @@ export class OpenSea {
     const wyAsset = order.metadata.asset
     let proxyAddress = await this._getProxy(accountAddress)
     const where = await findAsset(this.web3, { account: accountAddress, proxy: proxyAddress, wyAsset, schema })
-    if (where === 'other') {
+    if (where == 'other') {
       throw new Error('You do not own this asset.')
     }
 
@@ -623,7 +625,7 @@ export class OpenSea {
 
       // Check WETH balance
       if (balance.toNumber() < required.toNumber()) {
-        if (tokenAddress === WyvernSchemas.tokens[this.networkName].canonicalWrappedEther.address) {
+        if (tokenAddress == WyvernSchemas.tokens[this.networkName].canonicalWrappedEther.address) {
           throw new Error('Insufficient balance. You may need to wrap Ether.')
         } else {
           throw new Error('Insufficient balance.')
@@ -717,7 +719,7 @@ export class OpenSea {
     await this.api.postOrder(order)
   }
 
-  public async _signOrder({ order }): ECSignature {
+  public async _signOrder({ order }): Promise<ECSignature> {
     const message = order.hash || WyvernProtocol.getOrderHashHex(order)
     const signerAddress = order.maker
 
@@ -725,7 +727,7 @@ export class OpenSea {
   }
 
   public _getSchema(schemaName = 'ERC721') {
-    const schema = WyvernSchemas.schemas[this.networkName].filter(s => s.name === schemaName)[0]
+    const schema = WyvernSchemas.schemas[this.networkName].filter(s => s.name == schemaName)[0]
 
     if (!schema) {
       throw new Error('No schema found for this asset; please check back later!')
