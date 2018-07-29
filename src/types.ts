@@ -5,16 +5,17 @@ export type NodeCallback<T> = (err: Error | null, result: T) => void
 export type Web3Callback = NodeCallback<Web3.JSONRPCResponsePayload>
 export type TxnCallback = (result: boolean) => void
 
-export type ABI = Array<{
-  type: string;
-  name?: string;
-  inputs?: object[];
-  outputs?: object[];
-  payable?: boolean;
-  constant?: boolean;
-  anonymous?: boolean;
-  stateMutability?: string;
-}>
+export interface SimpleAbiDefinition {
+  type: Web3.AbiType | string
+  name?: string
+  inputs?: object[]
+  outputs?: object[]
+  payable?: boolean
+  constant?: boolean
+  anonymous?: boolean
+  stateMutability?: Web3.ConstructorStateMutability | string
+}
+export type SimpleContractAbi = SimpleAbiDefinition[]
 
 export interface OpenSeaAPIConfig {
   networkName?: Network

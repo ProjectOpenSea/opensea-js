@@ -145,7 +145,11 @@ export const orderToJSON = (order: Order) => {
   return asJSON
 }
 
-export const findAsset = async (web3, {account, proxy, wyAsset, schema}: {string, string, WyvernAsset, WyvernSchema}) => {
+export const findAsset = async (
+  web3: Web3,
+  {account, proxy, wyAsset, schema}:
+  {account: string; proxy: string; wyAsset: WyvernSchemas.WyvernAsset; schema: Schema}
+  ) => {
   let owner
   const ownerOf = schema.functions.ownerOf
   if (ownerOf) {
@@ -206,17 +210,21 @@ export async function personalSignAsync(web3: Web3, {message, signerAddress}: {m
   return parseSignatureHex(signature.result, message, signerAddress)
 }
 
-export function makeBigNumber(number) {
+export function makeBigNumber(arg: number | string): BigNumber {
   // Zero sometimes returned as 0x from contracts
-  if (number === '0x') {
-    number = 0
+  if (arg === '0x') {
+    arg = 0
   }
   // fix "new BigNumber() number type has more than 15 significant digits"
-  number = number.toString()
-  return new BigNumber(number)
+  arg = arg.toString()
+  return new BigNumber(arg)
 }
 
-export async function sendRawTransaction(web3: Web3, {fromAddress, toAddress, data, value = 0, awaitConfirmation = true}) {
+export async function sendRawTransaction(
+    web3: Web3,
+    {fromAddress, toAddress, data, value = 0, awaitConfirmation = true}:
+    {fromAddress: string; toAddress: string; data: any; value?: number | BigNumber; awaitConfirmation?: boolean}
+  ) {
 
   const txHash = await promisify(c => web3.eth.sendTransaction({
     from: fromAddress,
@@ -226,7 +234,7 @@ export async function sendRawTransaction(web3: Web3, {fromAddress, toAddress, da
   }, c))
 
   if (awaitConfirmation) {
-    await confirmTransaction(web3, {txHash})
+    await confirmTransaction(web3, txHash.toString())
   }
 
   return txHash

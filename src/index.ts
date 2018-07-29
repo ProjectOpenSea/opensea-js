@@ -20,28 +20,29 @@ export class OpenSea {
   private wyvernProtocol: WyvernProtocol
   private api: OpenSeaAPI
 
-  constructor(
-    provider: Web3.Provider,
-    apiConfig: OpenSeaAPIConfig = {
-      networkName: Network.Main,
-      gasPrice: makeBigNumber(100000),
-    }) {
+  constructor(provider: Web3.Provider, apiConfig: OpenSeaAPIConfig = {}) {
+
+    apiConfig.networkName = apiConfig.networkName || Network.Main
+    apiConfig.gasPrice = apiConfig.gasPrice || makeBigNumber(100000)
 
     // Web3 Config
     this.web3 = new Web3(provider)
-    this.networkName = networkName
+    this.networkName = apiConfig.networkName
 
     // WyvernJS config
     this.wyvernProtocol = new WyvernProtocol(provider, {
       network: this.networkName,
-      gasPrice,
+      gasPrice: apiConfig.gasPrice,
     })
 
     // API config
     this.api = new OpenSeaAPI(apiConfig)
   }
 
-  public async wrapEth({ amountInEth, accountAddress, awaitConfirmation = true }) {
+  public async wrapEth(
+      { amountInEth, accountAddress, awaitConfirmation = true }:
+      { amountInEth: number; accountAddress: string; awaitConfirmation?: boolean}
+    ) {
 
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
 
@@ -56,7 +57,10 @@ export class OpenSea {
     })
   }
 
-  public async unwrapWeth({ amountInEth, accountAddress, awaitConfirmation = true }) {
+  public async unwrapWeth(
+    { amountInEth, accountAddress, awaitConfirmation = true }:
+    { amountInEth: number; accountAddress: string; awaitConfirmation?: boolean}
+    ) {
 
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
 
@@ -71,7 +75,10 @@ export class OpenSea {
     })
   }
 
-  public async createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, expirationTime = 0 }) {
+  public async createBuyOrder(
+    { tokenId, tokenAddress, accountAddress, amountInEth, expirationTime = 0 }:
+    { tokenId: string; tokenAddress: string; accountAddress: string; amountInEth: number; expirationTime?: number }
+    ) {
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
     const schema = this._getSchema()
     const wyAsset = _getWyvernAsset(schema, { tokenId, tokenAddress })
@@ -131,9 +138,12 @@ export class OpenSea {
     return this._validateAndPostOrder(orderJSON)
   }
 
-  public async createSellOrder({ tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }) {
+  public async createSellOrder(
+    { tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
+    { tokenId: string; tokenAddress: string; accountAddress: string; startAmountInEth: number; endAmountInEth: number; expirationTime?: number }
+    ) {
     const schema = this._getSchema()
-    const wyAsset = this._getWyvernAsset(schema, { tokenId, tokenAddress })
+    const wyAsset = _getWyvernAsset(schema, { tokenId, tokenAddress })
     const metadata = {
       asset: wyAsset,
       schema: schema.name,
@@ -736,7 +746,11 @@ export class OpenSea {
   }
 }
 
-function _getWyvernAsset(schema, { tokenId, tokenAddress }) {
+function _getWyvernAsset(
+  schema: WyvernSchemas.Schema,
+  { tokenId, tokenAddress }:
+  { tokenId: string; tokenAddress: string}
+  ) {
   return schema.assetFromFields({
     'ID': tokenId.toString(),
     'Address': tokenAddress,
