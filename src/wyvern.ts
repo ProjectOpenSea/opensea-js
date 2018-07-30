@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js/lib'
 
-import { ECSignature, Order, OrderSide, SaleKind, NodeCallback, TxnCallback } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
@@ -14,13 +14,21 @@ export const feeRecipient = '0x5b3256965e7C3cF26E11FCAf296DfC8807C01073'
 
 const txCallbacks: {[key: string]: TxnCallback[]} = {}
 
-export const promisify = (inner: (fn: NodeCallback<any>) => void) =>
-  new Promise((resolve, reject) =>
-    inner((err: Error | null, res: any) => {
+/**
+ * Promisify a callback-syntax web3 function
+ * @param inner callback function that accepts a Web3 callback function and passes
+ * it to the Web3 function
+ */
+export async function promisify<T>(
+    inner: (fn: Web3Callback<T>) => void
+  ) {
+  return new Promise<T>((resolve, reject) =>
+    inner((err, res) => {
       if (err) { reject(err) }
       resolve(res)
     })
   )
+}
 
 const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
   if (txCallbacks[txHash]) {
@@ -32,9 +40,9 @@ const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
       //   setTimeout(poll, 1000)
       //   return
       // }
-      const tx: Web3.Transaction = await promisify(c => web3.eth.getTransaction(txHash, c))
+      const tx = await promisify<Web3.Transaction>(c => web3.eth.getTransaction(txHash, c))
       if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
-        const receipt: Web3.TransactionReceipt = await promisify(c => web3.eth.getTransactionReceipt(txHash, c))
+        const receipt = await promisify<Web3.TransactionReceipt | null>(c => web3.eth.getTransactionReceipt(txHash, c))
         if (!receipt) {
           // Hack: assume success if no receipt
           console.warn('No receipt found for ', txHash)
@@ -48,7 +56,7 @@ const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
         setTimeout(poll, 1000)
       }
     }
-    poll()
+    poll().catch()
   }
 }
 
@@ -64,7 +72,7 @@ export const confirmTransaction = async (web3: Web3, txHash: string) => {
   })
 }
 
-export const orderFromJSON = order => {
+export const orderFromJSON = (order: any) => {
   const hash = WyvernProtocol.getOrderHashHex(order)
   if (hash !== order.hash) {
     console.error('Invalid order hash')
@@ -102,15 +110,15 @@ export const orderFromJSON = order => {
     s: order.s,
   }
 
-  fromJSON.currentPrice = computeCurrentPrice(order)
+  fromJSON.currentPrice = estimateCurrentPrice(order)
 
-  if (order.asset) { fromJSON.asset = assetFromJSON(order.asset) }
-  if (order.settlement) { fromJSON.settlement = settlementFromJSON(order.settlement) }
   return fromJSON
 }
 
-export const orderToJSON = (order: Order): any => {
-  const asJSON: any = {
+export const orderToJSON = (order: Order): OrderJSON => {
+  const asJSON = {
+    ...order,
+
     exchange: order.exchange.toLowerCase(),
     maker: order.maker.toLowerCase(),
     taker: order.taker.toLowerCase(),
@@ -124,10 +132,7 @@ export const orderToJSON = (order: Order): any => {
     saleKind: order.saleKind.toString(),
     target: order.target.toLowerCase(),
     howToCall: order.howToCall.toString(),
-    calldata: order.calldata,
-    replacementPattern: order.replacementPattern,
     staticTarget: order.staticTarget.toLowerCase(),
-    staticExtradata: order.staticExtradata,
     paymentToken: order.paymentToken.toLowerCase(),
     basePrice: order.basePrice.toString(),
     extra: order.extra.toString(),
@@ -135,9 +140,6 @@ export const orderToJSON = (order: Order): any => {
     expirationTime: order.expirationTime.toString(),
     salt: order.salt.toString()
   }
-  const hash = WyvernProtocol.getOrderHashHex(order)
-  asJSON.hash = hash
-  asJSON.metadata = order.metadata
   return asJSON
 }
 
@@ -151,8 +153,8 @@ export const findAsset = async (
   if (ownerOf) {
     const abi = ownerOf(wyAsset)
     const contract = web3.eth.contract([abi]).at(abi.target)
-    if (abi.inputs.filter(x => x.value === undefined).length === 0) {
-      owner = await promisify(c => contract[abi.name].call(...abi.inputs.map(i => i.value.toString()), c))
+    if (abi.inputs.filter((x: any) => x.value === undefined).length === 0) {
+      owner = await promisify<string>(c => contract[abi.name].call(...abi.inputs.map((i: any) => i.value.toString()), c))
       owner = owner.toLowerCase()
     }
   }
@@ -165,12 +167,12 @@ export const findAsset = async (
     const abi = countOf(wyAsset)
     const contract = web3.eth.contract([abi]).at(abi.target)
     if (proxy) {
-      proxyCount = await promisify(c => contract[abi.name].call([proxy], c))
+      proxyCount = await promisify<BigNumber>(c => contract[abi.name].call([proxy], c))
       proxyCount = proxyCount.toNumber()
     } else {
       proxyCount = 0
     }
-    myCount = await promisify(c => contract[abi.name].call([account], c))
+    myCount = await promisify<BigNumber>(c => contract[abi.name].call([account], c))
     myCount = myCount.toNumber()
   }
   if (owner !== undefined) {
@@ -195,21 +197,29 @@ export const findAsset = async (
   return 'unknown'
 }
 
-export async function personalSignAsync(
-    web3: Web3,
-    {message, signerAddress}:
-    {message: string; signerAddress: string}
+/**
+ * Sign messages using web3 personal signatures
+ * @param web3 Web3 instance
+ * @param message message to sign
+ * @param signerAddress web3 address signing the message
+ */
+export async function personalSignAsync(web3: Web3, message: string, signerAddress: string
   ): Promise<ECSignature> {
-  const signature: any = await promisify(c => web3.currentProvider.sendAsync({
+
+  const signature = await promisify<Web3.JSONRPCResponsePayload>(c => web3.currentProvider.sendAsync({
       method: 'personal_sign', // 'eth_signTypedData',
       params: [message, signerAddress],
       from: signerAddress,
-    }, c),
+    } as any, c)
   )
 
-  return parseSignatureHex(signature.result, message, signerAddress)
+  return parseSignatureHex(signature.result)
 }
 
+/**
+ * Special fixes for making BigNumbers using web3 results
+ * @param arg An arg or the result of a web3 call to turn into a BigNumber
+ */
 export function makeBigNumber(arg: number | string): BigNumber {
   // Zero sometimes returned as 0x from contracts
   if (arg === '0x') {
@@ -220,6 +230,15 @@ export function makeBigNumber(arg: number | string): BigNumber {
   return new BigNumber(arg)
 }
 
+/**
+ * Send a transaction to the blockchain and optionally confirm it
+ * @param web3 Web3 instance
+ * @param fromAddress address sending transaction
+ * @param toAddress destination contract address
+ * @param data data to send to contract
+ * @param value value in ETH to send with data
+ * @param awaitConfirmation whether we should wait for blockchain to confirm
+ */
 export async function sendRawTransaction(
     web3: Web3,
     {fromAddress, toAddress, data, value = 0, awaitConfirmation = true}:
@@ -240,27 +259,9 @@ export async function sendRawTransaction(
   return txHash
 }
 
-function assetFromJSON(asset) {
-  if (asset.buyOrders) {
-    asset.buyOrders = asset.buyOrders.map(orderFromJSON)
-  }
-  if (asset.sellOrders) {
-    asset.sellOrders = asset.sellOrders.map(orderFromJSON)
-  }
-  return asset
-}
-
-function settlementFromJSON(settlement: any) {
-  settlement.price = makeBigNumber(settlement.price)
-  if (settlement.order) {
-    settlement.order = orderFromJSON(settlement.order)
-  }
-  return settlement
-}
-
 // sourced from 0x.js:
 // https://github.com/ProjectWyvern/wyvern-js/blob/39999cb93ce5d80ea90b4382182d1bd4339a9c6c/src/utils/signature_utils.ts
-function parseSignatureHex(signature: string, orderHash: string, signerAddress: string): ECSignature {
+function parseSignatureHex(signature: string): ECSignature {
   // HACK: There is no consensus on whether the signatureHex string should be formatted as
   // v + r + s OR r + s + v, and different clients (even different versions of the same client)
   // return the signature params in different orders. In order to support all client implementations,

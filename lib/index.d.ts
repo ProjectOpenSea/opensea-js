@@ -1,5 +1,5 @@
 import * as Web3 from 'web3';
-import { ECSignature, OpenSeaAPIConfig, Order, SimpleContractAbi } from './types';
+import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi } from './types';
 import BigNumber from 'bignumber.js';
 export declare class OpenSea {
     private web3;
@@ -35,29 +35,28 @@ export declare class OpenSea {
     fulfillOrder({ order, accountAddress }: {
         order: Order;
         accountAddress: string;
-    }): Promise<any>;
+    }): Promise<string>;
     cancelOrder({ order, accountAddress }: {
         order: Order;
         accountAddress: string;
-    }): Promise<any>;
+    }): Promise<string>;
     getApprovedTokenCount({ accountAddress, tokenAddress }: {
-        accountAddress: any;
-        tokenAddress: any;
-    }): Promise<any>;
+        accountAddress: string;
+        tokenAddress: string;
+    }): Promise<BigNumber>;
     approveNonFungibleToken({ tokenId, tokenAddress, accountAddress, proxyAddress, tokenAbi }: {
-        tokenId: any;
-        tokenAddress: any;
-        accountAddress: any;
-        proxyAddress: any;
-        tokenAbi?: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").SimpleAbiDefinition[];
-    }): Promise<void>;
+        tokenId: string;
+        tokenAddress: string;
+        accountAddress: string;
+        proxyAddress: string | null;
+        tokenAbi?: PartialReadonlyContractAbi;
+    }): Promise<{} | undefined>;
     approveFungibleToken({ accountAddress, tokenAddress }: {
         accountAddress: string;
         tokenAddress: string;
     }): Promise<{}>;
     /**
      * Gets the price for the order using the contract
-     * @param {object} order Wyvern order object
      */
     getCurrentPrice(order: Order): Promise<BigNumber>;
     /**
@@ -67,29 +66,30 @@ export declare class OpenSea {
         buy: Order;
         sell: Order;
         accountAddress: string;
-    }): Promise<any>;
+    }): Promise<string>;
     _makeMatchingOrder({ order, accountAddress }: {
         order: Order;
         accountAddress: string;
-    }): Order;
-    _getProxy(accountAddress: string): string | null;
-    _initializeProxy(accountAddress: any): Promise<string>;
+    }): UnsignedOrder;
+    _getProxy(accountAddress: string): Promise<string | null>;
+    _initializeProxy(accountAddress: string): Promise<string>;
     _validateSellOrderParameters({ order, accountAddress }: {
-        order: Order;
+        order: UnhashedOrder;
         accountAddress: string;
     }): Promise<void>;
     _validateBuyOrderParameters({ order, accountAddress }: {
-        order: Order;
+        order: UnhashedOrder;
         accountAddress: string;
     }): Promise<void>;
     _getTokenBalance({ accountAddress, tokenAddress, tokenAbi }: {
         accountAddress: string;
         tokenAddress: string;
-        tokenAbi?: SimpleContractAbi;
+        tokenAbi?: PartialReadonlyContractAbi;
     }): Promise<BigNumber>;
-    _validateAndPostOrder(order: any): Promise<void>;
-    _signOrder({ order }: {
-        order: any;
+    _validateAndPostOrder(order: Order): Promise<void>;
+    _signOrder(order: {
+        hash: string;
+        maker: string;
     }): Promise<ECSignature>;
     _getSchema(schemaName?: string): any;
 }

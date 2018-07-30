@@ -1,4 +1,5 @@
-import { Network } from './types';
+// NO IMPORTS HERE
+// Should be top-level
 
 // Taken from wyvern and 0x
 declare module 'web3_beta'
@@ -28,8 +29,9 @@ declare module 'truffle-hdwallet-provider' {
 }
 
 declare module 'wyvern-schemas' {
-    export const tokens: { [key in Network]: object; }
+    export const tokens: { [key: string]: any }
+    export const schemas: { [key: string]: any }
     export const encodeCall: (method: any, args: any[]) => any
-    export const encodeSell: (method: any, args: any[]) => any
-    export const encodeBuy: (method: any, args: any[]) => any
+    export const encodeSell: (method: any, asset: any, address: string) => any
+    export const encodeBuy: (method: any, asset: any, address: string) => any
 }

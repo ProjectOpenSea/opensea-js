@@ -1,6 +1,6 @@
-import { SimpleContractAbi } from "../types"
+import { PartialReadonlyContractAbi } from "../types"
 
-export const ERC721: SimpleContractAbi = [
+export const ERC721: PartialReadonlyContractAbi = [
   {
     'constant': true,
     'inputs': [],

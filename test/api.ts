@@ -15,7 +15,7 @@ const mainApi = new OpenSeaAPI({
 })
 
 const rinkebyApi = new OpenSeaAPI({
-  networkName: Network.Main
+  networkName: Network.Rinkeby
 })
 
 suite('api', () => {

@@ -1,5 +1,5 @@
-export declare const getMethod: (abi: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").SimpleAbiDefinition[], name: string) => import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").SimpleAbiDefinition;
-export declare const event: (abi: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").SimpleAbiDefinition[], name: string) => import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").SimpleAbiDefinition;
+export declare const getMethod: (abi: Readonly<import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").PartialAbiDefinition>[], name: string) => Readonly<import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").PartialAbiDefinition>;
+export declare const event: (abi: Readonly<import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").PartialAbiDefinition>[], name: string) => Readonly<import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").PartialAbiDefinition>;
 export declare const DECENTRALAND_AUCTION_CONFIG: {
     '1': string;
 };

@@ -1,12 +1,25 @@
 import BigNumber from 'bignumber.js'
 import * as Web3 from 'web3'
+import {
+  Network,
+  HowToCall,
+  SaleKind,
+  Order as WyvernOrder
+} from '../node_modules/wyvern-js/lib/types'
 
-export type NodeCallback<T> = (err: Error | null, result: T) => void
-export type Web3Callback = NodeCallback<Web3.JSONRPCResponsePayload>
+export {
+  Network,
+  HowToCall,
+  SaleKind,
+}
+
+export type Web3Callback<T> = (err: Error | null, result: T) => void
+export type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>
 export type TxnCallback = (result: boolean) => void
 
-export interface SimpleAbiDefinition {
-  type: Web3.AbiType | string
+// To simplify typifying ABIs:
+export interface PartialAbiDefinition {
+  type: Web3.AbiType | string // Not Partial!
   name?: string
   inputs?: object[]
   outputs?: object[]
@@ -15,7 +28,7 @@ export interface SimpleAbiDefinition {
   anonymous?: boolean
   stateMutability?: Web3.ConstructorStateMutability | string
 }
-export type SimpleContractAbi = SimpleAbiDefinition[]
+export type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>
 
 export interface OpenSeaAPIConfig {
   networkName?: Network
@@ -23,27 +36,9 @@ export interface OpenSeaAPIConfig {
   gasPrice?: BigNumber
 }
 
-export enum Network {
-  Main = 'main',
-  Rinkeby = 'rinkeby',
-}
-
 export enum OrderSide {
   Buy = 0,
   Sell = 1,
-}
-
-export enum SaleKind {
-  FixedPrice = 0,
-  EnglishAuction = 1,
-  DutchAuction = 2,
-}
-
-export enum HowToCall {
-  Call = 0,
-  DelegateCall = 1,
-  StaticCall = 2,
-  Create = 3,
 }
 
 export enum FeeMethod {
@@ -57,38 +52,64 @@ export interface ECSignature {
   s: string
 }
 
-export interface Order {
-  exchange: string
-  maker: string
-  taker: string
-  makerRelayerFee: BigNumber
-  takerRelayerFee: BigNumber
-  makerProtocolFee: BigNumber
-  takerProtocolFee: BigNumber
-  feeRecipient: string
+export interface WyvernAsset {
+  id: string
+  address: string
+}
+
+export interface Order extends WyvernOrder {
   feeMethod: FeeMethod
   side: OrderSide
   saleKind: SaleKind
-  target: string
   howToCall: HowToCall
+
+  hash: string
+
+  metadata: {asset: WyvernAsset; schema: string}
+
+  v: number
+  r: string
+  s: string
+
+  // Server side appends
+  cancelledOrFinalized?: boolean
+  markedInvalid?: boolean
+  currentPrice?: BigNumber
+}
+
+export type UnsignedOrder = Pick<Order, Exclude<keyof Order, keyof ECSignature>>
+
+export type UnhashedOrder = Pick<UnsignedOrder, Exclude<keyof UnsignedOrder, "hash">>
+
+export interface OrderJSON {
+  exchange: string
+  maker: string
+  taker: string
+  makerRelayerFee: string
+  takerRelayerFee: string
+  makerProtocolFee: string
+  takerProtocolFee: string
+  feeRecipient: string
+  feeMethod: string
+  side: string
+  saleKind: string
+  target: string
+  howToCall: string
   calldata: string
   replacementPattern: string
   staticTarget: string
   staticExtradata: string
   paymentToken: string
-  basePrice: BigNumber
-  extra: BigNumber
-  listingTime: BigNumber
-  expirationTime: BigNumber
-  salt: BigNumber
-  r?: string
-  s?: string
-  v?: number
+  basePrice: string
+  extra: string
+  listingTime: string
+  expirationTime: string
+  salt: string
 
-  // Appends
-  hash?: string
-  metadata?: object
-  currentPrice?: BigNumber
-  asset?: object,
-  settlement?: object
+  hash: string
+
+  metadata: {asset: WyvernAsset; schema: string}
+  v: number
+  r: string
+  s: string
 }

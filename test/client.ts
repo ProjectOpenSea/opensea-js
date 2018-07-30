@@ -1,6 +1,6 @@
 import {
   assert,
-} from 'chai';
+} from 'chai'
 
 import {
   suite,
@@ -9,7 +9,7 @@ import {
 
 import { OpenSea } from '../src/index'
 import * as Web3 from 'web3'
-import { Network } from '../src/types';
+import { Network } from '../src/types'
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
 const client = new OpenSea(provider, {

@@ -1,6 +1,6 @@
 import * as fetch from 'isomorphic-unfetch'
 
-import { Network, OpenSeaAPIConfig, Order } from './types'
+import { Network, OpenSeaAPIConfig, OrderJSON } from './types'
 
 const ORDERBOOK_PATH = `/wyvern/v0`
 
@@ -24,7 +24,7 @@ export class OpenSeaAPI {
     }
   }
 
-  public async postOrder(order: Order) {
+  public async postOrder(order: OrderJSON) {
     return this.post(
       `${ORDERBOOK_PATH}/orders/post`,
       order,
@@ -38,7 +38,7 @@ export class OpenSeaAPI {
    * body can be an object and will get JSON-stringified. Like with
    * `fetch`, it can't be present when the method is "GET"
    */
-  public async post(apiPath: string, body: any, opts: {body?: any} = {}) {
+  public async post(apiPath: string, body: object, opts: {body?: object} = {}) {
 
     const fetchOpts = {
       method: 'POST', ...opts,
@@ -56,7 +56,7 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param opts RequestInit opts, similar to Fetch API
    */
-  public async _fetch(apiPath: string, opts: {headers?: any} = {}) {
+  public async _fetch(apiPath: string, opts: {headers?: object} = {}) {
 
     const apiBase = this.apiBaseUrl
     const apiKey = this.apiKey
