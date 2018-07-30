@@ -1,6 +1,6 @@
 import {
   assert,
-} from 'chai';
+} from 'chai'
 
 import {
   suite,

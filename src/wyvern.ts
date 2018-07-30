@@ -72,7 +72,7 @@ export const confirmTransaction = async (web3: Web3, txHash: string) => {
   })
 }
 
-export const orderFromJSON = (order: any) => {
+export const orderFromJSON = (order: any): Order => {
   const hash = WyvernProtocol.getOrderHashHex(order)
   if (hash !== order.hash) {
     console.error('Invalid order hash')

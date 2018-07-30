@@ -3,9 +3,6 @@
   "version": "0.0.1",
   "description": "JavaScript SDK for the OpenSea marketplace",
   "main": "lib/index.js",
-  "directories": {
-    "test": "tests"
-  },
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha test/*.ts --require ts-node/register",
     "lint": "tslint --project . 'src/**/*.ts' --fix",
