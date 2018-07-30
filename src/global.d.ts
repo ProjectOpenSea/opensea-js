@@ -28,10 +28,7 @@ declare module 'truffle-hdwallet-provider' {
 }
 
 declare module 'wyvern-schemas' {
-    export const tokens: {
-        [Network.Main]: object;
-        [Network.Rinkeby]: object;
-    }
+    export const tokens: { [key in Network]: object; }
     export const encodeCall: (method: any, args: any[]) => any
     export const encodeSell: (method: any, args: any[]) => any
     export const encodeBuy: (method: any, args: any[]) => any
