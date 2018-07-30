@@ -14,6 +14,7 @@ import { orderFromJSON } from '../src/wyvern'
 import ordersJSON = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { WyvernProtocol } from 'wyvern-js/lib'
+import { Order } from 'wyvern-js/lib/types'
 
 const ordersAndProperties = ordersJSON as any
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
@@ -42,10 +43,10 @@ suite('client', () => {
     })
   })
 
-  // ordersAndProperties.map((data: {order: OrderJSON}, index: number) => {
-  //   test('Order #' + index + ' has correct hash', () => {
-  //     const order = orderFromJSON(data.order)
-  //     assert.equal(order.hash, WyvernProtocol.getOrderHashHex(data.order))
-  //   })
-  // })
+  ordersAndProperties.map((data: {order: OrderJSON}, index: number) => {
+    test('Order #' + index + ' has correct hash', () => {
+      const order = orderFromJSON(data.order)
+      assert.equal(order.hash, WyvernProtocol.getOrderHashHex(data.order as any))
+    })
+  })
 })

@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { ECSignature, Order, Web3Callback, OrderJSON } from './types';
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
-export declare const feeRecipient = "0x5b3256965e7C3cF26E11FCAf296DfC8807C01073";
+export declare const feeRecipient = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
 /**
  * Promisify a callback-syntax web3 function
  * @param inner callback function that accepts a Web3 callback function and passes
@@ -11,7 +11,7 @@ export declare const feeRecipient = "0x5b3256965e7C3cF26E11FCAf296DfC8807C01073"
 export declare function promisify<T>(inner: (fn: Web3Callback<T>) => void): Promise<T>;
 export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise<{}>;
 export declare const orderFromJSON: (order: any) => Order;
-export declare const orderToJSON: (order: Order) => OrderJSON;
+export declare const orderToJSON: (order: Order | Pick<Pick<Order, "metadata" | "feeMethod" | "side" | "saleKind" | "howToCall" | "hash" | "cancelledOrFinalized" | "markedInvalid" | "currentPrice" | "exchange" | "maker" | "taker" | "makerRelayerFee" | "takerRelayerFee" | "makerProtocolFee" | "takerProtocolFee" | "feeRecipient" | "target" | "calldata" | "replacementPattern" | "staticTarget" | "staticExtradata" | "paymentToken" | "basePrice" | "extra" | "listingTime" | "expirationTime" | "salt">, "metadata" | "feeMethod" | "side" | "saleKind" | "howToCall" | "cancelledOrFinalized" | "markedInvalid" | "currentPrice" | "exchange" | "maker" | "taker" | "makerRelayerFee" | "takerRelayerFee" | "makerProtocolFee" | "takerProtocolFee" | "feeRecipient" | "target" | "calldata" | "replacementPattern" | "staticTarget" | "staticExtradata" | "paymentToken" | "basePrice" | "extra" | "listingTime" | "expirationTime" | "salt">) => OrderJSON;
 export declare const findAsset: (web3: Web3, { account, proxy, wyAsset, schema }: {
     account: string;
     proxy: string;

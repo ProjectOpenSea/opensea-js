@@ -7,11 +7,13 @@ import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } 
 import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
-  makeBigNumber, orderToJSON,
+  makeBigNumber, orderToJSON, orderFromJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice
 } from './wyvern'
 import BigNumber from 'bignumber.js'
+
+export { orderToJSON, orderFromJSON }
 
 export class OpenSea {
 
@@ -124,7 +126,8 @@ export class OpenSea {
 
     const hashedOrder = {
       ...order,
-      hash: WyvernProtocol.getOrderHashHex(order)
+      // TS Bug with wyvern 0x schemas
+      hash: WyvernProtocol.getOrderHashHex(orderToJSON(order) as any)
     }
     let signature
     try {
@@ -197,7 +200,8 @@ export class OpenSea {
 
     const hashedOrder = {
       ...order,
-      hash: WyvernProtocol.getOrderHashHex(order)
+      // TS Bug with wyvern 0x schemas
+      hash: WyvernProtocol.getOrderHashHex(orderToJSON(order) as any)
     }
     let signature
     try {

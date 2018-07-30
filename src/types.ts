@@ -106,10 +106,10 @@ export interface OrderJSON {
   expirationTime: string
   salt: string
 
-  hash: string
+  hash?: string
 
   metadata: {asset: WyvernAsset; schema: string}
-  v: number
-  r: string
-  s: string
+  v?: number
+  r?: string
+  s?: string
 }

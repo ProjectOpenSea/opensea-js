@@ -4,11 +4,11 @@ import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js/lib'
 
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
-export const feeRecipient = '0x5b3256965e7C3cF26E11FCAf296DfC8807C01073'
+export const feeRecipient = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
 
 // OTHER
 
@@ -89,12 +89,12 @@ export const orderFromJSON = (order: any): Order => {
     takerRelayerFee: new BigNumber(order.takerRelayerFee),
     makerProtocolFee: new BigNumber(order.makerProtocolFee),
     takerProtocolFee: new BigNumber(order.takerProtocolFee),
-    feeMethod: JSON.parse(order.feeMethod),
+    feeMethod: order.feeMethod,
     feeRecipient: order.feeRecipient,
-    side: JSON.parse(order.side),
-    saleKind: JSON.parse(order.saleKind),
+    side: order.side,
+    saleKind: order.saleKind,
     target: order.target,
-    howToCall: JSON.parse(order.howToCall),
+    howToCall: order.howToCall,
     calldata: order.calldata,
     replacementPattern: order.replacementPattern,
     staticTarget: order.staticTarget,
@@ -115,7 +115,7 @@ export const orderFromJSON = (order: any): Order => {
   return fromJSON
 }
 
-export const orderToJSON = (order: Order): OrderJSON => {
+export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
   const asJSON = {
     ...order,
 
