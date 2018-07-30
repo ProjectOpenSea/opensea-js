@@ -1,3 +1,5 @@
+import { Network } from './types';
+
 // Taken from wyvern and 0x
 declare module 'web3_beta'
 declare module 'web3-provider-engine'
@@ -23,4 +25,14 @@ declare module 'truffle-hdwallet-provider' {
         ): void
     }
     export = HDWalletProvider
+}
+
+declare module 'wyvern-schemas' {
+    export const tokens: {
+        [Network.Main]: object;
+        [Network.Rinkeby]: object;
+    }
+    export const encodeCall: (method: any, args: any[]) => any
+    export const encodeSell: (method: any, args: any[]) => any
+    export const encodeBuy: (method: any, args: any[]) => any
 }

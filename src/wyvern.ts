@@ -3,20 +3,16 @@ import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js/lib'
-import * as WyvernSchemas from 'wyvern-schemas'
 
 import { ECSignature, Order, OrderSide, SaleKind, NodeCallback, TxnCallback } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
 export const feeRecipient = '0x5b3256965e7C3cF26E11FCAf296DfC8807C01073'
-// WyvernExchange.feeRecipient
 
 // OTHER
 
 const txCallbacks: {[key: string]: TxnCallback[]} = {}
-
-export const encodeCall = WyvernSchemas.encodeCall
 
 export const promisify = (inner: (fn: NodeCallback<any>) => void) =>
   new Promise((resolve, reject) =>
@@ -113,8 +109,8 @@ export const orderFromJSON = order => {
   return fromJSON
 }
 
-export const orderToJSON = (order: Order) => {
-  const asJSON = {
+export const orderToJSON = (order: Order): any => {
+  const asJSON: any = {
     exchange: order.exchange.toLowerCase(),
     maker: order.maker.toLowerCase(),
     taker: order.taker.toLowerCase(),
@@ -139,7 +135,7 @@ export const orderToJSON = (order: Order) => {
     expirationTime: order.expirationTime.toString(),
     salt: order.salt.toString()
   }
-  const hash = WyvernProtocol.getOrderHashHex(asJSON)
+  const hash = WyvernProtocol.getOrderHashHex(order)
   asJSON.hash = hash
   asJSON.metadata = order.metadata
   return asJSON
@@ -148,7 +144,7 @@ export const orderToJSON = (order: Order) => {
 export const findAsset = async (
   web3: Web3,
   {account, proxy, wyAsset, schema}:
-  {account: string; proxy: string; wyAsset: WyvernSchemas.WyvernAsset; schema: Schema}
+  {account: string; proxy: string; wyAsset: any; schema: any}
   ) => {
   let owner
   const ownerOf = schema.functions.ownerOf
@@ -199,8 +195,12 @@ export const findAsset = async (
   return 'unknown'
 }
 
-export async function personalSignAsync(web3: Web3, {message, signerAddress}: {message: string; signerAddress: string}): Promise<ECSignature> {
-  const signature = await promisify(c => web3.currentProvider.sendAsync({
+export async function personalSignAsync(
+    web3: Web3,
+    {message, signerAddress}:
+    {message: string; signerAddress: string}
+  ): Promise<ECSignature> {
+  const signature: any = await promisify(c => web3.currentProvider.sendAsync({
       method: 'personal_sign', // 'eth_signTypedData',
       params: [message, signerAddress],
       from: signerAddress,
@@ -281,7 +281,7 @@ function parseSignatureHex(signature: string, orderHash: string, signerAddress: 
   throw new Error('Invalid signature')
 
   function _parseSignatureHexAsVRS(signatureHex: string) {
-    const signatureBuffer = ethUtil.toBuffer(signatureHex)
+    const signatureBuffer: any = ethUtil.toBuffer(signatureHex)
     let v = signatureBuffer[0]
     if (v < 27) {
       v += 27
@@ -308,32 +308,32 @@ function parseSignatureHex(signature: string, orderHash: string, signerAddress: 
 }
 
 /**
- * Gets the price for the API data or cached order passed in
+ * Estimates the price 30 seconds ago
  */
-export function computeCurrentPrice(order: Order): BigNumber {
+export function estimateCurrentPrice(order: Order, shouldRoundUp = true) {
   let { basePrice, listingTime, expirationTime, extra } = order
   const { side } = order
 
-  const now = new BigNumber(Date.now() / 1000)
+  const now = new BigNumber(Date.now() / 1000).minus(30)
   basePrice = new BigNumber(basePrice)
   listingTime = new BigNumber(listingTime)
   expirationTime = new BigNumber(expirationTime)
   extra = new BigNumber(extra)
 
-  if (order.saleKind === SaleKind.FixedPrice) {
-    return basePrice
-  } else if (order.saleKind === SaleKind.DutchAuction) {
+  let exactPrice = basePrice
+
+  if (order.saleKind == SaleKind.FixedPrice) {
+    // Do nothing, price is correct
+  } else if (order.saleKind == SaleKind.DutchAuction) {
     const diff = extra.times(now.minus(listingTime))
                   .dividedBy(expirationTime.minus(listingTime))
-    if (side === OrderSide.Sell) {
+
+    exactPrice = side == OrderSide.Sell
       /* Sell-side - start price: basePrice. End price: basePrice - extra. */
-      return basePrice.minus(diff)
-    } else {
+      ? basePrice.minus(diff)
       /* Buy-side - start price: basePrice. End price: basePrice + extra. */
-      return basePrice.plus(diff)
-    }
-  } else {
-    // TODO English auction pricing
-    return basePrice
+      : basePrice.plus(diff)
   }
+
+  return shouldRoundUp ? exactPrice.ceil() : exactPrice
 }

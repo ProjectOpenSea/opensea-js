@@ -3,16 +3,17 @@ import * as Web3 from 'web3';
 export declare type NodeCallback<T> = (err: Error | null, result: T) => void;
 export declare type Web3Callback = NodeCallback<Web3.JSONRPCResponsePayload>;
 export declare type TxnCallback = (result: boolean) => void;
-export declare type ABI = Array<{
-    type: string;
+export interface SimpleAbiDefinition {
+    type: Web3.AbiType | string;
     name?: string;
     inputs?: object[];
     outputs?: object[];
     payable?: boolean;
     constant?: boolean;
     anonymous?: boolean;
-    stateMutability?: string;
-}>;
+    stateMutability?: Web3.ConstructorStateMutability | string;
+}
+export declare type SimpleContractAbi = SimpleAbiDefinition[];
 export interface OpenSeaAPIConfig {
     networkName?: Network;
     apiKey?: string;
@@ -76,6 +77,6 @@ export interface Order {
     hash?: string;
     metadata?: object;
     currentPrice?: BigNumber;
-    asset: object;
-    settlement: object;
+    asset?: object;
+    settlement?: object;
 }

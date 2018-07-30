@@ -1,2 +1,2 @@
-import { ABI } from "../types";
-export declare const ERC20: ABI;
+import { SimpleContractAbi } from "../types";
+export declare const ERC20: SimpleContractAbi;

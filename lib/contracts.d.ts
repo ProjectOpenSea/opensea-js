@@ -1,41 +1,5 @@
-export declare const getMethod: (abi: {
-    type: string;
-    name?: string | undefined;
-    inputs?: object[] | undefined;
-    outputs?: object[] | undefined;
-    payable?: boolean | undefined;
-    constant?: boolean | undefined;
-    anonymous?: boolean | undefined;
-    stateMutability?: string | undefined;
-}[], name: string) => {
-    type: string;
-    name?: string | undefined;
-    inputs?: object[] | undefined;
-    outputs?: object[] | undefined;
-    payable?: boolean | undefined;
-    constant?: boolean | undefined;
-    anonymous?: boolean | undefined;
-    stateMutability?: string | undefined;
-};
-export declare const event: (abi: {
-    type: string;
-    name?: string | undefined;
-    inputs?: object[] | undefined;
-    outputs?: object[] | undefined;
-    payable?: boolean | undefined;
-    constant?: boolean | undefined;
-    anonymous?: boolean | undefined;
-    stateMutability?: string | undefined;
-}[], name: string) => {
-    type: string;
-    name?: string | undefined;
-    inputs?: object[] | undefined;
-    outputs?: object[] | undefined;
-    payable?: boolean | undefined;
-    constant?: boolean | undefined;
-    anonymous?: boolean | undefined;
-    stateMutability?: string | undefined;
-};
+export declare const getMethod: (abi: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").SimpleAbiDefinition[], name: string) => import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").SimpleAbiDefinition;
+export declare const event: (abi: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").SimpleAbiDefinition[], name: string) => import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/src/types").SimpleAbiDefinition;
 export declare const DECENTRALAND_AUCTION_CONFIG: {
     '1': string;
 };

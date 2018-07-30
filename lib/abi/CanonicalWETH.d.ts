@@ -1,2 +1,2 @@
-import { ABI } from "../types";
-export declare const CanonicalWETH: ABI;
+import { SimpleContractAbi } from "../types";
+export declare const CanonicalWETH: SimpleContractAbi;

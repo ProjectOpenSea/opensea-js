@@ -89,6 +89,6 @@ export interface Order {
   hash?: string
   metadata?: object
   currentPrice?: BigNumber
-  asset: object,
-  settlement: object
+  asset?: object,
+  settlement?: object
 }

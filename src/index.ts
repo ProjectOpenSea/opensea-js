@@ -4,12 +4,12 @@ import * as WyvernSchemas from 'wyvern-schemas'
 
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, Order, SimpleContractAbi } from './types'
 import {
-  confirmTransaction, encodeCall, feeRecipient, findAsset,
+  confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
-  sendRawTransaction, computeCurrentPrice
+  sendRawTransaction, estimateCurrentPrice
 } from './wyvern'
 import BigNumber from 'bignumber.js'
 
@@ -52,7 +52,7 @@ export class OpenSea {
       fromAddress: accountAddress,
       toAddress: token.address,
       value: baseAmount,
-      data: encodeCall(getMethod(CanonicalWETH, 'deposit'), []),
+      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'deposit'), []),
       awaitConfirmation,
     })
   }
@@ -70,7 +70,7 @@ export class OpenSea {
       fromAddress: accountAddress,
       toAddress: token.address,
       value: 0,
-      data: encodeCall(getMethod(CanonicalWETH, 'withdraw'), [baseAmount.toString()]),
+      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [baseAmount.toString()]),
       awaitConfirmation,
     })
   }
@@ -90,7 +90,7 @@ export class OpenSea {
     const listingTime = Math.round(Date.now() / 1000 - 100)
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
-    const order = {
+    const order: Order = {
       exchange: WyvernProtocol.getExchangeContractAddress(this.networkName),
       maker: accountAddress,
       taker: WyvernProtocol.NULL_ADDRESS,
@@ -161,7 +161,7 @@ export class OpenSea {
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
-    const order = {
+    const order: Order = {
       exchange: WyvernProtocol.getExchangeContractAddress(this.networkName),
       maker: accountAddress,
       taker: WyvernProtocol.NULL_ADDRESS,
@@ -208,7 +208,10 @@ export class OpenSea {
     return this._validateAndPostOrder(orderJSON)
   }
 
-  public async fulfillOrder({ order, accountAddress }) {
+  public async fulfillOrder(
+      { order, accountAddress }:
+      { order: Order; accountAddress: string}
+    ) {
     const orderToMatch = await this._makeMatchingOrder({ order, accountAddress })
 
     const buy = order.side == OrderSide.Buy ? order : orderToMatch
@@ -217,7 +220,10 @@ export class OpenSea {
     return txHash
   }
 
-  public async cancelOrder({ order, accountAddress }) {
+  public async cancelOrder(
+      { order, accountAddress }:
+      { order: Order; accountAddress: string}
+    ) {
     const protocolInstance = this.wyvernProtocol
     const txHash = await protocolInstance.wyvernExchange.cancelOrder_.sendTransactionAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
@@ -239,7 +245,7 @@ export class OpenSea {
     const approved = await promisify(c => this.web3.eth.call({
       from: accountAddress,
       to: tokenAddress,
-      data: encodeCall(getMethod(ERC20, 'allowance'),
+      data: WyvernSchemas.encodeCall(getMethod(ERC20, 'allowance'),
         [accountAddress, contractAddress]),
     }, c))
     return makeBigNumber(approved)
@@ -289,7 +295,7 @@ export class OpenSea {
           fromAddress: accountAddress,
           toAddress: erc721.address,
           data: erc721.setApprovalForAll.getData(proxyAddress, true),
-          confirmTransaction: true,
+          awaitConfirmation: true,
         })
         return
       } catch (error) {
@@ -338,7 +344,7 @@ export class OpenSea {
         fromAddress: accountAddress,
         toAddress: erc721.address,
         data: erc721.approve.getData(proxyAddress, tokenId),
-        confirmTransaction: true,
+        awaitConfirmation: true
       })
     } catch (error) {
       console.error(error)
@@ -347,13 +353,16 @@ export class OpenSea {
   }
 
   // Returns transaction hash
-  public async approveFungibleToken({ accountAddress, tokenAddress }) {
+  public async approveFungibleToken(
+      { accountAddress, tokenAddress }:
+      { accountAddress: string; tokenAddress: string}
+    ) {
     const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this.networkName)
 
     const txHash = await sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: tokenAddress,
-      data: encodeCall(getMethod(ERC20, 'approve'),
+      data: WyvernSchemas.encodeCall(getMethod(ERC20, 'approve'),
         [contractAddress, WyvernProtocol.MAX_UINT_256.toString()]),
       awaitConfirmation: true,
     })
@@ -364,7 +373,7 @@ export class OpenSea {
    * Gets the price for the order using the contract
    * @param {object} order Wyvern order object
    */
-  public async getCurrentPrice(order) {
+  public async getCurrentPrice(order: Order) {
     const protocolInstance = this.wyvernProtocol
 
     const currentPrice = await protocolInstance.wyvernExchange.calculateCurrentPrice_.callAsync(
@@ -385,7 +394,10 @@ export class OpenSea {
    * Helper methods
    */
 
-  public async _atomicMatch({ buy, sell, accountAddress }) {
+  public async _atomicMatch(
+      { buy, sell, accountAddress }:
+      { buy: Order; sell: Order; accountAddress: string }
+    ) {
     const protocolInstance = this.wyvernProtocol
     let value, orderLookupHash
 
@@ -450,7 +462,7 @@ export class OpenSea {
       // If using ETH to pay, set the value of the transaction to the current price
       if (buy.paymentToken == WyvernProtocol.NULL_ADDRESS) {
         const currentPrice = await this.getCurrentPrice(sell)
-        const estimatedPrice = await computeCurrentPrice(sell)
+        const estimatedPrice = estimateCurrentPrice(sell)
         value = BigNumber.max(currentPrice, estimatedPrice)
       }
 
@@ -479,25 +491,23 @@ export class OpenSea {
       throw new Error('Unable to match offer with auction, due to the type of offer requested')
     }
 
-    const args = [[buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
-    buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
-    [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
-    [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
-    buy.calldata,
-    sell.calldata,
-    buy.replacementPattern,
-    sell.replacementPattern,
-    buy.staticExtradata,
-    sell.staticExtradata,
-    [buy.v, sell.v],
-    [buy.r, buy.s, sell.r, sell.s,
-      // Use the order hash so that OrdersMatched events can look it up
-      orderLookupHash],
-    { from: accountAddress, value }]
-
     let txHash
     try {
-      txHash = await protocolInstance.wyvernExchange.atomicMatch_.sendTransactionAsync(...args)
+      txHash = await protocolInstance.wyvernExchange.atomicMatch_.sendTransactionAsync([buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
+        buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
+        [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
+        [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
+        buy.calldata,
+        sell.calldata,
+        buy.replacementPattern,
+        sell.replacementPattern,
+        buy.staticExtradata,
+        sell.staticExtradata,
+        [buy.v, sell.v],
+        [buy.r, buy.s, sell.r, sell.s,
+          // Use the order hash so that OrdersMatched events can look it up
+          orderLookupHash],
+        { from: accountAddress, value })
     } catch (error) {
       console.error(error)
       throw new Error(`Failed to authorize transaction: "${
@@ -509,7 +519,10 @@ export class OpenSea {
     return txHash
   }
 
-  public async _makeMatchingOrder({ order, accountAddress }) {
+  public async _makeMatchingOrder(
+      { order, accountAddress }:
+      { order: Order; accountAddress: string}
+    ): Order {
     const schema = this._getSchema()
     const listingTime = Math.round(Date.now() / 1000 - 1000)
     const { target, calldata, replacementPattern } = order.side == OrderSide.Buy
@@ -544,9 +557,9 @@ export class OpenSea {
   }
 
   // Returns null if no proxy and throws if method not available
-  public async _getProxy(accountAddress) {
+  public async _getProxy(accountAddress: string): string | null {
     const protocolInstance = this.wyvernProtocol
-    let proxyAddress = await protocolInstance.wyvernProxyRegistry.proxies.callAsync(accountAddress)
+    let proxyAddress: string | null = await protocolInstance.wyvernProxyRegistry.proxies.callAsync(accountAddress)
 
     if (proxyAddress == '0x') {
       throw new Error("Couldn't retrieve your account from the blockchain - make sure you're on the correct Ethereum network!")
@@ -564,7 +577,7 @@ export class OpenSea {
       from: accountAddress,
     })
     // TODO dispatch(ExchangeActions._setTransactionHash(txHash))
-    await confirmTransaction(txHash)
+    await confirmTransaction(this.web3, txHash)
     const proxyAddress = await this._getProxy(accountAddress)
     if (!proxyAddress) {
       throw new Error('Failed to initialize your account, please try again')
@@ -573,7 +586,10 @@ export class OpenSea {
   }
 
   // Throws
-  public async _validateSellOrderParameters({ order, accountAddress }: { Order, string }) {
+  public async _validateSellOrderParameters(
+      { order, accountAddress }:
+      { order: Order; accountAddress: string }
+    ) {
     const schema = this._getSchema()
     const wyAsset = order.metadata.asset
     let proxyAddress = await this._getProxy(accountAddress)
@@ -624,7 +640,10 @@ export class OpenSea {
   }
 
   // Throws
-  public async _validateBuyOrderParameters({ order, accountAddress }: { Order, string }) {
+  public async _validateBuyOrderParameters(
+      { order, accountAddress }:
+      { order: Order; accountAddress: string }
+    ) {
     const tokenAddress = order.paymentToken
 
     if (tokenAddress != WyvernProtocol.NULL_ADDRESS) {
@@ -657,33 +676,35 @@ export class OpenSea {
 
     // Check order formation
     const protocolInstance = this.wyvernProtocol
-    const buyValidArgs = [[order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
-    [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
-    order.feeMethod,
-    order.side,
-    order.saleKind,
-    order.howToCall,
-    order.calldata,
-    order.replacementPattern,
-    order.staticExtradata,
-    { from: accountAddress }]
-    const buyValid = await protocolInstance.wyvernExchange.validateOrderParameters_.callAsync(...buyValidArgs)
+    const buyValid = await protocolInstance.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
+      order.feeMethod,
+      order.side,
+      order.saleKind,
+      order.howToCall,
+      order.calldata,
+      order.replacementPattern,
+      order.staticExtradata,
+      { from: accountAddress })
     if (!buyValid) {
-      throw new Error(`Failed to validate buy order parameters: ${JSON.stringify(buyValidArgs)}`)
+      throw new Error(`Failed to validate buy order parameters: ${JSON.stringify(order)}`)
     }
   }
 
-  public async _getTokenBalance({ accountAddress, tokenAddress, tokenAbi = ERC20 }) {
+  public async _getTokenBalance(
+      { accountAddress, tokenAddress, tokenAbi = ERC20 }:
+      { accountAddress: string; tokenAddress: string; tokenAbi?: SimpleContractAbi }
+    ) {
     if (!tokenAddress) {
       tokenAddress = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther.address
     }
     const amount = await promisify(c => this.web3.eth.call({
       from: accountAddress,
       to: tokenAddress,
-      data: encodeCall(getMethod(tokenAbi, 'balanceOf'), [accountAddress]),
+      data: WyvernSchemas.encodeCall(getMethod(tokenAbi, 'balanceOf'), [accountAddress]),
     }, c))
 
-    return makeBigNumber(amount)
+    return makeBigNumber(amount.toString())
   }
 
   // Throws

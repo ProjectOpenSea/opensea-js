@@ -1,10 +1,10 @@
-import { ABI } from './types'
+import { SimpleContractAbi } from './types'
 
-export const getMethod = (abi: ABI, name: string) => {
+export const getMethod = (abi: SimpleContractAbi, name: string) => {
   return abi.filter(x => x.type == 'function' && x.name == name)[0]
 }
 
-export const event = (abi: ABI, name: string) => {
+export const event = (abi: SimpleContractAbi, name: string) => {
   return abi.filter(x => x.type == 'event' && x.name == name)[0]
 }
 
