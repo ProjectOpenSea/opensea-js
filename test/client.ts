@@ -46,6 +46,7 @@ suite('client', () => {
   ordersAndProperties.map((data: {order: OrderJSON}, index: number) => {
     test('Order #' + index + ' has correct hash', () => {
       const order = orderFromJSON(data.order)
+      // TS Bug with wyvern 0x schemas
       assert.equal(order.hash, WyvernProtocol.getOrderHashHex(data.order as any))
     })
   })

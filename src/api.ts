@@ -2,6 +2,8 @@ import * as fetch from 'isomorphic-unfetch'
 
 import { Network, OpenSeaAPIConfig, OrderJSON } from './types'
 
+const API_BASE_MAINNET = 'https://api.opensea.io'
+const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'
 const ORDERBOOK_PATH = `/wyvern/v0`
 
 export class OpenSeaAPI {
@@ -15,11 +17,11 @@ export class OpenSeaAPI {
 
     switch (networkName) {
       case Network.Rinkeby:
-        this.apiBaseUrl = 'https://rinkeby-api.opensea.io'
+        this.apiBaseUrl = API_BASE_RINKEBY
         break
       case Network.Main:
       default:
-        this.apiBaseUrl = 'https://api.opensea.io'
+        this.apiBaseUrl = API_BASE_MAINNET
         break
     }
   }
