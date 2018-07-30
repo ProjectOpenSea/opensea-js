@@ -5,7 +5,7 @@ import {
   HowToCall,
   SaleKind,
   Order as WyvernOrder
-} from '../node_modules/wyvern-js/lib/types'
+} from 'wyvern-js/lib/types'
 
 export {
   Network,

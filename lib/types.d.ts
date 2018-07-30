@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import { Network, HowToCall, SaleKind, Order as WyvernOrder } from '../node_modules/wyvern-js/lib/types';
+import { Network, HowToCall, SaleKind, Order as WyvernOrder } from 'wyvern-js/lib/types';
 export { Network, HowToCall, SaleKind, };
 export declare type Web3Callback<T> = (err: Error | null, result: T) => void;
 export declare type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>;
