@@ -93,5 +93,5 @@ export declare class OpenSea {
         hash: string;
         maker: string;
     }): Promise<ECSignature>;
-    _getSchema(schemaName?: string): any;
+    _getSchema(schemaName?: SchemaName): Schema;
 }

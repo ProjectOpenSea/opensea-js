@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import { Network, HowToCall, SaleKind, Order as WyvernOrder } from 'wyvern-js/lib/types';
-export { Network, HowToCall, SaleKind, };
+import { Network, HowToCall, SaleKind, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
+export { Network, HowToCall, SaleKind, ECSignature };
 export declare type Web3Callback<T> = (err: Error | null, result: T) => void;
 export declare type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>;
 export declare type TxnCallback = (result: boolean) => void;
@@ -29,34 +29,28 @@ export declare enum FeeMethod {
     ProtocolFee = 0,
     SplitFee = 1
 }
-export interface ECSignature {
-    v: number;
-    r: string;
-    s: string;
-}
 export interface WyvernAsset {
     id: string;
     address: string;
 }
-export interface Order extends WyvernOrder {
+export interface UnhashedOrder extends WyvernOrder {
     feeMethod: FeeMethod;
     side: OrderSide;
     saleKind: SaleKind;
     howToCall: HowToCall;
-    hash: string;
     metadata: {
         asset: WyvernAsset;
-        schema: string;
+        schema: SchemaName;
     };
-    v: number;
-    r: string;
-    s: string;
+}
+export interface UnsignedOrder extends UnhashedOrder {
+    hash: string;
+}
+export interface Order extends UnsignedOrder, ECSignature {
     cancelledOrFinalized?: boolean;
     markedInvalid?: boolean;
     currentPrice?: BigNumber;
 }
-export declare type UnsignedOrder = Pick<Order, Exclude<keyof Order, keyof ECSignature>>;
-export declare type UnhashedOrder = Pick<UnsignedOrder, Exclude<keyof UnsignedOrder, "hash">>;
 export interface OrderJSON {
     exchange: string;
     maker: string;
@@ -83,7 +77,7 @@ export interface OrderJSON {
     salt: string;
     metadata: {
         asset: WyvernAsset;
-        schema: string;
+        schema: SchemaName;
     };
     hash?: string;
     v?: number;

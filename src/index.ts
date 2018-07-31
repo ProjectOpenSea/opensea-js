@@ -793,8 +793,8 @@ export class OpenSea {
     return personalSignAsync(this.web3, message, signerAddress)
   }
 
-  public _getSchema(schemaName = 'ERC721') {
-    const schema = WyvernSchemas.schemas[this.networkName].filter((s: any) => s.name == schemaName)[0]
+  public _getSchema(schemaName = SchemaName.ERC721) {
+    const schema = WyvernSchemas.schemas[this.networkName].filter(s => s.name == schemaName)[0]
 
     if (!schema) {
       throw new Error('No schema found for this asset; please check back later!')

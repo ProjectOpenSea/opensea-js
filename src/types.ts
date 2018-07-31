@@ -4,6 +4,7 @@ import {
   Network,
   HowToCall,
   SaleKind,
+  ECSignature,
   Order as WyvernOrder
 } from 'wyvern-js/lib/types'
 
@@ -11,6 +12,7 @@ export {
   Network,
   HowToCall,
   SaleKind,
+  ECSignature
 }
 
 export type Web3Callback<T> = (err: Error | null, result: T) => void
@@ -46,40 +48,33 @@ export enum FeeMethod {
   SplitFee = 1,
 }
 
-export interface ECSignature {
-  v: number
-  r: string
-  s: string
-}
-
 export interface WyvernAsset {
   id: string
   address: string
 }
 
-export interface Order extends WyvernOrder {
+export interface UnhashedOrder extends WyvernOrder {
   feeMethod: FeeMethod
   side: OrderSide
   saleKind: SaleKind
   howToCall: HowToCall
 
+  metadata: {
+    asset: WyvernAsset;
+    schema: SchemaName;
+  }
+}
+
+export interface UnsignedOrder extends UnhashedOrder {
   hash: string
+}
 
-  metadata: {asset: WyvernAsset; schema: string}
-
-  v: number
-  r: string
-  s: string
-
+export interface Order extends UnsignedOrder, ECSignature {
   // Server side appends
   cancelledOrFinalized?: boolean
   markedInvalid?: boolean
   currentPrice?: BigNumber
 }
-
-// Fancy TypeScript magic...
-export type UnsignedOrder = Pick<Order, Exclude<keyof Order, keyof ECSignature>>
-export type UnhashedOrder = Pick<UnsignedOrder, Exclude<keyof UnsignedOrder, "hash">>
 
 export interface OrderJSON {
   exchange: string
@@ -106,7 +101,10 @@ export interface OrderJSON {
   expirationTime: string
   salt: string
 
-  metadata: {asset: WyvernAsset; schema: string}
+  metadata: {
+    asset: WyvernAsset;
+    schema: SchemaName;
+  }
 
   // Optional, so that we can JSONify orders before sending them to getOrderHashHex
   hash?: string

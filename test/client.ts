@@ -11,11 +11,12 @@ import { OpenSea } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON } from '../src/types'
 import { orderFromJSON } from '../src/wyvern'
-import ordersJSON = require('./fixtures/orders.json')
+import orderJSON = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { WyvernProtocol } from 'wyvern-js/lib'
 
-const ordersAndProperties = ordersJSON as any
+const ordersAndProperties = orderJSON as any
+
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 const client = new OpenSea(provider, {
   networkName: Network.Main
