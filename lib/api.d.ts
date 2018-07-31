@@ -1,3 +1,4 @@
+import 'isomorphic-unfetch';
 import { OpenSeaAPIConfig, OrderJSON, Order } from './types';
 export declare class OpenSeaAPI {
     readonly apiBaseUrl: string;

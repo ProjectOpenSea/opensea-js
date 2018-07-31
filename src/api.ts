@@ -1,4 +1,4 @@
-import * as fetch from 'isomorphic-unfetch'
+import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
 import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse } from './types'
 import { orderFromJSON } from './wyvern'
@@ -134,7 +134,7 @@ export class OpenSeaAPI {
   }
 }
 
-function throwOnUnauth(response: fetch.IsomorphicResponse) {
+function throwOnUnauth(response: Response) {
   if (!response.ok && response.status == 401) {
     throw new Error('Unauthorized')
   }
