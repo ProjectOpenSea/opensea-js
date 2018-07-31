@@ -77,8 +77,8 @@ export interface Order extends WyvernOrder {
   currentPrice?: BigNumber
 }
 
+// Fancy TypeScript magic...
 export type UnsignedOrder = Pick<Order, Exclude<keyof Order, keyof ECSignature>>
-
 export type UnhashedOrder = Pick<UnsignedOrder, Exclude<keyof UnsignedOrder, "hash">>
 
 export interface OrderJSON {
@@ -106,10 +106,20 @@ export interface OrderJSON {
   expirationTime: string
   salt: string
 
-  hash?: string
-
   metadata: {asset: WyvernAsset; schema: string}
+
+  // Optional, so that we can JSONify orders before sending them to getOrderHashHex
+  hash?: string
   v?: number
   r?: string
   s?: string
+
+  // Used by orderbook to make queries easier
+  tokenAddress?: string,
+  tokenId?: number | string
+}
+
+export interface OrderbookResponse {
+  orders: OrderJSON[]
+  count: number
 }

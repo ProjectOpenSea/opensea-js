@@ -14,7 +14,6 @@ import { orderFromJSON } from '../src/wyvern'
 import ordersJSON = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { WyvernProtocol } from 'wyvern-js/lib'
-import { Order } from 'wyvern-js/lib/types'
 
 const ordersAndProperties = ordersJSON as any
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')

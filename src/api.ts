@@ -1,6 +1,7 @@
 import * as fetch from 'isomorphic-unfetch'
-
-import { Network, OpenSeaAPIConfig, OrderJSON } from './types'
+import QueryString from 'query-string'
+import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse } from './types'
+import { orderFromJSON } from './wyvern'
 
 const API_BASE_MAINNET = 'https://api.opensea.io'
 const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'
@@ -8,7 +9,8 @@ const ORDERBOOK_PATH = `/wyvern/v0`
 
 export class OpenSeaAPI {
 
-  public apiBaseUrl: string
+  public readonly apiBaseUrl: string
+  public pageSize = 20
 
   private apiKey: string | undefined
 
@@ -26,31 +28,91 @@ export class OpenSeaAPI {
     }
   }
 
-  public async postOrder(order: OrderJSON) {
-    return this.post(
+  public async postOrder(order: OrderJSON): Promise<Order> {
+    const response = await this.post(
       `${ORDERBOOK_PATH}/orders/post`,
       order,
     )
+    const json: OrderJSON = await response.json()
+    return orderFromJSON(json)
+  }
+
+  public async getOrder(query: Partial<OrderJSON>): Promise<Order | null> {
+    const response = await this.get(
+      `${ORDERBOOK_PATH}/orders`,
+      query
+    )
+    const json: OrderbookResponse = await response.json()
+    const orderJSON = json.orders[0]
+    return orderJSON ? orderFromJSON(orderJSON) : null
+  }
+
+  public async getOrders(
+      query: Partial<OrderJSON> = {},
+      page = 1
+    ): Promise<{orders: Order[]; count: number}> {
+
+    const response = await this.get(
+      `${ORDERBOOK_PATH}/orders`,
+      {
+        ...query,
+        page
+      }
+    )
+    const json: OrderbookResponse = await response.json()
+    return {
+      orders: json.orders.map(orderFromJSON),
+      count: json.count
+    }
   }
 
   /**
-   * Send JSON data to API, sending auth token in headers
+   * Get JSON data from API, sending auth token in headers
    * @param apiPath Path to URL endpoint under API
-   * @param opts RequestInit opts, similar to Fetch API, but
-   * body can be an object and will get JSON-stringified. Like with
-   * `fetch`, it can't be present when the method is "GET"
+   * @param query Data to send. Will be stringified using QueryString
    */
-  public async post(apiPath: string, body: object, opts: {body?: object} = {}) {
+  private async get(apiPath: string, query?: object) {
+
+    const qs = QueryString.stringify(query)
+    const url = `${apiPath}?${qs}`
+
+    return this._fetch(url)
+  }
+
+  /**
+   * POST JSON data to API, sending auth token in headers
+   * @param apiPath Path to URL endpoint under API
+   * @param body Data to send. Will be JSON.stringified
+   * @param opts RequestInit opts, similar to Fetch API. If it contains
+   *  a body, it won't be stringified.
+   */
+  private async post(apiPath: string, body?: object, opts: RequestInit = {}) {
 
     const fetchOpts = {
-      method: 'POST', ...opts,
-      body: JSON.stringify(body || opts.body),
+      method: 'POST',
+      body: body ? JSON.stringify(body) : undefined,
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-      }}
+      },
+      ...opts
+    }
 
     return this._fetch(apiPath, fetchOpts)
+  }
+
+  /**
+   * PUT JSON data to API, sending auth token in headers
+   * @param apiPath Path to URL endpoint under API
+   * @param body Data to send
+   * @param opts RequestInit opts, similar to Fetch API. If it contains
+   *  a body, it won't be stringified.
+   */
+  private async put(apiPath: string, body: object, opts: RequestInit = {}) {
+    return this.post(apiPath, body, {
+      method: 'PUT',
+      ...opts
+    })
   }
 
   /**
@@ -58,7 +120,7 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param opts RequestInit opts, similar to Fetch API
    */
-  public async _fetch(apiPath: string, opts: {headers?: object} = {}) {
+  private async _fetch(apiPath: string, opts: RequestInit = {}) {
 
     const apiBase = this.apiBaseUrl
     const apiKey = this.apiKey
