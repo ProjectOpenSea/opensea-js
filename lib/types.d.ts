@@ -89,4 +89,10 @@ export interface OrderJSON {
     v?: number;
     r?: string;
     s?: string;
+    tokenAddress?: string;
+    tokenId?: number | string;
+}
+export interface OrderbookResponse {
+    orders: OrderJSON[];
+    count: number;
 }

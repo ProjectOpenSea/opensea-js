@@ -38,8 +38,8 @@ suite('api', () => {
     assert.equal(pagination.count, count)
   })
 
-  test('API fetches orders for asset', () => {
-    const {orders, count}: OrderbookResponse = mainApi.getOrders({tokenAddress: "0x"})
+  test('API fetches orders for asset', async () => {
+    const {orders, count} = await mainApi.getOrders({tokenAddress: "0x"})
     assert.isAbove(orders.length, 0)
   })
 
@@ -51,7 +51,10 @@ suite('api', () => {
   test('API fetches existing order', async () => {
     const hash = "kdjfsdf"
     const order: Order | null = await mainApi.getOrder({hash})
-    assert.typeOf(order, "object")
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
     assert.equal(order.hash, hash)
   })
 

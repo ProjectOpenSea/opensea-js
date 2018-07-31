@@ -11,7 +11,7 @@ import {
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice
 } from './wyvern'
-import BigNumber from 'bignumber.js'
+import { BigNumber } from 'bignumber.js'
 
 export { orderToJSON, orderFromJSON }
 

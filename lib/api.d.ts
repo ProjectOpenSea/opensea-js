@@ -1,26 +1,41 @@
-import * as fetch from 'isomorphic-unfetch';
-import { OpenSeaAPIConfig, OrderJSON } from './types';
+import { OpenSeaAPIConfig, OrderJSON, Order } from './types';
 export declare class OpenSeaAPI {
-    apiBaseUrl: string;
+    readonly apiBaseUrl: string;
+    pageSize: number;
     private apiKey;
     constructor({ apiKey, networkName }: OpenSeaAPIConfig);
-    postOrder(order: OrderJSON): Promise<fetch.IsomorphicResponse>;
+    postOrder(order: OrderJSON): Promise<Order>;
+    getOrder(query: Partial<OrderJSON>): Promise<Order | null>;
+    getOrders(query?: Partial<OrderJSON>, page?: number): Promise<{
+        orders: Order[];
+        count: number;
+    }>;
     /**
-     * Send JSON data to API, sending auth token in headers
+     * Get JSON data from API, sending auth token in headers
      * @param apiPath Path to URL endpoint under API
-     * @param opts RequestInit opts, similar to Fetch API, but
-     * body can be an object and will get JSON-stringified. Like with
-     * `fetch`, it can't be present when the method is "GET"
+     * @param query Data to send. Will be stringified using QueryString
      */
-    post(apiPath: string, body: object, opts?: {
-        body?: object;
-    }): Promise<fetch.IsomorphicResponse>;
+    private get;
+    /**
+     * POST JSON data to API, sending auth token in headers
+     * @param apiPath Path to URL endpoint under API
+     * @param body Data to send. Will be JSON.stringified
+     * @param opts RequestInit opts, similar to Fetch API. If it contains
+     *  a body, it won't be stringified.
+     */
+    private post;
+    /**
+     * PUT JSON data to API, sending auth token in headers
+     * @param apiPath Path to URL endpoint under API
+     * @param body Data to send
+     * @param opts RequestInit opts, similar to Fetch API. If it contains
+     *  a body, it won't be stringified.
+     */
+    private put;
     /**
      * Get from an API Endpoint, sending auth token in headers
      * @param apiPath Path to URL endpoint under API
      * @param opts RequestInit opts, similar to Fetch API
      */
-    _fetch(apiPath: string, opts?: {
-        headers?: object;
-    }): Promise<fetch.IsomorphicResponse>;
+    private _fetch;
 }

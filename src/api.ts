@@ -1,5 +1,5 @@
 import * as fetch from 'isomorphic-unfetch'
-import QueryString from 'query-string'
+import * as QueryString from 'query-string'
 import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse } from './types'
 import { orderFromJSON } from './wyvern'
 
@@ -71,7 +71,7 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param query Data to send. Will be stringified using QueryString
    */
-  private async get(apiPath: string, query?: object) {
+  private async get(apiPath: string, query: object = {}) {
 
     const qs = QueryString.stringify(query)
     const url = `${apiPath}?${qs}`

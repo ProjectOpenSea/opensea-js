@@ -1,7 +1,7 @@
 import * as Web3 from 'web3';
 import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi } from './types';
 import { orderToJSON, orderFromJSON } from './wyvern';
-import BigNumber from 'bignumber.js';
+import { BigNumber } from 'bignumber.js';
 export { orderToJSON, orderFromJSON };
 export declare class OpenSea {
     private web3;
