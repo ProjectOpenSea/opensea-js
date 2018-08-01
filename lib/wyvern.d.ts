@@ -50,3 +50,10 @@ export declare function sendRawTransaction(web3: Web3, { fromAddress, toAddress,
  * Estimates the price 30 seconds ago
  */
 export declare function estimateCurrentPrice(order: Order, shouldRoundUp?: boolean): BigNumber;
+/**
+ * Get the Wyvern representation of an asset
+ * @param schema The WyvernSchema needed to access this asset
+ * @param tokenId The token's id
+ * @param tokenAddress The address of the token's contract
+ */
+export declare function getWyvernAsset(schema: any, tokenId: string, tokenAddress: string): any;

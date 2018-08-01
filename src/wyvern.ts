@@ -338,3 +338,18 @@ export function estimateCurrentPrice(order: Order, shouldRoundUp = true) {
 
   return shouldRoundUp ? exactPrice.ceil() : exactPrice
 }
+
+/**
+ * Get the Wyvern representation of an asset
+ * @param schema The WyvernSchema needed to access this asset
+ * @param tokenId The token's id
+ * @param tokenAddress The address of the token's contract
+ */
+export function getWyvernAsset(
+    schema: any, tokenId: string, tokenAddress: string
+  ) {
+  return schema.assetFromFields({
+    'ID': tokenId.toString(),
+    'Address': tokenAddress,
+  })
+}

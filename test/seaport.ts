@@ -22,7 +22,7 @@ const client = new OpenSeaPort(provider, {
   networkName: Network.Main
 })
 
-suite('client', () => {
+suite('seaport', () => {
 
   test('Constructor has public methods', () => {
     assert.equal(typeof client.getCurrentPrice, 'function')
