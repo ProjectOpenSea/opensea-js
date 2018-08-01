@@ -72,12 +72,17 @@ npm test
 
 Generate html docs, also available for browsing [here](https://projectopensea.github.io/opensea-js/):
 ```bash
-npm run docs
+npm run docsHtml
 ```
 
-Or generate markdown docs:
+Or generate markdown docs available for browsing on git repos:
 ```bash
 npm run docsMarkdown
+```
+
+Or generate both:
+```bash
+npm run docs
 ```
 
 #### Contributing
