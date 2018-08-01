@@ -14,7 +14,7 @@ import {
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
 
-export { orderToJSON, orderFromJSON }
+export { orderToJSON, orderFromJSON, Network }
 
 export class OpenSea {
 

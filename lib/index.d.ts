@@ -1,9 +1,9 @@
 import * as Web3 from 'web3';
-import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData } from './types';
+import { ECSignature, Network, OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData } from './types';
 import { orderToJSON, orderFromJSON } from './wyvern';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
-export { orderToJSON, orderFromJSON };
+export { orderToJSON, orderFromJSON, Network };
 export declare class OpenSea {
     web3: Web3;
     logger: (arg: string) => void;

@@ -3,7 +3,7 @@ import * as QueryString from 'query-string'
 import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse } from './types'
 import { orderFromJSON } from './wyvern'
 
-export const ORDERBOOK_VERSION: number = 1
+export const ORDERBOOK_VERSION: number = 0
 
 const API_BASE_MAINNET = 'https://api.opensea.io'
 const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'
@@ -31,6 +31,7 @@ export class OpenSeaAPI {
   }
 
   public async postOrder(order: OrderJSON): Promise<Order> {
+
     const response = await this.post(
       `${ORDERBOOK_PATH}/orders/post`,
       order,
@@ -40,10 +41,12 @@ export class OpenSeaAPI {
   }
 
   public async getOrder(query: Partial<OrderJSON>): Promise<Order | null> {
+
     const response = await this.get(
       `${ORDERBOOK_PATH}/orders`,
       query
     )
+
     if (ORDERBOOK_VERSION == 0) {
       const json: OrderJSON[] = await response.json()
       const orderJSON = json[0]
@@ -67,6 +70,7 @@ export class OpenSeaAPI {
         page
       }
     )
+
     if (ORDERBOOK_VERSION == 0) {
       const json: OrderJSON[] = await response.json()
       return {
@@ -125,6 +129,7 @@ export class OpenSeaAPI {
    *  a body, it won't be stringified.
    */
   private async put(apiPath: string, body: object, opts: RequestInit = {}) {
+
     return this.post(apiPath, body, {
       method: 'PUT',
       ...opts
