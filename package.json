@@ -6,7 +6,8 @@
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha test/*.ts --require ts-node/register",
     "lint": "tslint --project . 'src/**/*.ts' --fix",
-    "build": "npm run lint && tsc"
+    "build": "npm run lint && tsc",
+    "docs": "./node_modules/typedoc/bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file"
   },
   "repository": {
     "type": "git",
@@ -57,6 +58,7 @@
     "ts-node": "^6.1.0",
     "tslint": "^5.9.1",
     "tslint-eslint-rules": "^4.1.1",
+    "typedoc": "^0.11.1",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "0.0.8",
     "typescript": "^2.6.2",
