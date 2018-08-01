@@ -27,7 +27,7 @@ import { OpenSeaPort, Network } from 'opensea-js'
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
-const client = new OpenSeaPort(provider, {
+const seaport = new OpenSeaPort(provider, {
   networkName: Network.Main
 })
 ```
@@ -35,7 +35,7 @@ const client = new OpenSeaPort(provider, {
 Then, you can do this to make an offer on an asset:
 ```JavaScript
 // An expirationTime of 0 means it will never expire
-const offer = await client.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, expirationTime: 0 })
+const offer = await seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, expirationTime: 0 })
 ```
 
 ### Learning More
