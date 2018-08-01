@@ -70,19 +70,47 @@
 				<!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) --></p>
 				<h3 id="synopsis">Synopsis</h3>
 				<p>This is the JavaScript SDK for OpenSea. It allows developers to access the orderbook, filter it, create new buy orders (offers), create new sell orders (auctions), and fulfill orders to complete trades, programmatically.</p>
-				<h3 id="versioning">Versioning</h3>
-				<p>This project uses <a href="https://semver.org/">semantic versioning</a>.</p>
+				<h3 id="installation">Installation</h3>
+				<p>In your project, run:</p>
+				<pre><code class="lang-bash">npm install --save opensea-js
+</code></pre>
+				<p>Install <a href="https://github.com/ethereum/web3.js">web3</a> too if you haven&#39;t already.</p>
+				<h3 id="getting-started">Getting Started</h3>
+				<p>To get started, create a new OpenSeaJS client using your Web3 provider:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OpenSea, Network } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js'</span>
+
+<span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> Web3.providers.HttpProvider(<span class="hljs-string">'https://mainnet.infura.io'</span>)
+
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> OpenSea(provider, {
+  <span class="hljs-attr">networkName</span>: Network.Main
+})
+</code></pre>
+				<p>Then, you can do this to make an offer on an asset:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
+<span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> client.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> })
+</code></pre>
+				<h3 id="learning-more">Learning More</h3>
+				<p>Detailed documentation is coming soon on <a href="https://docs.opensea.io">docs.opensea.io</a>.</p>
+				<p>In the meantime, visit the auto-generated documentation <a href="https://projectopensea.github.io/opensea-js/">here</a>, or contact the OpenSea devs for help! They&#39;re available every day on <a href="https://discord.gg/XjwWYgU">Discord</a> in the <code>#developers</code> channel.</p>
 				<h3 id="development-information">Development Information</h3>
 				<h4 id="setup">Setup</h4>
 				<p><a href="https://nodejs.org/en/">Node &gt;= v8.11.2</a> required.</p>
 				<p>Before any development, install the required NPM dependencies:</p>
 				<pre><code class="lang-bash">npm install
 </code></pre>
+				<h4 id="build">Build</h4>
 				<p>Then, lint and build the library into the <code>lib</code> directory:</p>
 				<pre><code class="lang-bash">npm run build
 </code></pre>
 				<p>Or run the barebones tests:</p>
 				<pre><code class="lang-bash">npm <span class="hljs-built_in">test</span>
+</code></pre>
+				<h4 id="generate-documentation">Generate Documentation</h4>
+				<p>Generate html docs, also available for browsing <a href="https://projectopensea.github.io/opensea-js/">here</a>:</p>
+				<pre><code class="lang-bash">npm run docs
+</code></pre>
+				<p>Or generate markdown docs:</p>
+				<pre><code class="lang-bash">npm run docsMarkdown
 </code></pre>
 				<h4 id="contributing">Contributing</h4>
 				<p>Contributions welcome! Please use GitHub issues for suggestions/concerns - if you prefer to express your intentions in code, feel free to submit a pull request.</p>
