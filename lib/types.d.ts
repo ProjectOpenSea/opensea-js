@@ -50,6 +50,11 @@ export interface Order extends UnsignedOrder, ECSignature {
     cancelledOrFinalized?: boolean;
     markedInvalid?: boolean;
     currentPrice?: BigNumber;
+    asset?: {
+        asset: WyvernAsset;
+        owner: null | string;
+        hash: string;
+    };
 }
 export interface OrderJSON {
     exchange: string;
@@ -83,6 +88,7 @@ export interface OrderJSON {
     v?: number;
     r?: string;
     s?: string;
+    owner?: string;
     tokenAddress?: string;
     tokenId?: number | string;
 }

@@ -7,7 +7,7 @@
 
 ### Synopsis
 
-This is the standard JavaScript SDK for OpenSea.
+This is the JavaScript SDK for OpenSea. It allows developers to access the orderbook, filter it, create new buy orders (offers), create new sell orders (auctions), and fulfill orders to complete trades, programmatically.
 
 ### Versioning
 
@@ -25,7 +25,7 @@ Before any development, install the required NPM dependencies:
 npm install
 ```
 
-Then, build the library:
+Then, lint and build the library into the `lib` directory:
 
 ```bash
 npm run build
