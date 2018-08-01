@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON, orderFromJSON,
@@ -46,11 +46,31 @@ export class OpenSea {
     this.emitter = new EventEmitter()
   }
 
-  public addListener(event: EventType, listener: (...args: any[]) => void, once = false): EventSubscription {
+  /**
+   * Add a listener to a marketplace event
+   * @param event An event to listen for
+   * @param listener A callback that will accept an object with event data
+   * @param once Whether the listener should only be called once
+   */
+  public addListener(event: EventType, listener: (data: EventData) => void, once = false): EventSubscription {
     const subscription = once
       ? this.emitter.once(event, listener)
       : this.emitter.addListener(event, listener)
     return subscription
+  }
+
+  /**
+   * Remove an event listener, included here for completeness.
+   * Simply calls `.remove()` on a subscription
+   * @param subscription The event subscription returned from `addListener`
+   */
+  public removeListener(subscription: EventSubscription) {
+    // Kill tslint "no this used" warning
+    if (!this.emitter) {
+      return
+    }
+
+    subscription.remove()
   }
 
   public removeAllListeners(event?: EventType) {
@@ -66,17 +86,18 @@ export class OpenSea {
 
     const amount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
 
-    const transactionHash = sendRawTransaction(this.web3, {
+    const txHash = await sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: token.address,
       value: amount,
       data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'deposit'), []),
       awaitConfirmation: false,
     })
+    const transactionHash = txHash.toString()
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount, transactionHash })
 
-    await confirmTransaction(this.web3, transactionHash.toString())
+    await confirmTransaction(this.web3, transactionHash)
 
     this._dispatch(EventType.WrapEthComplete, { accountAddress, amount })
   }
@@ -90,17 +111,18 @@ export class OpenSea {
 
     const amount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
 
-    const transactionHash = sendRawTransaction(this.web3, {
+    const txHash = sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: token.address,
       value: 0,
       data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [amount.toString()]),
       awaitConfirmation: false,
     })
+    const transactionHash = txHash.toString()
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount, transactionHash })
 
-    await confirmTransaction(this.web3, transactionHash.toString())
+    await confirmTransaction(this.web3, transactionHash)
 
     this._dispatch(EventType.UnwrapWethComplete, { accountAddress, amount })
   }
@@ -331,6 +353,9 @@ export class OpenSea {
     if (!proxyAddress) {
       proxyAddress = await this._getProxy(accountAddress)
     }
+    if (!proxyAddress) {
+      throw new Error('Uninitialized account')
+    }
 
     // NOTE:
     // Use this long way of calling so we can check for method existence.
@@ -363,15 +388,16 @@ export class OpenSea {
       //  not approved for all yet
 
       try {
-        const transactionHash = await sendRawTransaction(this.web3, {
+        const txHash = await sendRawTransaction(this.web3, {
           fromAddress: accountAddress,
           toAddress: erc721.address,
           data: erc721.setApprovalForAll.getData(proxyAddress, true),
           awaitConfirmation: false,
         })
+        const transactionHash = txHash.toString()
 
         this._dispatch(EventType.ApproveAllAssets, { accountAddress, proxyAddress, tokenAddress, transactionHash })
-        await confirmTransaction(this.web3, transactionHash.toString())
+        await confirmTransaction(this.web3, transactionHash)
         this._dispatch(EventType.ApproveAllAssetsComplete, { accountAddress, proxyAddress, tokenAddress })
 
         return
@@ -417,15 +443,16 @@ export class OpenSea {
     // Call `approve`
 
     try {
-      const transactionHash = await sendRawTransaction(this.web3, {
+      const txHash = await sendRawTransaction(this.web3, {
         fromAddress: accountAddress,
         toAddress: erc721.address,
         data: erc721.approve.getData(proxyAddress, tokenId),
         awaitConfirmation: false
       })
+      const transactionHash = txHash.toString()
 
       this._dispatch(EventType.ApproveAsset, { accountAddress, proxyAddress, tokenAddress, tokenId, transactionHash })
-      await confirmTransaction(this.web3, transactionHash.toString())
+      await confirmTransaction(this.web3, transactionHash)
       this._dispatch(EventType.ApproveAssetComplete, { accountAddress, proxyAddress, tokenAddress, tokenId })
 
       return
@@ -852,7 +879,7 @@ export class OpenSea {
     return schema
   }
 
-  public _dispatch(event: EventType, data = {}): void {
+  public _dispatch(event: EventType, data: EventData): void {
     this.emitter.emit(event, data)
   }
 }

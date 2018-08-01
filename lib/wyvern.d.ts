@@ -11,7 +11,7 @@ export declare const feeRecipient = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073"
 export declare function promisify<T>(inner: (fn: Web3Callback<T>) => void): Promise<T>;
 export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise<{}>;
 export declare const orderFromJSON: (order: any) => Order;
-export declare const orderToJSON: (order: UnhashedOrder | Order) => OrderJSON;
+export declare const orderToJSON: (order: Order | UnhashedOrder) => OrderJSON;
 export declare const findAsset: (web3: Web3, { account, proxy, wyAsset, schema }: {
     account: string;
     proxy: string;

@@ -1,5 +1,5 @@
 import * as Web3 from 'web3';
-import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType } from './types';
+import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData } from './types';
 import { orderToJSON, orderFromJSON } from './wyvern';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
@@ -11,7 +11,19 @@ export declare class OpenSea {
     private api;
     private emitter;
     constructor(provider: Web3.Provider, apiConfig?: OpenSeaAPIConfig);
-    addListener(event: EventType, listener: (...args: any[]) => void, once?: boolean): EventSubscription;
+    /**
+     * Add a listener to a marketplace event
+     * @param event An event to listen for
+     * @param listener A callback that will accept an object with event data
+     * @param once Whether the listener should only be called once
+     */
+    addListener(event: EventType, listener: (data: EventData) => void, once?: boolean): EventSubscription;
+    /**
+     * Remove an event listener, included here for completeness.
+     * Simply calls `.remove()` on a subscription
+     * @param subscription The event subscription returned from `addListener`
+     */
+    removeListener(subscription: EventSubscription): void;
     removeAllListeners(event?: EventType): void;
     wrapEth({ amountInEth, accountAddress }: {
         amountInEth: number;
@@ -98,5 +110,5 @@ export declare class OpenSea {
         maker: string;
     }): Promise<ECSignature>;
     _getSchema(schemaName?: SchemaName): Schema;
-    _dispatch(event: EventType, data?: {}): void;
+    _dispatch(event: EventType, data: EventData): void;
 }

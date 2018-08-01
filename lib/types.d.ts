@@ -18,6 +18,17 @@ export declare enum EventType {
     CancelOrder = "CancelOrder",
     CancelOrderComplete = "CancelOrderComplete"
 }
+export interface EventData {
+    accountAddress?: string;
+    proxyAddress?: string;
+    transactionHash?: string;
+    amount?: BigNumber;
+    tokenAddress?: string;
+    tokenId?: string;
+    order?: Order;
+    buy?: Order;
+    sell?: Order;
+}
 export interface OpenSeaAPIConfig {
     networkName?: Network;
     apiKey?: string;
