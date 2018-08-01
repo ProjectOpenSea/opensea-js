@@ -9,6 +9,10 @@
 
 This is the JavaScript SDK for OpenSea. It allows developers to access the orderbook, filter it, create new buy orders (offers), create new sell orders (auctions), and fulfill orders to complete trades, programmatically.
 
+You get started by instantiating your own seaport. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEthComplete`) in the process.
+
+Happy seafaring! ⛵️
+
 ### Installation
 
 In your project, run:
@@ -20,7 +24,7 @@ Install [web3](https://github.com/ethereum/web3.js) too if you haven't already.
 
 ### Getting Started
 
-To get started, create a new OpenSeaJS client (called an OpenSeaPort) using your Web3 provider:
+To get started, create a new OpenSeaJS client, called an OpenSeaPort 🚢, using your Web3 provider:
 ```JavaScript
 import * as Web3 from 'web3'
 import { OpenSeaPort, Network } from 'opensea-js'
