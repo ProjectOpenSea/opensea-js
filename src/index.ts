@@ -135,7 +135,7 @@ export class OpenSea {
   public async createBuyOrder(
     { tokenId, tokenAddress, accountAddress, amountInEth, expirationTime = 0 }:
     { tokenId: string; tokenAddress: string; accountAddress: string; amountInEth: number; expirationTime?: number }
-    ) {
+    ): Promise<Order> {
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
     const schema = this._getSchema()
     const wyAsset = _getWyvernAsset(schema, { tokenId, tokenAddress })
@@ -202,7 +202,7 @@ export class OpenSea {
   public async createSellOrder(
     { tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
     { tokenId: string; tokenAddress: string; accountAddress: string; startAmountInEth: number; endAmountInEth: number; expirationTime?: number }
-    ) {
+    ): Promise<Order> {
     const schema = this._getSchema()
     const wyAsset = _getWyvernAsset(schema, { tokenId, tokenAddress })
     const metadata = {
@@ -862,7 +862,8 @@ export class OpenSea {
     }
     this.logger('Order is valid')
 
-    await this.api.postOrder(orderToJSON(order))
+    const confirmedOrder = await this.api.postOrder(orderToJSON(order))
+    return confirmedOrder
   }
 
   public async _signOrder(

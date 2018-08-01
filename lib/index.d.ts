@@ -42,7 +42,7 @@ export declare class OpenSea {
         accountAddress: string;
         amountInEth: number;
         expirationTime?: number;
-    }): Promise<void>;
+    }): Promise<Order>;
     createSellOrder({ tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime }: {
         tokenId: string;
         tokenAddress: string;
@@ -50,7 +50,7 @@ export declare class OpenSea {
         startAmountInEth: number;
         endAmountInEth: number;
         expirationTime?: number;
-    }): Promise<void>;
+    }): Promise<Order>;
     fulfillOrder({ order, accountAddress }: {
         order: Order;
         accountAddress: string;
@@ -105,7 +105,7 @@ export declare class OpenSea {
         tokenAddress: string;
         tokenAbi?: PartialReadonlyContractAbi;
     }): Promise<BigNumber>;
-    _validateAndPostOrder(order: Order): Promise<void>;
+    _validateAndPostOrder(order: Order): Promise<Order>;
     _signOrder(order: {
         hash: string;
         maker: string;

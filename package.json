@@ -8,7 +8,8 @@
     "lint": "tslint --project . 'src/**/*.ts' --fix",
     "build": "npm run lint && tsc",
     "docs": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
-    "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file"
+    "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file",
+    "prepare": "npm run test && npm run build && npm run docs && npm run docsMarkdown"
   },
   "repository": {
     "type": "git",
