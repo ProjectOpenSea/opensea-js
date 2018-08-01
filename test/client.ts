@@ -7,7 +7,7 @@ import {
   test,
 } from 'mocha-typescript'
 
-import { OpenSea } from '../src/index'
+import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON } from '../src/types'
 import { orderFromJSON } from '../src/wyvern'
@@ -18,7 +18,7 @@ import { WyvernProtocol } from 'wyvern-js/lib'
 const ordersAndProperties = orderJSON as any
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
-const client = new OpenSea(provider, {
+const client = new OpenSeaPort(provider, {
   networkName: Network.Main
 })
 

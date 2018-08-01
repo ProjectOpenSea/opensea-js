@@ -16,7 +16,7 @@ import { EventEmitter, EventSubscription } from 'fbemitter'
 
 export { orderToJSON, orderFromJSON, Network }
 
-export class OpenSea {
+export class OpenSeaPort {
 
   public web3: Web3
   public logger: (arg: string) => void

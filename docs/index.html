@@ -76,12 +76,13 @@
 </code></pre>
 				<p>Install <a href="https://github.com/ethereum/web3.js">web3</a> too if you haven&#39;t already.</p>
 				<h3 id="getting-started">Getting Started</h3>
-				<p>To get started, create a new OpenSeaJS client using your Web3 provider:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OpenSea, Network } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js'</span>
+				<p>To get started, create a new OpenSeaJS client (called an OpenSeaPort) using your Web3 provider:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> Web3 <span class="hljs-keyword">from</span> <span class="hljs-string">'web3'</span>
+<span class="hljs-keyword">import</span> { OpenSeaPort, Network } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js'</span>
 
 <span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> Web3.providers.HttpProvider(<span class="hljs-string">'https://mainnet.infura.io'</span>)
 
-<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> OpenSea(provider, {
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> OpenSeaPort(provider, {
   <span class="hljs-attr">networkName</span>: Network.Main
 })
 </code></pre>
@@ -107,10 +108,13 @@
 </code></pre>
 				<h4 id="generate-documentation">Generate Documentation</h4>
 				<p>Generate html docs, also available for browsing <a href="https://projectopensea.github.io/opensea-js/">here</a>:</p>
-				<pre><code class="lang-bash">npm run docs
+				<pre><code class="lang-bash">npm run docsHtml
 </code></pre>
-				<p>Or generate markdown docs:</p>
+				<p>Or generate markdown docs available for browsing on git repos:</p>
 				<pre><code class="lang-bash">npm run docsMarkdown
+</code></pre>
+				<p>Or generate both:</p>
+				<pre><code class="lang-bash">npm run docs
 </code></pre>
 				<h4 id="contributing">Contributing</h4>
 				<p>Contributions welcome! Please use GitHub issues for suggestions/concerns - if you prefer to express your intentions in code, feel free to submit a pull request.</p>
@@ -136,10 +140,10 @@
 						<a href="enums/orderside.html" class="tsd-kind-icon">Order<wbr>Side</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/opensea.html" class="tsd-kind-icon">Open<wbr>Sea</a>
+						<a href="classes/openseaapi.html" class="tsd-kind-icon">Open<wbr>SeaAPI</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/openseaapi.html" class="tsd-kind-icon">Open<wbr>SeaAPI</a>
+						<a href="classes/openseaport.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Port</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/eventdata.html" class="tsd-kind-icon">Event<wbr>Data</a>

@@ -20,13 +20,14 @@ Install [web3](https://github.com/ethereum/web3.js) too if you haven't already.
 
 ### Getting Started
 
-To get started, create a new OpenSeaJS client using your Web3 provider:
+To get started, create a new OpenSeaJS client (called an OpenSeaPort) using your Web3 provider:
 ```JavaScript
-import { OpenSea, Network } from 'opensea-js'
+import * as Web3 from 'web3'
+import { OpenSeaPort, Network } from 'opensea-js'
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
-const client = new OpenSea(provider, {
+const client = new OpenSeaPort(provider, {
   networkName: Network.Main
 })
 ```

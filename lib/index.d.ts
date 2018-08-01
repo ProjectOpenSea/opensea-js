@@ -4,7 +4,7 @@ import { orderToJSON, orderFromJSON } from './wyvern';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export { orderToJSON, orderFromJSON, Network };
-export declare class OpenSea {
+export declare class OpenSeaPort {
     web3: Web3;
     logger: (arg: string) => void;
     private networkName;
