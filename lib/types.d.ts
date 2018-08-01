@@ -2,20 +2,22 @@ import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { Network, HowToCall, SaleKind, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
 export { Network, HowToCall, SaleKind, ECSignature };
-export declare type Web3Callback<T> = (err: Error | null, result: T) => void;
-export declare type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>;
-export declare type TxnCallback = (result: boolean) => void;
-export interface PartialAbiDefinition {
-    type: Web3.AbiType | string;
-    name?: string;
-    inputs?: object[];
-    outputs?: object[];
-    payable?: boolean;
-    constant?: boolean;
-    anonymous?: boolean;
-    stateMutability?: Web3.ConstructorStateMutability | string;
+export declare enum EventType {
+    InitializeAccount = "InitializeAccount",
+    InitializeAccountComplete = "InitializeAccountComplete",
+    WrapEth = "WrapEth",
+    WrapEthComplete = "WrapEthComplete",
+    UnwrapWeth = "UnwrapWeth",
+    UnwrapWethComplete = "UnwrapWethComplete",
+    ApproveAsset = "ApproveAsset",
+    ApproveAssetComplete = "ApproveAssetComplete",
+    ApproveAllAssets = "ApproveAllAssets",
+    ApproveAllAssetsComplete = "ApproveAllAssetsComplete",
+    MatchOrders = "MatchOrders",
+    MatchOrdersComplete = "MatchOrdersComplete",
+    CancelOrder = "CancelOrder",
+    CancelOrderComplete = "CancelOrderComplete"
 }
-export declare type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>;
 export interface OpenSeaAPIConfig {
     networkName?: Network;
     apiKey?: string;
@@ -96,11 +98,20 @@ export interface OrderbookResponse {
     orders: OrderJSON[];
     count: number;
 }
-export declare enum EventType {
-    ApproveAsset = "ApproveAsset",
-    ApproveAssetComplete = "ApproveAssetComplete",
-    ApproveAllAssets = "ApproveAllAssets",
-    ApproveAllAssetsComplete = "ApproveAllAssetsComplete",
-    InitializeAccount = "InitializeAccount",
-    InitializeAccountComplete = "InitializeAccountComplete"
+/**
+ * Types related to Web3
+ */
+export declare type Web3Callback<T> = (err: Error | null, result: T) => void;
+export declare type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>;
+export declare type TxnCallback = (result: boolean) => void;
+export interface PartialAbiDefinition {
+    type: Web3.AbiType | string;
+    name?: string;
+    inputs?: object[];
+    outputs?: object[];
+    payable?: boolean;
+    constant?: boolean;
+    anonymous?: boolean;
+    stateMutability?: Web3.ConstructorStateMutability | string;
 }
+export declare type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>;

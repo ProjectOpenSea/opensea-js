@@ -58,39 +58,51 @@ export class OpenSea {
   }
 
   public async wrapEth(
-      { amountInEth, accountAddress, awaitConfirmation = true }:
+      { amountInEth, accountAddress }:
       { amountInEth: number; accountAddress: string; awaitConfirmation?: boolean}
     ) {
 
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
 
-    const baseAmount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
+    const amount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
 
-    return sendRawTransaction(this.web3, {
+    const transactionHash = sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: token.address,
-      value: baseAmount,
+      value: amount,
       data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'deposit'), []),
-      awaitConfirmation,
+      awaitConfirmation: false,
     })
+
+    this._dispatch(EventType.WrapEth, { accountAddress, amount, transactionHash })
+
+    await confirmTransaction(this.web3, transactionHash.toString())
+
+    this._dispatch(EventType.WrapEthComplete, { accountAddress, amount })
   }
 
   public async unwrapWeth(
-    { amountInEth, accountAddress, awaitConfirmation = true }:
+    { amountInEth, accountAddress }:
     { amountInEth: number; accountAddress: string; awaitConfirmation?: boolean}
     ) {
 
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
 
-    const baseAmount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
+    const amount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
 
-    return sendRawTransaction(this.web3, {
+    const transactionHash = sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: token.address,
       value: 0,
-      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [baseAmount.toString()]),
-      awaitConfirmation,
+      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [amount.toString()]),
+      awaitConfirmation: false,
     })
+
+    this._dispatch(EventType.UnwrapWeth, { accountAddress, amount, transactionHash })
+
+    await confirmTransaction(this.web3, transactionHash.toString())
+
+    this._dispatch(EventType.UnwrapWethComplete, { accountAddress, amount })
   }
 
   public async createBuyOrder(
@@ -261,8 +273,13 @@ export class OpenSea {
       }
     }
 
-    const txHash = await this._atomicMatch({ buy, sell, accountAddress })
-    return txHash
+    const transactionHash = await this._atomicMatch({ buy, sell, accountAddress })
+
+    this._dispatch(EventType.MatchOrders, { buy, sell, accountAddress, transactionHash })
+
+    await confirmTransaction(this.web3, transactionHash.toString())
+
+    this._dispatch(EventType.MatchOrdersComplete, { buy, sell, accountAddress })
   }
 
   public async cancelOrder(
@@ -270,7 +287,7 @@ export class OpenSea {
       { order: Order; accountAddress: string}
     ) {
     const protocolInstance = this.wyvernProtocol
-    const txHash = await protocolInstance.wyvernExchange.cancelOrder_.sendTransactionAsync(
+    const transactionHash = await protocolInstance.wyvernExchange.cancelOrder_.sendTransactionAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
@@ -282,7 +299,12 @@ export class OpenSea {
       order.staticExtradata,
       order.v, order.r, order.s,
       { from: accountAddress })
-    return txHash
+
+    this._dispatch(EventType.CancelOrder, { order, accountAddress, transactionHash })
+
+    await confirmTransaction(this.web3, transactionHash.toString())
+
+    this._dispatch(EventType.CancelOrderComplete, { order, accountAddress })
   }
 
   public async getApprovedTokenCount(
@@ -635,12 +657,16 @@ export class OpenSea {
       from: accountAddress,
     })
     this._dispatch(EventType.InitializeAccount, { accountAddress, transactionHash })
+
     await confirmTransaction(this.web3, transactionHash)
+
     const proxyAddress = await this._getProxy(accountAddress)
     if (!proxyAddress) {
       throw new Error('Failed to initialize your account, please try again')
     }
+
     this._dispatch(EventType.InitializeAccountComplete, { accountAddress, proxyAddress })
+
     return proxyAddress
   }
 

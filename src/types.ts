@@ -15,22 +15,27 @@ export {
   ECSignature
 }
 
-export type Web3Callback<T> = (err: Error | null, result: T) => void
-export type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>
-export type TxnCallback = (result: boolean) => void
+export enum EventType {
+  InitializeAccount = "InitializeAccount",
+  InitializeAccountComplete = "InitializeAccountComplete",
 
-// To simplify typifying ABIs:
-export interface PartialAbiDefinition {
-  type: Web3.AbiType | string // Not Partial!
-  name?: string
-  inputs?: object[]
-  outputs?: object[]
-  payable?: boolean
-  constant?: boolean
-  anonymous?: boolean
-  stateMutability?: Web3.ConstructorStateMutability | string
+  WrapEth = "WrapEth",
+  WrapEthComplete = "WrapEthComplete",
+  UnwrapWeth = "UnwrapWeth",
+  UnwrapWethComplete = "UnwrapWethComplete",
+
+  ApproveAsset = "ApproveAsset",
+  ApproveAssetComplete = "ApproveAssetComplete",
+
+  ApproveAllAssets = "ApproveAllAssets",
+  ApproveAllAssetsComplete = "ApproveAllAssetsComplete",
+
+  MatchOrders = "MatchOrders",
+  MatchOrdersComplete = "MatchOrdersComplete",
+
+  CancelOrder = "CancelOrder",
+  CancelOrderComplete = "CancelOrderComplete",
 }
-export type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>
 
 export interface OpenSeaAPIConfig {
   networkName?: Network
@@ -123,19 +128,28 @@ export interface OrderJSON {
   tokenId?: number | string
 }
 
-// FUTURE v2
 export interface OrderbookResponse {
   orders: OrderJSON[]
   count: number
 }
 
-export enum EventType {
-  ApproveAsset = "ApproveAsset",
-  ApproveAssetComplete = "ApproveAssetComplete",
+/**
+ * Types related to Web3
+ */
 
-  ApproveAllAssets = "ApproveAllAssets",
-  ApproveAllAssetsComplete = "ApproveAllAssetsComplete",
+export type Web3Callback<T> = (err: Error | null, result: T) => void
+export type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>
+export type TxnCallback = (result: boolean) => void
 
-  InitializeAccount = "InitializeAccount",
-  InitializeAccountComplete = "InitializeAccountComplete",
+// To simplify typifying ABIs:
+export interface PartialAbiDefinition {
+  type: Web3.AbiType | string // Not Partial!
+  name?: string
+  inputs?: object[]
+  outputs?: object[]
+  payable?: boolean
+  constant?: boolean
+  anonymous?: boolean
+  stateMutability?: Web3.ConstructorStateMutability | string
 }
+export type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>

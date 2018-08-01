@@ -13,16 +13,16 @@ export declare class OpenSea {
     constructor(provider: Web3.Provider, apiConfig?: OpenSeaAPIConfig);
     addListener(event: EventType, listener: (...args: any[]) => void, once?: boolean): EventSubscription;
     removeAllListeners(event?: EventType): void;
-    wrapEth({ amountInEth, accountAddress, awaitConfirmation }: {
+    wrapEth({ amountInEth, accountAddress }: {
         amountInEth: number;
         accountAddress: string;
         awaitConfirmation?: boolean;
-    }): Promise<{}>;
-    unwrapWeth({ amountInEth, accountAddress, awaitConfirmation }: {
+    }): Promise<void>;
+    unwrapWeth({ amountInEth, accountAddress }: {
         amountInEth: number;
         accountAddress: string;
         awaitConfirmation?: boolean;
-    }): Promise<{}>;
+    }): Promise<void>;
     createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, expirationTime }: {
         tokenId: string;
         tokenAddress: string;
@@ -41,11 +41,11 @@ export declare class OpenSea {
     fulfillOrder({ order, accountAddress }: {
         order: Order;
         accountAddress: string;
-    }): Promise<string>;
+    }): Promise<void>;
     cancelOrder({ order, accountAddress }: {
         order: Order;
         accountAddress: string;
-    }): Promise<string>;
+    }): Promise<void>;
     getApprovedTokenCount({ accountAddress, tokenAddress }: {
         accountAddress: string;
         tokenAddress: string;
