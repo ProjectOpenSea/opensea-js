@@ -19,7 +19,7 @@ export declare enum EventType {
     CancelOrderComplete = "CancelOrderComplete"
 }
 export interface EventData {
-    accountAddress?: string;
+    accountAddress: string;
     proxyAddress?: string;
     transactionHash?: string;
     amount?: BigNumber;
