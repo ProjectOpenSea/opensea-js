@@ -18,13 +18,15 @@ export { orderToJSON, orderFromJSON }
 
 export class OpenSea {
 
-  private web3: Web3
+  public web3: Web3
+  public logger: (arg: string) => void
+
   private networkName: Network
   private wyvernProtocol: WyvernProtocol
   private api: OpenSeaAPI
   private emitter: EventEmitter
 
-  constructor(provider: Web3.Provider, apiConfig: OpenSeaAPIConfig = {}) {
+  constructor(provider: Web3.Provider, apiConfig: OpenSeaAPIConfig = {}, logger?: (arg: string) => void) {
 
     apiConfig.networkName = apiConfig.networkName || Network.Main
     apiConfig.gasPrice = apiConfig.gasPrice || makeBigNumber(100000)
@@ -44,6 +46,9 @@ export class OpenSea {
 
     // Emit events
     this.emitter = new EventEmitter()
+
+    // Debugging: default to nothing
+    this.logger = logger || ((arg: string) => arg)
   }
 
   /**
@@ -378,7 +383,7 @@ export class OpenSea {
     if (isApprovedForAll == 1) {
       // Supports ApproveAll
       // Result was NULL_BLOCK_HASH + 1
-      // onCheck(true, 'Already approved proxy for all tokens')
+      this.logger('Already approved proxy for all tokens')
       return
     }
 
@@ -408,15 +413,15 @@ export class OpenSea {
     }
 
     // Does not support ApproveAll (ERC721 v1 or v2)
-    // onCheck(true, 'Contract does not support Approve All')
+    this.logger('Contract does not support Approve All')
 
     // Note: approvedAddr will be '0x' if not supported
     let approvedAddr = await promisify(c => erc721.getApproved.call(tokenId, c))
     if (approvedAddr == proxyAddress) {
-      // onCheck(true, 'Already approved proxy for this token')
+      this.logger('Already approved proxy for this token')
       return
     }
-    // onCheck(true, `Approve response: ${approvedAddr}`)
+    this.logger(`Approve response: ${approvedAddr}`)
 
     // SPECIAL CASING
 
@@ -424,20 +429,20 @@ export class OpenSea {
       // CRYPTOKITTIES check
       approvedAddr = await promisify(c => erc721.kittyIndexToApproved.call(tokenId, c))
       if (approvedAddr == proxyAddress) {
-        // onCheck(true, 'Already approved proxy for this kitty')
+        this.logger('Already approved proxy for this kitty')
         return
       }
-      // onCheck(true, `CryptoKitties approve response: ${approvedAddr}`)
+      this.logger(`CryptoKitties approve response: ${approvedAddr}`)
     }
 
     if (approvedAddr == '0x') {
       // ETHEREMON check
       approvedAddr = await promisify(c => erc721.allowed.call(accountAddress, tokenId, c))
       if (approvedAddr == proxyAddress) {
-        // onCheck(true, 'Already allowed proxy for this token')
+        this.logger('Already allowed proxy for this token')
         return
       }
-      // onCheck(true, `"allowed" response: ${approvedAddr}`)
+      this.logger(`"allowed" response: ${approvedAddr}`)
     }
 
     // Call `approve`
@@ -531,7 +536,7 @@ export class OpenSea {
       if (!buyValid) {
         throw new Error('Invalid offer')
       }
-      // onCheck(buyValid, 'Buy order is valid')
+      this.logger(`Buy order is valid: ${buyValid}`)
 
       orderLookupHash = buy.hash
 
@@ -554,7 +559,7 @@ export class OpenSea {
       if (!sellValid) {
         throw new Error('Invalid auction')
       }
-      // onCheck(sellValid, 'Sell order validation')
+      this.logger(`Sell order validation: ${sellValid}`)
 
       // If using ETH to pay, set the value of the transaction to the current price
       if (buy.paymentToken == WyvernProtocol.NULL_ADDRESS) {
@@ -585,9 +590,9 @@ export class OpenSea {
     if (!ordersCanMatch) {
       throw new Error('Unable to match offer with auction')
     }
-    // onCheck(ordersCanMatch, "Orders matching")
+    this.logger(`Orders matching: ${ordersCanMatch}`)
     const orderCalldataCanMatch = await protocolInstance.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
-    // onCheck(orderCalldataCanMatch, `Order calldata matching`)
+    this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
     if (!orderCalldataCanMatch) {
       throw new Error('Unable to match offer with auction, due to the type of offer requested')
     }
@@ -718,7 +723,7 @@ export class OpenSea {
 
     // Won't happen - but withdraw needs fixing
     // if (where === 'proxy') {
-    //   onCheck(false, 'You must first withdraw this asset.')
+    //   this.logger(`Whether you must first withdraw this asset: ${true}`)
     //   await this._withdrawAsset(asset, accountAddress, proxyAddress)
     // }
 
@@ -835,7 +840,7 @@ export class OpenSea {
       console.error(order)
       throw new Error(`Order couldn't be validated by the exchange due to a hash mismatch. Make sure your wallet is on the right network!`)
     }
-    // onCheck(true, 'Order hashes match')
+    this.logger('Order hashes match')
 
     const valid = await protocolInstance.wyvernExchange.validateOrder_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
@@ -855,7 +860,7 @@ export class OpenSea {
       console.error(order)
       throw new Error('Invalid order')
     }
-    // onCheck(true, 'Order is valid')
+    this.logger('Order is valid')
 
     await this.api.postOrder(orderToJSON(order))
   }

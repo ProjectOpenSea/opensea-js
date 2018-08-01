@@ -5,12 +5,13 @@ import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export { orderToJSON, orderFromJSON };
 export declare class OpenSea {
-    private web3;
+    web3: Web3;
+    logger: (arg: string) => void;
     private networkName;
     private wyvernProtocol;
     private api;
     private emitter;
-    constructor(provider: Web3.Provider, apiConfig?: OpenSeaAPIConfig);
+    constructor(provider: Web3.Provider, apiConfig?: OpenSeaAPIConfig, logger?: (arg: string) => void);
     /**
      * Add a listener to a marketplace event
      * @param event An event to listen for
