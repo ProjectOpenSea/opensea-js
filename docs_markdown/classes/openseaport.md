@@ -54,7 +54,7 @@
 
 ⊕ **new OpenSeaPort**(provider: *`Provider`*, apiConfig?: *[OpenSeaAPIConfig](../interfaces/openseaapiconfig.md)*, logger?: * `undefined` &#124; `function`*): [OpenSeaPort](openseaport.md)
 
-*Defined in [index.ts:27](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L27)*
+*Defined in [index.ts:27](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L27)*
 
 **Parameters:**
 
@@ -76,7 +76,7 @@ ___
 
 **● logger**: *`function`*
 
-*Defined in [index.ts:22](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L22)*
+*Defined in [index.ts:22](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L22)*
 
 #### Type declaration
 ▸(arg: *`string`*): `void`
@@ -96,7 +96,7 @@ ___
 
 **● web3**: *`Web3`*
 
-*Defined in [index.ts:21](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L21)*
+*Defined in [index.ts:21](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L21)*
 
 ___
 
@@ -108,7 +108,7 @@ ___
 
 ▸ **_atomicMatch**(__namedParameters: *`object`*): `Promise`<`string`>
 
-*Defined in [index.ts:511](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L511)*
+*Defined in [index.ts:511](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L511)*
 
 Helper methods
 
@@ -127,7 +127,7 @@ ___
 
 ▸ **_dispatch**(event: *[EventType](../enums/eventtype.md)*, data: *[EventData](../interfaces/eventdata.md)*): `void`
 
-*Defined in [index.ts:888](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L888)*
+*Defined in [index.ts:888](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L888)*
 
 **Parameters:**
 
@@ -145,7 +145,7 @@ ___
 
 ▸ **_getProxy**(accountAddress: *`string`*): `Promise`< `string` &#124; `null`>
 
-*Defined in [index.ts:672](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L672)*
+*Defined in [index.ts:672](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L672)*
 
 **Parameters:**
 
@@ -162,7 +162,7 @@ ___
 
 ▸ **_getSchema**(schemaName?: *`ERC721`*): `Schema`
 
-*Defined in [index.ts:879](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L879)*
+*Defined in [index.ts:879](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L879)*
 
 **Parameters:**
 
@@ -179,7 +179,7 @@ ___
 
 ▸ **_getTokenBalance**(__namedParameters: *`object`*): `Promise`<`BigNumber`>
 
-*Defined in [index.ts:809](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L809)*
+*Defined in [index.ts:809](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L809)*
 
 **Parameters:**
 
@@ -196,7 +196,7 @@ ___
 
 ▸ **_initializeProxy**(accountAddress: *`string`*): `Promise`<`string`>
 
-*Defined in [index.ts:686](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L686)*
+*Defined in [index.ts:686](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L686)*
 
 **Parameters:**
 
@@ -213,7 +213,7 @@ ___
 
 ▸ **_makeMatchingOrder**(__namedParameters: *`object`*): [UnsignedOrder](../interfaces/unsignedorder.md)
 
-*Defined in [index.ts:628](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L628)*
+*Defined in [index.ts:628](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L628)*
 
 **Parameters:**
 
@@ -230,7 +230,7 @@ ___
 
 ▸ **_signOrder**(order: *`object`*): `Promise`<`ECSignature`>
 
-*Defined in [index.ts:869](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L869)*
+*Defined in [index.ts:869](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L869)*
 
 **Parameters:**
 
@@ -247,7 +247,7 @@ ___
 
 ▸ **_validateAndPostOrder**(order: *[Order](../interfaces/order.md)*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in [index.ts:826](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L826)*
+*Defined in [index.ts:826](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L826)*
 
 **Parameters:**
 
@@ -264,7 +264,7 @@ ___
 
 ▸ **_validateBuyOrderParameters**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [index.ts:758](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L758)*
+*Defined in [index.ts:758](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L758)*
 
 **Parameters:**
 
@@ -281,7 +281,7 @@ ___
 
 ▸ **_validateSellOrderParameters**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [index.ts:706](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L706)*
+*Defined in [index.ts:706](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L706)*
 
 **Parameters:**
 
@@ -298,7 +298,7 @@ ___
 
 ▸ **addListener**(event: *[EventType](../enums/eventtype.md)*, listener: *`function`*, once?: *`boolean`*): `EventSubscription`
 
-*Defined in [index.ts:60](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L60)*
+*Defined in [index.ts:60](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L60)*
 
 Add a listener to a marketplace event
 
@@ -319,7 +319,7 @@ ___
 
 ▸ **approveFungibleToken**(__namedParameters: *`object`*): `Promise`<`Object`>
 
-*Defined in [index.ts:471](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L471)*
+*Defined in [index.ts:471](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L471)*
 
 **Parameters:**
 
@@ -336,7 +336,7 @@ ___
 
 ▸ **approveNonFungibleToken**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [index.ts:351](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L351)*
+*Defined in [index.ts:351](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L351)*
 
 **Parameters:**
 
@@ -353,7 +353,7 @@ ___
 
 ▸ **cancelOrder**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [index.ts:312](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L312)*
+*Defined in [index.ts:312](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L312)*
 
 **Parameters:**
 
@@ -370,7 +370,7 @@ ___
 
 ▸ **createBuyOrder**(__namedParameters: *`object`*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in [index.ts:135](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L135)*
+*Defined in [index.ts:135](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L135)*
 
 **Parameters:**
 
@@ -387,7 +387,7 @@ ___
 
 ▸ **createSellOrder**(__namedParameters: *`object`*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in [index.ts:202](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L202)*
+*Defined in [index.ts:202](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L202)*
 
 **Parameters:**
 
@@ -404,7 +404,7 @@ ___
 
 ▸ **fulfillOrder**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [index.ts:277](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L277)*
+*Defined in [index.ts:277](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L277)*
 
 **Parameters:**
 
@@ -421,7 +421,7 @@ ___
 
 ▸ **getApprovedTokenCount**(__namedParameters: *`object`*): `Promise`<`BigNumber`>
 
-*Defined in [index.ts:337](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L337)*
+*Defined in [index.ts:337](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L337)*
 
 **Parameters:**
 
@@ -438,7 +438,7 @@ ___
 
 ▸ **getCurrentPrice**(order: *[Order](../interfaces/order.md)*): `Promise`<`BigNumber`>
 
-*Defined in [index.ts:490](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L490)*
+*Defined in [index.ts:490](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L490)*
 
 Gets the price for the order using the contract
 
@@ -457,7 +457,7 @@ ___
 
 ▸ **removeAllListeners**(event?: *[EventType](../enums/eventtype.md)*): `void`
 
-*Defined in [index.ts:81](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L81)*
+*Defined in [index.ts:81](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L81)*
 
 **Parameters:**
 
@@ -474,7 +474,7 @@ ___
 
 ▸ **removeListener**(subscription: *`EventSubscription`*): `void`
 
-*Defined in [index.ts:72](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L72)*
+*Defined in [index.ts:72](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L72)*
 
 Remove an event listener, included here for completeness. Simply calls `.remove()` on a subscription
 
@@ -493,7 +493,7 @@ ___
 
 ▸ **unwrapWeth**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [index.ts:110](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L110)*
+*Defined in [index.ts:110](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L110)*
 
 **Parameters:**
 
@@ -510,7 +510,7 @@ ___
 
 ▸ **wrapEth**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [index.ts:85](https://github.com/ProjectOpenSea/opensea-js/blob/57ea692/src/index.ts#L85)*
+*Defined in [index.ts:85](https://github.com/ProjectOpenSea/opensea-js/blob/d1fd63a/src/index.ts#L85)*
 
 **Parameters:**
 

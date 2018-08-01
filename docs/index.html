@@ -82,13 +82,13 @@
 
 <span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> Web3.providers.HttpProvider(<span class="hljs-string">'https://mainnet.infura.io'</span>)
 
-<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> OpenSeaPort(provider, {
+<span class="hljs-keyword">const</span> seaport = <span class="hljs-keyword">new</span> OpenSeaPort(provider, {
   <span class="hljs-attr">networkName</span>: Network.Main
 })
 </code></pre>
 				<p>Then, you can do this to make an offer on an asset:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
-<span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> client.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> })
+<span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> })
 </code></pre>
 				<h3 id="learning-more">Learning More</h3>
 				<p>Detailed documentation is coming soon on <a href="https://docs.opensea.io">docs.opensea.io</a>.</p>
