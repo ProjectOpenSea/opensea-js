@@ -1,14 +1,18 @@
 import * as Web3 from 'web3';
-import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi } from './types';
+import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType } from './types';
 import { orderToJSON, orderFromJSON } from './wyvern';
 import { BigNumber } from 'bignumber.js';
+import { EventSubscription } from 'fbemitter';
 export { orderToJSON, orderFromJSON };
 export declare class OpenSea {
     private web3;
     private networkName;
     private wyvernProtocol;
     private api;
+    private emitter;
     constructor(provider: Web3.Provider, apiConfig?: OpenSeaAPIConfig);
+    addListener(event: EventType, listener: (...args: any[]) => void, once?: boolean): EventSubscription;
+    removeAllListeners(event?: EventType): void;
     wrapEth({ amountInEth, accountAddress, awaitConfirmation }: {
         amountInEth: number;
         accountAddress: string;
@@ -52,7 +56,7 @@ export declare class OpenSea {
         accountAddress: string;
         proxyAddress: string | null;
         tokenAbi?: PartialReadonlyContractAbi;
-    }): Promise<{} | undefined>;
+    }): Promise<void>;
     approveFungibleToken({ accountAddress, tokenAddress }: {
         accountAddress: string;
         tokenAddress: string;
@@ -94,4 +98,5 @@ export declare class OpenSea {
         maker: string;
     }): Promise<ECSignature>;
     _getSchema(schemaName?: SchemaName): Schema;
+    _dispatch(event: EventType, data?: {}): void;
 }

@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON, orderFromJSON,
@@ -12,6 +12,7 @@ import {
   sendRawTransaction, estimateCurrentPrice
 } from './wyvern'
 import { BigNumber } from 'bignumber.js'
+import { EventEmitter, EventSubscription } from 'fbemitter'
 
 export { orderToJSON, orderFromJSON }
 
@@ -21,6 +22,7 @@ export class OpenSea {
   private networkName: Network
   private wyvernProtocol: WyvernProtocol
   private api: OpenSeaAPI
+  private emitter: EventEmitter
 
   constructor(provider: Web3.Provider, apiConfig: OpenSeaAPIConfig = {}) {
 
@@ -39,6 +41,20 @@ export class OpenSea {
 
     // API config
     this.api = new OpenSeaAPI(apiConfig)
+
+    // Emit events
+    this.emitter = new EventEmitter()
+  }
+
+  public addListener(event: EventType, listener: (...args: any[]) => void, once = false): EventSubscription {
+    const subscription = once
+      ? this.emitter.once(event, listener)
+      : this.emitter.addListener(event, listener)
+    return subscription
+  }
+
+  public removeAllListeners(event?: EventType) {
+    this.emitter.removeAllListeners(event)
   }
 
   public async wrapEth(
@@ -324,15 +340,19 @@ export class OpenSea {
       //  Result was NULL_BLOCK_HASH
       //  not approved for all yet
 
-      // TODO dispatch({ type: ActionTypes.APPROVE_ALL_ASSETS })
       try {
-        const txHash = await sendRawTransaction(this.web3, {
+        const transactionHash = await sendRawTransaction(this.web3, {
           fromAddress: accountAddress,
           toAddress: erc721.address,
           data: erc721.setApprovalForAll.getData(proxyAddress, true),
-          awaitConfirmation: true,
+          awaitConfirmation: false,
         })
-        return txHash
+
+        this._dispatch(EventType.ApproveAllAssets, { accountAddress, proxyAddress, tokenAddress, transactionHash })
+        await confirmTransaction(this.web3, transactionHash.toString())
+        this._dispatch(EventType.ApproveAllAssetsComplete, { accountAddress, proxyAddress, tokenAddress })
+
+        return
       } catch (error) {
         console.error(error)
         throw new Error('Failed to approve access to these tokens. OpenSea has been alerted, but you can also chat with us on Discord.')
@@ -373,15 +393,20 @@ export class OpenSea {
     }
 
     // Call `approve`
-    // TODO dispatch({ type: ActionTypes.APPROVE_ASSET })
+
     try {
-      const txHash = await sendRawTransaction(this.web3, {
+      const transactionHash = await sendRawTransaction(this.web3, {
         fromAddress: accountAddress,
         toAddress: erc721.address,
         data: erc721.approve.getData(proxyAddress, tokenId),
-        awaitConfirmation: true
+        awaitConfirmation: false
       })
-      return txHash
+
+      this._dispatch(EventType.ApproveAsset, { accountAddress, proxyAddress, tokenAddress, tokenId, transactionHash })
+      await confirmTransaction(this.web3, transactionHash.toString())
+      this._dispatch(EventType.ApproveAssetComplete, { accountAddress, proxyAddress, tokenAddress, tokenId })
+
+      return
     } catch (error) {
       console.error(error)
       throw new Error('Failed to approve access to this token. OpenSea has been alerted, but you can also chat with us on Discord.')
@@ -606,15 +631,16 @@ export class OpenSea {
 
   public async _initializeProxy(accountAddress: string) {
     const protocolInstance = this.wyvernProtocol
-    const txHash = await protocolInstance.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
+    const transactionHash = await protocolInstance.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
       from: accountAddress,
     })
-    // TODO dispatch(ExchangeActions._setTransactionHash(txHash))
-    await confirmTransaction(this.web3, txHash)
+    this._dispatch(EventType.InitializeAccount, { accountAddress, transactionHash })
+    await confirmTransaction(this.web3, transactionHash)
     const proxyAddress = await this._getProxy(accountAddress)
     if (!proxyAddress) {
       throw new Error('Failed to initialize your account, please try again')
     }
+    this._dispatch(EventType.InitializeAccountComplete, { accountAddress, proxyAddress })
     return proxyAddress
   }
 
@@ -629,9 +655,7 @@ export class OpenSea {
     let proxyAddress = await this._getProxy(accountAddress)
 
     if (!proxyAddress) {
-      // TODO dispatch({ type: ActionTypes.INITIALIZE_PROXY })
       proxyAddress = await this._initializeProxy(accountAddress)
-      // dispatch({ type: ActionTypes.RESET_EXCHANGE })
     }
     const where = await findAsset(this.web3, { account: accountAddress, proxy: proxyAddress, wyAsset, schema })
 
@@ -800,6 +824,10 @@ export class OpenSea {
       throw new Error('No schema found for this asset; please check back later!')
     }
     return schema
+  }
+
+  public _dispatch(event: EventType, data = {}): void {
+    this.emitter.emit(event, data)
   }
 }
 

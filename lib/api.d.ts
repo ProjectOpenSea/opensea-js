@@ -1,5 +1,6 @@
 import 'isomorphic-unfetch';
 import { OpenSeaAPIConfig, OrderJSON, Order } from './types';
+export declare const ORDERBOOK_VERSION: number;
 export declare class OpenSeaAPI {
     readonly apiBaseUrl: string;
     pageSize: number;

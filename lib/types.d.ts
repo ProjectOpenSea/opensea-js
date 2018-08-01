@@ -96,3 +96,11 @@ export interface OrderbookResponse {
     orders: OrderJSON[];
     count: number;
 }
+export declare enum EventType {
+    ApproveAsset = "ApproveAsset",
+    ApproveAssetComplete = "ApproveAssetComplete",
+    ApproveAllAssets = "ApproveAllAssets",
+    ApproveAllAssetsComplete = "ApproveAllAssetsComplete",
+    InitializeAccount = "InitializeAccount",
+    InitializeAccountComplete = "InitializeAccountComplete"
+}
