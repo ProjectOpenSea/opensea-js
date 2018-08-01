@@ -7,7 +7,7 @@ import {
   test,
 } from 'mocha-typescript'
 
-import { OpenSeaAPI } from '../src/api'
+import { OpenSeaAPI, ORDERBOOK_VERSION } from '../src/api'
 import { Network, Order } from '../src/types'
 
 const mainApi = new OpenSeaAPI({
@@ -36,15 +36,16 @@ suite('api', () => {
     assert.equal(orders.length, mainApi.pageSize)
     assert.isAtLeast(count, orders.length)
   })
-
-  // FUTURE v2
-  // test('API orderbook paginates', async () => {
-  //   const {orders, count} = await mainApi.getOrders()
-  //   const pagination = await mainApi.getOrders({}, 2)
-  //   assert.equal(pagination.orders.length, mainApi.pageSize)
-  //   assert.notDeepEqual(pagination.orders[0], orders[0])
-  //   assert.equal(pagination.count, count)
-  // })
+  
+  if (ORDERBOOK_VERSION > 0) {
+    test('API orderbook paginates', async () => {
+      const {orders, count} = await mainApi.getOrders()
+      const pagination = await mainApi.getOrders({}, 2)
+      assert.equal(pagination.orders.length, mainApi.pageSize)
+      assert.notDeepEqual(pagination.orders[0], orders[0])
+      assert.equal(pagination.count, count)
+    })
+  }
 
   test('API fetches orders for asset contract and asset', async () => {
     const forKitties = await mainApi.getOrders({tokenAddress: CK_ADDRESS})

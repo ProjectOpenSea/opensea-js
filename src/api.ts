@@ -3,11 +3,11 @@ import * as QueryString from 'query-string'
 import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse } from './types'
 import { orderFromJSON } from './wyvern'
 
-const ORDERBOOK_VERSION: string = `v1`
+export const ORDERBOOK_VERSION: number = 1
 
 const API_BASE_MAINNET = 'https://api.opensea.io'
 const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'
-const ORDERBOOK_PATH = `/wyvern/${ORDERBOOK_VERSION}`
+const ORDERBOOK_PATH = `/wyvern/v${ORDERBOOK_VERSION}`
 
 export class OpenSeaAPI {
 
@@ -44,7 +44,7 @@ export class OpenSeaAPI {
       `${ORDERBOOK_PATH}/orders`,
       query
     )
-    if (ORDERBOOK_VERSION == 'v0') {
+    if (ORDERBOOK_VERSION == 0) {
       const json: OrderJSON[] = await response.json()
       const orderJSON = json[0]
       return orderJSON ? orderFromJSON(orderJSON) : null
@@ -67,7 +67,7 @@ export class OpenSeaAPI {
         page
       }
     )
-    if (ORDERBOOK_VERSION == 'v0') {
+    if (ORDERBOOK_VERSION == 0) {
       const json: OrderJSON[] = await response.json()
       return {
         orders: json.map(orderFromJSON),
