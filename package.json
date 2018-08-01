@@ -4,10 +4,11 @@
   "description": "JavaScript SDK for the OpenSea marketplace",
   "main": "lib/index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha test/*.ts --require ts-node/register",
+    "test": "./node_modules/.bin/mocha test/*.ts --require ts-node/register",
     "lint": "tslint --project . 'src/**/*.ts' --fix",
     "build": "npm run lint && tsc",
-    "docs": "./node_modules/typedoc/bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file"
+    "docs": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
+    "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file"
   },
   "repository": {
     "type": "git",
