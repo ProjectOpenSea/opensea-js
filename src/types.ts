@@ -74,6 +74,11 @@ export interface Order extends UnsignedOrder, ECSignature {
   cancelledOrFinalized?: boolean
   markedInvalid?: boolean
   currentPrice?: BigNumber
+  asset?: {
+    asset: WyvernAsset;
+    owner: null | string;
+    hash: string;
+  }
 }
 
 export interface OrderJSON {
@@ -113,10 +118,12 @@ export interface OrderJSON {
   s?: string
 
   // Used by orderbook to make queries easier
+  owner?: string,
   tokenAddress?: string,
   tokenId?: number | string
 }
 
+// FUTURE v2
 export interface OrderbookResponse {
   orders: OrderJSON[]
   count: number
