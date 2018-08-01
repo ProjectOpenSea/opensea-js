@@ -29,19 +29,22 @@ suite('api', () => {
     assert.equal(rinkebyApi.apiBaseUrl, 'https://rinkeby-api.opensea.io')
   })
 
-  test('API fetches orderbook and paginates', async () => {
+  test('API fetches orderbook', async () => {
     const {orders, count} = await mainApi.getOrders()
     assert.isArray(orders)
     assert.isNumber(count)
     assert.equal(orders.length, mainApi.pageSize)
     assert.isAtLeast(count, orders.length)
-
-    // FUTURE v2
-    // const pagination = await mainApi.getOrders({}, 2)
-    // assert.equal(pagination.orders.length, mainApi.pageSize)
-    // assert.notDeepEqual(pagination.orders[0], orders[0])
-    // assert.equal(pagination.count, count)
   })
+
+  // FUTURE v2
+  // test('API orderbook paginates', async () => {
+  //   const {orders, count} = await mainApi.getOrders()
+  //   const pagination = await mainApi.getOrders({}, 2)
+  //   assert.equal(pagination.orders.length, mainApi.pageSize)
+  //   assert.notDeepEqual(pagination.orders[0], orders[0])
+  //   assert.equal(pagination.count, count)
+  // })
 
   test('API fetches orders for asset contract and asset', async () => {
     const forKitties = await mainApi.getOrders({tokenAddress: CK_ADDRESS})

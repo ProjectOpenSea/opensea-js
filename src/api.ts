@@ -1,11 +1,13 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
-import { Network, OpenSeaAPIConfig, OrderJSON, Order } from './types'
+import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse } from './types'
 import { orderFromJSON } from './wyvern'
+
+const ORDERBOOK_VERSION: string = `v1`
 
 const API_BASE_MAINNET = 'https://api.opensea.io'
 const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'
-const ORDERBOOK_PATH = `/wyvern/v0`
+const ORDERBOOK_PATH = `/wyvern/${ORDERBOOK_VERSION}`
 
 export class OpenSeaAPI {
 
@@ -42,9 +44,15 @@ export class OpenSeaAPI {
       `${ORDERBOOK_PATH}/orders`,
       query
     )
-    const json: OrderJSON[] = await response.json()
-    const orderJSON = json[0]
-    return orderJSON ? orderFromJSON(orderJSON) : null
+    if (ORDERBOOK_VERSION == 'v0') {
+      const json: OrderJSON[] = await response.json()
+      const orderJSON = json[0]
+      return orderJSON ? orderFromJSON(orderJSON) : null
+    } else {
+      const json: OrderbookResponse = await response.json()
+      const orderJSON = json.orders[0]
+      return orderJSON ? orderFromJSON(orderJSON) : null
+    }
   }
 
   public async getOrders(
@@ -59,10 +67,18 @@ export class OpenSeaAPI {
         page
       }
     )
-    const json: OrderJSON[] = await response.json()
-    return {
-      orders: json.map(orderFromJSON),
-      count: json.length
+    if (ORDERBOOK_VERSION == 'v0') {
+      const json: OrderJSON[] = await response.json()
+      return {
+        orders: json.map(orderFromJSON),
+        count: json.length
+      }
+    } else {
+      const json: OrderbookResponse = await response.json()
+      return {
+        orders: json.orders.map(orderFromJSON),
+        count: json.count
+      }
     }
   }
 
