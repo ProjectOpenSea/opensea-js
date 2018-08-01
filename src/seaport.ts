@@ -624,49 +624,6 @@ export class OpenSeaPort {
     return txHash
   }
 
-  public _makeMatchingOrder(
-      { order, accountAddress }:
-      { order: Order; accountAddress: string}
-    ): UnsignedOrder {
-    const schema = this._getSchema()
-    const listingTime = Math.round(Date.now() / 1000 - 1000)
-    const { target, calldata, replacementPattern } = order.side == OrderSide.Buy
-      ? WyvernSchemas.encodeSell(schema, order.metadata.asset, accountAddress)
-      : WyvernSchemas.encodeBuy(schema, order.metadata.asset, accountAddress)
-
-    const matchingOrder: UnhashedOrder = {
-      exchange: order.exchange,
-      maker: accountAddress,
-      taker: WyvernProtocol.NULL_ADDRESS,
-      makerRelayerFee: makeBigNumber(0),
-      takerRelayerFee: makeBigNumber(0),
-      makerProtocolFee: makeBigNumber(0),
-      takerProtocolFee: makeBigNumber(0),
-      feeMethod: order.feeMethod,
-      feeRecipient: WyvernProtocol.NULL_ADDRESS,
-      side: (order.side + 1) % 2,
-      saleKind: SaleKind.FixedPrice,
-      target,
-      howToCall: order.howToCall,
-      calldata,
-      replacementPattern,
-      staticTarget: WyvernProtocol.NULL_ADDRESS,
-      staticExtradata: '0x',
-      paymentToken: order.paymentToken,
-      basePrice: order.basePrice,
-      extra: makeBigNumber(0),
-      listingTime: makeBigNumber(listingTime),
-      expirationTime: makeBigNumber(0),
-      salt: WyvernProtocol.generatePseudoRandomSalt(),
-      metadata: order.metadata,
-    }
-
-    return {
-      ...matchingOrder,
-      hash: WyvernProtocol.getOrderHashHex(matchingOrder)
-    }
-  }
-
   // Returns null if no proxy and throws if method not available
   public async _getProxy(accountAddress: string): Promise<string | null> {
     const protocolInstance = this.wyvernProtocol
@@ -875,7 +832,54 @@ export class OpenSeaPort {
     return personalSignAsync(this.web3, message, signerAddress)
   }
 
-  public _getSchema(schemaName = SchemaName.ERC721) {
+  /**
+   * Private methods
+   */
+
+  private _makeMatchingOrder(
+      { order, accountAddress }:
+      { order: Order; accountAddress: string}
+    ): UnsignedOrder {
+    const schema = this._getSchema()
+    const listingTime = Math.round(Date.now() / 1000 - 1000)
+    const { target, calldata, replacementPattern } = order.side == OrderSide.Buy
+      ? WyvernSchemas.encodeSell(schema, order.metadata.asset, accountAddress)
+      : WyvernSchemas.encodeBuy(schema, order.metadata.asset, accountAddress)
+
+    const matchingOrder: UnhashedOrder = {
+      exchange: order.exchange,
+      maker: accountAddress,
+      taker: WyvernProtocol.NULL_ADDRESS,
+      makerRelayerFee: makeBigNumber(0),
+      takerRelayerFee: makeBigNumber(0),
+      makerProtocolFee: makeBigNumber(0),
+      takerProtocolFee: makeBigNumber(0),
+      feeMethod: order.feeMethod,
+      feeRecipient: WyvernProtocol.NULL_ADDRESS,
+      side: (order.side + 1) % 2,
+      saleKind: SaleKind.FixedPrice,
+      target,
+      howToCall: order.howToCall,
+      calldata,
+      replacementPattern,
+      staticTarget: WyvernProtocol.NULL_ADDRESS,
+      staticExtradata: '0x',
+      paymentToken: order.paymentToken,
+      basePrice: order.basePrice,
+      extra: makeBigNumber(0),
+      listingTime: makeBigNumber(listingTime),
+      expirationTime: makeBigNumber(0),
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
+      metadata: order.metadata,
+    }
+
+    return {
+      ...matchingOrder,
+      hash: WyvernProtocol.getOrderHashHex(matchingOrder)
+    }
+  }
+
+  private _getSchema(schemaName = SchemaName.ERC721) {
     const schema = WyvernSchemas.schemas[this.networkName].filter(s => s.name == schemaName)[0]
 
     if (!schema) {
@@ -884,7 +888,7 @@ export class OpenSeaPort {
     return schema
   }
 
-  public _dispatch(event: EventType, data: EventData): void {
+  private _dispatch(event: EventType, data: EventData): void {
     this.emitter.emit(event, data)
   }
 }

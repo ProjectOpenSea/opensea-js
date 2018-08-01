@@ -1,5 +1,5 @@
 import * as Web3 from 'web3';
-import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData } from './types';
+import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, PartialReadonlyContractAbi, EventType, EventData } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -84,10 +84,6 @@ export declare class OpenSeaPort {
         sell: Order;
         accountAddress: string;
     }): Promise<string>;
-    _makeMatchingOrder({ order, accountAddress }: {
-        order: Order;
-        accountAddress: string;
-    }): UnsignedOrder;
     _getProxy(accountAddress: string): Promise<string | null>;
     _initializeProxy(accountAddress: string): Promise<string>;
     _validateSellOrderParameters({ order, accountAddress }: {
@@ -108,6 +104,10 @@ export declare class OpenSeaPort {
         hash: string;
         maker: string;
     }): Promise<ECSignature>;
-    _getSchema(schemaName?: SchemaName): Schema;
-    _dispatch(event: EventType, data: EventData): void;
+    /**
+     * Private methods
+     */
+    private _makeMatchingOrder;
+    private _getSchema;
+    private _dispatch;
 }

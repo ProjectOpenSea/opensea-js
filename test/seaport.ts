@@ -29,9 +29,9 @@ suite('seaport', () => {
     assert.equal(typeof client.wrapEth, 'function')
   })
 
-  test('Constructor exposes underscored methods', () => {
+  test('Constructor exposes some underscored methods', () => {
     assert.equal(typeof client._atomicMatch, 'function')
-    assert.equal(typeof client._getSchema, 'function')
+    assert.equal(typeof client._getProxy, 'function')
   })
 
   ordersAndProperties.map((data: {order: OrderJSON}, index: number) => {

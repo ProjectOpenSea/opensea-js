@@ -20,12 +20,9 @@
 ### Methods
 
 * [_atomicMatch](openseaport.md#_atomicmatch)
-* [_dispatch](openseaport.md#_dispatch)
 * [_getProxy](openseaport.md#_getproxy)
-* [_getSchema](openseaport.md#_getschema)
 * [_getTokenBalance](openseaport.md#_gettokenbalance)
 * [_initializeProxy](openseaport.md#_initializeproxy)
-* [_makeMatchingOrder](openseaport.md#_makematchingorder)
 * [_signOrder](openseaport.md#_signorder)
 * [_validateAndPostOrder](openseaport.md#_validateandpostorder)
 * [_validateBuyOrderParameters](openseaport.md#_validatebuyorderparameters)
@@ -54,7 +51,7 @@
 
 ⊕ **new OpenSeaPort**(provider: *`Provider`*, apiConfig?: *[OpenSeaAPIConfig](../interfaces/openseaapiconfig.md)*, logger?: * `undefined` &#124; `function`*): [OpenSeaPort](openseaport.md)
 
-*Defined in seaport.ts:26*
+*Defined in [seaport.ts:26](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L26)*
 
 **Parameters:**
 
@@ -76,7 +73,7 @@ ___
 
 **● logger**: *`function`*
 
-*Defined in seaport.ts:21*
+*Defined in [seaport.ts:21](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L21)*
 
 #### Type declaration
 ▸(arg: *`string`*): `void`
@@ -96,7 +93,7 @@ ___
 
 **● web3**: *`Web3`*
 
-*Defined in seaport.ts:20*
+*Defined in [seaport.ts:20](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L20)*
 
 ___
 
@@ -108,7 +105,7 @@ ___
 
 ▸ **_atomicMatch**(__namedParameters: *`object`*): `Promise`<`string`>
 
-*Defined in seaport.ts:510*
+*Defined in [seaport.ts:510](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L510)*
 
 Helper methods
 
@@ -121,31 +118,13 @@ Helper methods
 **Returns:** `Promise`<`string`>
 
 ___
-<a id="_dispatch"></a>
-
-###  _dispatch
-
-▸ **_dispatch**(event: *[EventType](../enums/eventtype.md)*, data: *[EventData](../interfaces/eventdata.md)*): `void`
-
-*Defined in seaport.ts:887*
-
-**Parameters:**
-
-| Param | Type |
-| ------ | ------ |
-| event | [EventType](../enums/eventtype.md) |
-| data | [EventData](../interfaces/eventdata.md) |
-
-**Returns:** `void`
-
-___
 <a id="_getproxy"></a>
 
 ###  _getProxy
 
 ▸ **_getProxy**(accountAddress: *`string`*): `Promise`< `string` &#124; `null`>
 
-*Defined in seaport.ts:671*
+*Defined in [seaport.ts:628](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L628)*
 
 **Parameters:**
 
@@ -156,30 +135,13 @@ ___
 **Returns:** `Promise`< `string` &#124; `null`>
 
 ___
-<a id="_getschema"></a>
-
-###  _getSchema
-
-▸ **_getSchema**(schemaName?: *`ERC721`*): `Schema`
-
-*Defined in seaport.ts:878*
-
-**Parameters:**
-
-| Param | Type | Default value |
-| ------ | ------ | ------ |
-| `Default value` schemaName | `ERC721` |  SchemaName.ERC721 |
-
-**Returns:** `Schema`
-
-___
 <a id="_gettokenbalance"></a>
 
 ###  _getTokenBalance
 
 ▸ **_getTokenBalance**(__namedParameters: *`object`*): `Promise`<`BigNumber`>
 
-*Defined in seaport.ts:808*
+*Defined in [seaport.ts:765](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L765)*
 
 **Parameters:**
 
@@ -196,7 +158,7 @@ ___
 
 ▸ **_initializeProxy**(accountAddress: *`string`*): `Promise`<`string`>
 
-*Defined in seaport.ts:685*
+*Defined in [seaport.ts:642](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L642)*
 
 **Parameters:**
 
@@ -207,30 +169,13 @@ ___
 **Returns:** `Promise`<`string`>
 
 ___
-<a id="_makematchingorder"></a>
-
-###  _makeMatchingOrder
-
-▸ **_makeMatchingOrder**(__namedParameters: *`object`*): [UnsignedOrder](../interfaces/unsignedorder.md)
-
-*Defined in seaport.ts:627*
-
-**Parameters:**
-
-| Param | Type |
-| ------ | ------ |
-| __namedParameters | `object` |
-
-**Returns:** [UnsignedOrder](../interfaces/unsignedorder.md)
-
-___
 <a id="_signorder"></a>
 
 ###  _signOrder
 
 ▸ **_signOrder**(order: *`object`*): `Promise`<`ECSignature`>
 
-*Defined in seaport.ts:868*
+*Defined in [seaport.ts:825](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L825)*
 
 **Parameters:**
 
@@ -247,7 +192,7 @@ ___
 
 ▸ **_validateAndPostOrder**(order: *[Order](../interfaces/order.md)*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in seaport.ts:825*
+*Defined in [seaport.ts:782](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L782)*
 
 **Parameters:**
 
@@ -264,7 +209,7 @@ ___
 
 ▸ **_validateBuyOrderParameters**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in seaport.ts:757*
+*Defined in [seaport.ts:714](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L714)*
 
 **Parameters:**
 
@@ -281,7 +226,7 @@ ___
 
 ▸ **_validateSellOrderParameters**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in seaport.ts:705*
+*Defined in [seaport.ts:662](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L662)*
 
 **Parameters:**
 
@@ -298,7 +243,7 @@ ___
 
 ▸ **addListener**(event: *[EventType](../enums/eventtype.md)*, listener: *`function`*, once?: *`boolean`*): `EventSubscription`
 
-*Defined in seaport.ts:59*
+*Defined in [seaport.ts:59](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L59)*
 
 Add a listener to a marketplace event
 
@@ -319,7 +264,7 @@ ___
 
 ▸ **approveFungibleToken**(__namedParameters: *`object`*): `Promise`<`Object`>
 
-*Defined in seaport.ts:470*
+*Defined in [seaport.ts:470](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L470)*
 
 **Parameters:**
 
@@ -336,7 +281,7 @@ ___
 
 ▸ **approveNonFungibleToken**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in seaport.ts:350*
+*Defined in [seaport.ts:350](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L350)*
 
 **Parameters:**
 
@@ -353,7 +298,7 @@ ___
 
 ▸ **cancelOrder**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in seaport.ts:311*
+*Defined in [seaport.ts:311](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L311)*
 
 **Parameters:**
 
@@ -370,7 +315,7 @@ ___
 
 ▸ **createBuyOrder**(__namedParameters: *`object`*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in seaport.ts:134*
+*Defined in [seaport.ts:134](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L134)*
 
 **Parameters:**
 
@@ -387,7 +332,7 @@ ___
 
 ▸ **createSellOrder**(__namedParameters: *`object`*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in seaport.ts:201*
+*Defined in [seaport.ts:201](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L201)*
 
 **Parameters:**
 
@@ -404,7 +349,7 @@ ___
 
 ▸ **fulfillOrder**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in seaport.ts:276*
+*Defined in [seaport.ts:276](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L276)*
 
 **Parameters:**
 
@@ -421,7 +366,7 @@ ___
 
 ▸ **getApprovedTokenCount**(__namedParameters: *`object`*): `Promise`<`BigNumber`>
 
-*Defined in seaport.ts:336*
+*Defined in [seaport.ts:336](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L336)*
 
 **Parameters:**
 
@@ -438,7 +383,7 @@ ___
 
 ▸ **getCurrentPrice**(order: *[Order](../interfaces/order.md)*): `Promise`<`BigNumber`>
 
-*Defined in seaport.ts:489*
+*Defined in [seaport.ts:489](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L489)*
 
 Gets the price for the order using the contract
 
@@ -457,7 +402,7 @@ ___
 
 ▸ **removeAllListeners**(event?: *[EventType](../enums/eventtype.md)*): `void`
 
-*Defined in seaport.ts:80*
+*Defined in [seaport.ts:80](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L80)*
 
 **Parameters:**
 
@@ -474,7 +419,7 @@ ___
 
 ▸ **removeListener**(subscription: *`EventSubscription`*): `void`
 
-*Defined in seaport.ts:71*
+*Defined in [seaport.ts:71](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L71)*
 
 Remove an event listener, included here for completeness. Simply calls `.remove()` on a subscription
 
@@ -493,7 +438,7 @@ ___
 
 ▸ **unwrapWeth**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in seaport.ts:109*
+*Defined in [seaport.ts:109](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L109)*
 
 **Parameters:**
 
@@ -510,7 +455,7 @@ ___
 
 ▸ **wrapEth**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in seaport.ts:84*
+*Defined in [seaport.ts:84](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/seaport.ts#L84)*
 
 **Parameters:**
 
