@@ -241,7 +241,7 @@ export function makeBigNumber(arg: number | string): BigNumber {
  */
 export async function sendRawTransaction(
     web3: Web3,
-    {fromAddress, toAddress, data, value = 0, awaitConfirmation = true}:
+    {fromAddress, toAddress, data, value = 0, awaitConfirmation = false}:
     {fromAddress: string; toAddress: string; data: any; value?: number | BigNumber; awaitConfirmation?: boolean}
   ) {
 

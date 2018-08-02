@@ -5,6 +5,7 @@ export { Network, HowToCall, SaleKind, ECSignature };
 export declare enum EventType {
     TransactionCreated = "TransactionCreated",
     TransactionConfirmed = "TransactionConfirmed",
+    TransactionFailed = "TransactionFailed",
     InitializeAccount = "InitializeAccount",
     WrapEth = "WrapEth",
     UnwrapWeth = "UnwrapWeth",
@@ -22,6 +23,7 @@ export interface EventData {
     tokenId?: string;
     transactionHash?: string;
     event?: EventType;
+    error?: Error;
     order?: Order;
     buy?: Order;
     sell?: Order;

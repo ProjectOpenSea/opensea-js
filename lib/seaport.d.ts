@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, PartialReadonlyContractAbi, EventType, EventData } from './types';
+import { OpenSeaAPIConfig, Order, PartialReadonlyContractAbi, EventType, EventData } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -48,7 +48,6 @@ export declare class OpenSeaPort {
     unwrapWeth({ amountInEth, accountAddress }: {
         amountInEth: number;
         accountAddress: string;
-        awaitConfirmation?: boolean;
     }): Promise<void>;
     /**
      * Create a buy order to make an offer on an asset.
@@ -104,34 +103,21 @@ export declare class OpenSeaPort {
      * Gets the price for the order using the contract
      */
     getCurrentPrice(order: Order): Promise<BigNumber>;
-    /**
-     * Helper methods
-     */
-    _atomicMatch({ buy, sell, accountAddress }: {
-        buy: Order;
-        sell: Order;
-        accountAddress: string;
-    }): Promise<string>;
     _getProxy(accountAddress: string): Promise<string | null>;
     _initializeProxy(accountAddress: string): Promise<string>;
-    _validateSellOrderParameters({ order, accountAddress }: {
-        order: UnhashedOrder;
-        accountAddress: string;
-    }): Promise<void>;
-    _validateBuyOrderParameters({ order, accountAddress }: {
-        order: UnhashedOrder;
-        accountAddress: string;
-    }): Promise<void>;
     _getTokenBalance({ accountAddress, tokenAddress, tokenAbi }: {
         accountAddress: string;
         tokenAddress: string;
         tokenAbi?: PartialReadonlyContractAbi;
     }): Promise<BigNumber>;
-    _validateAndPostOrder(order: Order): Promise<Order>;
-    _signOrder(order: {
-        hash: string;
-        maker: string;
-    }): Promise<ECSignature>;
+    /**
+     * Helper methods
+     */
+    private _atomicMatch;
+    private _validateSellOrderParameters;
+    private _validateBuyOrderParameters;
+    private _validateAndPostOrder;
+    private _signOrder;
     /**
      * Private methods
      */

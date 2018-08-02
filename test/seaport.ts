@@ -36,7 +36,7 @@ suite('seaport', () => {
   })
 
   test('Instance exposes some underscored methods', () => {
-    assert.equal(typeof client._atomicMatch, 'function')
+    assert.equal(typeof client._initializeProxy, 'function')
     assert.equal(typeof client._getProxy, 'function')
   })
 

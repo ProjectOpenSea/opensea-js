@@ -107,8 +107,7 @@ export class OpenSeaPort {
       fromAddress: accountAddress,
       toAddress: token.address,
       value: amount,
-      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'deposit'), []),
-      awaitConfirmation: false,
+      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'deposit'), [])
     })
     const transactionHash = txHash.toString()
 
@@ -121,8 +120,8 @@ export class OpenSeaPort {
    * @param param0 Object containing the amount in W-ETH to unwrap and the user's account address
    */
   public async unwrapWeth(
-    { amountInEth, accountAddress }:
-    { amountInEth: number; accountAddress: string; awaitConfirmation?: boolean}
+      { amountInEth, accountAddress }:
+      { amountInEth: number; accountAddress: string }
     ) {
 
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
@@ -135,8 +134,7 @@ export class OpenSeaPort {
       fromAddress: accountAddress,
       toAddress: token.address,
       value: 0,
-      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [amount.toString()]),
-      awaitConfirmation: false,
+      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [amount.toString()])
     })
     const transactionHash = txHash.toString()
 
@@ -420,8 +418,7 @@ export class OpenSeaPort {
         const txHash = await sendRawTransaction(this.web3, {
           fromAddress: accountAddress,
           toAddress: erc721.address,
-          data: erc721.setApprovalForAll.getData(proxyAddress, true),
-          awaitConfirmation: false,
+          data: erc721.setApprovalForAll.getData(proxyAddress, true)
         })
         const transactionHash = txHash.toString()
 
@@ -474,8 +471,7 @@ export class OpenSeaPort {
       const txHash = await sendRawTransaction(this.web3, {
         fromAddress: accountAddress,
         toAddress: erc721.address,
-        data: erc721.approve.getData(proxyAddress, tokenId),
-        awaitConfirmation: false
+        data: erc721.approve.getData(proxyAddress, tokenId)
       })
       const transactionHash = txHash.toString()
 
@@ -500,8 +496,7 @@ export class OpenSeaPort {
       fromAddress: accountAddress,
       toAddress: tokenAddress,
       data: WyvernSchemas.encodeCall(getMethod(ERC20, 'approve'),
-        [contractAddress, WyvernProtocol.MAX_UINT_256.toString()]),
-      awaitConfirmation: false,
+        [contractAddress, WyvernProtocol.MAX_UINT_256.toString()])
     })
     const transactionHash = txHash.toString()
 
@@ -528,11 +523,61 @@ export class OpenSeaPort {
     return currentPrice
   }
 
+  // Returns null if no proxy and throws if method not available
+  public async _getProxy(accountAddress: string): Promise<string | null> {
+    const protocolInstance = this.wyvernProtocol
+    let proxyAddress: string | null = await protocolInstance.wyvernProxyRegistry.proxies.callAsync(accountAddress)
+
+    if (proxyAddress == '0x') {
+      throw new Error("Couldn't retrieve your account from the blockchain - make sure you're on the correct Ethereum network!")
+    }
+
+    if (!proxyAddress || proxyAddress == WyvernProtocol.NULL_ADDRESS) {
+      proxyAddress = null
+    }
+    return proxyAddress
+  }
+
+  public async _initializeProxy(accountAddress: string) {
+    const protocolInstance = this.wyvernProtocol
+
+    this._dispatch(EventType.InitializeAccount, { accountAddress })
+
+    const transactionHash = await protocolInstance.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
+      from: accountAddress,
+    })
+
+    await this._confirmTransaction(transactionHash, EventType.InitializeAccount)
+
+    const proxyAddress = await this._getProxy(accountAddress)
+    if (!proxyAddress) {
+      throw new Error('Failed to initialize your account, please try again')
+    }
+
+    return proxyAddress
+  }
+
+  public async _getTokenBalance(
+      { accountAddress, tokenAddress, tokenAbi = ERC20 }:
+      { accountAddress: string; tokenAddress: string; tokenAbi?: PartialReadonlyContractAbi }
+    ) {
+    if (!tokenAddress) {
+      tokenAddress = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther.address
+    }
+    const amount = await promisify(c => this.web3.eth.call({
+      from: accountAddress,
+      to: tokenAddress,
+      data: WyvernSchemas.encodeCall(getMethod(tokenAbi, 'balanceOf'), [accountAddress]),
+    }, c))
+
+    return makeBigNumber(amount.toString())
+  }
+
   /**
    * Helper methods
    */
 
-  public async _atomicMatch(
+  private async _atomicMatch(
       { buy, sell, accountAddress }:
       { buy: Order; sell: Order; accountAddress: string }
     ) {
@@ -649,42 +694,8 @@ export class OpenSeaPort {
     return txHash
   }
 
-  // Returns null if no proxy and throws if method not available
-  public async _getProxy(accountAddress: string): Promise<string | null> {
-    const protocolInstance = this.wyvernProtocol
-    let proxyAddress: string | null = await protocolInstance.wyvernProxyRegistry.proxies.callAsync(accountAddress)
-
-    if (proxyAddress == '0x') {
-      throw new Error("Couldn't retrieve your account from the blockchain - make sure you're on the correct Ethereum network!")
-    }
-
-    if (!proxyAddress || proxyAddress == WyvernProtocol.NULL_ADDRESS) {
-      proxyAddress = null
-    }
-    return proxyAddress
-  }
-
-  public async _initializeProxy(accountAddress: string) {
-    const protocolInstance = this.wyvernProtocol
-
-    this._dispatch(EventType.InitializeAccount, { accountAddress })
-
-    const transactionHash = await protocolInstance.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
-      from: accountAddress,
-    })
-
-    await this._confirmTransaction(transactionHash, EventType.InitializeAccount)
-
-    const proxyAddress = await this._getProxy(accountAddress)
-    if (!proxyAddress) {
-      throw new Error('Failed to initialize your account, please try again')
-    }
-
-    return proxyAddress
-  }
-
   // Throws
-  public async _validateSellOrderParameters(
+  private async _validateSellOrderParameters(
       { order, accountAddress }:
       { order: UnhashedOrder; accountAddress: string }
     ) {
@@ -736,7 +747,7 @@ export class OpenSeaPort {
   }
 
   // Throws
-  public async _validateBuyOrderParameters(
+  private async _validateBuyOrderParameters(
       { order, accountAddress }:
       { order: UnhashedOrder; accountAddress: string }
     ) {
@@ -787,24 +798,8 @@ export class OpenSeaPort {
     }
   }
 
-  public async _getTokenBalance(
-      { accountAddress, tokenAddress, tokenAbi = ERC20 }:
-      { accountAddress: string; tokenAddress: string; tokenAbi?: PartialReadonlyContractAbi }
-    ) {
-    if (!tokenAddress) {
-      tokenAddress = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther.address
-    }
-    const amount = await promisify(c => this.web3.eth.call({
-      from: accountAddress,
-      to: tokenAddress,
-      data: WyvernSchemas.encodeCall(getMethod(tokenAbi, 'balanceOf'), [accountAddress]),
-    }, c))
-
-    return makeBigNumber(amount.toString())
-  }
-
   // Throws
-  public async _validateAndPostOrder(order: Order) {
+  private async _validateAndPostOrder(order: Order) {
     const protocolInstance = this.wyvernProtocol
     const hash = await protocolInstance.wyvernExchange.hashOrder_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
@@ -847,7 +842,7 @@ export class OpenSeaPort {
     return confirmedOrder
   }
 
-  public async _signOrder(
+  private async _signOrder(
       order:
       {hash: string; maker: string}
     ): Promise<ECSignature> {

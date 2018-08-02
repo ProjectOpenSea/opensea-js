@@ -19,7 +19,7 @@
 
 **Buy**:  = 0
 
-*Defined in [types.ts:57](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L57)*
+*Defined in [types.ts:59](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L59)*
 
 ___
 <a id="sell"></a>
@@ -28,7 +28,7 @@ ___
 
 **Sell**:  = 1
 
-*Defined in [types.ts:58](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L58)*
+*Defined in [types.ts:60](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L60)*
 
 ___
 
