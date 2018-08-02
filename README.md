@@ -25,6 +25,7 @@ Install [web3](https://github.com/ethereum/web3.js) too if you haven't already.
 ### Getting Started
 
 To get started, create a new OpenSeaJS client, called an OpenSeaPort 🚢, using your Web3 provider:
+
 ```JavaScript
 import * as Web3 from 'web3'
 import { OpenSeaPort, Network } from 'opensea-js'
@@ -37,9 +38,31 @@ const seaport = new OpenSeaPort(provider, {
 ```
 
 Then, you can do this to make an offer on an asset:
+
 ```JavaScript
 // An expirationTime of 0 means it will never expire
 const offer = await seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, expirationTime: 0 })
+```
+
+To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client:
+
+```JavaScript
+import { OrderSide } from 'opensea-js/types'
+// Get offers
+const { orders, count } = await seaport.api.getOrders({
+  tokenAddress, tokenId,
+  side: OrderSide.Buy
+})
+// Get page 2 of all auctions
+const { orders, count } = await seaport.api.getOrders({
+  tokenAddress, tokenId,
+  side: OrderSide.Sell
+}, 2)
+// Get page 2 of all auctions
+const { orders, count } = await seaport.api.getOrders({
+  tokenAddress, tokenId,
+  side: OrderSide.Sell
+}, 2)
 ```
 
 ### Learning More

@@ -92,6 +92,24 @@
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
 <span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> })
 </code></pre>
+				<p>To retrieve a list of offers and auction on an asset, you can use an instance of the <code>OpenSeaAPI</code> exposed on the client:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OrderSide } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js/types'</span>
+<span class="hljs-comment">// Get offers</span>
+<span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
+  tokenAddress, tokenId,
+  <span class="hljs-attr">side</span>: OrderSide.Buy
+})
+<span class="hljs-comment">// Get page 2 of all auctions</span>
+<span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
+  tokenAddress, tokenId,
+  <span class="hljs-attr">side</span>: OrderSide.Sell
+}, <span class="hljs-number">2</span>)
+<span class="hljs-comment">// Get page 2 of all auctions</span>
+<span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
+  tokenAddress, tokenId,
+  <span class="hljs-attr">side</span>: OrderSide.Sell
+}, <span class="hljs-number">2</span>)
+</code></pre>
 				<h3 id="learning-more">Learning More</h3>
 				<p>Detailed documentation is coming soon on <a href="https://docs.opensea.io">docs.opensea.io</a>.</p>
 				<p>In the meantime, visit the auto-generated documentation <a href="https://projectopensea.github.io/opensea-js/">here</a>, or contact the OpenSea devs for help! They&#39;re available every day on <a href="https://discord.gg/XjwWYgU">Discord</a> in the <code>#developers</code> channel.</p>

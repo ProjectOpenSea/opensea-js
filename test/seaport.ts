@@ -24,12 +24,18 @@ const client = new OpenSeaPort(provider, {
 
 suite('seaport', () => {
 
-  test('Constructor has public methods', () => {
+  test('Instance has public methods', () => {
     assert.equal(typeof client.getCurrentPrice, 'function')
     assert.equal(typeof client.wrapEth, 'function')
   })
 
-  test('Constructor exposes some underscored methods', () => {
+  test('Instance exposes API methods', () => {
+    assert.equal(typeof client.api.getOrder, 'function')
+    assert.equal(typeof client.api.getOrders, 'function')
+    assert.equal(typeof client.api.postOrder, 'function')
+  })
+
+  test('Instance exposes some underscored methods', () => {
     assert.equal(typeof client._atomicMatch, 'function')
     assert.equal(typeof client._getProxy, 'function')
   })

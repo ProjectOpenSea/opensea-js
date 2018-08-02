@@ -36,7 +36,7 @@ suite('api', () => {
     assert.equal(orders.length, mainApi.pageSize)
     assert.isAtLeast(count, orders.length)
   })
-  
+
   if (ORDERBOOK_VERSION > 0) {
     test('API orderbook paginates', async () => {
       const {orders, count} = await mainApi.getOrders()
