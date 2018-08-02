@@ -101,6 +101,8 @@ export class OpenSeaPort {
 
     const amount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
 
+    this._dispatch(EventType.WrapEth, { accountAddress, amount })
+
     const txHash = await sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: token.address,
@@ -110,11 +112,7 @@ export class OpenSeaPort {
     })
     const transactionHash = txHash.toString()
 
-    this._dispatch(EventType.WrapEth, { accountAddress, amount, transactionHash })
-
-    await confirmTransaction(this.web3, transactionHash)
-
-    this._dispatch(EventType.WrapEthComplete, { accountAddress, amount })
+    await this._confirmTransaction(transactionHash, EventType.WrapEth)
   }
 
   /**
@@ -131,6 +129,8 @@ export class OpenSeaPort {
 
     const amount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
 
+    this._dispatch(EventType.UnwrapWeth, { accountAddress, amount })
+
     const txHash = sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: token.address,
@@ -140,11 +140,7 @@ export class OpenSeaPort {
     })
     const transactionHash = txHash.toString()
 
-    this._dispatch(EventType.UnwrapWeth, { accountAddress, amount, transactionHash })
-
-    await confirmTransaction(this.web3, transactionHash)
-
-    this._dispatch(EventType.UnwrapWethComplete, { accountAddress, amount })
+    await this._confirmTransaction(transactionHash, EventType.UnwrapWeth)
   }
 
   /**
@@ -157,6 +153,7 @@ export class OpenSeaPort {
     { tokenId, tokenAddress, accountAddress, amountInEth, expirationTime = 0 }:
     { tokenId: string; tokenAddress: string; accountAddress: string; amountInEth: number; expirationTime?: number }
     ): Promise<Order> {
+
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, tokenId, tokenAddress)
@@ -230,6 +227,7 @@ export class OpenSeaPort {
     { tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
     { tokenId: string; tokenAddress: string; accountAddress: string; startAmountInEth: number; endAmountInEth?: number; expirationTime?: number }
     ): Promise<Order> {
+
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, tokenId, tokenAddress)
     const metadata = {
@@ -327,13 +325,11 @@ export class OpenSeaPort {
       }
     }
 
+    this._dispatch(EventType.MatchOrders, { buy, sell, accountAddress })
+
     const transactionHash = await this._atomicMatch({ buy, sell, accountAddress })
 
-    this._dispatch(EventType.MatchOrders, { buy, sell, accountAddress, transactionHash })
-
-    await confirmTransaction(this.web3, transactionHash.toString())
-
-    this._dispatch(EventType.MatchOrdersComplete, { buy, sell, accountAddress })
+    await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders)
   }
 
   public async cancelOrder(
@@ -341,6 +337,9 @@ export class OpenSeaPort {
       { order: Order; accountAddress: string}
     ) {
     const protocolInstance = this.wyvernProtocol
+
+    this._dispatch(EventType.CancelOrder, { order, accountAddress })
+
     const transactionHash = await protocolInstance.wyvernExchange.cancelOrder_.sendTransactionAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
@@ -354,11 +353,7 @@ export class OpenSeaPort {
       order.v, order.r, order.s,
       { from: accountAddress })
 
-    this._dispatch(EventType.CancelOrder, { order, accountAddress, transactionHash })
-
-    await confirmTransaction(this.web3, transactionHash.toString())
-
-    this._dispatch(EventType.CancelOrderComplete, { order, accountAddress })
+    await this._confirmTransaction(transactionHash.toString(), EventType.CancelOrder)
   }
 
   public async getApprovedTokenCount(
@@ -420,6 +415,8 @@ export class OpenSeaPort {
       //  not approved for all yet
 
       try {
+        this._dispatch(EventType.ApproveAllAssets, { accountAddress, proxyAddress, tokenAddress })
+
         const txHash = await sendRawTransaction(this.web3, {
           fromAddress: accountAddress,
           toAddress: erc721.address,
@@ -428,10 +425,7 @@ export class OpenSeaPort {
         })
         const transactionHash = txHash.toString()
 
-        this._dispatch(EventType.ApproveAllAssets, { accountAddress, proxyAddress, tokenAddress, transactionHash })
-        await confirmTransaction(this.web3, transactionHash)
-        this._dispatch(EventType.ApproveAllAssetsComplete, { accountAddress, proxyAddress, tokenAddress })
-
+        await this._confirmTransaction(transactionHash, EventType.ApproveAllAssets)
         return
       } catch (error) {
         console.error(error)
@@ -475,6 +469,8 @@ export class OpenSeaPort {
     // Call `approve`
 
     try {
+      this._dispatch(EventType.ApproveAsset, { accountAddress, proxyAddress, tokenAddress, tokenId })
+
       const txHash = await sendRawTransaction(this.web3, {
         fromAddress: accountAddress,
         toAddress: erc721.address,
@@ -483,10 +479,7 @@ export class OpenSeaPort {
       })
       const transactionHash = txHash.toString()
 
-      this._dispatch(EventType.ApproveAsset, { accountAddress, proxyAddress, tokenAddress, tokenId, transactionHash })
-      await confirmTransaction(this.web3, transactionHash)
-      this._dispatch(EventType.ApproveAssetComplete, { accountAddress, proxyAddress, tokenAddress, tokenId })
-
+      await this._confirmTransaction(transactionHash, EventType.ApproveAsset)
       return
     } catch (error) {
       console.error(error)
@@ -501,6 +494,8 @@ export class OpenSeaPort {
     ) {
     const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this.networkName)
 
+    this._dispatch(EventType.ApproveCurrency, { accountAddress, tokenAddress })
+
     const txHash = await sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: tokenAddress,
@@ -510,9 +505,7 @@ export class OpenSeaPort {
     })
     const transactionHash = txHash.toString()
 
-    this._dispatch(EventType.ApproveCurrency, { accountAddress, tokenAddress, transactionHash })
-    await confirmTransaction(this.web3, transactionHash)
-    this._dispatch(EventType.ApproveCurrencyComplete, { accountAddress, tokenAddress })
+    await this._confirmTransaction(transactionHash, EventType.ApproveCurrency)
   }
 
   /**
@@ -673,19 +666,19 @@ export class OpenSeaPort {
 
   public async _initializeProxy(accountAddress: string) {
     const protocolInstance = this.wyvernProtocol
+
+    this._dispatch(EventType.InitializeAccount, { accountAddress })
+
     const transactionHash = await protocolInstance.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
       from: accountAddress,
     })
-    this._dispatch(EventType.InitializeAccount, { accountAddress, transactionHash })
 
-    await confirmTransaction(this.web3, transactionHash)
+    await this._confirmTransaction(transactionHash, EventType.InitializeAccount)
 
     const proxyAddress = await this._getProxy(accountAddress)
     if (!proxyAddress) {
       throw new Error('Failed to initialize your account, please try again')
     }
-
-    this._dispatch(EventType.InitializeAccountComplete, { accountAddress, proxyAddress })
 
     return proxyAddress
   }
@@ -920,7 +913,16 @@ export class OpenSeaPort {
     return schema
   }
 
-  private _dispatch(event: EventType, data: EventData): void {
+  private _dispatch(event: EventType, data: EventData) {
     this.emitter.emit(event, data)
+  }
+
+  private async _confirmTransaction(transactionHash: string, event: EventType) {
+
+    const transactionEventData = { transactionHash, event }
+
+    this._dispatch(EventType.TransactionCreated, transactionEventData)
+    await confirmTransaction(this.web3, transactionHash)
+    this._dispatch(EventType.TransactionConfirmed, transactionEventData)
   }
 }

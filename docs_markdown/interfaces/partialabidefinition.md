@@ -30,7 +30,7 @@
 **● anonymous**: * `undefined` &#124; `true` &#124; `false`
 *
 
-*Defined in [types.ts:169](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L169)*
+*Defined in [types.ts:162](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L162)*
 
 ___
 <a id="constant"></a>
@@ -40,7 +40,7 @@ ___
 **● constant**: * `undefined` &#124; `true` &#124; `false`
 *
 
-*Defined in [types.ts:168](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L168)*
+*Defined in [types.ts:161](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L161)*
 
 ___
 <a id="inputs"></a>
@@ -49,7 +49,7 @@ ___
 
 **● inputs**: *`any`[]*
 
-*Defined in [types.ts:165](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L165)*
+*Defined in [types.ts:158](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L158)*
 
 ___
 <a id="name"></a>
@@ -59,7 +59,7 @@ ___
 **● name**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:164](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L164)*
+*Defined in [types.ts:157](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L157)*
 
 ___
 <a id="outputs"></a>
@@ -68,7 +68,7 @@ ___
 
 **● outputs**: *`any`[]*
 
-*Defined in [types.ts:166](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L166)*
+*Defined in [types.ts:159](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L159)*
 
 ___
 <a id="payable"></a>
@@ -78,7 +78,7 @@ ___
 **● payable**: * `undefined` &#124; `true` &#124; `false`
 *
 
-*Defined in [types.ts:167](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L167)*
+*Defined in [types.ts:160](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L160)*
 
 ___
 <a id="statemutability"></a>
@@ -88,7 +88,7 @@ ___
 **● stateMutability**: * `Web3.ConstructorStateMutability` &#124; `string`
 *
 
-*Defined in [types.ts:170](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L170)*
+*Defined in [types.ts:163](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L163)*
 
 ___
 <a id="type"></a>
@@ -98,7 +98,7 @@ ___
 **● type**: * `AbiType` &#124; `string`
 *
 
-*Defined in [types.ts:163](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L163)*
+*Defined in [types.ts:156](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L156)*
 
 ___
 

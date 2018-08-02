@@ -52,7 +52,7 @@
 
 ⊕ **new OpenSeaPort**(provider: *`Provider`*, apiConfig?: *[OpenSeaAPIConfig](../interfaces/openseaapiconfig.md)*, logger?: * `undefined` &#124; `function`*): [OpenSeaPort](openseaport.md)
 
-*Defined in [seaport.ts:26](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L26)*
+*Defined in [seaport.ts:26](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L26)*
 
 **Parameters:**
 
@@ -74,7 +74,7 @@ ___
 
 **● api**: *[OpenSeaAPI](openseaapi.md)*
 
-*Defined in [seaport.ts:22](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L22)*
+*Defined in [seaport.ts:22](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L22)*
 
 ___
 <a id="logger"></a>
@@ -83,7 +83,7 @@ ___
 
 **● logger**: *`function`*
 
-*Defined in [seaport.ts:21](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L21)*
+*Defined in [seaport.ts:21](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L21)*
 
 #### Type declaration
 ▸(arg: *`string`*): `void`
@@ -103,7 +103,7 @@ ___
 
 **● web3**: *`Web3`*
 
-*Defined in [seaport.ts:20](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L20)*
+*Defined in [seaport.ts:20](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L20)*
 
 ___
 
@@ -115,7 +115,7 @@ ___
 
 ▸ **_atomicMatch**(__namedParameters: *`object`*): `Promise`<`string`>
 
-*Defined in [seaport.ts:542](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L542)*
+*Defined in [seaport.ts:535](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L535)*
 
 Helper methods
 
@@ -134,7 +134,7 @@ ___
 
 ▸ **_getProxy**(accountAddress: *`string`*): `Promise`< `string` &#124; `null`>
 
-*Defined in [seaport.ts:660](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L660)*
+*Defined in [seaport.ts:653](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L653)*
 
 **Parameters:**
 
@@ -151,7 +151,7 @@ ___
 
 ▸ **_getTokenBalance**(__namedParameters: *`object`*): `Promise`<`BigNumber`>
 
-*Defined in [seaport.ts:797](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L797)*
+*Defined in [seaport.ts:790](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L790)*
 
 **Parameters:**
 
@@ -168,7 +168,7 @@ ___
 
 ▸ **_initializeProxy**(accountAddress: *`string`*): `Promise`<`string`>
 
-*Defined in [seaport.ts:674](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L674)*
+*Defined in [seaport.ts:667](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L667)*
 
 **Parameters:**
 
@@ -185,7 +185,7 @@ ___
 
 ▸ **_signOrder**(order: *`object`*): `Promise`<`ECSignature`>
 
-*Defined in [seaport.ts:857](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L857)*
+*Defined in [seaport.ts:850](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L850)*
 
 **Parameters:**
 
@@ -202,7 +202,7 @@ ___
 
 ▸ **_validateAndPostOrder**(order: *[Order](../interfaces/order.md)*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in [seaport.ts:814](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L814)*
+*Defined in [seaport.ts:807](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L807)*
 
 **Parameters:**
 
@@ -219,7 +219,7 @@ ___
 
 ▸ **_validateBuyOrderParameters**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [seaport.ts:746](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L746)*
+*Defined in [seaport.ts:739](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L739)*
 
 **Parameters:**
 
@@ -236,7 +236,7 @@ ___
 
 ▸ **_validateSellOrderParameters**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [seaport.ts:694](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L694)*
+*Defined in [seaport.ts:687](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L687)*
 
 **Parameters:**
 
@@ -253,7 +253,7 @@ ___
 
 ▸ **addListener**(event: *[EventType](../enums/eventtype.md)*, listener: *`function`*, once?: *`boolean`*): `EventSubscription`
 
-*Defined in [seaport.ts:59](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L59)*
+*Defined in [seaport.ts:59](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L59)*
 
 Add a listener to a marketplace event
 
@@ -274,7 +274,7 @@ ___
 
 ▸ **approveFungibleToken**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [seaport.ts:498](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L498)*
+*Defined in [seaport.ts:491](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L491)*
 
 **Parameters:**
 
@@ -291,7 +291,7 @@ ___
 
 ▸ **approveNonFungibleToken**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [seaport.ts:378](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L378)*
+*Defined in [seaport.ts:373](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L373)*
 
 **Parameters:**
 
@@ -308,7 +308,7 @@ ___
 
 ▸ **cancelOrder**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [seaport.ts:339](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L339)*
+*Defined in [seaport.ts:335](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L335)*
 
 **Parameters:**
 
@@ -325,7 +325,7 @@ ___
 
 ▸ **createBuyOrder**(__namedParameters: *`object`*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in [seaport.ts:156](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L156)*
+*Defined in [seaport.ts:152](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L152)*
 
 Create a buy order to make an offer on an asset. Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer. If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` and `ApproveCurrencyComplete` events before and after asking for approval.
 
@@ -344,7 +344,7 @@ ___
 
 ▸ **createSellOrder**(__namedParameters: *`object`*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in [seaport.ts:229](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L229)*
+*Defined in [seaport.ts:226](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L226)*
 
 Create a sell order to auction an asset. Will throw a 'You do not own this asset' error if the maker doesn't have the asset. If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` and `ApproveAllAssetsComplete` events (or ApproveAsset and ApproveAssetComplete if the contract doesn't support approve-all) before and after asking for approval.
 
@@ -363,7 +363,7 @@ ___
 
 ▸ **fulfillOrder**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [seaport.ts:304](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L304)*
+*Defined in [seaport.ts:302](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L302)*
 
 **Parameters:**
 
@@ -380,7 +380,7 @@ ___
 
 ▸ **getApprovedTokenCount**(__namedParameters: *`object`*): `Promise`<`BigNumber`>
 
-*Defined in [seaport.ts:364](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L364)*
+*Defined in [seaport.ts:359](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L359)*
 
 **Parameters:**
 
@@ -397,7 +397,7 @@ ___
 
 ▸ **getCurrentPrice**(order: *[Order](../interfaces/order.md)*): `Promise`<`BigNumber`>
 
-*Defined in [seaport.ts:521](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L521)*
+*Defined in [seaport.ts:514](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L514)*
 
 Gets the price for the order using the contract
 
@@ -416,7 +416,7 @@ ___
 
 ▸ **removeAllListeners**(event?: *[EventType](../enums/eventtype.md)*): `void`
 
-*Defined in [seaport.ts:85](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L85)*
+*Defined in [seaport.ts:85](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L85)*
 
 Remove all event listeners. Good idea to call this when you're unmounting a component that listens to events to make UI updates
 
@@ -435,7 +435,7 @@ ___
 
 ▸ **removeListener**(subscription: *`EventSubscription`*): `void`
 
-*Defined in [seaport.ts:71](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L71)*
+*Defined in [seaport.ts:71](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L71)*
 
 Remove an event listener, included here for completeness. Simply calls `.remove()` on a subscription
 
@@ -454,7 +454,7 @@ ___
 
 ▸ **unwrapWeth**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [seaport.ts:125](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L125)*
+*Defined in [seaport.ts:123](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L123)*
 
 Unwrap W-ETH into ETH. Emits the `UnrapWeth` event when the transaction is ready, and the `UnwrapWethComplete` event when the blockchain confirms it.
 
@@ -473,7 +473,7 @@ ___
 
 ▸ **wrapEth**(__namedParameters: *`object`*): `Promise`<`void`>
 
-*Defined in [seaport.ts:95](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/seaport.ts#L95)*
+*Defined in [seaport.ts:95](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/seaport.ts#L95)*
 
 Wrap ETH into W-ETH. W-ETH is needed for placing buy orders (making offers). Emits the `WrapEth` event when the transaction is ready, and the `WrapEthComplete` event when the blockchain confirms it.
 

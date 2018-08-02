@@ -138,4 +138,5 @@ export declare class OpenSeaPort {
     private _makeMatchingOrder;
     private _getSchema;
     private _dispatch;
+    private _confirmTransaction;
 }

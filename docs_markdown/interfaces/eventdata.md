@@ -13,6 +13,7 @@
 * [accountAddress](eventdata.md#accountaddress)
 * [amount](eventdata.md#amount)
 * [buy](eventdata.md#buy)
+* [event](eventdata.md#event)
 * [order](eventdata.md#order)
 * [proxyAddress](eventdata.md#proxyaddress)
 * [sell](eventdata.md#sell)
@@ -26,11 +27,12 @@
 
 <a id="accountaddress"></a>
 
-###  accountAddress
+### `<Optional>` accountAddress
 
-**● accountAddress**: *`string`*
+**● accountAddress**: * `undefined` &#124; `string`
+*
 
-*Defined in [types.ts:44](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L44)*
+*Defined in [types.ts:36](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L36)*
 
 ___
 <a id="amount"></a>
@@ -39,7 +41,7 @@ ___
 
 **● amount**: *`BigNumber`*
 
-*Defined in [types.ts:48](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L48)*
+*Defined in [types.ts:38](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L38)*
 
 ___
 <a id="buy"></a>
@@ -48,7 +50,16 @@ ___
 
 **● buy**: *[Order](order.md)*
 
-*Defined in [types.ts:53](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L53)*
+*Defined in [types.ts:46](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L46)*
+
+___
+<a id="event"></a>
+
+### `<Optional>` event
+
+**● event**: *[EventType](../enums/eventtype.md)*
+
+*Defined in [types.ts:43](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L43)*
 
 ___
 <a id="order"></a>
@@ -57,7 +68,7 @@ ___
 
 **● order**: *[Order](order.md)*
 
-*Defined in [types.ts:52](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L52)*
+*Defined in [types.ts:45](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L45)*
 
 ___
 <a id="proxyaddress"></a>
@@ -67,7 +78,7 @@ ___
 **● proxyAddress**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:46](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L46)*
+*Defined in [types.ts:37](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L37)*
 
 ___
 <a id="sell"></a>
@@ -76,7 +87,7 @@ ___
 
 **● sell**: *[Order](order.md)*
 
-*Defined in [types.ts:54](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L54)*
+*Defined in [types.ts:47](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L47)*
 
 ___
 <a id="tokenaddress"></a>
@@ -86,7 +97,7 @@ ___
 **● tokenAddress**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:49](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L49)*
+*Defined in [types.ts:39](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L39)*
 
 ___
 <a id="tokenid"></a>
@@ -96,7 +107,7 @@ ___
 **● tokenId**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:50](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L50)*
+*Defined in [types.ts:40](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L40)*
 
 ___
 <a id="transactionhash"></a>
@@ -106,7 +117,7 @@ ___
 **● transactionHash**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:47](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L47)*
+*Defined in [types.ts:42](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L42)*
 
 ___
 

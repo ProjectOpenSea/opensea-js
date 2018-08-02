@@ -16,38 +16,31 @@ export {
 }
 
 export enum EventType {
+  TransactionCreated = "TransactionCreated",
+  TransactionConfirmed = "TransactionConfirmed",
+
   InitializeAccount = "InitializeAccount",
-  InitializeAccountComplete = "InitializeAccountComplete",
 
   WrapEth = "WrapEth",
-  WrapEthComplete = "WrapEthComplete",
   UnwrapWeth = "UnwrapWeth",
-  UnwrapWethComplete = "UnwrapWethComplete",
-
-  ApproveAsset = "ApproveAsset",
-  ApproveAssetComplete = "ApproveAssetComplete",
 
   ApproveCurrency = "ApproveCurrency",
-  ApproveCurrencyComplete = "ApproveCurrencyComplete",
-
+  ApproveAsset = "ApproveAsset",
   ApproveAllAssets = "ApproveAllAssets",
-  ApproveAllAssetsComplete = "ApproveAllAssetsComplete",
 
   MatchOrders = "MatchOrders",
-  MatchOrdersComplete = "MatchOrdersComplete",
-
   CancelOrder = "CancelOrder",
-  CancelOrderComplete = "CancelOrderComplete",
 }
 
 export interface EventData {
-  accountAddress: string
-
+  accountAddress?: string
   proxyAddress?: string
-  transactionHash?: string
   amount?: BigNumber
   tokenAddress?: string
   tokenId?: string
+
+  transactionHash?: string
+  event?: EventType
 
   order?: Order
   buy?: Order

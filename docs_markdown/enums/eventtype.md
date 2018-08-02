@@ -7,21 +7,15 @@
 ### Enumeration members
 
 * [ApproveAllAssets](eventtype.md#approveallassets)
-* [ApproveAllAssetsComplete](eventtype.md#approveallassetscomplete)
 * [ApproveAsset](eventtype.md#approveasset)
-* [ApproveAssetComplete](eventtype.md#approveassetcomplete)
 * [ApproveCurrency](eventtype.md#approvecurrency)
-* [ApproveCurrencyComplete](eventtype.md#approvecurrencycomplete)
 * [CancelOrder](eventtype.md#cancelorder)
-* [CancelOrderComplete](eventtype.md#cancelordercomplete)
 * [InitializeAccount](eventtype.md#initializeaccount)
-* [InitializeAccountComplete](eventtype.md#initializeaccountcomplete)
 * [MatchOrders](eventtype.md#matchorders)
-* [MatchOrdersComplete](eventtype.md#matchorderscomplete)
+* [TransactionConfirmed](eventtype.md#transactionconfirmed)
+* [TransactionCreated](eventtype.md#transactioncreated)
 * [UnwrapWeth](eventtype.md#unwrapweth)
-* [UnwrapWethComplete](eventtype.md#unwrapwethcomplete)
 * [WrapEth](eventtype.md#wrapeth)
-* [WrapEthComplete](eventtype.md#wrapethcomplete)
 
 ---
 
@@ -33,16 +27,7 @@
 
 **ApproveAllAssets**:  = "ApproveAllAssets"
 
-*Defined in [types.ts:33](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L33)*
-
-___
-<a id="approveallassetscomplete"></a>
-
-###  ApproveAllAssetsComplete
-
-**ApproveAllAssetsComplete**:  = "ApproveAllAssetsComplete"
-
-*Defined in [types.ts:34](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L34)*
+*Defined in [types.ts:29](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L29)*
 
 ___
 <a id="approveasset"></a>
@@ -51,16 +36,7 @@ ___
 
 **ApproveAsset**:  = "ApproveAsset"
 
-*Defined in [types.ts:27](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L27)*
-
-___
-<a id="approveassetcomplete"></a>
-
-###  ApproveAssetComplete
-
-**ApproveAssetComplete**:  = "ApproveAssetComplete"
-
-*Defined in [types.ts:28](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L28)*
+*Defined in [types.ts:28](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L28)*
 
 ___
 <a id="approvecurrency"></a>
@@ -69,16 +45,7 @@ ___
 
 **ApproveCurrency**:  = "ApproveCurrency"
 
-*Defined in [types.ts:30](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L30)*
-
-___
-<a id="approvecurrencycomplete"></a>
-
-###  ApproveCurrencyComplete
-
-**ApproveCurrencyComplete**:  = "ApproveCurrencyComplete"
-
-*Defined in [types.ts:31](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L31)*
+*Defined in [types.ts:27](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L27)*
 
 ___
 <a id="cancelorder"></a>
@@ -87,16 +54,7 @@ ___
 
 **CancelOrder**:  = "CancelOrder"
 
-*Defined in [types.ts:39](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L39)*
-
-___
-<a id="cancelordercomplete"></a>
-
-###  CancelOrderComplete
-
-**CancelOrderComplete**:  = "CancelOrderComplete"
-
-*Defined in [types.ts:40](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L40)*
+*Defined in [types.ts:32](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L32)*
 
 ___
 <a id="initializeaccount"></a>
@@ -105,16 +63,7 @@ ___
 
 **InitializeAccount**:  = "InitializeAccount"
 
-*Defined in [types.ts:19](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L19)*
-
-___
-<a id="initializeaccountcomplete"></a>
-
-###  InitializeAccountComplete
-
-**InitializeAccountComplete**:  = "InitializeAccountComplete"
-
-*Defined in [types.ts:20](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L20)*
+*Defined in [types.ts:22](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L22)*
 
 ___
 <a id="matchorders"></a>
@@ -123,16 +72,25 @@ ___
 
 **MatchOrders**:  = "MatchOrders"
 
-*Defined in [types.ts:36](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L36)*
+*Defined in [types.ts:31](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L31)*
 
 ___
-<a id="matchorderscomplete"></a>
+<a id="transactionconfirmed"></a>
 
-###  MatchOrdersComplete
+###  TransactionConfirmed
 
-**MatchOrdersComplete**:  = "MatchOrdersComplete"
+**TransactionConfirmed**:  = "TransactionConfirmed"
 
-*Defined in [types.ts:37](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L37)*
+*Defined in [types.ts:20](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L20)*
+
+___
+<a id="transactioncreated"></a>
+
+###  TransactionCreated
+
+**TransactionCreated**:  = "TransactionCreated"
+
+*Defined in [types.ts:19](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L19)*
 
 ___
 <a id="unwrapweth"></a>
@@ -141,16 +99,7 @@ ___
 
 **UnwrapWeth**:  = "UnwrapWeth"
 
-*Defined in [types.ts:24](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L24)*
-
-___
-<a id="unwrapwethcomplete"></a>
-
-###  UnwrapWethComplete
-
-**UnwrapWethComplete**:  = "UnwrapWethComplete"
-
-*Defined in [types.ts:25](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L25)*
+*Defined in [types.ts:25](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L25)*
 
 ___
 <a id="wrapeth"></a>
@@ -159,16 +108,7 @@ ___
 
 **WrapEth**:  = "WrapEth"
 
-*Defined in [types.ts:22](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L22)*
-
-___
-<a id="wrapethcomplete"></a>
-
-###  WrapEthComplete
-
-**WrapEthComplete**:  = "WrapEthComplete"
-
-*Defined in [types.ts:23](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L23)*
+*Defined in [types.ts:24](https://github.com/ProjectOpenSea/opensea-js/blob/6a0f90f/src/types.ts#L24)*
 
 ___
 
