@@ -67,7 +67,8 @@ export class OpenSeaAPI {
       `${ORDERBOOK_PATH}/orders`,
       {
         ...query,
-        page
+        limit: this.pageSize,
+        offset: (page - 1) * this.pageSize
       }
     )
 

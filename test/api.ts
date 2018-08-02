@@ -37,6 +37,14 @@ suite('api', () => {
     assert.isAtLeast(count, orders.length)
   })
 
+  test('API can change page size', async () => {
+    const defaultPageSize = mainApi.pageSize
+    mainApi.pageSize = 7
+    const {orders, count} = await mainApi.getOrders()
+    assert.equal(orders.length, 7)
+    mainApi.pageSize = defaultPageSize
+  })
+
   if (ORDERBOOK_VERSION > 0) {
     test('API orderbook paginates', async () => {
       const {orders, count} = await mainApi.getOrders()
