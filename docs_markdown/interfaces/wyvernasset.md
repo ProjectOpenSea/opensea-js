@@ -23,7 +23,7 @@
 
 **● address**: *`string`*
 
-*Defined in [types.ts:70](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L70)*
+*Defined in [types.ts:80](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L80)*
 
 ___
 <a id="id"></a>
@@ -32,7 +32,7 @@ ___
 
 **● id**: *`string`*
 
-*Defined in [types.ts:69](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L69)*
+*Defined in [types.ts:79](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L79)*
 
 ___
 

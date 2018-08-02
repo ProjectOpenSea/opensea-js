@@ -1,6 +1,6 @@
 import { OpenSeaPort } from './seaport'
 import { OpenSeaAPI } from './api'
-import { Network } from './types'
+import { Network, EventData, EventType } from './types'
 import { orderToJSON, orderFromJSON } from './wyvern'
 
 /**
@@ -15,8 +15,14 @@ import { orderToJSON, orderFromJSON } from './wyvern'
  */
 
 export {
+  // Main SDK export:
   OpenSeaPort,
+  // So the API could be used separately:
   OpenSeaAPI,
+  // Useful for serializing and deserializing orders:
   orderToJSON, orderFromJSON,
-  Network
+  // Types to help initialize SDK and listen to events.
+  // Can also be imported using e.g.
+  //   import { EventType } from 'opensea-js/types'
+  EventData, EventType, Network
 }

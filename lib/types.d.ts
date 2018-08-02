@@ -2,6 +2,13 @@ import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { Network, HowToCall, SaleKind, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
 export { Network, HowToCall, SaleKind, ECSignature };
+/**
+ * Events emitted by the SDK. There are two types:
+ * 1. transaction events, which tell you when a new transaction was
+ *    created, confirmed, or failed
+ * 2. pre-transaction events, which are named (like "WrapEth") and indicate
+ *    that Web3 is asking for a signature on a transaction
+ */
 export declare enum EventType {
     TransactionCreated = "TransactionCreated",
     TransactionConfirmed = "TransactionConfirmed",
@@ -15,6 +22,9 @@ export declare enum EventType {
     MatchOrders = "MatchOrders",
     CancelOrder = "CancelOrder"
 }
+/**
+ * Data that gets sent with each EventType
+ */
 export interface EventData {
     accountAddress?: string;
     proxyAddress?: string;

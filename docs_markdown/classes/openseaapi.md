@@ -33,7 +33,7 @@
 
 ⊕ **new OpenSeaAPI**(__namedParameters: *`object`*): [OpenSeaAPI](openseaapi.md)
 
-*Defined in [api.ts:17](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/api.ts#L17)*
+*Defined in [api.ts:17](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/api.ts#L17)*
 
 **Parameters:**
 
@@ -53,7 +53,7 @@ ___
 
 **● apiBaseUrl**: *`string`*
 
-*Defined in [api.ts:14](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/api.ts#L14)*
+*Defined in [api.ts:14](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/api.ts#L14)*
 
 ___
 <a id="pagesize"></a>
@@ -62,7 +62,7 @@ ___
 
 **● pageSize**: *`number`* = 20
 
-*Defined in [api.ts:15](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/api.ts#L15)*
+*Defined in [api.ts:15](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/api.ts#L15)*
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 ▸ **getOrder**(query: *`Partial`<[OrderJSON](../interfaces/orderjson.md)>*): `Promise`< [Order](../interfaces/order.md) &#124; `null`>
 
-*Defined in [api.ts:43](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/api.ts#L43)*
+*Defined in [api.ts:43](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/api.ts#L43)*
 
 **Parameters:**
 
@@ -91,7 +91,7 @@ ___
 
 ▸ **getOrders**(query?: *`Partial`<[OrderJSON](../interfaces/orderjson.md)>*, page?: *`number`*): `Promise`<`object`>
 
-*Defined in [api.ts:61](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/api.ts#L61)*
+*Defined in [api.ts:61](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/api.ts#L61)*
 
 **Parameters:**
 
@@ -109,7 +109,7 @@ ___
 
 ▸ **postOrder**(order: *[OrderJSON](../interfaces/orderjson.md)*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in [api.ts:33](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/api.ts#L33)*
+*Defined in [api.ts:33](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/api.ts#L33)*
 
 **Parameters:**
 

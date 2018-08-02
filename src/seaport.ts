@@ -25,6 +25,16 @@ export class OpenSeaPort {
   private wyvernProtocol: WyvernProtocol
   private emitter: EventEmitter
 
+  /**
+   * Your very own seaport.
+   * Create a new instance of OpenSeaJS.
+   * @param provider Web3 Provider to use for transactions. For example:
+   *  const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
+   * @param apiConfig configuration options, including `networkName: Network`
+   *  and `gasPrice` (defaults to 100,000)
+   * @param logger logger, optional, a function that will be called with debugging
+   *  information
+   */
   constructor(provider: Web3.Provider, apiConfig: OpenSeaAPIConfig = {}, logger?: (arg: string) => void) {
 
     apiConfig.networkName = apiConfig.networkName || Network.Main
@@ -90,7 +100,9 @@ export class OpenSeaPort {
    * Wrap ETH into W-ETH.
    * W-ETH is needed for placing buy orders (making offers).
    * Emits the `WrapEth` event when the transaction is ready, and the `WrapEthComplete` event when the blockchain confirms it.
-   * @param param0 Object containing the amount in ETH to wrap and the user's account address
+   * @param param0 __namedParameters Object
+   * @param amountInEth How much ether to wrap
+   * @param accountAddress Address of the user's wallet containing the ether
    */
   public async wrapEth(
       { amountInEth, accountAddress }:
@@ -116,8 +128,10 @@ export class OpenSeaPort {
 
   /**
    * Unwrap W-ETH into ETH.
-   * Emits the `UnrapWeth` event when the transaction is ready, and the `UnwrapWethComplete` event when the blockchain confirms it.
-   * @param param0 Object containing the amount in W-ETH to unwrap and the user's account address
+   * Emits the `UnwrapWeth` event when the transaction is ready, and the `UnwrapWethComplete` event when the blockchain confirms it.
+   * @param param0 __namedParameters Object
+   * @param amountInEth How much W-ETH to unwrap
+   * @param accountAddress Address of the user's wallet containing the W-ETH
    */
   public async unwrapWeth(
       { amountInEth, accountAddress }:
@@ -148,8 +162,8 @@ export class OpenSeaPort {
    * @param param0 Object containing the token id, token address, user account address, amount to offer, and expiration time for the order. An expiration time of 0 means "never expire."
    */
   public async createBuyOrder(
-    { tokenId, tokenAddress, accountAddress, amountInEth, expirationTime = 0 }:
-    { tokenId: string; tokenAddress: string; accountAddress: string; amountInEth: number; expirationTime?: number }
+      { tokenId, tokenAddress, accountAddress, amountInEth, expirationTime = 0 }:
+      { tokenId: string; tokenAddress: string; accountAddress: string; amountInEth: number; expirationTime?: number }
     ): Promise<Order> {
 
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
@@ -222,8 +236,8 @@ export class OpenSeaPort {
    * @param param0 Object containing the token id, token address, user account address, start amount of auction, end amount (optional), and expiration time for the order. An expiration time of 0 means "never expire."
    */
   public async createSellOrder(
-    { tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
-    { tokenId: string; tokenAddress: string; accountAddress: string; startAmountInEth: number; endAmountInEth?: number; expirationTime?: number }
+      { tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
+      { tokenId: string; tokenAddress: string; accountAddress: string; startAmountInEth: number; endAmountInEth?: number; expirationTime?: number }
     ): Promise<Order> {
 
     const schema = this._getSchema()
@@ -377,9 +391,9 @@ export class OpenSeaPort {
 
     if (!proxyAddress) {
       proxyAddress = await this._getProxy(accountAddress)
-    }
-    if (!proxyAddress) {
-      throw new Error('Uninitialized account')
+      if (!proxyAddress) {
+        throw new Error('Uninitialized account')
+      }
     }
 
     // NOTE:

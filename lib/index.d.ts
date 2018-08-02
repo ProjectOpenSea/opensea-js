@@ -1,6 +1,6 @@
 import { OpenSeaPort } from './seaport';
 import { OpenSeaAPI } from './api';
-import { Network } from './types';
+import { Network, EventData, EventType } from './types';
 import { orderToJSON, orderFromJSON } from './wyvern';
 /**
  * Example setup:
@@ -12,4 +12,4 @@ import { orderToJSON, orderFromJSON } from './wyvern';
  *   networkName: Network.Main
  * })
  */
-export { OpenSeaPort, OpenSeaAPI, orderToJSON, orderFromJSON, Network };
+export { OpenSeaPort, OpenSeaAPI, orderToJSON, orderFromJSON, EventData, EventType, Network };

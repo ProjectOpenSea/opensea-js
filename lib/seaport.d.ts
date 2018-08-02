@@ -10,6 +10,16 @@ export declare class OpenSeaPort {
     private networkName;
     private wyvernProtocol;
     private emitter;
+    /**
+     * Your very own seaport.
+     * Create a new instance of OpenSeaJS.
+     * @param provider Web3 Provider to use for transactions. For example:
+     *  const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
+     * @param apiConfig configuration options, including `networkName: Network`
+     *  and `gasPrice` (defaults to 100,000)
+     * @param logger logger, optional, a function that will be called with debugging
+     *  information
+     */
     constructor(provider: Web3.Provider, apiConfig?: OpenSeaAPIConfig, logger?: (arg: string) => void);
     /**
      * Add a listener to a marketplace event
@@ -34,7 +44,9 @@ export declare class OpenSeaPort {
      * Wrap ETH into W-ETH.
      * W-ETH is needed for placing buy orders (making offers).
      * Emits the `WrapEth` event when the transaction is ready, and the `WrapEthComplete` event when the blockchain confirms it.
-     * @param param0 Object containing the amount in ETH to wrap and the user's account address
+     * @param param0 __namedParameters Object
+     * @param amountInEth How much ether to wrap
+     * @param accountAddress Address of the user's wallet containing the ether
      */
     wrapEth({ amountInEth, accountAddress }: {
         amountInEth: number;
@@ -42,8 +54,10 @@ export declare class OpenSeaPort {
     }): Promise<void>;
     /**
      * Unwrap W-ETH into ETH.
-     * Emits the `UnrapWeth` event when the transaction is ready, and the `UnwrapWethComplete` event when the blockchain confirms it.
-     * @param param0 Object containing the amount in W-ETH to unwrap and the user's account address
+     * Emits the `UnwrapWeth` event when the transaction is ready, and the `UnwrapWethComplete` event when the blockchain confirms it.
+     * @param param0 __namedParameters Object
+     * @param amountInEth How much W-ETH to unwrap
+     * @param accountAddress Address of the user's wallet containing the W-ETH
      */
     unwrapWeth({ amountInEth, accountAddress }: {
         amountInEth: number;

@@ -2,6 +2,11 @@
 
 # Enumeration: EventType
 
+Events emitted by the SDK. There are two types:
+
+1.  transaction events, which tell you when a new transaction was created, confirmed, or failed
+2.  pre-transaction events, which are named (like "WrapEth") and indicate that Web3 is asking for a signature on a transaction
+
 ## Index
 
 ### Enumeration members
@@ -28,7 +33,7 @@
 
 **ApproveAllAssets**:  = "ApproveAllAssets"
 
-*Defined in [types.ts:30](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L30)*
+*Defined in [types.ts:37](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L37)*
 
 ___
 <a id="approveasset"></a>
@@ -37,7 +42,7 @@ ___
 
 **ApproveAsset**:  = "ApproveAsset"
 
-*Defined in [types.ts:29](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L29)*
+*Defined in [types.ts:36](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L36)*
 
 ___
 <a id="approvecurrency"></a>
@@ -46,7 +51,7 @@ ___
 
 **ApproveCurrency**:  = "ApproveCurrency"
 
-*Defined in [types.ts:28](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L28)*
+*Defined in [types.ts:35](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L35)*
 
 ___
 <a id="cancelorder"></a>
@@ -55,7 +60,7 @@ ___
 
 **CancelOrder**:  = "CancelOrder"
 
-*Defined in [types.ts:33](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L33)*
+*Defined in [types.ts:40](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L40)*
 
 ___
 <a id="initializeaccount"></a>
@@ -64,7 +69,7 @@ ___
 
 **InitializeAccount**:  = "InitializeAccount"
 
-*Defined in [types.ts:23](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L23)*
+*Defined in [types.ts:30](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L30)*
 
 ___
 <a id="matchorders"></a>
@@ -73,7 +78,7 @@ ___
 
 **MatchOrders**:  = "MatchOrders"
 
-*Defined in [types.ts:32](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L32)*
+*Defined in [types.ts:39](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L39)*
 
 ___
 <a id="transactionconfirmed"></a>
@@ -82,7 +87,7 @@ ___
 
 **TransactionConfirmed**:  = "TransactionConfirmed"
 
-*Defined in [types.ts:20](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L20)*
+*Defined in [types.ts:27](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L27)*
 
 ___
 <a id="transactioncreated"></a>
@@ -91,7 +96,7 @@ ___
 
 **TransactionCreated**:  = "TransactionCreated"
 
-*Defined in [types.ts:19](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L19)*
+*Defined in [types.ts:26](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L26)*
 
 ___
 <a id="transactionfailed"></a>
@@ -100,7 +105,7 @@ ___
 
 **TransactionFailed**:  = "TransactionFailed"
 
-*Defined in [types.ts:21](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L21)*
+*Defined in [types.ts:28](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L28)*
 
 ___
 <a id="unwrapweth"></a>
@@ -109,7 +114,7 @@ ___
 
 **UnwrapWeth**:  = "UnwrapWeth"
 
-*Defined in [types.ts:26](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L26)*
+*Defined in [types.ts:33](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L33)*
 
 ___
 <a id="wrapeth"></a>
@@ -118,7 +123,7 @@ ___
 
 **WrapEth**:  = "WrapEth"
 
-*Defined in [types.ts:25](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L25)*
+*Defined in [types.ts:32](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L32)*
 
 ___
 

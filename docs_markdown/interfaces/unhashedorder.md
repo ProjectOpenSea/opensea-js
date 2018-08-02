@@ -106,7 +106,7 @@ ___
 
 *Overrides Order.feeMethod*
 
-*Defined in [types.ts:74](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L74)*
+*Defined in [types.ts:84](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L84)*
 
 ___
 <a id="feerecipient"></a>
@@ -128,7 +128,7 @@ ___
 
 *Overrides Order.howToCall*
 
-*Defined in [types.ts:77](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L77)*
+*Defined in [types.ts:87](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L87)*
 
 ___
 <a id="listingtime"></a>
@@ -181,7 +181,7 @@ ___
 
 **● metadata**: *`object`*
 
-*Defined in [types.ts:79](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L79)*
+*Defined in [types.ts:89](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L89)*
 
 #### Type declaration
 
@@ -220,7 +220,7 @@ ___
 
 *Overrides Order.saleKind*
 
-*Defined in [types.ts:76](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L76)*
+*Defined in [types.ts:86](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L86)*
 
 ___
 <a id="salt"></a>
@@ -242,7 +242,7 @@ ___
 
 *Overrides Order.side*
 
-*Defined in [types.ts:75](https://github.com/ProjectOpenSea/opensea-js/blob/cc0b3c7/src/types.ts#L75)*
+*Defined in [types.ts:85](https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/types.ts#L85)*
 
 ___
 <a id="staticextradata"></a>
