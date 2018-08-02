@@ -48,20 +48,17 @@ To retrieve a list of offers and auction on an asset, you can use an instance of
 
 ```JavaScript
 import { OrderSide } from 'opensea-js/types'
+
 // Get offers
 const { orders, count } = await seaport.api.getOrders({
   tokenAddress, tokenId,
-  side: OrderSide.Buy
+  side: OrderSide.Buy // == 0
 })
+
 // Get page 2 of all auctions
 const { orders, count } = await seaport.api.getOrders({
   tokenAddress, tokenId,
-  side: OrderSide.Sell
-}, 2)
-// Get page 2 of all auctions
-const { orders, count } = await seaport.api.getOrders({
-  tokenAddress, tokenId,
-  side: OrderSide.Sell
+  side: OrderSide.Sell // == 1
 }, 2)
 ```
 

@@ -94,20 +94,17 @@
 </code></pre>
 				<p>To retrieve a list of offers and auction on an asset, you can use an instance of the <code>OpenSeaAPI</code> exposed on the client:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OrderSide } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js/types'</span>
+
 <span class="hljs-comment">// Get offers</span>
 <span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
   tokenAddress, tokenId,
-  <span class="hljs-attr">side</span>: OrderSide.Buy
+  <span class="hljs-attr">side</span>: OrderSide.Buy <span class="hljs-comment">// == 0</span>
 })
+
 <span class="hljs-comment">// Get page 2 of all auctions</span>
 <span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
   tokenAddress, tokenId,
-  <span class="hljs-attr">side</span>: OrderSide.Sell
-}, <span class="hljs-number">2</span>)
-<span class="hljs-comment">// Get page 2 of all auctions</span>
-<span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
-  tokenAddress, tokenId,
-  <span class="hljs-attr">side</span>: OrderSide.Sell
+  <span class="hljs-attr">side</span>: OrderSide.Sell <span class="hljs-comment">// == 1</span>
 }, <span class="hljs-number">2</span>)
 </code></pre>
 				<h3 id="learning-more">Learning More</h3>
