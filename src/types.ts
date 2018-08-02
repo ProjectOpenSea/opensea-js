@@ -18,6 +18,7 @@ export {
 export enum EventType {
   TransactionCreated = "TransactionCreated",
   TransactionConfirmed = "TransactionConfirmed",
+  TransactionFailed = "TransactionFailed",
 
   InitializeAccount = "InitializeAccount",
 
@@ -41,6 +42,7 @@ export interface EventData {
 
   transactionHash?: string
   event?: EventType
+  error?: Error
 
   order?: Order
   buy?: Order

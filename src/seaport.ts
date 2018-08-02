@@ -921,8 +921,15 @@ export class OpenSeaPort {
 
     const transactionEventData = { transactionHash, event }
 
-    this._dispatch(EventType.TransactionCreated, transactionEventData)
-    await confirmTransaction(this.web3, transactionHash)
-    this._dispatch(EventType.TransactionConfirmed, transactionEventData)
+    try {
+      this._dispatch(EventType.TransactionCreated, transactionEventData)
+      await confirmTransaction(this.web3, transactionHash)
+      this._dispatch(EventType.TransactionConfirmed, transactionEventData)
+    } catch (error) {
+      this._dispatch(EventType.TransactionFailed, {
+        ...transactionEventData, error
+      })
+      throw error
+    }
   }
 }
