@@ -1,13 +1,14 @@
 import * as Web3 from 'web3';
+import { OpenSeaAPI } from './api';
 import { ECSignature, OpenSeaAPIConfig, UnhashedOrder, Order, PartialReadonlyContractAbi, EventType, EventData } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
     web3: Web3;
     logger: (arg: string) => void;
+    readonly api: OpenSeaAPI;
     private networkName;
     private wyvernProtocol;
-    private api;
     private emitter;
     constructor(provider: Web3.Provider, apiConfig?: OpenSeaAPIConfig, logger?: (arg: string) => void);
     /**

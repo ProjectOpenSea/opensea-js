@@ -19,16 +19,19 @@ export class OpenSeaPort {
 
   public web3: Web3
   public logger: (arg: string) => void
+  public readonly api: OpenSeaAPI
 
   private networkName: Network
   private wyvernProtocol: WyvernProtocol
-  private api: OpenSeaAPI
   private emitter: EventEmitter
 
   constructor(provider: Web3.Provider, apiConfig: OpenSeaAPIConfig = {}, logger?: (arg: string) => void) {
 
     apiConfig.networkName = apiConfig.networkName || Network.Main
     apiConfig.gasPrice = apiConfig.gasPrice || makeBigNumber(100000)
+
+    // API config
+    this.api = new OpenSeaAPI(apiConfig)
 
     // Web3 Config
     this.web3 = new Web3(provider)
@@ -39,9 +42,6 @@ export class OpenSeaPort {
       network: this.networkName,
       gasPrice: apiConfig.gasPrice,
     })
-
-    // API config
-    this.api = new OpenSeaAPI(apiConfig)
 
     // Emit events
     this.emitter = new EventEmitter()

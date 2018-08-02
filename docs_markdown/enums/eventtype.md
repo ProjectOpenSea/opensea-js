@@ -31,7 +31,7 @@
 
 **ApproveAllAssets**:  = "ApproveAllAssets"
 
-*Defined in [types.ts:30](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L30)*
+*Defined in [types.ts:30](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L30)*
 
 ___
 <a id="approveallassetscomplete"></a>
@@ -40,7 +40,7 @@ ___
 
 **ApproveAllAssetsComplete**:  = "ApproveAllAssetsComplete"
 
-*Defined in [types.ts:31](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L31)*
+*Defined in [types.ts:31](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L31)*
 
 ___
 <a id="approveasset"></a>
@@ -49,7 +49,7 @@ ___
 
 **ApproveAsset**:  = "ApproveAsset"
 
-*Defined in [types.ts:27](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L27)*
+*Defined in [types.ts:27](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L27)*
 
 ___
 <a id="approveassetcomplete"></a>
@@ -58,7 +58,7 @@ ___
 
 **ApproveAssetComplete**:  = "ApproveAssetComplete"
 
-*Defined in [types.ts:28](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L28)*
+*Defined in [types.ts:28](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L28)*
 
 ___
 <a id="cancelorder"></a>
@@ -67,7 +67,7 @@ ___
 
 **CancelOrder**:  = "CancelOrder"
 
-*Defined in [types.ts:36](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L36)*
+*Defined in [types.ts:36](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L36)*
 
 ___
 <a id="cancelordercomplete"></a>
@@ -76,7 +76,7 @@ ___
 
 **CancelOrderComplete**:  = "CancelOrderComplete"
 
-*Defined in [types.ts:37](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L37)*
+*Defined in [types.ts:37](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L37)*
 
 ___
 <a id="initializeaccount"></a>
@@ -85,7 +85,7 @@ ___
 
 **InitializeAccount**:  = "InitializeAccount"
 
-*Defined in [types.ts:19](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L19)*
+*Defined in [types.ts:19](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L19)*
 
 ___
 <a id="initializeaccountcomplete"></a>
@@ -94,7 +94,7 @@ ___
 
 **InitializeAccountComplete**:  = "InitializeAccountComplete"
 
-*Defined in [types.ts:20](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L20)*
+*Defined in [types.ts:20](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L20)*
 
 ___
 <a id="matchorders"></a>
@@ -103,7 +103,7 @@ ___
 
 **MatchOrders**:  = "MatchOrders"
 
-*Defined in [types.ts:33](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L33)*
+*Defined in [types.ts:33](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L33)*
 
 ___
 <a id="matchorderscomplete"></a>
@@ -112,7 +112,7 @@ ___
 
 **MatchOrdersComplete**:  = "MatchOrdersComplete"
 
-*Defined in [types.ts:34](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L34)*
+*Defined in [types.ts:34](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L34)*
 
 ___
 <a id="unwrapweth"></a>
@@ -121,7 +121,7 @@ ___
 
 **UnwrapWeth**:  = "UnwrapWeth"
 
-*Defined in [types.ts:24](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L24)*
+*Defined in [types.ts:24](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L24)*
 
 ___
 <a id="unwrapwethcomplete"></a>
@@ -130,7 +130,7 @@ ___
 
 **UnwrapWethComplete**:  = "UnwrapWethComplete"
 
-*Defined in [types.ts:25](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L25)*
+*Defined in [types.ts:25](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L25)*
 
 ___
 <a id="wrapeth"></a>
@@ -139,7 +139,7 @@ ___
 
 **WrapEth**:  = "WrapEth"
 
-*Defined in [types.ts:22](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L22)*
+*Defined in [types.ts:22](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L22)*
 
 ___
 <a id="wrapethcomplete"></a>
@@ -148,7 +148,7 @@ ___
 
 **WrapEthComplete**:  = "WrapEthComplete"
 
-*Defined in [types.ts:23](https://github.com/ProjectOpenSea/opensea-js/blob/5d9293e/src/types.ts#L23)*
+*Defined in [types.ts:23](https://github.com/ProjectOpenSea/opensea-js/blob/49f2b5f/src/types.ts#L23)*
 
 ___
 
