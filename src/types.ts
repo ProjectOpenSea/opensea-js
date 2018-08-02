@@ -27,6 +27,9 @@ export enum EventType {
   ApproveAsset = "ApproveAsset",
   ApproveAssetComplete = "ApproveAssetComplete",
 
+  ApproveCurrency = "ApproveCurrency",
+  ApproveCurrencyComplete = "ApproveCurrencyComplete",
+
   ApproveAllAssets = "ApproveAllAssets",
   ApproveAllAssetsComplete = "ApproveAllAssetsComplete",
 

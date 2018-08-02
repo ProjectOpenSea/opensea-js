@@ -25,7 +25,7 @@
 **● apiKey**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:56](https://github.com/ProjectOpenSea/opensea-js/blob/4352cbd/src/types.ts#L56)*
+*Defined in [types.ts:59](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L59)*
 
 ___
 <a id="gasprice"></a>
@@ -34,7 +34,7 @@ ___
 
 **● gasPrice**: *`BigNumber`*
 
-*Defined in [types.ts:57](https://github.com/ProjectOpenSea/opensea-js/blob/4352cbd/src/types.ts#L57)*
+*Defined in [types.ts:60](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L60)*
 
 ___
 <a id="networkname"></a>
@@ -43,7 +43,7 @@ ___
 
 **● networkName**: *`Network`*
 
-*Defined in [types.ts:55](https://github.com/ProjectOpenSea/opensea-js/blob/4352cbd/src/types.ts#L55)*
+*Defined in [types.ts:58](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L58)*
 
 ___
 

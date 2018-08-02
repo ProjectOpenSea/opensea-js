@@ -11,6 +11,8 @@ export declare enum EventType {
     UnwrapWethComplete = "UnwrapWethComplete",
     ApproveAsset = "ApproveAsset",
     ApproveAssetComplete = "ApproveAssetComplete",
+    ApproveCurrency = "ApproveCurrency",
+    ApproveCurrencyComplete = "ApproveCurrencyComplete",
     ApproveAllAssets = "ApproveAllAssets",
     ApproveAllAssetsComplete = "ApproveAllAssetsComplete",
     MatchOrders = "MatchOrders",

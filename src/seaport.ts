@@ -77,13 +77,24 @@ export class OpenSeaPort {
     subscription.remove()
   }
 
+  /**
+   * Remove all event listeners. Good idea to call this when you're unmounting
+   * a component that listens to events to make UI updates
+   * @param event Optional EventType to remove listeners for
+   */
   public removeAllListeners(event?: EventType) {
     this.emitter.removeAllListeners(event)
   }
 
+  /**
+   * Wrap ETH into W-ETH.
+   * W-ETH is needed for placing buy orders (making offers).
+   * Emits the `WrapEth` event when the transaction is ready, and the `WrapEthComplete` event when the blockchain confirms it.
+   * @param param0 Object containing the amount in ETH to wrap and the user's account address
+   */
   public async wrapEth(
       { amountInEth, accountAddress }:
-      { amountInEth: number; accountAddress: string; awaitConfirmation?: boolean}
+      { amountInEth: number; accountAddress: string }
     ) {
 
     const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
@@ -106,6 +117,11 @@ export class OpenSeaPort {
     this._dispatch(EventType.WrapEthComplete, { accountAddress, amount })
   }
 
+  /**
+   * Unwrap W-ETH into ETH.
+   * Emits the `UnrapWeth` event when the transaction is ready, and the `UnwrapWethComplete` event when the blockchain confirms it.
+   * @param param0 Object containing the amount in W-ETH to unwrap and the user's account address
+   */
   public async unwrapWeth(
     { amountInEth, accountAddress }:
     { amountInEth: number; accountAddress: string; awaitConfirmation?: boolean}
@@ -131,6 +147,12 @@ export class OpenSeaPort {
     this._dispatch(EventType.UnwrapWethComplete, { accountAddress, amount })
   }
 
+  /**
+   * Create a buy order to make an offer on an asset.
+   * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
+   * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` and `ApproveCurrencyComplete` events before and after asking for approval.
+   * @param param0 Object containing the token id, token address, user account address, amount to offer, and expiration time for the order. An expiration time of 0 means "never expire."
+   */
   public async createBuyOrder(
     { tokenId, tokenAddress, accountAddress, amountInEth, expirationTime = 0 }:
     { tokenId: string; tokenAddress: string; accountAddress: string; amountInEth: number; expirationTime?: number }
@@ -198,9 +220,15 @@ export class OpenSeaPort {
     return this._validateAndPostOrder(orderWithSignature)
   }
 
+  /**
+   * Create a sell order to auction an asset.
+   * Will throw a 'You do not own this asset' error if the maker doesn't have the asset.
+   * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` and `ApproveAllAssetsComplete` events (or ApproveAsset and ApproveAssetComplete if the contract doesn't support approve-all) before and after asking for approval.
+   * @param param0 Object containing the token id, token address, user account address, start amount of auction, end amount (optional), and expiration time for the order. An expiration time of 0 means "never expire."
+   */
   public async createSellOrder(
     { tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
-    { tokenId: string; tokenAddress: string; accountAddress: string; startAmountInEth: number; endAmountInEth: number; expirationTime?: number }
+    { tokenId: string; tokenAddress: string; accountAddress: string; startAmountInEth: number; endAmountInEth?: number; expirationTime?: number }
     ): Promise<Order> {
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, tokenId, tokenAddress)
@@ -478,9 +506,13 @@ export class OpenSeaPort {
       toAddress: tokenAddress,
       data: WyvernSchemas.encodeCall(getMethod(ERC20, 'approve'),
         [contractAddress, WyvernProtocol.MAX_UINT_256.toString()]),
-      awaitConfirmation: true,
+      awaitConfirmation: false,
     })
-    return txHash
+    const transactionHash = txHash.toString()
+
+    this._dispatch(EventType.ApproveCurrency, { accountAddress, tokenAddress, transactionHash })
+    await confirmTransaction(this.web3, transactionHash)
+    this._dispatch(EventType.ApproveCurrencyComplete, { accountAddress, tokenAddress })
   }
 
   /**

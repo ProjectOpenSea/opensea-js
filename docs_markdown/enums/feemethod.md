@@ -19,7 +19,7 @@
 
 **ProtocolFee**:  = 0
 
-*Defined in [types.ts:66](https://github.com/ProjectOpenSea/opensea-js/blob/4352cbd/src/types.ts#L66)*
+*Defined in [types.ts:69](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L69)*
 
 ___
 <a id="splitfee"></a>
@@ -28,7 +28,7 @@ ___
 
 **SplitFee**:  = 1
 
-*Defined in [types.ts:67](https://github.com/ProjectOpenSea/opensea-js/blob/4352cbd/src/types.ts#L67)*
+*Defined in [types.ts:70](https://github.com/ProjectOpenSea/opensea-js/blob/3acb1cb/src/types.ts#L70)*
 
 ___
 
