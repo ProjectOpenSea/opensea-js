@@ -99,7 +99,7 @@ export class OpenSeaPort {
   /**
    * Wrap ETH into W-ETH.
    * W-ETH is needed for placing buy orders (making offers).
-   * Emits the `WrapEth` event when the transaction is ready, and the `WrapEthComplete` event when the blockchain confirms it.
+   * Emits the `WrapEth` event when the transaction is prompted.
    * @param param0 __namedParameters Object
    * @param amountInEth How much ether to wrap
    * @param accountAddress Address of the user's wallet containing the ether
@@ -128,7 +128,7 @@ export class OpenSeaPort {
 
   /**
    * Unwrap W-ETH into ETH.
-   * Emits the `UnwrapWeth` event when the transaction is ready, and the `UnwrapWethComplete` event when the blockchain confirms it.
+   * Emits the `UnwrapWeth` event when the transaction is prompted.
    * @param param0 __namedParameters Object
    * @param amountInEth How much W-ETH to unwrap
    * @param accountAddress Address of the user's wallet containing the W-ETH
@@ -158,8 +158,13 @@ export class OpenSeaPort {
   /**
    * Create a buy order to make an offer on an asset.
    * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
-   * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` and `ApproveCurrencyComplete` events before and after asking for approval.
-   * @param param0 Object containing the token id, token address, user account address, amount to offer, and expiration time for the order. An expiration time of 0 means "never expire."
+   * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
+   * @param param0 __namedParameters Object
+   * @param tokenId Token ID
+   * @param tokenAddress Address of the token's contract
+   * @param accountAddress Address of the maker's wallet
+   * @param amountInEth Ether value of the offer
+   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    */
   public async createBuyOrder(
       { tokenId, tokenAddress, accountAddress, amountInEth, expirationTime = 0 }:
@@ -232,8 +237,14 @@ export class OpenSeaPort {
   /**
    * Create a sell order to auction an asset.
    * Will throw a 'You do not own this asset' error if the maker doesn't have the asset.
-   * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` and `ApproveAllAssetsComplete` events (or ApproveAsset and ApproveAssetComplete if the contract doesn't support approve-all) before and after asking for approval.
-   * @param param0 Object containing the token id, token address, user account address, start amount of auction, end amount (optional), and expiration time for the order. An expiration time of 0 means "never expire."
+   * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
+   * @param param0 __namedParameters Object
+   * @param tokenId Token ID
+   * @param tokenAddress Address of the token's contract
+   * @param accountAddress Address of the maker's wallet
+   * @param startAmountInEth Price of the asset at the start of the auction
+   * @param endAmountInEth Optional price of the asset at the end of its expiration time
+   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    */
   public async createSellOrder(
       { tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
@@ -311,6 +322,12 @@ export class OpenSeaPort {
     return this._validateAndPostOrder(orderWithSignature)
   }
 
+  /**
+   * Fullfill or "take" an order for an asset, either a buy or sell order
+   * @param param0 __namedParamaters Object
+   * @param order The order to fulfill, a.k.a. "take"
+   * @param accountAddress The taker's wallet address
+   */
   public async fulfillOrder(
       { order, accountAddress }:
       { order: Order; accountAddress: string}
@@ -344,6 +361,12 @@ export class OpenSeaPort {
     await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders)
   }
 
+  /**
+   * Cancel an order on-chain, preventing it from ever being fulfilled.
+   * @param param0 __namedParameters Object
+   * @param order The order to cancel
+   * @param accountAddress The order maker's wallet address
+   */
   public async cancelOrder(
       { order, accountAddress }:
       { order: Order; accountAddress: string}
@@ -368,20 +391,19 @@ export class OpenSeaPort {
     await this._confirmTransaction(transactionHash.toString(), EventType.CancelOrder)
   }
 
-  public async getApprovedTokenCount(
-      { accountAddress, tokenAddress }:
-      { accountAddress: string; tokenAddress: string}
-    ) {
-    const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this.networkName)
-    const approved = await promisify<string>(c => this.web3.eth.call({
-      from: accountAddress,
-      to: tokenAddress,
-      data: WyvernSchemas.encodeCall(getMethod(ERC20, 'allowance'),
-        [accountAddress, contractAddress]),
-    }, c))
-    return makeBigNumber(approved)
-  }
-
+  /**
+   * Approve a non-fungible token for use in trades.
+   * Called internally, but exposed for dev flexibility.
+   * @param param0 __namedParamters Object
+   * @param tokenId Token id to approve, but only used if approve-all isn't
+   *  supported by the token contract
+   * @param tokenAddress The contract address of the token being approved
+   * @param accountAddress The user's wallet address
+   * @param proxyAddress Address of the user's proxy contract. If not provided,
+   *  will attempt to fetch it from Wyvern.
+   * @param tokenAbi ABI of the token's contract. Defaults to a flexible ERC-721
+   *  contract.
+   */
   public async approveNonFungibleToken(
       { tokenId, tokenAddress, accountAddress, proxyAddress = null, tokenAbi = ERC721 }:
       { tokenId: string; tokenAddress: string; accountAddress: string; proxyAddress: string | null; tokenAbi?: PartialReadonlyContractAbi}
@@ -497,7 +519,13 @@ export class OpenSeaPort {
     }
   }
 
-  // Returns transaction hash
+  /**
+   * Approve a fungible token (e.g. W-ETH) for use in trades.
+   * Called internally, but exposed for dev flexibility.
+   * @param param0 __namedParamters Object
+   * @param accountAddress The user's wallet address
+   * @param tokenAddress The contract address of the token being approved
+   */
   public async approveFungibleToken(
       { accountAddress, tokenAddress }:
       { accountAddress: string; tokenAddress: string}
@@ -519,6 +547,7 @@ export class OpenSeaPort {
 
   /**
    * Gets the price for the order using the contract
+   * @param order The order to calculate the price for
    */
   public async getCurrentPrice(order: Order) {
     const protocolInstance = this.wyvernProtocol
@@ -537,7 +566,11 @@ export class OpenSeaPort {
     return currentPrice
   }
 
-  // Returns null if no proxy and throws if method not available
+  /**
+   * Get the proxy address for a user's wallet.
+   * Internal method exposed for dev flexibility.
+   * @param accountAddress The user's wallet address
+   */
   public async _getProxy(accountAddress: string): Promise<string | null> {
     const protocolInstance = this.wyvernProtocol
     let proxyAddress: string | null = await protocolInstance.wyvernProxyRegistry.proxies.callAsync(accountAddress)
@@ -552,6 +585,13 @@ export class OpenSeaPort {
     return proxyAddress
   }
 
+  /**
+   * Initialize the proxy for a user's wallet.
+   * Proxies are used to make trades on behalf of the order's maker so that
+   *  trades can happen when the maker isn't online.
+   * Internal method exposed for dev flexibility.
+   * @param accountAddress The user's wallet address
+   */
   public async _initializeProxy(accountAddress: string) {
     const protocolInstance = this.wyvernProtocol
 
@@ -571,9 +611,18 @@ export class OpenSeaPort {
     return proxyAddress
   }
 
+  /**
+   * Get the balance of a fungible token.
+   * Internal method exposed for dev flexibility.
+   * @param param0 __namedParameters Object
+   * @param accountAddress User's account address
+   * @param tokenAddress Optional address of the token's contract.
+   *  Defaults to W-ETH
+   * @param tokenAbi ABI for the token's contract
+   */
   public async _getTokenBalance(
       { accountAddress, tokenAddress, tokenAbi = ERC20 }:
-      { accountAddress: string; tokenAddress: string; tokenAbi?: PartialReadonlyContractAbi }
+      { accountAddress: string; tokenAddress?: string; tokenAbi?: PartialReadonlyContractAbi }
     ) {
     if (!tokenAddress) {
       tokenAddress = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther.address
@@ -588,7 +637,29 @@ export class OpenSeaPort {
   }
 
   /**
-   * Helper methods
+   * For a fungible token to use in trades (like W-ETH), get the amount
+   *  approved for use by the Wyvern transfer proxy.
+   * Internal method exposed for dev flexibility.
+   * @param param0 __namedParamters Object
+   * @param accountAddress Address for the user's wallet
+   * @param tokenAddress Address for the token's contract
+   */
+  public async _getApprovedTokenCount(
+      { accountAddress, tokenAddress }:
+      { accountAddress: string; tokenAddress: string}
+    ) {
+    const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this.networkName)
+    const approved = await promisify<string>(c => this.web3.eth.call({
+      from: accountAddress,
+      to: tokenAddress,
+      data: WyvernSchemas.encodeCall(getMethod(ERC20, 'allowance'),
+        [accountAddress, contractAddress]),
+    }, c))
+    return makeBigNumber(approved)
+  }
+
+  /**
+   * Private helper methods
    */
 
   private async _atomicMatch(
@@ -784,7 +855,7 @@ export class OpenSeaPort {
 
       // Check token approval
       // This can be done at a higher level to show UI
-      const approved = await this.getApprovedTokenCount({ accountAddress, tokenAddress })
+      const approved = await this._getApprovedTokenCount({ accountAddress, tokenAddress })
       if (approved.toNumber() < required.toNumber()) {
         try {
           await this.approveFungibleToken({ accountAddress, tokenAddress })

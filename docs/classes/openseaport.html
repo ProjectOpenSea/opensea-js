@@ -95,6 +95,7 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#_getapprovedtokencount" class="tsd-kind-icon">_get<wbr>Approved<wbr>Token<wbr>Count</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#_getproxy" class="tsd-kind-icon">_get<wbr>Proxy</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#_gettokenbalance" class="tsd-kind-icon">_get<wbr>Token<wbr>Balance</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#_initializeproxy" class="tsd-kind-icon">_initialize<wbr>Proxy</a></li>
@@ -105,7 +106,6 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#createbuyorder" class="tsd-kind-icon">create<wbr>Buy<wbr>Order</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#createsellorder" class="tsd-kind-icon">create<wbr>Sell<wbr>Order</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#fulfillorder" class="tsd-kind-icon">fulfill<wbr>Order</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#getapprovedtokencount" class="tsd-kind-icon">get<wbr>Approved<wbr>Token<wbr>Count</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#getcurrentprice" class="tsd-kind-icon">get<wbr>Current<wbr>Price</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#removealllisteners" class="tsd-kind-icon">remove<wbr>All<wbr>Listeners</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaport.html#removelistener" class="tsd-kind-icon">remove<wbr>Listener</a></li>
@@ -128,7 +128,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L26">seaport.ts:26</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L26">seaport.ts:26</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -180,7 +180,7 @@
 					<div class="tsd-signature tsd-kind-icon">api<span class="tsd-signature-symbol">:</span> <a href="openseaapi.html" class="tsd-signature-type">OpenSeaAPI</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L22">seaport.ts:22</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L22">seaport.ts:22</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -190,7 +190,7 @@
 					<div class="tsd-signature tsd-kind-icon">logger<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L21">seaport.ts:21</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L21">seaport.ts:21</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -221,13 +221,57 @@
 					<div class="tsd-signature tsd-kind-icon">web3<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Web3</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L20">seaport.ts:20</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L20">seaport.ts:20</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="_getapprovedtokencount" class="tsd-anchor"></a>
+					<h3>_get<wbr>Approved<wbr>Token<wbr>Count</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">_get<wbr>Approved<wbr>Token<wbr>Count<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BigNumber</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L647">seaport.ts:647</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>For a fungible token to use in trades (like W-ETH), get the amount
+										approved for use by the Wyvern transfer proxy.
+									Internal method exposed for dev flexibility.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>__namedParameters: <span class="tsd-signature-type">object</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5>account<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Address for the user&#39;s wallet</p>
+											</div>
+										</li>
+										<li class="tsd-parameter">
+											<h5>token<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Address for the token&#39;s contract</p>
+											</div>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BigNumber</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="_getproxy" class="tsd-anchor"></a>
 					<h3>_get<wbr>Proxy</h3>
@@ -238,13 +282,22 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L541">seaport.ts:541</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L574">seaport.ts:574</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Get the proxy address for a user&#39;s wallet.
+									Internal method exposed for dev flexibility.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>accountAddress: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The user&#39;s wallet address</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -261,9 +314,15 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L574">seaport.ts:574</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L623">seaport.ts:623</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Get the balance of a fungible token.
+									Internal method exposed for dev flexibility.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -271,12 +330,22 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter">
 											<h5>account<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>User&#39;s account address</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>token<wbr>Abi<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">[]</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>ABI for the token&#39;s contract</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
-											<h5>token<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<h5>token<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Optional address of the token&#39;s contract.
+												Defaults to W-ETH</p>
+											</div>
 										</li>
 									</ul>
 								</li>
@@ -295,13 +364,24 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L555">seaport.ts:555</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L595">seaport.ts:595</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Initialize the proxy for a user&#39;s wallet.
+										Proxies are used to make trades on behalf of the order&#39;s maker so that
+										trades can happen when the maker isn&#39;t online.
+									Internal method exposed for dev flexibility.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>accountAddress: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The user&#39;s wallet address</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -318,7 +398,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L69">seaport.ts:69</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L69">seaport.ts:69</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -379,9 +459,15 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L501">seaport.ts:501</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L529">seaport.ts:529</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Approve a fungible token (e.g. W-ETH) for use in trades.
+									Called internally, but exposed for dev flexibility.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -389,9 +475,15 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter">
 											<h5>account<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>The user&#39;s wallet address</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>token<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>The contract address of the token being approved</p>
+											</div>
 										</li>
 									</ul>
 								</li>
@@ -410,9 +502,15 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L385">seaport.ts:385</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L407">seaport.ts:407</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Approve a non-fungible token for use in trades.
+									Called internally, but exposed for dev flexibility.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -420,18 +518,36 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter">
 											<h5>account<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>The user&#39;s wallet address</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>proxy<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Address of the user&#39;s proxy contract. If not provided,
+												will attempt to fetch it from Wyvern.</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>token<wbr>Abi<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">[]</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>ABI of the token&#39;s contract. Defaults to a flexible ERC-721
+												contract.</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>token<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>The contract address of the token being approved</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>token<wbr>Id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Token id to approve, but only used if approve-all isn&#39;t
+												supported by the token contract</p>
+											</div>
 										</li>
 									</ul>
 								</li>
@@ -450,9 +566,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L347">seaport.ts:347</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L370">seaport.ts:370</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Cancel an order on-chain, preventing it from ever being fulfilled.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -460,9 +581,15 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter">
 											<h5>account<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>The order maker&#39;s wallet address</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>order<span class="tsd-signature-symbol">: </span><a href="../interfaces/order.html" class="tsd-signature-type">Order</a></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>The order to cancel</p>
+											</div>
 										</li>
 									</ul>
 								</li>
@@ -481,14 +608,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L164">seaport.ts:164</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L169">seaport.ts:169</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Create a buy order to make an offer on an asset.
 										Will throw an &#39;Insufficient balance&#39; error if the maker doesn&#39;t have enough W-ETH to make the offer.
-									If the user hasn&#39;t approved W-ETH access yet, this will emit <code>ApproveCurrency</code> and <code>ApproveCurrencyComplete</code> events before and after asking for approval.</p>
+									If the user hasn&#39;t approved W-ETH access yet, this will emit <code>ApproveCurrency</code> before asking for approval.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -498,18 +625,33 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter">
 											<h5>account<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Address of the maker&#39;s wallet</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>amount<wbr>InEth<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Ether value of the offer</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>expiration<wbr>Time<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Expiration time for the order, in seconds. An expiration time of 0 means &quot;never expire.&quot;</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>token<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Address of the token&#39;s contract</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>token<wbr>Id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Token ID</p>
+											</div>
 										</li>
 									</ul>
 								</li>
@@ -528,14 +670,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L238">seaport.ts:238</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L249">seaport.ts:249</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Create a sell order to auction an asset.
 										Will throw a &#39;You do not own this asset&#39; error if the maker doesn&#39;t have the asset.
-									If the user hasn&#39;t approved access to the token yet, this will emit <code>ApproveAllAssets</code> and <code>ApproveAllAssetsComplete</code> events (or ApproveAsset and ApproveAssetComplete if the contract doesn&#39;t support approve-all) before and after asking for approval.</p>
+									If the user hasn&#39;t approved access to the token yet, this will emit <code>ApproveAllAssets</code> (or <code>ApproveAsset</code> if the contract doesn&#39;t support approve-all) before asking for approval.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -545,21 +687,39 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter">
 											<h5>account<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Address of the maker&#39;s wallet</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>end<wbr>Amount<wbr>InEth<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Optional price of the asset at the end of its expiration time</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>expiration<wbr>Time<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Expiration time for the order, in seconds. An expiration time of 0 means &quot;never expire.&quot;</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>start<wbr>Amount<wbr>InEth<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Price of the asset at the start of the auction</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>token<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Address of the token&#39;s contract</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>token<wbr>Id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>Token ID</p>
+											</div>
 										</li>
 									</ul>
 								</li>
@@ -578,9 +738,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L314">seaport.ts:314</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L331">seaport.ts:331</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Fullfill or &quot;take&quot; an order for an asset, either a buy or sell order</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
@@ -588,45 +753,20 @@
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter">
 											<h5>account<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>The taker&#39;s wallet address</p>
+											</div>
 										</li>
 										<li class="tsd-parameter">
 											<h5>order<span class="tsd-signature-symbol">: </span><a href="../interfaces/order.html" class="tsd-signature-type">Order</a></h5>
+											<div class="tsd-comment tsd-typography">
+												<p>The order to fulfill, a.k.a. &quot;take&quot;</p>
+											</div>
 										</li>
 									</ul>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="getapprovedtokencount" class="tsd-anchor"></a>
-					<h3>get<wbr>Approved<wbr>Token<wbr>Count</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Approved<wbr>Token<wbr>Count<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BigNumber</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L371">seaport.ts:371</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>__namedParameters: <span class="tsd-signature-type">object</span></h5>
-									<ul class="tsd-parameters">
-										<li class="tsd-parameter">
-											<h5>account<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
-										</li>
-										<li class="tsd-parameter">
-											<h5>token<wbr>Address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
-										</li>
-									</ul>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BigNumber</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -640,7 +780,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L523">seaport.ts:523</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L552">seaport.ts:552</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -652,6 +792,9 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>order: <a href="../interfaces/order.html" class="tsd-signature-type">Order</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The order to calculate the price for</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">BigNumber</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -668,7 +811,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L95">seaport.ts:95</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L95">seaport.ts:95</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -700,7 +843,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L81">seaport.ts:81</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L81">seaport.ts:81</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -732,13 +875,13 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L136">seaport.ts:136</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L136">seaport.ts:136</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Unwrap W-ETH into ETH.
-									Emits the <code>UnwrapWeth</code> event when the transaction is ready, and the <code>UnwrapWethComplete</code> event when the blockchain confirms it.</p>
+									Emits the <code>UnwrapWeth</code> event when the transaction is prompted.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -775,14 +918,14 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/7a8f863/src/seaport.ts#L107">seaport.ts:107</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4452f8a/src/seaport.ts#L107">seaport.ts:107</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Wrap ETH into W-ETH.
 										W-ETH is needed for placing buy orders (making offers).
-									Emits the <code>WrapEth</code> event when the transaction is ready, and the <code>WrapEthComplete</code> event when the blockchain confirms it.</p>
+									Emits the <code>WrapEth</code> event when the transaction is prompted.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -839,6 +982,9 @@
 								<a href="openseaport.html#web3" class="tsd-kind-icon">web3</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="openseaport.html#_getapprovedtokencount" class="tsd-kind-icon">_get<wbr>Approved<wbr>Token<wbr>Count</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="openseaport.html#_getproxy" class="tsd-kind-icon">_get<wbr>Proxy</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
@@ -867,9 +1013,6 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="openseaport.html#fulfillorder" class="tsd-kind-icon">fulfill<wbr>Order</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="openseaport.html#getapprovedtokencount" class="tsd-kind-icon">get<wbr>Approved<wbr>Token<wbr>Count</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="openseaport.html#getcurrentprice" class="tsd-kind-icon">get<wbr>Current<wbr>Price</a>

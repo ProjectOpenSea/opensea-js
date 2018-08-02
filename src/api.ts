@@ -11,11 +11,23 @@ const ORDERBOOK_PATH = `/wyvern/v${ORDERBOOK_VERSION}`
 
 export class OpenSeaAPI {
 
+  /**
+   * Base url for the API
+   */
   public readonly apiBaseUrl: string
+  /**
+   * Page size to use for fetching orders
+   */
   public pageSize = 20
 
   private apiKey: string | undefined
 
+  /**
+   * Create an instance of the OpenSea API
+   * @param param0 __namedParamters Object
+   * @param apiKey Optional key to use for API
+   * @param networkName `Network` type to use. Defaults to `Network.Main` (mainnet)
+   */
   constructor({apiKey, networkName}: OpenSeaAPIConfig) {
     this.apiKey = apiKey
 
@@ -30,6 +42,11 @@ export class OpenSeaAPI {
     }
   }
 
+  /**
+   * Send an order to the orderbook.
+   * Throws when the order is invalid.
+   * @param order Order to post to the orderbook
+   */
   public async postOrder(order: OrderJSON): Promise<Order> {
 
     const response = await this.post(
@@ -40,6 +57,11 @@ export class OpenSeaAPI {
     return orderFromJSON(json)
   }
 
+  /**
+   * Get an order from the orderbook, returning `null` if none are found.
+   * @param query Query to use for getting orders. A subset of parameters
+   *  on the `OrderJSON` type is supported
+   */
   public async getOrder(query: Partial<OrderJSON>): Promise<Order | null> {
 
     const response = await this.get(
@@ -58,6 +80,13 @@ export class OpenSeaAPI {
     }
   }
 
+  /**
+   * Get a list of orders from the orderbook, returning the page of orders
+   *  and the count of total orders found.
+   * @param query Query to use for getting orders. A subset of parameters
+   *  on the `OrderJSON` type is supported
+   * @param page Page number, defaults to 1
+   */
   public async getOrders(
       query: Partial<OrderJSON> = {},
       page = 1
@@ -92,7 +121,7 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param query Data to send. Will be stringified using QueryString
    */
-  private async get(apiPath: string, query: object = {}) {
+  public async get(apiPath: string, query: object = {}) {
 
     const qs = QueryString.stringify(query)
     const url = `${apiPath}?${qs}`
@@ -107,7 +136,7 @@ export class OpenSeaAPI {
    * @param opts RequestInit opts, similar to Fetch API. If it contains
    *  a body, it won't be stringified.
    */
-  private async post(apiPath: string, body?: object, opts: RequestInit = {}) {
+  public async post(apiPath: string, body?: object, opts: RequestInit = {}) {
 
     const fetchOpts = {
       method: 'POST',
@@ -129,7 +158,7 @@ export class OpenSeaAPI {
    * @param opts RequestInit opts, similar to Fetch API. If it contains
    *  a body, it won't be stringified.
    */
-  private async put(apiPath: string, body: object, opts: RequestInit = {}) {
+  public async put(apiPath: string, body: object, opts: RequestInit = {}) {
 
     return this.post(apiPath, body, {
       method: 'PUT',
