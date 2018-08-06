@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import { WyvernProtocol } from 'wyvern-js'
 import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
@@ -152,9 +153,7 @@ export const orderFromJSON = (order: any): Order => {
 }
 
 export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
-  const asJSON = {
-    ...order,
-
+  const asJSON: any = {
     exchange: order.exchange.toLowerCase(),
     maker: order.maker.toLowerCase(),
     taker: order.taker.toLowerCase(),
@@ -168,7 +167,10 @@ export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
     saleKind: order.saleKind.toString(),
     target: order.target.toLowerCase(),
     howToCall: order.howToCall.toString(),
+    calldata: order.calldata,
+    replacementPattern: order.replacementPattern,
     staticTarget: order.staticTarget.toLowerCase(),
+    staticExtradata: order.staticExtradata,
     paymentToken: order.paymentToken.toLowerCase(),
     basePrice: order.basePrice.toString(),
     extra: order.extra.toString(),
@@ -176,6 +178,9 @@ export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
     expirationTime: order.expirationTime.toString(),
     salt: order.salt.toString()
   }
+  const hash = WyvernProtocol.getOrderHashHex(asJSON)
+  asJSON.hash = hash
+  asJSON.metadata = order.metadata
   return asJSON
 }
 
