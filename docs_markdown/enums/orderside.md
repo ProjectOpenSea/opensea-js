@@ -2,6 +2,8 @@
 
 # Enumeration: OrderSide
 
+Wyvern order side: buy or sell.
+
 ## Index
 
 ### Enumeration members
@@ -19,7 +21,7 @@
 
 **Buy**:  = 0
 
-*Defined in [types.ts:69](https://github.com/ProjectOpenSea/opensea-js/blob/b6c46a8/src/types.ts#L69)*
+*Defined in [types.ts:73](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L73)*
 
 ___
 <a id="sell"></a>
@@ -28,7 +30,7 @@ ___
 
 **Sell**:  = 1
 
-*Defined in [types.ts:70](https://github.com/ProjectOpenSea/opensea-js/blob/b6c46a8/src/types.ts#L70)*
+*Defined in [types.ts:74](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L74)*
 
 ___
 

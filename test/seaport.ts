@@ -45,6 +45,7 @@ suite('seaport', () => {
       const order = orderFromJSON(data.order)
       assert.instanceOf(order.basePrice, BigNumber)
       assert.typeOf(order.hash, "string")
+      assert.typeOf(order.maker, "string")
       // client._validateBuyOrderParameters({order, accountAddress: order.maker})
     })
   })
@@ -52,8 +53,7 @@ suite('seaport', () => {
   ordersAndProperties.map((data: {order: OrderJSON}, index: number) => {
     test('Order #' + index + ' has correct hash', () => {
       const order = orderFromJSON(data.order)
-      // TS Bug with wyvern 0x schemas
-      assert.equal(order.hash, WyvernProtocol.getOrderHashHex(data.order as any))
+      assert.equal(order.hash, WyvernProtocol.getOrderHashHex(order))
     })
   })
 })

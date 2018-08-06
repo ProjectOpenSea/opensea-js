@@ -43,10 +43,16 @@ export interface OpenSeaAPIConfig {
     apiKey?: string;
     gasPrice?: BigNumber;
 }
+/**
+ * Wyvern order side: buy or sell.
+ */
 export declare enum OrderSide {
     Buy = 0,
     Sell = 1
 }
+/**
+ * Wyvern fee method
+ */
 export declare enum FeeMethod {
     ProtocolFee = 0,
     SplitFee = 1
@@ -54,6 +60,17 @@ export declare enum FeeMethod {
 export interface WyvernAsset {
     id: string;
     address: string;
+}
+/**
+ * The OpenSea account object appended to orders, providing extra metadata, profile images and usernames
+ */
+export interface OpenSeaAccount {
+    address: string;
+    config: string;
+    profile_img_url: string;
+    user: null | {
+        username: string;
+    };
 }
 export interface UnhashedOrder extends WyvernOrder {
     feeMethod: FeeMethod;
@@ -69,6 +86,8 @@ export interface UnsignedOrder extends UnhashedOrder {
     hash: string;
 }
 export interface Order extends UnsignedOrder, ECSignature {
+    makerAccount?: OpenSeaAccount;
+    takerAccount?: OpenSeaAccount;
     cancelledOrFinalized?: boolean;
     markedInvalid?: boolean;
     currentPrice?: BigNumber;

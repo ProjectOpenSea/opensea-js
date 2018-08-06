@@ -23,7 +23,7 @@
 
 **● count**: *`number`*
 
-*Defined in [types.ts:155](https://github.com/ProjectOpenSea/opensea-js/blob/b6c46a8/src/types.ts#L155)*
+*Defined in [types.ts:184](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L184)*
 
 ___
 <a id="orders"></a>
@@ -32,7 +32,7 @@ ___
 
 **● orders**: *[OrderJSON](orderjson.md)[]*
 
-*Defined in [types.ts:154](https://github.com/ProjectOpenSea/opensea-js/blob/b6c46a8/src/types.ts#L154)*
+*Defined in [types.ts:183](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L183)*
 
 ___
 

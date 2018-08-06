@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>WyvernAsset | opensea-js</title>
+	<title>OpenSeaAccount | opensea-js</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,21 +56,28 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="wyvernasset.html">WyvernAsset</a>
+					<a href="openseaaccount.html">OpenSeaAccount</a>
 				</li>
 			</ul>
-			<h1>Interface WyvernAsset</h1>
+			<h1>Interface OpenSeaAccount</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>The OpenSea account object appended to orders, providing extra metadata, profile images and usernames</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">WyvernAsset</span>
+						<span class="target">OpenSeaAccount</span>
 					</li>
 				</ul>
 			</section>
@@ -81,8 +88,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="wyvernasset.html#address" class="tsd-kind-icon">address</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="wyvernasset.html#id" class="tsd-kind-icon">id</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaaccount.html#address" class="tsd-kind-icon">address</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaaccount.html#config" class="tsd-kind-icon">config</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaaccount.html#profile_img_url" class="tsd-kind-icon">profile_<wbr>img_<wbr>url</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaaccount.html#user" class="tsd-kind-icon">user</a></li>
 							</ul>
 						</section>
 					</div>
@@ -96,17 +105,37 @@
 					<div class="tsd-signature tsd-kind-icon">address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L89">types.ts:89</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L97">types.ts:97</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="id" class="tsd-anchor"></a>
-					<h3>id</h3>
-					<div class="tsd-signature tsd-kind-icon">id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="config" class="tsd-anchor"></a>
+					<h3>config</h3>
+					<div class="tsd-signature tsd-kind-icon">config<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L88">types.ts:88</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L99">types.ts:99</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="profile_img_url" class="tsd-anchor"></a>
+					<h3>profile_<wbr>img_<wbr>url</h3>
+					<div class="tsd-signature tsd-kind-icon">profile_<wbr>img_<wbr>url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L101">types.ts:101</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="user" class="tsd-anchor"></a>
+					<h3>user</h3>
+					<div class="tsd-signature tsd-kind-icon">user<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L104">types.ts:104</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -125,13 +154,19 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="wyvernasset.html" class="tsd-kind-icon">Wyvern<wbr>Asset</a>
+						<a href="openseaaccount.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Account</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="wyvernasset.html#address" class="tsd-kind-icon">address</a>
+								<a href="openseaaccount.html#address" class="tsd-kind-icon">address</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="wyvernasset.html#id" class="tsd-kind-icon">id</a>
+								<a href="openseaaccount.html#config" class="tsd-kind-icon">config</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="openseaaccount.html#profile_img_url" class="tsd-kind-icon">profile_<wbr>img_<wbr>url</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="openseaaccount.html#user" class="tsd-kind-icon">user</a>
 							</li>
 						</ul>
 					</li>

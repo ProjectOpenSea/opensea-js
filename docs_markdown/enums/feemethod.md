@@ -2,6 +2,8 @@
 
 # Enumeration: FeeMethod
 
+Wyvern fee method
+
 ## Index
 
 ### Enumeration members
@@ -19,7 +21,7 @@
 
 **ProtocolFee**:  = 0
 
-*Defined in [types.ts:74](https://github.com/ProjectOpenSea/opensea-js/blob/b6c46a8/src/types.ts#L74)*
+*Defined in [types.ts:82](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L82)*
 
 ___
 <a id="splitfee"></a>
@@ -28,7 +30,7 @@ ___
 
 **SplitFee**:  = 1
 
-*Defined in [types.ts:75](https://github.com/ProjectOpenSea/opensea-js/blob/b6c46a8/src/types.ts#L75)*
+*Defined in [types.ts:84](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L84)*
 
 ___
 

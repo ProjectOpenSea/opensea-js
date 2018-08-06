@@ -17,6 +17,10 @@
         "experimentalDecorators": true,
         "noImplicitReturns": true,
         "pretty": true,
-        "strict": true
+        "strict": true,
+        "baseUrl": ".",
+        "paths": {
+            "buffer" : ["./buffer-override.d.ts"]
+        }
     }
 }

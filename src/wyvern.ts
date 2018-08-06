@@ -69,18 +69,18 @@ export const confirmTransaction = async (web3: Web3, txHash: string) => {
 }
 
 export const orderFromJSON = (order: any): Order => {
-  const hash = WyvernProtocol.getOrderHashHex(order)
-  if (hash !== order.hash) {
-    console.error('Invalid order hash')
-  }
+
   const fromJSON: Order = {
-    hash: order.hash,
+    hash: order.order_hash || order.hash,
     cancelledOrFinalized: order.cancelledOrFinalized,
     markedInvalid: order.markedInvalid,
     metadata: order.metadata,
     exchange: order.exchange,
-    maker: order.maker,
-    taker: order.taker,
+    makerAccount: order.maker,
+    takerAccount: order.maker,
+    // Use string address to conform to Wyvern Order schema
+    maker: order.maker.address,
+    taker: order.taker.address,
     makerRelayerFee: new BigNumber(order.makerRelayerFee),
     takerRelayerFee: new BigNumber(order.takerRelayerFee),
     makerProtocolFee: new BigNumber(order.makerProtocolFee),

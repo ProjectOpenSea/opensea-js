@@ -104,13 +104,13 @@ export class OpenSeaAPI {
     if (ORDERBOOK_VERSION == 0) {
       const json: OrderJSON[] = await response.json()
       return {
-        orders: json.map(orderFromJSON),
+        orders: json.map(j => orderFromJSON(j)),
         count: json.length
       }
     } else {
       const json: OrderbookResponse = await response.json()
       return {
-        orders: json.orders.map(orderFromJSON),
+        orders: json.orders.map(j => orderFromJSON(j)),
         count: json.count
       }
     }
