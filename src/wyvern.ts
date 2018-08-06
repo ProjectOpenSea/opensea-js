@@ -146,7 +146,7 @@ export const orderFromJSON = (order: any): Order => {
     s: order.s,
   }
 
-  fromJSON.currentPrice = estimateCurrentPrice(order)
+  fromJSON.currentPrice = estimateCurrentPrice(fromJSON)
 
   return fromJSON
 }

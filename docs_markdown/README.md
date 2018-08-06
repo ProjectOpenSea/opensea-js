@@ -199,7 +199,7 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 
 **ΤPartialReadonlyContractAbi**: *`Array`<`Readonly`<[PartialAbiDefinition](interfaces/partialabidefinition.md)>>*
 
-*Defined in [types.ts:207](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L207)*
+*Defined in [types.ts:207](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/types.ts#L207)*
 
 ___
 <a id="txncallback"></a>
@@ -208,7 +208,7 @@ ___
 
 **ΤTxnCallback**: *`function`*
 
-*Defined in [types.ts:194](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L194)*
+*Defined in [types.ts:194](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/types.ts#L194)*
 
 #### Type declaration
 ▸(result: *`boolean`*): `void`
@@ -228,7 +228,7 @@ ___
 
 **ΤWeb3Callback**: *`function`*
 
-*Defined in [types.ts:192](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L192)*
+*Defined in [types.ts:192](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/types.ts#L192)*
 
 Types related to Web3
 
@@ -251,7 +251,7 @@ ___
 
 **ΤWeb3RPCCallback**: *[Web3Callback](#web3callback)<`JSONRPCResponsePayload`>*
 
-*Defined in [types.ts:193](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L193)*
+*Defined in [types.ts:193](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/types.ts#L193)*
 
 ___
 
@@ -263,7 +263,7 @@ ___
 
 **● API_BASE_MAINNET**: *"https://api.opensea.io"* = "https://api.opensea.io"
 
-*Defined in [api.ts:8](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/api.ts#L8)*
+*Defined in [api.ts:8](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/api.ts#L8)*
 
 ___
 <a id="api_base_rinkeby"></a>
@@ -272,7 +272,7 @@ ___
 
 **● API_BASE_RINKEBY**: *"https://rinkeby-api.opensea.io"* = "https://rinkeby-api.opensea.io"
 
-*Defined in [api.ts:9](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/api.ts#L9)*
+*Defined in [api.ts:9](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/api.ts#L9)*
 
 ___
 <a id="canonicalweth"></a>
@@ -281,7 +281,7 @@ ___
 
 **● CanonicalWETH**: *[PartialReadonlyContractAbi](#partialreadonlycontractabi)* =  [{'constant': true, 'inputs': [], 'name': 'name', 'outputs': [{'name': '', 'type': 'string'}], 'payable': false, 'stateMutability': 'view', 'type': 'function'}, {'constant': false, 'inputs': [{'name': 'guy', 'type': 'address'}, {'name': 'wad', 'type': 'uint256'}], 'name': 'approve', 'outputs': [{'name': '', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}, {'constant': true, 'inputs': [], 'name': 'totalSupply', 'outputs': [{'name': '', 'type': 'uint256'}], 'payable': false, 'stateMutability': 'view', 'type': 'function'}, {'constant': false, 'inputs': [{'name': 'src', 'type': 'address'}, {'name': 'dst', 'type': 'address'}, {'name': 'wad', 'type': 'uint256'}], 'name': 'transferFrom', 'outputs': [{'name': '', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}, {'constant': false, 'inputs': [{'name': 'wad', 'type': 'uint256'}], 'name': 'withdraw', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}, {'constant': true, 'inputs': [], 'name': 'decimals', 'outputs': [{'name': '', 'type': 'uint8'}], 'payable': false, 'stateMutability': 'view', 'type': 'function'}, {'constant': true, 'inputs': [{'name': '', 'type': 'address'}], 'name': 'balanceOf', 'outputs': [{'name': '', 'type': 'uint256'}], 'payable': false, 'stateMutability': 'view', 'type': 'function'}, {'constant': true, 'inputs': [], 'name': 'symbol', 'outputs': [{'name': '', 'type': 'string'}], 'payable': false, 'stateMutability': 'view', 'type': 'function'}, {'constant': false, 'inputs': [{'name': 'dst', 'type': 'address'}, {'name': 'wad', 'type': 'uint256'}], 'name': 'transfer', 'outputs': [{'name': '', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}, {'constant': false, 'inputs': [], 'name': 'deposit', 'outputs': [], 'payable': true, 'stateMutability': 'payable', 'type': 'function'}, {'constant': true, 'inputs': [{'name': '', 'type': 'address'}, {'name': '', 'type': 'address'}], 'name': 'allowance', 'outputs': [{'name': '', 'type': 'uint256'}], 'payable': false, 'stateMutability': 'view', 'type': 'function'}, {'payable': true, 'stateMutability': 'payable', 'type': 'fallback'}, {'anonymous': false, 'inputs': [{'indexed': true, 'name': 'src', 'type': 'address'}, {'indexed': true, 'name': 'guy', 'type': 'address'}, {'indexed': false, 'name': 'wad', 'type': 'uint256'}], 'name': 'Approval', 'type': 'event'}, {'anonymous': false, 'inputs': [{'indexed': true, 'name': 'src', 'type': 'address'}, {'indexed': true, 'name': 'dst', 'type': 'address'}, {'indexed': false, 'name': 'wad', 'type': 'uint256'}], 'name': 'Transfer', 'type': 'event'}, {'anonymous': false, 'inputs': [{'indexed': true, 'name': 'dst', 'type': 'address'}, {'indexed': false, 'name': 'wad', 'type': 'uint256'}], 'name': 'Deposit', 'type': 'event'}, {'anonymous': false, 'inputs': [{'indexed': true, 'name': 'src', 'type': 'address'}, {'indexed': false, 'name': 'wad', 'type': 'uint256'}], 'name': 'Withdrawal', 'type': 'event'}]
 
-*Defined in [abi/CanonicalWETH.ts:3](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/abi/CanonicalWETH.ts#L3)*
+*Defined in [abi/CanonicalWETH.ts:3](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/abi/CanonicalWETH.ts#L3)*
 
 ___
 <a id="erc20"></a>
@@ -290,7 +290,7 @@ ___
 
 **● ERC20**: *[PartialReadonlyContractAbi](#partialreadonlycontractabi)* =  [{'constant': true, 'inputs': [], 'name': 'name', 'outputs': [{'name': '', 'type': 'string'}], 'payable': false, 'type': 'function'}, {'constant': false, 'inputs': [{'name': '_spender', 'type': 'address'}, {'name': '_value', 'type': 'uint256'}], 'name': 'approve', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'type': 'function'}, {'constant': true, 'inputs': [], 'name': 'totalSupply', 'outputs': [{'name': '', 'type': 'uint256'}], 'payable': false, 'type': 'function'}, {'constant': false, 'inputs': [{'name': '_from', 'type': 'address'}, {'name': '_to', 'type': 'address'}, {'name': '_value', 'type': 'uint256'}], 'name': 'transferFrom', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'type': 'function'}, {'constant': true, 'inputs': [], 'name': 'decimals', 'outputs': [{'name': '', 'type': 'uint8'}], 'payable': false, 'type': 'function'}, {'constant': true, 'inputs': [], 'name': 'version', 'outputs': [{'name': '', 'type': 'string'}], 'payable': false, 'type': 'function'}, {'constant': true, 'inputs': [{'name': '_owner', 'type': 'address'}], 'name': 'balanceOf', 'outputs': [{'name': 'balance', 'type': 'uint256'}], 'payable': false, 'type': 'function'}, {'constant': true, 'inputs': [], 'name': 'symbol', 'outputs': [{'name': '', 'type': 'string'}], 'payable': false, 'type': 'function'}, {'constant': false, 'inputs': [{'name': '_to', 'type': 'address'}, {'name': '_value', 'type': 'uint256'}], 'name': 'transfer', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'type': 'function'}, {'constant': false, 'inputs': [{'name': '_spender', 'type': 'address'}, {'name': '_value', 'type': 'uint256'}, {'name': '_extraData', 'type': 'bytes'}], 'name': 'approveAndCall', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'type': 'function'}, {'constant': true, 'inputs': [{'name': '_owner', 'type': 'address'}, {'name': '_spender', 'type': 'address'}], 'name': 'allowance', 'outputs': [{'name': 'remaining', 'type': 'uint256'}], 'payable': false, 'type': 'function'}, {'inputs': [{'name': '_initialAmount', 'type': 'uint256'}, {'name': '_tokenName', 'type': 'string'}, {'name': '_decimalUnits', 'type': 'uint8'}, {'name': '_tokenSymbol', 'type': 'string'}], 'type': 'constructor'}, {'payable': false, 'type': 'fallback'}, {'anonymous': false, 'inputs': [{'indexed': true, 'name': '_from', 'type': 'address'}, {'indexed': true, 'name': '_to', 'type': 'address'}, {'indexed': false, 'name': '_value', 'type': 'uint256'}], 'name': 'Transfer', 'type': 'event'}, {'anonymous': false, 'inputs': [{'indexed': true, 'name': '_owner', 'type': 'address'}, {'indexed': true, 'name': '_spender', 'type': 'address'}, {'indexed': false, 'name': '_value', 'type': 'uint256'}], 'name': 'Approval', 'type': 'event'}]
 
-*Defined in [abi/ERC20.ts:3](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/abi/ERC20.ts#L3)*
+*Defined in [abi/ERC20.ts:3](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/abi/ERC20.ts#L3)*
 
 ___
 <a id="erc721"></a>
@@ -731,7 +731,7 @@ ___
   },
 ]
 
-*Defined in [abi/ERC721v3.ts:3](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/abi/ERC721v3.ts#L3)*
+*Defined in [abi/ERC721v3.ts:3](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/abi/ERC721v3.ts#L3)*
 
 ___
 <a id="null_block_hash"></a>
@@ -740,7 +740,7 @@ ___
 
 **● NULL_BLOCK_HASH**: *"0x0000000000000000000000000000000000000000000000000000000000000000"* = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
-*Defined in [wyvern.ts:8](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L8)*
+*Defined in [wyvern.ts:8](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L8)*
 
 ___
 <a id="orderbook_path"></a>
@@ -749,7 +749,7 @@ ___
 
 **● ORDERBOOK_PATH**: *`string`* =  `/wyvern/v${ORDERBOOK_VERSION}`
 
-*Defined in [api.ts:10](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/api.ts#L10)*
+*Defined in [api.ts:10](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/api.ts#L10)*
 
 ___
 <a id="orderbook_version"></a>
@@ -758,7 +758,7 @@ ___
 
 **● ORDERBOOK_VERSION**: *`number`* = 1
 
-*Defined in [api.ts:6](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/api.ts#L6)*
+*Defined in [api.ts:6](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/api.ts#L6)*
 
 ___
 <a id="feerecipient"></a>
@@ -767,7 +767,7 @@ ___
 
 **● feeRecipient**: *"0x5b3256965e7c3cf26e11fcaf296dfc8807c01073"* = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073"
 
-*Defined in [wyvern.ts:10](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L10)*
+*Defined in [wyvern.ts:10](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L10)*
 
 ___
 <a id="txcallbacks"></a>
@@ -776,7 +776,7 @@ ___
 
 **● txCallbacks**: *`object`*
 
-*Defined in [wyvern.ts:14](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L14)*
+*Defined in [wyvern.ts:14](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L14)*
 
 #### Type declaration
 
@@ -792,7 +792,7 @@ ___
 
 ▸ **confirmTransaction**(web3: *`Web3`*, txHash: *`string`*): `Promise`<`Object`>
 
-*Defined in [wyvern.ts:58](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L58)*
+*Defined in [wyvern.ts:58](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L58)*
 
 **Parameters:**
 
@@ -810,7 +810,7 @@ ___
 
 ▸ **estimateCurrentPrice**(order: *[Order](interfaces/order.md)*, secondsToBacktrack?: *`number`*, shouldRoundUp?: *`boolean`*): `BigNumber`
 
-*Defined in [wyvern.ts:354](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L354)*
+*Defined in [wyvern.ts:354](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L354)*
 
 Estimates the price of an order
 
@@ -831,7 +831,7 @@ ___
 
 ▸ **event**(abi: *[PartialReadonlyContractAbi](#partialreadonlycontractabi)*, name: *`string`*): `object`
 
-*Defined in [contracts.ts:7](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/contracts.ts#L7)*
+*Defined in [contracts.ts:7](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/contracts.ts#L7)*
 
 **Parameters:**
 
@@ -849,7 +849,7 @@ ___
 
 ▸ **findAsset**(web3: *`Web3`*, __namedParameters: *`object`*): `Promise`< "proxy" &#124; "account" &#124; "unknown" &#124; "other">
 
-*Defined in [wyvern.ts:182](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L182)*
+*Defined in [wyvern.ts:182](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L182)*
 
 **Parameters:**
 
@@ -867,7 +867,7 @@ ___
 
 ▸ **getMethod**(abi: *[PartialReadonlyContractAbi](#partialreadonlycontractabi)*, name: *`string`*): `object`
 
-*Defined in [contracts.ts:3](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/contracts.ts#L3)*
+*Defined in [contracts.ts:3](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/contracts.ts#L3)*
 
 **Parameters:**
 
@@ -885,7 +885,7 @@ ___
 
 ▸ **getWyvernAsset**(schema: *`any`*, tokenId: *`string`*, tokenAddress: *`string`*): `any`
 
-*Defined in [wyvern.ts:388](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L388)*
+*Defined in [wyvern.ts:388](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L388)*
 
 Get the Wyvern representation of an asset
 
@@ -906,7 +906,7 @@ ___
 
 ▸ **makeBigNumber**(arg: * `number` &#124; `string`*): `BigNumber`
 
-*Defined in [wyvern.ts:259](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L259)*
+*Defined in [wyvern.ts:259](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L259)*
 
 Special fixes for making BigNumbers using web3 results
 
@@ -925,7 +925,7 @@ ___
 
 ▸ **orderFromJSON**(order: *`any`*): [Order](interfaces/order.md)
 
-*Defined in [wyvern.ts:110](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L110)*
+*Defined in [wyvern.ts:110](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L110)*
 
 **Parameters:**
 
@@ -942,7 +942,7 @@ ___
 
 ▸ **orderFromJSONv0**(order: *`any`*): [Order](interfaces/order.md)
 
-*Defined in [wyvern.ts:70](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L70)*
+*Defined in [wyvern.ts:70](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L70)*
 
 **Parameters:**
 
@@ -959,7 +959,7 @@ ___
 
 ▸ **orderToJSON**(order: * [Order](interfaces/order.md) &#124; [UnhashedOrder](interfaces/unhashedorder.md)*): [OrderJSON](interfaces/orderjson.md)
 
-*Defined in [wyvern.ts:154](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L154)*
+*Defined in [wyvern.ts:154](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L154)*
 
 **Parameters:**
 
@@ -976,7 +976,7 @@ ___
 
 ▸ **parseSignatureHex**(signature: *`string`*): `ECSignature`
 
-*Defined in [wyvern.ts:300](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L300)*
+*Defined in [wyvern.ts:300](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L300)*
 
 **Parameters:**
 
@@ -993,7 +993,7 @@ ___
 
 ▸ **personalSignAsync**(web3: *`Web3`*, message: *`string`*, signerAddress: *`string`*): `Promise`<`ECSignature`>
 
-*Defined in [wyvern.ts:242](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L242)*
+*Defined in [wyvern.ts:242](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L242)*
 
 Sign messages using web3 personal signatures
 
@@ -1014,7 +1014,7 @@ ___
 
 ▸ **promisify**T(inner: *`function`*): `Promise`<`T`>
 
-*Defined in [wyvern.ts:21](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L21)*
+*Defined in [wyvern.ts:21](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L21)*
 
 Promisify a callback-syntax web3 function
 
@@ -1036,7 +1036,7 @@ ___
 
 ▸ **sendRawTransaction**(web3: *`Web3`*, __namedParameters: *`object`*): `Promise`<`Object`>
 
-*Defined in [wyvern.ts:278](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L278)*
+*Defined in [wyvern.ts:278](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L278)*
 
 Send a transaction to the blockchain and optionally confirm it
 
@@ -1056,7 +1056,7 @@ ___
 
 ▸ **throwOnUnauth**(response: *`Response`*): `Response`
 
-*Defined in [api.ts:188](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/api.ts#L188)*
+*Defined in [api.ts:188](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/api.ts#L188)*
 
 **Parameters:**
 
@@ -1073,7 +1073,7 @@ ___
 
 ▸ **track**(web3: *`Web3`*, txHash: *`string`*, onFinalized: *[TxnCallback](#txncallback)*): `void`
 
-*Defined in [wyvern.ts:32](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/wyvern.ts#L32)*
+*Defined in [wyvern.ts:32](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/wyvern.ts#L32)*
 
 **Parameters:**
 
@@ -1095,7 +1095,7 @@ ___
 
 **DECENTRALAND_AUCTION_CONFIG**: *`object`*
 
-*Defined in [contracts.ts:11](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/contracts.ts#L11)*
+*Defined in [contracts.ts:11](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/contracts.ts#L11)*
 
 <a id="decentraland_auction_config.1"></a>
 
@@ -1103,7 +1103,7 @@ ___
 
 **● 1**: *`string`* = "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d"
 
-*Defined in [contracts.ts:12](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/contracts.ts#L12)*
+*Defined in [contracts.ts:12](https://github.com/ProjectOpenSea/opensea-js/blob/e845296/src/contracts.ts#L12)*
 
 ___
 
