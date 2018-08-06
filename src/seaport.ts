@@ -29,9 +29,8 @@ export class OpenSeaPort {
    * Your very own seaport.
    * Create a new instance of OpenSeaJS.
    * @param provider Web3 Provider to use for transactions. For example:
-   *  const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
-   * @param apiConfig configuration options, including `networkName: Network`
-   *  and `gasPrice` (defaults to 100,000)
+   *  `const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')`
+   * @param apiConfig configuration options, including `networkName`
    * @param logger logger, optional, a function that will be called with debugging
    *  information
    */

@@ -33,7 +33,7 @@
   "bugs": {
     "url": "https://github.com/ProjectOpenSea/opensea-js/issues"
   },
-  "homepage": "https://developers.opensea.io/",
+  "homepage": "https://docs.opensea.io/",
   "dependencies": {
     "bignumber.js": "^4.0.4",
     "ethereumjs-util": "^5.1.3",

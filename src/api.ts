@@ -3,7 +3,7 @@ import * as QueryString from 'query-string'
 import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse } from './types'
 import { orderFromJSON } from './wyvern'
 
-export const ORDERBOOK_VERSION: number = 0
+export const ORDERBOOK_VERSION: number = 1
 
 const API_BASE_MAINNET = 'https://api.opensea.io'
 const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'

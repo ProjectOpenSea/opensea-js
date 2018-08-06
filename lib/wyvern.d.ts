@@ -47,9 +47,13 @@ export declare function sendRawTransaction(web3: Web3, { fromAddress, toAddress,
     awaitConfirmation?: boolean;
 }): Promise<{}>;
 /**
- * Estimates the price 30 seconds ago
+ * Estimates the price of an order
+ * @param order The order to estimate price on
+ * @param secondsToBacktrack The number of seconds to subtract on current time,
+ *  to fix race conditions
+ * @param shouldRoundUp Whether to round up fractional wei
  */
-export declare function estimateCurrentPrice(order: Order, shouldRoundUp?: boolean): BigNumber;
+export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: number, shouldRoundUp?: boolean): BigNumber;
 /**
  * Get the Wyvern representation of an asset
  * @param schema The WyvernSchema needed to access this asset

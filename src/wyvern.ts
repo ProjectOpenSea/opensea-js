@@ -36,10 +36,6 @@ const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
   } else {
     txCallbacks[txHash] = [onFinalized]
     const poll = async () => {
-      // if (!web3) {
-      //   setTimeout(poll, 1000)
-      //   return
-      // }
       const tx = await promisify<Web3.Transaction>(c => web3.eth.getTransaction(txHash, c))
       if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
         const receipt = await promisify<Web3.TransactionReceipt | null>(c => web3.eth.getTransactionReceipt(txHash, c))
@@ -309,13 +305,17 @@ function parseSignatureHex(signature: string): ECSignature {
 }
 
 /**
- * Estimates the price 30 seconds ago
+ * Estimates the price of an order
+ * @param order The order to estimate price on
+ * @param secondsToBacktrack The number of seconds to subtract on current time,
+ *  to fix race conditions
+ * @param shouldRoundUp Whether to round up fractional wei
  */
-export function estimateCurrentPrice(order: Order, shouldRoundUp = true) {
+export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shouldRoundUp = true) {
   let { basePrice, listingTime, expirationTime, extra } = order
   const { side } = order
 
-  const now = new BigNumber(Date.now() / 1000).minus(30)
+  const now = new BigNumber(Date.now() / 1000).minus(secondsToBacktrack)
   basePrice = new BigNumber(basePrice)
   listingTime = new BigNumber(listingTime)
   expirationTime = new BigNumber(expirationTime)
