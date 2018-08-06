@@ -24,6 +24,7 @@
 * [extra](order.md#extra)
 * [feeMethod](order.md#feemethod)
 * [feeRecipient](order.md#feerecipient)
+* [feeRecipientAccount](order.md#feerecipientaccount)
 * [hash](order.md#hash)
 * [howToCall](order.md#howtocall)
 * [listingTime](order.md#listingtime)
@@ -60,7 +61,7 @@
 **● asset**: * `undefined` &#124; `object`
 *
 
-*Defined in [types.ts:133](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L133)*
+*Defined in [types.ts:134](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L134)*
 
 ___
 <a id="baseprice"></a>
@@ -92,7 +93,7 @@ ___
 **● cancelledOrFinalized**: * `undefined` &#124; `true` &#124; `false`
 *
 
-*Defined in [types.ts:130](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L130)*
+*Defined in [types.ts:131](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L131)*
 
 ___
 <a id="currentprice"></a>
@@ -101,7 +102,7 @@ ___
 
 **● currentPrice**: *`BigNumber`*
 
-*Defined in [types.ts:132](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L132)*
+*Defined in [types.ts:133](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L133)*
 
 ___
 <a id="exchange"></a>
@@ -147,7 +148,7 @@ ___
 
 *Overrides Order.feeMethod*
 
-*Defined in [types.ts:111](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L111)*
+*Defined in [types.ts:111](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L111)*
 
 ___
 <a id="feerecipient"></a>
@@ -161,6 +162,15 @@ ___
 *Defined in /Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/wyvern-js/lib/types.d.ts:92*
 
 ___
+<a id="feerecipientaccount"></a>
+
+### `<Optional>` feeRecipientAccount
+
+**● feeRecipientAccount**: *[OpenSeaAccount](openseaaccount.md)*
+
+*Defined in [types.ts:130](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L130)*
+
+___
 <a id="hash"></a>
 
 ###  hash
@@ -169,7 +179,7 @@ ___
 
 *Inherited from [UnsignedOrder](unsignedorder.md).[hash](unsignedorder.md#hash)*
 
-*Defined in [types.ts:123](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L123)*
+*Defined in [types.ts:123](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L123)*
 
 ___
 <a id="howtocall"></a>
@@ -182,7 +192,7 @@ ___
 
 *Overrides Order.howToCall*
 
-*Defined in [types.ts:114](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L114)*
+*Defined in [types.ts:114](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L114)*
 
 ___
 <a id="listingtime"></a>
@@ -213,7 +223,7 @@ ___
 
 **● makerAccount**: *[OpenSeaAccount](openseaaccount.md)*
 
-*Defined in [types.ts:128](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L128)*
+*Defined in [types.ts:128](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L128)*
 
 ___
 <a id="makerprotocolfee"></a>
@@ -245,7 +255,7 @@ ___
 **● markedInvalid**: * `undefined` &#124; `true` &#124; `false`
 *
 
-*Defined in [types.ts:131](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L131)*
+*Defined in [types.ts:132](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L132)*
 
 ___
 <a id="metadata"></a>
@@ -256,7 +266,7 @@ ___
 
 *Inherited from [UnhashedOrder](unhashedorder.md).[metadata](unhashedorder.md#metadata)*
 
-*Defined in [types.ts:116](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L116)*
+*Defined in [types.ts:116](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L116)*
 
 #### Type declaration
 
@@ -319,7 +329,7 @@ ___
 
 *Overrides Order.saleKind*
 
-*Defined in [types.ts:113](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L113)*
+*Defined in [types.ts:113](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L113)*
 
 ___
 <a id="salt"></a>
@@ -343,7 +353,7 @@ ___
 
 *Overrides Order.side*
 
-*Defined in [types.ts:112](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L112)*
+*Defined in [types.ts:112](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L112)*
 
 ___
 <a id="staticextradata"></a>
@@ -385,7 +395,7 @@ ___
 
 **● takerAccount**: *[OpenSeaAccount](openseaaccount.md)*
 
-*Defined in [types.ts:129](https://github.com/ProjectOpenSea/opensea-js/blob/d48b650/src/types.ts#L129)*
+*Defined in [types.ts:129](https://github.com/ProjectOpenSea/opensea-js/blob/5a2d67e/src/types.ts#L129)*
 
 ___
 <a id="takerprotocolfee"></a>

@@ -127,6 +127,7 @@ export interface Order extends UnsignedOrder, ECSignature {
   // Server side appends
   makerAccount?: OpenSeaAccount,
   takerAccount?: OpenSeaAccount,
+  feeRecipientAccount?: OpenSeaAccount,
   cancelledOrFinalized?: boolean
   markedInvalid?: boolean
   currentPrice?: BigNumber

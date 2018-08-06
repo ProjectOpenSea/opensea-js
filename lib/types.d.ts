@@ -88,6 +88,7 @@ export interface UnsignedOrder extends UnhashedOrder {
 export interface Order extends UnsignedOrder, ECSignature {
     makerAccount?: OpenSeaAccount;
     takerAccount?: OpenSeaAccount;
+    feeRecipientAccount?: OpenSeaAccount;
     cancelledOrFinalized?: boolean;
     markedInvalid?: boolean;
     currentPrice?: BigNumber;

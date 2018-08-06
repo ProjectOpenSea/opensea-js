@@ -2,7 +2,6 @@ import BigNumber from 'bignumber.js'
 import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
-import { WyvernProtocol } from 'wyvern-js/lib'
 
 import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder } from './types'
 
@@ -68,19 +67,16 @@ export const confirmTransaction = async (web3: Web3, txHash: string) => {
   })
 }
 
-export const orderFromJSON = (order: any): Order => {
+export const orderFromJSONv0 = (order: any): Order => {
 
   const fromJSON: Order = {
-    hash: order.order_hash || order.hash,
+    hash: order.hash,
     cancelledOrFinalized: order.cancelledOrFinalized,
     markedInvalid: order.markedInvalid,
     metadata: order.metadata,
     exchange: order.exchange,
-    makerAccount: order.maker,
-    takerAccount: order.maker,
-    // Use string address to conform to Wyvern Order schema
-    maker: order.maker.address,
-    taker: order.taker.address,
+    maker: order.maker,
+    taker: order.taker,
     makerRelayerFee: new BigNumber(order.makerRelayerFee),
     takerRelayerFee: new BigNumber(order.takerRelayerFee),
     makerProtocolFee: new BigNumber(order.makerProtocolFee),
@@ -100,6 +96,50 @@ export const orderFromJSON = (order: any): Order => {
     extra: new BigNumber(order.extra),
     listingTime: new BigNumber(order.listingTime),
     expirationTime: new BigNumber(order.expirationTime),
+    salt: new BigNumber(order.salt),
+    v: parseInt(order.v),
+    r: order.r,
+    s: order.s,
+  }
+
+  fromJSON.currentPrice = estimateCurrentPrice(order)
+
+  return fromJSON
+}
+
+export const orderFromJSON = (order: any): Order => {
+
+  const fromJSON: Order = {
+    hash: order.order_hash || order.hash,
+    cancelledOrFinalized: order.cancelled || order.finalized,
+    markedInvalid: order.marked_invalid,
+    metadata: order.metadata,
+    exchange: order.exchange,
+    makerAccount: order.maker,
+    takerAccount: order.maker,
+    // Use string address to conform to Wyvern Order schema
+    maker: order.maker.address,
+    taker: order.taker.address,
+    makerRelayerFee: new BigNumber(order.maker_relayer_fee),
+    takerRelayerFee: new BigNumber(order.taker_relayer_fee),
+    makerProtocolFee: new BigNumber(order.maker_protocol_fee),
+    takerProtocolFee: new BigNumber(order.taker_protocol_fee),
+    feeMethod: order.fee_method,
+    feeRecipientAccount: order.fee_recipient,
+    feeRecipient: order.fee_recipient.address,
+    side: order.side,
+    saleKind: order.sale_kind,
+    target: order.target,
+    howToCall: order.how_to_call,
+    calldata: order.calldata,
+    replacementPattern: order.replacement_pattern,
+    staticTarget: order.static_target,
+    staticExtradata: order.static_extradata,
+    paymentToken: order.payment_token,
+    basePrice: new BigNumber(order.base_price),
+    extra: new BigNumber(order.extra),
+    listingTime: new BigNumber(order.listing_time),
+    expirationTime: new BigNumber(order.expiration_time),
     salt: new BigNumber(order.salt),
     v: parseInt(order.v),
     r: order.r,
