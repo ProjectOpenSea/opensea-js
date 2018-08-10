@@ -20,11 +20,13 @@
 * [feeRecipient](orderjson.md#feerecipient)
 * [hash](orderjson.md#hash)
 * [howToCall](orderjson.md#howtocall)
+* [limit](orderjson.md#limit)
 * [listingTime](orderjson.md#listingtime)
 * [maker](orderjson.md#maker)
 * [makerProtocolFee](orderjson.md#makerprotocolfee)
 * [makerRelayerFee](orderjson.md#makerrelayerfee)
 * [metadata](orderjson.md#metadata)
+* [offset](orderjson.md#offset)
 * [owner](orderjson.md#owner)
 * [paymentToken](orderjson.md#paymenttoken)
 * [r](orderjson.md#r)
@@ -53,7 +55,7 @@
 **● asset_contract_address**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:177](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L177)*
+*Defined in [types.ts:177](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L177)*
 
 ___
 <a id="baseprice"></a>
@@ -62,7 +64,7 @@ ___
 
 **● basePrice**: *`string`*
 
-*Defined in [types.ts:158](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L158)*
+*Defined in [types.ts:158](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L158)*
 
 ___
 <a id="calldata"></a>
@@ -71,7 +73,7 @@ ___
 
 **● calldata**: *`string`*
 
-*Defined in [types.ts:153](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L153)*
+*Defined in [types.ts:153](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L153)*
 
 ___
 <a id="exchange"></a>
@@ -80,7 +82,7 @@ ___
 
 **● exchange**: *`string`*
 
-*Defined in [types.ts:140](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L140)*
+*Defined in [types.ts:140](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L140)*
 
 ___
 <a id="expirationtime"></a>
@@ -89,7 +91,7 @@ ___
 
 **● expirationTime**: *`string`*
 
-*Defined in [types.ts:161](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L161)*
+*Defined in [types.ts:161](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L161)*
 
 ___
 <a id="extra"></a>
@@ -98,16 +100,16 @@ ___
 
 **● extra**: *`string`*
 
-*Defined in [types.ts:159](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L159)*
+*Defined in [types.ts:159](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L159)*
 
 ___
 <a id="feemethod"></a>
 
 ###  feeMethod
 
-**● feeMethod**: *`string`*
+**● feeMethod**: *[FeeMethod](../enums/feemethod.md)*
 
-*Defined in [types.ts:148](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L148)*
+*Defined in [types.ts:148](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L148)*
 
 ___
 <a id="feerecipient"></a>
@@ -116,7 +118,7 @@ ___
 
 **● feeRecipient**: *`string`*
 
-*Defined in [types.ts:147](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L147)*
+*Defined in [types.ts:147](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L147)*
 
 ___
 <a id="hash"></a>
@@ -126,16 +128,26 @@ ___
 **● hash**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:170](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L170)*
+*Defined in [types.ts:170](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L170)*
 
 ___
 <a id="howtocall"></a>
 
 ###  howToCall
 
-**● howToCall**: *`string`*
+**● howToCall**: *`HowToCall`*
 
-*Defined in [types.ts:152](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L152)*
+*Defined in [types.ts:152](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L152)*
+
+___
+<a id="limit"></a>
+
+### `<Optional>` limit
+
+**● limit**: * `undefined` &#124; `number`
+*
+
+*Defined in [types.ts:179](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L179)*
 
 ___
 <a id="listingtime"></a>
@@ -144,7 +156,7 @@ ___
 
 **● listingTime**: *`string`*
 
-*Defined in [types.ts:160](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L160)*
+*Defined in [types.ts:160](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L160)*
 
 ___
 <a id="maker"></a>
@@ -153,7 +165,7 @@ ___
 
 **● maker**: *`string`*
 
-*Defined in [types.ts:141](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L141)*
+*Defined in [types.ts:141](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L141)*
 
 ___
 <a id="makerprotocolfee"></a>
@@ -162,7 +174,7 @@ ___
 
 **● makerProtocolFee**: *`string`*
 
-*Defined in [types.ts:145](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L145)*
+*Defined in [types.ts:145](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L145)*
 
 ___
 <a id="makerrelayerfee"></a>
@@ -171,7 +183,7 @@ ___
 
 **● makerRelayerFee**: *`string`*
 
-*Defined in [types.ts:143](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L143)*
+*Defined in [types.ts:143](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L143)*
 
 ___
 <a id="metadata"></a>
@@ -180,13 +192,23 @@ ___
 
 **● metadata**: *`object`*
 
-*Defined in [types.ts:164](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L164)*
+*Defined in [types.ts:164](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L164)*
 
 #### Type declaration
 
  asset: [WyvernAsset](wyvernasset.md)
 
  schema: `SchemaName`
+
+___
+<a id="offset"></a>
+
+### `<Optional>` offset
+
+**● offset**: * `undefined` &#124; `number`
+*
+
+*Defined in [types.ts:180](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L180)*
 
 ___
 <a id="owner"></a>
@@ -196,7 +218,7 @@ ___
 **● owner**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:176](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L176)*
+*Defined in [types.ts:176](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L176)*
 
 ___
 <a id="paymenttoken"></a>
@@ -205,7 +227,7 @@ ___
 
 **● paymentToken**: *`string`*
 
-*Defined in [types.ts:157](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L157)*
+*Defined in [types.ts:157](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L157)*
 
 ___
 <a id="r"></a>
@@ -215,7 +237,7 @@ ___
 **● r**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:172](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L172)*
+*Defined in [types.ts:172](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L172)*
 
 ___
 <a id="replacementpattern"></a>
@@ -224,7 +246,7 @@ ___
 
 **● replacementPattern**: *`string`*
 
-*Defined in [types.ts:154](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L154)*
+*Defined in [types.ts:154](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L154)*
 
 ___
 <a id="s"></a>
@@ -234,16 +256,16 @@ ___
 **● s**: * `undefined` &#124; `string`
 *
 
-*Defined in [types.ts:173](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L173)*
+*Defined in [types.ts:173](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L173)*
 
 ___
 <a id="salekind"></a>
 
 ###  saleKind
 
-**● saleKind**: *`string`*
+**● saleKind**: *`SaleKind`*
 
-*Defined in [types.ts:150](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L150)*
+*Defined in [types.ts:150](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L150)*
 
 ___
 <a id="salt"></a>
@@ -252,16 +274,16 @@ ___
 
 **● salt**: *`string`*
 
-*Defined in [types.ts:162](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L162)*
+*Defined in [types.ts:162](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L162)*
 
 ___
 <a id="side"></a>
 
 ###  side
 
-**● side**: *`string`*
+**● side**: *[OrderSide](../enums/orderside.md)*
 
-*Defined in [types.ts:149](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L149)*
+*Defined in [types.ts:149](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L149)*
 
 ___
 <a id="staticextradata"></a>
@@ -270,7 +292,7 @@ ___
 
 **● staticExtradata**: *`string`*
 
-*Defined in [types.ts:156](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L156)*
+*Defined in [types.ts:156](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L156)*
 
 ___
 <a id="statictarget"></a>
@@ -279,7 +301,7 @@ ___
 
 **● staticTarget**: *`string`*
 
-*Defined in [types.ts:155](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L155)*
+*Defined in [types.ts:155](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L155)*
 
 ___
 <a id="taker"></a>
@@ -288,7 +310,7 @@ ___
 
 **● taker**: *`string`*
 
-*Defined in [types.ts:142](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L142)*
+*Defined in [types.ts:142](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L142)*
 
 ___
 <a id="takerprotocolfee"></a>
@@ -297,7 +319,7 @@ ___
 
 **● takerProtocolFee**: *`string`*
 
-*Defined in [types.ts:146](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L146)*
+*Defined in [types.ts:146](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L146)*
 
 ___
 <a id="takerrelayerfee"></a>
@@ -306,7 +328,7 @@ ___
 
 **● takerRelayerFee**: *`string`*
 
-*Defined in [types.ts:144](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L144)*
+*Defined in [types.ts:144](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L144)*
 
 ___
 <a id="target"></a>
@@ -315,7 +337,7 @@ ___
 
 **● target**: *`string`*
 
-*Defined in [types.ts:151](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L151)*
+*Defined in [types.ts:151](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L151)*
 
 ___
 <a id="token_id"></a>
@@ -325,7 +347,7 @@ ___
 **● token_id**: * `number` &#124; `string`
 *
 
-*Defined in [types.ts:178](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L178)*
+*Defined in [types.ts:178](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L178)*
 
 ___
 <a id="v"></a>
@@ -335,7 +357,7 @@ ___
 **● v**: * `undefined` &#124; `number`
 *
 
-*Defined in [types.ts:171](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/types.ts#L171)*
+*Defined in [types.ts:171](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L171)*
 
 ___
 

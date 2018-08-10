@@ -145,11 +145,11 @@ export interface OrderJSON {
   makerProtocolFee: string
   takerProtocolFee: string
   feeRecipient: string
-  feeMethod: string
-  side: string
-  saleKind: string
+  feeMethod: FeeMethod
+  side: OrderSide
+  saleKind: SaleKind
   target: string
-  howToCall: string
+  howToCall: HowToCall
   calldata: string
   replacementPattern: string
   staticTarget: string
@@ -176,6 +176,8 @@ export interface OrderJSON {
   owner?: string,
   asset_contract_address?: string,
   token_id?: number | string
+  limit?: number
+  offset?: number
 }
 
 export interface OrderbookResponse {

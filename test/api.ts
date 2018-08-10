@@ -8,7 +8,7 @@ import {
 } from 'mocha-typescript'
 
 import { OpenSeaAPI, ORDERBOOK_VERSION } from '../src/api'
-import { Network, Order, OrderJSON } from '../src/types'
+import { Network, Order, OrderJSON, OrderSide } from '../src/types'
 import { orderToJSON } from '../src'
 
 const mainApi = new OpenSeaAPI({
@@ -80,13 +80,13 @@ suite('api', () => {
     })
   })
 
-  test('API fetches orders for asset maker', async () => {
-    const forMaker = await apiToTest.getOrders({maker: ALEX_ADDRESS})
+  test('API fetches buy orders for maker', async () => {
+    const forMaker = await apiToTest.getOrders({maker: ALEX_ADDRESS, side: OrderSide.Buy})
     assert.isAbove(forMaker.orders.length, 0)
     assert.isAbove(forMaker.count, 0)
-    const makers = forMaker.orders.map(o => o.maker)
-    makers.forEach(maker => {
-      assert.equal(ALEX_ADDRESS, maker)
+    forMaker.orders.forEach(order => {
+      assert.equal(ALEX_ADDRESS, order.maker)
+      assert.equal(OrderSide.Buy, order.side)
     })
   })
 
@@ -96,7 +96,7 @@ suite('api', () => {
   })
 
   test('API excludes cancelledOrFinalized and markedInvalid orders', async () => {
-    const {orders} = await apiToTest.getOrders()
+    const {orders} = await apiToTest.getOrders({limit: 100})
     const finishedOrders = orders.filter(o => o.cancelledOrFinalized)
     assert.isEmpty(finishedOrders)
     const invalidOrders = orders.filter(o => o.markedInvalid)
@@ -123,7 +123,7 @@ suite('api', () => {
       }
       await apiToTest.postOrder(newOrder)
     } catch (error) {
-      assert.equal(error.message, "Unauthorized")
+      assert.include(error.message, "Expected")
     }
   })
 
