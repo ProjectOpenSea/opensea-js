@@ -111,7 +111,7 @@ suite('api', () => {
     try {
       await apiToTest.get('/user')
     } catch (error) {
-      assert.equal(error.message, "Unauthorized")
+      assert.include(error.message, "Unauthorized")
     }
 
     try {
@@ -123,7 +123,7 @@ suite('api', () => {
       }
       await apiToTest.postOrder(newOrder)
     } catch (error) {
-      assert.include(error.message, "Expected")
+      assert.include(error.message, "Order failed exchange validation")
     }
   })
 
