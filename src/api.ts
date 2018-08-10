@@ -193,16 +193,23 @@ async function handleApiErrors(response: Response) {
     switch (response.status) {
       case 401:
       case 403:
-        throw new Error('Unauthorized')
+        errorMessage = 'Unauthorized'
+        break
       case 400:
         result = await response.json()
         errorMessage = result && result.errors
           ? result.errors.join(', ')
           : "Invalid request"
-        throw new Error(errorMessage)
+        break
+      case 500:
+        errorMessage = "Internal server error"
+        break
       default:
-        throw new Error("OpenSea API error :/ Please try again later!")
+        errorMessage = "Please try again later!"
+        break
     }
+
+    throw new Error(`API Error: ${errorMessage}`)
   }
   return response
 }
