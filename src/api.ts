@@ -181,13 +181,28 @@ export class OpenSeaAPI {
         ...(apiKey ? { 'X-API-KEY': apiKey } : {}),
         ...(opts.headers || {}),
       },
-    }).then(throwOnUnauth)
+    }).then(handleApiErrors)
   }
 }
 
-function throwOnUnauth(response: Response) {
-  if (!response.ok && response.status == 401) {
-    throw new Error('Unauthorized')
+async function handleApiErrors(response: Response) {
+  let result
+  let errorMessage
+
+  if (!response.ok) {
+    switch (response.status) {
+      case 401:
+      case 403:
+        throw new Error('Unauthorized')
+      case 400:
+        result = await response.json()
+        errorMessage = result && result.errors
+          ? result.errors.join(', ')
+          : "Invalid request"
+        throw new Error(errorMessage)
+      default:
+        throw new Error("OpenSea API error :/ Please try again later!")
+    }
   }
   return response
 }

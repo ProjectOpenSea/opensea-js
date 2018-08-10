@@ -8,7 +8,8 @@ import {
 } from 'mocha-typescript'
 
 import { OpenSeaAPI, ORDERBOOK_VERSION } from '../src/api'
-import { Network, Order } from '../src/types'
+import { Network, Order, OrderJSON } from '../src/types'
+import { orderToJSON } from '../src'
 
 const mainApi = new OpenSeaAPI({
   networkName: Network.Main
@@ -18,8 +19,11 @@ const rinkebyApi = new OpenSeaAPI({
   networkName: Network.Rinkeby
 })
 
+const apiToTest = rinkebyApi
+
 const CK_ADDRESS = '0x06012c8cf97bead5deae237070f9587f8e7a266d'
-const CK_GENESIS_OWNER_ADDRESS = '0x79bd592415ff6c91cfe69a7f9cd091354fc65a18'
+const CK_RINKEBY_ADDRESS = '0x16baf0de678e52367adc69fd067e5edd1d33e3bf'
+const CK_RINKEBY_TOKEN_ID = 111
 const ALEX_ADDRESS = '0xe96a1b303a1eb8d04fb973eb2b291b8d591c8f72'
 
 suite('api', () => {
@@ -30,55 +34,54 @@ suite('api', () => {
   })
 
   test('API fetches orderbook', async () => {
-    const {orders, count} = await mainApi.getOrders()
+    const {orders, count} = await apiToTest.getOrders()
     assert.isArray(orders)
     assert.isNumber(count)
-    assert.equal(orders.length, mainApi.pageSize)
+    assert.equal(orders.length, apiToTest.pageSize)
     assert.isAtLeast(count, orders.length)
   })
 
   test('API can change page size', async () => {
-    const defaultPageSize = mainApi.pageSize
-    mainApi.pageSize = 7
-    const {orders, count} = await mainApi.getOrders()
+    const defaultPageSize = apiToTest.pageSize
+    apiToTest.pageSize = 7
+    const {orders, count} = await apiToTest.getOrders()
     assert.equal(orders.length, 7)
-    mainApi.pageSize = defaultPageSize
+    apiToTest.pageSize = defaultPageSize
   })
 
   if (ORDERBOOK_VERSION > 0) {
     test('API orderbook paginates', async () => {
-      const {orders, count} = await mainApi.getOrders()
-      const pagination = await mainApi.getOrders({}, 2)
-      assert.equal(pagination.orders.length, mainApi.pageSize)
+      const {orders, count} = await apiToTest.getOrders()
+      const pagination = await apiToTest.getOrders({}, 2)
+      assert.equal(pagination.orders.length, apiToTest.pageSize)
       assert.notDeepEqual(pagination.orders[0], orders[0])
       assert.equal(pagination.count, count)
     })
   }
 
   test('API fetches orders for asset contract and asset', async () => {
-    const forKitties = await mainApi.getOrders({tokenAddress: CK_ADDRESS})
+    const forKitties = await apiToTest.getOrders({asset_contract_address: CK_RINKEBY_ADDRESS})
     assert.isAbove(forKitties.orders.length, 0)
     assert.isAbove(forKitties.count, 0)
 
-    const forKitty = await mainApi.getOrders({tokenAddress: CK_ADDRESS, tokenId: 1})
+    const forKitty = await apiToTest.getOrders({asset_contract_address: CK_RINKEBY_ADDRESS, token_id: CK_RINKEBY_TOKEN_ID})
     assert.isAbove(forKitty.orders.length, 0)
     assert.isAbove(forKitty.count, 0)
     assert.isAtLeast(forKitties.orders.length, forKitty.orders.length)
   })
 
-  // TODO after v1 migration
-  // test('API fetches orders for asset owner', async () => {
-  //   const forOwner = await mainApi.getOrders({owner: CK_GENESIS_OWNER_ADDRESS})
-  //   assert.isAbove(forOwner.orders.length, 0)
-  //   assert.isAbove(forOwner.count, 0)
-  //   const owners = forOwner.orders.map(o => o.asset.owner)
-  //   owners.forEach(owner => {
-  //     assert.equal(CK_GENESIS_OWNER_ADDRESS, owner)
-  //   })
-  // })
+  test('API fetches orders for asset owner', async () => {
+    const forOwner = await apiToTest.getOrders({owner: ALEX_ADDRESS})
+    assert.isAbove(forOwner.orders.length, 0)
+    assert.isAbove(forOwner.count, 0)
+    const owners = forOwner.orders.map(o => o.asset && o.asset.owner && o.asset.owner.address)
+    owners.forEach(owner => {
+      assert.equal(ALEX_ADDRESS, owner)
+    })
+  })
 
   test('API fetches orders for asset maker', async () => {
-    const forMaker = await mainApi.getOrders({maker: ALEX_ADDRESS})
+    const forMaker = await apiToTest.getOrders({maker: ALEX_ADDRESS})
     assert.isAbove(forMaker.orders.length, 0)
     assert.isAbove(forMaker.count, 0)
     const makers = forMaker.orders.map(o => o.maker)
@@ -88,16 +91,40 @@ suite('api', () => {
   })
 
   test('API doesn\'t fetch impossible orders', async () => {
-    const order: Order | null = await mainApi.getOrder({maker: ALEX_ADDRESS, taker: ALEX_ADDRESS})
+    const order: Order | null = await apiToTest.getOrder({maker: ALEX_ADDRESS, taker: ALEX_ADDRESS})
     assert.isNull(order)
   })
 
   test('API excludes cancelledOrFinalized and markedInvalid orders', async () => {
-    const {orders} = await mainApi.getOrders()
+    const {orders} = await apiToTest.getOrders()
     const finishedOrders = orders.filter(o => o.cancelledOrFinalized)
     assert.isEmpty(finishedOrders)
     const invalidOrders = orders.filter(o => o.markedInvalid)
     assert.isEmpty(invalidOrders)
+  })
+
+  test('API handles errors', async () => {
+    const res = await apiToTest.getOrders()
+    const order = res.orders[0]
+    assert.isNotNull(order)
+
+    try {
+      await apiToTest.get('/user')
+    } catch (error) {
+      assert.equal(error.message, "Unauthorized")
+    }
+
+    try {
+      const newOrder = {
+        ...orderToJSON(order),
+        v: 1,
+        r: "",
+        s: ""
+      }
+      await apiToTest.postOrder(newOrder)
+    } catch (error) {
+      assert.equal(error.message, "Unauthorized")
+    }
   })
 
 })

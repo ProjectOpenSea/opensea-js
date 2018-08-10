@@ -145,6 +145,8 @@ export const orderFromJSON = (order: any): Order => {
     v: parseInt(order.v),
     r: order.r,
     s: order.s,
+
+    asset: order.asset
   }
 
   fromJSON.currentPrice = estimateCurrentPrice(fromJSON)

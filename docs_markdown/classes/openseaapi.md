@@ -36,7 +36,7 @@
 
 ⊕ **new OpenSeaAPI**(__namedParameters: *`object`*): [OpenSeaAPI](openseaapi.md)
 
-*Defined in [api.ts:23](https://github.com/ProjectOpenSea/opensea-js/blob/f609fb2/src/api.ts#L23)*
+*Defined in [api.ts:23](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/api.ts#L23)*
 
 Create an instance of the OpenSea API
 
@@ -58,7 +58,7 @@ ___
 
 **● apiBaseUrl**: *`string`*
 
-*Defined in [api.ts:17](https://github.com/ProjectOpenSea/opensea-js/blob/f609fb2/src/api.ts#L17)*
+*Defined in [api.ts:17](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/api.ts#L17)*
 
 Base url for the API
 
@@ -69,7 +69,7 @@ ___
 
 **● pageSize**: *`number`* = 20
 
-*Defined in [api.ts:21](https://github.com/ProjectOpenSea/opensea-js/blob/f609fb2/src/api.ts#L21)*
+*Defined in [api.ts:21](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/api.ts#L21)*
 
 Page size to use for fetching orders
 
@@ -83,7 +83,7 @@ ___
 
 ▸ **get**(apiPath: *`string`*, query?: *`object`*): `Promise`<`Response`>
 
-*Defined in [api.ts:124](https://github.com/ProjectOpenSea/opensea-js/blob/f609fb2/src/api.ts#L124)*
+*Defined in [api.ts:124](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/api.ts#L124)*
 
 Get JSON data from API, sending auth token in headers
 
@@ -103,7 +103,7 @@ ___
 
 ▸ **getOrder**(query: *`Partial`<[OrderJSON](../interfaces/orderjson.md)>*): `Promise`< [Order](../interfaces/order.md) &#124; `null`>
 
-*Defined in [api.ts:65](https://github.com/ProjectOpenSea/opensea-js/blob/f609fb2/src/api.ts#L65)*
+*Defined in [api.ts:65](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/api.ts#L65)*
 
 Get an order from the orderbook, returning `null` if none are found.
 
@@ -122,7 +122,7 @@ ___
 
 ▸ **getOrders**(query?: *`Partial`<[OrderJSON](../interfaces/orderjson.md)>*, page?: *`number`*): `Promise`<`object`>
 
-*Defined in [api.ts:90](https://github.com/ProjectOpenSea/opensea-js/blob/f609fb2/src/api.ts#L90)*
+*Defined in [api.ts:90](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/api.ts#L90)*
 
 Get a list of orders from the orderbook, returning the page of orders and the count of total orders found.
 
@@ -142,7 +142,7 @@ ___
 
 ▸ **post**(apiPath: *`string`*, body?: * `undefined` &#124; `object`*, opts?: *`RequestInit`*): `Promise`<`Response`>
 
-*Defined in [api.ts:139](https://github.com/ProjectOpenSea/opensea-js/blob/f609fb2/src/api.ts#L139)*
+*Defined in [api.ts:139](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/api.ts#L139)*
 
 POST JSON data to API, sending auth token in headers
 
@@ -163,7 +163,7 @@ ___
 
 ▸ **postOrder**(order: *[OrderJSON](../interfaces/orderjson.md)*): `Promise`<[Order](../interfaces/order.md)>
 
-*Defined in [api.ts:50](https://github.com/ProjectOpenSea/opensea-js/blob/f609fb2/src/api.ts#L50)*
+*Defined in [api.ts:50](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/api.ts#L50)*
 
 Send an order to the orderbook. Throws when the order is invalid.
 
@@ -182,7 +182,7 @@ ___
 
 ▸ **put**(apiPath: *`string`*, body: *`object`*, opts?: *`RequestInit`*): `Promise`<`Response`>
 
-*Defined in [api.ts:161](https://github.com/ProjectOpenSea/opensea-js/blob/f609fb2/src/api.ts#L161)*
+*Defined in [api.ts:161](https://github.com/ProjectOpenSea/opensea-js/blob/543a727/src/api.ts#L161)*
 
 PUT JSON data to API, sending auth token in headers
 

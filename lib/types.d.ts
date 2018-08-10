@@ -93,9 +93,7 @@ export interface Order extends UnsignedOrder, ECSignature {
     markedInvalid?: boolean;
     currentPrice?: BigNumber;
     asset?: {
-        asset: WyvernAsset;
-        owner: null | string;
-        hash: string;
+        owner: OpenSeaAccount;
     };
 }
 export interface OrderJSON {
@@ -131,8 +129,8 @@ export interface OrderJSON {
     r?: string;
     s?: string;
     owner?: string;
-    tokenAddress?: string;
-    tokenId?: number | string;
+    asset_contract_address?: string;
+    token_id?: number | string;
 }
 export interface OrderbookResponse {
     orders: OrderJSON[];
