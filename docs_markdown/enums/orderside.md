@@ -21,7 +21,7 @@ Wyvern order side: buy or sell.
 
 **Buy**:  = 0
 
-*Defined in [types.ts:73](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L73)*
+*Defined in [types.ts:73](https://github.com/ProjectOpenSea/opensea-js/blob/5f20f11/src/types.ts#L73)*
 
 ___
 <a id="sell"></a>
@@ -30,7 +30,7 @@ ___
 
 **Sell**:  = 1
 
-*Defined in [types.ts:74](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L74)*
+*Defined in [types.ts:74](https://github.com/ProjectOpenSea/opensea-js/blob/5f20f11/src/types.ts#L74)*
 
 ___
 

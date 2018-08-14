@@ -21,7 +21,7 @@ Wyvern fee method
 
 **ProtocolFee**:  = 0
 
-*Defined in [types.ts:82](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L82)*
+*Defined in [types.ts:82](https://github.com/ProjectOpenSea/opensea-js/blob/5f20f11/src/types.ts#L82)*
 
 ___
 <a id="splitfee"></a>
@@ -30,7 +30,7 @@ ___
 
 **SplitFee**:  = 1
 
-*Defined in [types.ts:84](https://github.com/ProjectOpenSea/opensea-js/blob/b54ebda/src/types.ts#L84)*
+*Defined in [types.ts:84](https://github.com/ProjectOpenSea/opensea-js/blob/5f20f11/src/types.ts#L84)*
 
 ___
 
