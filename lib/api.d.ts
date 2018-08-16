@@ -1,6 +1,7 @@
 import 'isomorphic-unfetch';
-import { OpenSeaAPIConfig, OrderJSON, Order } from './types';
+import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset } from './types';
 export declare const ORDERBOOK_VERSION: number;
+export declare const API_VERSION: number;
 export declare class OpenSeaAPI {
     /**
      * Base url for the API
@@ -41,6 +42,12 @@ export declare class OpenSeaAPI {
         orders: Order[];
         count: number;
     }>;
+    /**
+     * Fetch an asset from the API, return null if it isn't found
+     * @param tokenAddress Address of the asset's contract
+     * @param tokenId The asset's token ID
+     */
+    getAsset(tokenAddress: string, tokenId: string | number): Promise<OpenSeaAsset | null>;
     /**
      * Get JSON data from API, sending auth token in headers
      * @param apiPath Path to URL endpoint under API
