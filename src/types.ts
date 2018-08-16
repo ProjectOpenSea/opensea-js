@@ -107,6 +107,28 @@ export interface OpenSeaAccount {
   }
 }
 
+/**
+ * The OpenSea asset fetched by the API
+ */
+export interface OpenSeaAsset {
+  assetContract: {
+    // Name of the asset's contract
+    name: string;
+    // Address of this contract
+    address: OpenSeaAccount;
+    // Fee levied on sellers by this contract, in basis points
+    sellerFeeBasisPoints: number;
+    // Fee levied on buyers by this contract, in basis points
+    buyerFeeBasisPoints: number;
+  }
+  // The asset's given name
+  name: string
+  // The asset's token ID
+  tokenId: string
+  // Owner of the asset
+  owner: OpenSeaAccount
+}
+
 export interface UnhashedOrder extends WyvernOrder {
   feeMethod: FeeMethod
   side: OrderSide
@@ -131,9 +153,7 @@ export interface Order extends UnsignedOrder, ECSignature {
   cancelledOrFinalized?: boolean
   markedInvalid?: boolean
   currentPrice?: BigNumber
-  asset?: {
-    owner: OpenSeaAccount;
-  }
+  asset?: OpenSeaAsset
 }
 
 export interface OrderJSON {

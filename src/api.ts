@@ -1,13 +1,15 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
-import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse } from './types'
-import { orderFromJSON } from './wyvern'
+import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset} from './types'
+import { orderFromJSON, assetFromJSON } from './wyvern'
 
 export const ORDERBOOK_VERSION: number = 1
+export const API_VERSION: number = 1
 
 const API_BASE_MAINNET = 'https://api.opensea.io'
 const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'
 const ORDERBOOK_PATH = `/wyvern/v${ORDERBOOK_VERSION}`
+const API_PATH = `/api/v${ORDERBOOK_VERSION}`
 
 export class OpenSeaAPI {
 
@@ -114,6 +116,19 @@ export class OpenSeaAPI {
         count: json.count
       }
     }
+  }
+
+  /**
+   * Fetch an asset from the API, return null if it isn't found
+   * @param tokenAddress Address of the asset's contract
+   * @param tokenId The asset's token ID
+   */
+  public async getAsset(tokenAddress: string, tokenId: string | number): Promise<OpenSeaAsset | null> {
+
+    const response = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId}`)
+
+    const json: any = await response.json()
+    return json ? assetFromJSON(json) : null
   }
 
   /**

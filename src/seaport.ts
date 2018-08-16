@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
@@ -180,16 +180,23 @@ export class OpenSeaPort {
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
 
+    const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
+    if (!asset) {
+      throw new Error('No asset found for this order')
+    }
+    const buyerFee = asset.assetContract.buyerFeeBasisPoints
+    const sellerFee = asset.assetContract.sellerFeeBasisPoints
+
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
     const order: UnhashedOrder = {
       exchange: WyvernProtocol.getExchangeContractAddress(this.networkName),
       maker: accountAddress,
       taker: WyvernProtocol.NULL_ADDRESS,
-      makerRelayerFee: makeBigNumber(0),
-      takerRelayerFee: makeBigNumber(0),
+      makerRelayerFee: makeBigNumber(buyerFee),
+      takerRelayerFee: makeBigNumber(sellerFee),
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
-      feeMethod: FeeMethod.ProtocolFee,
+      feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Buy,
       saleKind: SaleKind.FixedPrice,
@@ -259,6 +266,13 @@ export class OpenSeaPort {
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
 
+    const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
+    if (!asset) {
+      throw new Error('No asset found for this order')
+    }
+    const buyerFee = asset.assetContract.buyerFeeBasisPoints
+    const sellerFee = asset.assetContract.sellerFeeBasisPoints
+
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
 
     const extraInEth = endAmountInEth != null
@@ -273,11 +287,11 @@ export class OpenSeaPort {
       exchange: WyvernProtocol.getExchangeContractAddress(this.networkName),
       maker: accountAddress,
       taker: WyvernProtocol.NULL_ADDRESS,
-      makerRelayerFee: makeBigNumber(0),
-      takerRelayerFee: makeBigNumber(0),
+      makerRelayerFee: makeBigNumber(sellerFee),
+      takerRelayerFee: makeBigNumber(buyerFee),
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
-      feeMethod: FeeMethod.ProtocolFee,
+      feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Sell,
       saleKind: orderSaleKind,
@@ -954,8 +968,8 @@ export class OpenSeaPort {
       exchange: order.exchange,
       maker: accountAddress,
       taker: WyvernProtocol.NULL_ADDRESS,
-      makerRelayerFee: makeBigNumber(0),
-      takerRelayerFee: makeBigNumber(0),
+      makerRelayerFee: order.makerRelayerFee,
+      takerRelayerFee: order.takerRelayerFee,
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       feeMethod: order.feeMethod,

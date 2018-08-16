@@ -4,7 +4,7 @@ import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
 
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
@@ -105,6 +105,21 @@ export const orderFromJSONv0 = (order: any): Order => {
 
   fromJSON.currentPrice = estimateCurrentPrice(order)
 
+  return fromJSON
+}
+
+export const assetFromJSON = (asset: any): OpenSeaAsset => {
+  const fromJSON: OpenSeaAsset = {
+    tokenId: asset.token_id.toString(),
+    name: asset.name,
+    owner: asset.owner,
+    assetContract: {
+      name: asset.asset_contract.name,
+      address: asset.asset_contract.address,
+      buyerFeeBasisPoints: asset.asset_contract.buyer_fee_basis_points,
+      sellerFeeBasisPoints: asset.asset_contract.seller_fee_basis_points,
+    }
+  }
   return fromJSON
 }
 
