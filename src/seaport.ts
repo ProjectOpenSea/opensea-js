@@ -10,7 +10,7 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset
+  getWyvernAsset, INVERSE_BASIS_POINT
 } from './wyvern'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -732,7 +732,14 @@ export class OpenSeaPort {
       if (buy.paymentToken == WyvernProtocol.NULL_ADDRESS) {
         const currentPrice = await this.getCurrentPrice(sell)
         const estimatedPrice = estimateCurrentPrice(sell)
-        value = BigNumber.max(currentPrice, estimatedPrice)
+
+        const maxPrice = BigNumber.max(currentPrice, estimatedPrice)
+
+        // TODO Why is this not always a big number?
+        sell.takerRelayerFee = makeBigNumber(sell.takerRelayerFee.toString())
+        const feePercentage = sell.takerRelayerFee.div(INVERSE_BASIS_POINT)
+        const fee = feePercentage.times(maxPrice)
+        value = fee.plus(maxPrice).ceil()
       }
 
       orderLookupHash = sell.hash

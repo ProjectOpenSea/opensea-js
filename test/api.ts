@@ -24,7 +24,7 @@ const apiToTest = rinkebyApi
 const CK_ADDRESS = '0x06012c8cf97bead5deae237070f9587f8e7a266d'
 const CK_RINKEBY_ADDRESS = '0x16baf0de678e52367adc69fd067e5edd1d33e3bf'
 const CK_RINKEBY_TOKEN_ID = 111
-const CK_RINKEBY_SELLER_FEE = 0
+const CK_RINKEBY_SELLER_FEE = 125
 const ALEX_ADDRESS = '0xe96a1b303a1eb8d04fb973eb2b291b8d591c8f72'
 
 suite('api', () => {
@@ -112,7 +112,7 @@ suite('api', () => {
     }
     assert.equal(asset.tokenId, CK_RINKEBY_TOKEN_ID.toString())
     assert.equal(asset.assetContract.name, "CryptoKittiesRinkeby")
-    assert.equal(asset.assetContract.buyerFeeBasisPoints, CK_RINKEBY_SELLER_FEE)
+    assert.equal(asset.assetContract.sellerFeeBasisPoints, CK_RINKEBY_SELLER_FEE)
   })
 
   test('API handles errors', async () => {

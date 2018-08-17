@@ -3,6 +3,7 @@ import * as Web3 from 'web3';
 import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset } from './types';
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const feeRecipient = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
+export declare const INVERSE_BASIS_POINT = 10000;
 /**
  * Promisify a callback-syntax web3 function
  * @param inner callback function that accepts a Web3 callback function and passes

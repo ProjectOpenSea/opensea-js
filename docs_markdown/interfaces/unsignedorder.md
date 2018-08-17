@@ -109,7 +109,7 @@ ___
 
 *Overrides Order.feeMethod*
 
-*Defined in [types.ts:133](https://github.com/ProjectOpenSea/opensea-js/blob/03a1831/src/types.ts#L133)*
+*Defined in [types.ts:133](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L133)*
 
 ___
 <a id="feerecipient"></a>
@@ -129,7 +129,7 @@ ___
 
 **● hash**: *`string`*
 
-*Defined in [types.ts:145](https://github.com/ProjectOpenSea/opensea-js/blob/03a1831/src/types.ts#L145)*
+*Defined in [types.ts:145](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L145)*
 
 ___
 <a id="howtocall"></a>
@@ -142,7 +142,7 @@ ___
 
 *Overrides Order.howToCall*
 
-*Defined in [types.ts:136](https://github.com/ProjectOpenSea/opensea-js/blob/03a1831/src/types.ts#L136)*
+*Defined in [types.ts:136](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L136)*
 
 ___
 <a id="listingtime"></a>
@@ -197,7 +197,7 @@ ___
 
 *Inherited from [UnhashedOrder](unhashedorder.md).[metadata](unhashedorder.md#metadata)*
 
-*Defined in [types.ts:138](https://github.com/ProjectOpenSea/opensea-js/blob/03a1831/src/types.ts#L138)*
+*Defined in [types.ts:138](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L138)*
 
 #### Type declaration
 
@@ -238,7 +238,7 @@ ___
 
 *Overrides Order.saleKind*
 
-*Defined in [types.ts:135](https://github.com/ProjectOpenSea/opensea-js/blob/03a1831/src/types.ts#L135)*
+*Defined in [types.ts:135](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L135)*
 
 ___
 <a id="salt"></a>
@@ -262,7 +262,7 @@ ___
 
 *Overrides Order.side*
 
-*Defined in [types.ts:134](https://github.com/ProjectOpenSea/opensea-js/blob/03a1831/src/types.ts#L134)*
+*Defined in [types.ts:134](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L134)*
 
 ___
 <a id="staticextradata"></a>
