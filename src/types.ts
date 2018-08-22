@@ -84,6 +84,11 @@ export enum FeeMethod {
   SplitFee = 1,
 }
 
+// Wyvern Schemas (see https://github.com/ProjectOpenSea/wyvern-schemas)
+export enum WyvernSchemaName {
+  ERC721 = 'ERC721'
+}
+
 export interface WyvernAsset {
   id: string
   address: string
@@ -137,7 +142,7 @@ export interface UnhashedOrder extends WyvernOrder {
 
   metadata: {
     asset: WyvernAsset;
-    schema: SchemaName;
+    schema: WyvernSchemaName;
   }
 }
 
@@ -183,7 +188,7 @@ export interface OrderJSON {
 
   metadata: {
     asset: WyvernAsset;
-    schema: SchemaName;
+    schema: WyvernSchemaName;
   }
 
   // Optional, so that we can JSONify orders before sending them to getOrderHashHex

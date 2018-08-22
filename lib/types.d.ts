@@ -57,6 +57,9 @@ export declare enum FeeMethod {
     ProtocolFee = 0,
     SplitFee = 1
 }
+export declare enum WyvernSchemaName {
+    ERC721 = "ERC721"
+}
 export interface WyvernAsset {
     id: string;
     address: string;
@@ -93,7 +96,7 @@ export interface UnhashedOrder extends WyvernOrder {
     howToCall: HowToCall;
     metadata: {
         asset: WyvernAsset;
-        schema: SchemaName;
+        schema: WyvernSchemaName;
     };
 }
 export interface UnsignedOrder extends UnhashedOrder {
@@ -134,7 +137,7 @@ export interface OrderJSON {
     salt: string;
     metadata: {
         asset: WyvernAsset;
-        schema: SchemaName;
+        schema: WyvernSchemaName;
     };
     hash?: string;
     v?: number;

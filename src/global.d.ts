@@ -29,7 +29,7 @@ declare module 'truffle-hdwallet-provider' {
 
 declare module 'wyvern-schemas' {
     export const tokens: { [key: string]: any }
-    export const schemas: { [key: string]: Schema[] }
+    export const schemas: { [key: string]: Array<{name: any}> }
     export const encodeCall: (method: any, args: any[]) => any
     export const encodeSell: (method: any, asset: any, address: string) => any
     export const encodeBuy: (method: any, asset: any, address: string) => any

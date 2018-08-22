@@ -109,7 +109,7 @@ ___
 
 *Overrides Order.feeMethod*
 
-*Defined in [types.ts:133](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L133)*
+*Defined in [types.ts:138](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L138)*
 
 ___
 <a id="feerecipient"></a>
@@ -129,7 +129,7 @@ ___
 
 **● hash**: *`string`*
 
-*Defined in [types.ts:145](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L145)*
+*Defined in [types.ts:150](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L150)*
 
 ___
 <a id="howtocall"></a>
@@ -142,7 +142,7 @@ ___
 
 *Overrides Order.howToCall*
 
-*Defined in [types.ts:136](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L136)*
+*Defined in [types.ts:141](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L141)*
 
 ___
 <a id="listingtime"></a>
@@ -197,13 +197,13 @@ ___
 
 *Inherited from [UnhashedOrder](unhashedorder.md).[metadata](unhashedorder.md#metadata)*
 
-*Defined in [types.ts:138](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L138)*
+*Defined in [types.ts:143](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L143)*
 
 #### Type declaration
 
  asset: [WyvernAsset](wyvernasset.md)
 
- schema: `SchemaName`
+ schema: [WyvernSchemaName](../enums/wyvernschemaname.md)
 
 ___
 <a id="paymenttoken"></a>
@@ -238,7 +238,7 @@ ___
 
 *Overrides Order.saleKind*
 
-*Defined in [types.ts:135](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L135)*
+*Defined in [types.ts:140](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L140)*
 
 ___
 <a id="salt"></a>
@@ -262,7 +262,7 @@ ___
 
 *Overrides Order.side*
 
-*Defined in [types.ts:134](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L134)*
+*Defined in [types.ts:139](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L139)*
 
 ___
 <a id="staticextradata"></a>

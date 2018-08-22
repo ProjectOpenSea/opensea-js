@@ -27,7 +27,7 @@ The OpenSea asset fetched by the API
 
 **● assetContract**: *`object`*
 
-*Defined in [types.ts:114](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L114)*
+*Defined in [types.ts:119](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L119)*
 
 #### Type declaration
 
@@ -46,7 +46,7 @@ ___
 
 **● name**: *`string`*
 
-*Defined in [types.ts:125](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L125)*
+*Defined in [types.ts:130](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L130)*
 
 ___
 <a id="owner"></a>
@@ -55,7 +55,7 @@ ___
 
 **● owner**: *[OpenSeaAccount](openseaaccount.md)*
 
-*Defined in [types.ts:129](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L129)*
+*Defined in [types.ts:134](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L134)*
 
 ___
 <a id="tokenid"></a>
@@ -64,7 +64,7 @@ ___
 
 **● tokenId**: *`string`*
 
-*Defined in [types.ts:127](https://github.com/ProjectOpenSea/opensea-js/blob/b2e704f/src/types.ts#L127)*
+*Defined in [types.ts:132](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L132)*
 
 ___
 
