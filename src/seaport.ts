@@ -1000,7 +1000,7 @@ export class OpenSeaPort {
 
     return {
       ...matchingOrder,
-      hash: WyvernProtocol.getOrderHashHex(matchingOrder)
+      hash: WyvernProtocol.getOrderHashHex(orderToJSON(matchingOrder) as any)
     }
   }
 

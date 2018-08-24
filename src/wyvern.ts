@@ -120,7 +120,8 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
       address: asset.asset_contract.address,
       buyerFeeBasisPoints: asset.asset_contract.buyer_fee_basis_points,
       sellerFeeBasisPoints: asset.asset_contract.seller_fee_basis_points,
-    }
+    },
+    orders: asset.orders.map(orderFromJSON)
   }
   return fromJSON
 }

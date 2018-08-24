@@ -88,6 +88,7 @@ export interface OpenSeaAsset {
     name: string;
     tokenId: string;
     owner: OpenSeaAccount;
+    orders: Order[];
 }
 export interface UnhashedOrder extends WyvernOrder {
     feeMethod: FeeMethod;

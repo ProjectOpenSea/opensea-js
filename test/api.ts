@@ -8,7 +8,7 @@ import {
 } from 'mocha-typescript'
 
 import { OpenSeaAPI, ORDERBOOK_VERSION } from '../src/api'
-import { Network, Order, OrderJSON, OrderSide } from '../src/types'
+import { Network, Order, OrderSide } from '../src/types'
 import { orderToJSON } from '../src'
 
 const mainApi = new OpenSeaAPI({

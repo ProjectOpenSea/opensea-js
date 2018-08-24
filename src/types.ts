@@ -132,6 +132,8 @@ export interface OpenSeaAsset {
   tokenId: string
   // Owner of the asset
   owner: OpenSeaAccount
+  // Orders on the asset
+  orders: Order[]
 }
 
 export interface UnhashedOrder extends WyvernOrder {
