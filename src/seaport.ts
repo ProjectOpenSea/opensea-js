@@ -828,7 +828,7 @@ export class OpenSeaPort {
       orderLookupHash = buy.hash
     }
 
-    this._validateMatch({ buy, sell, accountAddress })
+    await this._validateMatch({ buy, sell, accountAddress })
 
     let txHash
     try {

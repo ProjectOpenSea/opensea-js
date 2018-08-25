@@ -90,7 +90,7 @@ suite('seaport', () => {
     const matchingOrder = client._makeMatchingOrder({order, accountAddress})
     const matchingOrderHash = matchingOrder.hash
     delete matchingOrder.hash
-    assert.isNull(matchingOrder.hash)
+    assert.isUndefined(matchingOrder.hash)
 
     const orderJSON = orderToJSON(matchingOrder)
     assert.equal(orderJSON.hash, matchingOrderHash)
@@ -105,7 +105,7 @@ suite('seaport', () => {
     }
     const accountAddress = ALEX_ADDRESS
     const matchingOrder = client._makeMatchingOrder({order, accountAddress})
-    assert.equal(matchingOrder.hash, getOrderHash(order))
+    assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
 
     let buy: Order
     let sell: Order

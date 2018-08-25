@@ -201,6 +201,18 @@ export declare class OpenSeaPort {
         accountAddress: string;
     }): UnsignedOrder;
     /**
+     * Validate against Wyvern that a buy and sell order can match
+     * @param param0 __namedParamters Object
+     * @param buy The buy order to validate
+     * @param sell The sell order to validate
+     * @param accountAddress Address for the user's wallet
+     */
+    _validateMatch({ buy, sell, accountAddress }: {
+        buy: Order;
+        sell: Order;
+        accountAddress: string;
+    }): Promise<boolean>;
+    /**
      * Private helper methods
      */
     private _atomicMatch;
