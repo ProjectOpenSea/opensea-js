@@ -9,11 +9,11 @@ import {
 
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON } from '../src/types'
-import { orderFromJSON, orderToJSON } from '../src/wyvern'
+import { Network, OrderJSON, OrderSide, Order } from '../src/types'
+import { orderFromJSON, getOrderHash, orderToJSON } from '../src/wyvern'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { WyvernProtocol } from 'wyvern-js/lib'
+import { ALEX_ADDRESS } from './constants';
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -53,7 +53,7 @@ suite('seaport', () => {
   ordersJSON.map((orderJSON: OrderJSON, index: number) => {
     test('Order #' + index + ' has correct hash', () => {
       const order = orderFromJSON(orderJSON)
-      assert.equal(order.hash, WyvernProtocol.getOrderHashHex(orderToJSON(order) as any))
+      assert.equal(order.hash, getOrderHash(order))
     })
   })
 
@@ -63,8 +63,7 @@ suite('seaport', () => {
     if (!order) {
       return
     }
-    // TS Bug with wyvern 0x schemas
-    assert.equal(order.hash, WyvernProtocol.getOrderHashHex(orderToJSON(order) as any))
+    assert.equal(order.hash, getOrderHash(order))
   })
 
   test('API asset\'s order has correct hash', async () => {
@@ -78,7 +77,56 @@ suite('seaport', () => {
     if (!order) {
       return
     }
-    // TS Bug with wyvern 0x schemas
-    assert.equal(order.hash, WyvernProtocol.getOrderHashHex(orderToJSON(order) as any))
+    assert.equal(order.hash, getOrderHash(order))
+  })
+
+  test('orderToJSON hashes if necessary', async () => {
+    const order = await client.api.getOrder({})
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+    const accountAddress = ALEX_ADDRESS
+    const matchingOrder = client._makeMatchingOrder({order, accountAddress})
+    const matchingOrderHash = matchingOrder.hash
+    delete matchingOrder.hash
+    assert.isNull(matchingOrder.hash)
+
+    const orderJSON = orderToJSON(matchingOrder)
+    assert.equal(orderJSON.hash, matchingOrderHash)
+    assert.equal(orderJSON.hash, getOrderHash(matchingOrder))
+  })
+
+  test('Matching order is correct', async () => {
+    const order = await client.api.getOrder({})
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+    const accountAddress = ALEX_ADDRESS
+    const matchingOrder = client._makeMatchingOrder({order, accountAddress})
+    assert.equal(matchingOrder.hash, getOrderHash(order))
+
+    let buy: Order
+    let sell: Order
+    if (order.side == OrderSide.Buy) {
+      buy = order
+      sell = {
+        ...matchingOrder,
+        v: buy.v,
+        r: buy.r,
+        s: buy.s
+      }
+    } else {
+      sell = order
+      buy = {
+        ...matchingOrder,
+        v: sell.v,
+        r: sell.r,
+        s: sell.s
+      }
+    }
+    const isValid = await client._validateMatch({ buy, sell, accountAddress })
+    assert.isTrue(isValid)
   })
 })

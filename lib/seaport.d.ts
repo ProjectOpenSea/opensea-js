@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, Order, PartialReadonlyContractAbi, EventType, EventData } from './types';
+import { OpenSeaAPIConfig, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -196,6 +196,10 @@ export declare class OpenSeaPort {
         accountAddress: string;
         tokenAddress: string;
     }): Promise<BigNumber>;
+    _makeMatchingOrder({ order, accountAddress }: {
+        order: Order;
+        accountAddress: string;
+    }): UnsignedOrder;
     /**
      * Private helper methods
      */
@@ -204,10 +208,6 @@ export declare class OpenSeaPort {
     private _validateBuyOrderParameters;
     private _validateAndPostOrder;
     private _signOrder;
-    /**
-     * Private methods
-     */
-    private _makeMatchingOrder;
     private _getSchema;
     private _dispatch;
     private _confirmTransaction;

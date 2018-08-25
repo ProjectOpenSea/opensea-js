@@ -193,11 +193,10 @@ export interface OrderJSON {
     schema: WyvernSchemaName;
   }
 
-  // Optional, so that we can JSONify orders before sending them to getOrderHashHex
-  hash?: string
-  v?: number
-  r?: string
-  s?: string
+  hash: string
+  v: number
+  r: string
+  s: string
 
   // Used by orderbook to make queries easier
   owner?: string,

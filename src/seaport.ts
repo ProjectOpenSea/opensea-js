@@ -10,7 +10,7 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset, INVERSE_BASIS_POINT
+  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash
 } from './wyvern'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -222,8 +222,7 @@ export class OpenSeaPort {
 
     const hashedOrder = {
       ...order,
-      // TS Bug with wyvern 0x schemas
-      hash: WyvernProtocol.getOrderHashHex(orderToJSON(order) as any)
+      hash: getOrderHash(order)
     }
     let signature
     try {
@@ -316,8 +315,7 @@ export class OpenSeaPort {
 
     const hashedOrder = {
       ...order,
-      // TS Bug with wyvern 0x schemas
-      hash: WyvernProtocol.getOrderHashHex(orderToJSON(order) as any)
+      hash: getOrderHash(order)
     }
     let signature
     try {
@@ -671,6 +669,88 @@ export class OpenSeaPort {
     return makeBigNumber(approved)
   }
 
+  public _makeMatchingOrder(
+      { order, accountAddress }:
+      { order: Order; accountAddress: string}
+    ): UnsignedOrder {
+    const schema = this._getSchema()
+    const listingTime = Math.round(Date.now() / 1000 - 1000)
+    const { target, calldata, replacementPattern } = order.side == OrderSide.Buy
+      ? WyvernSchemas.encodeSell(schema, order.metadata.asset, accountAddress)
+      : WyvernSchemas.encodeBuy(schema, order.metadata.asset, accountAddress)
+
+    const matchingOrder: UnhashedOrder = {
+      exchange: order.exchange,
+      maker: accountAddress,
+      taker: WyvernProtocol.NULL_ADDRESS,
+      makerRelayerFee: order.makerRelayerFee,
+      takerRelayerFee: order.takerRelayerFee,
+      makerProtocolFee: makeBigNumber(0),
+      takerProtocolFee: makeBigNumber(0),
+      feeMethod: order.feeMethod,
+      feeRecipient: WyvernProtocol.NULL_ADDRESS,
+      side: (order.side + 1) % 2,
+      saleKind: SaleKind.FixedPrice,
+      target,
+      howToCall: order.howToCall,
+      calldata,
+      replacementPattern,
+      staticTarget: WyvernProtocol.NULL_ADDRESS,
+      staticExtradata: '0x',
+      paymentToken: order.paymentToken,
+      basePrice: order.basePrice,
+      extra: makeBigNumber(0),
+      listingTime: makeBigNumber(listingTime),
+      expirationTime: makeBigNumber(0),
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
+      metadata: order.metadata,
+    }
+
+    return {
+      ...matchingOrder,
+      hash: getOrderHash(matchingOrder)
+    }
+  }
+
+  /**
+   * Validate against Wyvern that a buy and sell order can match
+   * @param param0 __namedParamters Object
+   * @param buy The buy order to validate
+   * @param sell The sell order to validate
+   * @param accountAddress Address for the user's wallet
+   */
+  public async _validateMatch(
+      { buy, sell, accountAddress }:
+      { buy: Order; sell: Order; accountAddress: string }
+    ): Promise<boolean> {
+
+    const ordersCanMatch = await this.wyvernProtocol.wyvernExchange.ordersCanMatch_.callAsync(
+      [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
+      [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
+      [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
+      buy.calldata,
+      sell.calldata,
+      buy.replacementPattern,
+      sell.replacementPattern,
+      buy.staticExtradata,
+      sell.staticExtradata,
+      { from: accountAddress },
+    )
+
+    if (!ordersCanMatch) {
+      throw new Error('Unable to match offer with auction')
+    }
+    this.logger(`Orders matching: ${ordersCanMatch}`)
+
+    const orderCalldataCanMatch = await this.wyvernProtocol.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
+    this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
+
+    if (!orderCalldataCanMatch) {
+      throw new Error('Unable to match offer with auction, due to the type of offer requested')
+    }
+    return true
+  }
+
   /**
    * Private helper methods
    */
@@ -679,7 +759,6 @@ export class OpenSeaPort {
       { buy, sell, accountAddress }:
       { buy: Order; sell: Order; accountAddress: string }
     ) {
-    const protocolInstance = this.wyvernProtocol
     let value
     let orderLookupHash
 
@@ -688,7 +767,7 @@ export class OpenSeaPort {
       // USER IS THE SELLER
       await this._validateSellOrderParameters({ order: sell, accountAddress })
 
-      const buyValid = await protocolInstance.wyvernExchange.validateOrder_.callAsync(
+      const buyValid = await this.wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
         [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken],
         [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt],
         buy.feeMethod,
@@ -711,7 +790,7 @@ export class OpenSeaPort {
       // USER IS THE BUYER
       await this._validateBuyOrderParameters({ order: buy, accountAddress })
 
-      const sellValid = await protocolInstance.wyvernExchange.validateOrder_.callAsync(
+      const sellValid = await this.wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
         [sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
         [sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
         sell.feeMethod,
@@ -749,31 +828,11 @@ export class OpenSeaPort {
       orderLookupHash = buy.hash
     }
 
-    const ordersCanMatch = await protocolInstance.wyvernExchange.ordersCanMatch_.callAsync(
-      [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
-      [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
-      [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
-      buy.calldata,
-      sell.calldata,
-      buy.replacementPattern,
-      sell.replacementPattern,
-      buy.staticExtradata,
-      sell.staticExtradata,
-      { from: accountAddress },
-    )
-    if (!ordersCanMatch) {
-      throw new Error('Unable to match offer with auction')
-    }
-    this.logger(`Orders matching: ${ordersCanMatch}`)
-    const orderCalldataCanMatch = await protocolInstance.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
-    this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
-    if (!orderCalldataCanMatch) {
-      throw new Error('Unable to match offer with auction, due to the type of offer requested')
-    }
+    this._validateMatch({ buy, sell, accountAddress })
 
     let txHash
     try {
-      txHash = await protocolInstance.wyvernExchange.atomicMatch_.sendTransactionAsync([buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
+      txHash = await this.wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync([buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
         buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
         [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
         [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
@@ -955,53 +1014,6 @@ export class OpenSeaPort {
     const signerAddress = order.maker
 
     return personalSignAsync(this.web3, message, signerAddress)
-  }
-
-  /**
-   * Private methods
-   */
-
-  private _makeMatchingOrder(
-      { order, accountAddress }:
-      { order: Order; accountAddress: string}
-    ): UnsignedOrder {
-    const schema = this._getSchema()
-    const listingTime = Math.round(Date.now() / 1000 - 1000)
-    const { target, calldata, replacementPattern } = order.side == OrderSide.Buy
-      ? WyvernSchemas.encodeSell(schema, order.metadata.asset, accountAddress)
-      : WyvernSchemas.encodeBuy(schema, order.metadata.asset, accountAddress)
-
-    const matchingOrder: UnhashedOrder = {
-      exchange: order.exchange,
-      maker: accountAddress,
-      taker: WyvernProtocol.NULL_ADDRESS,
-      makerRelayerFee: order.makerRelayerFee,
-      takerRelayerFee: order.takerRelayerFee,
-      makerProtocolFee: makeBigNumber(0),
-      takerProtocolFee: makeBigNumber(0),
-      feeMethod: order.feeMethod,
-      feeRecipient: WyvernProtocol.NULL_ADDRESS,
-      side: (order.side + 1) % 2,
-      saleKind: SaleKind.FixedPrice,
-      target,
-      howToCall: order.howToCall,
-      calldata,
-      replacementPattern,
-      staticTarget: WyvernProtocol.NULL_ADDRESS,
-      staticExtradata: '0x',
-      paymentToken: order.paymentToken,
-      basePrice: order.basePrice,
-      extra: makeBigNumber(0),
-      listingTime: makeBigNumber(listingTime),
-      expirationTime: makeBigNumber(0),
-      salt: WyvernProtocol.generatePseudoRandomSalt(),
-      metadata: order.metadata,
-    }
-
-    return {
-      ...matchingOrder,
-      hash: WyvernProtocol.getOrderHashHex(orderToJSON(matchingOrder) as any)
-    }
   }
 
   private _getSchema(schemaName = WyvernSchemaName.ERC721) {

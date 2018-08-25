@@ -140,10 +140,10 @@ export interface OrderJSON {
         asset: WyvernAsset;
         schema: WyvernSchemaName;
     };
-    hash?: string;
-    v?: number;
-    r?: string;
-    s?: string;
+    hash: string;
+    v: number;
+    r: string;
+    s: string;
     owner?: string;
     asset_contract_address?: string;
     token_id?: number | string;

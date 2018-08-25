@@ -7,25 +7,10 @@ import {
   test,
 } from 'mocha-typescript'
 
-import { OpenSeaAPI, ORDERBOOK_VERSION } from '../src/api'
-import { Network, Order, OrderSide } from '../src/types'
+import { ORDERBOOK_VERSION } from '../src/api'
+import { Order, OrderSide } from '../src/types'
 import { orderToJSON } from '../src'
-
-const mainApi = new OpenSeaAPI({
-  networkName: Network.Main
-})
-
-const rinkebyApi = new OpenSeaAPI({
-  networkName: Network.Rinkeby
-})
-
-const apiToTest = rinkebyApi
-
-const CK_ADDRESS = '0x06012c8cf97bead5deae237070f9587f8e7a266d'
-const CK_RINKEBY_ADDRESS = '0x16baf0de678e52367adc69fd067e5edd1d33e3bf'
-const CK_RINKEBY_TOKEN_ID = 111
-const CK_RINKEBY_SELLER_FEE = 125
-const ALEX_ADDRESS = '0xe96a1b303a1eb8d04fb973eb2b291b8d591c8f72'
+import { mainApi, rinkebyApi, apiToTest, ALEX_ADDRESS, CK_RINKEBY_TOKEN_ID, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE } from './constants'
 
 suite('api', () => {
 

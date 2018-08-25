@@ -14,6 +14,10 @@ export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise
 export declare const orderFromJSONv0: (order: any) => Order;
 export declare const assetFromJSON: (asset: any) => OpenSeaAsset;
 export declare const orderFromJSON: (order: any) => Order;
+/**
+ * Convert an order to JSON, hashing it as well if necessary
+ * @param order order (hashed or unhashed)
+ */
 export declare const orderToJSON: (order: Order | UnhashedOrder) => OrderJSON;
 export declare const findAsset: (web3: Web3, { account, proxy, wyAsset, schema }: {
     account: string;
@@ -64,3 +68,9 @@ export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: 
  * @param tokenAddress The address of the token's contract
  */
 export declare function getWyvernAsset(schema: any, tokenId: string, tokenAddress: string): any;
+/**
+ * Get the non-prefixed hash for the order
+ * (Fixes a Wyvern typescript issue)
+ * @param order order to hash
+ */
+export declare function getOrderHash(order: UnhashedOrder): string;

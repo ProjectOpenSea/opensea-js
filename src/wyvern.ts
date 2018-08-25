@@ -172,6 +172,10 @@ export const orderFromJSON = (order: any): Order => {
   return fromJSON
 }
 
+/**
+ * Convert an order to JSON, hashing it as well if necessary
+ * @param order order (hashed or unhashed)
+ */
 export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
   const asJSON: any = {
     exchange: order.exchange.toLowerCase(),
@@ -198,7 +202,7 @@ export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
     expirationTime: order.expirationTime.toString(),
     salt: order.salt.toString()
   }
-  const hash = WyvernProtocol.getOrderHashHex(asJSON)
+  const hash = 'hash' in order ? order.hash : WyvernProtocol.getOrderHashHex(asJSON)
   asJSON.hash = hash
   asJSON.metadata = order.metadata
   return asJSON
@@ -417,4 +421,20 @@ export function getWyvernAsset(
     'ID': tokenId.toString(),
     'Address': tokenAddress,
   })
+}
+
+/**
+ * Get the non-prefixed hash for the order
+ * (Fixes a Wyvern typescript issue)
+ * @param order order to hash
+ */
+export function getOrderHash(order: UnhashedOrder) {
+  const orderWithStringTypes = {
+    ...order,
+    side: order.side.toString(),
+    saleKind: order.saleKind.toString(),
+    howToCall: order.howToCall.toString(),
+    feeMethod: order.feeMethod.toString()
+  }
+  return WyvernProtocol.getOrderHashHex(orderWithStringTypes as any)
 }
