@@ -202,7 +202,7 @@ export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
     expirationTime: order.expirationTime.toString(),
     salt: order.salt.toString()
   }
-  const hash = 'hash' in order ? order.hash : WyvernProtocol.getOrderHashHex(asJSON)
+  const hash = 'hash' in order ? order.hash : getOrderHash(asJSON)
   asJSON.hash = hash
   asJSON.metadata = order.metadata
   return asJSON
