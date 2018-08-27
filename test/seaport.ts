@@ -10,10 +10,10 @@ import {
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order } from '../src/types'
-import { orderFromJSON, getOrderHash, orderToJSON } from '../src/wyvern'
+import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256 } from '../src/wyvern'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS } from './constants';
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, canSettleSellOrder } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -97,7 +97,25 @@ suite('seaport', () => {
     assert.equal(orderJSON.hash, getOrderHash(matchingOrder))
   })
 
-  test('Matching first order in book', async () => {
+  test('Fetches proxy for an account', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const proxy = await client._getProxy(accountAddress)
+    assert.isNotNull(proxy)
+  })
+
+  test('Fetches positive token balance for an account', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const balance = await client._getTokenBalance({ accountAddress })
+    assert.isAbove(balance.toNumber(), 0)
+  })
+
+  test('Accounts have maximum token balance approved', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const approved = await client._getApprovedTokenCount({ accountAddress })
+    assert.equal(approved.toString(), MAX_UINT_256.toString())
+  })
+
+  test('Matches first order in book', async () => {
     const order = await client.api.getOrder({})
     assert.isNotNull(order)
     if (!order) {
@@ -107,7 +125,7 @@ suite('seaport', () => {
     await testMatch(order, accountAddress)
   })
 
-  test('Matching order via sell_orders and getAssets', async () => {
+  test('Matches order via sell_orders and getAssets', async () => {
     const accountAddress = ALEX_ADDRESS
     const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "asc", limit: 5 })
 
@@ -122,6 +140,12 @@ suite('seaport', () => {
     if (!order) {
       return
     }
+
+    // TODO Test proxy for settlement
+    // const settleable = await canSettleSellOrder(client, order)
+    // assert.isTrue(settleable)
+
+    // Make sure match is valid
     await testMatch(order, accountAddress)
   })
 })

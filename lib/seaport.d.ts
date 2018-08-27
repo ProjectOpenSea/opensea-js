@@ -194,7 +194,7 @@ export declare class OpenSeaPort {
      */
     _getApprovedTokenCount({ accountAddress, tokenAddress }: {
         accountAddress: string;
-        tokenAddress: string;
+        tokenAddress?: string;
     }): Promise<BigNumber>;
     _makeMatchingOrder({ order, accountAddress }: {
         order: Order;

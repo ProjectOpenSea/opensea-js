@@ -12,6 +12,8 @@ export const feeRecipient = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
 
 export const INVERSE_BASIS_POINT = 10000
 
+export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256
+
 // OTHER
 
 const txCallbacks: {[key: string]: TxnCallback[]} = {}

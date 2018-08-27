@@ -657,8 +657,11 @@ export class OpenSeaPort {
    */
   public async _getApprovedTokenCount(
       { accountAddress, tokenAddress }:
-      { accountAddress: string; tokenAddress: string}
+      { accountAddress: string; tokenAddress?: string}
     ) {
+    if (!tokenAddress) {
+      tokenAddress = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther.address
+    }
     const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this.networkName)
     const approved = await promisify<string>(c => this.web3.eth.call({
       from: accountAddress,
