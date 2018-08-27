@@ -132,8 +132,12 @@ export interface OpenSeaAsset {
   tokenId: string
   // Owner of the asset
   owner: OpenSeaAccount
-  // Orders on the asset
-  orders: Order[]
+  // Orders on the asset. Null if asset was fetched in a list
+  orders: Order[] | null
+  // Buy orders (offers) on the asset. Null if asset in a list and didn't prefetch buy orders
+  buyOrders: Order[] | null
+  // Sell orders (auctions) on the asset. Null if asset in a list and didn't prefetch sell orders
+  sellOrders: Order[] | null
 }
 
 export interface UnhashedOrder extends WyvernOrder {
@@ -202,6 +206,17 @@ export interface OrderJSON {
   owner?: string,
   asset_contract_address?: string,
   token_id?: number | string
+  limit?: number
+  offset?: number
+}
+
+// IN PROGRESS
+export interface OpenSeaAssetJSON {
+  // For querying
+  owner?: string
+  asset_contract_address?: string
+  order_by?: string
+  order_direction?: string
   limit?: number
   offset?: number
 }

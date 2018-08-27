@@ -1,6 +1,6 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
-import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset} from './types'
+import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetJSON} from './types'
 import { orderFromJSON, assetFromJSON } from './wyvern'
 
 export const ORDERBOOK_VERSION: number = 1
@@ -129,6 +129,29 @@ export class OpenSeaAPI {
 
     const json: any = await response.json()
     return json ? assetFromJSON(json) : null
+  }
+
+  /**
+   * Fetch list of assets from the API, returning the page of assets and the count of total assets
+   * @param query Query to use for getting orders. A subset of parameters on the `AssetJSON` type is supported
+   * @param page Page number, defaults to 1
+   */
+  public async getAssets(
+      query: Partial<OpenSeaAssetJSON> = {},
+      page = 1
+    ): Promise<{assets: OpenSeaAsset[]; estimatedCount: number}> {
+
+    const response = await this.get(`${API_PATH}/assets/`, {
+      ...query,
+      limit: this.pageSize,
+      offset: (page - 1) * this.pageSize
+    })
+
+    const json: any = await response.json()
+    return {
+      assets: json.assets.map((j: any) => assetFromJSON(j)),
+      estimatedCount: json.estimated_count
+    }
   }
 
   /**

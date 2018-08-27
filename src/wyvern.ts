@@ -121,7 +121,16 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
       buyerFeeBasisPoints: asset.asset_contract.buyer_fee_basis_points,
       sellerFeeBasisPoints: asset.asset_contract.seller_fee_basis_points,
     },
-    orders: asset.orders.map(orderFromJSON)
+    orders: asset.orders ? asset.orders.map(orderFromJSON) : null,
+    sellOrders: asset.sell_orders ? asset.sell_orders.map(orderFromJSON) : null,
+    buyOrders: asset.buy_orders ? asset.buy_orders.map(orderFromJSON) : null
+  }
+  // If orders were included, put them in sell/buy order groups
+  if (fromJSON.orders && !fromJSON.sellOrders) {
+    fromJSON.sellOrders = fromJSON.orders.filter(o => o.side == OrderSide.Sell)
+  }
+  if (fromJSON.orders && !fromJSON.buyOrders) {
+    fromJSON.buyOrders = fromJSON.orders.filter(o => o.side == OrderSide.Buy)
   }
   return fromJSON
 }

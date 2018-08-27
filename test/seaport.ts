@@ -13,7 +13,7 @@ import { Network, OrderJSON, OrderSide, Order } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON } from '../src/wyvern'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS } from './constants';
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS } from './constants';
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -69,7 +69,7 @@ suite('seaport', () => {
   test('API asset\'s order has correct hash', async () => {
     const asset = await client.api.getAsset("0x06012c8cf97bead5deae237070f9587f8e7a266d", 1)
     assert.isNotNull(asset)
-    if (!asset) {
+    if (!asset || !asset.orders) {
       return
     }
     const order = asset.orders[0]
@@ -97,36 +97,58 @@ suite('seaport', () => {
     assert.equal(orderJSON.hash, getOrderHash(matchingOrder))
   })
 
-  test('Matching order is correct', async () => {
+  test('Matching first order in book', async () => {
     const order = await client.api.getOrder({})
     assert.isNotNull(order)
     if (!order) {
       return
     }
     const accountAddress = ALEX_ADDRESS
-    const matchingOrder = client._makeMatchingOrder({order, accountAddress})
-    assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
+    await testMatch(order, accountAddress)
+  })
 
-    let buy: Order
-    let sell: Order
-    if (order.side == OrderSide.Buy) {
-      buy = order
-      sell = {
-        ...matchingOrder,
-        v: buy.v,
-        r: buy.r,
-        s: buy.s
-      }
-    } else {
-      sell = order
-      buy = {
-        ...matchingOrder,
-        v: sell.v,
-        r: sell.r,
-        s: sell.s
-      }
+  test('Matching order via sell_orders and getAssets', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "asc", limit: 5 })
+
+    const asset = assets[0]
+    assert.isNotNull(asset)
+    assert.isNotNull(asset.sellOrders)
+    if (!asset || !asset.sellOrders) {
+      return
     }
-    const isValid = await client._validateMatch({ buy, sell, accountAddress })
-    assert.isTrue(isValid)
+    const order = asset.sellOrders[0]
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+    await testMatch(order, accountAddress)
   })
 })
+
+async function testMatch(order: Order, accountAddress: string) {
+  const matchingOrder = client._makeMatchingOrder({order, accountAddress})
+  assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
+
+  let buy: Order
+  let sell: Order
+  if (order.side == OrderSide.Buy) {
+    buy = order
+    sell = {
+      ...matchingOrder,
+      v: buy.v,
+      r: buy.r,
+      s: buy.s
+    }
+  } else {
+    sell = order
+    buy = {
+      ...matchingOrder,
+      v: sell.v,
+      r: sell.r,
+      s: sell.s
+    }
+  }
+  const isValid = await client._validateMatch({ buy, sell, accountAddress })
+  assert.isTrue(isValid)
+}
