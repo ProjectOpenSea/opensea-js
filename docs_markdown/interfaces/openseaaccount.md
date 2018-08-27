@@ -27,7 +27,7 @@ The OpenSea account object appended to orders, providing extra metadata, profile
 
 **● address**: *`string`*
 
-*Defined in [types.ts:102](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L102)*
+*Defined in [types.ts:102](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L102)*
 
 ___
 <a id="config"></a>
@@ -36,7 +36,7 @@ ___
 
 **● config**: *`string`*
 
-*Defined in [types.ts:104](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L104)*
+*Defined in [types.ts:104](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L104)*
 
 ___
 <a id="profile_img_url"></a>
@@ -45,7 +45,7 @@ ___
 
 **● profile_img_url**: *`string`*
 
-*Defined in [types.ts:106](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L106)*
+*Defined in [types.ts:106](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L106)*
 
 ___
 <a id="user"></a>
@@ -55,7 +55,7 @@ ___
 **● user**: * `null` &#124; `object`
 *
 
-*Defined in [types.ts:109](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L109)*
+*Defined in [types.ts:109](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L109)*
 
 ___
 

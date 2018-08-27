@@ -18,7 +18,7 @@
 
 **ERC721**:  = "ERC721"
 
-*Defined in [types.ts:89](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L89)*
+*Defined in [types.ts:89](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L89)*
 
 ___
 

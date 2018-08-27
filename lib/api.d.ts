@@ -1,5 +1,5 @@
 import 'isomorphic-unfetch';
-import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset } from './types';
+import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset, OpenSeaAssetJSON } from './types';
 export declare const ORDERBOOK_VERSION: number;
 export declare const API_VERSION: number;
 export declare class OpenSeaAPI {
@@ -48,6 +48,15 @@ export declare class OpenSeaAPI {
      * @param tokenId The asset's token ID
      */
     getAsset(tokenAddress: string, tokenId: string | number): Promise<OpenSeaAsset | null>;
+    /**
+     * Fetch list of assets from the API, returning the page of assets and the count of total assets
+     * @param query Query to use for getting orders. A subset of parameters on the `AssetJSON` type is supported
+     * @param page Page number, defaults to 1
+     */
+    getAssets(query?: Partial<OpenSeaAssetJSON>, page?: number): Promise<{
+        assets: OpenSeaAsset[];
+        estimatedCount: number;
+    }>;
     /**
      * Get JSON data from API, sending auth token in headers
      * @param apiPath Path to URL endpoint under API

@@ -88,7 +88,9 @@ export interface OpenSeaAsset {
     name: string;
     tokenId: string;
     owner: OpenSeaAccount;
-    orders: Order[];
+    orders: Order[] | null;
+    buyOrders: Order[] | null;
+    sellOrders: Order[] | null;
 }
 export interface UnhashedOrder extends WyvernOrder {
     feeMethod: FeeMethod;
@@ -147,6 +149,14 @@ export interface OrderJSON {
     owner?: string;
     asset_contract_address?: string;
     token_id?: number | string;
+    limit?: number;
+    offset?: number;
+}
+export interface OpenSeaAssetJSON {
+    owner?: string;
+    asset_contract_address?: string;
+    order_by?: string;
+    order_direction?: string;
     limit?: number;
     offset?: number;
 }

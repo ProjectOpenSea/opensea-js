@@ -96,6 +96,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaapi.html#get" class="tsd-kind-icon">get</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaapi.html#getasset" class="tsd-kind-icon">get<wbr>Asset</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaapi.html#getassets" class="tsd-kind-icon">get<wbr>Assets</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaapi.html#getorder" class="tsd-kind-icon">get<wbr>Order</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaapi.html#getorders" class="tsd-kind-icon">get<wbr>Orders</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="openseaapi.html#post" class="tsd-kind-icon">post</a></li>
@@ -118,7 +119,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/api.ts#L25">api.ts:25</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L25">api.ts:25</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -159,7 +160,7 @@
 					<div class="tsd-signature tsd-kind-icon">api<wbr>Base<wbr>Url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/api.ts#L19">api.ts:19</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L19">api.ts:19</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -174,7 +175,7 @@
 					<div class="tsd-signature tsd-kind-icon">page<wbr>Size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;20</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/api.ts#L23">api.ts:23</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L23">api.ts:23</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -196,7 +197,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/api.ts#L139">api.ts:139</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L162">api.ts:162</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -233,7 +234,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/api.ts#L126">api.ts:126</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L126">api.ts:126</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -261,6 +262,43 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getassets" class="tsd-anchor"></a>
+					<h3>get<wbr>Assets</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Assets<span class="tsd-signature-symbol">(</span>query<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/openseaassetjson.html" class="tsd-signature-type">OpenSeaAssetJSON</a><span class="tsd-signature-symbol">&gt;</span>, page<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L139">api.ts:139</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Fetch list of assets from the API, returning the page of assets and the count of total assets</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> query: <span class="tsd-signature-type">Partial</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/openseaassetjson.html" class="tsd-signature-type">OpenSeaAssetJSON</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Query to use for getting orders. A subset of parameters on the <code>AssetJSON</code> type is supported</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> page: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Page number, defaults to 1</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getorder" class="tsd-anchor"></a>
 					<h3>get<wbr>Order</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -270,7 +308,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/api.ts#L67">api.ts:67</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L67">api.ts:67</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -302,7 +340,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/api.ts#L92">api.ts:92</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L92">api.ts:92</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -341,7 +379,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/api.ts#L154">api.ts:154</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L177">api.ts:177</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -385,7 +423,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/api.ts#L52">api.ts:52</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L52">api.ts:52</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -417,7 +455,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/api.ts#L176">api.ts:176</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/api.ts#L199">api.ts:199</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -482,6 +520,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="openseaapi.html#getasset" class="tsd-kind-icon">get<wbr>Asset</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="openseaapi.html#getassets" class="tsd-kind-icon">get<wbr>Assets</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="openseaapi.html#getorder" class="tsd-kind-icon">get<wbr>Order</a>

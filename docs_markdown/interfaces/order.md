@@ -60,7 +60,7 @@
 
 **● asset**: *[OpenSeaAsset](openseaasset.md)*
 
-*Defined in [types.ts:161](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L161)*
+*Defined in [types.ts:167](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L167)*
 
 ___
 <a id="baseprice"></a>
@@ -92,7 +92,7 @@ ___
 **● cancelledOrFinalized**: * `undefined` &#124; `true` &#124; `false`
 *
 
-*Defined in [types.ts:158](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L158)*
+*Defined in [types.ts:164](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L164)*
 
 ___
 <a id="currentprice"></a>
@@ -101,7 +101,7 @@ ___
 
 **● currentPrice**: *`BigNumber`*
 
-*Defined in [types.ts:160](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L160)*
+*Defined in [types.ts:166](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L166)*
 
 ___
 <a id="exchange"></a>
@@ -147,7 +147,7 @@ ___
 
 *Overrides Order.feeMethod*
 
-*Defined in [types.ts:138](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L138)*
+*Defined in [types.ts:144](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L144)*
 
 ___
 <a id="feerecipient"></a>
@@ -167,7 +167,7 @@ ___
 
 **● feeRecipientAccount**: *[OpenSeaAccount](openseaaccount.md)*
 
-*Defined in [types.ts:157](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L157)*
+*Defined in [types.ts:163](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L163)*
 
 ___
 <a id="hash"></a>
@@ -178,7 +178,7 @@ ___
 
 *Inherited from [UnsignedOrder](unsignedorder.md).[hash](unsignedorder.md#hash)*
 
-*Defined in [types.ts:150](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L150)*
+*Defined in [types.ts:156](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L156)*
 
 ___
 <a id="howtocall"></a>
@@ -191,7 +191,7 @@ ___
 
 *Overrides Order.howToCall*
 
-*Defined in [types.ts:141](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L141)*
+*Defined in [types.ts:147](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L147)*
 
 ___
 <a id="listingtime"></a>
@@ -222,7 +222,7 @@ ___
 
 **● makerAccount**: *[OpenSeaAccount](openseaaccount.md)*
 
-*Defined in [types.ts:155](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L155)*
+*Defined in [types.ts:161](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L161)*
 
 ___
 <a id="makerprotocolfee"></a>
@@ -254,7 +254,7 @@ ___
 **● markedInvalid**: * `undefined` &#124; `true` &#124; `false`
 *
 
-*Defined in [types.ts:159](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L159)*
+*Defined in [types.ts:165](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L165)*
 
 ___
 <a id="metadata"></a>
@@ -265,7 +265,7 @@ ___
 
 *Inherited from [UnhashedOrder](unhashedorder.md).[metadata](unhashedorder.md#metadata)*
 
-*Defined in [types.ts:143](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L143)*
+*Defined in [types.ts:149](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L149)*
 
 #### Type declaration
 
@@ -328,7 +328,7 @@ ___
 
 *Overrides Order.saleKind*
 
-*Defined in [types.ts:140](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L140)*
+*Defined in [types.ts:146](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L146)*
 
 ___
 <a id="salt"></a>
@@ -352,7 +352,7 @@ ___
 
 *Overrides Order.side*
 
-*Defined in [types.ts:139](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L139)*
+*Defined in [types.ts:145](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L145)*
 
 ___
 <a id="staticextradata"></a>
@@ -394,7 +394,7 @@ ___
 
 **● takerAccount**: *[OpenSeaAccount](openseaaccount.md)*
 
-*Defined in [types.ts:156](https://github.com/ProjectOpenSea/opensea-js/blob/572e318/src/types.ts#L156)*
+*Defined in [types.ts:162](https://github.com/ProjectOpenSea/opensea-js/blob/780e919/src/types.ts#L162)*
 
 ___
 <a id="takerprotocolfee"></a>
