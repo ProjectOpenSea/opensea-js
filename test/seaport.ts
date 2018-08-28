@@ -125,7 +125,7 @@ suite('seaport', () => {
     await testMatch(order, accountAddress)
   })
 
-  test('Checkes proxy for settlement and matches order, via sell_orders and getAssets', async () => {
+  test('Matches order via sell_orders and getAssets', async () => {
     const accountAddress = ALEX_ADDRESS
     const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "asc", limit: 5 })
 
@@ -141,17 +141,16 @@ suite('seaport', () => {
       return
     }
 
-    // TODO fix
-    const settleable = await canSettleOrder(client, order, accountAddress)
-    // console.log(orderToJSON(order))
-    assert.isTrue(settleable)
-
     // Make sure match is valid
     await testMatch(order, accountAddress)
   })
 })
 
 async function testMatch(order: Order, accountAddress: string) {
+  // Make sure it's settleable
+  const settleable = await canSettleOrder(client, order, accountAddress)
+  assert.isTrue(settleable)
+
   const matchingOrder = client._makeMatchingOrder({order, accountAddress})
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
 
@@ -174,6 +173,7 @@ async function testMatch(order: Order, accountAddress: string) {
       s: sell.s
     }
   }
+
   const isValid = await client._validateMatch({ buy, sell, accountAddress })
   assert.isTrue(isValid)
 }

@@ -22,8 +22,11 @@ export const ALEX_ADDRESS = '0xe96a1b303a1eb8d04fb973eb2b291b8d591c8f72'
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 
-// TODO fix this - currently returns false for everything
 export async function canSettleOrder(client: OpenSeaPort, order: Order, takerAddress: string): Promise<boolean> {
+
+  // HACK to change null address to 0x1111111... for replacing calldata
+  const calldata = order.calldata.slice(0, 98) + "1111111111111111111111111111111111111111" + order.calldata.slice(138)
+
   const seller = order.side == OrderSide.Buy ? takerAddress : order.maker
   const proxy = await client._getProxy(seller)
   if (!proxy) {
@@ -35,8 +38,8 @@ export async function canSettleOrder(client: OpenSeaPort, order: Order, takerAdd
     contract.proxy.call(
       order.target,
       order.howToCall,
-      order.calldata,
-      {from: takerAddress},
+      calldata,
+      {from: seller},
     c)
   )
 }
