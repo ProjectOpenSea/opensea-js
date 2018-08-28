@@ -22,12 +22,13 @@ export const ALEX_ADDRESS = '0xe96a1b303a1eb8d04fb973eb2b291b8d591c8f72'
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 
-export async function canSettleOrder(client: OpenSeaPort, order: Order, takerAddress: string): Promise<boolean> {
+export async function canSettleOrder(client: OpenSeaPort, order: Order, matchingOrder: Order): Promise<boolean> {
 
+  // TODO fix this calldata for buy orders
   // HACK to change null address to 0x1111111... for replacing calldata
   const calldata = order.calldata.slice(0, 98) + "1111111111111111111111111111111111111111" + order.calldata.slice(138)
 
-  const seller = order.side == OrderSide.Buy ? takerAddress : order.maker
+  const seller = order.side == OrderSide.Buy ? matchingOrder.maker : order.maker
   const proxy = await client._getProxy(seller)
   if (!proxy) {
     console.warn(`No proxy found for seller ${seller}`)
