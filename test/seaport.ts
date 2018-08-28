@@ -13,7 +13,7 @@ import { Network, OrderJSON, OrderSide, Order } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256 } from '../src/wyvern'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, canSettleSellOrder } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, canSettleOrder } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -125,7 +125,7 @@ suite('seaport', () => {
     await testMatch(order, accountAddress)
   })
 
-  test('Matches order via sell_orders and getAssets', async () => {
+  test('Checkes proxy for settlement and matches order, via sell_orders and getAssets', async () => {
     const accountAddress = ALEX_ADDRESS
     const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "asc", limit: 5 })
 
@@ -141,9 +141,9 @@ suite('seaport', () => {
       return
     }
 
-    // TODO Test proxy for settlement
-    // const settleable = await canSettleSellOrder(client, order)
-    // assert.isTrue(settleable)
+    const settleable = await canSettleOrder(client, order, accountAddress)
+    // console.log(orderToJSON(order))
+    assert.isTrue(settleable)
 
     // Make sure match is valid
     await testMatch(order, accountAddress)

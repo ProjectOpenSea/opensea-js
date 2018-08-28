@@ -206,6 +206,7 @@ export interface OrderJSON {
   owner?: string,
   asset_contract_address?: string,
   token_id?: number | string
+  token_ids?: Array<number | string>
   limit?: number
   offset?: number
 }
