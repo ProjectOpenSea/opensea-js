@@ -141,6 +141,7 @@ suite('seaport', () => {
       return
     }
 
+    // TODO fix
     const settleable = await canSettleOrder(client, order, accountAddress)
     // console.log(orderToJSON(order))
     assert.isTrue(settleable)
