@@ -103,22 +103,21 @@ suite('api', () => {
       assert.equal(asset.assetContract.sellerFeeBasisPoints, CK_RINKEBY_SELLER_FEE)
     })
 
-  })
+    test('API fetches assets and prefetches sellOrders', async () => {
+      const { assets, estimatedCount } = await apiToTest.getAssets({asset_contract_address: CK_RINKEBY_ADDRESS, order_by: "current_price"})
+      assert.isArray(assets)
+      assert.isNumber(estimatedCount)
+      assert.equal(assets.length, apiToTest.pageSize)
+      assert.isAtLeast(estimatedCount, assets.length)
 
-  test('API fetches assets and prefetches sellOrders', async () => {
-    const { assets, estimatedCount } = await apiToTest.getAssets({asset_contract_address: CK_RINKEBY_ADDRESS, order_by: "current_price"})
-    assert.isArray(assets)
-    assert.isNumber(estimatedCount)
-    assert.equal(assets.length, apiToTest.pageSize)
-    assert.isAtLeast(estimatedCount, assets.length)
-
-    const asset = assets[0]
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
-    assert.equal(asset.assetContract.name, "CryptoKittiesRinkeby")
-    assert.isNotEmpty(asset.sellOrders)
+      const asset = assets[0]
+      assert.isNotNull(asset)
+      if (!asset) {
+        return
+      }
+      assert.equal(asset.assetContract.name, "CryptoKittiesRinkeby")
+      assert.isNotEmpty(asset.sellOrders)
+    })
   })
 
   test('API handles errors', async () => {

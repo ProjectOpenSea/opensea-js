@@ -129,7 +129,7 @@ suite('seaport', () => {
       return
     }
     const takerAddress = ALEX_ADDRESS
-    await testMatchingOrder(order, takerAddress)
+    await testMatchingOrder(order, takerAddress, true)
   })
 
   test('Matches first buy order in book', async () => {
@@ -143,7 +143,27 @@ suite('seaport', () => {
       return
     }
     const takerAddress = order.asset.owner.address
-    await testMatchingOrder(order, takerAddress)
+    // Taker might not have all approval permissions so only test match
+    await testMatchingOrder(order, takerAddress, false)
+  })
+
+  test('Matches a buy order and estimates gas on fulfillment', async () => {
+    // Need to use a taker who has created a proxy and approved W-ETH already
+    const takerAddress = ALEX_ADDRESS
+
+    const order = await client.api.getOrder({
+      side: OrderSide.Buy,
+      owner: takerAddress
+    })
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+    assert.isNotNull(order.asset)
+    if (!order.asset) {
+      return
+    }
+    await testMatchingOrder(order, takerAddress, true)
   })
 
   test('Matches order via sell_orders and getAssets', async () => {
@@ -151,7 +171,7 @@ suite('seaport', () => {
 
     const asset = assets[0]
     assert.isNotNull(asset)
-    assert.isNotNull(asset.sellOrders)
+    assert.isNotEmpty(asset.sellOrders)
     if (!asset || !asset.sellOrders) {
       return
     }
@@ -163,11 +183,11 @@ suite('seaport', () => {
 
     // Make sure match is valid
     const takerAddress = ALEX_ADDRESS
-    await testMatchingOrder(order, takerAddress)
+    await testMatchingOrder(order, takerAddress, true)
   })
 })
 
-async function testMatchingOrder(order: Order, accountAddress: string) {
+async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch: boolean) {
   // TODO test mode for matching order to use 0x11111 in calldata
   const matchingOrder = client._makeMatchingOrder({order, accountAddress})
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
@@ -197,10 +217,7 @@ async function testMatchingOrder(order: Order, accountAddress: string) {
   const isValid = await client._validateMatch({ buy, sell, accountAddress })
   assert.isTrue(isValid)
 
-  // Try to execute the match if it's a sell order, since buy orders
-  // won't always work unless taker has make a proxy and approved all
-  // token types involved in the trade
-  if (isSellOrder) {
+  if (testAtomicMatch) {
     const gasEstimate = await client._estimateGasForMatch({ buy, sell, accountAddress })
     const gasPrice = await client._computeGasPrice()
     console.info(`Gas estimate for sell order: ${gasEstimate}`)
