@@ -10,7 +10,7 @@ import {
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order } from '../src/types'
-import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256 } from '../src/wyvern'
+import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice } from '../src/wyvern'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS } from './constants'
@@ -95,6 +95,13 @@ suite('seaport', () => {
     const orderJSON = orderToJSON(matchingOrder)
     assert.equal(orderJSON.hash, matchingOrderHash)
     assert.equal(orderJSON.hash, getOrderHash(matchingOrder))
+  })
+
+  test('Uses a gas price above the mean', async () => {
+    const gasPrice = await client._computeGasPrice()
+    const meanGasPrice = await getCurrentGasPrice(client.web3)
+    assert.isAbove(meanGasPrice.toNumber(), 0)
+    assert.isAbove(gasPrice.toNumber(), meanGasPrice.toNumber())
   })
 
   test('Fetches proxy for an account', async () => {
@@ -197,7 +204,7 @@ async function testMatchingOrder(order: Order, accountAddress: string) {
     const gasEstimate = await client._estimateGasForMatch({ buy, sell, accountAddress })
     const gasPrice = await client._computeGasPrice()
     console.info(`Gas estimate for sell order: ${gasEstimate}`)
-    console.info(`Gas price to use: ${gasPrice}`)
+    console.info(`Gas price to use: ${client.web3.fromWei(gasPrice, 'gwei')} gwei`)
     assert.isAbove(gasEstimate, 0)
   }
 }

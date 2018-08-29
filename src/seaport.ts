@@ -128,7 +128,7 @@ export class OpenSeaPort {
       gasPrice
     })
 
-    await this._confirmTransaction(txHash, EventType.WrapEth)
+    await this._confirmTransaction(txHash, EventType.WrapEth, "Wrapping ETH")
   }
 
   /**
@@ -158,7 +158,7 @@ export class OpenSeaPort {
       gasPrice
     })
 
-    await this._confirmTransaction(txHash, EventType.UnwrapWeth)
+    await this._confirmTransaction(txHash, EventType.UnwrapWeth, "Unwrapping W-ETH")
   }
 
   /**
@@ -376,7 +376,7 @@ export class OpenSeaPort {
 
     const transactionHash = await this._atomicMatch({ buy, sell, accountAddress })
 
-    await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders)
+    await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders, "Fulfilling order")
   }
 
   /**
@@ -389,12 +389,11 @@ export class OpenSeaPort {
       { order, accountAddress }:
       { order: Order; accountAddress: string}
     ) {
-    const protocolInstance = this._wyvernProtocol
 
     this._dispatch(EventType.CancelOrder, { order, accountAddress })
 
     const gasPrice = await this._computeGasPrice()
-    const transactionHash = await protocolInstance.wyvernExchange.cancelOrder_.sendTransactionAsync(
+    const transactionHash = await this._wyvernProtocol.wyvernExchange.cancelOrder_.sendTransactionAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
@@ -407,12 +406,14 @@ export class OpenSeaPort {
       order.v, order.r, order.s,
       { from: accountAddress, gasPrice })
 
-    await this._confirmTransaction(transactionHash.toString(), EventType.CancelOrder)
+    await this._confirmTransaction(transactionHash.toString(), EventType.CancelOrder, "Cancelling order")
   }
 
   /**
    * Approve a non-fungible token for use in trades.
+   * Requires an account to be initialized first.
    * Called internally, but exposed for dev flexibility.
+   * Checks to see if already approved, first. Then tries different approval methods from best to worst.
    * @param param0 __namedParamters Object
    * @param tokenId Token id to approve, but only used if approve-all isn't
    *  supported by the token contract
@@ -422,11 +423,12 @@ export class OpenSeaPort {
    *  will attempt to fetch it from Wyvern.
    * @param tokenAbi ABI of the token's contract. Defaults to a flexible ERC-721
    *  contract.
+   * @returns Transaction hash if a new transaction was created, otherwise null
    */
   public async approveNonFungibleToken(
       { tokenId, tokenAddress, accountAddress, proxyAddress = null, tokenAbi = ERC721 }:
       { tokenId: string; tokenAddress: string; accountAddress: string; proxyAddress: string | null; tokenAbi?: PartialReadonlyContractAbi}
-    ) {
+    ): Promise<string | null> {
     const tokenContract = this.web3.eth.contract(tokenAbi as any[])
     const erc721 = await tokenContract.at(tokenAddress)
 
@@ -459,7 +461,7 @@ export class OpenSeaPort {
       // Supports ApproveAll
       // Result was NULL_BLOCK_HASH + 1
       this.logger('Already approved proxy for all tokens')
-      return
+      return null
     }
 
     if (isApprovedForAll == 0) {
@@ -477,9 +479,8 @@ export class OpenSeaPort {
           data: erc721.setApprovalForAll.getData(proxyAddress, true),
           gasPrice
         })
-
-        await this._confirmTransaction(txHash, EventType.ApproveAllAssets)
-        return
+        await this._confirmTransaction(txHash, EventType.ApproveAllAssets, 'Approving all tokens of this type for trading')
+        return txHash
       } catch (error) {
         console.error(error)
         throw new Error('Failed to approve access to these tokens. OpenSea has been alerted, but you can also chat with us on Discord.')
@@ -493,7 +494,7 @@ export class OpenSeaPort {
     let approvedAddr = await promisify(c => erc721.getApproved.call(tokenId, c))
     if (approvedAddr == proxyAddress) {
       this.logger('Already approved proxy for this token')
-      return
+      return null
     }
     this.logger(`Approve response: ${approvedAddr}`)
 
@@ -504,7 +505,7 @@ export class OpenSeaPort {
       approvedAddr = await promisify(c => erc721.kittyIndexToApproved.call(tokenId, c))
       if (approvedAddr == proxyAddress) {
         this.logger('Already approved proxy for this kitty')
-        return
+        return null
       }
       this.logger(`CryptoKitties approve response: ${approvedAddr}`)
     }
@@ -514,7 +515,7 @@ export class OpenSeaPort {
       approvedAddr = await promisify(c => erc721.allowed.call(accountAddress, tokenId, c))
       if (approvedAddr == proxyAddress) {
         this.logger('Already allowed proxy for this token')
-        return
+        return null
       }
       this.logger(`"allowed" response: ${approvedAddr}`)
     }
@@ -532,8 +533,8 @@ export class OpenSeaPort {
         gasPrice
       })
 
-      await this._confirmTransaction(txHash, EventType.ApproveAsset)
-      return
+      await this._confirmTransaction(txHash, EventType.ApproveAsset, "Approving single token for trading")
+      return txHash
     } catch (error) {
       console.error(error)
       throw new Error('Failed to approve access to this token. OpenSea has been alerted, but you can also chat with us on Discord.')
@@ -543,14 +544,23 @@ export class OpenSeaPort {
   /**
    * Approve a fungible token (e.g. W-ETH) for use in trades.
    * Called internally, but exposed for dev flexibility.
+   * Checks to see if the minimum amount is already approved, first.
    * @param param0 __namedParamters Object
    * @param accountAddress The user's wallet address
    * @param tokenAddress The contract address of the token being approved
+   * @param minimumAmount The minimum amount needed to skip a transaction. Defaults to the max-integer.
+   * @returns Transaction hash if a new transaction occurred, otherwise null
    */
   public async approveFungibleToken(
-      { accountAddress, tokenAddress }:
-      { accountAddress: string; tokenAddress: string}
-    ) {
+      { accountAddress, tokenAddress, minimumAmount = WyvernProtocol.MAX_UINT_256 }:
+      { accountAddress: string; tokenAddress: string; minimumAmount?: BigNumber }
+    ): Promise<string | null> {
+    const approvedAmount = await this._getApprovedTokenCount({ accountAddress, tokenAddress })
+    if (approvedAmount.toNumber() >= minimumAmount.toNumber()) {
+      this.logger('Already approved enough fungible tokens for trading')
+      return null
+    }
+
     const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
 
     this._dispatch(EventType.ApproveCurrency, { accountAddress, tokenAddress })
@@ -564,7 +574,8 @@ export class OpenSeaPort {
       gasPrice
     })
 
-    await this._confirmTransaction(txHash, EventType.ApproveCurrency)
+    await this._confirmTransaction(txHash, EventType.ApproveCurrency, "Approving fungible tokens for trading")
+    return txHash
   }
 
   /**
@@ -572,9 +583,8 @@ export class OpenSeaPort {
    * @param order The order to calculate the price for
    */
   public async getCurrentPrice(order: Order) {
-    const protocolInstance = this._wyvernProtocol
 
-    const currentPrice = await protocolInstance.wyvernExchange.calculateCurrentPrice_.callAsync(
+    const currentPrice = await this._wyvernProtocol.wyvernExchange.calculateCurrentPrice_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
@@ -637,8 +647,7 @@ export class OpenSeaPort {
    * @param accountAddress The user's wallet address
    */
   public async _getProxy(accountAddress: string): Promise<string | null> {
-    const protocolInstance = this._wyvernProtocol
-    let proxyAddress: string | null = await protocolInstance.wyvernProxyRegistry.proxies.callAsync(accountAddress)
+    let proxyAddress: string | null = await this._wyvernProtocol.wyvernProxyRegistry.proxies.callAsync(accountAddress)
 
     if (proxyAddress == '0x') {
       throw new Error("Couldn't retrieve your account from the blockchain - make sure you're on the correct Ethereum network!")
@@ -658,17 +667,16 @@ export class OpenSeaPort {
    * @param accountAddress The user's wallet address
    */
   public async _initializeProxy(accountAddress: string) {
-    const protocolInstance = this._wyvernProtocol
 
     this._dispatch(EventType.InitializeAccount, { accountAddress })
 
     const gasPrice = await this._computeGasPrice()
-    const transactionHash = await protocolInstance.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
+    const transactionHash = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
       from: accountAddress,
       gasPrice
     })
 
-    await this._confirmTransaction(transactionHash, EventType.InitializeAccount)
+    await this._confirmTransaction(transactionHash, EventType.InitializeAccount, "Initializing proxy for account")
 
     const proxyAddress = await this._getProxy(accountAddress)
     if (!proxyAddress) {
@@ -929,25 +937,27 @@ export class OpenSeaPort {
     ) {
     const schema = this._getSchema()
     const wyAsset = order.metadata.asset
+    const tokenAddress = order.paymentToken
 
     let proxyAddress = await this._getProxy(accountAddress)
-
     if (!proxyAddress) {
       proxyAddress = await this._initializeProxy(accountAddress)
     }
-    const where = await findAsset(this.web3, { account: accountAddress, proxy: proxyAddress, wyAsset, schema })
 
-    if (where == 'other') {
+    // Verify that the taker owns the asset
+    const where = await findAsset(this.web3, { account: accountAddress, proxy: proxyAddress, wyAsset, schema })
+    if (where != 'account') {
+      // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
       throw new Error('You do not own this asset.')
     }
 
-    // Won't happen - but withdraw needs fixing
-    // if (where === 'proxy') {
-    //   this.logger(`Whether you must first withdraw this asset: ${true}`)
-    //   await this._withdrawAsset(asset, accountAddress, proxyAddress)
-    // }
-
-    // else where === 'account':
+    // For fulfilling bids,
+    // need to approve access to fungible token because of the way fees are paid
+    // This can be done at a higher level to show UI
+    if (tokenAddress != WyvernProtocol.NULL_ADDRESS) {
+      const minimumAmount = order.basePrice
+      await this.approveFungibleToken({ accountAddress, tokenAddress, minimumAmount })
+    }
 
     await this.approveNonFungibleToken({
       tokenId: wyAsset.id.toString(),
@@ -957,9 +967,7 @@ export class OpenSeaPort {
     })
 
     // Check sell parameters
-    const protocolInstance = this._wyvernProtocol
-
-    const sellValid = await protocolInstance.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+    const sellValid = await this._wyvernProtocol.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
       order.side,
@@ -985,10 +993,11 @@ export class OpenSeaPort {
 
       const balance = await this._getTokenBalance({ accountAddress, tokenAddress })
 
-      const required = order.basePrice /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
+      /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
+      const minimumAmount = order.basePrice
 
       // Check WETH balance
-      if (balance.toNumber() < required.toNumber()) {
+      if (balance.toNumber() < minimumAmount.toNumber()) {
         if (tokenAddress == WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address) {
           throw new Error('Insufficient balance. You may need to wrap Ether.')
         } else {
@@ -998,20 +1007,11 @@ export class OpenSeaPort {
 
       // Check token approval
       // This can be done at a higher level to show UI
-      const approved = await this._getApprovedTokenCount({ accountAddress, tokenAddress })
-      if (approved.toNumber() < required.toNumber()) {
-        try {
-          await this.approveFungibleToken({ accountAddress, tokenAddress })
-        } catch (error) {
-          console.error(error)
-          throw new Error('You declined to approve your W-ETH.')
-        }
-      }
+      await this.approveFungibleToken({ accountAddress, tokenAddress, minimumAmount })
     }
 
     // Check order formation
-    const protocolInstance = this._wyvernProtocol
-    const buyValid = await protocolInstance.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+    const buyValid = await this._wyvernProtocol.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
       order.side,
@@ -1028,8 +1028,7 @@ export class OpenSeaPort {
 
   // Throws
   private async _validateAndPostOrder(order: Order) {
-    const protocolInstance = this._wyvernProtocol
-    const hash = await protocolInstance.wyvernExchange.hashOrder_.callAsync(
+    const hash = await this._wyvernProtocol.wyvernExchange.hashOrder_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
@@ -1046,7 +1045,7 @@ export class OpenSeaPort {
     }
     this.logger('Order hashes match')
 
-    const valid = await protocolInstance.wyvernExchange.validateOrder_.callAsync(
+    const valid = await this._wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
@@ -1093,15 +1092,17 @@ export class OpenSeaPort {
     this._emitter.emit(event, data)
   }
 
-  private async _confirmTransaction(transactionHash: string, event: EventType) {
+  private async _confirmTransaction(transactionHash: string, event: EventType, description: string) {
 
     const transactionEventData = { transactionHash, event }
-
+    this.logger(`Transaction started: ${description}`)
     try {
       this._dispatch(EventType.TransactionCreated, transactionEventData)
       await confirmTransaction(this.web3, transactionHash)
+      this.logger(`Transaction succeeded: ${description}`)
       this._dispatch(EventType.TransactionConfirmed, transactionEventData)
     } catch (error) {
+      this.logger(`Transaction failed: ${description}`)
       this._dispatch(EventType.TransactionFailed, {
         ...transactionEventData, error
       })

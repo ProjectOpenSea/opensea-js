@@ -222,6 +222,7 @@ export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
   return asJSON
 }
 
+// Taken from Wyvern demo exchange
 export const findAsset = async (
   web3: Web3,
   {account, proxy, wyAsset, schema}:
