@@ -578,6 +578,38 @@ export class OpenSeaPort {
   }
 
   /**
+   * Estimate the gas needed to match two orders
+   * @param param0 __namedParamaters Object
+   * @param buy The buy order to match
+   * @param sell The sell order to match
+   * @param accountAddress The taker's wallet address
+   */
+  public async estimateGasForMatch(
+    { buy, sell, accountAddress }:
+    { buy: Order; sell: Order; accountAddress: string }): Promise<number> {
+
+    let value
+    if (buy.maker == accountAddress) {
+      value = await this._getEthValueForTakingSellOrder(sell)
+    }
+
+    return this.wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
+        [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
+        [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
+        [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
+        buy.calldata,
+        sell.calldata,
+        buy.replacementPattern,
+        sell.replacementPattern,
+        buy.staticExtradata,
+        sell.staticExtradata,
+        [buy.v, sell.v],
+        [buy.r, buy.s, sell.r, sell.s,
+          WyvernProtocol.NULL_ADDRESS],
+          { from: accountAddress, value } as any)
+  }
+
+  /**
    * Get the proxy address for a user's wallet.
    * Internal method exposed for dev flexibility.
    * @param accountAddress The user's wallet address
@@ -812,16 +844,7 @@ export class OpenSeaPort {
 
       // If using ETH to pay, set the value of the transaction to the current price
       if (buy.paymentToken == WyvernProtocol.NULL_ADDRESS) {
-        const currentPrice = await this.getCurrentPrice(sell)
-        const estimatedPrice = estimateCurrentPrice(sell)
-
-        const maxPrice = BigNumber.max(currentPrice, estimatedPrice)
-
-        // TODO Why is this not always a big number?
-        sell.takerRelayerFee = makeBigNumber(sell.takerRelayerFee.toString())
-        const feePercentage = sell.takerRelayerFee.div(INVERSE_BASIS_POINT)
-        const fee = feePercentage.times(maxPrice)
-        value = fee.plus(maxPrice).ceil()
+        value = await this._getEthValueForTakingSellOrder(sell)
       }
 
       orderLookupHash = sell.hash
@@ -859,6 +882,19 @@ export class OpenSeaPort {
         }..."`)
     }
     return txHash
+  }
+
+  private async _getEthValueForTakingSellOrder(sell: Order) {
+    const currentPrice = await this.getCurrentPrice(sell)
+    const estimatedPrice = estimateCurrentPrice(sell)
+
+    const maxPrice = BigNumber.max(currentPrice, estimatedPrice)
+
+    // TODO Why is this not always a big number?
+    sell.takerRelayerFee = makeBigNumber(sell.takerRelayerFee.toString())
+    const feePercentage = sell.takerRelayerFee.div(INVERSE_BASIS_POINT)
+    const fee = feePercentage.times(maxPrice)
+    return fee.plus(maxPrice).ceil()
   }
 
   // Throws

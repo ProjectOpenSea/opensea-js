@@ -13,7 +13,7 @@ import { Network, OrderJSON, OrderSide, Order } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256 } from '../src/wyvern'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, canSettleOrder } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -115,18 +115,31 @@ suite('seaport', () => {
     assert.equal(approved.toString(), MAX_UINT_256.toString())
   })
 
-  test('Matches first order in book', async () => {
-    const order = await client.api.getOrder({})
+  test('Matches first sell order in book', async () => {
+    const order = await client.api.getOrder({side: OrderSide.Sell})
     assert.isNotNull(order)
     if (!order) {
       return
     }
-    const accountAddress = ALEX_ADDRESS
-    await testMatch(order, accountAddress)
+    const takerAddress = ALEX_ADDRESS
+    await testMatchingOrder(order, takerAddress)
+  })
+
+  test('Matches first buy order in book', async () => {
+    const order = await client.api.getOrder({side: OrderSide.Buy})
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+    assert.isNotNull(order.asset)
+    if (!order.asset) {
+      return
+    }
+    const takerAddress = order.asset.owner.address
+    await testMatchingOrder(order, takerAddress)
   })
 
   test('Matches order via sell_orders and getAssets', async () => {
-    const accountAddress = ALEX_ADDRESS
     const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "asc", limit: 5 })
 
     const asset = assets[0]
@@ -142,18 +155,15 @@ suite('seaport', () => {
     }
 
     // Make sure match is valid
-    await testMatch(order, accountAddress)
+    const takerAddress = ALEX_ADDRESS
+    await testMatchingOrder(order, takerAddress)
   })
 })
 
-async function testMatch(order: Order, accountAddress: string) {
+async function testMatchingOrder(order: Order, accountAddress: string) {
   // TODO test mode for matching order to use 0x11111 in calldata
   const matchingOrder = client._makeMatchingOrder({order, accountAddress})
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
-
-  // TODO Make sure it's settleable
-  // const settleable = await canSettleOrder(client, order, matchingOrder)
-  // assert.isTrue(settleable)
 
   let buy: Order
   let sell: Order
@@ -177,4 +187,12 @@ async function testMatch(order: Order, accountAddress: string) {
 
   const isValid = await client._validateMatch({ buy, sell, accountAddress })
   assert.isTrue(isValid)
+
+  // Try to execute the match if it's a sell order, since buy orders
+  // won't always work unless taker has make a proxy and approved all
+  // token types involved in the trade
+  if (buy.maker == accountAddress) {
+    const gasEstimate = await client.estimateGasForMatch({ buy, sell, accountAddress })
+    assert.isAbove(gasEstimate, 0)
+  }
 }

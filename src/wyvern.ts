@@ -3,8 +3,9 @@ import { WyvernProtocol } from 'wyvern-js'
 import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
+import { OpenSeaPort } from '../src'
 
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, Network } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
@@ -13,6 +14,8 @@ export const feeRecipient = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
 export const INVERSE_BASIS_POINT = 10000
 
 export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256
+
+const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 
 // OTHER
 
@@ -335,6 +338,30 @@ export async function sendRawTransaction(
   return txHash
 }
 
+/**
+ * Estimate Gas usage for a transaction
+ * @param web3 Web3 instance
+ * @param fromAddress address sending transaction
+ * @param toAddress destination contract address
+ * @param data data to send to contract
+ * @param value value in ETH to send with data
+ */
+export async function estimateGas(
+  web3: Web3,
+  {fromAddress, toAddress, data, value = 0 }:
+  {fromAddress?: string; toAddress?: string; data?: any; value?: number | BigNumber }
+): Promise<number> {
+
+  const amount = await promisify<number>(c => web3.eth.estimateGas({
+    from: fromAddress,
+    to: toAddress,
+    value,
+    data,
+  }, c))
+
+  return amount
+}
+
 // sourced from 0x.js:
 // https://github.com/ProjectWyvern/wyvern-js/blob/39999cb93ce5d80ea90b4382182d1bd4339a9c6c/src/utils/signature_utils.ts
 function parseSignatureHex(signature: string): ECSignature {
@@ -448,4 +475,29 @@ export function getOrderHash(order: UnhashedOrder) {
     feeMethod: order.feeMethod.toString()
   }
   return WyvernProtocol.getOrderHashHex(orderWithStringTypes as any)
+}
+
+// BROKEN
+// TODO fix this calldata for buy orders
+export async function canSettleOrder(client: OpenSeaPort, order: Order, matchingOrder: Order): Promise<boolean> {
+
+  // HACK that doesn't always work
+  //  to change null address to 0x1111111... for replacing calldata
+  const calldata = order.calldata.slice(0, 98) + "1111111111111111111111111111111111111111" + order.calldata.slice(138)
+
+  const seller = order.side == OrderSide.Buy ? matchingOrder.maker : order.maker
+  const proxy = await client._getProxy(seller)
+  if (!proxy) {
+    console.warn(`No proxy found for seller ${seller}`)
+    return false
+  }
+  const contract = (client.web3.eth.contract([proxyABI])).at(proxy)
+  return promisify<boolean>(c =>
+    contract.proxy.call(
+      order.target,
+      order.howToCall,
+      calldata,
+      {from: seller},
+    c)
+  )
 }
