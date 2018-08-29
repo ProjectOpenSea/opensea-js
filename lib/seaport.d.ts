@@ -123,7 +123,9 @@ export declare class OpenSeaPort {
     }): Promise<void>;
     /**
      * Approve a non-fungible token for use in trades.
+     * Requires an account to be initialized first.
      * Called internally, but exposed for dev flexibility.
+     * Checks to see if already approved, first. Then tries different approval methods from best to worst.
      * @param param0 __namedParamters Object
      * @param tokenId Token id to approve, but only used if approve-all isn't
      *  supported by the token contract
@@ -133,6 +135,7 @@ export declare class OpenSeaPort {
      *  will attempt to fetch it from Wyvern.
      * @param tokenAbi ABI of the token's contract. Defaults to a flexible ERC-721
      *  contract.
+     * @returns Transaction hash if a new transaction was created, otherwise null
      */
     approveNonFungibleToken({ tokenId, tokenAddress, accountAddress, proxyAddress, tokenAbi }: {
         tokenId: string;
@@ -140,18 +143,22 @@ export declare class OpenSeaPort {
         accountAddress: string;
         proxyAddress: string | null;
         tokenAbi?: PartialReadonlyContractAbi;
-    }): Promise<void>;
+    }): Promise<string | null>;
     /**
      * Approve a fungible token (e.g. W-ETH) for use in trades.
      * Called internally, but exposed for dev flexibility.
+     * Checks to see if the minimum amount is already approved, first.
      * @param param0 __namedParamters Object
      * @param accountAddress The user's wallet address
      * @param tokenAddress The contract address of the token being approved
+     * @param minimumAmount The minimum amount needed to skip a transaction. Defaults to the max-integer.
+     * @returns Transaction hash if a new transaction occurred, otherwise null
      */
-    approveFungibleToken({ accountAddress, tokenAddress }: {
+    approveFungibleToken({ accountAddress, tokenAddress, minimumAmount }: {
         accountAddress: string;
         tokenAddress: string;
-    }): Promise<void>;
+        minimumAmount?: BigNumber;
+    }): Promise<string | null>;
     /**
      * Gets the price for the order using the contract
      * @param order The order to calculate the price for
