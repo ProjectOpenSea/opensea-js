@@ -165,9 +165,11 @@ async function testMatchingOrder(order: Order, accountAddress: string) {
   const matchingOrder = client._makeMatchingOrder({order, accountAddress})
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
 
+  const isSellOrder = order.side == OrderSide.Sell
+
   let buy: Order
   let sell: Order
-  if (order.side == OrderSide.Buy) {
+  if (!isSellOrder) {
     buy = order
     sell = {
       ...matchingOrder,
@@ -191,8 +193,9 @@ async function testMatchingOrder(order: Order, accountAddress: string) {
   // Try to execute the match if it's a sell order, since buy orders
   // won't always work unless taker has make a proxy and approved all
   // token types involved in the trade
-  if (buy.maker == accountAddress) {
-    const gasEstimate = await client.estimateGasForMatch({ buy, sell, accountAddress })
+  if (isSellOrder) {
+    const gasEstimate = await client._estimateGasForMatch({ buy, sell, accountAddress })
+    console.info(`Gas estimate for sell order: ${gasEstimate}`)
     assert.isAbove(gasEstimate, 0)
   }
 }

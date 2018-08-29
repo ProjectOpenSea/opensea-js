@@ -584,7 +584,7 @@ export class OpenSeaPort {
    * @param sell The sell order to match
    * @param accountAddress The taker's wallet address
    */
-  public async estimateGasForMatch(
+  public async _estimateGasForMatch(
     { buy, sell, accountAddress }:
     { buy: Order; sell: Order; accountAddress: string }): Promise<number> {
 
@@ -606,6 +606,7 @@ export class OpenSeaPort {
         [buy.v, sell.v],
         [buy.r, buy.s, sell.r, sell.s,
           WyvernProtocol.NULL_ADDRESS],
+          // Typescript error in estimate gas method, so use any
           { from: accountAddress, value } as any)
   }
 
