@@ -23,7 +23,7 @@ export class OpenSeaPort {
   public logger: (arg: string) => void
   // API instance on this seaport
   public readonly api: OpenSeaAPI
-  // Extra wei to add to the mean gas price when making transactions
+  // Extra gwei to add to the mean gas price when making transactions
   public gasPriceAddition = new BigNumber(3)
 
   private _networkName: Network
@@ -594,7 +594,8 @@ export class OpenSeaPort {
    */
   public async _computeGasPrice(): Promise<BigNumber> {
     const meanGas = await getCurrentGasPrice(this.web3)
-    return meanGas.plus(this.gasPriceAddition)
+    const weiToAdd = this.web3.toWei(this.gasPriceAddition, 'gwei')
+    return meanGas.plus(weiToAdd)
   }
 
   /**
