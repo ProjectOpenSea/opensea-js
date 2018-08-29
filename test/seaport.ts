@@ -13,7 +13,7 @@ import { Network, OrderJSON, OrderSide, Order } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice } from '../src/wyvern'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -153,7 +153,9 @@ suite('seaport', () => {
 
     const order = await client.api.getOrder({
       side: OrderSide.Buy,
-      owner: takerAddress
+      owner: takerAddress,
+      // Use a token that has already been approved via approve-all
+      asset_contract_address: DIGITAL_ART_CHAIN_ADDRESS
     })
     assert.isNotNull(order)
     if (!order) {
@@ -176,11 +178,6 @@ suite('seaport', () => {
       return
     }
     const order = asset.sellOrders[0]
-    assert.isNotNull(order)
-    if (!order) {
-      return
-    }
-
     // Make sure match is valid
     const takerAddress = ALEX_ADDRESS
     await testMatchingOrder(order, takerAddress, true)
@@ -220,7 +217,7 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   if (testAtomicMatch) {
     const gasEstimate = await client._estimateGasForMatch({ buy, sell, accountAddress })
     const gasPrice = await client._computeGasPrice()
-    console.info(`Gas estimate for sell order: ${gasEstimate}`)
+    console.info(`Gas estimate for ${isSellOrder ? "sell" : "buy"} order: ${gasEstimate}`)
     console.info(`Gas price to use: ${client.web3.fromWei(gasPrice, 'gwei')} gwei`)
     assert.isAbove(gasEstimate, 0)
   }

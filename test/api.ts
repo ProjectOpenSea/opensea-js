@@ -20,6 +20,7 @@ suite('api', () => {
     assert.equal(rinkebyApi.apiBaseUrl, 'https://rinkeby-api.opensea.io')
   })
 
+  // Skip these tests, since many are redundant with seaport tests
   skip(() => {
 
     test('API fetches orderbook', async () => {

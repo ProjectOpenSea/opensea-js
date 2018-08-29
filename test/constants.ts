@@ -13,6 +13,7 @@ export const apiToTest = rinkebyApi
 
 export const CK_ADDRESS = '0x06012c8cf97bead5deae237070f9587f8e7a266d'
 export const CRYPTO_CRYSTAL_ADDRESS = '0xcfbc9103362aec4ce3089f155c2da2eea1cb7602'
+export const DIGITAL_ART_CHAIN_ADDRESS = '0x323a3e1693e7a0959f65972f3bf2dfcb93239dfe'
 export const CK_RINKEBY_ADDRESS = '0x16baf0de678e52367adc69fd067e5edd1d33e3bf'
 export const CK_RINKEBY_TOKEN_ID = 111
 export const CK_RINKEBY_SELLER_FEE = 125
