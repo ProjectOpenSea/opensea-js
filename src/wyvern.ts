@@ -315,16 +315,15 @@ export function makeBigNumber(arg: number | string): BigNumber {
  * @param fromAddress address sending transaction
  * @param toAddress destination contract address
  * @param data data to send to contract
- * @param value value in ETH to send with data
- * @param awaitConfirmation whether we should wait for blockchain to confirm
+ * @param gasPrice gas price to use. If unspecified, uses web3 default (mean gas price)
+ * @param value value in ETH to send with data. Defaults to 0
+ * @param awaitConfirmation whether we should wait for blockchain to confirm. Defaults to false
  */
 export async function sendRawTransaction(
     web3: Web3,
-    {fromAddress, toAddress, data, value = 0, awaitConfirmation = false}:
-    {fromAddress: string; toAddress: string; data: any; value?: number | BigNumber; awaitConfirmation?: boolean}
+    {fromAddress, toAddress, data, gasPrice, value = 0, awaitConfirmation = false}:
+    {fromAddress: string; toAddress: string; data: any; gasPrice?: number | BigNumber; value?: number | BigNumber; awaitConfirmation?: boolean}
   ): Promise<string> {
-
-  const gasPrice = await getGasPrice(web3)
 
   const txHashRes = await promisify(c => web3.eth.sendTransaction({
     from: fromAddress,
@@ -367,14 +366,12 @@ export async function estimateGas(
 }
 
 /**
- * Get gas price for sending a txn, in wei
- * Will be slightly above the mean to make it faster
+ * Get mean gas price for sending a txn, in wei
  * @param web3 Web3 instance
  */
-export async function getGasPrice(web3: Web3): Promise<BigNumber> {
-  const weiToAdd = 3
+export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
   const meanGas = await promisify<BigNumber>(c => web3.eth.getGasPrice(c))
-  return meanGas.plus(weiToAdd)
+  return meanGas
 }
 
 // sourced from 0x.js:

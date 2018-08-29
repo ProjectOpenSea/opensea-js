@@ -10,20 +10,25 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getGasPrice
+  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice
 } from './wyvern'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
 
 export class OpenSeaPort {
 
+  // Web3 instance to use
   public web3: Web3
+  // Logger function to use when debugging
   public logger: (arg: string) => void
+  // API instance on this seaport
   public readonly api: OpenSeaAPI
+  // Extra wei to add to the mean gas price when making transactions
+  public gasPriceAddition = new BigNumber(3)
 
-  private networkName: Network
-  private wyvernProtocol: WyvernProtocol
-  private emitter: EventEmitter
+  private _networkName: Network
+  private _wyvernProtocol: WyvernProtocol
+  private _emitter: EventEmitter
 
   /**
    * Your very own seaport.
@@ -44,16 +49,16 @@ export class OpenSeaPort {
 
     // Web3 Config
     this.web3 = new Web3(provider)
-    this.networkName = apiConfig.networkName
+    this._networkName = apiConfig.networkName
 
     // WyvernJS config
-    this.wyvernProtocol = new WyvernProtocol(provider, {
-      network: this.networkName,
+    this._wyvernProtocol = new WyvernProtocol(provider, {
+      network: this._networkName,
       gasPrice: apiConfig.gasPrice,
     })
 
     // Emit events
-    this.emitter = new EventEmitter()
+    this._emitter = new EventEmitter()
 
     // Debugging: default to nothing
     this.logger = logger || ((arg: string) => arg)
@@ -67,8 +72,8 @@ export class OpenSeaPort {
    */
   public addListener(event: EventType, listener: (data: EventData) => void, once = false): EventSubscription {
     const subscription = once
-      ? this.emitter.once(event, listener)
-      : this.emitter.addListener(event, listener)
+      ? this._emitter.once(event, listener)
+      : this._emitter.addListener(event, listener)
     return subscription
   }
 
@@ -79,7 +84,7 @@ export class OpenSeaPort {
    */
   public removeListener(subscription: EventSubscription) {
     // Kill tslint "no this used" warning
-    if (!this.emitter) {
+    if (!this._emitter) {
       return
     }
 
@@ -92,7 +97,7 @@ export class OpenSeaPort {
    * @param event Optional EventType to remove listeners for
    */
   public removeAllListeners(event?: EventType) {
-    this.emitter.removeAllListeners(event)
+    this._emitter.removeAllListeners(event)
   }
 
   /**
@@ -108,17 +113,19 @@ export class OpenSeaPort {
       { amountInEth: number; accountAddress: string }
     ) {
 
-    const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
+    const token = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther
 
     const amount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount })
 
+    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: token.address,
       value: amount,
-      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'deposit'), [])
+      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'deposit'), []),
+      gasPrice
     })
 
     await this._confirmTransaction(txHash, EventType.WrapEth)
@@ -136,17 +143,19 @@ export class OpenSeaPort {
       { amountInEth: number; accountAddress: string }
     ) {
 
-    const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
+    const token = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther
 
     const amount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount })
 
+    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: token.address,
       value: 0,
-      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [amount.toString()])
+      data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [amount.toString()]),
+      gasPrice
     })
 
     await this._confirmTransaction(txHash, EventType.UnwrapWeth)
@@ -168,7 +177,7 @@ export class OpenSeaPort {
       { tokenId: string; tokenAddress: string; accountAddress: string; amountInEth: number; expirationTime?: number }
     ): Promise<Order> {
 
-    const token = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther
+    const token = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, tokenId, tokenAddress)
     const metadata = {
@@ -187,7 +196,7 @@ export class OpenSeaPort {
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
     const order: UnhashedOrder = {
-      exchange: WyvernProtocol.getExchangeContractAddress(this.networkName),
+      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: WyvernProtocol.NULL_ADDRESS,
       makerRelayerFee: makeBigNumber(buyerFee),
@@ -281,7 +290,7 @@ export class OpenSeaPort {
       : SaleKind.FixedPrice
 
     const order: UnhashedOrder = {
-      exchange: WyvernProtocol.getExchangeContractAddress(this.networkName),
+      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: WyvernProtocol.NULL_ADDRESS,
       makerRelayerFee: makeBigNumber(sellerFee),
@@ -380,11 +389,11 @@ export class OpenSeaPort {
       { order, accountAddress }:
       { order: Order; accountAddress: string}
     ) {
-    const protocolInstance = this.wyvernProtocol
+    const protocolInstance = this._wyvernProtocol
 
     this._dispatch(EventType.CancelOrder, { order, accountAddress })
 
-    const gasPrice = await getGasPrice(this.web3)
+    const gasPrice = await this._computeGasPrice()
     const transactionHash = await protocolInstance.wyvernExchange.cancelOrder_.sendTransactionAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
@@ -461,10 +470,12 @@ export class OpenSeaPort {
       try {
         this._dispatch(EventType.ApproveAllAssets, { accountAddress, proxyAddress, tokenAddress })
 
+        const gasPrice = await this._computeGasPrice()
         const txHash = await sendRawTransaction(this.web3, {
           fromAddress: accountAddress,
           toAddress: erc721.address,
-          data: erc721.setApprovalForAll.getData(proxyAddress, true)
+          data: erc721.setApprovalForAll.getData(proxyAddress, true),
+          gasPrice
         })
 
         await this._confirmTransaction(txHash, EventType.ApproveAllAssets)
@@ -513,10 +524,12 @@ export class OpenSeaPort {
     try {
       this._dispatch(EventType.ApproveAsset, { accountAddress, proxyAddress, tokenAddress, tokenId })
 
+      const gasPrice = await this._computeGasPrice()
       const txHash = await sendRawTransaction(this.web3, {
         fromAddress: accountAddress,
         toAddress: erc721.address,
-        data: erc721.approve.getData(proxyAddress, tokenId)
+        data: erc721.approve.getData(proxyAddress, tokenId),
+        gasPrice
       })
 
       await this._confirmTransaction(txHash, EventType.ApproveAsset)
@@ -538,15 +551,17 @@ export class OpenSeaPort {
       { accountAddress, tokenAddress }:
       { accountAddress: string; tokenAddress: string}
     ) {
-    const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this.networkName)
+    const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
 
     this._dispatch(EventType.ApproveCurrency, { accountAddress, tokenAddress })
 
+    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: tokenAddress,
       data: WyvernSchemas.encodeCall(getMethod(ERC20, 'approve'),
-        [contractAddress, WyvernProtocol.MAX_UINT_256.toString()])
+        [contractAddress, WyvernProtocol.MAX_UINT_256.toString()]),
+      gasPrice
     })
 
     await this._confirmTransaction(txHash, EventType.ApproveCurrency)
@@ -557,7 +572,7 @@ export class OpenSeaPort {
    * @param order The order to calculate the price for
    */
   public async getCurrentPrice(order: Order) {
-    const protocolInstance = this.wyvernProtocol
+    const protocolInstance = this._wyvernProtocol
 
     const currentPrice = await protocolInstance.wyvernExchange.calculateCurrentPrice_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
@@ -571,6 +586,15 @@ export class OpenSeaPort {
       order.staticExtradata,
     )
     return currentPrice
+  }
+
+  /**
+   * Compute the gas price for sending a txn, in wei
+   * Will be slightly above the mean to make it faster
+   */
+  public async _computeGasPrice(): Promise<BigNumber> {
+    const meanGas = await getCurrentGasPrice(this.web3)
+    return meanGas.plus(this.gasPriceAddition)
   }
 
   /**
@@ -589,7 +613,7 @@ export class OpenSeaPort {
       value = await this._getEthValueForTakingSellOrder(sell)
     }
 
-    return this.wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
+    return this._wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
         [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
         [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
         [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
@@ -612,7 +636,7 @@ export class OpenSeaPort {
    * @param accountAddress The user's wallet address
    */
   public async _getProxy(accountAddress: string): Promise<string | null> {
-    const protocolInstance = this.wyvernProtocol
+    const protocolInstance = this._wyvernProtocol
     let proxyAddress: string | null = await protocolInstance.wyvernProxyRegistry.proxies.callAsync(accountAddress)
 
     if (proxyAddress == '0x') {
@@ -633,11 +657,11 @@ export class OpenSeaPort {
    * @param accountAddress The user's wallet address
    */
   public async _initializeProxy(accountAddress: string) {
-    const protocolInstance = this.wyvernProtocol
+    const protocolInstance = this._wyvernProtocol
 
     this._dispatch(EventType.InitializeAccount, { accountAddress })
 
-    const gasPrice = await getGasPrice(this.web3)
+    const gasPrice = await this._computeGasPrice()
     const transactionHash = await protocolInstance.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
       from: accountAddress,
       gasPrice
@@ -667,7 +691,7 @@ export class OpenSeaPort {
       { accountAddress: string; tokenAddress?: string; tokenAbi?: PartialReadonlyContractAbi }
     ) {
     if (!tokenAddress) {
-      tokenAddress = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther.address
+      tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     }
     const amount = await promisify(c => this.web3.eth.call({
       from: accountAddress,
@@ -691,9 +715,9 @@ export class OpenSeaPort {
       { accountAddress: string; tokenAddress?: string}
     ) {
     if (!tokenAddress) {
-      tokenAddress = WyvernSchemas.tokens[this.networkName].canonicalWrappedEther.address
+      tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     }
-    const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this.networkName)
+    const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
     const approved = await promisify<string>(c => this.web3.eth.call({
       from: accountAddress,
       to: tokenAddress,
@@ -758,7 +782,7 @@ export class OpenSeaPort {
       { buy: Order; sell: Order; accountAddress: string }
     ): Promise<boolean> {
 
-    const ordersCanMatch = await this.wyvernProtocol.wyvernExchange.ordersCanMatch_.callAsync(
+    const ordersCanMatch = await this._wyvernProtocol.wyvernExchange.ordersCanMatch_.callAsync(
       [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
       [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
       [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
@@ -776,7 +800,7 @@ export class OpenSeaPort {
     }
     this.logger(`Orders matching: ${ordersCanMatch}`)
 
-    const orderCalldataCanMatch = await this.wyvernProtocol.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
+    const orderCalldataCanMatch = await this._wyvernProtocol.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
     this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
 
     if (!orderCalldataCanMatch) {
@@ -801,7 +825,7 @@ export class OpenSeaPort {
       // USER IS THE SELLER
       await this._validateSellOrderParameters({ order: sell, accountAddress })
 
-      const buyValid = await this.wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
+      const buyValid = await this._wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
         [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken],
         [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt],
         buy.feeMethod,
@@ -824,7 +848,7 @@ export class OpenSeaPort {
       // USER IS THE BUYER
       await this._validateBuyOrderParameters({ order: buy, accountAddress })
 
-      const sellValid = await this.wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
+      const sellValid = await this._wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
         [sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
         [sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
         sell.feeMethod,
@@ -856,9 +880,9 @@ export class OpenSeaPort {
     await this._validateMatch({ buy, sell, accountAddress })
 
     let txHash
-    const gasPrice = await getGasPrice(this.web3)
+    const gasPrice = await this._computeGasPrice()
     try {
-      txHash = await this.wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync([buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
+      txHash = await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync([buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
         buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
         [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
         [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
@@ -932,7 +956,7 @@ export class OpenSeaPort {
     })
 
     // Check sell parameters
-    const protocolInstance = this.wyvernProtocol
+    const protocolInstance = this._wyvernProtocol
 
     const sellValid = await protocolInstance.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
@@ -964,7 +988,7 @@ export class OpenSeaPort {
 
       // Check WETH balance
       if (balance.toNumber() < required.toNumber()) {
-        if (tokenAddress == WyvernSchemas.tokens[this.networkName].canonicalWrappedEther.address) {
+        if (tokenAddress == WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address) {
           throw new Error('Insufficient balance. You may need to wrap Ether.')
         } else {
           throw new Error('Insufficient balance.')
@@ -985,7 +1009,7 @@ export class OpenSeaPort {
     }
 
     // Check order formation
-    const protocolInstance = this.wyvernProtocol
+    const protocolInstance = this._wyvernProtocol
     const buyValid = await protocolInstance.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
@@ -1003,7 +1027,7 @@ export class OpenSeaPort {
 
   // Throws
   private async _validateAndPostOrder(order: Order) {
-    const protocolInstance = this.wyvernProtocol
+    const protocolInstance = this._wyvernProtocol
     const hash = await protocolInstance.wyvernExchange.hashOrder_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
@@ -1056,7 +1080,7 @@ export class OpenSeaPort {
   }
 
   private _getSchema(schemaName = WyvernSchemaName.ERC721) {
-    const schema = WyvernSchemas.schemas[this.networkName].filter(s => s.name == schemaName)[0]
+    const schema = WyvernSchemas.schemas[this._networkName].filter(s => s.name == schemaName)[0]
 
     if (!schema) {
       throw new Error('No schema found for this asset; please check back later!')
@@ -1065,7 +1089,7 @@ export class OpenSeaPort {
   }
 
   private _dispatch(event: EventType, data: EventData) {
-    this.emitter.emit(event, data)
+    this._emitter.emit(event, data)
   }
 
   private async _confirmTransaction(transactionHash: string, event: EventType) {
