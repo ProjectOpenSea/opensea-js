@@ -7,9 +7,10 @@ export declare class OpenSeaPort {
     web3: Web3;
     logger: (arg: string) => void;
     readonly api: OpenSeaAPI;
-    private networkName;
-    private wyvernProtocol;
-    private emitter;
+    gasPriceAddition: BigNumber;
+    private _networkName;
+    private _wyvernProtocol;
+    private _emitter;
     /**
      * Your very own seaport.
      * Create a new instance of OpenSeaJS.
@@ -157,6 +158,23 @@ export declare class OpenSeaPort {
      */
     getCurrentPrice(order: Order): Promise<BigNumber>;
     /**
+     * Compute the gas price for sending a txn, in wei
+     * Will be slightly above the mean to make it faster
+     */
+    _computeGasPrice(): Promise<BigNumber>;
+    /**
+     * Estimate the gas needed to match two orders
+     * @param param0 __namedParamaters Object
+     * @param buy The buy order to match
+     * @param sell The sell order to match
+     * @param accountAddress The taker's wallet address
+     */
+    _estimateGasForMatch({ buy, sell, accountAddress }: {
+        buy: Order;
+        sell: Order;
+        accountAddress: string;
+    }): Promise<number>;
+    /**
      * Get the proxy address for a user's wallet.
      * Internal method exposed for dev flexibility.
      * @param accountAddress The user's wallet address
@@ -216,6 +234,7 @@ export declare class OpenSeaPort {
      * Private helper methods
      */
     private _atomicMatch;
+    private _getEthValueForTakingSellOrder;
     private _validateSellOrderParameters;
     private _validateBuyOrderParameters;
     private _validateAndPostOrder;

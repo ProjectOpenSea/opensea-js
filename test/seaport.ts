@@ -10,7 +10,7 @@ import {
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order } from '../src/types'
-import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getGasPrice } from '../src/wyvern'
+import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256 } from '../src/wyvern'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS } from './constants'
@@ -195,9 +195,9 @@ async function testMatchingOrder(order: Order, accountAddress: string) {
   // token types involved in the trade
   if (isSellOrder) {
     const gasEstimate = await client._estimateGasForMatch({ buy, sell, accountAddress })
-    const gasPrice = await client._getGasPrice()
+    const gasPrice = await client._computeGasPrice()
     console.info(`Gas estimate for sell order: ${gasEstimate}`)
-    console.info(`Gas price: ${gasPrice}`)
+    console.info(`Gas price to use: ${gasPrice}`)
     assert.isAbove(gasEstimate, 0)
   }
 }

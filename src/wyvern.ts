@@ -491,7 +491,7 @@ export function getOrderHash(order: UnhashedOrder) {
 
 // BROKEN
 // TODO fix this calldata for buy orders
-export async function canSettleOrder(client: OpenSeaPort, order: Order, matchingOrder: Order): Promise<boolean> {
+async function canSettleOrder(client: OpenSeaPort, order: Order, matchingOrder: Order): Promise<boolean> {
 
   // HACK that doesn't always work
   //  to change null address to 0x1111111... for replacing calldata

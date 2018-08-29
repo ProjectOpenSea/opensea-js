@@ -109,7 +109,7 @@ Or generate markdown docs available for browsing on git repos:
 npm run docsMarkdown
 ```
 
-Or generate both:
+Due to a markdown theme typescript issue, `docs` just generates html docs right now:
 ```bash
 npm run docs
 ```

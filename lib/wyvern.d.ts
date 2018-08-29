@@ -44,16 +44,37 @@ export declare function makeBigNumber(arg: number | string): BigNumber;
  * @param fromAddress address sending transaction
  * @param toAddress destination contract address
  * @param data data to send to contract
- * @param value value in ETH to send with data
- * @param awaitConfirmation whether we should wait for blockchain to confirm
+ * @param gasPrice gas price to use. If unspecified, uses web3 default (mean gas price)
+ * @param value value in ETH to send with data. Defaults to 0
+ * @param awaitConfirmation whether we should wait for blockchain to confirm. Defaults to false
  */
-export declare function sendRawTransaction(web3: Web3, { fromAddress, toAddress, data, value, awaitConfirmation }: {
+export declare function sendRawTransaction(web3: Web3, { fromAddress, toAddress, data, gasPrice, value, awaitConfirmation }: {
     fromAddress: string;
     toAddress: string;
     data: any;
+    gasPrice?: number | BigNumber;
     value?: number | BigNumber;
     awaitConfirmation?: boolean;
-}): Promise<{}>;
+}): Promise<string>;
+/**
+ * Estimate Gas usage for a transaction
+ * @param web3 Web3 instance
+ * @param fromAddress address sending transaction
+ * @param toAddress destination contract address
+ * @param data data to send to contract
+ * @param value value in ETH to send with data
+ */
+export declare function estimateGas(web3: Web3, { fromAddress, toAddress, data, value }: {
+    fromAddress?: string;
+    toAddress?: string;
+    data?: any;
+    value?: number | BigNumber;
+}): Promise<number>;
+/**
+ * Get mean gas price for sending a txn, in wei
+ * @param web3 Web3 instance
+ */
+export declare function getCurrentGasPrice(web3: Web3): Promise<BigNumber>;
 /**
  * Estimates the price of an order
  * @param order The order to estimate price on

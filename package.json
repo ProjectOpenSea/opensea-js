@@ -7,7 +7,7 @@
     "test": "./node_modules/.bin/mocha test/*.ts --require ts-node/register --timeout 8000",
     "lint": "tslint --project . 'src/**/*.ts' --fix",
     "build": "npm run lint && tsc",
-    "docs": "npm run docsHtml && npm run docsMarkdown",
+    "docs": "npm run docsHtml",
     "docsHtml": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
     "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file"
   },
