@@ -322,17 +322,21 @@ export async function sendRawTransaction(
     web3: Web3,
     {fromAddress, toAddress, data, value = 0, awaitConfirmation = false}:
     {fromAddress: string; toAddress: string; data: any; value?: number | BigNumber; awaitConfirmation?: boolean}
-  ) {
+  ): Promise<string> {
 
-  const txHash = await promisify(c => web3.eth.sendTransaction({
+  const gasPrice = await getGasPrice(web3)
+
+  const txHashRes = await promisify(c => web3.eth.sendTransaction({
     from: fromAddress,
     to: toAddress,
     value,
     data,
+    gasPrice
   }, c))
+  const txHash = txHashRes.toString()
 
   if (awaitConfirmation) {
-    await confirmTransaction(web3, txHash.toString())
+    await confirmTransaction(web3, txHash)
   }
 
   return txHash
@@ -347,10 +351,10 @@ export async function sendRawTransaction(
  * @param value value in ETH to send with data
  */
 export async function estimateGas(
-  web3: Web3,
-  {fromAddress, toAddress, data, value = 0 }:
-  {fromAddress?: string; toAddress?: string; data?: any; value?: number | BigNumber }
-): Promise<number> {
+    web3: Web3,
+    {fromAddress, toAddress, data, value = 0 }:
+    {fromAddress?: string; toAddress?: string; data?: any; value?: number | BigNumber }
+  ): Promise<number> {
 
   const amount = await promisify<number>(c => web3.eth.estimateGas({
     from: fromAddress,
@@ -360,6 +364,17 @@ export async function estimateGas(
   }, c))
 
   return amount
+}
+
+/**
+ * Get gas price for sending a txn, in wei
+ * Will be slightly above the mean to make it faster
+ * @param web3 Web3 instance
+ */
+export async function getGasPrice(web3: Web3): Promise<BigNumber> {
+  const weiToAdd = 3
+  const meanGas = await promisify<BigNumber>(c => web3.eth.getGasPrice(c))
+  return meanGas.plus(weiToAdd)
 }
 
 // sourced from 0x.js:

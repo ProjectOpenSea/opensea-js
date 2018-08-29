@@ -10,7 +10,7 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash
+  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getGasPrice
 } from './wyvern'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -120,9 +120,8 @@ export class OpenSeaPort {
       value: amount,
       data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'deposit'), [])
     })
-    const transactionHash = txHash.toString()
 
-    await this._confirmTransaction(transactionHash, EventType.WrapEth)
+    await this._confirmTransaction(txHash, EventType.WrapEth)
   }
 
   /**
@@ -143,15 +142,14 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount })
 
-    const txHash = sendRawTransaction(this.web3, {
+    const txHash = await sendRawTransaction(this.web3, {
       fromAddress: accountAddress,
       toAddress: token.address,
       value: 0,
       data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [amount.toString()])
     })
-    const transactionHash = txHash.toString()
 
-    await this._confirmTransaction(transactionHash, EventType.UnwrapWeth)
+    await this._confirmTransaction(txHash, EventType.UnwrapWeth)
   }
 
   /**
@@ -386,6 +384,7 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.CancelOrder, { order, accountAddress })
 
+    const gasPrice = await getGasPrice(this.web3)
     const transactionHash = await protocolInstance.wyvernExchange.cancelOrder_.sendTransactionAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
@@ -397,7 +396,7 @@ export class OpenSeaPort {
       order.replacementPattern,
       order.staticExtradata,
       order.v, order.r, order.s,
-      { from: accountAddress })
+      { from: accountAddress, gasPrice })
 
     await this._confirmTransaction(transactionHash.toString(), EventType.CancelOrder)
   }
@@ -467,9 +466,8 @@ export class OpenSeaPort {
           toAddress: erc721.address,
           data: erc721.setApprovalForAll.getData(proxyAddress, true)
         })
-        const transactionHash = txHash.toString()
 
-        await this._confirmTransaction(transactionHash, EventType.ApproveAllAssets)
+        await this._confirmTransaction(txHash, EventType.ApproveAllAssets)
         return
       } catch (error) {
         console.error(error)
@@ -520,9 +518,8 @@ export class OpenSeaPort {
         toAddress: erc721.address,
         data: erc721.approve.getData(proxyAddress, tokenId)
       })
-      const transactionHash = txHash.toString()
 
-      await this._confirmTransaction(transactionHash, EventType.ApproveAsset)
+      await this._confirmTransaction(txHash, EventType.ApproveAsset)
       return
     } catch (error) {
       console.error(error)
@@ -551,9 +548,8 @@ export class OpenSeaPort {
       data: WyvernSchemas.encodeCall(getMethod(ERC20, 'approve'),
         [contractAddress, WyvernProtocol.MAX_UINT_256.toString()])
     })
-    const transactionHash = txHash.toString()
 
-    await this._confirmTransaction(transactionHash, EventType.ApproveCurrency)
+    await this._confirmTransaction(txHash, EventType.ApproveCurrency)
   }
 
   /**
@@ -641,8 +637,10 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.InitializeAccount, { accountAddress })
 
+    const gasPrice = await getGasPrice(this.web3)
     const transactionHash = await protocolInstance.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
       from: accountAddress,
+      gasPrice
     })
 
     await this._confirmTransaction(transactionHash, EventType.InitializeAccount)
@@ -858,6 +856,7 @@ export class OpenSeaPort {
     await this._validateMatch({ buy, sell, accountAddress })
 
     let txHash
+    const gasPrice = await getGasPrice(this.web3)
     try {
       txHash = await this.wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync([buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
         buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
@@ -873,7 +872,7 @@ export class OpenSeaPort {
         [buy.r, buy.s, sell.r, sell.s,
           // Use the order hash so that OrdersMatched events can look it up
           orderLookupHash],
-        { from: accountAddress, value })
+        { from: accountAddress, value, gasPrice })
     } catch (error) {
       console.error(error)
       throw new Error(`Failed to authorize transaction: "${
