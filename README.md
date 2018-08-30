@@ -98,7 +98,7 @@ Then, lint and build the library into the `lib` directory:
 npm run build
 ```
 
-Or run the barebones tests:
+Or run the tests:
 ```bash
 npm test
 ```
