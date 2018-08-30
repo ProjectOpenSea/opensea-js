@@ -2,7 +2,15 @@ import 'isomorphic-unfetch';
 import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset, OpenSeaAssetJSON } from './types';
 export declare const ORDERBOOK_VERSION: number;
 export declare const API_VERSION: number;
+export declare const API_BASE_MAINNET = "https://api.opensea.io";
+export declare const API_BASE_RINKEBY = "https://rinkeby-api.opensea.io";
+export declare const SITE_HOST_MAINNET = "https://opensea.io";
+export declare const SITE_HOST_RINKEBY = "https://rinkeby.opensea.io";
 export declare class OpenSeaAPI {
+    /**
+     * Host url for OpenSea
+     */
+    readonly hostUrl: string;
     /**
      * Base url for the API
      */

@@ -164,6 +164,8 @@ export interface OpenSeaAsset {
   imageUrlOriginal: string
   // Thumbnail url for this token
   imageUrlThumbnail: string
+  // Link to token on OpenSea
+  openseaLink: string
   // Link to token on dapp's site
   externalLink: string
   // Array of traits on this token

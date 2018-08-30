@@ -103,6 +103,7 @@ export interface OpenSeaAsset {
     imagePreviewUrl: string;
     imageUrlOriginal: string;
     imageUrlThumbnail: string;
+    openseaLink: string;
     externalLink: string;
     traits: object[];
     numSales: number;

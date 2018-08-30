@@ -5,15 +5,15 @@ import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import { OpenSeaPort } from '../src'
 
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, Network } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset } from './types'
+import { SITE_HOST_MAINNET, SITE_HOST_RINKEBY } from './api'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
-
 export const feeRecipient = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
-
 export const INVERSE_BASIS_POINT = 10000
-
 export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256
+export const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"
+export const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9"
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 
@@ -115,7 +115,7 @@ export const orderFromJSONv0 = (order: any): Order => {
   return fromJSON
 }
 
-export const assetFromJSON = (asset: any): OpenSeaAsset => {
+export const assetFromJSON = (asset: any, hostUrl: string): OpenSeaAsset => {
   const isAnimated = asset.image_url && asset.image_url.endsWith('.gif')
   const isSvg = asset.image_url && asset.image_url.endsWith('.svg')
   const fromJSON: OpenSeaAsset = {
@@ -149,6 +149,7 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     imageUrlThumbnail: asset.image_thumbnail_url,
 
     externalLink: asset.external_link,
+    openseaLink: `${hostUrl}/assets/${asset.asset_contract.address}/${asset.token_id.toString()}`,
     traits: asset.traits,
     numSales: asset.num_sales,
     lastSale: asset.last_sale,
@@ -165,6 +166,10 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
 }
 
 export const orderFromJSON = (order: any): Order => {
+
+  const hostUrl = order.exchange == WYVERN_EXCHANGE_ADDRESS_MAINNET
+    ? SITE_HOST_MAINNET
+    : SITE_HOST_RINKEBY
 
   const fromJSON: Order = {
     hash: order.order_hash || order.hash,
@@ -202,7 +207,7 @@ export const orderFromJSON = (order: any): Order => {
     r: order.r,
     s: order.s,
 
-    asset: order.asset ? assetFromJSON(order.asset) : order.asset
+    asset: order.asset ? assetFromJSON(order.asset, hostUrl) : order.asset
   }
 
   fromJSON.currentPrice = estimateCurrentPrice(fromJSON)

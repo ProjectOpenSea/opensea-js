@@ -6,13 +6,19 @@ import { orderFromJSON, assetFromJSON } from './wyvern'
 export const ORDERBOOK_VERSION: number = 1
 export const API_VERSION: number = 1
 
-const API_BASE_MAINNET = 'https://api.opensea.io'
-const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'
+export const API_BASE_MAINNET = 'https://api.opensea.io'
+export const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'
+export const SITE_HOST_MAINNET = 'https://opensea.io'
+export const SITE_HOST_RINKEBY = 'https://rinkeby.opensea.io'
 const ORDERBOOK_PATH = `/wyvern/v${ORDERBOOK_VERSION}`
 const API_PATH = `/api/v${ORDERBOOK_VERSION}`
 
 export class OpenSeaAPI {
 
+  /**
+   * Host url for OpenSea
+   */
+  public readonly hostUrl: string
   /**
    * Base url for the API
    */
@@ -36,10 +42,12 @@ export class OpenSeaAPI {
     switch (networkName) {
       case Network.Rinkeby:
         this.apiBaseUrl = API_BASE_RINKEBY
+        this.hostUrl = SITE_HOST_RINKEBY
         break
       case Network.Main:
       default:
         this.apiBaseUrl = API_BASE_MAINNET
+        this.hostUrl = SITE_HOST_MAINNET
         break
     }
   }
@@ -128,7 +136,7 @@ export class OpenSeaAPI {
     const response = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId}`)
 
     const json: any = await response.json()
-    return json ? assetFromJSON(json) : null
+    return json ? assetFromJSON(json, this.hostUrl) : null
   }
 
   /**
@@ -149,7 +157,7 @@ export class OpenSeaAPI {
 
     const json: any = await response.json()
     return {
-      assets: json.assets.map((j: any) => assetFromJSON(j)),
+      assets: json.assets.map((j: any) => assetFromJSON(j, this.hostUrl)),
       estimatedCount: json.estimated_count
     }
   }
