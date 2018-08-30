@@ -66,6 +66,12 @@ const { orders, count } = await seaport.api.getOrders({
 }, 2)
 ```
 
+### Example Code
+
+Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
+
+You can also view a live demo [here](https://ships-log.herokuapp.com/)!
+
 ### Learning More
 
 Detailed documentation is coming soon on [docs.opensea.io](https://docs.opensea.io).

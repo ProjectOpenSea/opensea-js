@@ -1,0 +1,3 @@
+[submodule "examples/ships-log"]
+	path = examples/ships-log
+	url = https://github.com/ProjectOpenSea/ships-log
