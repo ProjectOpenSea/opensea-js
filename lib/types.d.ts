@@ -124,12 +124,12 @@ export interface UnsignedOrder extends UnhashedOrder {
     hash: string;
 }
 export interface Order extends UnsignedOrder, ECSignature {
-    makerAccount?: OpenSeaAccount;
-    takerAccount?: OpenSeaAccount;
-    feeRecipientAccount?: OpenSeaAccount;
+    makerAccount: OpenSeaAccount;
+    takerAccount: OpenSeaAccount;
+    feeRecipientAccount: OpenSeaAccount;
+    currentPrice?: BigNumber;
     cancelledOrFinalized?: boolean;
     markedInvalid?: boolean;
-    currentPrice?: BigNumber;
     asset?: OpenSeaAsset;
 }
 export interface OrderJSON {

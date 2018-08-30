@@ -3,7 +3,7 @@ import * as Web3 from 'web3'
 import {
   Network,
   HowToCall,
-  SaleKind,
+  // Note: Wyvern SaleKind is wrong!
   ECSignature,
   Order as WyvernOrder
 } from 'wyvern-js/lib/types'
@@ -11,7 +11,6 @@ import {
 export {
   Network,
   HowToCall,
-  SaleKind,
   ECSignature
 }
 
@@ -82,6 +81,15 @@ export enum FeeMethod {
   ProtocolFee = 0,
   /* Maker fees are deducted from the token amount that the maker receives. Taker fees are extra tokens that must be paid by the taker. */
   SplitFee = 1,
+}
+
+/**
+ * Wyvern: type of sale. Fixed or Dutch auction
+ * Note: wyvern.js uses EnglishAuction as 1 and Dutch as 2
+ */
+export enum SaleKind {
+  FixedPrice = 0,
+  DutchAuction = 1,
 }
 
 // Wyvern Schemas (see https://github.com/ProjectOpenSea/wyvern-schemas)
@@ -195,13 +203,13 @@ export interface UnsignedOrder extends UnhashedOrder {
 }
 
 export interface Order extends UnsignedOrder, ECSignature {
-  // Server side appends
-  makerAccount?: OpenSeaAccount,
-  takerAccount?: OpenSeaAccount,
-  feeRecipientAccount?: OpenSeaAccount,
+  // Read-only server-side appends
+  currentPrice?: BigNumber
+  makerAccount?: OpenSeaAccount
+  takerAccount?: OpenSeaAccount
+  feeRecipientAccount?: OpenSeaAccount
   cancelledOrFinalized?: boolean
   markedInvalid?: boolean
-  currentPrice?: BigNumber
   asset?: OpenSeaAsset
 }
 
