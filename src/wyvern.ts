@@ -178,7 +178,7 @@ export const orderFromJSON = (order: any): Order => {
     r: order.r,
     s: order.s,
 
-    asset: order.asset
+    asset: order.asset ? assetFromJSON(order.asset) : order.asset
   }
 
   fromJSON.currentPrice = estimateCurrentPrice(fromJSON)

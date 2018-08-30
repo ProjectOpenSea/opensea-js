@@ -80,12 +80,15 @@ suite('seaport', () => {
     assert.equal(order.hash, getOrderHash(order))
   })
 
-  test('orderToJSON hashes if necessary', async () => {
+  test('orderToJSON deserializes asset and hashes if necessary', async () => {
     const order = await client.api.getOrder({})
     assert.isNotNull(order)
-    if (!order) {
+    if (!order || !order.asset) {
       return
     }
+    assert.isNotEmpty(order.asset.assetContract)
+    assert.isNotEmpty(order.asset.tokenId)
+
     const accountAddress = ALEX_ADDRESS
     const matchingOrder = client._makeMatchingOrder({order, accountAddress})
     const matchingOrderHash = matchingOrder.hash

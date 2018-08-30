@@ -34,7 +34,7 @@ suite('api', () => {
     test('API can change page size', async () => {
       const defaultPageSize = apiToTest.pageSize
       apiToTest.pageSize = 7
-      const {orders, count} = await apiToTest.getOrders()
+      const {orders} = await apiToTest.getOrders()
       assert.equal(orders.length, 7)
       apiToTest.pageSize = defaultPageSize
     })
