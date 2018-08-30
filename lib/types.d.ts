@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import { Network, HowToCall, SaleKind, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
-export { Network, HowToCall, SaleKind, ECSignature };
+import { Network, HowToCall, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
+export { Network, HowToCall, ECSignature };
 /**
  * Events emitted by the SDK. There are two types:
  * 1. transaction events, which tell you when a new transaction was
@@ -56,6 +56,14 @@ export declare enum OrderSide {
 export declare enum FeeMethod {
     ProtocolFee = 0,
     SplitFee = 1
+}
+/**
+ * Wyvern: type of sale. Fixed or Dutch auction
+ * Note: wyvern.js uses EnglishAuction as 1 and Dutch as 2
+ */
+export declare enum SaleKind {
+    FixedPrice = 0,
+    DutchAuction = 1
 }
 export declare enum WyvernSchemaName {
     ERC721 = "ERC721"
@@ -124,10 +132,10 @@ export interface UnsignedOrder extends UnhashedOrder {
     hash: string;
 }
 export interface Order extends UnsignedOrder, ECSignature {
-    makerAccount: OpenSeaAccount;
-    takerAccount: OpenSeaAccount;
-    feeRecipientAccount: OpenSeaAccount;
     currentPrice?: BigNumber;
+    makerAccount?: OpenSeaAccount;
+    takerAccount?: OpenSeaAccount;
+    feeRecipientAccount?: OpenSeaAccount;
     cancelledOrFinalized?: boolean;
     markedInvalid?: boolean;
     asset?: OpenSeaAsset;
