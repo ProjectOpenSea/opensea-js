@@ -125,6 +125,20 @@ export interface OpenSeaAsset {
     sellerFeeBasisPoints: number;
     // Fee levied on buyers by this contract, in basis points
     buyerFeeBasisPoints: number;
+    // Description of the contract
+    description: string;
+    // Contract's Etherscan / OpenSea symbol
+    tokenSymbol: string;
+    // Image for the contract
+    imageUrl: string;
+    // Object with stats about the contract
+    stats?: object;
+    // Array of trait types for the contract
+    traits?: object[];
+    // Link to the contract's main website
+    externalLink?: string;
+    // Link to the contract's wiki, if available
+    wikiLink?: string;
   }
   // The asset's given name
   name: string
@@ -138,6 +152,28 @@ export interface OpenSeaAsset {
   buyOrders: Order[] | null
   // Sell orders (auctions) on the asset. Null if asset in a list and didn't prefetch sell orders
   sellOrders: Order[] | null
+
+  // Whether the asset is on a pre-sale (so token ids aren't real)
+  isPresale: boolean
+  // The cached and size-optimized image url for this token
+  imageUrl: string
+  // The image preview url for this token.
+  // Note: Loses gif animation and may have issues with SVGs
+  imagePreviewUrl: string
+  // The original image url for this token
+  imageUrlOriginal: string
+  // Thumbnail url for this token
+  imageUrlThumbnail: string
+  // Link to token on dapp's site
+  externalLink: string
+  // Array of traits on this token
+  traits: object[],
+  // Number of times this token has been traded (sold)
+  numSales: number
+  // Data about the last time this token was sold
+  lastSale: object | null
+  // The suggested background color for the image url
+  backgroundColor: string | null
 }
 
 export interface UnhashedOrder extends WyvernOrder {

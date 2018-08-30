@@ -116,19 +116,43 @@ export const orderFromJSONv0 = (order: any): Order => {
 }
 
 export const assetFromJSON = (asset: any): OpenSeaAsset => {
+  const isAnimated = asset.image_url && asset.image_url.endsWith('.gif')
+  const isSvg = asset.image_url && asset.image_url.endsWith('.svg')
   const fromJSON: OpenSeaAsset = {
     tokenId: asset.token_id.toString(),
     name: asset.name,
     owner: asset.owner,
     assetContract: {
       name: asset.asset_contract.name,
+      description: asset.asset_contract.description,
       address: asset.asset_contract.address,
+      tokenSymbol: asset.asset_contract.symbol,
       buyerFeeBasisPoints: asset.asset_contract.buyer_fee_basis_points,
       sellerFeeBasisPoints: asset.asset_contract.seller_fee_basis_points,
+      imageUrl: asset.asset_contract.image_url,
+      stats: asset.asset_contract.stats,
+      traits: asset.asset_contract.traits,
+      externalLink: asset.asset_contract.external_link,
+      wikiLink: asset.asset_contract.wiki_link,
     },
     orders: asset.orders ? asset.orders.map(orderFromJSON) : null,
     sellOrders: asset.sell_orders ? asset.sell_orders.map(orderFromJSON) : null,
-    buyOrders: asset.buy_orders ? asset.buy_orders.map(orderFromJSON) : null
+    buyOrders: asset.buy_orders ? asset.buy_orders.map(orderFromJSON) : null,
+
+    isPresale: asset.is_presale,
+    // Don't use previews if it's a special image
+    imageUrl: isAnimated || isSvg
+      ? asset.image_url
+      : (asset.image_preview_url || asset.image_url),
+    imagePreviewUrl: asset.image_preview_url,
+    imageUrlOriginal: asset.image_original_url,
+    imageUrlThumbnail: asset.image_thumbnail_url,
+
+    externalLink: asset.external_link,
+    traits: asset.traits,
+    numSales: asset.num_sales,
+    lastSale: asset.last_sale,
+    backgroundColor: asset.background_color ? `#${asset.background_color}` : null,
   }
   // If orders were included, put them in sell/buy order groups
   if (fromJSON.orders && !fromJSON.sellOrders) {

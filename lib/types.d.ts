@@ -84,6 +84,13 @@ export interface OpenSeaAsset {
         address: OpenSeaAccount;
         sellerFeeBasisPoints: number;
         buyerFeeBasisPoints: number;
+        description: string;
+        tokenSymbol: string;
+        imageUrl: string;
+        stats?: object;
+        traits?: object[];
+        externalLink?: string;
+        wikiLink?: string;
     };
     name: string;
     tokenId: string;
@@ -91,6 +98,16 @@ export interface OpenSeaAsset {
     orders: Order[] | null;
     buyOrders: Order[] | null;
     sellOrders: Order[] | null;
+    isPresale: boolean;
+    imageUrl: string;
+    imagePreviewUrl: string;
+    imageUrlOriginal: string;
+    imageUrlThumbnail: string;
+    externalLink: string;
+    traits: object[];
+    numSales: number;
+    lastSale: object | null;
+    backgroundColor: string | null;
 }
 export interface UnhashedOrder extends WyvernOrder {
     feeMethod: FeeMethod;
