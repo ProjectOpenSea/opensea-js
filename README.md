@@ -51,7 +51,7 @@ const offer = await seaport.createBuyOrder({ tokenId, tokenAddress, accountAddre
 To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client:
 
 ```JavaScript
-import { OrderSide } from 'opensea-js/types'
+import { OrderSide } from 'opensea-js/lib/types'
 
 // Get offers
 const { orders, count } = await seaport.api.getOrders({

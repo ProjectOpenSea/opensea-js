@@ -23,6 +23,6 @@ export {
   orderToJSON, orderFromJSON,
   // Types to help initialize SDK and listen to events.
   // Can also be imported using e.g.
-  //   import { EventType } from 'opensea-js/types'
+  //   import { EventType } from 'opensea-js/lib/types'
   EventData, EventType, Network
 }

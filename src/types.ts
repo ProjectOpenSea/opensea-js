@@ -75,17 +75,18 @@ export enum OrderSide {
 
 /**
  * Wyvern fee method
+ * ProtocolFee: Charge maker fee to seller and charge taker fee to buyer.
+ * SplitFee: Maker fees are deducted from the token amount that the maker receives. Taker fees are extra tokens that must be paid by the taker.
  */
 export enum FeeMethod {
-  /* Charge maker fee to seller and charge taker fee to buyer. */
   ProtocolFee = 0,
-  /* Maker fees are deducted from the token amount that the maker receives. Taker fees are extra tokens that must be paid by the taker. */
   SplitFee = 1,
 }
 
 /**
  * Wyvern: type of sale. Fixed or Dutch auction
- * Note: wyvern.js uses EnglishAuction as 1 and Dutch as 2
+ * Note: not imported from wyvern.js because it uses
+ * EnglishAuction as 1 and DutchAuction as 2
  */
 export enum SaleKind {
   FixedPrice = 0,
@@ -273,15 +274,14 @@ export interface OrderbookResponse {
   count: number
 }
 
-/**
- * Types related to Web3
- */
-
+// Types related to Web3
 export type Web3Callback<T> = (err: Error | null, result: T) => void
 export type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>
 export type TxnCallback = (result: boolean) => void
 
-// To simplify typifying ABIs:
+/**
+ * To simplify typifying ABIs
+ */
 export interface PartialAbiDefinition {
   type: Web3.AbiType | string // Not Partial!
   name?: string

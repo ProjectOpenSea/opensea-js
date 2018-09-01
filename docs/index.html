@@ -95,7 +95,7 @@
 <span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> })
 </code></pre>
 				<p>To retrieve a list of offers and auction on an asset, you can use an instance of the <code>OpenSeaAPI</code> exposed on the client:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OrderSide } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js/types'</span>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OrderSide } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js/lib/types'</span>
 
 <span class="hljs-comment">// Get offers</span>
 <span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
@@ -109,6 +109,9 @@
   <span class="hljs-attr">side</span>: OrderSide.Sell <span class="hljs-comment">// == 1</span>
 }, <span class="hljs-number">2</span>)
 </code></pre>
+				<h3 id="example-code">Example Code</h3>
+				<p>Check out the <a href="https://github.com/ProjectOpenSea/ships-log">Ship&#39;s Log</a>, built with the SDK, which shows the recent orders in the OpenSea orderbook.</p>
+				<p>You can also view a live demo <a href="https://ships-log.herokuapp.com/">here</a>!</p>
 				<h3 id="learning-more">Learning More</h3>
 				<p>Detailed documentation is coming soon on <a href="https://docs.opensea.io">docs.opensea.io</a>.</p>
 				<p>In the meantime, visit the auto-generated documentation <a href="https://projectopensea.github.io/opensea-js/">here</a>, or contact the OpenSea devs for help! They&#39;re available every day on <a href="https://discord.gg/XjwWYgU">Discord</a> in the <code>#developers</code> channel.</p>
@@ -122,7 +125,7 @@
 				<p>Then, lint and build the library into the <code>lib</code> directory:</p>
 				<pre><code class="lang-bash">npm run build
 </code></pre>
-				<p>Or run the barebones tests:</p>
+				<p>Or run the tests:</p>
 				<pre><code class="lang-bash">npm <span class="hljs-built_in">test</span>
 </code></pre>
 				<h4 id="generate-documentation">Generate Documentation</h4>

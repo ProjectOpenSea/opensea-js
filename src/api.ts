@@ -5,11 +5,11 @@ import { orderFromJSON, assetFromJSON } from './wyvern'
 
 export const ORDERBOOK_VERSION: number = 1
 export const API_VERSION: number = 1
-
 export const API_BASE_MAINNET = 'https://api.opensea.io'
 export const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'
 export const SITE_HOST_MAINNET = 'https://opensea.io'
 export const SITE_HOST_RINKEBY = 'https://rinkeby.opensea.io'
+
 const ORDERBOOK_PATH = `/wyvern/v${ORDERBOOK_VERSION}`
 const API_PATH = `/api/v${ORDERBOOK_VERSION}`
 
