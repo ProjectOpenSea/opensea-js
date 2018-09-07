@@ -235,8 +235,8 @@ export interface OrderJSON {
   paymentToken: string
   basePrice: string
   extra: string
-  listingTime: string
-  expirationTime: string
+  listingTime: number | string
+  expirationTime: number | string
   salt: string
 
   metadata: {
@@ -249,11 +249,19 @@ export interface OrderJSON {
   r: string
   s: string
 
-  // Used by orderbook to make queries easier
+  /**
+   * Attrs used by orderbook to make queries easier
+   * Includes `maker`, `taker` and `side` from above
+   */
   owner?: string,
+  sale_kind?: SaleKind,
   asset_contract_address?: string,
   token_id?: number | string
   token_ids?: Array<number | string>
+  // This means listing_time > value in seconds
+  listed_after?: number | string
+  // This means listing_time <= value in seconds
+  listed_before?: number | string
   limit?: number
   offset?: number
 }

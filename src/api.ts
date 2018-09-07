@@ -1,7 +1,7 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
 import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetJSON} from './types'
-import { orderFromJSON, assetFromJSON } from './wyvern'
+import { orderFromJSON, assetFromJSON } from './utils'
 
 export const ORDERBOOK_VERSION: number = 1
 export const API_VERSION: number = 1

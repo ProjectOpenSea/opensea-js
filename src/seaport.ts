@@ -10,8 +10,8 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice
-} from './wyvern'
+  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay
+} from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
 
@@ -677,6 +677,9 @@ export class OpenSeaPort {
     })
 
     await this._confirmTransaction(transactionHash, EventType.InitializeAccount, "Initializing proxy for account")
+
+    // Fix for Cipher and any other clients who get receipts too early
+    await delay(800)
 
     const proxyAddress = await this._getProxy(accountAddress)
     if (!proxyAddress) {

@@ -543,3 +543,11 @@ async function canSettleOrder(client: OpenSeaPort, order: Order, matchingOrder: 
     c)
   )
 }
+
+/**
+ * Delay using setTimeout
+ * @param ms milliseconds to wait
+ */
+export async function delay(ms: number) {
+  return new Promise(res => setTimeout(res, ms))
+}

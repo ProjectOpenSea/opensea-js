@@ -10,7 +10,7 @@ import {
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order, SaleKind } from '../src/types'
-import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice } from '../src/wyvern'
+import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS } from './constants'
@@ -57,12 +57,13 @@ suite('seaport', () => {
     })
   })
 
-  test('API order has correct hash', async () => {
+  test('API order has asset and correct hash', async () => {
     const order = await client.api.getOrder({})
     assert.isNotNull(order)
     if (!order) {
       return
     }
+    assert.isNotNull(order.asset)
     assert.equal(order.hash, getOrderHash(order))
   })
 
@@ -81,15 +82,17 @@ suite('seaport', () => {
   })
 
   test('orderToJSON computes correct current price for Dutch auctions', async () => {
-    const order = await client.api.getOrder({ saleKind: SaleKind.DutchAuction })
-    assert.isNotNull(order)
-    if (!order || !order.asset || !order.currentPrice) {
-      return
-    }
-    assert.isNotNull(order.currentPrice)
-    // Possible race condition
-    assert.equal(order.currentPrice.toPrecision(3), estimateCurrentPrice(order).toPrecision(3))
-    assert.isAbove(order.basePrice.toNumber(), order.currentPrice.toNumber())
+    const { orders, count } = await client.api.getOrders({ saleKind: SaleKind.DutchAuction })
+    assert.equal(orders.length, client.api.pageSize)
+    orders.map(order => {
+      assert.isNotNull(order.currentPrice)
+      if (!order.currentPrice) {
+        return
+      }
+      // Possible race condition
+      assert.equal(order.currentPrice.toPrecision(3), estimateCurrentPrice(order).toPrecision(3))
+      assert.isAtLeast(order.basePrice.toNumber(), order.currentPrice.toNumber())
+    })
   })
 
   test('orderToJSON deserializes asset and hashes if necessary', async () => {
