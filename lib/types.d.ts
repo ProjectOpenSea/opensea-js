@@ -164,8 +164,8 @@ export interface OrderJSON {
     paymentToken: string;
     basePrice: string;
     extra: string;
-    listingTime: string;
-    expirationTime: string;
+    listingTime: number | string;
+    expirationTime: number | string;
     salt: string;
     metadata: {
         asset: WyvernAsset;
@@ -175,10 +175,17 @@ export interface OrderJSON {
     v: number;
     r: string;
     s: string;
+    /**
+     * Attrs used by orderbook to make queries easier
+     * Includes `maker`, `taker` and `side` from above
+     */
     owner?: string;
+    sale_kind?: SaleKind;
     asset_contract_address?: string;
     token_id?: number | string;
     token_ids?: Array<number | string>;
+    listed_after?: number | string;
+    listed_before?: number | string;
     limit?: number;
     offset?: number;
 }
