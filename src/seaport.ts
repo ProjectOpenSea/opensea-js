@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundle } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
@@ -265,10 +265,6 @@ export class OpenSeaPort {
 
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, tokenId, tokenAddress)
-    const metadata = {
-      asset: wyAsset,
-      schema: schema.name,
-    }
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
 
@@ -315,8 +311,52 @@ export class OpenSeaPort {
       listingTime: makeBigNumber(listingTime),
       expirationTime: makeBigNumber(expirationTime),
       salt: WyvernProtocol.generatePseudoRandomSalt(),
-      metadata,
+      metadata: {
+        asset: wyAsset,
+        schema: schema.name,
+      },
     }
+
+    await this._validateSellOrderParameters({ order, accountAddress })
+
+    const hashedOrder = {
+      ...order,
+      hash: getOrderHash(order)
+    }
+    let signature
+    try {
+      signature = await this._signOrder(hashedOrder)
+    } catch (error) {
+      console.error(error)
+      throw new Error("You declined to sign your auction. Just a reminder: there's no gas needed anymore to create auctions!")
+    }
+
+    const orderWithSignature = {
+      ...hashedOrder,
+      ...signature
+    }
+
+    return this._validateAndPostOrder(orderWithSignature)
+  }
+
+  /**
+   * Create a sell order to auction a bundle of assets.
+   * Will throw a 'You do not own this asset' error if the maker doesn't have one of the assets.
+   * If the user hasn't approved access to any of the assets yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval for each asset.
+   * @param param0 __namedParameters Object
+   * @param tokenId Token ID
+   * @param tokenAddress Address of the token's contract
+   * @param accountAddress Address of the maker's wallet
+   * @param startAmountInEth Price of the asset at the start of the auction
+   * @param endAmountInEth Optional price of the asset at the end of its expiration time
+   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+   */
+  public async createBundleSellOrder(
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
+      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmountInEth: number; endAmountInEth?: number; expirationTime?: number }
+    ): Promise<Order> {
+
+    const order = this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -666,7 +706,7 @@ export class OpenSeaPort {
    * Internal method exposed for dev flexibility.
    * @param accountAddress The user's wallet address
    */
-  public async _initializeProxy(accountAddress: string) {
+  public async _initializeProxy(accountAddress: string): Promise<string> {
 
     this._dispatch(EventType.InitializeAccount, { accountAddress })
 
@@ -739,15 +779,102 @@ export class OpenSeaPort {
     return makeBigNumber(approved)
   }
 
+  public _makeBundleSellOrder(
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
+      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmountInEth: number; endAmountInEth?: number; expirationTime?: number }
+    ): UnhashedOrder {
+
+    const schema = this._getSchema()
+
+    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
+
+    const bundle: OpenSeaAssetBundle = {
+      assets: wyAssets,
+      name: bundleName,
+      description: bundleDescription,
+      external_link: bundleExternalLink
+    }
+
+    const transactions = wyAssets.map(wyAsset => {
+      const { target, calldata } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
+      return {
+        calldata,
+        address: target,
+        value: makeBigNumber(0)
+      }
+    })
+
+    const atomicizedCalldata = this._wyvernProtocol.wyvernAtomicizer.atomicize.getABIEncodedTransactionData(
+      transactions.map(t => t.address),
+      transactions.map(t => t.value),
+      transactions.map(t => makeBigNumber((t.calldata.length - 2) / 2)), // subtract 2 for '0x', divide by 2 for hex
+      transactions.map(t => t.calldata).reduce((x, y) => x + y.slice(2)) // cut off the '0x'
+    )
+
+    // Small offset to account for latency
+    const listingTime = Math.round(Date.now() / 1000 - 100)
+
+    const extraInEth = endAmountInEth != null
+      ? startAmountInEth - endAmountInEth
+      : 0
+
+    const orderSaleKind = endAmountInEth != null && endAmountInEth !== startAmountInEth
+      ? SaleKind.DutchAuction
+      : SaleKind.FixedPrice
+
+    return {
+      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
+      maker: accountAddress,
+      taker: WyvernProtocol.NULL_ADDRESS,
+      makerRelayerFee: makeBigNumber(0), // TODO decide fee policy for bundles
+      takerRelayerFee: makeBigNumber(0),
+      makerProtocolFee: makeBigNumber(0),
+      takerProtocolFee: makeBigNumber(0),
+      feeMethod: FeeMethod.SplitFee,
+      feeRecipient,
+      side: OrderSide.Sell,
+      saleKind: orderSaleKind,
+      target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
+      howToCall: HowToCall.DelegateCall, // required DELEGATECALL to library for atomicizer
+      calldata: atomicizedCalldata,
+      replacementPattern: '0x',
+      staticTarget: WyvernProtocol.NULL_ADDRESS,
+      staticExtradata: '0x',
+      paymentToken: WyvernProtocol.NULL_ADDRESS, // use Ether
+      basePrice: makeBigNumber(this.web3.toWei(startAmountInEth, 'ether')).round(),
+      extra: makeBigNumber(this.web3.toWei(extraInEth, 'ether')).round(),
+      listingTime: makeBigNumber(listingTime),
+      expirationTime: makeBigNumber(expirationTime),
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
+      metadata: {
+        bundle,
+        schema: schema.name,
+      },
+    }
+  }
+
   public _makeMatchingOrder(
       { order, accountAddress }:
-      { order: Order; accountAddress: string}
+      { order: UnsignedOrder; accountAddress: string}
     ): UnsignedOrder {
     const schema = this._getSchema()
     const listingTime = Math.round(Date.now() / 1000 - 1000)
-    const { target, calldata, replacementPattern } = order.side == OrderSide.Buy
-      ? WyvernSchemas.encodeSell(schema, order.metadata.asset, accountAddress)
-      : WyvernSchemas.encodeBuy(schema, order.metadata.asset, accountAddress)
+
+    const getCalldata = () => {
+      if (order.metadata.asset) {
+        return order.side == OrderSide.Buy
+          ? WyvernSchemas.encodeSell(schema, order.metadata.asset, accountAddress)
+          : WyvernSchemas.encodeBuy(schema, order.metadata.asset, accountAddress)
+      } else {
+        return {
+          target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
+          calldata: order.calldata,
+          replacementPattern: order.replacementPattern
+        }
+      }
+    }
+
+    const { target, calldata, replacementPattern } = getCalldata()
 
     const matchingOrder: UnhashedOrder = {
       exchange: order.exchange,
@@ -819,6 +946,109 @@ export class OpenSeaPort {
       throw new Error('Unable to match offer with auction, due to the type of offer requested')
     }
     return true
+  }
+
+  // Throws
+  public async _validateSellOrderParameters(
+      { order, accountAddress }:
+      { order: UnhashedOrder; accountAddress: string }
+    ) {
+    const schema = this._getSchema()
+    const wyAssets = order.metadata.bundle
+      ? order.metadata.bundle.assets
+      : order.metadata.asset
+        ? [order.metadata.asset]
+        : []
+    const tokenAddress = order.paymentToken
+
+    let proxyAddress = await this._getProxy(accountAddress)
+    if (!proxyAddress) {
+      proxyAddress = await this._initializeProxy(accountAddress)
+    }
+    const proxy = proxyAddress
+
+    await Promise.all(wyAssets.map(async wyAsset => {
+      // Verify that the taker owns the asset
+      const where = await findAsset(this.web3, { account: accountAddress, proxy, wyAsset, schema })
+      if (where != 'account') {
+        // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
+        throw new Error('You do not own this asset.')
+      }
+
+      await this.approveNonFungibleToken({
+        tokenId: wyAsset.id.toString(),
+        tokenAddress: wyAsset.address,
+        accountAddress,
+        proxyAddress
+      })
+    }))
+
+    // For fulfilling bids,
+    // need to approve access to fungible token because of the way fees are paid
+    // This can be done at a higher level to show UI
+    if (tokenAddress != WyvernProtocol.NULL_ADDRESS) {
+      const minimumAmount = order.basePrice
+      await this.approveFungibleToken({ accountAddress, tokenAddress, minimumAmount })
+    }
+
+    // Check sell parameters
+    const sellValid = await this._wyvernProtocol.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
+      order.feeMethod,
+      order.side,
+      order.saleKind,
+      order.howToCall,
+      order.calldata,
+      order.replacementPattern,
+      order.staticExtradata,
+      { from: accountAddress })
+    if (!sellValid) {
+      throw new Error(`Failed to validate sell order parameters: ${JSON.stringify(order)}`)
+    }
+  }
+
+  // Throws
+  public async _validateBuyOrderParameters(
+      { order, accountAddress }:
+      { order: UnhashedOrder; accountAddress: string }
+    ) {
+    const tokenAddress = order.paymentToken
+
+    if (tokenAddress != WyvernProtocol.NULL_ADDRESS) {
+
+      const balance = await this._getTokenBalance({ accountAddress, tokenAddress })
+
+      /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
+      const minimumAmount = order.basePrice
+
+      // Check WETH balance
+      if (balance.toNumber() < minimumAmount.toNumber()) {
+        if (tokenAddress == WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address) {
+          throw new Error('Insufficient balance. You may need to wrap Ether.')
+        } else {
+          throw new Error('Insufficient balance.')
+        }
+      }
+
+      // Check token approval
+      // This can be done at a higher level to show UI
+      await this.approveFungibleToken({ accountAddress, tokenAddress, minimumAmount })
+    }
+
+    // Check order formation
+    const buyValid = await this._wyvernProtocol.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
+      order.feeMethod,
+      order.side,
+      order.saleKind,
+      order.howToCall,
+      order.calldata,
+      order.replacementPattern,
+      order.staticExtradata,
+      { from: accountAddress })
+    if (!buyValid) {
+      throw new Error(`Failed to validate buy order parameters: ${JSON.stringify(order)}`)
+    }
   }
 
   /**
@@ -931,102 +1161,6 @@ export class OpenSeaPort {
     const feePercentage = sell.takerRelayerFee.div(INVERSE_BASIS_POINT)
     const fee = feePercentage.times(maxPrice)
     return fee.plus(maxPrice).ceil()
-  }
-
-  // Throws
-  private async _validateSellOrderParameters(
-      { order, accountAddress }:
-      { order: UnhashedOrder; accountAddress: string }
-    ) {
-    const schema = this._getSchema()
-    const wyAsset = order.metadata.asset
-    const tokenAddress = order.paymentToken
-
-    let proxyAddress = await this._getProxy(accountAddress)
-    if (!proxyAddress) {
-      proxyAddress = await this._initializeProxy(accountAddress)
-    }
-
-    // Verify that the taker owns the asset
-    const where = await findAsset(this.web3, { account: accountAddress, proxy: proxyAddress, wyAsset, schema })
-    if (where != 'account') {
-      // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
-      throw new Error('You do not own this asset.')
-    }
-
-    // For fulfilling bids,
-    // need to approve access to fungible token because of the way fees are paid
-    // This can be done at a higher level to show UI
-    if (tokenAddress != WyvernProtocol.NULL_ADDRESS) {
-      const minimumAmount = order.basePrice
-      await this.approveFungibleToken({ accountAddress, tokenAddress, minimumAmount })
-    }
-
-    await this.approveNonFungibleToken({
-      tokenId: wyAsset.id.toString(),
-      tokenAddress: wyAsset.address,
-      accountAddress,
-      proxyAddress
-    })
-
-    // Check sell parameters
-    const sellValid = await this._wyvernProtocol.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
-      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
-      order.feeMethod,
-      order.side,
-      order.saleKind,
-      order.howToCall,
-      order.calldata,
-      order.replacementPattern,
-      order.staticExtradata,
-      { from: accountAddress })
-    if (!sellValid) {
-      throw new Error(`Failed to validate sell order parameters: ${JSON.stringify(order)}`)
-    }
-  }
-
-  // Throws
-  private async _validateBuyOrderParameters(
-      { order, accountAddress }:
-      { order: UnhashedOrder; accountAddress: string }
-    ) {
-    const tokenAddress = order.paymentToken
-
-    if (tokenAddress != WyvernProtocol.NULL_ADDRESS) {
-
-      const balance = await this._getTokenBalance({ accountAddress, tokenAddress })
-
-      /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
-      const minimumAmount = order.basePrice
-
-      // Check WETH balance
-      if (balance.toNumber() < minimumAmount.toNumber()) {
-        if (tokenAddress == WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address) {
-          throw new Error('Insufficient balance. You may need to wrap Ether.')
-        } else {
-          throw new Error('Insufficient balance.')
-        }
-      }
-
-      // Check token approval
-      // This can be done at a higher level to show UI
-      await this.approveFungibleToken({ accountAddress, tokenAddress, minimumAmount })
-    }
-
-    // Check order formation
-    const buyValid = await this._wyvernProtocol.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
-      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
-      order.feeMethod,
-      order.side,
-      order.saleKind,
-      order.howToCall,
-      order.calldata,
-      order.replacementPattern,
-      order.staticExtradata,
-      { from: accountAddress })
-    if (!buyValid) {
-      throw new Error(`Failed to validate buy order parameters: ${JSON.stringify(order)}`)
-    }
   }
 
   // Throws

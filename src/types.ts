@@ -187,6 +187,17 @@ export interface OpenSeaAsset {
   backgroundColor: string | null
 }
 
+/**
+ * Bundles of assets, grouped together into one OpenSea order
+ * URLs for bundles are auto-generated from the name
+ */
+export interface OpenSeaAssetBundle {
+  assets: WyvernAsset[]
+  name: string
+  description?: string
+  external_link?: string
+}
+
 export interface UnhashedOrder extends WyvernOrder {
   feeMethod: FeeMethod
   side: OrderSide
@@ -194,7 +205,8 @@ export interface UnhashedOrder extends WyvernOrder {
   howToCall: HowToCall
 
   metadata: {
-    asset: WyvernAsset;
+    asset?: WyvernAsset;
+    bundle?: OpenSeaAssetBundle;
     schema: WyvernSchemaName;
   }
 }

@@ -9,11 +9,11 @@ import {
 
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind } from '../src/types'
+import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -55,6 +55,44 @@ suite('seaport', () => {
       const order = orderFromJSON(orderJSON)
       assert.equal(order.hash, getOrderHash(order))
     })
+  })
+
+  test('Matches fixed bundle order for different approve-all assets', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const order = client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with different types of assets",
+      assets: [
+        { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
+        { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
+      ],
+      accountAddress,
+      startAmountInEth: 1
+    })
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches Dutch bundle order for different approve-all assets', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const order = client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with different types of assets",
+      assets: [
+        { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
+        { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
+      ],
+      accountAddress,
+      startAmountInEth: 1,
+      endAmountInEth: 0,
+      expirationTime: (Date.now() / 1000 + 60 * 60 * 24)
+    })
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
   })
 
   test('API order has asset and correct hash', async () => {
@@ -239,4 +277,46 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
     console.info(`Gas price to use: ${client.web3.fromWei(gasPrice, 'gwei')} gwei`)
     assert.isAbove(gasEstimate, 0)
   }
+}
+
+async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string) {
+  const order = {
+    ...unhashedOrder,
+    hash: getOrderHash(unhashedOrder)
+  }
+
+  const matchingOrder = client._makeMatchingOrder({order, accountAddress})
+  assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
+
+  const isSellOrder = order.side == OrderSide.Sell
+
+  // No signatures, order previously approved
+  const v = 27
+  const r = ''
+  const s = ''
+
+  let buy: Order
+  let sell: Order
+  if (!isSellOrder) {
+    buy = {
+      ...order,
+      v, r, s
+    }
+    sell = {
+      ...matchingOrder,
+      v, r, s
+    }
+  } else {
+    sell = {
+      ...order,
+      v, r, s
+    }
+    buy = {
+      ...matchingOrder,
+      v, r, s
+    }
+  }
+
+  const isValid = await client._validateMatch({ buy, sell, accountAddress })
+  assert.isTrue(isValid)
 }

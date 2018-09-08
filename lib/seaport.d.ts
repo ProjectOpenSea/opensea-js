@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData } from './types';
+import { OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -96,6 +96,31 @@ export declare class OpenSeaPort {
     createSellOrder({ tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime }: {
         tokenId: string;
         tokenAddress: string;
+        accountAddress: string;
+        startAmountInEth: number;
+        endAmountInEth?: number;
+        expirationTime?: number;
+    }): Promise<Order>;
+    /**
+     * Create a sell order to auction a bundle of assets.
+     * Will throw a 'You do not own this asset' error if the maker doesn't have one of the assets.
+     * If the user hasn't approved access to any of the assets yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval for each asset.
+     * @param param0 __namedParameters Object
+     * @param tokenId Token ID
+     * @param tokenAddress Address of the token's contract
+     * @param accountAddress Address of the maker's wallet
+     * @param startAmountInEth Price of the asset at the start of the auction
+     * @param endAmountInEth Optional price of the asset at the end of its expiration time
+     * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+     */
+    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime }: {
+        bundleName: string;
+        bundleDescription?: string;
+        bundleExternalLink?: string;
+        assets: Array<{
+            tokenId: string;
+            tokenAddress: string;
+        }>;
         accountAddress: string;
         startAmountInEth: number;
         endAmountInEth?: number;
@@ -221,8 +246,21 @@ export declare class OpenSeaPort {
         accountAddress: string;
         tokenAddress?: string;
     }): Promise<BigNumber>;
+    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime }: {
+        bundleName: string;
+        bundleDescription?: string;
+        bundleExternalLink?: string;
+        assets: Array<{
+            tokenId: string;
+            tokenAddress: string;
+        }>;
+        accountAddress: string;
+        startAmountInEth: number;
+        endAmountInEth?: number;
+        expirationTime?: number;
+    }): UnhashedOrder;
     _makeMatchingOrder({ order, accountAddress }: {
-        order: Order;
+        order: UnsignedOrder;
         accountAddress: string;
     }): UnsignedOrder;
     /**
@@ -237,13 +275,19 @@ export declare class OpenSeaPort {
         sell: Order;
         accountAddress: string;
     }): Promise<boolean>;
+    _validateSellOrderParameters({ order, accountAddress }: {
+        order: UnhashedOrder;
+        accountAddress: string;
+    }): Promise<void>;
+    _validateBuyOrderParameters({ order, accountAddress }: {
+        order: UnhashedOrder;
+        accountAddress: string;
+    }): Promise<void>;
     /**
      * Private helper methods
      */
     private _atomicMatch;
     private _getEthValueForTakingSellOrder;
-    private _validateSellOrderParameters;
-    private _validateBuyOrderParameters;
     private _validateAndPostOrder;
     private _signOrder;
     private _getSchema;
