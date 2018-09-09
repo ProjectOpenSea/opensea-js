@@ -30,6 +30,7 @@ export declare class OpenSeaAPI {
     /**
      * Send an order to the orderbook.
      * Throws when the order is invalid.
+     * IN NEXT VERSION: change order input to Order type
      * @param order Order to post to the orderbook
      */
     postOrder(order: OrderJSON): Promise<Order>;

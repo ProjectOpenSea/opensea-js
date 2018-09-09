@@ -257,9 +257,11 @@ export interface OrderJSON {
   }
 
   hash: string
-  v: number
-  r: string
-  s: string
+
+  // In future, make signature required
+  v?: number
+  r?: string
+  s?: string
 
   /**
    * Attrs used by orderbook to make queries easier

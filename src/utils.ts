@@ -246,6 +246,11 @@ export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
     salt: order.salt.toString()
   }
   const hash = 'hash' in order ? order.hash : getOrderHash(asJSON)
+  if ('v' in order) {
+    asJSON.v = order.v
+    asJSON.r = order.r
+    asJSON.s = order.s
+  }
   asJSON.hash = hash
   asJSON.metadata = order.metadata
   return asJSON

@@ -975,7 +975,7 @@ export class OpenSeaPort {
         throw new Error('You do not own this asset.')
       }
 
-      await this.approveNonFungibleToken({
+      return this.approveNonFungibleToken({
         tokenId: wyAsset.id.toString(),
         tokenAddress: wyAsset.address,
         accountAddress,

@@ -183,9 +183,9 @@ export interface OrderJSON {
         schema: WyvernSchemaName;
     };
     hash: string;
-    v: number;
-    r: string;
-    s: string;
+    v?: number;
+    r?: string;
+    s?: string;
     /**
      * Attrs used by orderbook to make queries easier
      * Includes `maker`, `taker` and `side` from above
