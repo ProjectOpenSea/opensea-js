@@ -109,6 +109,69 @@
   <span class="hljs-attr">side</span>: OrderSide.Sell <span class="hljs-comment">// == 1</span>
 }, <span class="hljs-number">2</span>)
 </code></pre>
+				<h3 id="listening-to-events">Listening to Events</h3>
+				<p>Events are fired whenever transactions or orders are being created, and when transactions return receipts from recently mined blocks on the Ethereum blockchain.</p>
+				<p>Our recommendation is that you &quot;forward&quot; OpenSea events to your own store or state management system. Here&#39;s an example of doing that with a Redux action:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { EventType } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js'</span>
+<span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> ActionTypes <span class="hljs-keyword">from</span> <span class="hljs-string">'./index'</span>
+<span class="hljs-keyword">import</span> { openSeaPort } <span class="hljs-keyword">from</span> <span class="hljs-string">'../globalSingletons'</span>
+
+<span class="hljs-comment">// ...</span>
+
+handleSeaportEvents() {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">dispatch, getState</span>) </span>{
+    openSeaPort.addListener(EventType.TransactionCreated, ({ transactionHash, event }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ transactionHash, event })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.SET_PENDING_TRANSACTION_HASH, <span class="hljs-attr">hash</span>: transactionHash })
+    })
+    openSeaPort.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ transactionHash, event })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.RESET_EXCHANGE })
+    })
+    openSeaPort.addListener(EventType.TransactionFailed, ({ transactionHash, event }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ transactionHash, event })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.RESET_EXCHANGE })
+    })
+    openSeaPort.addListener(EventType.InitializeAccount, ({ accountAddress }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ accountAddress })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.INITIALIZE_PROXY })
+    })
+    openSeaPort.addListener(EventType.WrapEth, ({ accountAddress, amount }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ accountAddress, amount })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.WRAP_ETH })
+    })
+    openSeaPort.addListener(EventType.UnwrapWeth, ({ accountAddress, amount }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ accountAddress, amount })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.UNWRAP_WETH })
+    })
+    openSeaPort.addListener(EventType.ApproveCurrency, ({ accountAddress, tokenAddress }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ accountAddress, tokenAddress })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.APPROVE_WETH })
+    })
+    openSeaPort.addListener(EventType.ApproveAllAssets, ({ accountAddress, proxyAddress, tokenAddress }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ accountAddress, proxyAddress, tokenAddress })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.APPROVE_ALL_ASSETS })
+    })
+    openSeaPort.addListener(EventType.ApproveAsset, ({ accountAddress, proxyAddress, tokenAddress, tokenId }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ accountAddress, proxyAddress, tokenAddress, tokenId })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.APPROVE_ASSET })
+    })
+    openSeaPort.addListener(EventType.CreateOrder, ({ order, accountAddress }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ order, accountAddress })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.CREATE_ORDER })
+    })
+    openSeaPort.addListener(EventType.MatchOrders, ({ buy, sell, accountAddress }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ buy, sell, accountAddress })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.FULFILL_ORDER })
+    })
+    openSeaPort.addListener(EventType.CancelOrder, ({ order, accountAddress }) =&gt; {
+      <span class="hljs-built_in">console</span>.info({ order, accountAddress })
+      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.CANCEL_ORDER })
+    })
+  }
+}
+</code></pre>
+				<p>To remove all listeners and start over, just call <code>seaport.removeAllListeners()</code>.</p>
 				<h3 id="example-code">Example Code</h3>
 				<p>Check out the <a href="https://github.com/ProjectOpenSea/ships-log">Ship&#39;s Log</a>, built with the SDK, which shows the recent orders in the OpenSea orderbook.</p>
 				<p>You can also view a live demo <a href="https://ships-log.herokuapp.com/">here</a>!</p>
@@ -128,6 +191,7 @@
 				<p>Or run the tests:</p>
 				<pre><code class="lang-bash">npm <span class="hljs-built_in">test</span>
 </code></pre>
+				<p>Note that the tests require access to both Infura and the OpenSea API. The timeout is adjustable via the <code>test</code> script in <code>package.json</code>.</p>
 				<h4 id="generate-documentation">Generate Documentation</h4>
 				<p>Generate html docs, also available for browsing <a href="https://projectopensea.github.io/opensea-js/">here</a>:</p>
 				<pre><code class="lang-bash">npm run docsHtml

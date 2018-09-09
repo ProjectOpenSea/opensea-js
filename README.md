@@ -66,6 +66,75 @@ const { orders, count } = await seaport.api.getOrders({
 }, 2)
 ```
 
+### Listening to Events
+
+Events are fired whenever transactions or orders are being created, and when transactions return receipts from recently mined blocks on the Ethereum blockchain.
+
+Our recommendation is that you "forward" OpenSea events to your own store or state management system. Here's an example of doing that with a Redux action:
+
+```JavaScript
+import { EventType } from 'opensea-js'
+import * as ActionTypes from './index'
+import { openSeaPort } from '../globalSingletons'
+
+// ...
+
+handleSeaportEvents() {
+  return async function(dispatch, getState) {
+    openSeaPort.addListener(EventType.TransactionCreated, ({ transactionHash, event }) => {
+      console.info({ transactionHash, event })
+      dispatch({ type: ActionTypes.SET_PENDING_TRANSACTION_HASH, hash: transactionHash })
+    })
+    openSeaPort.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) => {
+      console.info({ transactionHash, event })
+      dispatch({ type: ActionTypes.RESET_EXCHANGE })
+    })
+    openSeaPort.addListener(EventType.TransactionFailed, ({ transactionHash, event }) => {
+      console.info({ transactionHash, event })
+      dispatch({ type: ActionTypes.RESET_EXCHANGE })
+    })
+    openSeaPort.addListener(EventType.InitializeAccount, ({ accountAddress }) => {
+      console.info({ accountAddress })
+      dispatch({ type: ActionTypes.INITIALIZE_PROXY })
+    })
+    openSeaPort.addListener(EventType.WrapEth, ({ accountAddress, amount }) => {
+      console.info({ accountAddress, amount })
+      dispatch({ type: ActionTypes.WRAP_ETH })
+    })
+    openSeaPort.addListener(EventType.UnwrapWeth, ({ accountAddress, amount }) => {
+      console.info({ accountAddress, amount })
+      dispatch({ type: ActionTypes.UNWRAP_WETH })
+    })
+    openSeaPort.addListener(EventType.ApproveCurrency, ({ accountAddress, tokenAddress }) => {
+      console.info({ accountAddress, tokenAddress })
+      dispatch({ type: ActionTypes.APPROVE_WETH })
+    })
+    openSeaPort.addListener(EventType.ApproveAllAssets, ({ accountAddress, proxyAddress, tokenAddress }) => {
+      console.info({ accountAddress, proxyAddress, tokenAddress })
+      dispatch({ type: ActionTypes.APPROVE_ALL_ASSETS })
+    })
+    openSeaPort.addListener(EventType.ApproveAsset, ({ accountAddress, proxyAddress, tokenAddress, tokenId }) => {
+      console.info({ accountAddress, proxyAddress, tokenAddress, tokenId })
+      dispatch({ type: ActionTypes.APPROVE_ASSET })
+    })
+    openSeaPort.addListener(EventType.CreateOrder, ({ order, accountAddress }) => {
+      console.info({ order, accountAddress })
+      dispatch({ type: ActionTypes.CREATE_ORDER })
+    })
+    openSeaPort.addListener(EventType.MatchOrders, ({ buy, sell, accountAddress }) => {
+      console.info({ buy, sell, accountAddress })
+      dispatch({ type: ActionTypes.FULFILL_ORDER })
+    })
+    openSeaPort.addListener(EventType.CancelOrder, ({ order, accountAddress }) => {
+      console.info({ order, accountAddress })
+      dispatch({ type: ActionTypes.CANCEL_ORDER })
+    })
+  }
+}
+```
+
+To remove all listeners and start over, just call `seaport.removeAllListeners()`.
+
 ### Example Code
 
 Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
@@ -102,6 +171,8 @@ Or run the tests:
 ```bash
 npm test
 ```
+
+Note that the tests require access to both Infura and the OpenSea API. The timeout is adjustable via the `test` script in `package.json`.
 
 #### Generate Documentation
 
