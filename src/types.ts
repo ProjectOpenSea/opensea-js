@@ -15,11 +15,12 @@ export {
 }
 
 /**
- * Events emitted by the SDK. There are two types:
+ * Events emitted by the SDK. There are three types:
  * 1. transaction events, which tell you when a new transaction was
  *    created, confirmed, or failed
  * 2. pre-transaction events, which are named (like "WrapEth") and indicate
  *    that Web3 is asking for a signature on a transaction
+ * 3. One "CreateOrder" event, which fires when a signature is being prompted to create an off-chain order
  */
 export enum EventType {
   TransactionCreated = "TransactionCreated",
@@ -37,6 +38,8 @@ export enum EventType {
 
   MatchOrders = "MatchOrders",
   CancelOrder = "CancelOrder",
+
+  CreateOrder = "CreateOrder",
 }
 
 /**
@@ -53,7 +56,7 @@ export interface EventData {
   event?: EventType
   error?: Error
 
-  order?: Order
+  order?: Order | UnsignedOrder
   buy?: Order
   sell?: Order
 }

@@ -1207,11 +1207,12 @@ export class OpenSeaPort {
   }
 
   private async _signOrder(
-      order:
-      {hash: string; maker: string}
+      order: UnsignedOrder
     ): Promise<ECSignature> {
     const message = order.hash
     const signerAddress = order.maker
+
+    this._dispatch(EventType.CreateOrder, { order, accountAddress: order.maker })
 
     return personalSignAsync(this.web3, message, signerAddress)
   }
