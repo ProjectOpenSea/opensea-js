@@ -120,7 +120,7 @@ suite('seaport', () => {
   })
 
   test('orderToJSON computes correct current price for Dutch auctions', async () => {
-    const { orders, count } = await client.api.getOrders({ saleKind: SaleKind.DutchAuction })
+    const { orders, count } = await client.api.getOrders({ sale_kind: SaleKind.DutchAuction })
     assert.equal(orders.length, client.api.pageSize)
     orders.map(order => {
       assert.isNotNull(order.currentPrice)
@@ -129,7 +129,7 @@ suite('seaport', () => {
       }
       // Possible race condition
       assert.equal(order.currentPrice.toPrecision(3), estimateCurrentPrice(order).toPrecision(3))
-      assert.isAtLeast(order.basePrice.toNumber(), order.currentPrice.toNumber())
+      assert.isAbove(order.basePrice.toNumber(), order.currentPrice.toNumber())
     })
   })
 
