@@ -53,20 +53,22 @@ To retrieve a list of offers and auction on an asset, you can use an instance of
 ```JavaScript
 import { OrderSide } from 'opensea-js/lib/types'
 
-// Get offers
+// Get offers (bids), a.k.a. orders where `side == 0`
 const { orders, count } = await seaport.api.getOrders({
   asset_contract_address: tokenAddress,
   token_id: token_id,
   side: OrderSide.Buy
 })
 
-// Get page 2 of all auctions
+// Get page 2 of all auctions, a.k.a. orders where `side == 1`
 const { orders, count } = await seaport.api.getOrders({
   asset_contract_address: tokenAddress,
   token_id: token_id,
   side: OrderSide.Sell
 }, 2)
 ```
+
+Note that the listing price of an asset is equal to the `currentPrice` of the **lowest valid sell order** on the asset. Users can lower their listing price without invalidating previous sell orders, so all get shipped down until they're cancelled or one is fulfilled.
 
 The available API filters for the orders endpoint is documented in the `OrderJSON` interface:
 

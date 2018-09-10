@@ -97,20 +97,21 @@
 				<p>To retrieve a list of offers and auction on an asset, you can use an instance of the <code>OpenSeaAPI</code> exposed on the client. Parameters passed into API filter objects are underscored instead of camel-cased, similar to the main <a href="https://docs.opensea.io/v1.0/reference">OpenSea API parameters</a>:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OrderSide } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js/lib/types'</span>
 
-<span class="hljs-comment">// Get offers</span>
+<span class="hljs-comment">// Get offers (bids), a.k.a. orders where `side == 0`</span>
 <span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
   <span class="hljs-attr">asset_contract_address</span>: tokenAddress,
   <span class="hljs-attr">token_id</span>: token_id,
   <span class="hljs-attr">side</span>: OrderSide.Buy
 })
 
-<span class="hljs-comment">// Get page 2 of all auctions</span>
+<span class="hljs-comment">// Get page 2 of all auctions, a.k.a. orders where `side == 1`</span>
 <span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
   <span class="hljs-attr">asset_contract_address</span>: tokenAddress,
   <span class="hljs-attr">token_id</span>: token_id,
   <span class="hljs-attr">side</span>: OrderSide.Sell
 }, <span class="hljs-number">2</span>)
 </code></pre>
+				<p>Note that the listing price of an asset is equal to the <code>currentPrice</code> of the <strong>lowest valid sell order</strong> on the asset. Users can lower their listing price without invalidating previous sell orders, so all get shipped down until they&#39;re cancelled or one is fulfilled.</p>
 				<p>The available API filters for the orders endpoint is documented in the <code>OrderJSON</code> interface:</p>
 				<pre><code class="lang-TypeScript"><span class="hljs-comment">/**
    * Attrs used by orderbook to make queries easier
