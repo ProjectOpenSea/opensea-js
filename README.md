@@ -48,22 +48,47 @@ Then, you can do this to make an offer on an asset:
 const offer = await seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, expirationTime: 0 })
 ```
 
-To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client:
+To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are underscored instead of camel-cased, similar to the main [OpenSea API parameters](https://docs.opensea.io/v1.0/reference):
 
 ```JavaScript
 import { OrderSide } from 'opensea-js/lib/types'
 
 // Get offers
 const { orders, count } = await seaport.api.getOrders({
-  tokenAddress, tokenId,
-  side: OrderSide.Buy // == 0
+  asset_contract_address: tokenAddress,
+  token_id: token_id,
+  side: OrderSide.Buy
 })
 
 // Get page 2 of all auctions
 const { orders, count } = await seaport.api.getOrders({
-  tokenAddress, tokenId,
-  side: OrderSide.Sell // == 1
+  asset_contract_address: tokenAddress,
+  token_id: token_id,
+  side: OrderSide.Sell
 }, 2)
+```
+
+The available API filters for the orders endpoint is documented in the `OrderJSON` interface:
+
+```TypeScript
+/**
+   * Attrs used by orderbook to make queries easier
+   * More to come soon!
+   */
+  maker?: string, // Address of the order's creator
+  taker?: string, // The null address if anyone is allowed to take the order
+  side?: OrderSide, // 0 for offers, 1 for auctions
+  owner?: string, // Address of owner of the order's asset
+  sale_kind?: SaleKind, // 0 for fixed-price, 1 for Dutch auctions
+  asset_contract_address?: string, // Contract address for order's asset
+  token_id?: number | string,
+  token_ids?: Array<number | string>,
+  listed_after?: number | string, // This means listing_time > value in seconds
+  listed_before?: number | string, // This means listing_time <= value in seconds
+
+  // For pagination
+  limit?: number,
+  offset?: number,
 ```
 
 ### Listening to Events

@@ -94,20 +94,42 @@
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
 <span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> })
 </code></pre>
-				<p>To retrieve a list of offers and auction on an asset, you can use an instance of the <code>OpenSeaAPI</code> exposed on the client:</p>
+				<p>To retrieve a list of offers and auction on an asset, you can use an instance of the <code>OpenSeaAPI</code> exposed on the client. Parameters passed into API filter objects are underscored instead of camel-cased, similar to the main <a href="https://docs.opensea.io/v1.0/reference">OpenSea API parameters</a>:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OrderSide } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js/lib/types'</span>
 
 <span class="hljs-comment">// Get offers</span>
 <span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
-  tokenAddress, tokenId,
-  <span class="hljs-attr">side</span>: OrderSide.Buy <span class="hljs-comment">// == 0</span>
+  <span class="hljs-attr">asset_contract_address</span>: tokenAddress,
+  <span class="hljs-attr">token_id</span>: token_id,
+  <span class="hljs-attr">side</span>: OrderSide.Buy
 })
 
 <span class="hljs-comment">// Get page 2 of all auctions</span>
 <span class="hljs-keyword">const</span> { orders, count } = <span class="hljs-keyword">await</span> seaport.api.getOrders({
-  tokenAddress, tokenId,
-  <span class="hljs-attr">side</span>: OrderSide.Sell <span class="hljs-comment">// == 1</span>
+  <span class="hljs-attr">asset_contract_address</span>: tokenAddress,
+  <span class="hljs-attr">token_id</span>: token_id,
+  <span class="hljs-attr">side</span>: OrderSide.Sell
 }, <span class="hljs-number">2</span>)
+</code></pre>
+				<p>The available API filters for the orders endpoint is documented in the <code>OrderJSON</code> interface:</p>
+				<pre><code class="lang-TypeScript"><span class="hljs-comment">/**
+   * Attrs used by orderbook to make queries easier
+   * More to come soon!
+   */</span>
+  maker?: <span class="hljs-built_in">string</span>, <span class="hljs-comment">// Address of the order's creator</span>
+  taker?: <span class="hljs-built_in">string</span>, <span class="hljs-comment">// The null address if anyone is allowed to take the order</span>
+  side?: OrderSide, <span class="hljs-comment">// 0 for offers, 1 for auctions</span>
+  owner?: <span class="hljs-built_in">string</span>, <span class="hljs-comment">// Address of owner of the order's asset</span>
+  sale_kind?: SaleKind, <span class="hljs-comment">// 0 for fixed-price, 1 for Dutch auctions</span>
+  asset_contract_address?: <span class="hljs-built_in">string</span>, <span class="hljs-comment">// Contract address for order's asset</span>
+  token_id?: <span class="hljs-built_in">number</span> | <span class="hljs-built_in">string</span>,
+  token_ids?: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">number</span> | <span class="hljs-built_in">string</span>&gt;,
+  listed_after?: <span class="hljs-built_in">number</span> | <span class="hljs-built_in">string</span>, <span class="hljs-comment">// This means listing_time &gt; value in seconds</span>
+  listed_before?: <span class="hljs-built_in">number</span> | <span class="hljs-built_in">string</span>, <span class="hljs-comment">// This means listing_time &lt;= value in seconds</span>
+
+  <span class="hljs-comment">// For pagination</span>
+  limit?: <span class="hljs-built_in">number</span>,
+  offset?: <span class="hljs-built_in">number</span>,
 </code></pre>
 				<h3 id="listening-to-events">Listening to Events</h3>
 				<p>Events are fired whenever transactions or orders are being created, and when transactions return receipts from recently mined blocks on the Ethereum blockchain.</p>
