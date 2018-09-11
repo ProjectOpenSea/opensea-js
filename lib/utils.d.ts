@@ -14,8 +14,7 @@ export declare const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb
  */
 export declare function promisify<T>(inner: (fn: Web3Callback<T>) => void): Promise<T>;
 export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise<{}>;
-export declare const orderFromJSONv0: (order: any) => Order;
-export declare const assetFromJSON: (asset: any, hostUrl: string) => OpenSeaAsset;
+export declare const assetFromJSON: (asset: any) => OpenSeaAsset;
 export declare const orderFromJSON: (order: any) => Order;
 /**
  * Convert an order to JSON, hashing it as well if necessary

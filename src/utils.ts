@@ -6,7 +6,6 @@ import * as Web3 from 'web3'
 import { OpenSeaPort } from '../src'
 
 import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset } from './types'
-import { SITE_HOST_MAINNET, SITE_HOST_RINKEBY } from './api'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export const feeRecipient = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
@@ -67,55 +66,15 @@ export const confirmTransaction = async (web3: Web3, txHash: string) => {
   return new Promise((resolve, reject) => {
     track(web3, txHash, (didSucceed: boolean) => {
       if (didSucceed) {
-        resolve('Transaction complete')
+        resolve("Transaction complete!")
       } else {
-        reject('Transaction failed')
+        reject(new Error(`Transaction failed :( You might have already completed this action. See more on the mainnet at etherscan.io/txn/${txHash}`))
       }
     })
   })
 }
 
-export const orderFromJSONv0 = (order: any): Order => {
-
-  const fromJSON: Order = {
-    hash: order.hash,
-    cancelledOrFinalized: order.cancelledOrFinalized,
-    markedInvalid: order.markedInvalid,
-    metadata: order.metadata,
-    exchange: order.exchange,
-    maker: order.maker,
-    taker: order.taker,
-    makerRelayerFee: new BigNumber(order.makerRelayerFee),
-    takerRelayerFee: new BigNumber(order.takerRelayerFee),
-    makerProtocolFee: new BigNumber(order.makerProtocolFee),
-    takerProtocolFee: new BigNumber(order.takerProtocolFee),
-    feeMethod: order.feeMethod,
-    feeRecipient: order.feeRecipient,
-    side: order.side,
-    saleKind: order.saleKind,
-    target: order.target,
-    howToCall: order.howToCall,
-    calldata: order.calldata,
-    replacementPattern: order.replacementPattern,
-    staticTarget: order.staticTarget,
-    staticExtradata: order.staticExtradata,
-    paymentToken: order.paymentToken,
-    basePrice: new BigNumber(order.basePrice),
-    extra: new BigNumber(order.extra),
-    listingTime: new BigNumber(order.listingTime),
-    expirationTime: new BigNumber(order.expirationTime),
-    salt: new BigNumber(order.salt),
-    v: parseInt(order.v),
-    r: order.r,
-    s: order.s,
-  }
-
-  fromJSON.currentPrice = estimateCurrentPrice(order)
-
-  return fromJSON
-}
-
-export const assetFromJSON = (asset: any, hostUrl: string): OpenSeaAsset => {
+export const assetFromJSON = (asset: any): OpenSeaAsset => {
   const isAnimated = asset.image_url && asset.image_url.endsWith('.gif')
   const isSvg = asset.image_url && asset.image_url.endsWith('.svg')
   const fromJSON: OpenSeaAsset = {
@@ -149,7 +108,7 @@ export const assetFromJSON = (asset: any, hostUrl: string): OpenSeaAsset => {
     imageUrlThumbnail: asset.image_thumbnail_url,
 
     externalLink: asset.external_link,
-    openseaLink: `${hostUrl}/assets/${asset.asset_contract.address}/${asset.token_id.toString()}`,
+    openseaLink: asset.permalink,
     traits: asset.traits,
     numSales: asset.num_sales,
     lastSale: asset.last_sale,
@@ -166,10 +125,6 @@ export const assetFromJSON = (asset: any, hostUrl: string): OpenSeaAsset => {
 }
 
 export const orderFromJSON = (order: any): Order => {
-
-  const hostUrl = order.exchange == WYVERN_EXCHANGE_ADDRESS_MAINNET
-    ? SITE_HOST_MAINNET
-    : SITE_HOST_RINKEBY
 
   const fromJSON: Order = {
     hash: order.order_hash || order.hash,
@@ -207,7 +162,7 @@ export const orderFromJSON = (order: any): Order => {
     r: order.r,
     s: order.s,
 
-    asset: order.asset ? assetFromJSON(order.asset, hostUrl) : order.asset
+    asset: order.asset ? assetFromJSON(order.asset) : order.asset
   }
 
   fromJSON.currentPrice = estimateCurrentPrice(fromJSON)

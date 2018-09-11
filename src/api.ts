@@ -137,7 +137,7 @@ export class OpenSeaAPI {
     const response = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId}`)
 
     const json: any = await response.json()
-    return json ? assetFromJSON(json, this.hostUrl) : null
+    return json ? assetFromJSON(json) : null
   }
 
   /**
@@ -158,7 +158,7 @@ export class OpenSeaAPI {
 
     const json: any = await response.json()
     return {
-      assets: json.assets.map((j: any) => assetFromJSON(j, this.hostUrl)),
+      assets: json.assets.map((j: any) => assetFromJSON(j)),
       estimatedCount: json.estimated_count
     }
   }
