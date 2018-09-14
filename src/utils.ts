@@ -5,7 +5,7 @@ import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import { OpenSeaPort } from '../src'
 
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export const feeRecipient = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
@@ -124,6 +124,19 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
   return fromJSON
 }
 
+export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
+
+  const fromJSON: OpenSeaAssetBundle = {
+    assets: asset_bundle.assets.map(assetFromJSON),
+    name: asset_bundle.name,
+    slug: asset_bundle.slug,
+    description: asset_bundle.description,
+    externalLink: asset_bundle.external_link
+  }
+
+  return fromJSON
+}
+
 export const orderFromJSON = (order: any): Order => {
 
   const fromJSON: Order = {
@@ -162,7 +175,8 @@ export const orderFromJSON = (order: any): Order => {
     r: order.r,
     s: order.s,
 
-    asset: order.asset ? assetFromJSON(order.asset) : order.asset
+    asset: order.asset ? assetFromJSON(order.asset) : undefined,
+    assetBundle: order.asset_bundle ? assetBundleFromJSON(order.asset_bundle) : undefined
   }
 
   fromJSON.currentPrice = estimateCurrentPrice(fromJSON)

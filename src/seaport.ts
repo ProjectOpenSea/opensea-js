@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundle } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundle, OpenSeaAssetBundleJSON } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
@@ -788,7 +788,7 @@ export class OpenSeaPort {
 
     const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
 
-    const bundle: OpenSeaAssetBundle = {
+    const bundle: OpenSeaAssetBundleJSON = {
       assets: wyAssets,
       name: bundleName,
       description: bundleDescription,

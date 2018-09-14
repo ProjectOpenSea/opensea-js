@@ -161,7 +161,7 @@ suite('api', () => {
       }
       await apiToTest.postOrder(newOrder)
     } catch (error) {
-      assert.include(error.message, "Expected listing_time to be at or past the current time")
+      assert.include(error.message, "Order failed exchange validation")
     }
   })
 

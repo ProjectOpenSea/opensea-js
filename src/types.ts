@@ -195,6 +195,14 @@ export interface OpenSeaAsset {
  * URLs for bundles are auto-generated from the name
  */
 export interface OpenSeaAssetBundle {
+  assets: OpenSeaAsset[]
+  name: string
+  slug: string
+  description?: string
+  externalLink?: string
+}
+
+export interface OpenSeaAssetBundleJSON {
   assets: WyvernAsset[]
   name: string
   description?: string
@@ -209,7 +217,7 @@ export interface UnhashedOrder extends WyvernOrder {
 
   metadata: {
     asset?: WyvernAsset;
-    bundle?: OpenSeaAssetBundle;
+    bundle?: OpenSeaAssetBundleJSON;
     schema: WyvernSchemaName;
   }
 }
@@ -227,6 +235,7 @@ export interface Order extends UnsignedOrder, ECSignature {
   cancelledOrFinalized?: boolean
   markedInvalid?: boolean
   asset?: OpenSeaAsset
+  assetBundle?: OpenSeaAssetBundle
 }
 
 export interface OrderJSON {

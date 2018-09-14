@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle } from './types';
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const feeRecipient = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
 export declare const INVERSE_BASIS_POINT = 10000;
@@ -15,6 +15,7 @@ export declare const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb
 export declare function promisify<T>(inner: (fn: Web3Callback<T>) => void): Promise<T>;
 export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise<{}>;
 export declare const assetFromJSON: (asset: any) => OpenSeaAsset;
+export declare const assetBundleFromJSON: (asset_bundle: any) => OpenSeaAssetBundle;
 export declare const orderFromJSON: (order: any) => Order;
 /**
  * Convert an order to JSON, hashing it as well if necessary
