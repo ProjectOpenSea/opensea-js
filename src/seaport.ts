@@ -1003,7 +1003,8 @@ export class OpenSeaPort {
       order.staticExtradata,
       { from: accountAddress })
     if (!sellValid) {
-      throw new Error(`Failed to validate sell order parameters: ${JSON.stringify(order)}`)
+      console.error(order)
+      throw new Error(`Failed to validate sell order parameters. Make sure you're on the right network!`)
     }
   }
 
@@ -1047,7 +1048,8 @@ export class OpenSeaPort {
       order.staticExtradata,
       { from: accountAddress })
     if (!buyValid) {
-      throw new Error(`Failed to validate buy order parameters: ${JSON.stringify(order)}`)
+      console.error(order)
+      throw new Error(`Failed to validate buy order parameters. Make sure you're on the right network!`)
     }
   }
 
