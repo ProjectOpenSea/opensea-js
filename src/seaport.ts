@@ -42,7 +42,7 @@ export class OpenSeaPort {
   constructor(provider: Web3.Provider, apiConfig: OpenSeaAPIConfig = {}, logger?: (arg: string) => void) {
 
     apiConfig.networkName = apiConfig.networkName || Network.Main
-    apiConfig.gasPrice = apiConfig.gasPrice || makeBigNumber(100000)
+    apiConfig.gasPrice = apiConfig.gasPrice || makeBigNumber(300000)
 
     // API config
     this.api = new OpenSeaAPI(apiConfig)
