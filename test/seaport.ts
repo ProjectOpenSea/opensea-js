@@ -178,8 +178,8 @@ suite('seaport', () => {
     assert.equal(approved.toString(), MAX_UINT_256.toString())
   })
 
-  test('Matches first sell order in book', async () => {
-    const order = await client.api.getOrder({side: OrderSide.Sell})
+  test('Matches first sell order by Alex in book', async () => {
+    const order = await client.api.getOrder({side: OrderSide.Sell, maker: ALEX_ADDRESS})
     assert.isNotNull(order)
     if (!order) {
       return

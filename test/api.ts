@@ -142,15 +142,18 @@ suite('api', () => {
   })
 
   test('API handles errors', async () => {
-    const res = await apiToTest.getOrders()
-    const order = res.orders[0]
-    assert.isNotNull(order)
-
     try {
       await apiToTest.get('/user')
     } catch (error) {
       assert.include(error.message, "Unauthorized")
     }
+
+    // Get an old order to make sure listing time is too early
+    const res = await apiToTest.getOrders({
+      listed_before: Math.round(Date.now() / 1000 - 3600)
+    })
+    const order = res.orders[0]
+    assert.isNotNull(order)
 
     try {
       const newOrder = {
@@ -161,7 +164,7 @@ suite('api', () => {
       }
       await apiToTest.postOrder(newOrder)
     } catch (error) {
-      assert.include(error.message, "Order failed exchange validation")
+      assert.include(error.message, "Expected the listing time to be at or past the current time")
     }
   })
 

@@ -879,7 +879,7 @@ export class OpenSeaPort {
     const matchingOrder: UnhashedOrder = {
       exchange: order.exchange,
       maker: accountAddress,
-      taker: WyvernProtocol.NULL_ADDRESS,
+      taker: order.maker,
       makerRelayerFee: order.makerRelayerFee,
       takerRelayerFee: order.takerRelayerFee,
       makerProtocolFee: order.makerProtocolFee,
