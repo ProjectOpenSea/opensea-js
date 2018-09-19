@@ -33,4 +33,6 @@ declare module 'wyvern-schemas' {
     export const encodeCall: (method: any, args: any[]) => any
     export const encodeSell: (method: any, asset: object, address: string) => any
     export const encodeBuy: (method: any, asset: object, address: string) => any
+    export const encodeAtomicizedSell: (method: any, assets: object[], address: string, atomicizer: any) => any
+    export const encodeAtomicizedBuy: (method: any, assets: object[], address: string, atomicizer: any) => any
 }

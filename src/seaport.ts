@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundle, OpenSeaAssetBundleJSON } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
@@ -795,21 +795,7 @@ export class OpenSeaPort {
       external_link: bundleExternalLink
     }
 
-    const transactions = wyAssets.map(wyAsset => {
-      const { target, calldata } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
-      return {
-        calldata,
-        address: target,
-        value: makeBigNumber(0)
-      }
-    })
-
-    const atomicizedCalldata = this._wyvernProtocol.wyvernAtomicizer.atomicize.getABIEncodedTransactionData(
-      transactions.map(t => t.address),
-      transactions.map(t => t.value),
-      transactions.map(t => makeBigNumber((t.calldata.length - 2) / 2)), // subtract 2 for '0x', divide by 2 for hex
-      transactions.map(t => t.calldata).reduce((x, y) => x + y.slice(2)) // cut off the '0x'
-    )
+    const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
@@ -836,8 +822,8 @@ export class OpenSeaPort {
       saleKind: orderSaleKind,
       target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
       howToCall: HowToCall.DelegateCall, // required DELEGATECALL to library for atomicizer
-      calldata: atomicizedCalldata,
-      replacementPattern: '0x',
+      calldata,
+      replacementPattern,
       staticTarget: WyvernProtocol.NULL_ADDRESS,
       staticExtradata: '0x',
       paymentToken: WyvernProtocol.NULL_ADDRESS, // use Ether
@@ -865,16 +851,33 @@ export class OpenSeaPort {
         return order.side == OrderSide.Buy
           ? WyvernSchemas.encodeSell(schema, order.metadata.asset, accountAddress)
           : WyvernSchemas.encodeBuy(schema, order.metadata.asset, accountAddress)
-      } else {
+      } else if (order.metadata.bundle) {
+        // We're matching a bundle order
+        const atomicized = order.side == OrderSide.Buy
+          ? WyvernSchemas.encodeAtomicizedSell(schema, order.metadata.bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+          : WyvernSchemas.encodeAtomicizedBuy(schema, order.metadata.bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
         return {
           target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
-          calldata: order.calldata,
-          replacementPattern: order.replacementPattern
+          calldata: atomicized.calldata,
+          replacementPattern: atomicized.replacementPattern
+          // calldata: order.calldata,
+          // replacementPattern: '0x'
         }
+      } else {
+        throw new Error('Invalid order metadata')
       }
     }
 
     const { target, calldata, replacementPattern } = getCalldata()
+
+    // console.log("Sell calldata")
+    // console.log(order.calldata)
+    // console.log("Sell replacementPattern")
+    // console.log(order.replacementPattern)
+    // console.log("Buy calldata")
+    // console.log(calldata)
+    // console.log("Buy replacementPattern")
+    // console.log(replacementPattern)
 
     const matchingOrder: UnhashedOrder = {
       exchange: order.exchange,
