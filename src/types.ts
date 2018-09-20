@@ -106,6 +106,8 @@ export interface WyvernAsset {
   address: string
 }
 
+export type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<(number | BigNumber)>, string, string, string, string, string, string, Array<(number | BigNumber)>, string[]]
+
 /**
  * The OpenSea account object appended to orders, providing extra metadata, profile images and usernames
  */

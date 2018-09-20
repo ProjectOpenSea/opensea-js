@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
@@ -658,7 +658,7 @@ export class OpenSeaPort {
    * @param estimation The result of estimateGas for a transaction
    */
   public _correctGasAmount(estimation: number): number {
-    return estimation * this.gasIncreaseFactor
+    return Math.ceil(estimation * this.gasIncreaseFactor)
   }
 
   /**
@@ -1145,7 +1145,7 @@ export class OpenSeaPort {
     let txHash
     const gasPrice = await this._computeGasPrice()
     const txnData: any = { from: accountAddress, value, gasPrice }
-    const args = [
+    const args: WyvernAtomicMatchParameters = [
       [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
       buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
       [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
@@ -1159,14 +1159,13 @@ export class OpenSeaPort {
       [buy.v, sell.v],
       [buy.r, buy.s, sell.r, sell.s,
         // Use the order hash so that OrdersMatched events can look it up
-        orderLookupHash],
-      txnData
+        orderLookupHash]
     ]
 
     // Estimate gas first
     try {
       // Typescript splat doesn't typecheck
-      const gasEstimate = await this._wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11])
+      const gasEstimate = await this._wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
       txnData.gas = this._correctGasAmount(gasEstimate)
     } catch (error) {
       console.error(error)
@@ -1175,7 +1174,8 @@ export class OpenSeaPort {
 
     // Then do the transaction
     try {
-      txHash = await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11])
+      this.logger(`Fulfilling order with gas set to ${txnData.gas}`)
+      txHash = await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
     } catch (error) {
       console.error(error)
       throw new Error(`Failed to authorize transaction: "${
