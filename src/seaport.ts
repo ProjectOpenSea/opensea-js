@@ -1006,7 +1006,7 @@ export class OpenSeaPort {
     // need to approve access to fungible token because of the way fees are paid
     // This can be done at a higher level to show UI
     if (tokenAddress != WyvernProtocol.NULL_ADDRESS) {
-      const minimumAmount = order.basePrice
+      const minimumAmount = makeBigNumber(order.basePrice)
       await this.approveFungibleToken({ accountAddress, tokenAddress, minimumAmount })
     }
 
@@ -1039,7 +1039,7 @@ export class OpenSeaPort {
       const balance = await this._getTokenBalance({ accountAddress, tokenAddress })
 
       /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
-      const minimumAmount = order.basePrice
+      const minimumAmount = makeBigNumber(order.basePrice)
 
       // Check WETH balance
       if (balance.toNumber() < minimumAmount.toNumber()) {

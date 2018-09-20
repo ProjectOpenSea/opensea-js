@@ -39,7 +39,7 @@ export declare function personalSignAsync(web3: Web3, message: string, signerAdd
  * Special fixes for making BigNumbers using web3 results
  * @param arg An arg or the result of a web3 call to turn into a BigNumber
  */
-export declare function makeBigNumber(arg: number | string): BigNumber;
+export declare function makeBigNumber(arg: number | string | BigNumber): BigNumber;
 /**
  * Send a transaction to the blockchain and optionally confirm it
  * @param web3 Web3 instance

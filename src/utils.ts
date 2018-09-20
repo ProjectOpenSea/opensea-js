@@ -303,7 +303,7 @@ export async function personalSignAsync(web3: Web3, message: string, signerAddre
  * Special fixes for making BigNumbers using web3 results
  * @param arg An arg or the result of a web3 call to turn into a BigNumber
  */
-export function makeBigNumber(arg: number | string): BigNumber {
+export function makeBigNumber(arg: number | string | BigNumber): BigNumber {
   // Zero sometimes returned as 0x from contracts
   if (arg === '0x') {
     arg = 0
