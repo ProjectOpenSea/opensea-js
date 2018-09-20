@@ -8,6 +8,7 @@ export declare class OpenSeaPort {
     logger: (arg: string) => void;
     readonly api: OpenSeaAPI;
     gasPriceAddition: BigNumber;
+    gasIncreaseFactor: number;
     private _networkName;
     private _wyvernProtocol;
     private _emitter;
@@ -194,6 +195,12 @@ export declare class OpenSeaPort {
      * Will be slightly above the mean to make it faster
      */
     _computeGasPrice(): Promise<BigNumber>;
+    /**
+     * Compute the gas amount for sending a txn
+     * Will be slightly above the result of estimateGas to make it more reliable
+     * @param estimation The result of estimateGas for a transaction
+     */
+    _correctGasAmount(estimation: number): number;
     /**
      * Estimate the gas needed to match two orders
      * @param param0 __namedParamaters Object

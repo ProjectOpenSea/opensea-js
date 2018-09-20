@@ -225,6 +225,13 @@ export interface OrderbookResponse {
 export declare type Web3Callback<T> = (err: Error | null, result: T) => void;
 export declare type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>;
 export declare type TxnCallback = (result: boolean) => void;
+export interface TxnParameters {
+    fromAddress?: string;
+    toAddress: string;
+    data?: any;
+    value?: number | BigNumber;
+    gasPrice?: number | BigNumber;
+}
 /**
  * To simplify typifying ABIs
  */

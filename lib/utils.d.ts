@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, TxnParameters } from './types';
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const feeRecipient = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
 export declare const INVERSE_BASIS_POINT = 10000;
@@ -66,12 +66,7 @@ export declare function sendRawTransaction(web3: Web3, { fromAddress, toAddress,
  * @param data data to send to contract
  * @param value value in ETH to send with data
  */
-export declare function estimateGas(web3: Web3, { fromAddress, toAddress, data, value }: {
-    fromAddress?: string;
-    toAddress?: string;
-    data?: any;
-    value?: number | BigNumber;
-}): Promise<number>;
+export declare function estimateGas(web3: Web3, { fromAddress, toAddress, data, value }: TxnParameters): Promise<number>;
 /**
  * Get mean gas price for sending a txn, in wei
  * @param web3 Web3 instance

@@ -5,7 +5,7 @@ import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import { OpenSeaPort } from '../src'
 
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, TxnParameters } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export const feeRecipient = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
@@ -355,8 +355,7 @@ export async function sendRawTransaction(
  */
 export async function estimateGas(
     web3: Web3,
-    {fromAddress, toAddress, data, value = 0 }:
-    {fromAddress?: string; toAddress?: string; data?: any; value?: number | BigNumber }
+    {fromAddress, toAddress, data, value = 0 }: TxnParameters
   ): Promise<number> {
 
   const amount = await promisify<number>(c => web3.eth.estimateGas({

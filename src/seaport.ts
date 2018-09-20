@@ -15,6 +15,8 @@ import {
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
 
+const MAX_ERROR_LENGTH = 120
+
 export class OpenSeaPort {
 
   // Web3 instance to use
@@ -25,6 +27,8 @@ export class OpenSeaPort {
   public readonly api: OpenSeaAPI
   // Extra gwei to add to the mean gas price when making transactions
   public gasPriceAddition = new BigNumber(3)
+  // Amount to multiply gas estimate by when making transactions
+  public gasIncreaseFactor = 1.2
 
   private _networkName: Network
   private _wyvernProtocol: WyvernProtocol
@@ -649,6 +653,15 @@ export class OpenSeaPort {
   }
 
   /**
+   * Compute the gas amount for sending a txn
+   * Will be slightly above the result of estimateGas to make it more reliable
+   * @param estimation The result of estimateGas for a transaction
+   */
+  public _correctGasAmount(estimation: number): number {
+    return estimation * this.gasIncreaseFactor
+  }
+
+  /**
    * Estimate the gas needed to match two orders
    * @param param0 __namedParamaters Object
    * @param buy The buy order to match
@@ -711,9 +724,12 @@ export class OpenSeaPort {
     this._dispatch(EventType.InitializeAccount, { accountAddress })
 
     const gasPrice = await this._computeGasPrice()
+    const txnData: any = { from: accountAddress, gasPrice }
+    const gas = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.estimateGasAsync(txnData)
+
     const transactionHash = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
-      from: accountAddress,
-      gasPrice
+      ...txnData,
+      gas: this._correctGasAmount(gas)
     })
 
     await this._confirmTransaction(transactionHash, EventType.InitializeAccount, "Initializing proxy for account")
@@ -1128,22 +1144,38 @@ export class OpenSeaPort {
 
     let txHash
     const gasPrice = await this._computeGasPrice()
+    const txnData: any = { from: accountAddress, value, gasPrice }
+    const args = [
+      [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
+      buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
+      [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
+      [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
+      buy.calldata,
+      sell.calldata,
+      buy.replacementPattern,
+      sell.replacementPattern,
+      buy.staticExtradata,
+      sell.staticExtradata,
+      [buy.v, sell.v],
+      [buy.r, buy.s, sell.r, sell.s,
+        // Use the order hash so that OrdersMatched events can look it up
+        orderLookupHash],
+      txnData
+    ]
+
+    // Estimate gas first
     try {
-      txHash = await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync([buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
-        buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
-        [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
-        [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
-        buy.calldata,
-        sell.calldata,
-        buy.replacementPattern,
-        sell.replacementPattern,
-        buy.staticExtradata,
-        sell.staticExtradata,
-        [buy.v, sell.v],
-        [buy.r, buy.s, sell.r, sell.s,
-          // Use the order hash so that OrdersMatched events can look it up
-          orderLookupHash],
-        { from: accountAddress, value, gasPrice })
+      // Typescript splat doesn't typecheck
+      const gasEstimate = await this._wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11])
+      txnData.gas = this._correctGasAmount(gasEstimate)
+    } catch (error) {
+      console.error(error)
+      throw new Error(`Oops, the Ethereum network rejected this transaction :( OpenSea has been alerted, but this problem typically goes away if you try again later. The exact error was "${error.message.substr(0, MAX_ERROR_LENGTH)}..."`)
+    }
+
+    // Then do the transaction
+    try {
+      txHash = await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11])
     } catch (error) {
       console.error(error)
       throw new Error(`Failed to authorize transaction: "${
