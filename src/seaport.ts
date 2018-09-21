@@ -700,8 +700,9 @@ export class OpenSeaPort {
    * Get the proxy address for a user's wallet.
    * Internal method exposed for dev flexibility.
    * @param accountAddress The user's wallet address
+   * @param retries Optional number of retries to do
    */
-  public async _getProxy(accountAddress: string): Promise<string | null> {
+  public async _getProxy(accountAddress: string, retries = 0): Promise<string | null> {
     let proxyAddress: string | null = await this._wyvernProtocol.wyvernProxyRegistry.proxies.callAsync(accountAddress)
 
     if (proxyAddress == '0x') {
@@ -709,6 +710,9 @@ export class OpenSeaPort {
     }
 
     if (!proxyAddress || proxyAddress == WyvernProtocol.NULL_ADDRESS) {
+      if (retries > 0) {
+        return this._getProxy(accountAddress, retries - 1)
+      }
       proxyAddress = null
     }
     return proxyAddress
@@ -739,7 +743,7 @@ export class OpenSeaPort {
     // Fix for Cipher and any other clients who get receipts too early
     await delay(1000)
 
-    const proxyAddress = await this._getProxy(accountAddress)
+    const proxyAddress = await this._getProxy(accountAddress, 2)
     if (!proxyAddress) {
       throw new Error('Failed to initialize your account, please try again')
     }
