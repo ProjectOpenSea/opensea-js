@@ -735,7 +735,7 @@ export class OpenSeaPort {
     await this._confirmTransaction(transactionHash, EventType.InitializeAccount, "Initializing proxy for account")
 
     // Fix for Cipher and any other clients who get receipts too early
-    await delay(800)
+    await delay(1000)
 
     const proxyAddress = await this._getProxy(accountAddress)
     if (!proxyAddress) {
