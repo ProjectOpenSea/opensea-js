@@ -70,8 +70,8 @@
 				<!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) --></p>
 				<p>A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. <a href="https://github.com/ProjectOpenSea/opensea-js">GitHub</a> | <a href="https://www.npmjs.com/package/opensea-js">npm</a></p>
 				<h3 id="synopsis">Synopsis</h3>
-				<p>This is the JavaScript SDK for <a href="https://opensea.io">OpenSea</a>, the largest marketplace for crypto collectibles. It allows developers to access the official orderbook, filter it, create buy orders (offers), create sell orders (auctions), and fulfill orders to complete trades, programmatically.</p>
-				<p>For the first time, you can build a <strong>cryptocommerce dapp</strong>.</p>
+				<p>This is the JavaScript SDK for <a href="https://opensea.io">OpenSea</a>, the largest marketplace for crypto collectibles. It allows developers to access the official orderbook, filter it, create buy orders (<strong>offers</strong>), create sell orders (<strong>auctions</strong>), create collections of assets to sell at once (<strong>bundles</strong>), and complete trades programmatically.</p>
+				<p>For the first time, you can build a <em>cryptocommerce dapp</em>.</p>
 				<p>You get started by instantiating your own seaport. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like <code>ApproveAllAssets</code> or <code>WrapEth</code>) in the process.</p>
 				<p>Happy seafaring! ⛵️</p>
 				<h3 id="installation">Installation</h3>
@@ -132,6 +132,16 @@
   limit?: <span class="hljs-built_in">number</span>,
   offset?: <span class="hljs-built_in">number</span>,
 </code></pre>
+				<h3 id="creating-bundles">Creating Bundles</h3>
+				<p>New in version 0.2.9, you can create bundles of assets to sell at the same time! If the owner has approved all the assets in the bundle already, only a signature is needed to create it.</p>
+				<p>To make a bundle, it&#39;s just one line of code:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> assets: <span class="hljs-built_in">Array</span>&lt;{<span class="hljs-attr">tokenId</span>: string; tokenAddress: string}&gt; = [...]
+
+<span class="hljs-keyword">const</span> bundle = <span class="hljs-keyword">await</span> seaport.createBundleSellOrder({
+  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime
+})
+</code></pre>
+				<p>The parameters <code>bundleDescription</code>, <code>bundleExternalLink</code>, and <code>expirationTime</code> are optional, and <code>endAmountInEth</code> can equal <code>startAmountInEth</code>, similar to the normal <code>createSellOrder</code> functionality.</p>
 				<h3 id="listening-to-events">Listening to Events</h3>
 				<p>Events are fired whenever transactions or orders are being created, and when transactions return receipts from recently mined blocks on the Ethereum blockchain.</p>
 				<p>Our recommendation is that you &quot;forward&quot; OpenSea events to your own store or state management system. Here&#39;s an example of doing that with a Redux action:</p>

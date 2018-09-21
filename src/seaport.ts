@@ -348,9 +348,11 @@ export class OpenSeaPort {
    * Will throw a 'You do not own this asset' error if the maker doesn't have one of the assets.
    * If the user hasn't approved access to any of the assets yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval for each asset.
    * @param param0 __namedParameters Object
-   * @param tokenId Token ID
-   * @param tokenAddress Address of the token's contract
-   * @param accountAddress Address of the maker's wallet
+   * @param bundleName Name of the bundle
+   * @param bundleDescription Optional description of the bundle. Markdown is allowed.
+   * @param bundleExternalLink Optional link to a page that adds context to the bundle.
+   * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
+   * @param accountAddress The address of the maker of the bundle and the owner of all the assets.
    * @param startAmountInEth Price of the asset at the start of the auction
    * @param endAmountInEth Optional price of the asset at the end of its expiration time
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."

@@ -9,9 +9,9 @@ A JavaScript library for crypto-native ecommerce: buying, selling, and bidding o
 
 ### Synopsis
 
-This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest marketplace for crypto collectibles. It allows developers to access the official orderbook, filter it, create buy orders (offers), create sell orders (auctions), and fulfill orders to complete trades, programmatically.
+This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest marketplace for crypto collectibles. It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**auctions**), create collections of assets to sell at once (**bundles**), and complete trades programmatically.
 
-For the first time, you can build a **cryptocommerce dapp**.
+For the first time, you can build a *cryptocommerce dapp*.
 
 You get started by instantiating your own seaport. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEth`) in the process.
 
@@ -92,6 +92,22 @@ The available API filters for the orders endpoint is documented in the `OrderJSO
   limit?: number,
   offset?: number,
 ```
+
+### Creating Bundles
+
+New in version 0.2.9, you can create bundles of assets to sell at the same time! If the owner has approved all the assets in the bundle already, only a signature is needed to create it.
+
+To make a bundle, it's just one line of code:
+
+```JavaScript
+const assets: Array<{tokenId: string; tokenAddress: string}> = [...]
+
+const bundle = await seaport.createBundleSellOrder({
+  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime
+})
+```
+
+The parameters `bundleDescription`, `bundleExternalLink`, and `expirationTime` are optional, and `endAmountInEth` can equal `startAmountInEth`, similar to the normal `createSellOrder` functionality.
 
 ### Listening to Events
 
