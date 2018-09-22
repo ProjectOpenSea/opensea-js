@@ -469,11 +469,12 @@ export class OpenSeaPort {
    *  will attempt to fetch it from Wyvern.
    * @param tokenAbi ABI of the token's contract. Defaults to a flexible ERC-721
    *  contract.
+   * @param skipApproveAllIfTokenAddressIn an optional list of token addresses that, if a token is approve-all type, will skip approval
    * @returns Transaction hash if a new transaction was created, otherwise null
    */
   public async approveNonFungibleToken(
-      { tokenId, tokenAddress, accountAddress, proxyAddress = null, tokenAbi = ERC721 }:
-      { tokenId: string; tokenAddress: string; accountAddress: string; proxyAddress: string | null; tokenAbi?: PartialReadonlyContractAbi}
+      { tokenId, tokenAddress, accountAddress, proxyAddress = null, tokenAbi = ERC721, skipApproveAllIfTokenAddressIn = [] }:
+      { tokenId: string; tokenAddress: string; accountAddress: string; proxyAddress: string | null; tokenAbi?: PartialReadonlyContractAbi; skipApproveAllIfTokenAddressIn?: string[] }
     ): Promise<string | null> {
     const tokenContract = this.web3.eth.contract(tokenAbi as any[])
     const erc721 = await tokenContract.at(tokenAddress)
@@ -515,6 +516,12 @@ export class OpenSeaPort {
       //  Result was NULL_BLOCK_HASH
       //  not approved for all yet
 
+      if (skipApproveAllIfTokenAddressIn.includes(tokenAddress)) {
+        this.logger('Already approving proxy for all tokens in another transaction')
+        return null
+      }
+      skipApproveAllIfTokenAddressIn.push(tokenAddress)
+
       try {
         this._dispatch(EventType.ApproveAllAssets, { accountAddress, proxyAddress, tokenAddress })
 
@@ -529,7 +536,7 @@ export class OpenSeaPort {
         return txHash
       } catch (error) {
         console.error(error)
-        throw new Error('Failed to approve access to these tokens. OpenSea has been alerted, but you can also chat with us on Discord.')
+        throw new Error("Couldn't get permission to trade these tokens. Remember, you only have to approve them once for this item type!")
       }
     }
 
@@ -583,7 +590,7 @@ export class OpenSeaPort {
       return txHash
     } catch (error) {
       console.error(error)
-      throw new Error('Failed to approve access to this token. OpenSea has been alerted, but you can also chat with us on Discord.')
+      throw new Error("Couldn't get permission to trade this token.")
     }
   }
 
@@ -991,6 +998,7 @@ export class OpenSeaPort {
       proxyAddress = await this._initializeProxy(accountAddress)
     }
     const proxy = proxyAddress
+    const contractsWithApproveAll: string[] = []
 
     await Promise.all(wyAssets.map(async wyAsset => {
       // Verify that the taker owns the asset
@@ -1004,7 +1012,8 @@ export class OpenSeaPort {
         tokenId: wyAsset.id.toString(),
         tokenAddress: wyAsset.address,
         accountAddress,
-        proxyAddress
+        proxyAddress,
+        skipApproveAllIfTokenAddressIn: contractsWithApproveAll
       })
     }))
 

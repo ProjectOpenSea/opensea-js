@@ -163,14 +163,16 @@ export declare class OpenSeaPort {
      *  will attempt to fetch it from Wyvern.
      * @param tokenAbi ABI of the token's contract. Defaults to a flexible ERC-721
      *  contract.
+     * @param skipApproveAllIfTokenAddressIn an optional list of token addresses that, if a token is approve-all type, will skip approval
      * @returns Transaction hash if a new transaction was created, otherwise null
      */
-    approveNonFungibleToken({ tokenId, tokenAddress, accountAddress, proxyAddress, tokenAbi }: {
+    approveNonFungibleToken({ tokenId, tokenAddress, accountAddress, proxyAddress, tokenAbi, skipApproveAllIfTokenAddressIn }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
         proxyAddress: string | null;
         tokenAbi?: PartialReadonlyContractAbi;
+        skipApproveAllIfTokenAddressIn?: string[];
     }): Promise<string | null>;
     /**
      * Approve a fungible token (e.g. W-ETH) for use in trades.
