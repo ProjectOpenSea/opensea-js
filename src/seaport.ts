@@ -10,7 +10,7 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides
+  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -654,6 +654,43 @@ export class OpenSeaPort {
       // TODO check calldataCanMatch too?
       // const isValid = await this._validateMatch({ buy, sell, accountAddress })
       const gas = await this._estimateGasForMatch({ buy, sell, accountAddress })
+
+      this.logger(`Gas estimate for ${order.side == OrderSide.Sell ? "sell" : "buy"} order: ${gas}`)
+
+      return gas > 0
+    } catch (error) {
+      return false
+    }
+  }
+
+  /**
+   * WIP Returns whether an asset is transferrable.
+   * (Currently returns true too often, even when asset is locked by contract.)
+   * An asset may not be transferrable if its transfer function
+   * is locked for some reason, e.g. an item is being rented within a game
+   * or trading has been locked for an item type.
+   * @param param0 __namedParamters Object
+   * @param tokenId ID of the token to check
+   * @param tokenAddress Address of the token's contract
+   * @param fromAddress The account address that currently owns the asset
+   * @param toAddress The account address that will be acquiring the asset
+   * @param tokenAbi ABI for the token contract. Defaults to ERC-721
+   */
+  public async isAssetTransferrable(
+    { tokenId, tokenAddress, fromAddress, toAddress, tokenAbi = ERC721 }:
+    { tokenId: string; tokenAddress: string; fromAddress: string; toAddress: string; tokenAbi?: PartialReadonlyContractAbi }
+  ): Promise<boolean> {
+    const tokenContract = this.web3.eth.contract(tokenAbi as any[])
+    const erc721 = await tokenContract.at(tokenAddress)
+
+    const data = erc721.transferFrom.getData(fromAddress, toAddress, tokenId)
+
+    try {
+      const gas = await estimateGas(this.web3, {
+        fromAddress,
+        toAddress,
+        data
+      })
       return gas > 0
     } catch (error) {
       return false
@@ -761,7 +798,7 @@ export class OpenSeaPort {
 
     const proxyAddress = await this._getProxy(accountAddress, 2)
     if (!proxyAddress) {
-      throw new Error('Failed to initialize your account, please try again')
+      throw new Error('Failed to initialize your account :( Please restart your wallet/browser and try again!')
     }
 
     return proxyAddress
@@ -976,7 +1013,7 @@ export class OpenSeaPort {
     )
 
     if (!ordersCanMatch) {
-      throw new Error('Unable to match offer with auction')
+      throw new Error('Unable to match offer with auction. Please restart your wallet/browser and try again!')
     }
     this.logger(`Orders matching: ${ordersCanMatch}`)
 
@@ -984,7 +1021,7 @@ export class OpenSeaPort {
     this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
 
     if (!orderCalldataCanMatch) {
-      throw new Error('Unable to match offer with auction, due to the type of offer requested')
+      throw new Error('Unable to match offer details with auction. Please restart your wallet/browser and try again!')
     }
     return true
   }
@@ -1125,7 +1162,7 @@ export class OpenSeaPort {
         buy.v, buy.r, buy.s,
         { from: accountAddress })
       if (!buyValid) {
-        throw new Error('Invalid offer. Please reload and try again!')
+        throw new Error('Invalid offer. Please restart your wallet/browser and try again!')
       }
       this.logger(`Buy order is valid: ${buyValid}`)
 
@@ -1148,7 +1185,7 @@ export class OpenSeaPort {
         sell.v, sell.r, sell.s,
         { from: accountAddress })
       if (!sellValid) {
-        throw new Error('Invalid auction. Please reload and try again!')
+        throw new Error('Invalid auction. Please restart your wallet/browser and try again!')
       }
       this.logger(`Sell order validation: ${sellValid}`)
 
@@ -1259,7 +1296,7 @@ export class OpenSeaPort {
 
     if (!valid) {
       console.error(order)
-      throw new Error('Invalid order. Please reload and try again!')
+      throw new Error('Invalid order. Please restart your wallet/browser and try again!')
     }
     this.logger('Order is valid')
 

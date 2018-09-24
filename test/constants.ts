@@ -12,6 +12,7 @@ export const rinkebyApi = new OpenSeaAPI({
 export const apiToTest = rinkebyApi
 
 export const CK_ADDRESS = '0x06012c8cf97bead5deae237070f9587f8e7a266d'
+export const GODS_UNCHAINED_ADDRESS = '0x6ebeaf8e8e946f0716e6533a6f2cefc83f60e8ab'
 export const CRYPTO_CRYSTAL_ADDRESS = '0xcfbc9103362aec4ce3089f155c2da2eea1cb7602'
 export const DIGITAL_ART_CHAIN_ADDRESS = '0x323a3e1693e7a0959f65972f3bf2dfcb93239dfe'
 export const MYTHEREUM_ADDRESS = '0xc70be5b7c19529ef642d16c10dfe91c58b5c3bf0'

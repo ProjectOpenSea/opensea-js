@@ -208,6 +208,26 @@ export declare class OpenSeaPort {
         accountAddress: string;
     }): Promise<boolean>;
     /**
+     * WIP Returns whether an asset is transferrable.
+     * (Currently returns true too often, even when asset is locked by contract.)
+     * An asset may not be transferrable if its transfer function
+     * is locked for some reason, e.g. an item is being rented within a game
+     * or trading has been locked for an item type.
+     * @param param0 __namedParamters Object
+     * @param tokenId ID of the token to check
+     * @param tokenAddress Address of the token's contract
+     * @param fromAddress The account address that currently owns the asset
+     * @param toAddress The account address that will be acquiring the asset
+     * @param tokenAbi ABI for the token contract. Defaults to ERC-721
+     */
+    isAssetTransferrable({ tokenId, tokenAddress, fromAddress, toAddress, tokenAbi }: {
+        tokenId: string;
+        tokenAddress: string;
+        fromAddress: string;
+        toAddress: string;
+        tokenAbi?: PartialReadonlyContractAbi;
+    }): Promise<boolean>;
+    /**
      * Compute the gas price for sending a txn, in wei
      * Will be slightly above the mean to make it faster
      */

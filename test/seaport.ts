@@ -5,22 +5,29 @@ import {
 import {
   suite,
   test,
+  skip,
 } from 'mocha-typescript'
 
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder } from '../src/types'
+import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
+
 const client = new OpenSeaPort(provider, {
   networkName: Network.Main
-})
+}, line => console.info(line))
+
+const assetsForBundleOrder = [
+  { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
+  { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
+]
 
 suite('seaport', () => {
 
@@ -57,16 +64,26 @@ suite('seaport', () => {
     })
   })
 
+  // TODO
+  skip(() => {
+    test('Asset locked in contract is not transferrable', async () => {
+      const isTransferrable = await client.isAssetTransferrable({
+        tokenId: "1",
+        tokenAddress: GODS_UNCHAINED_ADDRESS,
+        fromAddress: ALEX_ADDRESS,
+        toAddress: ALEX_ADDRESS
+      })
+      assert.isNotTrue(isTransferrable)
+    })
+  })
+
   test('Matches fixed bundle order for different approve-all assets', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
     const order = client._makeBundleSellOrder({
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with different types of assets",
-      assets: [
-        { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
-        { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
-      ],
+      assets: assetsForBundleOrder,
       accountAddress,
       startAmountInEth: 1
     })
@@ -81,10 +98,7 @@ suite('seaport', () => {
     const order = client._makeBundleSellOrder({
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with different types of assets",
-      assets: [
-        { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
-        { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
-      ],
+      assets: assetsForBundleOrder,
       accountAddress,
       startAmountInEth: 1,
       endAmountInEth: 0,
@@ -251,11 +265,10 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   assert.isTrue(isValid)
 
   if (testAtomicMatch) {
-    const gasEstimate = await client._estimateGasForMatch({ buy, sell, accountAddress })
+    const isFulfillable = await client.isOrderFulfillable({ order, accountAddress })
+    assert.isTrue(isFulfillable)
     const gasPrice = await client._computeGasPrice()
-    console.info(`Gas estimate for ${order.side == OrderSide.Sell ? "sell" : "buy"} order: ${gasEstimate}`)
     console.info(`Gas price to use: ${client.web3.fromWei(gasPrice, 'gwei')} gwei`)
-    assert.isAbove(gasEstimate, 0)
   }
 }
 
@@ -298,4 +311,32 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
 
   const isValid = await client._validateMatch({ buy, sell, accountAddress })
   assert.isTrue(isValid)
+
+  // Make sure assets are transferrable
+  await Promise.all(getAssets(order).map(async ({ tokenAddress, tokenId }, i) => {
+    const isTransferrable = await client.isAssetTransferrable({
+      tokenId, tokenAddress,
+      fromAddress: sell.maker,
+      toAddress: buy.maker
+    })
+    assert.isTrue(isTransferrable)
+  }))
+}
+
+function getAssets(
+    order: Order | UnsignedOrder | UnhashedOrder
+  ): Array<{tokenAddress: string; tokenId: string }> {
+
+  const wyAssets = order.metadata.bundle
+    ? order.metadata.bundle.assets
+    : order.metadata.asset
+      ? [ order.metadata.asset ]
+      : []
+
+  assert.isNotEmpty(wyAssets)
+
+  return wyAssets.map(({ id, address }) => ({
+    tokenId: id,
+    tokenAddress: address
+  }))
 }
