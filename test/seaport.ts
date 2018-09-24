@@ -10,7 +10,7 @@ import {
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder } from '../src/types'
-import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice } from '../src/utils'
+import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS } from './constants'
@@ -245,27 +245,7 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   const matchingOrder = client._makeMatchingOrder({order, accountAddress})
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
 
-  const isSellOrder = order.side == OrderSide.Sell
-
-  let buy: Order
-  let sell: Order
-  if (!isSellOrder) {
-    buy = order
-    sell = {
-      ...matchingOrder,
-      v: buy.v,
-      r: buy.r,
-      s: buy.s
-    }
-  } else {
-    sell = order
-    buy = {
-      ...matchingOrder,
-      v: sell.v,
-      r: sell.r,
-      s: sell.s
-    }
-  }
+  const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
   const isValid = await client._validateMatch({ buy, sell, accountAddress })
   assert.isTrue(isValid)
@@ -273,7 +253,7 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   if (testAtomicMatch) {
     const gasEstimate = await client._estimateGasForMatch({ buy, sell, accountAddress })
     const gasPrice = await client._computeGasPrice()
-    console.info(`Gas estimate for ${isSellOrder ? "sell" : "buy"} order: ${gasEstimate}`)
+    console.info(`Gas estimate for ${order.side == OrderSide.Sell ? "sell" : "buy"} order: ${gasEstimate}`)
     console.info(`Gas price to use: ${client.web3.fromWei(gasPrice, 'gwei')} gwei`)
     assert.isAbove(gasEstimate, 0)
   }
@@ -290,7 +270,6 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
 
   const isSellOrder = order.side == OrderSide.Sell
 
-  // No signatures, order previously approved
   const v = 27
   const r = ''
   const s = ''

@@ -5,7 +5,7 @@ import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import { OpenSeaPort } from '../src'
 
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, TxnParameters } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, TxnParameters, UnsignedOrder } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export const feeRecipient = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
@@ -490,6 +490,38 @@ export function getOrderHash(order: UnhashedOrder) {
     feeMethod: order.feeMethod.toString()
   }
   return WyvernProtocol.getOrderHashHex(orderWithStringTypes as any)
+}
+
+/**
+ * Assign an order and a new matching order to their buy/sell sides
+ * @param order Original order
+ * @param matchingOrder The result of _makeMatchingOrder
+ */
+export function assignOrdersToSides(order: Order, matchingOrder: UnsignedOrder ): { buy: Order; sell: Order } {
+
+  const isSellOrder = order.side == OrderSide.Sell
+
+  let buy: Order
+  let sell: Order
+  if (!isSellOrder) {
+    buy = order
+    sell = {
+      ...matchingOrder,
+      v: buy.v,
+      r: buy.r,
+      s: buy.s
+    }
+  } else {
+    sell = order
+    buy = {
+      ...matchingOrder,
+      v: sell.v,
+      r: sell.r,
+      s: sell.s
+    }
+  }
+
+  return { buy, sell }
 }
 
 // BROKEN

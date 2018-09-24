@@ -97,7 +97,7 @@ The available API filters for the orders endpoint is documented in the `OrderJSO
 
 New in version 0.2.9, you can create bundles of assets to sell at the same time! If the owner has approved all the assets in the bundle already, only a signature is needed to create it.
 
-To make a bundle, it's just one line of code:
+To make a bundle, it's just one call:
 
 ```JavaScript
 const assets: Array<{tokenId: string; tokenAddress: string}> = [...]

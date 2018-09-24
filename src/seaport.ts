@@ -10,7 +10,7 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay
+  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -396,27 +396,9 @@ export class OpenSeaPort {
       { order, accountAddress }:
       { order: Order; accountAddress: string}
     ) {
-    const orderToMatch = this._makeMatchingOrder({ order, accountAddress })
+    const matchingOrder = this._makeMatchingOrder({ order, accountAddress })
 
-    let buy: Order
-    let sell: Order
-    if (order.side == OrderSide.Buy) {
-      buy = order
-      sell = {
-        ...orderToMatch,
-        v: buy.v,
-        r: buy.r,
-        s: buy.s
-      }
-    } else {
-      sell = order
-      buy = {
-        ...orderToMatch,
-        v: sell.v,
-        r: sell.r,
-        s: sell.s
-      }
-    }
+    const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
     this._dispatch(EventType.MatchOrders, { buy, sell, accountAddress })
 
@@ -649,6 +631,33 @@ export class OpenSeaPort {
       order.staticExtradata,
     )
     return currentPrice
+  }
+
+  /**
+   * Returns whether an order is fulfillable.
+   * An order may not be fulfillable if a target item's transfer function
+   * is locked for some reason, e.g. an item is being rented within a game
+   * or trading has been locked for an item type.
+   * @param param0 __namedParamters Object
+   * @param order Order to check
+   * @param accountAddress The account address that will be fulfilling the order
+   */
+  public async isOrderFulfillable(
+      { order, accountAddress }:
+      { order: Order; accountAddress: string }
+    ): Promise<boolean> {
+    const matchingOrder = this._makeMatchingOrder({ order, accountAddress })
+
+    const { buy, sell } = assignOrdersToSides(order, matchingOrder)
+
+    try {
+      // TODO check calldataCanMatch too?
+      // const isValid = await this._validateMatch({ buy, sell, accountAddress })
+      const gas = await this._estimateGasForMatch({ buy, sell, accountAddress })
+      return gas > 0
+    } catch (error) {
+      return false
+    }
   }
 
   /**
@@ -1116,7 +1125,7 @@ export class OpenSeaPort {
         buy.v, buy.r, buy.s,
         { from: accountAddress })
       if (!buyValid) {
-        throw new Error('Invalid offer')
+        throw new Error('Invalid offer. Please reload and try again!')
       }
       this.logger(`Buy order is valid: ${buyValid}`)
 
@@ -1139,7 +1148,7 @@ export class OpenSeaPort {
         sell.v, sell.r, sell.s,
         { from: accountAddress })
       if (!sellValid) {
-        throw new Error('Invalid auction')
+        throw new Error('Invalid auction. Please reload and try again!')
       }
       this.logger(`Sell order validation: ${sellValid}`)
 
@@ -1184,7 +1193,7 @@ export class OpenSeaPort {
       txnData.gas = this._correctGasAmount(gasEstimate)
     } catch (error) {
       console.error(error)
-      throw new Error(`Oops, the Ethereum network rejected this transaction :( OpenSea has been alerted, but this problem typically goes away if you try again later. The exact error was "${error.message.substr(0, MAX_ERROR_LENGTH)}..."`)
+      throw new Error(`Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due to one or more items being locked or untransferrable. The exact error was "${error.message.substr(0, MAX_ERROR_LENGTH)}..."`)
     }
 
     // Then do the transaction
@@ -1250,7 +1259,7 @@ export class OpenSeaPort {
 
     if (!valid) {
       console.error(order)
-      throw new Error('Invalid order')
+      throw new Error('Invalid order. Please reload and try again!')
     }
     this.logger('Order is valid')
 

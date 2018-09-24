@@ -195,6 +195,19 @@ export declare class OpenSeaPort {
      */
     getCurrentPrice(order: Order): Promise<BigNumber>;
     /**
+     * Returns whether an order is fulfillable.
+     * An order may not be fulfillable if a target item's transfer function
+     * is locked for some reason, e.g. an item is being rented within a game
+     * or trading has been locked for an item type.
+     * @param param0 __namedParamters Object
+     * @param order Order to check
+     * @param accountAddress The account address that will be fulfilling the order
+     */
+    isOrderFulfillable({ order, accountAddress }: {
+        order: Order;
+        accountAddress: string;
+    }): Promise<boolean>;
+    /**
      * Compute the gas price for sending a txn, in wei
      * Will be slightly above the mean to make it faster
      */
