@@ -205,6 +205,7 @@ export interface OrderJSON {
     owner?: string;
     sale_kind?: SaleKind;
     asset_contract_address?: string;
+    bundled?: boolean;
     token_id?: number | string;
     token_ids?: Array<number | string>;
     listed_after?: number | string;
