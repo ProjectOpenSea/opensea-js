@@ -109,6 +109,24 @@ export const ERC721: PartialReadonlyContractAbi = [
     'type': 'function',
   },
   {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "name": "_tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "transfer",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     'constant': false,
     'inputs': [
       {

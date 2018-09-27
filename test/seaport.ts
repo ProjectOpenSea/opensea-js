@@ -14,7 +14,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2 } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -47,6 +47,18 @@ suite('seaport', () => {
     assert.equal(typeof client._getProxy, 'function')
   })
 
+  skip(() => {
+    test('Asset locked in contract is not transferrable', async () => {
+      const isTransferrable = await client.isAssetTransferrable({
+        tokenId: "1",
+        tokenAddress: GODS_UNCHAINED_ADDRESS,
+        fromAddress: ALEX_ADDRESS,
+        toAddress: ALEX_ADDRESS_2
+      })
+      assert.isNotTrue(isTransferrable)
+    })
+  })
+
   ordersJSON.map((orderJSON: OrderJSON, index: number) => {
     test('Order #' + index + ' has correct types', () => {
       const order = orderFromJSON(orderJSON)
@@ -61,19 +73,6 @@ suite('seaport', () => {
     test('Order #' + index + ' has correct hash', () => {
       const order = orderFromJSON(orderJSON)
       assert.equal(order.hash, getOrderHash(order))
-    })
-  })
-
-  // TODO
-  skip(() => {
-    test('Asset locked in contract is not transferrable', async () => {
-      const isTransferrable = await client.isAssetTransferrable({
-        tokenId: "1",
-        tokenAddress: GODS_UNCHAINED_ADDRESS,
-        fromAddress: ALEX_ADDRESS,
-        toAddress: ALEX_ADDRESS
-      })
-      assert.isNotTrue(isTransferrable)
     })
   })
 

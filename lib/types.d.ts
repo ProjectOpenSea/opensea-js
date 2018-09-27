@@ -132,6 +132,7 @@ export interface OpenSeaAssetBundle {
     assets: OpenSeaAsset[];
     name: string;
     slug: string;
+    permalink: string;
     description?: string;
     externalLink?: string;
 }

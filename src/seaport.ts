@@ -1230,7 +1230,7 @@ export class OpenSeaPort {
       txnData.gas = this._correctGasAmount(gasEstimate)
     } catch (error) {
       console.error(error)
-      throw new Error(`Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due to one or more items being locked or untransferrable. The exact error was "${error.message.substr(0, MAX_ERROR_LENGTH)}..."`)
+      throw new Error(`Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${error.message.substr(0, MAX_ERROR_LENGTH)}..."`)
     }
 
     // Then do the transaction

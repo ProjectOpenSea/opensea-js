@@ -20,18 +20,18 @@ suite('api', () => {
     assert.equal(rinkebyApi.apiBaseUrl, 'https://rinkeby-api.opensea.io')
   })
 
-  test('Rinkeby API orders have correct OpenSea url', async () => {
-    const order = await rinkebyApi.getOrder({})
-    assert.isNotNull(order)
-    if (!order || !order.asset) {
-      return
-    }
-    const url = `https://rinkeby.opensea.io/assets/${order.asset.assetContract.address}/${order.asset.tokenId}`
-    assert.equal(order.asset.openseaLink, url)
-  })
-
   // Skip these tests, since many are redundant with other tests
   skip(() => {
+
+    test('Rinkeby API orders have correct OpenSea url', async () => {
+      const order = await rinkebyApi.getOrder({})
+      assert.isNotNull(order)
+      if (!order || !order.asset) {
+        return
+      }
+      const url = `https://rinkeby.opensea.io/assets/${order.asset.assetContract.address}/${order.asset.tokenId}`
+      assert.equal(order.asset.openseaLink, url)
+    })
 
     test('Mainnet API orders have correct OpenSea url', async () => {
       const order = await mainApi.getOrder({})
