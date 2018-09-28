@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, TxnParameters, UnsignedOrder } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder } from './types';
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const feeRecipient = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
 export declare const INVERSE_BASIS_POINT = 10000;
@@ -50,14 +50,7 @@ export declare function makeBigNumber(arg: number | string | BigNumber): BigNumb
  * @param value value in ETH to send with data. Defaults to 0
  * @param awaitConfirmation whether we should wait for blockchain to confirm. Defaults to false
  */
-export declare function sendRawTransaction(web3: Web3, { fromAddress, toAddress, data, gasPrice, value, awaitConfirmation }: {
-    fromAddress: string;
-    toAddress: string;
-    data: any;
-    gasPrice?: number | BigNumber;
-    value?: number | BigNumber;
-    awaitConfirmation?: boolean;
-}): Promise<string>;
+export declare function sendRawTransaction(web3: Web3, { from, to, data, gasPrice, value }: Web3.TxData, awaitConfirmation?: boolean): Promise<string>;
 /**
  * Estimate Gas usage for a transaction
  * @param web3 Web3 instance
@@ -66,7 +59,7 @@ export declare function sendRawTransaction(web3: Web3, { fromAddress, toAddress,
  * @param data data to send to contract
  * @param value value in ETH to send with data
  */
-export declare function estimateGas(web3: Web3, { fromAddress, toAddress, data, value }: TxnParameters): Promise<number>;
+export declare function estimateGas(web3: Web3, { from, to, data, value }: Web3.TxData): Promise<number>;
 /**
  * Get mean gas price for sending a txn, in wei
  * @param web3 Web3 instance

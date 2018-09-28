@@ -5,7 +5,7 @@ import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import { OpenSeaPort } from '../src'
 
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, TxnParameters, UnsignedOrder } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder } from './types'
 
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export const feeRecipient = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
@@ -326,13 +326,13 @@ export function makeBigNumber(arg: number | string | BigNumber): BigNumber {
  */
 export async function sendRawTransaction(
     web3: Web3,
-    {fromAddress, toAddress, data, gasPrice, value = 0, awaitConfirmation = false}:
-    {fromAddress: string; toAddress: string; data: any; gasPrice?: number | BigNumber; value?: number | BigNumber; awaitConfirmation?: boolean}
+    {from, to, data, gasPrice, value = 0}: Web3.TxData,
+    awaitConfirmation = false
   ): Promise<string> {
 
   const txHashRes = await promisify(c => web3.eth.sendTransaction({
-    from: fromAddress,
-    to: toAddress,
+    from,
+    to,
     value,
     data,
     gasPrice
@@ -356,12 +356,12 @@ export async function sendRawTransaction(
  */
 export async function estimateGas(
     web3: Web3,
-    {fromAddress, toAddress, data, value = 0 }: TxnParameters
+    {from, to, data, value = 0 }: Web3.TxData
   ): Promise<number> {
 
   const amount = await promisify<number>(c => web3.eth.estimateGas({
-    from: fromAddress,
-    to: toAddress,
+    from,
+    to,
     value,
     data,
   }, c))

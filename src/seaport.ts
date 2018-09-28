@@ -125,8 +125,8 @@ export class OpenSeaPort {
 
     const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
-      fromAddress: accountAddress,
-      toAddress: token.address,
+      from: accountAddress,
+      to: token.address,
       value: amount,
       data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'deposit'), []),
       gasPrice
@@ -155,8 +155,8 @@ export class OpenSeaPort {
 
     const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
-      fromAddress: accountAddress,
-      toAddress: token.address,
+      from: accountAddress,
+      to: token.address,
       value: 0,
       data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [amount.toString()]),
       gasPrice
@@ -509,8 +509,8 @@ export class OpenSeaPort {
 
         const gasPrice = await this._computeGasPrice()
         const txHash = await sendRawTransaction(this.web3, {
-          fromAddress: accountAddress,
-          toAddress: erc721.address,
+          from: accountAddress,
+          to: erc721.address,
           data: erc721.setApprovalForAll.getData(proxyAddress, true),
           gasPrice
         })
@@ -562,8 +562,8 @@ export class OpenSeaPort {
 
       const gasPrice = await this._computeGasPrice()
       const txHash = await sendRawTransaction(this.web3, {
-        fromAddress: accountAddress,
-        toAddress: erc721.address,
+        from: accountAddress,
+        to: erc721.address,
         data: erc721.approve.getData(proxyAddress, tokenId),
         gasPrice
       })
@@ -602,8 +602,8 @@ export class OpenSeaPort {
 
     const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
-      fromAddress: accountAddress,
-      toAddress: tokenAddress,
+      from: accountAddress,
+      to: tokenAddress,
       data: WyvernSchemas.encodeCall(getMethod(ERC20, 'approve'),
         [contractAddress, WyvernProtocol.MAX_UINT_256.toString()]),
       gasPrice
@@ -687,8 +687,8 @@ export class OpenSeaPort {
 
     try {
       const gas = await estimateGas(this.web3, {
-        fromAddress,
-        toAddress,
+        from: fromAddress,
+        to: tokenAddress,
         data
       })
       return gas > 0

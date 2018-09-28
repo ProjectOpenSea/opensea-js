@@ -47,6 +47,7 @@ suite('seaport', () => {
     assert.equal(typeof client._getProxy, 'function')
   })
 
+  // FIXME estimateGas goesn't respect transfer checks
   skip(() => {
     test('Asset locked in contract is not transferrable', async () => {
       const isTransferrable = await client.isAssetTransferrable({
