@@ -14,7 +14,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2 } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -47,17 +47,34 @@ suite('seaport', () => {
     assert.equal(typeof client._getProxy, 'function')
   })
 
-  // FIXME estimateGas goesn't respect transfer checks
-  skip(() => {
-    test('Asset locked in contract is not transferrable', async () => {
-      const isTransferrable = await client.isAssetTransferrable({
-        tokenId: "1",
-        tokenAddress: GODS_UNCHAINED_ADDRESS,
-        fromAddress: ALEX_ADDRESS,
-        toAddress: ALEX_ADDRESS_2
-      })
-      assert.isNotTrue(isTransferrable)
+  test('Asset locked in contract is not transferrable', async () => {
+    const isTransferrable = await client.isAssetTransferrable({
+      tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
+      tokenAddress: GODS_UNCHAINED_ADDRESS,
+      fromAddress: ALEX_ADDRESS,
+      toAddress: ALEX_ADDRESS_2
     })
+    assert.isNotTrue(isTransferrable)
+  })
+
+  test('Digital Art not owned by fromAddress is not transferrable', async () => {
+    const isTransferrable = await client.isAssetTransferrable({
+      tokenId: "1",
+      tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      fromAddress: ALEX_ADDRESS,
+      toAddress: ALEX_ADDRESS_2
+    })
+    assert.isNotTrue(isTransferrable)
+  })
+
+  test('Digital Art owned by fromAddress is transferrable', async () => {
+    const isTransferrable = await client.isAssetTransferrable({
+      tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
+      tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      fromAddress: ALEX_ADDRESS,
+      toAddress: ALEX_ADDRESS_2
+    })
+    assert.isTrue(isTransferrable)
   })
 
   ordersJSON.map((orderJSON: OrderJSON, index: number) => {
@@ -190,16 +207,6 @@ suite('seaport', () => {
     const accountAddress = ALEX_ADDRESS
     const approved = await client._getApprovedTokenCount({ accountAddress })
     assert.equal(approved.toString(), MAX_UINT_256.toString())
-  })
-
-  test('Matches first sell order by Alex in book', async () => {
-    const order = await client.api.getOrder({side: OrderSide.Sell, maker: ALEX_ADDRESS})
-    assert.isNotNull(order)
-    if (!order) {
-      return
-    }
-    const takerAddress = ALEX_ADDRESS
-    await testMatchingOrder(order, takerAddress, true)
   })
 
   test('Matches first buy order in book', async () => {
