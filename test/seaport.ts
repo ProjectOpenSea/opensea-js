@@ -14,7 +14,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -57,7 +57,7 @@ suite('seaport', () => {
     assert.isNotTrue(isTransferrable)
   })
 
-  test('Digital Art not owned by fromAddress is not transferrable', async () => {
+  test('ERC-721 v3 asset not owned by fromAddress is not transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
       tokenId: "1",
       tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
@@ -67,10 +67,20 @@ suite('seaport', () => {
     assert.isNotTrue(isTransferrable)
   })
 
-  test('Digital Art owned by fromAddress is transferrable', async () => {
+  test('ERC-721 v3 asset owned by fromAddress is transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
       tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
       tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      fromAddress: ALEX_ADDRESS,
+      toAddress: ALEX_ADDRESS_2
+    })
+    assert.isTrue(isTransferrable)
+  })
+
+  test('ERC-721 v1 asset owned by fromAddress is transferrable', async () => {
+    const isTransferrable = await client.isAssetTransferrable({
+      tokenId: CK_TOKEN_ID.toString(),
+      tokenAddress: CK_ADDRESS,
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2
     })

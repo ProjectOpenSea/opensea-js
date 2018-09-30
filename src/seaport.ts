@@ -682,12 +682,16 @@ export class OpenSeaPort {
   ): Promise<boolean> {
     const tokenContract = this.web3.eth.contract(tokenAbi as any[])
     const erc721 = await tokenContract.at(tokenAddress)
-
+    const proxy = await this._getProxy(fromAddress)
+    if (!proxy) {
+      console.error(`This asset's owner (${fromAddress}) no longer has a proxy!`)
+      return false
+    }
     const data = erc721.transferFrom.getData(fromAddress, toAddress, tokenId)
 
     try {
       const gas = await estimateGas(this.web3, {
-        from: fromAddress,
+        from: proxy,
         to: tokenAddress,
         data
       })
