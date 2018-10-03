@@ -68,16 +68,6 @@ const { orders, count } = await seaport.api.getOrders({
 }, 2)
 ```
 
-To buy an item or accept a bid, you need to **fulfill an order**. To do that, it's just one call:
-
-```JavaScript
-const order = await seaport.api.getOrder(...)
-const accountAddress = "0x..." // The order taker's wallet address
-await this.props.seaport.fulfillOrder({ order, accountAddress })
-```
-
-The parameters `bundleDescription`, `bundleExternalLink`, and `expirationTime` are optional, and `endAmountInEth` can equal `startAmountInEth`, similar to the normal `createSellOrder` functionality.
-
 Note that the listing price of an asset is equal to the `currentPrice` of the **lowest valid sell order** on the asset. Users can lower their listing price without invalidating previous sell orders, so all get shipped down until they're cancelled or one is fulfilled.
 
 The available API filters for the orders endpoint is documented in the `OrderJSON` interface:
@@ -102,6 +92,20 @@ The available API filters for the orders endpoint is documented in the `OrderJSO
   limit?: number,
   offset?: number,
 ```
+
+### Buying items or accepting bids
+
+To buy an item or accept a bid, you need to **fulfill an order**. To do that, it's just one call:
+
+```JavaScript
+const order = await seaport.api.getOrder(...)
+const accountAddress = "0x..." // The order taker's wallet address
+await this.props.seaport.fulfillOrder({ order, accountAddress })
+```
+
+If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the *buyer* and this will prompt the buyer to pay for the item(s).
+
+If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return.
 
 ### Creating Bundles
 
