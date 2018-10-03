@@ -68,6 +68,16 @@ const { orders, count } = await seaport.api.getOrders({
 }, 2)
 ```
 
+To buy an item or accept a bid, you need to **fulfill an order**. To do that, it's just one call:
+
+```JavaScript
+const order = await seaport.api.getOrder(...)
+const accountAddress = "0x..." // The order taker's wallet address
+await this.props.seaport.fulfillOrder({ order, accountAddress })
+```
+
+The parameters `bundleDescription`, `bundleExternalLink`, and `expirationTime` are optional, and `endAmountInEth` can equal `startAmountInEth`, similar to the normal `createSellOrder` functionality.
+
 Note that the listing price of an asset is equal to the `currentPrice` of the **lowest valid sell order** on the asset. Users can lower their listing price without invalidating previous sell orders, so all get shipped down until they're cancelled or one is fulfilled.
 
 The available API filters for the orders endpoint is documented in the `OrderJSON` interface:
@@ -130,7 +140,10 @@ handleSeaportEvents() {
     })
     openSeaPort.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) => {
       console.info({ transactionHash, event })
-      dispatch({ type: ActionTypes.RESET_EXCHANGE })
+      // Only reset your exchange UI if we're finishing an order fulfillment or cancellation
+      if (event == EventType.MatchOrders || event == EventType.CancelOrder) {
+        dispatch({ type: ActionTypes.RESET_EXCHANGE })
+      }
     })
     openSeaPort.addListener(EventType.TransactionFailed, ({ transactionHash, event }) => {
       console.info({ transactionHash, event })

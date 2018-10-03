@@ -111,6 +111,12 @@
   <span class="hljs-attr">side</span>: OrderSide.Sell
 }, <span class="hljs-number">2</span>)
 </code></pre>
+				<p>To buy an item or accept a bid, you need to <strong>fulfill an order</strong>. To do that, it&#39;s just one call:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrder(...)
+<span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The order taker's wallet address</span>
+<span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress })
+</code></pre>
+				<p>The parameters <code>bundleDescription</code>, <code>bundleExternalLink</code>, and <code>expirationTime</code> are optional, and <code>endAmountInEth</code> can equal <code>startAmountInEth</code>, similar to the normal <code>createSellOrder</code> functionality.</p>
 				<p>Note that the listing price of an asset is equal to the <code>currentPrice</code> of the <strong>lowest valid sell order</strong> on the asset. Users can lower their listing price without invalidating previous sell orders, so all get shipped down until they&#39;re cancelled or one is fulfilled.</p>
 				<p>The available API filters for the orders endpoint is documented in the <code>OrderJSON</code> interface:</p>
 				<pre><code class="lang-TypeScript"><span class="hljs-comment">/**
@@ -159,7 +165,10 @@ handleSeaportEvents() {
     })
     openSeaPort.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) =&gt; {
       <span class="hljs-built_in">console</span>.info({ transactionHash, event })
-      dispatch({ <span class="hljs-attr">type</span>: ActionTypes.RESET_EXCHANGE })
+      <span class="hljs-comment">// Only reset your exchange UI if we're finishing an order fulfillment or cancellation</span>
+      <span class="hljs-keyword">if</span> (event == EventType.MatchOrders || event == EventType.CancelOrder) {
+        dispatch({ <span class="hljs-attr">type</span>: ActionTypes.RESET_EXCHANGE })
+      }
     })
     openSeaPort.addListener(EventType.TransactionFailed, ({ transactionHash, event }) =&gt; {
       <span class="hljs-built_in">console</span>.info({ transactionHash, event })
