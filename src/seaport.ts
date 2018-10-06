@@ -925,7 +925,7 @@ export class OpenSeaPort {
     const schema = this._getSchema()
     const listingTime = Math.round(Date.now() / 1000 - 1000)
 
-    const getCalldata = () => {
+    const computeOrderParams = () => {
       if (order.metadata.asset) {
         return order.side == OrderSide.Buy
           ? WyvernSchemas.encodeSell(schema, order.metadata.asset, accountAddress)
@@ -939,24 +939,13 @@ export class OpenSeaPort {
           target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
           calldata: atomicized.calldata,
           replacementPattern: atomicized.replacementPattern
-          // calldata: order.calldata,
-          // replacementPattern: '0x'
         }
       } else {
         throw new Error('Invalid order metadata')
       }
     }
 
-    const { target, calldata, replacementPattern } = getCalldata()
-
-    // console.log("Sell calldata")
-    // console.log(order.calldata)
-    // console.log("Sell replacementPattern")
-    // console.log(order.replacementPattern)
-    // console.log("Buy calldata")
-    // console.log(calldata)
-    // console.log("Buy replacementPattern")
-    // console.log(replacementPattern)
+    const { target, calldata, replacementPattern } = computeOrderParams()
 
     const matchingOrder: UnhashedOrder = {
       exchange: order.exchange,

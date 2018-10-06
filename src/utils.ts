@@ -479,12 +479,15 @@ export function getWyvernAsset(
 
 /**
  * Get the non-prefixed hash for the order
- * (Fixes a Wyvern typescript issue)
+ * (Fixes a Wyvern typescript issue and casing issue)
  * @param order order to hash
  */
 export function getOrderHash(order: UnhashedOrder) {
   const orderWithStringTypes = {
     ...order,
+    maker: order.maker.toLowerCase(),
+    taker: order.taker.toLowerCase(),
+    feeRecipient: order.feeRecipient.toLowerCase(),
     side: order.side.toString(),
     saleKind: order.saleKind.toString(),
     howToCall: order.howToCall.toString(),

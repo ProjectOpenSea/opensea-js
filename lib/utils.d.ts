@@ -82,7 +82,7 @@ export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: 
 export declare function getWyvernAsset(schema: any, tokenId: string, tokenAddress: string): any;
 /**
  * Get the non-prefixed hash for the order
- * (Fixes a Wyvern typescript issue)
+ * (Fixes a Wyvern typescript issue and casing issue)
  * @param order order to hash
  */
 export declare function getOrderHash(order: UnhashedOrder): string;
