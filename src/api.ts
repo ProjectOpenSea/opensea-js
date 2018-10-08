@@ -1,7 +1,7 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
-import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetJSON} from './types'
-import { orderFromJSON, assetFromJSON } from './utils'
+import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetJSON, OpenSeaAssetBundle, OpenSeaAssetBundleJSON} from './types'
+import { orderFromJSON, assetFromJSON, assetBundleFromJSON } from './utils'
 
 export const ORDERBOOK_VERSION: number = 1
 export const API_VERSION: number = 1
@@ -142,7 +142,7 @@ export class OpenSeaAPI {
 
   /**
    * Fetch list of assets from the API, returning the page of assets and the count of total assets
-   * @param query Query to use for getting orders. A subset of parameters on the `AssetJSON` type is supported
+   * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
    * @param page Page number, defaults to 1
    */
   public async getAssets(
@@ -159,6 +159,42 @@ export class OpenSeaAPI {
     const json: any = await response.json()
     return {
       assets: json.assets.map((j: any) => assetFromJSON(j)),
+      estimatedCount: json.estimated_count
+    }
+  }
+
+  /**
+   * Fetch an bundle from the API, return null if it isn't found
+   * @param tokenAddress Address of the bundle's contract
+   * @param tokenId The bundle's token ID
+   */
+  public async getBundle(slug: string): Promise<OpenSeaAssetBundle | null> {
+
+    const response = await this.get(`${API_PATH}/bundle/${slug}/`)
+
+    const json: any = await response.json()
+    return json ? assetBundleFromJSON(json) : null
+  }
+
+  /**
+   * Fetch list of bundles from the API, returning the page of bundles and the count of total bundles
+   * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetBundleJSON` type is supported
+   * @param page Page number, defaults to 1
+   */
+  public async getBundles(
+      query: Partial<OpenSeaAssetBundleJSON> = {},
+      page = 1
+    ): Promise<{bundles: OpenSeaAssetBundle[]; estimatedCount: number}> {
+
+    const response = await this.get(`${API_PATH}/bundles/`, {
+      ...query,
+      limit: this.pageSize,
+      offset: (page - 1) * this.pageSize
+    })
+
+    const json: any = await response.json()
+    return {
+      bundles: json.bundles.map((j: any) => assetBundleFromJSON(j)),
       estimatedCount: json.estimated_count
     }
   }

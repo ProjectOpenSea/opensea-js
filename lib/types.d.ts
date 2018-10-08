@@ -133,6 +133,7 @@ export interface OpenSeaAssetBundle {
     name: string;
     slug: string;
     permalink: string;
+    sellOrders: Order[] | null;
     description?: string;
     externalLink?: string;
 }
@@ -141,6 +142,14 @@ export interface OpenSeaAssetBundleJSON {
     name: string;
     description?: string;
     external_link?: string;
+    maker?: OpenSeaAccount;
+    asset_contract_address?: string;
+    token_ids?: Array<number | string>;
+    on_sale?: boolean;
+    owner?: string;
+    offset?: number;
+    limit?: number;
+    search?: string;
 }
 export interface UnhashedOrder extends WyvernOrder {
     feeMethod: FeeMethod;
@@ -216,6 +225,8 @@ export interface OrderJSON {
 export interface OpenSeaAssetJSON {
     owner?: string;
     asset_contract_address?: string;
+    token_ids?: Array<number | string>;
+    search?: string;
     order_by?: string;
     order_direction?: string;
     limit?: number;

@@ -141,6 +141,21 @@ suite('api', () => {
     })
   })
 
+  test('API fetches bundles and prefetches sell orders', async () => {
+    const { bundles, estimatedCount } = await apiToTest.getBundles({asset_contract_address: CK_RINKEBY_ADDRESS, on_sale: true})
+    assert.isArray(bundles)
+    assert.isNumber(estimatedCount)
+    assert.isAtLeast(estimatedCount, bundles.length)
+
+    const bundle = bundles[0]
+    assert.isNotNull(bundle)
+    if (!bundle) {
+      return
+    }
+    assert.include(bundle.assets.map(a => a.assetContract.name), "CryptoKittiesRinkeby")
+    assert.isNotEmpty(bundle.sellOrders)
+  })
+
   test('API handles errors', async () => {
     try {
       await apiToTest.get('/user')

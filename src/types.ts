@@ -202,6 +202,9 @@ export interface OpenSeaAssetBundle {
   slug: string
   permalink: string
 
+  // Sell orders (auctions) on the bundle. Null if bundle in a list and didn't prefetch sell orders
+  sellOrders: Order[] | null
+
   description?: string
   externalLink?: string
 }
@@ -211,6 +214,18 @@ export interface OpenSeaAssetBundleJSON {
   name: string
   description?: string
   external_link?: string
+
+  // From API only
+  maker?: OpenSeaAccount
+
+  // For querying
+  asset_contract_address?: string
+  token_ids?: Array<number | string>
+  on_sale?: boolean
+  owner?: string
+  offset?: number
+  limit?: number
+  search?: string
 }
 
 export interface UnhashedOrder extends WyvernOrder {
@@ -302,6 +317,8 @@ export interface OpenSeaAssetJSON {
   // For querying
   owner?: string
   asset_contract_address?: string
+  token_ids?: Array<number | string>
+  search?: string
   order_by?: string
   order_direction?: string
   limit?: number

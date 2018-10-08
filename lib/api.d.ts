@@ -1,5 +1,5 @@
 import 'isomorphic-unfetch';
-import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset, OpenSeaAssetJSON } from './types';
+import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset, OpenSeaAssetJSON, OpenSeaAssetBundle, OpenSeaAssetBundleJSON } from './types';
 export declare const ORDERBOOK_VERSION: number;
 export declare const API_VERSION: number;
 export declare const API_BASE_MAINNET = "https://api.opensea.io";
@@ -59,11 +59,26 @@ export declare class OpenSeaAPI {
     getAsset(tokenAddress: string, tokenId: string | number): Promise<OpenSeaAsset | null>;
     /**
      * Fetch list of assets from the API, returning the page of assets and the count of total assets
-     * @param query Query to use for getting orders. A subset of parameters on the `AssetJSON` type is supported
+     * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
      * @param page Page number, defaults to 1
      */
     getAssets(query?: Partial<OpenSeaAssetJSON>, page?: number): Promise<{
         assets: OpenSeaAsset[];
+        estimatedCount: number;
+    }>;
+    /**
+     * Fetch an bundle from the API, return null if it isn't found
+     * @param tokenAddress Address of the bundle's contract
+     * @param tokenId The bundle's token ID
+     */
+    getBundle(slug: string): Promise<OpenSeaAssetBundle | null>;
+    /**
+     * Fetch list of bundles from the API, returning the page of bundles and the count of total bundles
+     * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetBundleJSON` type is supported
+     * @param page Page number, defaults to 1
+     */
+    getBundles(query?: Partial<OpenSeaAssetBundleJSON>, page?: number): Promise<{
+        bundles: OpenSeaAssetBundle[];
         estimatedCount: number;
     }>;
     /**

@@ -19,6 +19,7 @@ export const MYTHEREUM_ADDRESS = '0xc70be5b7c19529ef642d16c10dfe91c58b5c3bf0'
 export const DIGITAL_ART_CHAIN_TOKEN_ID = 189
 export const GODS_UNCHAINED_TOKEN_ID = 76719
 export const MYTHEREUM_TOKEN_ID = 2773
+export const CK_RINKEBY_BUNDLE_SLUG = 'puff-kitty'
 
 export const CK_RINKEBY_ADDRESS = '0x16baf0de678e52367adc69fd067e5edd1d33e3bf'
 export const CK_RINKEBY_TOKEN_ID = 111
