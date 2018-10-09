@@ -1,7 +1,7 @@
 import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js/lib'
 import * as WyvernSchemas from 'wyvern-schemas'
-
+import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
 import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters } from './types'
@@ -863,7 +863,7 @@ export class OpenSeaPort {
     const paymentToken = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     const { basePrice, extra } = this._getPriceParameters(paymentToken, startAmount)
 
-    const order: UnhashedOrder = {
+    return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: NULL_ADDRESS,
@@ -889,8 +889,6 @@ export class OpenSeaPort {
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata,
     }
-
-    return order
   }
 
   public async _makeBundleSellOrder(
@@ -909,18 +907,19 @@ export class OpenSeaPort {
       external_link: bundleExternalLink
     }
 
-    // let buyerFee = DEFAULT_BUYER_FEE_BASIS_POINTS
-    // let sellerFee = DEFAULT_SELLER_FEE_BASIS_POINTS
-    // // If all assets are for the same contract, use its fees
-    // if (asset.)
-    //   const { tokenAddress, tokenId } = assets[0]
-    //   const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
-    //   if (!asset) {
-    //     throw new Error('No asset found for this order')
-    //   }
-    //   buyerFee = asset.assetContract.buyerFeeBasisPoints
-    //   sellerFee = asset.assetContract.sellerFeeBasisPoints
-    // }
+    let buyerFee = DEFAULT_BUYER_FEE_BASIS_POINTS
+    let sellerFee = DEFAULT_SELLER_FEE_BASIS_POINTS
+
+    // If all assets are for the same contract, use its fees
+    if (_.uniqBy(assets, 'tokenAddress').length == 1) {
+      const { tokenAddress, tokenId } = assets[0]
+      const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
+      if (!asset) {
+        throw new Error('No asset found for this order')
+      }
+      buyerFee = asset.assetContract.buyerFeeBasisPoints
+      sellerFee = asset.assetContract.sellerFeeBasisPoints
+    }
 
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
@@ -938,8 +937,8 @@ export class OpenSeaPort {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: NULL_ADDRESS,
-      makerRelayerFee: makeBigNumber(0), // TODO decide fee policy for bundles
-      takerRelayerFee: makeBigNumber(0),
+      makerRelayerFee: makeBigNumber(sellerFee),
+      takerRelayerFee: makeBigNumber(buyerFee),
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       feeMethod: FeeMethod.SplitFee,
