@@ -179,7 +179,7 @@ suite('seaport', () => {
   test('Matches Dutch bundle order for different approve-all assets', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
+    const expirationTime = (Date.now() / 1000 + 60 * 60 * 24) // one day from now
     const amountInEth = 1
 
     const order = await client._makeBundleSellOrder({

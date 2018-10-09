@@ -45,8 +45,21 @@ Then, you can do this to make an offer on an asset:
 
 ```JavaScript
 // An expirationTime of 0 means it will never expire
-const offer = await seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, expirationTime: 0 })
+const offer = await seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime: 0 })
 ```
+
+... or this to sell an asset:
+
+```JavaScript
+// Expire this auction one day from now
+const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
+// If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order.
+const auction = await seaport.createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime })
+```
+
+The units for `startAmount` and `endAmount` are Ether, ETH. If you want to specify another ERC-20 token to use, see **Using ERC-20 Tokens** below.
+
+### Fetching Orders
 
 To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are underscored instead of camel-cased, similar to the main [OpenSea API parameters](https://docs.opensea.io/v1.0/reference):
 
@@ -93,7 +106,7 @@ The available API filters for the orders endpoint is documented in the `OrderJSO
   offset?: number,
 ```
 
-### Buying items or accepting bids
+### Buying Items or Accepting Bids
 
 To buy an item or accept a bid, you need to **fulfill an order**. To do that, it's just one call:
 
@@ -117,11 +130,25 @@ To make a bundle, it's just one call:
 const assets: Array<{tokenId: string; tokenAddress: string}> = [...]
 
 const bundle = await seaport.createBundleSellOrder({
-  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime
+  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime
 })
 ```
 
-The parameters `bundleDescription`, `bundleExternalLink`, and `expirationTime` are optional, and `endAmountInEth` can equal `startAmountInEth`, similar to the normal `createSellOrder` functionality.
+The parameters `bundleDescription`, `bundleExternalLink`, and `expirationTime` are optional, and `endAmount` can equal `startAmount`, similar to the normal `createSellOrder` functionality.
+
+### Using ERC-20 Tokens Instead of Ether
+
+**New in version 0.3:** now you can make auctions and offers in whatever ERC-20 token you want! Just specify the token's contract address as the `paymentTokenAddress` when creating the order.
+
+Here's an example of listing a token for $5! No more need to worry about the exchange rate:
+
+```JavaScript
+// Token address for the DAI stable coin, which is pegged to $1 USD:
+// https://etherscan.io/address/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
+const paymentTokenAddress = "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359"
+// The units for `startAmount` and `endAmount` are now in DAI, so $5 USD
+const auction = await seaport.createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount: 5, expirationTime: 0, paymentTokenAddress })
+```
 
 ### Listening to Events
 

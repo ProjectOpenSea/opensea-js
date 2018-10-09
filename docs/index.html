@@ -92,8 +92,16 @@
 </code></pre>
 				<p>Then, you can do this to make an offer on an asset:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
-<span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> })
+<span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> })
 </code></pre>
+				<p>... or this to sell an asset:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire this auction one day from now</span>
+<span class="hljs-keyword">const</span> expirationTime = (<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
+<span class="hljs-comment">// If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order.</span>
+<span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime })
+</code></pre>
+				<p>The units for <code>startAmount</code> and <code>endAmount</code> are Ether, ETH. If you want to specify another ERC-20 token to use, see <strong>Using ERC-20 Tokens</strong> below.</p>
+				<h3 id="fetching-orders">Fetching Orders</h3>
 				<p>To retrieve a list of offers and auction on an asset, you can use an instance of the <code>OpenSeaAPI</code> exposed on the client. Parameters passed into API filter objects are underscored instead of camel-cased, similar to the main <a href="https://docs.opensea.io/v1.0/reference">OpenSea API parameters</a>:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OrderSide } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js/lib/types'</span>
 
@@ -132,7 +140,7 @@
   limit?: <span class="hljs-built_in">number</span>,
   offset?: <span class="hljs-built_in">number</span>,
 </code></pre>
-				<h3 id="buying-items-or-accepting-bids">Buying items or accepting bids</h3>
+				<h3 id="buying-items-or-accepting-bids">Buying Items or Accepting Bids</h3>
 				<p>To buy an item or accept a bid, you need to <strong>fulfill an order</strong>. To do that, it&#39;s just one call:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrder(...)
 <span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The order taker's wallet address</span>
@@ -146,10 +154,19 @@
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> assets: <span class="hljs-built_in">Array</span>&lt;{<span class="hljs-attr">tokenId</span>: string; tokenAddress: string}&gt; = [...]
 
 <span class="hljs-keyword">const</span> bundle = <span class="hljs-keyword">await</span> seaport.createBundleSellOrder({
-  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime
+  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime
 })
 </code></pre>
-				<p>The parameters <code>bundleDescription</code>, <code>bundleExternalLink</code>, and <code>expirationTime</code> are optional, and <code>endAmountInEth</code> can equal <code>startAmountInEth</code>, similar to the normal <code>createSellOrder</code> functionality.</p>
+				<p>The parameters <code>bundleDescription</code>, <code>bundleExternalLink</code>, and <code>expirationTime</code> are optional, and <code>endAmount</code> can equal <code>startAmount</code>, similar to the normal <code>createSellOrder</code> functionality.</p>
+				<h3 id="using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</h3>
+				<p><strong>New in version 0.3:</strong> now you can make auctions and offers in whatever ERC-20 token you want! Just specify the token&#39;s contract address as the <code>paymentTokenAddress</code> when creating the order.</p>
+				<p>Here&#39;s an example of listing a token for $5! No more need to worry about the exchange rate:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Token address for the DAI stable coin, which is pegged to $1 USD:</span>
+<span class="hljs-comment">// https://etherscan.io/address/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359</span>
+<span class="hljs-keyword">const</span> paymentTokenAddress = <span class="hljs-string">"0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359"</span>
+<span class="hljs-comment">// The units for `startAmount` and `endAmount` are now in DAI, so $5 USD</span>
+<span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({ tokenId, tokenAddress, accountAddress, <span class="hljs-attr">startAmount</span>: <span class="hljs-number">5</span>, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span>, paymentTokenAddress })
+</code></pre>
 				<h3 id="listening-to-events">Listening to Events</h3>
 				<p>Events are fired whenever transactions or orders are being created, and when transactions return receipts from recently mined blocks on the Ethereum blockchain.</p>
 				<p>Our recommendation is that you &quot;forward&quot; OpenSea events to your own store or state management system. Here&#39;s an example of doing that with a Redux action:</p>
@@ -354,6 +371,12 @@ handleSeaportEvents() {
 						<a href="globals.html#canonicalweth" class="tsd-kind-icon">CanonicalWETH</a>
 					</li>
 					<li class=" tsd-kind-variable">
+						<a href="globals.html#default_buyer_fee_basis_points" class="tsd-kind-icon">DEFAULT_<wbr>BUYER_<wbr>FEE_<wbr>BASIS_<wbr>POINTS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#default_seller_fee_basis_points" class="tsd-kind-icon">DEFAULT_<wbr>SELLER_<wbr>FEE_<wbr>BASIS_<wbr>POINTS</a>
+					</li>
+					<li class=" tsd-kind-variable">
 						<a href="globals.html#erc20" class="tsd-kind-icon">ERC20</a>
 					</li>
 					<li class=" tsd-kind-variable">
@@ -367,6 +390,9 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#max_uint_256" class="tsd-kind-icon">MAX_<wbr>UINT_<wbr>256</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#null_address" class="tsd-kind-icon">NULL_<wbr>ADDRESS</a>
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#null_block_hash" class="tsd-kind-icon">NULL_<wbr>BLOCK_<wbr>HASH</a>
