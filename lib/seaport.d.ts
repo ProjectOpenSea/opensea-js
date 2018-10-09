@@ -72,15 +72,17 @@ export declare class OpenSeaPort {
      * @param tokenId Token ID
      * @param tokenAddress Address of the token's contract
      * @param accountAddress Address of the maker's wallet
-     * @param amountInEth Ether value of the offer
-     * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+     * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
+     * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
+     * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
      */
-    createBuyOrder({ tokenId, tokenAddress, accountAddress, amountInEth, expirationTime }: {
+    createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime, paymentTokenAddress }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
-        amountInEth: number;
+        startAmount: number;
         expirationTime?: number;
+        paymentTokenAddress?: string;
     }): Promise<Order>;
     /**
      * Create a sell order to auction an asset.
@@ -90,17 +92,19 @@ export declare class OpenSeaPort {
      * @param tokenId Token ID
      * @param tokenAddress Address of the token's contract
      * @param accountAddress Address of the maker's wallet
-     * @param startAmountInEth Price of the asset at the start of the auction
-     * @param endAmountInEth Optional price of the asset at the end of its expiration time
+     * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+     * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+     * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      */
-    createSellOrder({ tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime }: {
+    createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
-        startAmountInEth: number;
-        endAmountInEth?: number;
+        startAmount: number;
+        endAmount?: number;
         expirationTime?: number;
+        paymentTokenAddress?: string;
     }): Promise<Order>;
     /**
      * Create a sell order to auction a bundle of assets.
@@ -112,11 +116,12 @@ export declare class OpenSeaPort {
      * @param bundleExternalLink Optional link to a page that adds context to the bundle.
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
      * @param accountAddress The address of the maker of the bundle and the owner of all the assets.
-     * @param startAmountInEth Price of the asset at the start of the auction
-     * @param endAmountInEth Optional price of the asset at the end of its expiration time
+     * @param startAmount Price of the asset at the start of the auction
+     * @param endAmount Optional price of the asset at the end of its expiration time
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+     * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      */
-    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime }: {
+    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -125,9 +130,10 @@ export declare class OpenSeaPort {
             tokenAddress: string;
         }>;
         accountAddress: string;
-        startAmountInEth: number;
-        endAmountInEth?: number;
+        startAmount: number;
+        endAmount?: number;
         expirationTime?: number;
+        paymentTokenAddress?: string;
     }): Promise<Order>;
     /**
      * Fullfill or "take" an order for an asset, either a buy or sell order
@@ -265,6 +271,10 @@ export declare class OpenSeaPort {
      * @param accountAddress The user's wallet address
      */
     _initializeProxy(accountAddress: string): Promise<string>;
+    _getPriceParameters(tokenAddress: string, startAmount: number, endAmount?: number): {
+        basePrice: BigNumber;
+        extra: BigNumber;
+    };
     /**
      * Get the balance of a fungible token.
      * Internal method exposed for dev flexibility.
@@ -291,7 +301,15 @@ export declare class OpenSeaPort {
         accountAddress: string;
         tokenAddress?: string;
     }): Promise<BigNumber>;
-    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime }: {
+    _makeBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime, paymentTokenAddress }: {
+        tokenId: string;
+        tokenAddress: string;
+        accountAddress: string;
+        startAmount: number;
+        expirationTime?: number;
+        paymentTokenAddress?: string;
+    }): Promise<UnhashedOrder>;
+    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -300,10 +318,11 @@ export declare class OpenSeaPort {
             tokenAddress: string;
         }>;
         accountAddress: string;
-        startAmountInEth: number;
-        endAmountInEth?: number;
+        startAmount: number;
+        endAmount?: number;
         expirationTime?: number;
-    }): UnhashedOrder;
+        paymentTokenAddress?: string;
+    }): Promise<UnhashedOrder>;
     _makeMatchingOrder({ order, accountAddress }: {
         order: UnsignedOrder;
         accountAddress: string;

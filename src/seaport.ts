@@ -10,7 +10,8 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas
+  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
+  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -173,58 +174,16 @@ export class OpenSeaPort {
    * @param tokenId Token ID
    * @param tokenAddress Address of the token's contract
    * @param accountAddress Address of the maker's wallet
-   * @param amountInEth Ether value of the offer
-   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+   * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
+   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
+   * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
    */
   public async createBuyOrder(
-      { tokenId, tokenAddress, accountAddress, amountInEth, expirationTime = 0 }:
-      { tokenId: string; tokenAddress: string; accountAddress: string; amountInEth: number; expirationTime?: number }
+      { tokenId, tokenAddress, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress }:
+      { tokenId: string; tokenAddress: string; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string }
     ): Promise<Order> {
 
-    const token = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther
-    const schema = this._getSchema()
-    const wyAsset = getWyvernAsset(schema, tokenId, tokenAddress)
-    const metadata = {
-      asset: wyAsset,
-      schema: schema.name,
-    }
-    // Small offset to account for latency
-    const listingTime = Math.round(Date.now() / 1000 - 100)
-
-    const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
-    if (!asset) {
-      throw new Error('No asset found for this order')
-    }
-    const buyerFee = asset.assetContract.buyerFeeBasisPoints
-    const sellerFee = asset.assetContract.sellerFeeBasisPoints
-
-    const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
-    const order: UnhashedOrder = {
-      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
-      maker: accountAddress,
-      taker: WyvernProtocol.NULL_ADDRESS,
-      makerRelayerFee: makeBigNumber(buyerFee),
-      takerRelayerFee: makeBigNumber(sellerFee),
-      makerProtocolFee: makeBigNumber(0),
-      takerProtocolFee: makeBigNumber(0),
-      feeMethod: FeeMethod.SplitFee,
-      feeRecipient,
-      side: OrderSide.Buy,
-      saleKind: SaleKind.FixedPrice,
-      target,
-      howToCall: HowToCall.Call,
-      calldata,
-      replacementPattern,
-      staticTarget: WyvernProtocol.NULL_ADDRESS,
-      staticExtradata: '0x',
-      paymentToken: token.address,
-      basePrice: WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals),
-      extra: WyvernProtocol.toBaseUnitAmount(makeBigNumber(0), token.decimals),
-      listingTime: makeBigNumber(listingTime),
-      expirationTime: makeBigNumber(expirationTime),
-      salt: WyvernProtocol.generatePseudoRandomSalt(),
-      metadata,
-    }
+    const order = await this._makeBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime, paymentTokenAddress })
 
     // NOTE not in Wyvern exchange code:
     // frontend checks to make sure
@@ -258,13 +217,14 @@ export class OpenSeaPort {
    * @param tokenId Token ID
    * @param tokenAddress Address of the token's contract
    * @param accountAddress Address of the maker's wallet
-   * @param startAmountInEth Price of the asset at the start of the auction
-   * @param endAmountInEth Optional price of the asset at the end of its expiration time
+   * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+   * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+   * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    */
   public async createSellOrder(
-      { tokenId, tokenAddress, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
-      { tokenId: string; tokenAddress: string; accountAddress: string; startAmountInEth: number; endAmountInEth?: number; expirationTime?: number }
+      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress }:
+      { tokenId: string; tokenAddress: string; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string }
     ): Promise<Order> {
 
     const schema = this._getSchema()
@@ -281,18 +241,17 @@ export class OpenSeaPort {
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
 
-    const extraInEth = endAmountInEth != null
-      ? startAmountInEth - endAmountInEth
-      : 0
-
-    const orderSaleKind = endAmountInEth != null && endAmountInEth !== startAmountInEth
+    const orderSaleKind = endAmount != null && endAmount !== startAmount
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
+
+    const paymentToken = paymentTokenAddress || NULL_ADDRESS
+    const { basePrice, extra } = this._getPriceParameters(paymentToken, startAmount, endAmount)
 
     const order: UnhashedOrder = {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
-      taker: WyvernProtocol.NULL_ADDRESS,
+      taker: NULL_ADDRESS,
       makerRelayerFee: makeBigNumber(sellerFee),
       takerRelayerFee: makeBigNumber(buyerFee),
       makerProtocolFee: makeBigNumber(0),
@@ -305,13 +264,11 @@ export class OpenSeaPort {
       howToCall: HowToCall.Call,
       calldata,
       replacementPattern,
-      staticTarget: WyvernProtocol.NULL_ADDRESS,
+      staticTarget: NULL_ADDRESS,
       staticExtradata: '0x',
-      paymentToken: WyvernProtocol.NULL_ADDRESS, // use Ether
-      // Note: WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmountInEth), token.decimals)
-      // will fail if too many decimal places
-      basePrice: makeBigNumber(this.web3.toWei(startAmountInEth, 'ether')).round(),
-      extra: makeBigNumber(this.web3.toWei(extraInEth, 'ether')).round(),
+      paymentToken,
+      basePrice,
+      extra,
       listingTime: makeBigNumber(listingTime),
       expirationTime: makeBigNumber(expirationTime),
       salt: WyvernProtocol.generatePseudoRandomSalt(),
@@ -353,16 +310,17 @@ export class OpenSeaPort {
    * @param bundleExternalLink Optional link to a page that adds context to the bundle.
    * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
    * @param accountAddress The address of the maker of the bundle and the owner of all the assets.
-   * @param startAmountInEth Price of the asset at the start of the auction
-   * @param endAmountInEth Optional price of the asset at the end of its expiration time
+   * @param startAmount Price of the asset at the start of the auction
+   * @param endAmount Optional price of the asset at the end of its expiration time
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+   * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
-      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmountInEth: number; endAmountInEth?: number; expirationTime?: number }
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress }:
+      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string }
     ): Promise<Order> {
 
-    const order = this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime })
+    const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -592,7 +550,7 @@ export class OpenSeaPort {
     ): Promise<string | null> {
     const approvedAmount = await this._getApprovedTokenCount({ accountAddress, tokenAddress })
     if (approvedAmount.toNumber() >= minimumAmount.toNumber()) {
-      this.logger('Already approved enough fungible tokens for trading')
+      this.logger('Already approved enough currency for trading')
       return null
     }
 
@@ -609,7 +567,7 @@ export class OpenSeaPort {
       gasPrice
     })
 
-    await this._confirmTransaction(txHash, EventType.ApproveCurrency, "Approving fungible tokens for trading")
+    await this._confirmTransaction(txHash, EventType.ApproveCurrency, "Approving currency for trading")
     return txHash
   }
 
@@ -748,7 +706,7 @@ export class OpenSeaPort {
         sell.staticExtradata,
         [buy.v, sell.v],
         [buy.r, buy.s, sell.r, sell.s,
-          WyvernProtocol.NULL_ADDRESS],
+          NULL_ADDRESS],
           // Typescript error in estimate gas method, so use any
           { from: accountAddress, value } as any)
   }
@@ -766,7 +724,7 @@ export class OpenSeaPort {
       throw new Error("Couldn't retrieve your account from the blockchain - make sure you're on the correct Ethereum network!")
     }
 
-    if (!proxyAddress || proxyAddress == WyvernProtocol.NULL_ADDRESS) {
+    if (!proxyAddress || proxyAddress == NULL_ADDRESS) {
       if (retries > 0) {
         return this._getProxy(accountAddress, retries - 1)
       }
@@ -806,6 +764,27 @@ export class OpenSeaPort {
     }
 
     return proxyAddress
+  }
+
+  public _getPriceParameters(tokenAddress: string, startAmount: number, endAmount?: number) {
+    const isEther = tokenAddress == NULL_ADDRESS
+    const token = WyvernSchemas.tokens[this._networkName].otherTokens.filter((t: any) => t.address == tokenAddress)[0]
+
+    const priceDiff = endAmount != null
+      ? startAmount - endAmount
+      : 0
+
+    // Note: WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
+    // will fail if too many decimal places, so special-case ether
+    const basePrice = isEther
+      ? makeBigNumber(this.web3.toWei(startAmount, 'ether')).round()
+      : WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
+
+    const extra = isEther
+      ? makeBigNumber(this.web3.toWei(priceDiff, 'ether')).round()
+      : WyvernProtocol.toBaseUnitAmount(makeBigNumber(priceDiff), token.decimals)
+
+    return { basePrice, extra }
   }
 
   /**
@@ -858,10 +837,66 @@ export class OpenSeaPort {
     return makeBigNumber(approved)
   }
 
-  public _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmountInEth, endAmountInEth, expirationTime = 0 }:
-      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmountInEth: number; endAmountInEth?: number; expirationTime?: number }
-    ): UnhashedOrder {
+  public async _makeBuyOrder(
+      { tokenId, tokenAddress, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress }:
+      { tokenId: string; tokenAddress: string; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string }
+    ): Promise<UnhashedOrder> {
+
+    const schema = this._getSchema()
+    const wyAsset = getWyvernAsset(schema, tokenId, tokenAddress)
+    const metadata = {
+      asset: wyAsset,
+      schema: schema.name,
+    }
+    // Small offset to account for latency
+    const listingTime = Math.round(Date.now() / 1000 - 100)
+
+    const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
+    if (!asset) {
+      throw new Error('No asset found for this order')
+    }
+    const buyerFee = asset.assetContract.buyerFeeBasisPoints
+    const sellerFee = asset.assetContract.sellerFeeBasisPoints
+
+    const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
+
+    const paymentToken = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
+    const { basePrice, extra } = this._getPriceParameters(paymentToken, startAmount)
+
+    const order: UnhashedOrder = {
+      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
+      maker: accountAddress,
+      taker: NULL_ADDRESS,
+      makerRelayerFee: makeBigNumber(buyerFee),
+      takerRelayerFee: makeBigNumber(sellerFee),
+      makerProtocolFee: makeBigNumber(0),
+      takerProtocolFee: makeBigNumber(0),
+      feeMethod: FeeMethod.SplitFee,
+      feeRecipient,
+      side: OrderSide.Buy,
+      saleKind: SaleKind.FixedPrice,
+      target,
+      howToCall: HowToCall.Call,
+      calldata,
+      replacementPattern,
+      staticTarget: NULL_ADDRESS,
+      staticExtradata: '0x',
+      paymentToken,
+      basePrice,
+      extra,
+      listingTime: makeBigNumber(listingTime),
+      expirationTime: makeBigNumber(expirationTime),
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
+      metadata,
+    }
+
+    return order
+  }
+
+  public async _makeBundleSellOrder(
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress }:
+      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string }
+    ): Promise<UnhashedOrder> {
 
     const schema = this._getSchema()
 
@@ -874,23 +909,35 @@ export class OpenSeaPort {
       external_link: bundleExternalLink
     }
 
+    // let buyerFee = DEFAULT_BUYER_FEE_BASIS_POINTS
+    // let sellerFee = DEFAULT_SELLER_FEE_BASIS_POINTS
+    // // If all assets are for the same contract, use its fees
+    // if (asset.)
+    //   const { tokenAddress, tokenId } = assets[0]
+    //   const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
+    //   if (!asset) {
+    //     throw new Error('No asset found for this order')
+    //   }
+    //   buyerFee = asset.assetContract.buyerFeeBasisPoints
+    //   sellerFee = asset.assetContract.sellerFeeBasisPoints
+    // }
+
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+
+    const paymentToken = paymentTokenAddress || NULL_ADDRESS
+    const { basePrice, extra } = this._getPriceParameters(paymentToken, startAmount, endAmount)
 
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
 
-    const extraInEth = endAmountInEth != null
-      ? startAmountInEth - endAmountInEth
-      : 0
-
-    const orderSaleKind = endAmountInEth != null && endAmountInEth !== startAmountInEth
+    const orderSaleKind = endAmount != null && endAmount !== startAmount
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
-      taker: WyvernProtocol.NULL_ADDRESS,
+      taker: NULL_ADDRESS,
       makerRelayerFee: makeBigNumber(0), // TODO decide fee policy for bundles
       takerRelayerFee: makeBigNumber(0),
       makerProtocolFee: makeBigNumber(0),
@@ -903,11 +950,11 @@ export class OpenSeaPort {
       howToCall: HowToCall.DelegateCall, // required DELEGATECALL to library for atomicizer
       calldata,
       replacementPattern,
-      staticTarget: WyvernProtocol.NULL_ADDRESS,
+      staticTarget: NULL_ADDRESS,
       staticExtradata: '0x',
-      paymentToken: WyvernProtocol.NULL_ADDRESS, // use Ether
-      basePrice: makeBigNumber(this.web3.toWei(startAmountInEth, 'ether')).round(),
-      extra: makeBigNumber(this.web3.toWei(extraInEth, 'ether')).round(),
+      paymentToken,
+      basePrice,
+      extra,
       listingTime: makeBigNumber(listingTime),
       expirationTime: makeBigNumber(expirationTime),
       salt: WyvernProtocol.generatePseudoRandomSalt(),
@@ -956,14 +1003,14 @@ export class OpenSeaPort {
       makerProtocolFee: order.makerProtocolFee,
       takerProtocolFee: order.takerProtocolFee,
       feeMethod: order.feeMethod,
-      feeRecipient: WyvernProtocol.NULL_ADDRESS,
+      feeRecipient: NULL_ADDRESS,
       side: (order.side + 1) % 2,
       saleKind: SaleKind.FixedPrice,
       target,
       howToCall: order.howToCall,
       calldata,
       replacementPattern,
-      staticTarget: WyvernProtocol.NULL_ADDRESS,
+      staticTarget: NULL_ADDRESS,
       staticExtradata: '0x',
       paymentToken: order.paymentToken,
       basePrice: order.basePrice,
@@ -1059,7 +1106,7 @@ export class OpenSeaPort {
     // For fulfilling bids,
     // need to approve access to fungible token because of the way fees are paid
     // This can be done at a higher level to show UI
-    if (tokenAddress != WyvernProtocol.NULL_ADDRESS) {
+    if (tokenAddress != NULL_ADDRESS) {
       const minimumAmount = makeBigNumber(order.basePrice)
       await this.approveFungibleToken({ accountAddress, tokenAddress, minimumAmount })
     }
@@ -1088,7 +1135,7 @@ export class OpenSeaPort {
     ) {
     const tokenAddress = order.paymentToken
 
-    if (tokenAddress != WyvernProtocol.NULL_ADDRESS) {
+    if (tokenAddress != NULL_ADDRESS) {
 
       const balance = await this._getTokenBalance({ accountAddress, tokenAddress })
 
@@ -1138,7 +1185,7 @@ export class OpenSeaPort {
     let orderLookupHash
 
     // Case: user is the seller (and fulfilling a buy order)
-    if (sell.maker.toLowerCase() == accountAddress.toLowerCase() && sell.feeRecipient == WyvernProtocol.NULL_ADDRESS) {
+    if (sell.maker.toLowerCase() == accountAddress.toLowerCase() && sell.feeRecipient == NULL_ADDRESS) {
       // USER IS THE SELLER
       await this._validateSellOrderParameters({ order: sell, accountAddress })
 
@@ -1183,7 +1230,7 @@ export class OpenSeaPort {
       this.logger(`Sell order validation: ${sellValid}`)
 
       // If using ETH to pay, set the value of the transaction to the current price
-      if (buy.paymentToken == WyvernProtocol.NULL_ADDRESS) {
+      if (buy.paymentToken == NULL_ADDRESS) {
         value = await this._getEthValueForTakingSellOrder(sell)
       }
 
