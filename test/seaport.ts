@@ -11,7 +11,8 @@ import {
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder } from '../src/types'
-import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides } from '../src/utils'
+import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS } from '../src/utils'
+import * as WyvernSchemas from 'wyvern-schemas'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID } from './constants'
@@ -20,9 +21,8 @@ const ordersJSON = ordersJSONFixture as any
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
-const client = new OpenSeaPort(provider, {
-  networkName: Network.Main
-}, line => console.info(line))
+const networkName = Network.Main
+const client = new OpenSeaPort(provider, { networkName }, line => console.info(line))
 
 const assetsForBundleOrder = [
   { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
@@ -104,16 +104,73 @@ suite('seaport', () => {
     })
   })
 
-  test('Matches fixed bundle order for different approve-all assets', async () => {
+  test('Matches a bundle sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const order = client._makeBundleSellOrder({
+    const token = WyvernSchemas.tokens[networkName].otherTokens.filter(t => t.symbol == 'MANA')[0]
+    const amountInToken = 2.422
+
+    const order = await client._makeBundleSellOrder({
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with different types of assets",
       assets: assetsForBundleOrder,
       accountAddress,
-      startAmountInEth: 1
+      startAmount: amountInToken,
+      paymentTokenAddress: token.address
     })
+
+    assert.equal(order.paymentToken, token.address)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, token.decimals) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches a buy order with an ERC-20 token (DAI)', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const token = WyvernSchemas.tokens[networkName].otherTokens.filter(t => t.symbol == 'DAI')[0]
+    const amountInToken = 3
+
+    const order = await client._makeBuyOrder({
+      tokenId: CK_TOKEN_ID.toString(),
+      tokenAddress: CK_ADDRESS,
+      accountAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress: token.address
+    })
+
+    assert.equal(order.paymentToken, token.address)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, token.decimals) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+
+    await client._validateBuyOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches fixed bundle sell order', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 1
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with different types of assets",
+      assets: assetsForBundleOrder,
+      accountAddress,
+      startAmount: amountInEth
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
@@ -122,15 +179,24 @@ suite('seaport', () => {
   test('Matches Dutch bundle order for different approve-all assets', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const order = client._makeBundleSellOrder({
+    const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
+    const amountInEth = 1
+
+    const order = await client._makeBundleSellOrder({
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with different types of assets",
       assets: assetsForBundleOrder,
       accountAddress,
-      startAmountInEth: 1,
-      endAmountInEth: 0,
-      expirationTime: (Date.now() / 1000 + 60 * 60 * 24)
+      startAmount: amountInEth,
+      endAmount: 0,
+      expirationTime
     })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.expirationTime.toNumber(), expirationTime)
+
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)

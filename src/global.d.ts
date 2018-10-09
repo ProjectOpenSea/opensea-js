@@ -27,8 +27,20 @@ declare module 'truffle-hdwallet-provider' {
     export = HDWalletProvider
 }
 
+interface Token {
+    name: string
+    symbol: string
+    decimals: number
+    address: string
+}
+
+interface NetworkTokens {
+    canonicalWrappedEther: Token
+    otherTokens: Token[]
+}
+
 declare module 'wyvern-schemas' {
-    export const tokens: { [key: string]: any }
+    export const tokens: { [key: string]: NetworkTokens }
     export const schemas: { [key: string]: Array<{name: any}> }
     export const encodeCall: (method: any, args: any[]) => any
     export const encodeSell: (method: any, asset: object, address: string) => any
