@@ -766,6 +766,13 @@ export class OpenSeaPort {
     return proxyAddress
   }
 
+  /**
+   * Compute the `basePrice` and `extra` parameters to be used to price an order.
+   * @param tokenAddress Address of the ERC-20 token to use for trading.
+   * Use the null address for ETH
+   * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
+   * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
+   */
   public _getPriceParameters(tokenAddress: string, startAmount: number, endAmount?: number) {
     const isEther = tokenAddress == NULL_ADDRESS
     const token = WyvernSchemas.tokens[this._networkName].otherTokens.filter((t: any) => t.address == tokenAddress)[0]

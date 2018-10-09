@@ -108,23 +108,47 @@ suite('seaport', () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
     const token = WyvernSchemas.tokens[networkName].otherTokens.filter(t => t.symbol == 'MANA')[0]
-    const amountInMANA = 2.422
+    const amountInToken = 2.422
 
     const order = await client._makeBundleSellOrder({
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with different types of assets",
       assets: assetsForBundleOrder,
       accountAddress,
-      startAmount: amountInMANA,
+      startAmount: amountInToken,
       paymentTokenAddress: token.address
     })
 
     assert.equal(order.paymentToken, token.address)
-    assert.equal(order.basePrice.toNumber(), Math.pow(10, token.decimals) * amountInMANA)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, token.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
 
     await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches a buy order with an ERC-20 token (DAI)', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const token = WyvernSchemas.tokens[networkName].otherTokens.filter(t => t.symbol == 'DAI')[0]
+    const amountInToken = 3
+
+    const order = await client._makeBuyOrder({
+      tokenId: CK_TOKEN_ID.toString(),
+      tokenAddress: CK_ADDRESS,
+      accountAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress: token.address
+    })
+
+    assert.equal(order.paymentToken, token.address)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, token.decimals) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+
+    await client._validateBuyOrderParameters({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
