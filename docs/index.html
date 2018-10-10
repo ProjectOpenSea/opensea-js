@@ -65,21 +65,43 @@
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
 				<p><img src="https://storage.googleapis.com/opensea-static/opensea-js-logo.png" alt="OpenSea.js Logo" title="OpenSea.js Logo"></p>
-				<h2 id="opensea-js">OpenSea.js</h2>
+				<h1 id="opensea-js-omit-in-toc-">OpenSea.js <!-- omit in toc --></h1>
 				<p><a href="https://opensource.org/licenses/MIT"><img src="https://badges.frapsoft.com/os/mit/mit.svg?v=102" alt="https://badges.frapsoft.com/os/mit/mit.svg?v=102"></a>
 				<!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) --></p>
 				<p>A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. <a href="https://github.com/ProjectOpenSea/opensea-js">GitHub</a> | <a href="https://www.npmjs.com/package/opensea-js">npm</a></p>
-				<h3 id="synopsis">Synopsis</h3>
+				<ul>
+					<li><a href="#synopsis">Synopsis</a></li>
+					<li><a href="#installation">Installation</a></li>
+					<li><a href="#getting-started">Getting Started</a><ul>
+							<li><a href="#fetching-orders">Fetching Orders</a></li>
+							<li><a href="#buying-items">Buying Items</a></li>
+							<li><a href="#accepting-offers">Accepting Offers</a></li>
+						</ul>
+					</li>
+					<li><a href="#advanced">Advanced</a><ul>
+							<li><a href="#creating-bundles">Creating Bundles</a></li>
+							<li><a href="#using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</a></li>
+							<li><a href="#sharing-sale-fees-with-opensea">Sharing Sale Fees with OpenSea</a></li>
+							<li><a href="#listening-to-events">Listening to Events</a></li>
+						</ul>
+					</li>
+					<li><a href="#learning-more">Learning More</a><ul>
+							<li><a href="#example-code">Example Code</a></li>
+						</ul>
+					</li>
+					<li><a href="#development-information">Development Information</a></li>
+				</ul>
+				<h2 id="synopsis">Synopsis</h2>
 				<p>This is the JavaScript SDK for <a href="https://opensea.io">OpenSea</a>, the largest marketplace for crypto collectibles. It allows developers to access the official orderbook, filter it, create buy orders (<strong>offers</strong>), create sell orders (<strong>auctions</strong>), create collections of assets to sell at once (<strong>bundles</strong>), and complete trades programmatically.</p>
 				<p>For the first time, you can build a <em>cryptocommerce dapp</em>.</p>
 				<p>You get started by instantiating your own seaport. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like <code>ApproveAllAssets</code> or <code>WrapEth</code>) in the process.</p>
 				<p>Happy seafaring! ⛵️</p>
-				<h3 id="installation">Installation</h3>
+				<h2 id="installation">Installation</h2>
 				<p>In your project, run:</p>
 				<pre><code class="lang-bash">npm install --save opensea-js
 </code></pre>
 				<p>Install <a href="https://github.com/ethereum/web3.js">web3</a> too if you haven&#39;t already.</p>
-				<h3 id="getting-started">Getting Started</h3>
+				<h2 id="getting-started">Getting Started</h2>
 				<p>To get started, create a new OpenSeaJS client, called an OpenSeaPort 🚢, using your Web3 provider:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> Web3 <span class="hljs-keyword">from</span> <span class="hljs-string">'web3'</span>
 <span class="hljs-keyword">import</span> { OpenSeaPort, Network } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js'</span>
@@ -100,7 +122,8 @@
 <span class="hljs-comment">// If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order.</span>
 <span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime })
 </code></pre>
-				<p>The units for <code>startAmount</code> and <code>endAmount</code> are Ether, ETH. If you want to specify another ERC-20 token to use, see <strong>Using ERC-20 Tokens</strong> below.</p>
+				<p>The units for <code>startAmount</code> and <code>endAmount</code> are Ether, ETH. If you want to specify another ERC-20 token to use, see <a href="#using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</a>.</p>
+				<p>See <a href="#listening-to-events">Listening to Events</a> to respond to the setup transactions that occur the first time a user sells an item.</p>
 				<h3 id="fetching-orders">Fetching Orders</h3>
 				<p>To retrieve a list of offers and auction on an asset, you can use an instance of the <code>OpenSeaAPI</code> exposed on the client. Parameters passed into API filter objects are underscored instead of camel-cased, similar to the main <a href="https://docs.opensea.io/v1.0/reference">OpenSea API parameters</a>:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OrderSide } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js/lib/types'</span>
@@ -140,14 +163,22 @@
   limit?: <span class="hljs-built_in">number</span>,
   offset?: <span class="hljs-built_in">number</span>,
 </code></pre>
-				<h3 id="buying-items-or-accepting-bids">Buying Items or Accepting Bids</h3>
-				<p>To buy an item or accept a bid, you need to <strong>fulfill an order</strong>. To do that, it&#39;s just one call:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrder(...)
-<span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The order taker's wallet address</span>
+				<h3 id="buying-items">Buying Items</h3>
+				<p>To buy an item , you need to <strong>fulfill a sell order</strong>. To do that, it&#39;s just one call:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrder({ <span class="hljs-attr">side</span>: OrderSide.Sell, ... })
+<span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The buyer's wallet address, also the taker</span>
 <span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress })
 </code></pre>
 				<p>If the order is a sell order (<code>order.side === OrderSide.Sell</code>), the taker is the <em>buyer</em> and this will prompt the buyer to pay for the item(s).</p>
-				<p>If the order is a buy order (<code>order.side === OrderSide.Buy</code>), then the taker is the <em>owner</em> and this will prompt the owner to exchange their item(s) for whatever is being offered in return.</p>
+				<h3 id="accepting-offers">Accepting Offers</h3>
+				<p>Similar to fulfilling sell orders above, you need to fulfill a buy order on an item you own to receive the tokens in the offer.</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrder({ <span class="hljs-attr">side</span>: OrderSide.Buy, ... })
+<span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The owner's wallet address, also the taker</span>
+<span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress })
+</code></pre>
+				<p>If the order is a buy order (<code>order.side === OrderSide.Buy</code>), then the taker is the <em>owner</em> and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See <a href="#listening-to-events">Listening to Events</a> below to respond to the setup transactions that occur the first time a user accepts a bid. </p>
+				<h2 id="advanced">Advanced</h2>
+				<p>Interested in bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.</p>
 				<h3 id="creating-bundles">Creating Bundles</h3>
 				<p>New in version 0.2.9, you can create bundles of assets to sell at the same time! If the owner has approved all the assets in the bundle already, only a signature is needed to create it.</p>
 				<p>To make a bundle, it&#39;s just one call:</p>
@@ -160,13 +191,28 @@
 				<p>The parameters <code>bundleDescription</code>, <code>bundleExternalLink</code>, and <code>expirationTime</code> are optional, and <code>endAmount</code> can equal <code>startAmount</code>, similar to the normal <code>createSellOrder</code> functionality.</p>
 				<h3 id="using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</h3>
 				<p><strong>New in version 0.3:</strong> now you can make auctions and offers in whatever ERC-20 token you want! Just specify the token&#39;s contract address as the <code>paymentTokenAddress</code> when creating the order.</p>
-				<p>Here&#39;s an example of listing a token for $5! No more need to worry about the exchange rate:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Token address for the DAI stable coin, which is pegged to $1 USD:</span>
-<span class="hljs-comment">// https://etherscan.io/address/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359</span>
+				<p>Here&#39;s an example of listing the Genesis CryptoKitty for $100! No more needing to worry about the exchange rate:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Token address for the DAI stablecoin, which is pegged to $1 USD</span>
 <span class="hljs-keyword">const</span> paymentTokenAddress = <span class="hljs-string">"0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359"</span>
-<span class="hljs-comment">// The units for `startAmount` and `endAmount` are now in DAI, so $5 USD</span>
-<span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({ tokenId, tokenAddress, accountAddress, <span class="hljs-attr">startAmount</span>: <span class="hljs-number">5</span>, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span>, paymentTokenAddress })
+
+<span class="hljs-comment">// The units for `startAmount` and `endAmount` are now in DAI, so $100 USD</span>
+<span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({
+  <span class="hljs-attr">tokenAddress</span>: <span class="hljs-string">"0x06012c8cf97bead5deae237070f9587f8e7a266d"</span>, <span class="hljs-comment">// CryptoKitties</span>
+  tokenId: <span class="hljs-string">"1"</span>, <span class="hljs-comment">// Token ID</span>
+  accountAddress: OWNERS_WALLET_ADDRESS,
+  <span class="hljs-attr">startAmount</span>: <span class="hljs-number">100</span>,
+  <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span>,
+  paymentTokenAddress
+})
 </code></pre>
+				<p>Fun note: all ERC-20 tokens are allowed! This means you can create crazy offers on crypto collectibles <strong>using your own ERC-20 token</strong>. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea for the near future:</p>
+				<ul>
+					<li>MANA, Decentraland&#39;s currency: <a href="https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942">https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942</a> </li>
+					<li>DAI, Maker&#39;s stablecoin, pegged to $1 USD: <a href="https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359">https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359</a></li>
+				</ul>
+				<h3 id="sharing-sale-fees-with-opensea">Sharing Sale Fees with OpenSea</h3>
+				<p>We share fees for successful sales with game developers, relayers, and affiliates using the OpenSea orderbook. Developers can customize the fee amount to apply to  buyers and/or sellers.</p>
+				<p>More information will appear here when our redesigned affiliate program is ready. In the meantime, contact us at <a href="mailto:contact@opensea.io">contact@opensea.io</a> (or in <a href="https://discord.gg/ga8EJbv">Discord</a>), or use our legacy affiliate program at <a href="https://opensea.io/account#referrals">https://opensea.io/account#referrals</a>.</p>
 				<h3 id="listening-to-events">Listening to Events</h3>
 				<p>Events are fired whenever transactions or orders are being created, and when transactions return receipts from recently mined blocks on the Ethereum blockchain.</p>
 				<p>Our recommendation is that you &quot;forward&quot; OpenSea events to your own store or state management system. Here&#39;s an example of doing that with a Redux action:</p>
@@ -233,19 +279,19 @@ handleSeaportEvents() {
 }
 </code></pre>
 				<p>To remove all listeners and start over, just call <code>seaport.removeAllListeners()</code>.</p>
+				<h2 id="learning-more">Learning More</h2>
+				<p>Detailed documentation is coming soon on <a href="https://docs.opensea.io">docs.opensea.io</a>.</p>
+				<p>In the meantime, visit the auto-generated documentation <a href="https://projectopensea.github.io/opensea-js/">here</a>, or contact the OpenSea devs for help! They&#39;re available every day on <a href="https://discord.gg/XjwWYgU">Discord</a> in the <code>#developers</code> channel.</p>
 				<h3 id="example-code">Example Code</h3>
 				<p>Check out the <a href="https://github.com/ProjectOpenSea/ships-log">Ship&#39;s Log</a>, built with the SDK, which shows the recent orders in the OpenSea orderbook.</p>
 				<p>You can also view a live demo <a href="https://ships-log.herokuapp.com/">here</a>!</p>
-				<h3 id="learning-more">Learning More</h3>
-				<p>Detailed documentation is coming soon on <a href="https://docs.opensea.io">docs.opensea.io</a>.</p>
-				<p>In the meantime, visit the auto-generated documentation <a href="https://projectopensea.github.io/opensea-js/">here</a>, or contact the OpenSea devs for help! They&#39;re available every day on <a href="https://discord.gg/XjwWYgU">Discord</a> in the <code>#developers</code> channel.</p>
-				<h3 id="development-information">Development Information</h3>
-				<h4 id="setup">Setup</h4>
+				<h2 id="development-information">Development Information</h2>
+				<p><strong>Setup</strong></p>
 				<p><a href="https://nodejs.org/en/">Node &gt;= v8.11.2</a> required.</p>
 				<p>Before any development, install the required NPM dependencies:</p>
 				<pre><code class="lang-bash">npm install
 </code></pre>
-				<h4 id="build">Build</h4>
+				<p><strong>Build</strong></p>
 				<p>Then, lint and build the library into the <code>lib</code> directory:</p>
 				<pre><code class="lang-bash">npm run build
 </code></pre>
@@ -253,7 +299,7 @@ handleSeaportEvents() {
 				<pre><code class="lang-bash">npm <span class="hljs-built_in">test</span>
 </code></pre>
 				<p>Note that the tests require access to both Infura and the OpenSea API. The timeout is adjustable via the <code>test</code> script in <code>package.json</code>.</p>
-				<h4 id="generate-documentation">Generate Documentation</h4>
+				<p><strong>Generate Documentation</strong></p>
 				<p>Generate html docs, also available for browsing <a href="https://projectopensea.github.io/opensea-js/">here</a>:</p>
 				<pre><code class="lang-bash">npm run docsHtml
 </code></pre>
@@ -263,7 +309,7 @@ handleSeaportEvents() {
 				<p>Due to a markdown theme typescript issue, <code>docs</code> just generates html docs right now:</p>
 				<pre><code class="lang-bash">npm run docs
 </code></pre>
-				<h4 id="contributing">Contributing</h4>
+				<p><strong>Contributing</strong></p>
 				<p>Contributions welcome! Please use GitHub issues for suggestions/concerns - if you prefer to express your intentions in code, feel free to submit a pull request.</p>
 			</div>
 		</div>

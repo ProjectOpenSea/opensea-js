@@ -1,13 +1,28 @@
 ![OpenSea.js Logo](https://storage.googleapis.com/opensea-static/opensea-js-logo.png "OpenSea.js Logo")
 
-## OpenSea.js
+# OpenSea.js <!-- omit in toc -->
 
 [![https://badges.frapsoft.com/os/mit/mit.svg?v=102](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://opensource.org/licenses/MIT)
 <!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
 
 A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. [GitHub](https://github.com/ProjectOpenSea/opensea-js) | [npm](https://www.npmjs.com/package/opensea-js)
 
-### Synopsis
+- [Synopsis](#synopsis)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+  - [Fetching Orders](#fetching-orders)
+  - [Buying Items](#buying-items)
+  - [Accepting Offers](#accepting-offers)
+- [Advanced](#advanced)
+  - [Creating Bundles](#creating-bundles)
+  - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
+  - [Sharing Sale Fees with OpenSea](#sharing-sale-fees-with-opensea)
+  - [Listening to Events](#listening-to-events)
+- [Learning More](#learning-more)
+  - [Example Code](#example-code)
+- [Development Information](#development-information)
+
+## Synopsis
 
 This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest marketplace for crypto collectibles. It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**auctions**), create collections of assets to sell at once (**bundles**), and complete trades programmatically.
 
@@ -17,7 +32,7 @@ You get started by instantiating your own seaport. Then you can create orders of
 
 Happy seafaring! ⛵️
 
-### Installation
+## Installation
 
 In your project, run:
 ```bash
@@ -26,7 +41,7 @@ npm install --save opensea-js
 
 Install [web3](https://github.com/ethereum/web3.js) too if you haven't already.
 
-### Getting Started
+## Getting Started
 
 To get started, create a new OpenSeaJS client, called an OpenSeaPort 🚢, using your Web3 provider:
 
@@ -57,7 +72,9 @@ const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
 const auction = await seaport.createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime })
 ```
 
-The units for `startAmount` and `endAmount` are Ether, ETH. If you want to specify another ERC-20 token to use, see **Using ERC-20 Tokens** below.
+The units for `startAmount` and `endAmount` are Ether, ETH. If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
+
+See [Listening to Events](#listening-to-events) to respond to the setup transactions that occur the first time a user sells an item.
 
 ### Fetching Orders
 
@@ -106,19 +123,33 @@ The available API filters for the orders endpoint is documented in the `OrderJSO
   offset?: number,
 ```
 
-### Buying Items or Accepting Bids
+### Buying Items
 
-To buy an item or accept a bid, you need to **fulfill an order**. To do that, it's just one call:
+To buy an item , you need to **fulfill a sell order**. To do that, it's just one call:
 
 ```JavaScript
-const order = await seaport.api.getOrder(...)
-const accountAddress = "0x..." // The order taker's wallet address
+const order = await seaport.api.getOrder({ side: OrderSide.Sell, ... })
+const accountAddress = "0x..." // The buyer's wallet address, also the taker
 await this.props.seaport.fulfillOrder({ order, accountAddress })
 ```
 
 If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the *buyer* and this will prompt the buyer to pay for the item(s).
 
-If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return.
+### Accepting Offers
+
+Similar to fulfilling sell orders above, you need to fulfill a buy order on an item you own to receive the tokens in the offer.
+
+```JavaScript
+const order = await seaport.api.getOrder({ side: OrderSide.Buy, ... })
+const accountAddress = "0x..." // The owner's wallet address, also the taker
+await this.props.seaport.fulfillOrder({ order, accountAddress })
+```
+
+If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid. 
+
+## Advanced
+
+Interested in bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.
 
 ### Creating Bundles
 
@@ -140,15 +171,33 @@ The parameters `bundleDescription`, `bundleExternalLink`, and `expirationTime` a
 
 **New in version 0.3:** now you can make auctions and offers in whatever ERC-20 token you want! Just specify the token's contract address as the `paymentTokenAddress` when creating the order.
 
-Here's an example of listing a token for $5! No more need to worry about the exchange rate:
+Here's an example of listing the Genesis CryptoKitty for $100! No more needing to worry about the exchange rate:
 
 ```JavaScript
-// Token address for the DAI stable coin, which is pegged to $1 USD:
-// https://etherscan.io/address/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
+// Token address for the DAI stablecoin, which is pegged to $1 USD
 const paymentTokenAddress = "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359"
-// The units for `startAmount` and `endAmount` are now in DAI, so $5 USD
-const auction = await seaport.createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount: 5, expirationTime: 0, paymentTokenAddress })
+
+// The units for `startAmount` and `endAmount` are now in DAI, so $100 USD
+const auction = await seaport.createSellOrder({
+  tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
+  tokenId: "1", // Token ID
+  accountAddress: OWNERS_WALLET_ADDRESS,
+  startAmount: 100,
+  expirationTime: 0,
+  paymentTokenAddress
+})
 ```
+
+Fun note: all ERC-20 tokens are allowed! This means you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea for the near future:
+
+* MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942 
+* DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
+
+### Sharing Sale Fees with OpenSea
+
+We share fees for successful sales with game developers, relayers, and affiliates using the OpenSea orderbook. Developers can customize the fee amount to apply to  buyers and/or sellers.
+
+More information will appear here when our redesigned affiliate program is ready. In the meantime, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or use our legacy affiliate program at https://opensea.io/account#referrals.
 
 ### Listening to Events
 
@@ -222,21 +271,21 @@ handleSeaportEvents() {
 
 To remove all listeners and start over, just call `seaport.removeAllListeners()`.
 
+## Learning More
+
+Detailed documentation is coming soon on [docs.opensea.io](https://docs.opensea.io).
+
+In the meantime, visit the auto-generated documentation [here](https://projectopensea.github.io/opensea-js/), or contact the OpenSea devs for help! They're available every day on [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel.
+
 ### Example Code
 
 Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
 
 You can also view a live demo [here](https://ships-log.herokuapp.com/)!
 
-### Learning More
+## Development Information
 
-Detailed documentation is coming soon on [docs.opensea.io](https://docs.opensea.io).
-
-In the meantime, visit the auto-generated documentation [here](https://projectopensea.github.io/opensea-js/), or contact the OpenSea devs for help! They're available every day on [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel.
-
-### Development Information
-
-#### Setup
+**Setup**
 
 [Node >= v8.11.2](https://nodejs.org/en/) required.
 
@@ -246,7 +295,7 @@ Before any development, install the required NPM dependencies:
 npm install
 ```
 
-#### Build
+**Build**
 
 Then, lint and build the library into the `lib` directory:
 
@@ -261,7 +310,7 @@ npm test
 
 Note that the tests require access to both Infura and the OpenSea API. The timeout is adjustable via the `test` script in `package.json`.
 
-#### Generate Documentation
+**Generate Documentation**
 
 Generate html docs, also available for browsing [here](https://projectopensea.github.io/opensea-js/):
 ```bash
@@ -278,6 +327,6 @@ Due to a markdown theme typescript issue, `docs` just generates html docs right 
 npm run docs
 ```
 
-#### Contributing
+**Contributing**
 
 Contributions welcome! Please use GitHub issues for suggestions/concerns - if you prefer to express your intentions in code, feel free to submit a pull request.
