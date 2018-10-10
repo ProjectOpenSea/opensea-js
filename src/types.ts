@@ -8,10 +8,15 @@ import {
   Order as WyvernOrder
 } from 'wyvern-js/lib/types'
 
+import {
+  FungibleToken
+} from 'wyvern-schemas'
+
 export {
   Network,
   HowToCall,
-  ECSignature
+  ECSignature,
+  FungibleToken
 }
 
 /**

@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData } from './types';
+import { OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, FungibleToken } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -247,7 +247,7 @@ export declare class OpenSeaPort {
         symbol?: string;
         address?: string;
         officiallySupported?: boolean;
-    }): Token[];
+    }): FungibleToken[];
     /**
      * Compute the gas price for sending a txn, in wei
      * Will be slightly above the mean to make it faster

@@ -1,7 +1,8 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { Network, HowToCall, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
-export { Network, HowToCall, ECSignature };
+import { FungibleToken } from 'wyvern-schemas';
+export { Network, HowToCall, ECSignature, FungibleToken };
 /**
  * Events emitted by the SDK. There are three types:
  * 1. transaction events, which tell you when a new transaction was

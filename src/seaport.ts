@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
@@ -671,11 +671,13 @@ export class OpenSeaPort {
   public getFungibleTokens(
       { symbol, address, officiallySupported = false }:
       { symbol?: string; address?: string; officiallySupported?: boolean }
-    ) {
+    ): FungibleToken[] {
+
     const allTokens = [
       WyvernSchemas.tokens[this._networkName].canonicalWrappedEther,
       ...WyvernSchemas.tokens[this._networkName].otherTokens
     ]
+
     return allTokens.filter(t => {
       if (symbol && t.symbol != symbol) {
         return false
