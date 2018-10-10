@@ -11,12 +11,11 @@ import {
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
   getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
-  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS
+  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS,
+  OFFICIALLY_SUPPORTED_ERC20_TOKEN_SYMBOLS, MAX_ERROR_LENGTH
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
-
-const MAX_ERROR_LENGTH = 120
 
 export class OpenSeaPort {
 
@@ -660,6 +659,38 @@ export class OpenSeaPort {
   }
 
   /**
+   * Get all fungible tokens (ERC-20) supported by OpenSea
+   * @param param0 __namedParamters Object
+   * @param symbol Filter by the ERC-20 symbol for the token,
+   *    e.g. "DAI" for Dai stablecoin
+   * @param address Filter by the ERC-20 contract address for the token,
+   *    e.g. "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359" for Dai
+   * @param officiallySupported Filter for tokens that are officially supported
+   *    and shown on opensea.io
+   */
+  public getFungibleTokens(
+      { symbol, address, officiallySupported = false }:
+      { symbol?: string; address?: string; officiallySupported?: boolean }
+    ) {
+    const allTokens = [
+      WyvernSchemas.tokens[this._networkName].canonicalWrappedEther,
+      ...WyvernSchemas.tokens[this._networkName].otherTokens
+    ]
+    return allTokens.filter(t => {
+      if (symbol && t.symbol != symbol) {
+        return false
+      }
+      if (address && t.address != address) {
+        return false
+      }
+      if (officiallySupported && !_.includes(OFFICIALLY_SUPPORTED_ERC20_TOKEN_SYMBOLS, t.symbol)) {
+        return false
+      }
+      return true
+    })
+  }
+
+  /**
    * Compute the gas price for sending a txn, in wei
    * Will be slightly above the mean to make it faster
    */
@@ -764,34 +795,6 @@ export class OpenSeaPort {
     }
 
     return proxyAddress
-  }
-
-  /**
-   * Compute the `basePrice` and `extra` parameters to be used to price an order.
-   * @param tokenAddress Address of the ERC-20 token to use for trading.
-   * Use the null address for ETH
-   * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
-   * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
-   */
-  public _getPriceParameters(tokenAddress: string, startAmount: number, endAmount?: number) {
-    const isEther = tokenAddress == NULL_ADDRESS
-    const token = WyvernSchemas.tokens[this._networkName].otherTokens.filter((t: any) => t.address == tokenAddress)[0]
-
-    const priceDiff = endAmount != null
-      ? startAmount - endAmount
-      : 0
-
-    // Note: WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
-    // will fail if too many decimal places, so special-case ether
-    const basePrice = isEther
-      ? makeBigNumber(this.web3.toWei(startAmount, 'ether')).round()
-      : WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
-
-    const extra = isEther
-      ? makeBigNumber(this.web3.toWei(priceDiff, 'ether')).round()
-      : WyvernProtocol.toBaseUnitAmount(makeBigNumber(priceDiff), token.decimals)
-
-    return { basePrice, extra }
   }
 
   /**
@@ -1177,6 +1180,34 @@ export class OpenSeaPort {
       console.error(order)
       throw new Error(`Failed to validate buy order parameters. Make sure you're on the right network!`)
     }
+  }
+
+  /**
+   * Compute the `basePrice` and `extra` parameters to be used to price an order.
+   * @param tokenAddress Address of the ERC-20 token to use for trading.
+   * Use the null address for ETH
+   * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
+   * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
+   */
+  private _getPriceParameters(tokenAddress: string, startAmount: number, endAmount?: number) {
+    const isEther = tokenAddress == NULL_ADDRESS
+    const token = this.getFungibleTokens({ address: tokenAddress })[0]
+
+    const priceDiff = endAmount != null
+      ? startAmount - endAmount
+      : 0
+
+    // Note: WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
+    // will fail if too many decimal places, so special-case ether
+    const basePrice = isEther
+      ? makeBigNumber(this.web3.toWei(startAmount, 'ether')).round()
+      : WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
+
+    const extra = isEther
+      ? makeBigNumber(this.web3.toWei(priceDiff, 'ether')).round()
+      : WyvernProtocol.toBaseUnitAmount(makeBigNumber(priceDiff), token.decimals)
+
+    return { basePrice, extra }
   }
 
   /**

@@ -234,6 +234,21 @@ export declare class OpenSeaPort {
         tokenAbi?: PartialReadonlyContractAbi;
     }): Promise<boolean>;
     /**
+     * Get all fungible tokens (ERC-20) supported by OpenSea
+     * @param param0 __namedParamters Object
+     * @param symbol Filter by the ERC-20 symbol for the token,
+     *    e.g. "DAI" for Dai stablecoin
+     * @param address Filter by the ERC-20 contract address for the token,
+     *    e.g. "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359" for Dai
+     * @param officiallySupported Filter for tokens that are officially supported
+     *    and shown on opensea.io
+     */
+    getFungibleTokens({ symbol, address, officiallySupported }: {
+        symbol?: string;
+        address?: string;
+        officiallySupported?: boolean;
+    }): Token[];
+    /**
      * Compute the gas price for sending a txn, in wei
      * Will be slightly above the mean to make it faster
      */
@@ -271,17 +286,6 @@ export declare class OpenSeaPort {
      * @param accountAddress The user's wallet address
      */
     _initializeProxy(accountAddress: string): Promise<string>;
-    /**
-     * Compute the `basePrice` and `extra` parameters to be used to price an order.
-     * @param tokenAddress Address of the ERC-20 token to use for trading.
-     * Use the null address for ETH
-     * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
-     * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
-     */
-    _getPriceParameters(tokenAddress: string, startAmount: number, endAmount?: number): {
-        basePrice: BigNumber;
-        extra: BigNumber;
-    };
     /**
      * Get the balance of a fungible token.
      * Internal method exposed for dev flexibility.
@@ -354,6 +358,14 @@ export declare class OpenSeaPort {
         order: UnhashedOrder;
         accountAddress: string;
     }): Promise<void>;
+    /**
+     * Compute the `basePrice` and `extra` parameters to be used to price an order.
+     * @param tokenAddress Address of the ERC-20 token to use for trading.
+     * Use the null address for ETH
+     * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
+     * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
+     */
+    private _getPriceParameters;
     /**
      * Private helper methods
      */

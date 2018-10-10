@@ -107,7 +107,7 @@ suite('seaport', () => {
   test('Matches a bundle sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const token = WyvernSchemas.tokens[networkName].otherTokens.filter(t => t.symbol == 'MANA')[0]
+    const token = client.getFungibleTokens({ symbol: 'MANA'})[0]
     const amountInToken = 2.422
 
     const order = await client._makeBundleSellOrder({
@@ -132,7 +132,7 @@ suite('seaport', () => {
   test('Matches a buy order with an ERC-20 token (DAI)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const token = WyvernSchemas.tokens[networkName].otherTokens.filter(t => t.symbol == 'DAI')[0]
+    const token = client.getFungibleTokens({ symbol: 'DAI'})[0]
     const amountInToken = 3
 
     const order = await client._makeBuyOrder({
