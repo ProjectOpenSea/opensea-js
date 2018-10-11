@@ -56,6 +56,9 @@ suite('seaport', () => {
     const dai = client.getFungibleTokens({ symbol: "DAI" })[0]
     assert.isNotNull(dai)
     assert.equal(dai.name, "")
+
+    const all = client.getFungibleTokens()
+    assert.isNotEmpty(all)
   })
 
   test('Asset locked in contract is not transferrable', async () => {

@@ -246,7 +246,7 @@ export declare class OpenSeaPort {
      * FUTURE: officiallySupported: Filter for tokens that are
      *    officially supported and shown on opensea.io
      */
-    getFungibleTokens({ symbol, address, name }: {
+    getFungibleTokens({ symbol, address, name }?: {
         symbol?: string;
         address?: string;
         name?: string;

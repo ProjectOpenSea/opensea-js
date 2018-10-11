@@ -672,7 +672,7 @@ export class OpenSeaPort {
    */
   public getFungibleTokens(
       { symbol, address, name }:
-      { symbol?: string; address?: string; name?: string }
+      { symbol?: string; address?: string; name?: string } = {}
     ): FungibleToken[] {
 
     const allTokens = [
@@ -725,7 +725,7 @@ export class OpenSeaPort {
     { buy: Order; sell: Order; accountAddress: string }): Promise<number> {
 
     let value
-    if (buy.maker == accountAddress) {
+    if (buy.maker == accountAddress && buy.paymentToken == NULL_ADDRESS) {
       value = await this._getEthValueForTakingSellOrder(sell)
     }
 
