@@ -5,7 +5,7 @@
 [![https://badges.frapsoft.com/os/mit/mit.svg?v=102](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://opensource.org/licenses/MIT)
 <!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
 
-A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. [GitHub](https://github.com/ProjectOpenSea/opensea-js) | [npm](https://www.npmjs.com/package/opensea-js)
+A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea JS, you can easily build your own native marketplace for your ERC721 items without having to deploy your own smart contracts or backend orderbooks. [GitHub](https://github.com/ProjectOpenSea/opensea-js) | [npm](https://www.npmjs.com/package/opensea-js)
 
 - [Synopsis](#synopsis)
 - [Installation](#installation)
@@ -281,7 +281,7 @@ In the meantime, visit the auto-generated documentation [here](https://projectop
 
 Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
 
-You can also view a live demo [here](https://ships-log.herokuapp.com/)!
+You can view a live demo [here](https://ships-log.herokuapp.com/)! Also check out the [Mythereum marketplace](https://mythereum.io/marketplace), which is entirely powered by OpenSea JS.
 
 ## Development Information
 
