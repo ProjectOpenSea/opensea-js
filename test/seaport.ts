@@ -46,6 +46,18 @@ suite('seaport', () => {
     assert.equal(typeof client._getProxy, 'function')
   })
 
+  test('Fungible tokens filter', () => {
+    const mana = client.getFungibleTokens({ symbol: "MANA" })[0]
+    assert.isNotNull(mana)
+    assert.equal(mana.name, "Decentraland")
+    assert.equal(mana.address, "0x0f5d2fb29fb7d3cfee444a200298f468908cc942")
+    assert.equal(mana.decimals, 18)
+
+    const dai = client.getFungibleTokens({ symbol: "DAI" })[0]
+    assert.isNotNull(dai)
+    assert.equal(dai.name, "")
+  })
+
   test('Asset locked in contract is not transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
       tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
