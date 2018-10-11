@@ -11,8 +11,7 @@ import {
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
   getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
-  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS,
-  OFFICIALLY_SUPPORTED_ERC20_TOKEN_SYMBOLS, MAX_ERROR_LENGTH
+  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -27,7 +26,7 @@ export class OpenSeaPort {
   public readonly api: OpenSeaAPI
   // Extra gwei to add to the mean gas price when making transactions
   public gasPriceAddition = new BigNumber(3)
-  // Amount to multiply gas estimate by when making transactions
+  // Multiply gas estimate by this factor when making transactions
   public gasIncreaseFactor = 1.2
 
   private _networkName: Network
@@ -659,18 +658,21 @@ export class OpenSeaPort {
   }
 
   /**
-   * Get all fungible tokens (ERC-20) supported by OpenSea
+   * Get known fungible tokens (ERC-20) that match your filters.
    * @param param0 __namedParamters Object
    * @param symbol Filter by the ERC-20 symbol for the token,
    *    e.g. "DAI" for Dai stablecoin
    * @param address Filter by the ERC-20 contract address for the token,
    *    e.g. "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359" for Dai
-   * @param officiallySupported Filter for tokens that are officially supported
-   *    and shown on opensea.io
+   * @param name Filter by the name of the ERC-20 contract.
+   *    Not guaranteed to exist or be unique for each token type.
+   *    e.g. '' for Dai and 'Decentraland' for MANA
+   * FUTURE: officiallySupported: Filter for tokens that are
+   *    officially supported and shown on opensea.io
    */
   public getFungibleTokens(
-      { symbol, address, officiallySupported = false }:
-      { symbol?: string; address?: string; officiallySupported?: boolean }
+      { symbol, address, name }:
+      { symbol?: string; address?: string; name?: string }
     ): FungibleToken[] {
 
     const allTokens = [
@@ -679,13 +681,13 @@ export class OpenSeaPort {
     ]
 
     return allTokens.filter(t => {
-      if (symbol && t.symbol != symbol) {
+      if (symbol != null && t.symbol != symbol) {
         return false
       }
-      if (address && t.address != address) {
+      if (address != null && t.address != address) {
         return false
       }
-      if (officiallySupported && !_.includes(OFFICIALLY_SUPPORTED_ERC20_TOKEN_SYMBOLS, t.symbol)) {
+      if (name != null && t.name != name) {
         return false
       }
       return true
@@ -779,11 +781,11 @@ export class OpenSeaPort {
 
     const gasPrice = await this._computeGasPrice()
     const txnData: any = { from: accountAddress, gasPrice }
-    const gas = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.estimateGasAsync(txnData)
+    const gasEstimate = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.estimateGasAsync(txnData)
 
     const transactionHash = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
       ...txnData,
-      gas: this._correctGasAmount(gas)
+      gas: this._correctGasAmount(gasEstimate)
     })
 
     await this._confirmTransaction(transactionHash, EventType.InitializeAccount, "Initializing proxy for account")

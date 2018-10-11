@@ -234,19 +234,22 @@ export declare class OpenSeaPort {
         tokenAbi?: PartialReadonlyContractAbi;
     }): Promise<boolean>;
     /**
-     * Get all fungible tokens (ERC-20) supported by OpenSea
+     * Get known fungible tokens (ERC-20) that match your filters.
      * @param param0 __namedParamters Object
      * @param symbol Filter by the ERC-20 symbol for the token,
      *    e.g. "DAI" for Dai stablecoin
      * @param address Filter by the ERC-20 contract address for the token,
      *    e.g. "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359" for Dai
-     * @param officiallySupported Filter for tokens that are officially supported
-     *    and shown on opensea.io
+     * @param name Filter by the name of the ERC-20 contract.
+     *    Not guaranteed to exist or be unique for each token type.
+     *    e.g. '' for Dai and 'Decentraland' for MANA
+     * FUTURE: officiallySupported: Filter for tokens that are
+     *    officially supported and shown on opensea.io
      */
-    getFungibleTokens({ symbol, address, officiallySupported }: {
+    getFungibleTokens({ symbol, address, name }: {
         symbol?: string;
         address?: string;
-        officiallySupported?: boolean;
+        name?: string;
     }): FungibleToken[];
     /**
      * Compute the gas price for sending a txn, in wei

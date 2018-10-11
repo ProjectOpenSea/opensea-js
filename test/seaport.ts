@@ -12,7 +12,6 @@ import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS } from '../src/utils'
-import * as WyvernSchemas from 'wyvern-schemas'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID } from './constants'
