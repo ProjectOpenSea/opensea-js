@@ -25,7 +25,7 @@
         "linebreak-style": [true, "LF"],
         "max-classes-per-file": [true, 1],
         "max-line-length": false,
-        "max-file-line-count": [true, 1500],
+        "max-file-line-count": [true, 2000],
         "member-access": true,
         "member-ordering": [true, "public-before-private", "static-before-instance", "variables-before-functions"],
         "newline-before-return": false,

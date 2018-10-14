@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, FungibleToken } from './types';
+import { OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, FungibleToken, WyvernAsset } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -387,6 +387,7 @@ export declare class OpenSeaPort {
         order: UnhashedOrder;
         accountAddress: string;
     }): Promise<void>;
+    _approveAll(wyAssets: WyvernAsset[], accountAddress: string, proxyAddress?: string | null): Promise<(string | null)[]>;
     _validateBuyOrderParameters({ order, accountAddress }: {
         order: UnhashedOrder;
         accountAddress: string;

@@ -22,20 +22,14 @@ const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
 const networkName = Network.Main
 const client = new OpenSeaPort(provider, { networkName }, line => console.info(line))
-const rinkebyClient = new OpenSeaPort(provider, { networkName: Network.Rinkeby }, line => console.info(line))
+// const rinkebyClient = new OpenSeaPort(provider, { networkName: Network.Rinkeby }, line => console.info(line))
 
 const assetsForBundleOrder = [
   { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
   { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
 ]
 
-const assetsForBulkTransfer = [
-  { tokenId: "504", tokenAddress: CK_RINKEBY_ADDRESS },
-  { tokenId: "505", tokenAddress: CK_RINKEBY_ADDRESS },
-  { tokenId: "509", tokenAddress: CK_RINKEBY_ADDRESS },
-  { tokenId: "513", tokenAddress: CK_RINKEBY_ADDRESS },
-  // { tokenId: "0", tokenAddress: CK_RINKEBY_ADDRESS }
-]
+const assetsForBulkTransfer = assetsForBundleOrder
 
 suite('seaport', () => {
 
@@ -55,12 +49,12 @@ suite('seaport', () => {
     assert.equal(typeof client._getProxy, 'function')
   })
 
-  test('Bulk transfer of 2 batches of 40 cats', async () => {
+  test('Bulk transfer', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
 
     const gas = await client._estimateGasForTransfer({
-      assets: assetsForBundleOrder,
+      assets: assetsForBulkTransfer,
       fromAddress: accountAddress,
       toAddress: takerAddress
     })

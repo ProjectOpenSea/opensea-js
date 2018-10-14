@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
@@ -681,6 +681,8 @@ export class OpenSeaPort {
       proxyAddress = await this._initializeProxy(fromAddress)
     }
 
+    await this._approveAll(wyAssets, fromAddress, proxyAddress)
+
     this._dispatch(EventType.TransferAll, { accountAddress: fromAddress, toAddress, assets })
 
     const gasPrice = await this._computeGasPrice()
@@ -802,6 +804,8 @@ export class OpenSeaPort {
     if (!proxyAddress) {
       throw new Error('Uninitialized proxy address')
     }
+
+    await this._approveAll(wyAssets, fromAddress, proxyAddress)
 
     const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
 
@@ -1150,7 +1154,7 @@ export class OpenSeaPort {
       { order, accountAddress }:
       { order: UnhashedOrder; accountAddress: string }
     ) {
-    const schema = this._getSchema()
+
     const wyAssets = order.metadata.bundle
       ? order.metadata.bundle.assets
       : order.metadata.asset
@@ -1158,29 +1162,7 @@ export class OpenSeaPort {
         : []
     const tokenAddress = order.paymentToken
 
-    let proxyAddress = await this._getProxy(accountAddress)
-    if (!proxyAddress) {
-      proxyAddress = await this._initializeProxy(accountAddress)
-    }
-    const proxy = proxyAddress
-    const contractsWithApproveAll: string[] = []
-
-    await Promise.all(wyAssets.map(async wyAsset => {
-      // Verify that the taker owns the asset
-      const where = await findAsset(this.web3, { account: accountAddress, proxy, wyAsset, schema })
-      if (where != 'account') {
-        // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
-        throw new Error('You do not own this asset.')
-      }
-
-      return this.approveNonFungibleToken({
-        tokenId: wyAsset.id.toString(),
-        tokenAddress: wyAsset.address,
-        accountAddress,
-        proxyAddress,
-        skipApproveAllIfTokenAddressIn: contractsWithApproveAll
-      })
-    }))
+    await this._approveAll(wyAssets, accountAddress)
 
     // For fulfilling bids,
     // need to approve access to fungible token because of the way fees are paid
@@ -1205,6 +1187,33 @@ export class OpenSeaPort {
       console.error(order)
       throw new Error(`Failed to validate sell order parameters. Make sure you're on the right network!`)
     }
+  }
+
+  public async _approveAll(wyAssets: WyvernAsset[], accountAddress: string, proxyAddress: string | null = null) {
+    const schema = this._getSchema()
+    proxyAddress = proxyAddress || await this._getProxy(accountAddress)
+    if (!proxyAddress) {
+      proxyAddress = await this._initializeProxy(accountAddress)
+    }
+    const proxy = proxyAddress
+    const contractsWithApproveAll: string[] = []
+
+    return Promise.all(wyAssets.map(async wyAsset => {
+      // Verify that the taker owns the asset
+      const where = await findAsset(this.web3, { account: accountAddress, proxy, wyAsset, schema })
+      if (where != 'account') {
+        // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
+        throw new Error('You do not own this asset.')
+      }
+
+      return this.approveNonFungibleToken({
+        tokenId: wyAsset.id.toString(),
+        tokenAddress: wyAsset.address,
+        accountAddress,
+        proxyAddress,
+        skipApproveAllIfTokenAddressIn: contractsWithApproveAll
+      })
+    }))
   }
 
   // Throws
