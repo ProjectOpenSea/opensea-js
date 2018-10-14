@@ -30,11 +30,11 @@ const assetsForBundleOrder = [
 ]
 
 const assetsForBulkTransfer = [
-  { tokenId: "504", tokenAddress: GODS_UNCHAINED_ADDRESS },
+  { tokenId: "504", tokenAddress: CK_RINKEBY_ADDRESS },
   { tokenId: "505", tokenAddress: CK_RINKEBY_ADDRESS },
   { tokenId: "509", tokenAddress: CK_RINKEBY_ADDRESS },
   { tokenId: "513", tokenAddress: CK_RINKEBY_ADDRESS },
-  { tokenId: "0", tokenAddress: CK_RINKEBY_ADDRESS }
+  // { tokenId: "0", tokenAddress: CK_RINKEBY_ADDRESS }
 ]
 
 suite('seaport', () => {

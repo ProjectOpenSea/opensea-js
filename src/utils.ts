@@ -581,7 +581,9 @@ export async function delay(ms: number) {
 export function encodeAtomicizedTransfer(schema: any, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
 
   const transactions = assets.map((asset: any) => {
-    const transfer = schema.functions.transferFrom(asset)
+    // Need to use transfer because transferFrom sometimes doesn't let the user
+    // call it without approval, including CK
+    const transfer = schema.functions.transfer(asset)
     const calldata = encodeTransferCall(transfer, from, to)
     return {
       calldata,
