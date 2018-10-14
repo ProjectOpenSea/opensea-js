@@ -59,13 +59,11 @@ suite('seaport', () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
 
-    const gas = await rinkebyClient._estimateGasForTransfer({
-      assets: assetsForBulkTransfer,
+    const gas = await client._estimateGasForTransfer({
+      assets: assetsForBundleOrder,
       fromAddress: accountAddress,
       toAddress: takerAddress
     })
-
-    console.warn(gas)
 
     assert.isAbove(gas, 0)
   })

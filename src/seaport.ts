@@ -12,7 +12,8 @@ import {
   sendRawTransaction, estimateCurrentPrice,
   getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
-  encodeAtomicizedTransfer
+  encodeAtomicizedTransfer,
+  encodeProxyCall
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -675,13 +676,18 @@ export class OpenSeaPort {
 
     const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
 
+    let proxyAddress = await this._getProxy(fromAddress)
+    if (!proxyAddress) {
+      proxyAddress = await this._initializeProxy(fromAddress)
+    }
+
     this._dispatch(EventType.TransferAll, { accountAddress: fromAddress, toAddress, assets })
 
     const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       from: fromAddress,
-      to: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
-      data: calldata,
+      to: proxyAddress,
+      data: encodeProxyCall(WyvernProtocol.getAtomicizerContractAddress(this._networkName), HowToCall.DelegateCall, calldata),
       gasPrice
     })
 
@@ -792,12 +798,17 @@ export class OpenSeaPort {
     const schema = this._getSchema()
     const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
 
+    const proxyAddress = await this._getProxy(fromAddress)
+    if (!proxyAddress) {
+      throw new Error('Uninitialized proxy address')
+    }
+
     const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
 
     return estimateGas(this.web3, {
       from: fromAddress,
-      to: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
-      data: calldata
+      to: proxyAddress,
+      data: encodeProxyCall(WyvernProtocol.getAtomicizerContractAddress(this._networkName), HowToCall.DelegateCall, calldata)
     })
   }
 

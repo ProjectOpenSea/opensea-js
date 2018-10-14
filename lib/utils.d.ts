@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
-import { AnnotatedFunctionABI } from 'wyvern-js/lib/types';
+import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
 import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -124,3 +124,10 @@ export declare function encodeAtomicizedTransfer(schema: any, assets: WyvernAsse
  * @param to To address
  */
 export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string): any;
+/**
+ * Encode a call to a user's proxy contract
+ * @param address The address for the proxy to call
+ * @param howToCall How to call the addres
+ * @param calldata The data to use in the call
+ */
+export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string): any;

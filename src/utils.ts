@@ -5,7 +5,7 @@ import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import * as WyvernSchemas from 'wyvern-schemas'
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
-import { AnnotatedFunctionABI, FunctionInputKind } from 'wyvern-js/lib/types'
+import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/lib/types'
 
 import { OpenSeaPort } from '../src'
 import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset } from './types'
@@ -581,9 +581,7 @@ export async function delay(ms: number) {
 export function encodeAtomicizedTransfer(schema: any, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
 
   const transactions = assets.map((asset: any) => {
-    // Need to use transfer because transferFrom sometimes doesn't let the user
-    // call it without approval, including CK
-    const transfer = schema.functions.transfer(asset)
+    const transfer = schema.functions.transferFrom(asset)
     const calldata = encodeTransferCall(transfer, from, to)
     return {
       calldata,
@@ -622,4 +620,14 @@ export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: stri
     }
   })
   return WyvernSchemas.encodeCall(transferAbi, parameters)
+}
+
+/**
+ * Encode a call to a user's proxy contract
+ * @param address The address for the proxy to call
+ * @param howToCall How to call the addres
+ * @param calldata The data to use in the call
+ */
+export function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string) {
+  return WyvernSchemas.encodeCall(proxyABI, [address, howToCall, calldata])
 }
