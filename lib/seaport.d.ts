@@ -234,6 +234,21 @@ export declare class OpenSeaPort {
         tokenAbi?: PartialReadonlyContractAbi;
     }): Promise<boolean>;
     /**
+     * Transfer one or more assets to another address
+     * @param param0 __namedParamaters Object
+     * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
+     * @param fromAddress The owner's wallet address
+     * @param toAddress The recipient's wallet address
+     */
+    transferAll({ assets, fromAddress, toAddress }: {
+        assets: Array<{
+            tokenId: string;
+            tokenAddress: string;
+        }>;
+        fromAddress: string;
+        toAddress: string;
+    }): Promise<void>;
+    /**
      * Get known fungible tokens (ERC-20) that match your filters.
      * @param param0 __namedParamters Object
      * @param symbol Filter by the ERC-20 symbol for the token,
@@ -273,6 +288,21 @@ export declare class OpenSeaPort {
         buy: Order;
         sell: Order;
         accountAddress: string;
+    }): Promise<number>;
+    /**
+     * Estimate the gas needed to transfer assets in bulk
+     * @param param0 __namedParamaters Object
+     * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
+     * @param fromAddress The owner's wallet address
+     * @param toAddress The recipient's wallet address
+     */
+    _estimateGasForTransfer({ assets, fromAddress, toAddress }: {
+        assets: Array<{
+            tokenId: string;
+            tokenAddress: string;
+        }>;
+        fromAddress: string;
+        toAddress: string;
     }): Promise<number>;
     /**
      * Get the proxy address for a user's wallet.

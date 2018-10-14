@@ -11,7 +11,8 @@ import {
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
   getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
-  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH
+  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
+  encodeAtomicizedTransfer
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -658,6 +659,36 @@ export class OpenSeaPort {
   }
 
   /**
+   * Transfer one or more assets to another address
+   * @param param0 __namedParamaters Object
+   * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
+   * @param fromAddress The owner's wallet address
+   * @param toAddress The recipient's wallet address
+   */
+  public async transferAll(
+      { assets, fromAddress, toAddress }:
+      { assets: Array<{tokenId: string; tokenAddress: string}>; fromAddress: string; toAddress: string }
+    ): Promise<void> {
+
+    const schema = this._getSchema()
+    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
+
+    const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
+
+    this._dispatch(EventType.TransferAll, { accountAddress: fromAddress, toAddress, assets })
+
+    const gasPrice = await this._computeGasPrice()
+    const txHash = await sendRawTransaction(this.web3, {
+      from: fromAddress,
+      to: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
+      data: calldata,
+      gasPrice
+    })
+
+    await this._confirmTransaction(txHash, EventType.TransferAll, `Transferring ${assets.length} asset${assets.length == 1 ? '' : 's'}`)
+  }
+
+  /**
    * Get known fungible tokens (ERC-20) that match your filters.
    * @param param0 __namedParamters Object
    * @param symbol Filter by the ERC-20 symbol for the token,
@@ -744,6 +775,30 @@ export class OpenSeaPort {
           NULL_ADDRESS],
           // Typescript error in estimate gas method, so use any
           { from: accountAddress, value } as any)
+  }
+
+  /**
+   * Estimate the gas needed to transfer assets in bulk
+   * @param param0 __namedParamaters Object
+   * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
+   * @param fromAddress The owner's wallet address
+   * @param toAddress The recipient's wallet address
+   */
+  public async _estimateGasForTransfer(
+      { assets, fromAddress, toAddress }:
+      { assets: Array<{tokenId: string; tokenAddress: string}>; fromAddress: string; toAddress: string }
+    ): Promise<number> {
+
+    const schema = this._getSchema()
+    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
+
+    const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
+
+    return estimateGas(this.web3, {
+      from: fromAddress,
+      to: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
+      data: calldata
+    })
   }
 
   /**
