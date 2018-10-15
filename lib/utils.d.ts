@@ -129,5 +129,6 @@ export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, fr
  * @param address The address for the proxy to call
  * @param howToCall How to call the addres
  * @param calldata The data to use in the call
+ * @param shouldAssert Whether to assert success in the proxy call
  */
-export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string): any;
+export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert?: boolean): any;

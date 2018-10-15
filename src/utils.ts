@@ -22,6 +22,7 @@ export const DEFAULT_SELLER_FEE_BASIS_POINTS = 250
 export const MAX_ERROR_LENGTH = 120
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
+const proxyAssertABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxyAssert', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 
 // OTHER
 
@@ -627,7 +628,9 @@ export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: stri
  * @param address The address for the proxy to call
  * @param howToCall How to call the addres
  * @param calldata The data to use in the call
+ * @param shouldAssert Whether to assert success in the proxy call
  */
-export function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string) {
-  return WyvernSchemas.encodeCall(proxyABI, [address, howToCall, calldata])
+export function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert = true) {
+  const abi = shouldAssert ? proxyAssertABI : proxyABI
+  return WyvernSchemas.encodeCall(abi, [address, howToCall, calldata])
 }
