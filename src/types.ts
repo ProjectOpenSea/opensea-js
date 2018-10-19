@@ -202,6 +202,7 @@ export interface OpenSeaAsset {
  * URLs for bundles are auto-generated from the name
  */
 export interface OpenSeaAssetBundle {
+  maker: OpenSeaAccount
   assets: OpenSeaAsset[]
   name: string
   slug: string

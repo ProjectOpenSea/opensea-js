@@ -131,6 +131,7 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
 export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
 
   const fromJSON: OpenSeaAssetBundle = {
+    maker: asset_bundle.maker,
     assets: asset_bundle.assets.map(assetFromJSON),
     name: asset_bundle.name,
     slug: asset_bundle.slug,
