@@ -22,7 +22,7 @@ const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
 const networkName = Network.Main
 const client = new OpenSeaPort(provider, { networkName }, line => console.info(line))
-// const rinkebyClient = new OpenSeaPort(provider, { networkName: Network.Rinkeby }, line => console.info(line))
+const rinkebyClient = new OpenSeaPort(provider, { networkName: Network.Rinkeby }, line => console.info(line))
 
 const assetsForBundleOrder = [
   { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
@@ -47,6 +47,27 @@ suite('seaport', () => {
   test('Instance exposes some underscored methods', () => {
     assert.equal(typeof client._initializeProxy, 'function')
     assert.equal(typeof client._getProxy, 'function')
+  })
+
+  test('Serializes payment token and matches most recent ERC-20 order', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+
+    const token = rinkebyClient.getFungibleTokens({ symbol: 'MANA'})[0]
+
+    const order = await rinkebyClient.api.getOrder({
+      maker: accountAddress,
+      payment_token_address: token.address
+    })
+
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+
+    assert.equal(order.paymentToken, token.address)
+    // Make sure match is valid
+    await testMatchingOrder(order, takerAddress, false)
   })
 
   test('Bulk transfer', async () => {
