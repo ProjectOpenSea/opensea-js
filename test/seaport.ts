@@ -14,7 +14,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, CK_RINKEBY_ADDRESS } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -49,13 +49,14 @@ suite('seaport', () => {
     assert.equal(typeof client._getProxy, 'function')
   })
 
-  test('Serializes payment token and matches most recent ERC-20 order', async () => {
+  test('Serializes payment token and matches most recent ERC-20 sale', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
 
     const token = rinkebyClient.getFungibleTokens({ symbol: 'MANA'})[0]
 
     const order = await rinkebyClient.api.getOrder({
+      side: OrderSide.Sell,
       maker: accountAddress,
       payment_token_address: token.address
     })
@@ -66,7 +67,7 @@ suite('seaport', () => {
     }
 
     assert.equal(order.paymentToken, token.address)
-    // Make sure match is valid
+    // TODO why can't we test atomicMatch?
     await testMatchingOrder(order, takerAddress, false)
   })
 
