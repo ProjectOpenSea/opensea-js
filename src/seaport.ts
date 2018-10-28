@@ -714,9 +714,11 @@ export class OpenSeaPort {
       { symbol?: string; address?: string; name?: string } = {}
     ): FungibleToken[] {
 
-    const allTokens = [
-      WyvernSchemas.tokens[this._networkName].canonicalWrappedEther,
-      ...WyvernSchemas.tokens[this._networkName].otherTokens
+    const tokenSettings = WyvernSchemas.tokens[this._networkName]
+
+    const allTokens: FungibleToken[] = [
+      tokenSettings.canonicalWrappedEther,
+      ...tokenSettings.otherTokens
     ]
 
     return allTokens.filter(t => {

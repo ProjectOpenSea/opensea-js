@@ -50,14 +50,12 @@ suite('seaport', () => {
   })
 
   test('Serializes payment token and matches most recent ERC-20 sale', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const takerAddress = ALEX_ADDRESS_2
+    const takerAddress = ALEX_ADDRESS
 
     const token = rinkebyClient.getFungibleTokens({ symbol: 'MANA'})[0]
 
     const order = await rinkebyClient.api.getOrder({
       side: OrderSide.Sell,
-      maker: accountAddress,
       payment_token_address: token.address
     })
 
