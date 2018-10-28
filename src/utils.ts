@@ -595,7 +595,7 @@ export function encodeAtomicizedTransfer(schema: any, assets: WyvernAsset[], fro
     transactions.map((t: any) => t.address),
     transactions.map((t: any) => t.value),
     transactions.map((t: any) => new BigNumber((t.calldata.length - 2) / 2)), // subtract 2 for '0x', divide by 2 for hex
-    transactions.map((t: any) => t.calldata).reduce((x: string, y: string) => x + y.slice(2)), // cut off the '0x'
+    transactions.map((t: any) => t.calldata).reduce((x: string, y: string) => x + y.slice(2), ''), // cut off the '0x'
   )
 
   return {
