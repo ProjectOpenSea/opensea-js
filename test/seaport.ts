@@ -18,7 +18,8 @@ import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITA
 
 const ordersJSON = ordersJSONFixture as any
 
-const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
+// const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
+const provider = new Web3.providers.HttpProvider('xxx')
 
 const networkName = Network.Main
 const client = new OpenSeaPort(provider, { networkName }, line => console.info(line))

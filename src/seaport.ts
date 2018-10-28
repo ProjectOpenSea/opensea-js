@@ -358,8 +358,6 @@ export class OpenSeaPort {
 
     const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
-    this._dispatch(EventType.MatchOrders, { buy, sell, accountAddress })
-
     const transactionHash = await this._atomicMatch({ buy, sell, accountAddress })
 
     await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders, "Fulfilling order")
@@ -1363,6 +1361,8 @@ export class OpenSeaPort {
     }
 
     await this._validateMatch({ buy, sell, accountAddress })
+
+    this._dispatch(EventType.MatchOrders, { buy, sell, accountAddress })
 
     let txHash
     const gasPrice = await this._computeGasPrice()
