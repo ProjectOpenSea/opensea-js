@@ -681,7 +681,7 @@ export class OpenSeaPort {
       proxyAddress = await this._initializeProxy(fromAddress)
     }
 
-    await this._approveAll(wyAssets, fromAddress, proxyAddress)
+    await this._approveAll({wyAssets, accountAddress: fromAddress, proxyAddress})
 
     this._dispatch(EventType.TransferAll, { accountAddress: fromAddress, toAddress, assets })
 
@@ -807,7 +807,7 @@ export class OpenSeaPort {
       throw new Error('Uninitialized proxy address')
     }
 
-    await this._approveAll(wyAssets, fromAddress, proxyAddress)
+    await this._approveAll({wyAssets, accountAddress: fromAddress, proxyAddress})
 
     const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
 
@@ -1164,7 +1164,7 @@ export class OpenSeaPort {
         : []
     const tokenAddress = order.paymentToken
 
-    await this._approveAll(wyAssets, accountAddress)
+    await this._approveAll({wyAssets, accountAddress})
 
     // For fulfilling bids,
     // need to approve access to fungible token because of the way fees are paid
@@ -1191,7 +1191,10 @@ export class OpenSeaPort {
     }
   }
 
-  public async _approveAll(wyAssets: WyvernAsset[], accountAddress: string, proxyAddress: string | null = null) {
+  public async _approveAll(
+      { wyAssets, accountAddress, proxyAddress = null}:
+      { wyAssets: WyvernAsset[]; accountAddress: string; proxyAddress?: string | null}
+    ) {
     const schema = this._getSchema()
     proxyAddress = proxyAddress || await this._getProxy(accountAddress)
     if (!proxyAddress) {

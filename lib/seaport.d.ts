@@ -387,7 +387,11 @@ export declare class OpenSeaPort {
         order: UnhashedOrder;
         accountAddress: string;
     }): Promise<void>;
-    _approveAll(wyAssets: WyvernAsset[], accountAddress: string, proxyAddress?: string | null): Promise<(string | null)[]>;
+    _approveAll({ wyAssets, accountAddress, proxyAddress }: {
+        wyAssets: WyvernAsset[];
+        accountAddress: string;
+        proxyAddress?: string | null;
+    }): Promise<(string | null)[]>;
     _validateBuyOrderParameters({ order, accountAddress }: {
         order: UnhashedOrder;
         accountAddress: string;
