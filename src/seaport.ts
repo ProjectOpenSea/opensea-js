@@ -549,6 +549,7 @@ export class OpenSeaPort {
       this.logger('Already approved enough currency for trading')
       return null
     }
+    this.logger(`Not enough token approved for trade: ${approvedAmount}`)
 
     const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
 
