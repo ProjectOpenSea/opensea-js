@@ -14,12 +14,11 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
-// const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
-const provider = new Web3.providers.HttpProvider('xxx')
+const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
 const networkName = Network.Main
 const client = new OpenSeaPort(provider, { networkName }, line => console.info(line))
@@ -71,11 +70,11 @@ suite('seaport', () => {
   })
 
   test('Bulk transfer', async () => {
-    const accountAddress = ALEX_ADDRESS
+    const accountAddress = DEVIN_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
 
     const gas = await client._estimateGasForTransfer({
-      assets: assetsForBulkTransfer,
+      assets: [], // assetsForBulkTransfer,
       fromAddress: accountAddress,
       toAddress: takerAddress
     })
