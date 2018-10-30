@@ -595,7 +595,7 @@ export function encodeAtomicizedTransfer(schema: any, assets: WyvernAsset[], fro
     transactions.map((t: any) => t.address),
     transactions.map((t: any) => t.value),
     transactions.map((t: any) => new BigNumber((t.calldata.length - 2) / 2)), // subtract 2 for '0x', divide by 2 for hex
-    transactions.map((t: any) => t.calldata).reduce((x: string, y: string) => x + y.slice(2), ''), // cut off the '0x'
+    transactions.map((t: any) => t.calldata).reduce((x: string, current: string) => x + current.slice(2), '0x'), // cut off the '0x'
   )
 
   return {
@@ -632,5 +632,5 @@ export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: stri
  */
 export function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert = true) {
   const abi = shouldAssert ? proxyAssertABI : proxyABI
-  return WyvernSchemas.encodeCall(abi, [address, howToCall, calldata])
+  return WyvernSchemas.encodeCall(abi, [address, howToCall, Buffer.from(calldata.slice(2), 'hex')])
 }

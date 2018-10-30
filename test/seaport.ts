@@ -70,11 +70,11 @@ suite('seaport', () => {
   })
 
   test('Bulk transfer', async () => {
-    const accountAddress = DEVIN_ADDRESS
+    const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
 
     const gas = await client._estimateGasForTransfer({
-      assets: [], // assetsForBulkTransfer,
+      assets: assetsForBulkTransfer,
       fromAddress: accountAddress,
       toAddress: takerAddress
     })
