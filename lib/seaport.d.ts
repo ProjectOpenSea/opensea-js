@@ -392,8 +392,9 @@ export declare class OpenSeaPort {
         accountAddress: string;
         proxyAddress?: string | null;
     }): Promise<(string | null)[]>;
-    _validateBuyOrderParameters({ order, accountAddress }: {
+    _validateBuyOrderParameters({ order, counterOrder, accountAddress }: {
         order: UnhashedOrder;
+        counterOrder?: Order;
         accountAddress: string;
     }): Promise<void>;
     /**
@@ -408,7 +409,7 @@ export declare class OpenSeaPort {
      * Private helper methods
      */
     private _atomicMatch;
-    private _getEthValueForTakingSellOrder;
+    private _getRequiredAmountForTakingSellOrder;
     private _validateAndPostOrder;
     private _signOrder;
     private _getSchema;

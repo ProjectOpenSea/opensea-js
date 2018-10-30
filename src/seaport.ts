@@ -17,6 +17,7 @@ import {
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
+import { SignedOrder } from 'wyvern-js/lib/types'
 
 export class OpenSeaPort {
 
@@ -766,7 +767,7 @@ export class OpenSeaPort {
 
     let value
     if (buy.maker == accountAddress && buy.paymentToken == NULL_ADDRESS) {
-      value = await this._getEthValueForTakingSellOrder(sell)
+      value = await this._getRequiredAmountForTakingSellOrder(sell)
     }
 
     return this._wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
@@ -1222,8 +1223,8 @@ export class OpenSeaPort {
 
   // Throws
   public async _validateBuyOrderParameters(
-      { order, accountAddress }:
-      { order: UnhashedOrder; accountAddress: string }
+      { order, counterOrder, accountAddress }:
+      { order: UnhashedOrder; counterOrder?: Order; accountAddress: string }
     ) {
     const tokenAddress = order.paymentToken
 
@@ -1232,7 +1233,10 @@ export class OpenSeaPort {
       const balance = await this._getTokenBalance({ accountAddress, tokenAddress })
 
       /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
-      const minimumAmount = makeBigNumber(order.basePrice)
+      let minimumAmount = makeBigNumber(order.basePrice)
+      if (counterOrder) {
+        minimumAmount = await this._getRequiredAmountForTakingSellOrder(counterOrder)
+      }
 
       // Check WETH balance
       if (balance.toNumber() < minimumAmount.toNumber()) {
@@ -1330,7 +1334,7 @@ export class OpenSeaPort {
 
     } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
       // USER IS THE BUYER
-      await this._validateBuyOrderParameters({ order: buy, accountAddress })
+      await this._validateBuyOrderParameters({ order: buy, counterOrder: sell, accountAddress })
 
       const sellValid = await this._wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
         [sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
@@ -1351,7 +1355,7 @@ export class OpenSeaPort {
 
       // If using ETH to pay, set the value of the transaction to the current price
       if (buy.paymentToken == NULL_ADDRESS) {
-        value = await this._getEthValueForTakingSellOrder(sell)
+        value = await this._getRequiredAmountForTakingSellOrder(sell)
       }
 
       orderLookupHash = sell.hash
@@ -1410,7 +1414,7 @@ export class OpenSeaPort {
     return txHash
   }
 
-  private async _getEthValueForTakingSellOrder(sell: Order) {
+  private async _getRequiredAmountForTakingSellOrder(sell: Order) {
     const currentPrice = await this.getCurrentPrice(sell)
     const estimatedPrice = estimateCurrentPrice(sell)
 
