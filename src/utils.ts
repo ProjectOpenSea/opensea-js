@@ -3,9 +3,12 @@ import { WyvernProtocol } from 'wyvern-js'
 import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
-import { OpenSeaPort } from '../src'
+import * as WyvernSchemas from 'wyvern-schemas'
+import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
+import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/lib/types'
 
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder } from './types'
+import { OpenSeaPort } from '../src'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -19,6 +22,7 @@ export const DEFAULT_SELLER_FEE_BASIS_POINTS = 250
 export const MAX_ERROR_LENGTH = 120
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
+const proxyAssertABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxyAssert', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 
 // OTHER
 
@@ -477,7 +481,7 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
  */
 export function getWyvernAsset(
     schema: any, tokenId: string, tokenAddress: string
-  ) {
+  ): WyvernAsset {
   return schema.assetFromFields({
     'ID': tokenId.toString(),
     'Address': tokenAddress,
@@ -566,4 +570,68 @@ async function canSettleOrder(client: OpenSeaPort, order: Order, matchingOrder: 
  */
 export async function delay(ms: number) {
   return new Promise(res => setTimeout(res, ms))
+}
+
+/**
+ * Encode the atomicized transfer of many assets
+ * @param schema Wyvern Schema for the assets
+ * @param assets List of assets to transfer
+ * @param from Current address owning the assets
+ * @param to Destination address
+ * @param atomicizer Wyvern Atomicizer instance
+ */
+export function encodeAtomicizedTransfer(schema: any, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
+
+  const transactions = assets.map((asset: any) => {
+    const transfer = schema.functions.transferFrom(asset)
+    const calldata = encodeTransferCall(transfer, from, to)
+    return {
+      calldata,
+      address: transfer.target,
+      value: new BigNumber(0),
+    }
+  })
+
+  const atomicizedCalldata = atomicizer.atomicize.getABIEncodedTransactionData(
+    transactions.map((t: any) => t.address),
+    transactions.map((t: any) => t.value),
+    transactions.map((t: any) => new BigNumber((t.calldata.length - 2) / 2)), // subtract 2 for '0x', divide by 2 for hex
+    transactions.map((t: any) => t.calldata).reduce((x: string, current: string) => x + current.slice(2), '0x'), // cut off the '0x'
+  )
+
+  return {
+    calldata: atomicizedCalldata,
+  }
+}
+
+/**
+ * Encode a transfer call for a Wyvern schema function
+ * @param transferAbi Annotated Wyvern ABI
+ * @param from From address
+ * @param to To address
+ */
+export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string) {
+  const parameters = transferAbi.inputs.map(input => {
+    switch (input.kind) {
+      case FunctionInputKind.Asset:
+        return input.value
+      case FunctionInputKind.Replaceable:
+        return to
+      case FunctionInputKind.Owner:
+        return from
+    }
+  })
+  return WyvernSchemas.encodeCall(transferAbi, parameters)
+}
+
+/**
+ * Encode a call to a user's proxy contract
+ * @param address The address for the proxy to call
+ * @param howToCall How to call the addres
+ * @param calldata The data to use in the call
+ * @param shouldAssert Whether to assert success in the proxy call
+ */
+export function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert = true) {
+  const abi = shouldAssert ? proxyAssertABI : proxyABI
+  return WyvernSchemas.encodeCall(abi, [address, howToCall, Buffer.from(calldata.slice(2), 'hex')])
 }

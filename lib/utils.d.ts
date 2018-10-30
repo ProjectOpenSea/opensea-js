@@ -1,6 +1,8 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder } from './types';
+import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
+import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const feeRecipient = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
@@ -83,7 +85,7 @@ export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: 
  * @param tokenId The token's id
  * @param tokenAddress The address of the token's contract
  */
-export declare function getWyvernAsset(schema: any, tokenId: string, tokenAddress: string): any;
+export declare function getWyvernAsset(schema: any, tokenId: string, tokenAddress: string): WyvernAsset;
 /**
  * Get the non-prefixed hash for the order
  * (Fixes a Wyvern typescript issue and casing issue)
@@ -104,3 +106,29 @@ export declare function assignOrdersToSides(order: Order, matchingOrder: Unsigne
  * @param ms milliseconds to wait
  */
 export declare function delay(ms: number): Promise<{}>;
+/**
+ * Encode the atomicized transfer of many assets
+ * @param schema Wyvern Schema for the assets
+ * @param assets List of assets to transfer
+ * @param from Current address owning the assets
+ * @param to Destination address
+ * @param atomicizer Wyvern Atomicizer instance
+ */
+export declare function encodeAtomicizedTransfer(schema: any, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract): {
+    calldata: string;
+};
+/**
+ * Encode a transfer call for a Wyvern schema function
+ * @param transferAbi Annotated Wyvern ABI
+ * @param from From address
+ * @param to To address
+ */
+export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string): any;
+/**
+ * Encode a call to a user's proxy contract
+ * @param address The address for the proxy to call
+ * @param howToCall How to call the addres
+ * @param calldata The data to use in the call
+ * @param shouldAssert Whether to assert success in the proxy call
+ */
+export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert?: boolean): any;

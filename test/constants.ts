@@ -28,3 +28,4 @@ export const CK_RINKEBY_SELLER_FEE = 125
 
 export const ALEX_ADDRESS = '0xe96a1b303a1eb8d04fb973eb2b291b8d591c8f72'
 export const ALEX_ADDRESS_2 = '0x431e44389a003f0ec6e83b3578db5075a44ac523'
+export const DEVIN_ADDRESS = '0x0239769a1adf4def9f07da824b80b9c4fcb59593'

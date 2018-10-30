@@ -4,12 +4,15 @@ import { Network, HowToCall, ECSignature, Order as WyvernOrder } from 'wyvern-js
 import { FungibleToken } from 'wyvern-schemas';
 export { Network, HowToCall, ECSignature, FungibleToken };
 /**
- * Events emitted by the SDK. There are three types:
+ * Events emitted by the SDK. There are four types:
  * 1. transaction events, which tell you when a new transaction was
  *    created, confirmed, or failed
  * 2. pre-transaction events, which are named (like "WrapEth") and indicate
  *    that Web3 is asking for a signature on a transaction
- * 3. One "CreateOrder" event, which fires when a signature is being prompted to create an off-chain order
+ * 3. One "CreateOrder" event, which fires when a signature is being prompted
+ *    to create an off-chain order
+ * 4. The "TransferAll" event, which fires when a user is about to directly
+ *    transfer one or more assets to another account
  */
 export declare enum EventType {
     TransactionCreated = "TransactionCreated",
@@ -23,17 +26,23 @@ export declare enum EventType {
     ApproveAllAssets = "ApproveAllAssets",
     MatchOrders = "MatchOrders",
     CancelOrder = "CancelOrder",
-    CreateOrder = "CreateOrder"
+    CreateOrder = "CreateOrder",
+    TransferAll = "TransferAll"
 }
 /**
  * Data that gets sent with each EventType
  */
 export interface EventData {
     accountAddress?: string;
+    toAddress?: string;
     proxyAddress?: string;
     amount?: BigNumber;
     tokenAddress?: string;
     tokenId?: string;
+    assets?: Array<{
+        tokenAddress: string;
+        tokenId: string;
+    }>;
     transactionHash?: string;
     event?: EventType;
     error?: Error;
@@ -216,6 +225,7 @@ export interface OrderJSON {
     owner?: string;
     sale_kind?: SaleKind;
     asset_contract_address?: string;
+    payment_token_address?: string;
     bundled?: boolean;
     token_id?: number | string;
     token_ids?: Array<number | string>;

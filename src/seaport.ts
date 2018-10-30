@@ -4,14 +4,16 @@ import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
   getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
-  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH
+  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
+  encodeAtomicizedTransfer,
+  encodeProxyCall
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -657,6 +659,43 @@ export class OpenSeaPort {
   }
 
   /**
+   * Transfer one or more assets to another address
+   * @param param0 __namedParamaters Object
+   * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
+   * @param fromAddress The owner's wallet address
+   * @param toAddress The recipient's wallet address
+   */
+  public async transferAll(
+      { assets, fromAddress, toAddress }:
+      { assets: Array<{tokenId: string; tokenAddress: string}>; fromAddress: string; toAddress: string }
+    ): Promise<void> {
+
+    const schema = this._getSchema()
+    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
+
+    const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
+
+    let proxyAddress = await this._getProxy(fromAddress)
+    if (!proxyAddress) {
+      proxyAddress = await this._initializeProxy(fromAddress)
+    }
+
+    await this._approveAll({wyAssets, accountAddress: fromAddress, proxyAddress})
+
+    this._dispatch(EventType.TransferAll, { accountAddress: fromAddress, toAddress, assets })
+
+    const gasPrice = await this._computeGasPrice()
+    const txHash = await sendRawTransaction(this.web3, {
+      from: fromAddress,
+      to: proxyAddress,
+      data: encodeProxyCall(WyvernProtocol.getAtomicizerContractAddress(this._networkName), HowToCall.DelegateCall, calldata),
+      gasPrice
+    })
+
+    await this._confirmTransaction(txHash, EventType.TransferAll, `Transferring ${assets.length} asset${assets.length == 1 ? '' : 's'}`)
+  }
+
+  /**
    * Get known fungible tokens (ERC-20) that match your filters.
    * @param param0 __namedParamters Object
    * @param symbol Filter by the ERC-20 symbol for the token,
@@ -674,9 +713,11 @@ export class OpenSeaPort {
       { symbol?: string; address?: string; name?: string } = {}
     ): FungibleToken[] {
 
-    const allTokens = [
-      WyvernSchemas.tokens[this._networkName].canonicalWrappedEther,
-      ...WyvernSchemas.tokens[this._networkName].otherTokens
+    const tokenSettings = WyvernSchemas.tokens[this._networkName]
+
+    const allTokens: FungibleToken[] = [
+      tokenSettings.canonicalWrappedEther,
+      ...tokenSettings.otherTokens
     ]
 
     return allTokens.filter(t => {
@@ -743,6 +784,37 @@ export class OpenSeaPort {
           NULL_ADDRESS],
           // Typescript error in estimate gas method, so use any
           { from: accountAddress, value } as any)
+  }
+
+  /**
+   * Estimate the gas needed to transfer assets in bulk
+   * @param param0 __namedParamaters Object
+   * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
+   * @param fromAddress The owner's wallet address
+   * @param toAddress The recipient's wallet address
+   */
+  public async _estimateGasForTransfer(
+      { assets, fromAddress, toAddress }:
+      { assets: Array<{tokenId: string; tokenAddress: string}>; fromAddress: string; toAddress: string }
+    ): Promise<number> {
+
+    const schema = this._getSchema()
+    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
+
+    const proxyAddress = await this._getProxy(fromAddress)
+    if (!proxyAddress) {
+      throw new Error('Uninitialized proxy address')
+    }
+
+    await this._approveAll({wyAssets, accountAddress: fromAddress, proxyAddress})
+
+    const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
+
+    return estimateGas(this.web3, {
+      from: fromAddress,
+      to: proxyAddress,
+      data: encodeProxyCall(WyvernProtocol.getAtomicizerContractAddress(this._networkName), HowToCall.DelegateCall, calldata)
+    })
   }
 
   /**
@@ -1083,7 +1155,7 @@ export class OpenSeaPort {
       { order, accountAddress }:
       { order: UnhashedOrder; accountAddress: string }
     ) {
-    const schema = this._getSchema()
+
     const wyAssets = order.metadata.bundle
       ? order.metadata.bundle.assets
       : order.metadata.asset
@@ -1091,29 +1163,7 @@ export class OpenSeaPort {
         : []
     const tokenAddress = order.paymentToken
 
-    let proxyAddress = await this._getProxy(accountAddress)
-    if (!proxyAddress) {
-      proxyAddress = await this._initializeProxy(accountAddress)
-    }
-    const proxy = proxyAddress
-    const contractsWithApproveAll: string[] = []
-
-    await Promise.all(wyAssets.map(async wyAsset => {
-      // Verify that the taker owns the asset
-      const where = await findAsset(this.web3, { account: accountAddress, proxy, wyAsset, schema })
-      if (where != 'account') {
-        // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
-        throw new Error('You do not own this asset.')
-      }
-
-      return this.approveNonFungibleToken({
-        tokenId: wyAsset.id.toString(),
-        tokenAddress: wyAsset.address,
-        accountAddress,
-        proxyAddress,
-        skipApproveAllIfTokenAddressIn: contractsWithApproveAll
-      })
-    }))
+    await this._approveAll({wyAssets, accountAddress})
 
     // For fulfilling bids,
     // need to approve access to fungible token because of the way fees are paid
@@ -1138,6 +1188,36 @@ export class OpenSeaPort {
       console.error(order)
       throw new Error(`Failed to validate sell order parameters. Make sure you're on the right network!`)
     }
+  }
+
+  public async _approveAll(
+      { wyAssets, accountAddress, proxyAddress = null}:
+      { wyAssets: WyvernAsset[]; accountAddress: string; proxyAddress?: string | null}
+    ) {
+    const schema = this._getSchema()
+    proxyAddress = proxyAddress || await this._getProxy(accountAddress)
+    if (!proxyAddress) {
+      proxyAddress = await this._initializeProxy(accountAddress)
+    }
+    const proxy = proxyAddress
+    const contractsWithApproveAll: string[] = []
+
+    return Promise.all(wyAssets.map(async wyAsset => {
+      // Verify that the taker owns the asset
+      const where = await findAsset(this.web3, { account: accountAddress, proxy, wyAsset, schema })
+      if (where != 'account') {
+        // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
+        throw new Error('You do not own this asset.')
+      }
+
+      return this.approveNonFungibleToken({
+        tokenId: wyAsset.id.toString(),
+        tokenAddress: wyAsset.address,
+        accountAddress,
+        proxyAddress,
+        skipApproveAllIfTokenAddressIn: contractsWithApproveAll
+      })
+    }))
   }
 
   // Throws

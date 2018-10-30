@@ -14,7 +14,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
@@ -22,11 +22,14 @@ const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
 const networkName = Network.Main
 const client = new OpenSeaPort(provider, { networkName }, line => console.info(line))
+const rinkebyClient = new OpenSeaPort(provider, { networkName: Network.Rinkeby }, line => console.info(line))
 
 const assetsForBundleOrder = [
   { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
   { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
 ]
+
+const assetsForBulkTransfer = assetsForBundleOrder
 
 suite('seaport', () => {
 
@@ -44,6 +47,39 @@ suite('seaport', () => {
   test('Instance exposes some underscored methods', () => {
     assert.equal(typeof client._initializeProxy, 'function')
     assert.equal(typeof client._getProxy, 'function')
+  })
+
+  test('Serializes payment token and matches most recent ERC-20 sale', async () => {
+    const takerAddress = ALEX_ADDRESS
+
+    const token = rinkebyClient.getFungibleTokens({ symbol: 'MANA'})[0]
+
+    const order = await rinkebyClient.api.getOrder({
+      side: OrderSide.Sell,
+      payment_token_address: token.address
+    })
+
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+
+    assert.equal(order.paymentToken, token.address)
+    // TODO why can't we test atomicMatch?
+    await testMatchingOrder(order, takerAddress, false)
+  })
+
+  test('Bulk transfer', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+
+    const gas = await client._estimateGasForTransfer({
+      assets: assetsForBulkTransfer,
+      fromAddress: accountAddress,
+      toAddress: takerAddress
+    })
+
+    assert.isAbove(gas, 0)
   })
 
   test('Fungible tokens filter', () => {

@@ -145,7 +145,6 @@ suite('api', () => {
     const { bundles, estimatedCount } = await apiToTest.getBundles({asset_contract_address: CK_RINKEBY_ADDRESS, on_sale: true})
     assert.isArray(bundles)
     assert.isNumber(estimatedCount)
-    assert.isAtLeast(estimatedCount, bundles.length)
 
     const bundle = bundles[0]
     assert.isNotNull(bundle)

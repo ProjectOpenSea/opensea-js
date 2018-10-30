@@ -273,9 +273,9 @@ To remove all listeners and start over, just call `seaport.removeAllListeners()`
 
 ## Learning More
 
-Detailed documentation is coming soon on [docs.opensea.io](https://docs.opensea.io).
+Auto-generated documentation for each export is available [here](https://projectopensea.github.io/opensea-js/).
 
-In the meantime, visit the auto-generated documentation [here](https://projectopensea.github.io/opensea-js/), or contact the OpenSea devs for help! They're available every day on [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel.
+If you need extra help, support is free! Contact the OpenSea devs. They're available every day on [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel.
 
 ### Example Code
 
