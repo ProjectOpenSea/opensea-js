@@ -73,6 +73,8 @@
 					<li><a href="#synopsis">Synopsis</a></li>
 					<li><a href="#installation">Installation</a></li>
 					<li><a href="#getting-started">Getting Started</a><ul>
+							<li><a href="#making-offers">Making Offers</a></li>
+							<li><a href="#making-auctions">Making Auctions</a></li>
 							<li><a href="#fetching-orders">Fetching Orders</a></li>
 							<li><a href="#buying-items">Buying Items</a></li>
 							<li><a href="#accepting-offers">Accepting Offers</a></li>
@@ -112,11 +114,14 @@
   <span class="hljs-attr">networkName</span>: Network.Main
 })
 </code></pre>
+				<h3 id="making-offers">Making Offers</h3>
 				<p>Then, you can do this to make an offer on an asset:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
 <span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> })
 </code></pre>
-				<p>... or this to sell an asset:</p>
+				<p>When you make an offer on an item owned by an OpenSea user, <strong>that user will automatically get an email notifying them with the offer amount</strong>, if it&#39;s above their desired threshold.</p>
+				<h3 id="making-auctions">Making Auctions</h3>
+				<p>To sell an asset, call <code>createSellOrder</code>. You can do a fixed-price sale, where <code>startAmount</code> is equal to <code>endAmount</code>, or a declining <a href="https://en.wikipedia.org/wiki/Dutch_auction">Dutch auction</a>, where <code>endAmount</code> is lower and the price declines until <code>expirationTime</code> is hit:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire this auction one day from now</span>
 <span class="hljs-keyword">const</span> expirationTime = (<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
 <span class="hljs-comment">// If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order.</span>
@@ -185,10 +190,12 @@
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> assets: <span class="hljs-built_in">Array</span>&lt;{<span class="hljs-attr">tokenId</span>: string; tokenAddress: string}&gt; = [...]
 
 <span class="hljs-keyword">const</span> bundle = <span class="hljs-keyword">await</span> seaport.createBundleSellOrder({
-  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime
+  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress
 })
 </code></pre>
 				<p>The parameters <code>bundleDescription</code>, <code>bundleExternalLink</code>, and <code>expirationTime</code> are optional, and <code>endAmount</code> can equal <code>startAmount</code>, similar to the normal <code>createSellOrder</code> functionality.</p>
+				<p>The parameter <code>paymentTokenAddress</code> is the address of the ERC-20 token to accept in return. If it&#39;s <code>undefined</code> or <code>null</code>, the amount is assumed to be in Ether.</p>
+				<p>Wait what, you can use other currencies than ETH?</p>
 				<h3 id="using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</h3>
 				<p><strong>New in version 0.3:</strong> now you can make auctions and offers in whatever ERC-20 token you want! Just specify the token&#39;s contract address as the <code>paymentTokenAddress</code> when creating the order.</p>
 				<p>Here&#39;s an example of listing the Genesis CryptoKitty for $100! No more needing to worry about the exchange rate:</p>
@@ -205,7 +212,15 @@
   paymentTokenAddress
 })
 </code></pre>
-				<p>Fun note: all ERC-20 tokens are allowed! This means you can create crazy offers on crypto collectibles <strong>using your own ERC-20 token</strong>. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea for the near future:</p>
+				<p>You can use <code>getFungibleTokens</code> to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> token = seaport.getFungibleTokens({ <span class="hljs-attr">symbol</span>: <span class="hljs-string">'MANA'</span>})[<span class="hljs-number">0</span>]
+
+<span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrders({
+  <span class="hljs-attr">side</span>: OrderSide.Sell,
+  <span class="hljs-attr">payment_token_address</span>: token.address
+})
+</code></pre>
+				<p><strong>Fun note:</strong> all ERC-20 tokens are allowed! This means you can create crazy offers on crypto collectibles <strong>using your own ERC-20 token</strong>. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea for the near future:</p>
 				<ul>
 					<li>MANA, Decentraland&#39;s currency: <a href="https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942">https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942</a> </li>
 					<li>DAI, Maker&#39;s stablecoin, pegged to $1 USD: <a href="https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359">https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359</a></li>

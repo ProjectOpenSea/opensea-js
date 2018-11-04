@@ -1138,7 +1138,7 @@ export class OpenSeaPort {
     )
 
     if (!ordersCanMatch) {
-      throw new Error('Unable to match offer with auction. Please restart your wallet/browser and try again!')
+      throw new Error('Unable to match offer with auction. Please refresh or restart your wallet and try again!')
     }
     this.logger(`Orders matching: ${ordersCanMatch}`)
 
@@ -1146,7 +1146,7 @@ export class OpenSeaPort {
     this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
 
     if (!orderCalldataCanMatch) {
-      throw new Error('Unable to match offer details with auction. Please restart your wallet/browser and try again!')
+      throw new Error('Unable to match offer details with auction. Please refresh or restart your wallet and try again!')
     }
     return true
   }

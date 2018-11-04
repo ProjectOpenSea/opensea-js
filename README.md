@@ -10,6 +10,8 @@ A JavaScript library for crypto-native ecommerce: buying, selling, and bidding o
 - [Synopsis](#synopsis)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
+  - [Making Offers](#making-offers)
+  - [Making Auctions](#making-auctions)
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
@@ -56,6 +58,8 @@ const seaport = new OpenSeaPort(provider, {
 })
 ```
 
+### Making Offers
+
 Then, you can do this to make an offer on an asset:
 
 ```JavaScript
@@ -63,7 +67,11 @@ Then, you can do this to make an offer on an asset:
 const offer = await seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime: 0 })
 ```
 
-... or this to sell an asset:
+When you make an offer on an item owned by an OpenSea user, **that user will automatically get an email notifying them with the offer amount**, if it's above their desired threshold.
+
+### Making Auctions
+
+To sell an asset, call `createSellOrder`. You can do a fixed-price sale, where `startAmount` is equal to `endAmount`, or a declining [Dutch auction](https://en.wikipedia.org/wiki/Dutch_auction), where `endAmount` is lower and the price declines until `expirationTime` is hit:
 
 ```JavaScript
 // Expire this auction one day from now
@@ -161,11 +169,15 @@ To make a bundle, it's just one call:
 const assets: Array<{tokenId: string; tokenAddress: string}> = [...]
 
 const bundle = await seaport.createBundleSellOrder({
-  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime
+  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress
 })
 ```
 
 The parameters `bundleDescription`, `bundleExternalLink`, and `expirationTime` are optional, and `endAmount` can equal `startAmount`, similar to the normal `createSellOrder` functionality.
+
+The parameter `paymentTokenAddress` is the address of the ERC-20 token to accept in return. If it's `undefined` or `null`, the amount is assumed to be in Ether.
+
+Wait what, you can use other currencies than ETH?
 
 ### Using ERC-20 Tokens Instead of Ether
 
@@ -188,7 +200,18 @@ const auction = await seaport.createSellOrder({
 })
 ```
 
-Fun note: all ERC-20 tokens are allowed! This means you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea for the near future:
+You can use `getFungibleTokens` to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:
+
+```JavaScript
+const token = seaport.getFungibleTokens({ symbol: 'MANA'})[0]
+
+const order = await seaport.api.getOrders({
+  side: OrderSide.Sell,
+  payment_token_address: token.address
+})
+```
+
+**Fun note:** all ERC-20 tokens are allowed! This means you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea for the near future:
 
 * MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942 
 * DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
