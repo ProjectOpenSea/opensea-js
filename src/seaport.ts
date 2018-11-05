@@ -722,10 +722,10 @@ export class OpenSeaPort {
     ]
 
     return allTokens.filter(t => {
-      if (symbol != null && t.symbol != symbol) {
+      if (symbol != null && t.symbol.toLowerCase() != symbol.toLowerCase()) {
         return false
       }
-      if (address != null && t.address != address) {
+      if (address != null && t.address.toLowerCase() != address.toLowerCase()) {
         return false
       }
       if (name != null && t.name != name) {
@@ -1279,6 +1279,10 @@ export class OpenSeaPort {
   private _getPriceParameters(tokenAddress: string, startAmount: number, endAmount?: number) {
     const isEther = tokenAddress == NULL_ADDRESS
     const token = this.getFungibleTokens({ address: tokenAddress })[0]
+
+    if (!isEther && !token) {
+      throw new Error(`No ERC-20 token found for '${tokenAddress}'`)
+    }
 
     const priceDiff = endAmount != null
       ? startAmount - endAmount
