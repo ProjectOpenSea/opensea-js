@@ -125,11 +125,9 @@ suite('api', () => {
     })
 
     test('API fetches assets and prefetches sellOrders', async () => {
-      const { assets, estimatedCount } = await apiToTest.getAssets({asset_contract_address: CK_RINKEBY_ADDRESS, order_by: "current_price"})
+      const { assets } = await apiToTest.getAssets({asset_contract_address: CK_RINKEBY_ADDRESS, order_by: "current_price"})
       assert.isArray(assets)
-      assert.isNumber(estimatedCount)
       assert.equal(assets.length, apiToTest.pageSize)
-      assert.isAtLeast(estimatedCount, assets.length)
 
       const asset = assets[0]
       assert.isNotNull(asset)
@@ -142,9 +140,8 @@ suite('api', () => {
   })
 
   test('API fetches bundles and prefetches sell orders', async () => {
-    const { bundles, estimatedCount } = await apiToTest.getBundles({asset_contract_address: CK_RINKEBY_ADDRESS, on_sale: true})
+    const { bundles } = await apiToTest.getBundles({asset_contract_address: CK_RINKEBY_ADDRESS, on_sale: true})
     assert.isArray(bundles)
-    assert.isNumber(estimatedCount)
 
     const bundle = bundles[0]
     assert.isNotNull(bundle)
