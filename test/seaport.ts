@@ -19,10 +19,10 @@ import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITA
 const ordersJSON = ordersJSONFixture as any
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
+const rinkebyProvider = new Web3.providers.HttpProvider('https://rinkeby.infura.io')
 
-const networkName = Network.Main
-const client = new OpenSeaPort(provider, { networkName }, line => console.info(line))
-const rinkebyClient = new OpenSeaPort(provider, { networkName: Network.Rinkeby }, line => console.info(line))
+const client = new OpenSeaPort(provider, { networkName: Network.Main }, line => console.info(`MAINNET: ${line}`))
+const rinkebyClient = new OpenSeaPort(rinkebyProvider, { networkName: Network.Rinkeby }, line => console.info(`RINKEBY: ${line}`))
 
 const assetsForBundleOrder = [
   { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
