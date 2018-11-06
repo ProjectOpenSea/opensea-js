@@ -3,7 +3,7 @@ import { WyvernProtocol } from 'wyvern-js/lib'
 import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
-import { CanonicalWETH, DECENTRALAND_AUCTION_CONFIG, ERC20, ERC721, getMethod } from './contracts'
+import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
 import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
@@ -430,11 +430,11 @@ export class OpenSeaPort {
     // If isNaN(isApprovedForAll) == true, then
     // result for isApprovedForAllCallHash was '0x'
 
-    let isApprovedCheckData = erc721.isApprovedForAll.getData(accountAddress, proxyAddress)
-    // Decentraland reverses the arguments to isApprovedForAll, so we need to special case that. :(
-    if (erc721.address == DECENTRALAND_AUCTION_CONFIG['1']) {
-      isApprovedCheckData = erc721.isApprovedForAll.getData(proxyAddress, accountAddress)
-    }
+    const isApprovedCheckData = erc721.isApprovedForAll.getData(accountAddress, proxyAddress)
+    // Decentraland used to reverse the arguments to isApprovedForAll, so we needed to special case that. :(
+    // if (erc721.address == DECENTRALAND_AUCTION_CONFIG['1']) {
+    //   isApprovedCheckData = erc721.isApprovedForAll.getData(proxyAddress, accountAddress)
+    // }
 
     const isApprovedForAllCallHash = await promisify<string>(c => this.web3.eth.call({
       from: accountAddress,
