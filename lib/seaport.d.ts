@@ -267,6 +267,19 @@ export declare class OpenSeaPort {
         name?: string;
     }): FungibleToken[];
     /**
+     * Get the balance of a fungible token.
+     * @param param0 __namedParameters Object
+     * @param accountAddress User's account address
+     * @param tokenAddress Optional address of the token's contract.
+     *  Defaults to W-ETH
+     * @param tokenAbi ABI for the token's contract. Defaults to ERC20
+     */
+    getTokenBalance({ accountAddress, tokenAddress, tokenAbi }: {
+        accountAddress: string;
+        tokenAddress?: string;
+        tokenAbi?: PartialReadonlyContractAbi;
+    }): Promise<BigNumber>;
+    /**
      * Compute the gas price for sending a txn, in wei
      * Will be slightly above the mean to make it faster
      */
@@ -319,20 +332,6 @@ export declare class OpenSeaPort {
      * @param accountAddress The user's wallet address
      */
     _initializeProxy(accountAddress: string): Promise<string>;
-    /**
-     * Get the balance of a fungible token.
-     * Internal method exposed for dev flexibility.
-     * @param param0 __namedParameters Object
-     * @param accountAddress User's account address
-     * @param tokenAddress Optional address of the token's contract.
-     *  Defaults to W-ETH
-     * @param tokenAbi ABI for the token's contract
-     */
-    _getTokenBalance({ accountAddress, tokenAddress, tokenAbi }: {
-        accountAddress: string;
-        tokenAddress?: string;
-        tokenAbi?: PartialReadonlyContractAbi;
-    }): Promise<BigNumber>;
     /**
      * For a fungible token to use in trades (like W-ETH), get the amount
      *  approved for use by the Wyvern transfer proxy.

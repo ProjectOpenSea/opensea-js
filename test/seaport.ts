@@ -325,7 +325,7 @@ suite('seaport', () => {
 
   test('Fetches positive token balance for an account', async () => {
     const accountAddress = ALEX_ADDRESS
-    const balance = await client._getTokenBalance({ accountAddress })
+    const balance = await client.getTokenBalance({ accountAddress })
     assert.isAbove(balance.toNumber(), 0)
   })
 

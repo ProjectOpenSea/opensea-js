@@ -736,6 +736,30 @@ export class OpenSeaPort {
   }
 
   /**
+   * Get the balance of a fungible token.
+   * @param param0 __namedParameters Object
+   * @param accountAddress User's account address
+   * @param tokenAddress Optional address of the token's contract.
+   *  Defaults to W-ETH
+   * @param tokenAbi ABI for the token's contract. Defaults to ERC20
+   */
+  public async getTokenBalance(
+      { accountAddress, tokenAddress, tokenAbi = ERC20 }:
+      { accountAddress: string; tokenAddress?: string; tokenAbi?: PartialReadonlyContractAbi }
+    ) {
+    if (!tokenAddress) {
+      tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
+    }
+    const amount = await promisify(c => this.web3.eth.call({
+      from: accountAddress,
+      to: tokenAddress,
+      data: WyvernSchemas.encodeCall(getMethod(tokenAbi, 'balanceOf'), [accountAddress]),
+    }, c))
+
+    return makeBigNumber(amount.toString())
+  }
+
+  /**
    * Compute the gas price for sending a txn, in wei
    * Will be slightly above the mean to make it faster
    */
@@ -871,31 +895,6 @@ export class OpenSeaPort {
     }
 
     return proxyAddress
-  }
-
-  /**
-   * Get the balance of a fungible token.
-   * Internal method exposed for dev flexibility.
-   * @param param0 __namedParameters Object
-   * @param accountAddress User's account address
-   * @param tokenAddress Optional address of the token's contract.
-   *  Defaults to W-ETH
-   * @param tokenAbi ABI for the token's contract
-   */
-  public async _getTokenBalance(
-      { accountAddress, tokenAddress, tokenAbi = ERC20 }:
-      { accountAddress: string; tokenAddress?: string; tokenAbi?: PartialReadonlyContractAbi }
-    ) {
-    if (!tokenAddress) {
-      tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
-    }
-    const amount = await promisify(c => this.web3.eth.call({
-      from: accountAddress,
-      to: tokenAddress,
-      data: WyvernSchemas.encodeCall(getMethod(tokenAbi, 'balanceOf'), [accountAddress]),
-    }, c))
-
-    return makeBigNumber(amount.toString())
   }
 
   /**
@@ -1230,7 +1229,7 @@ export class OpenSeaPort {
 
     if (tokenAddress != NULL_ADDRESS) {
 
-      const balance = await this._getTokenBalance({ accountAddress, tokenAddress })
+      const balance = await this.getTokenBalance({ accountAddress, tokenAddress })
 
       /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
       let minimumAmount = makeBigNumber(order.basePrice)
@@ -1425,7 +1424,7 @@ export class OpenSeaPort {
     const maxPrice = BigNumber.max(currentPrice, estimatedPrice)
 
     // TODO Why is this not always a big number?
-    sell.takerRelayerFee = makeBigNumber(sell.takerRelayerFee.toString())
+    sell.takerRelayerFee = makeBigNumber(sell.takerRelayerFee)
     const feePercentage = sell.takerRelayerFee.div(INVERSE_BASIS_POINT)
     const fee = feePercentage.times(maxPrice)
     return fee.plus(maxPrice).ceil()
