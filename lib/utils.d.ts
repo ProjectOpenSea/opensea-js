@@ -6,6 +6,7 @@ import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsse
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const feeRecipient = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
+export declare const INFURA_KEY = "e8695bce67944848aa95459fac052f8e";
 export declare const INVERSE_BASIS_POINT = 10000;
 export declare const MAX_UINT_256: BigNumber;
 export declare const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b";

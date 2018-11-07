@@ -11,6 +11,7 @@ export declare class OpenSeaPort {
     gasIncreaseFactor: number;
     private _networkName;
     private _wyvernProtocol;
+    private _wyvernProtocolReadOnly;
     private _emitter;
     /**
      * Your very own seaport.

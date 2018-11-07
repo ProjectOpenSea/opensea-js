@@ -10,14 +10,13 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
+  getWyvernAsset, INVERSE_BASIS_POINT, INFURA_KEY, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
   encodeAtomicizedTransfer,
   encodeProxyCall
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
-import { SignedOrder } from 'wyvern-js/lib/types'
 
 export class OpenSeaPort {
 
@@ -34,6 +33,7 @@ export class OpenSeaPort {
 
   private _networkName: Network
   private _wyvernProtocol: WyvernProtocol
+  private _wyvernProtocolReadOnly: WyvernProtocol
   private _emitter: EventEmitter
 
   /**
@@ -59,6 +59,14 @@ export class OpenSeaPort {
 
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider, {
+      network: this._networkName,
+      gasPrice: apiConfig.gasPrice,
+    })
+
+    // WyvernJS config for readonly (optimization for infura calls)
+    const networkPrefix = this._networkName + (this._networkName == Network.Main ? "net" : "")
+    const readonlyProvider = new Web3.providers.HttpProvider(`https://${networkPrefix}.infura.io/v3/${INFURA_KEY}`)
+    this._wyvernProtocolReadOnly = new WyvernProtocol(readonlyProvider, {
       network: this._networkName,
       gasPrice: apiConfig.gasPrice,
     })
@@ -577,7 +585,7 @@ export class OpenSeaPort {
    */
   public async getCurrentPrice(order: Order) {
 
-    const currentPrice = await this._wyvernProtocol.wyvernExchange.calculateCurrentPrice_.callAsync(
+    const currentPrice = await this._wyvernProtocolReadOnly.wyvernExchange.calculateCurrentPrice_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
@@ -794,7 +802,7 @@ export class OpenSeaPort {
       value = await this._getRequiredAmountForTakingSellOrder(sell)
     }
 
-    return this._wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
+    return this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
         [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
         [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
         [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
@@ -849,7 +857,7 @@ export class OpenSeaPort {
    * @param retries Optional number of retries to do
    */
   public async _getProxy(accountAddress: string, retries = 0): Promise<string | null> {
-    let proxyAddress: string | null = await this._wyvernProtocol.wyvernProxyRegistry.proxies.callAsync(accountAddress)
+    let proxyAddress: string | null = await this._wyvernProtocolReadOnly.wyvernProxyRegistry.proxies.callAsync(accountAddress)
 
     if (proxyAddress == '0x') {
       throw new Error("Couldn't retrieve your account from the blockchain - make sure you're on the correct Ethereum network!")
@@ -877,7 +885,7 @@ export class OpenSeaPort {
 
     const gasPrice = await this._computeGasPrice()
     const txnData: any = { from: accountAddress, gasPrice }
-    const gasEstimate = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.estimateGasAsync(txnData)
+    const gasEstimate = await this._wyvernProtocolReadOnly.wyvernProxyRegistry.registerProxy.estimateGasAsync(txnData)
 
     const transactionHash = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
       ...txnData,
@@ -1123,7 +1131,7 @@ export class OpenSeaPort {
       { buy: Order; sell: Order; accountAddress: string }
     ): Promise<boolean> {
 
-    const ordersCanMatch = await this._wyvernProtocol.wyvernExchange.ordersCanMatch_.callAsync(
+    const ordersCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.ordersCanMatch_.callAsync(
       [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
       [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
       [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
@@ -1141,7 +1149,7 @@ export class OpenSeaPort {
     }
     this.logger(`Orders matching: ${ordersCanMatch}`)
 
-    const orderCalldataCanMatch = await this._wyvernProtocol.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
+    const orderCalldataCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
     this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
 
     if (!orderCalldataCanMatch) {
@@ -1174,7 +1182,7 @@ export class OpenSeaPort {
     }
 
     // Check sell parameters
-    const sellValid = await this._wyvernProtocol.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+    const sellValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
       order.side,
@@ -1252,7 +1260,7 @@ export class OpenSeaPort {
     }
 
     // Check order formation
-    const buyValid = await this._wyvernProtocol.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+    const buyValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrderParameters_.callAsync([order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
       order.side,
@@ -1316,7 +1324,7 @@ export class OpenSeaPort {
       // USER IS THE SELLER
       await this._validateSellOrderParameters({ order: sell, accountAddress })
 
-      const buyValid = await this._wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
+      const buyValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
         [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken],
         [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt],
         buy.feeMethod,
@@ -1339,7 +1347,7 @@ export class OpenSeaPort {
       // USER IS THE BUYER
       await this._validateBuyOrderParameters({ order: buy, counterOrder: sell, accountAddress })
 
-      const sellValid = await this._wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
+      const sellValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
         [sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
         [sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
         sell.feeMethod,
@@ -1395,7 +1403,7 @@ export class OpenSeaPort {
     // Estimate gas first
     try {
       // Typescript splat doesn't typecheck
-      const gasEstimate = await this._wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
+      const gasEstimate = await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
       txnData.gas = this._correctGasAmount(gasEstimate)
     } catch (error) {
       console.error(error)
@@ -1432,7 +1440,7 @@ export class OpenSeaPort {
 
   // Throws
   private async _validateAndPostOrder(order: Order) {
-    const hash = await this._wyvernProtocol.wyvernExchange.hashOrder_.callAsync(
+    const hash = await this._wyvernProtocolReadOnly.wyvernExchange.hashOrder_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
@@ -1449,7 +1457,7 @@ export class OpenSeaPort {
     }
     this.logger('Order hashes match')
 
-    const valid = await this._wyvernProtocol.wyvernExchange.validateOrder_.callAsync(
+    const valid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
