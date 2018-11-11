@@ -203,7 +203,7 @@ const auction = await seaport.createSellOrder({
 You can use `getFungibleTokens` to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:
 
 ```JavaScript
-const token = seaport.getFungibleTokens({ symbol: 'MANA'})[0]
+const token = await seaport.getFungibleTokens({ symbol: 'MANA'})[0]
 
 const order = await seaport.api.getOrders({
   side: OrderSide.Sell,

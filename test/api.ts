@@ -23,6 +23,13 @@ suite('api', () => {
   // Skip these tests, since many are redundant with other tests
   skip(() => {
 
+    test('API fetches tokens', async () => {
+      const { tokens } = await apiToTest.getTokens({ symbol: "MANA" })
+      assert.isArray(tokens)
+      assert.equal(tokens.length, 1)
+      assert.equal(tokens[0].name, "Decentraland MANA")
+    })
+
     test('Rinkeby API orders have correct OpenSea url', async () => {
       const order = await rinkebyApi.getOrder({})
       assert.isNotNull(order)

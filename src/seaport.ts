@@ -255,7 +255,7 @@ export class OpenSeaPort {
       : SaleKind.FixedPrice
 
     const paymentToken = paymentTokenAddress || NULL_ADDRESS
-    const { basePrice, extra } = this._getPriceParameters(paymentToken, startAmount, endAmount)
+    const { basePrice, extra } = await this._getPriceParameters(paymentToken, startAmount, endAmount)
 
     const order: UnhashedOrder = {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
@@ -717,19 +717,19 @@ export class OpenSeaPort {
    * FUTURE: officiallySupported: Filter for tokens that are
    *    officially supported and shown on opensea.io
    */
-  public getFungibleTokens(
+  public async getFungibleTokens(
       { symbol, address, name }:
       { symbol?: string; address?: string; name?: string } = {}
-    ): FungibleToken[] {
+    ): Promise<FungibleToken[]> {
 
     const tokenSettings = WyvernSchemas.tokens[this._networkName]
 
-    const allTokens: FungibleToken[] = [
-      tokenSettings.canonicalWrappedEther,
-      ...tokenSettings.otherTokens
-    ]
+    const { tokens } = await this.api.getTokens({ symbol, address, name })
 
-    return allTokens.filter(t => {
+    const offlineTokens: FungibleToken[] = [
+      tokenSettings.canonicalWrappedEther,
+      ...tokenSettings.otherTokens,
+    ].filter(t => {
       if (symbol != null && t.symbol.toLowerCase() != symbol.toLowerCase()) {
         return false
       }
@@ -741,6 +741,11 @@ export class OpenSeaPort {
       }
       return true
     })
+
+    return [
+      ...offlineTokens,
+      ...tokens
+    ]
   }
 
   /**
@@ -954,7 +959,7 @@ export class OpenSeaPort {
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
 
     const paymentToken = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
-    const { basePrice, extra } = this._getPriceParameters(paymentToken, startAmount)
+    const { basePrice, extra } = await this._getPriceParameters(paymentToken, startAmount)
 
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
@@ -1017,7 +1022,7 @@ export class OpenSeaPort {
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
     const paymentToken = paymentTokenAddress || NULL_ADDRESS
-    const { basePrice, extra } = this._getPriceParameters(paymentToken, startAmount, endAmount)
+    const { basePrice, extra } = await this._getPriceParameters(paymentToken, startAmount, endAmount)
 
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
@@ -1283,9 +1288,10 @@ export class OpenSeaPort {
    * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
    * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
    */
-  private _getPriceParameters(tokenAddress: string, startAmount: number, endAmount?: number) {
+  private async _getPriceParameters(tokenAddress: string, startAmount: number, endAmount?: number) {
     const isEther = tokenAddress == NULL_ADDRESS
-    const token = this.getFungibleTokens({ address: tokenAddress })[0]
+    const tokens = await this.getFungibleTokens({ address: tokenAddress })
+    const token = tokens[0]
 
     if (!isEther && !token) {
       throw new Error(`No ERC-20 token found for '${tokenAddress}'`)

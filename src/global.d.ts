@@ -33,6 +33,8 @@ declare module 'wyvern-schemas' {
         symbol: string
         decimals: number
         address: string
+        imageUrl?: string
+        ethPrice?: string
     }
 
     interface NetworkFungibleTokens {

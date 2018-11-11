@@ -266,7 +266,7 @@ export declare class OpenSeaPort {
         symbol?: string;
         address?: string;
         name?: string;
-    }): FungibleToken[];
+    }): Promise<FungibleToken[]>;
     /**
      * Get the balance of a fungible token.
      * @param param0 __namedParameters Object

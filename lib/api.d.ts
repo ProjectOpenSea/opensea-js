@@ -1,5 +1,5 @@
 import 'isomorphic-unfetch';
-import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset, OpenSeaAssetJSON, OpenSeaAssetBundle, OpenSeaAssetBundleJSON } from './types';
+import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset, OpenSeaAssetJSON, OpenSeaAssetBundle, OpenSeaAssetBundleJSON, FungibleToken } from './types';
 export declare const ORDERBOOK_VERSION: number;
 export declare const API_VERSION: number;
 export declare const API_BASE_MAINNET = "https://api.opensea.io";
@@ -65,6 +65,14 @@ export declare class OpenSeaAPI {
     getAssets(query?: Partial<OpenSeaAssetJSON>, page?: number): Promise<{
         assets: OpenSeaAsset[];
         estimatedCount: number;
+    }>;
+    /**
+     * Fetch list of fungible tokens from the API matching paramters
+     * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
+     * @param page Page number, defaults to 1
+     */
+    getTokens(query?: Partial<FungibleToken>, page?: number): Promise<{
+        tokens: FungibleToken[];
     }>;
     /**
      * Fetch an bundle from the API, return null if it isn't found

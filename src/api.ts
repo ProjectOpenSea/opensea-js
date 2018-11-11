@@ -1,7 +1,7 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
-import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetJSON, OpenSeaAssetBundle, OpenSeaAssetBundleJSON} from './types'
-import { orderFromJSON, assetFromJSON, assetBundleFromJSON } from './utils'
+import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetJSON, OpenSeaAssetBundle, OpenSeaAssetBundleJSON, FungibleToken} from './types'
+import { orderFromJSON, assetFromJSON, assetBundleFromJSON, tokenFromJSON } from './utils'
 
 export const ORDERBOOK_VERSION: number = 1
 export const API_VERSION: number = 1
@@ -160,6 +160,28 @@ export class OpenSeaAPI {
     return {
       assets: json.assets.map((j: any) => assetFromJSON(j)),
       estimatedCount: json.estimated_count
+    }
+  }
+
+  /**
+   * Fetch list of fungible tokens from the API matching paramters
+   * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
+   * @param page Page number, defaults to 1
+   */
+  public async getTokens(
+      query: Partial<FungibleToken> = {},
+      page = 1
+    ): Promise<{tokens: FungibleToken[]}> {
+
+    const response = await this.get(`${API_PATH}/tokens/`, {
+      ...query,
+      limit: this.pageSize,
+      offset: (page - 1) * this.pageSize
+    })
+
+    const json: any = await response.json()
+    return {
+      tokens: json.map((t: any) => tokenFromJSON(t))
     }
   }
 

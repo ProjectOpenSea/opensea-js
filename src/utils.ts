@@ -150,6 +150,20 @@ export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
   return fromJSON
 }
 
+export const tokenFromJSON = (token: any): WyvernSchemas.FungibleToken => {
+
+  const fromJSON: WyvernSchemas.FungibleToken = {
+    name: token.name,
+    symbol: token.symbol,
+    decimals: token.decimals,
+    address: token.address,
+    imageUrl: token.image_url,
+    ethPrice: token.eth_price
+  }
+
+  return fromJSON
+}
+
 export const orderFromJSON = (order: any): Order => {
 
   const fromJSON: Order = {

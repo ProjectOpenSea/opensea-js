@@ -52,7 +52,7 @@ suite('seaport', () => {
   test('Serializes payment token and matches most recent ERC-20 sale', async () => {
     const takerAddress = ALEX_ADDRESS
 
-    const token = client.getFungibleTokens({ symbol: 'MANA'})[0]
+    const token = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
 
     const order = await client.api.getOrder({
       side: OrderSide.Sell,
@@ -82,18 +82,22 @@ suite('seaport', () => {
     assert.isAbove(gas, 0)
   })
 
-  test('Fungible tokens filter', () => {
-    const mana = client.getFungibleTokens({ symbol: "MANA" })[0]
+  test('Fungible tokens filter', async () => {
+    const manaTokens = (await client.getFungibleTokens({ symbol: "MANA" }))
+    // API returns another version of MANA,
+    // and one version is offline (in sdk)
+    assert.equal(manaTokens.length, 2)
+    const mana = manaTokens[0]
     assert.isNotNull(mana)
     assert.equal(mana.name, "Decentraland")
     assert.equal(mana.address, "0x0f5d2fb29fb7d3cfee444a200298f468908cc942")
     assert.equal(mana.decimals, 18)
 
-    const dai = client.getFungibleTokens({ symbol: "DAI" })[0]
+    const dai = (await client.getFungibleTokens({ symbol: "DAI" }))[0]
     assert.isNotNull(dai)
     assert.equal(dai.name, "")
 
-    const all = client.getFungibleTokens()
+    const all = await client.getFungibleTokens()
     assert.isNotEmpty(all)
   })
 
@@ -157,7 +161,7 @@ suite('seaport', () => {
   test('Matches a bundle sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const token = client.getFungibleTokens({ symbol: 'MANA'})[0]
+    const token = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
     const amountInToken = 2.422
 
     const order = await client._makeBundleSellOrder({
@@ -182,7 +186,7 @@ suite('seaport', () => {
   test('Matches a buy order with an ERC-20 token (DAI)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const token = client.getFungibleTokens({ symbol: 'DAI'})[0]
+    const token = (await client.getFungibleTokens({ symbol: 'DAI'}))[0]
     const amountInToken = 3
 
     const order = await client._makeBuyOrder({

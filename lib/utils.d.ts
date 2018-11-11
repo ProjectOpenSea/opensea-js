@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
+import * as WyvernSchemas from 'wyvern-schemas';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
 import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset } from './types';
@@ -23,6 +24,7 @@ export declare function promisify<T>(inner: (fn: Web3Callback<T>) => void): Prom
 export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise<{}>;
 export declare const assetFromJSON: (asset: any) => OpenSeaAsset;
 export declare const assetBundleFromJSON: (asset_bundle: any) => OpenSeaAssetBundle;
+export declare const tokenFromJSON: (token: any) => WyvernSchemas.FungibleToken;
 export declare const orderFromJSON: (order: any) => Order;
 /**
  * Convert an order to JSON, hashing it as well if necessary
