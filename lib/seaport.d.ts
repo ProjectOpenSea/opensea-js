@@ -141,10 +141,12 @@ export declare class OpenSeaPort {
      * @param param0 __namedParamaters Object
      * @param order The order to fulfill, a.k.a. "take"
      * @param accountAddress The taker's wallet address
+     * @param referrerAddress The optional address that referred the order
      */
-    fulfillOrder({ order, accountAddress }: {
+    fulfillOrder({ order, accountAddress, referrerAddress }: {
         order: Order;
         accountAddress: string;
+        referrerAddress?: string;
     }): Promise<void>;
     /**
      * Cancel an order on-chain, preventing it from ever being fulfilled.
@@ -209,10 +211,12 @@ export declare class OpenSeaPort {
      * @param param0 __namedParamters Object
      * @param order Order to check
      * @param accountAddress The account address that will be fulfilling the order
+     * @param referrerAddress The optional address that referred the order
      */
-    isOrderFulfillable({ order, accountAddress }: {
+    isOrderFulfillable({ order, accountAddress, referrerAddress }: {
         order: Order;
         accountAddress: string;
+        referrerAddress?: string;
     }): Promise<boolean>;
     /**
      * WIP Returns whether an asset is transferrable.
@@ -297,11 +301,13 @@ export declare class OpenSeaPort {
      * @param buy The buy order to match
      * @param sell The sell order to match
      * @param accountAddress The taker's wallet address
+     * @param metadata Metadata bytes32 to send with the match
      */
-    _estimateGasForMatch({ buy, sell, accountAddress }: {
+    _estimateGasForMatch({ buy, sell, accountAddress, metadata }: {
         buy: Order;
         sell: Order;
         accountAddress: string;
+        metadata?: string;
     }): Promise<number>;
     /**
      * Estimate the gas needed to transfer assets in bulk

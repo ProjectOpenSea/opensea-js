@@ -49,6 +49,7 @@ export interface EventData {
     order?: Order | UnsignedOrder;
     buy?: Order;
     sell?: Order;
+    matchMetadata?: string;
 }
 export interface OpenSeaAPIConfig {
     networkName?: Network;

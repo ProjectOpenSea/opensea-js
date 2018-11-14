@@ -158,7 +158,7 @@ suite('seaport', () => {
     })
   })
 
-  test('Matches a bundle sell order for an ERC-20 token (MANA)', async () => {
+  test('Matches a new bundle sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
     const token = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
@@ -375,7 +375,7 @@ suite('seaport', () => {
     await testMatchingOrder(order, takerAddress, true)
   })
 
-  test('Matches order via sell_orders and getAssets', async () => {
+  test('Matches a referred order via sell_orders and getAssets', async () => {
     const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "asc", limit: 5 })
 
     const asset = assets[0]
@@ -387,11 +387,12 @@ suite('seaport', () => {
     const order = asset.sellOrders[0]
     // Make sure match is valid
     const takerAddress = ALEX_ADDRESS
-    await testMatchingOrder(order, takerAddress, true)
+    const referrerAddress = ALEX_ADDRESS_2
+    await testMatchingOrder(order, takerAddress, true, referrerAddress)
   })
 })
 
-async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch: boolean) {
+async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch = false, referrerAddress?: string) {
   // TODO test mode for matching order to use 0x11111 in calldata
   const matchingOrder = client._makeMatchingOrder({order, accountAddress})
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
@@ -402,7 +403,7 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   assert.isTrue(isValid)
 
   if (testAtomicMatch) {
-    const isFulfillable = await client.isOrderFulfillable({ order, accountAddress })
+    const isFulfillable = await client.isOrderFulfillable({ order, accountAddress, referrerAddress })
     assert.isTrue(isFulfillable)
     const gasPrice = await client._computeGasPrice()
     console.info(`Gas price to use: ${client.web3.fromWei(gasPrice, 'gwei')} gwei`)

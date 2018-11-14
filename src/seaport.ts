@@ -13,7 +13,8 @@ import {
   getWyvernAsset, INVERSE_BASIS_POINT, INFURA_KEY, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
   encodeAtomicizedTransfer,
-  encodeProxyCall
+  encodeProxyCall,
+  NULL_BLOCK_HASH
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -358,16 +359,18 @@ export class OpenSeaPort {
    * @param param0 __namedParamaters Object
    * @param order The order to fulfill, a.k.a. "take"
    * @param accountAddress The taker's wallet address
+   * @param referrerAddress The optional address that referred the order
    */
   public async fulfillOrder(
-      { order, accountAddress }:
-      { order: Order; accountAddress: string}
+      { order, accountAddress, referrerAddress }:
+      { order: Order; accountAddress: string; referrerAddress?: string }
     ) {
     const matchingOrder = this._makeMatchingOrder({ order, accountAddress })
 
     const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
-    const transactionHash = await this._atomicMatch({ buy, sell, accountAddress })
+    const metadata = referrerAddress
+    const transactionHash = await this._atomicMatch({ buy, sell, accountAddress, metadata })
 
     await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders, "Fulfilling order")
   }
@@ -607,10 +610,11 @@ export class OpenSeaPort {
    * @param param0 __namedParamters Object
    * @param order Order to check
    * @param accountAddress The account address that will be fulfilling the order
+   * @param referrerAddress The optional address that referred the order
    */
   public async isOrderFulfillable(
-      { order, accountAddress }:
-      { order: Order; accountAddress: string }
+      { order, accountAddress, referrerAddress }:
+      { order: Order; accountAddress: string; referrerAddress?: string }
     ): Promise<boolean> {
     const matchingOrder = this._makeMatchingOrder({ order, accountAddress })
 
@@ -619,7 +623,8 @@ export class OpenSeaPort {
     try {
       // TODO check calldataCanMatch too?
       // const isValid = await this._validateMatch({ buy, sell, accountAddress })
-      const gas = await this._estimateGasForMatch({ buy, sell, accountAddress })
+      const metadata = referrerAddress
+      const gas = await this._estimateGasForMatch({ buy, sell, accountAddress, metadata })
 
       this.logger(`Gas estimate for ${order.side == OrderSide.Sell ? "sell" : "buy"} order: ${gas}`)
 
@@ -797,10 +802,11 @@ export class OpenSeaPort {
    * @param buy The buy order to match
    * @param sell The sell order to match
    * @param accountAddress The taker's wallet address
+   * @param metadata Metadata bytes32 to send with the match
    */
   public async _estimateGasForMatch(
-    { buy, sell, accountAddress }:
-    { buy: Order; sell: Order; accountAddress: string }): Promise<number> {
+    { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH }:
+    { buy: Order; sell: Order; accountAddress: string; metadata?: string }): Promise<number> {
 
     let value
     if (buy.maker == accountAddress && buy.paymentToken == NULL_ADDRESS) {
@@ -819,7 +825,7 @@ export class OpenSeaPort {
         sell.staticExtradata,
         [buy.v, sell.v],
         [buy.r, buy.s, sell.r, sell.s,
-          NULL_ADDRESS],
+          metadata],
           // Typescript error in estimate gas method, so use any
           { from: accountAddress, value } as any)
   }
@@ -1319,11 +1325,10 @@ export class OpenSeaPort {
    */
 
   private async _atomicMatch(
-      { buy, sell, accountAddress }:
-      { buy: Order; sell: Order; accountAddress: string }
+      { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH }:
+      { buy: Order; sell: Order; accountAddress: string; metadata?: string }
     ) {
     let value
-    let orderLookupHash
 
     // Case: user is the seller (and fulfilling a buy order)
     if (sell.maker.toLowerCase() == accountAddress.toLowerCase() && sell.feeRecipient == NULL_ADDRESS) {
@@ -1346,8 +1351,6 @@ export class OpenSeaPort {
         throw new Error('Invalid offer. Please restart your wallet/browser and try again!')
       }
       this.logger(`Buy order is valid: ${buyValid}`)
-
-      orderLookupHash = buy.hash
 
     } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
       // USER IS THE BUYER
@@ -1374,17 +1377,13 @@ export class OpenSeaPort {
       if (buy.paymentToken == NULL_ADDRESS) {
         value = await this._getRequiredAmountForTakingSellOrder(sell)
       }
-
-      orderLookupHash = sell.hash
     } else {
       // User is neither - matching service
-      // TODO
-      orderLookupHash = buy.hash
     }
 
     await this._validateMatch({ buy, sell, accountAddress })
 
-    this._dispatch(EventType.MatchOrders, { buy, sell, accountAddress })
+    this._dispatch(EventType.MatchOrders, { buy, sell, accountAddress, matchMetadata: metadata })
 
     let txHash
     const gasPrice = await this._computeGasPrice()
@@ -1402,8 +1401,7 @@ export class OpenSeaPort {
       sell.staticExtradata,
       [buy.v, sell.v],
       [buy.r, buy.s, sell.r, sell.s,
-        // Use the order hash so that OrdersMatched events can look it up
-        orderLookupHash]
+        metadata]
     ]
 
     // Estimate gas first
