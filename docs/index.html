@@ -81,6 +81,7 @@
 						</ul>
 					</li>
 					<li><a href="#advanced">Advanced</a><ul>
+							<li><a href="#affiliate-program">Affiliate Program</a></li>
 							<li><a href="#creating-bundles">Creating Bundles</a></li>
 							<li><a href="#using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</a></li>
 							<li><a href="#sharing-sale-fees-with-opensea">Sharing Sale Fees with OpenSea</a></li>
@@ -181,9 +182,18 @@
 <span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The owner's wallet address, also the taker</span>
 <span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress })
 </code></pre>
-				<p>If the order is a buy order (<code>order.side === OrderSide.Buy</code>), then the taker is the <em>owner</em> and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See <a href="#listening-to-events">Listening to Events</a> below to respond to the setup transactions that occur the first time a user accepts a bid. </p>
+				<p>If the order is a buy order (<code>order.side === OrderSide.Buy</code>), then the taker is the <em>owner</em> and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See <a href="#listening-to-events">Listening to Events</a> below to respond to the setup transactions that occur the first time a user accepts a bid.</p>
 				<h2 id="advanced">Advanced</h2>
-				<p>Interested in bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.</p>
+				<p>Interested in making an affiliate program, bundling items together, or making bids in different ERC-20 tokens? OpenSea.js can help with that.</p>
+				<h3 id="affiliate-program">Affiliate Program</h3>
+				<p><strong>NOTE:</strong> This feature is in beta.</p>
+				<p>You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders! Whenever someone refers a sale or the acceptance of an offer, you can add a <code>referrerAddress</code> to give their wallet credit:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> referrerAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The referrer's wallet address</span>
+<span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress, referrerAddress })
+</code></pre>
+				<p>This works for buying assets and bundles, along with accepting bids!</p>
+				<p>OpenSea will send the referrer <strong>1%</strong> of the item&#39;s sale price. Soon, if you&#39;ve customized your fees using the storefront editor, you&#39;ll be able to set an amount that you can send referrers as well.</p>
+				<p>More information will appear here when our redesigned affiliate program is ready. In the meantime, contact us at <a href="mailto:contact@opensea.io">contact@opensea.io</a> (or in <a href="https://discord.gg/ga8EJbv">Discord</a>), or use our legacy affiliate program at <a href="https://opensea.io/account#referrals">https://opensea.io/account#referrals</a>.</p>
 				<h3 id="creating-bundles">Creating Bundles</h3>
 				<p>New in version 0.2.9, you can create bundles of assets to sell at the same time! If the owner has approved all the assets in the bundle already, only a signature is needed to create it.</p>
 				<p>To make a bundle, it&#39;s just one call:</p>
@@ -227,6 +237,7 @@
 				</ul>
 				<h3 id="sharing-sale-fees-with-opensea">Sharing Sale Fees with OpenSea</h3>
 				<p>We share fees for successful sales with game developers, relayers, and affiliates using the OpenSea orderbook. Developers can customize the fee amount to apply to  buyers and/or sellers.</p>
+				<p>See <a href="#affiliate-program">Affiliate Program</a> above for how to register referrers for sales.</p>
 				<p>More information will appear here when our redesigned affiliate program is ready. In the meantime, contact us at <a href="mailto:contact@opensea.io">contact@opensea.io</a> (or in <a href="https://discord.gg/ga8EJbv">Discord</a>), or use our legacy affiliate program at <a href="https://opensea.io/account#referrals">https://opensea.io/account#referrals</a>.</p>
 				<h3 id="listening-to-events">Listening to Events</h3>
 				<p>Events are fired whenever transactions or orders are being created, and when transactions return receipts from recently mined blocks on the Ethereum blockchain.</p>

@@ -16,6 +16,7 @@ A JavaScript library for crypto-native ecommerce: buying, selling, and bidding o
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
 - [Advanced](#advanced)
+  - [Affiliate Program](#affiliate-program)
   - [Creating Bundles](#creating-bundles)
   - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
   - [Sharing Sale Fees with OpenSea](#sharing-sale-fees-with-opensea)
@@ -153,11 +154,28 @@ const accountAddress = "0x..." // The owner's wallet address, also the taker
 await this.props.seaport.fulfillOrder({ order, accountAddress })
 ```
 
-If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid. 
+If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
 
 ## Advanced
 
-Interested in bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+Interested in making an affiliate program, bundling items together, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+
+### Affiliate Program
+
+**NOTE:** This feature is in beta.
+
+You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders! Whenever someone refers a sale or the acceptance of an offer, you can add a `referrerAddress` to give their wallet credit:
+
+```JavaScript
+const referrerAddress = "0x..." // The referrer's wallet address
+await this.props.seaport.fulfillOrder({ order, accountAddress, referrerAddress })
+```
+
+This works for buying assets and bundles, along with accepting bids!
+
+OpenSea will send the referrer **1%** of the item's sale price. Soon, if you've customized your fees using the storefront editor, you'll be able to set an amount that you can send referrers as well.
+
+More information will appear here when our redesigned affiliate program is ready. In the meantime, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or use our legacy affiliate program at https://opensea.io/account#referrals.
 
 ### Creating Bundles
 
@@ -219,6 +237,8 @@ const order = await seaport.api.getOrders({
 ### Sharing Sale Fees with OpenSea
 
 We share fees for successful sales with game developers, relayers, and affiliates using the OpenSea orderbook. Developers can customize the fee amount to apply to  buyers and/or sellers.
+
+See [Affiliate Program](#affiliate-program) above for how to register referrers for sales.
 
 More information will appear here when our redesigned affiliate program is ready. In the meantime, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or use our legacy affiliate program at https://opensea.io/account#referrals.
 
