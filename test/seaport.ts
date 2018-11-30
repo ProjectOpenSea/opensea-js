@@ -158,6 +158,38 @@ suite('seaport', () => {
     })
   })
 
+  test('Matches a new sell order for an ERC-20 token (MANA)', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+    const paymentToken = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
+    const amountInToken = 4000
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const order = await client._makeSellOrder({
+      asset,
+      accountAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress: paymentToken.address
+    })
+
+    assert.equal(order.paymentToken, paymentToken.address)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
   test('Matches a new bundle sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
@@ -186,19 +218,27 @@ suite('seaport', () => {
   test('Matches a buy order with an ERC-20 token (DAI)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const token = (await client.getFungibleTokens({ symbol: 'DAI'}))[0]
+    const paymentToken = (await client.getFungibleTokens({ symbol: 'DAI'}))[0]
     const amountInToken = 3
 
+    const tokenId = CK_TOKEN_ID.toString()
+    const tokenAddress = CK_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
     const order = await client._makeBuyOrder({
-      tokenId: CK_TOKEN_ID.toString(),
-      tokenAddress: CK_ADDRESS,
+      asset,
       accountAddress,
       startAmount: amountInToken,
-      paymentTokenAddress: token.address
+      paymentTokenAddress: paymentToken.address
     })
 
-    assert.equal(order.paymentToken, token.address)
-    assert.equal(order.basePrice.toNumber(), Math.pow(10, token.decimals) * amountInToken)
+    assert.equal(order.paymentToken, paymentToken.address)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
 
@@ -290,7 +330,7 @@ suite('seaport', () => {
       }
       // Possible race condition
       assert.equal(order.currentPrice.toPrecision(3), estimateCurrentPrice(order).toPrecision(3))
-      assert.isAbove(order.basePrice.toNumber(), order.currentPrice.toNumber())
+      assert.isAtLeast(order.basePrice.toNumber(), order.currentPrice.toNumber())
     })
   })
 

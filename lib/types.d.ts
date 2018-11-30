@@ -106,7 +106,7 @@ export interface OpenSeaAccount {
 export interface OpenSeaAsset {
     assetContract: {
         name: string;
-        address: OpenSeaAccount;
+        address: string;
         sellerFeeBasisPoints: number;
         buyerFeeBasisPoints: number;
         description: string;

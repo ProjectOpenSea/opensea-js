@@ -12,6 +12,7 @@ A JavaScript library for crypto-native ecommerce: buying, selling, and bidding o
 - [Getting Started](#getting-started)
   - [Making Offers](#making-offers)
   - [Making Auctions](#making-auctions)
+  - [Running Crowdsales](#running-crowdsales)
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
@@ -84,6 +85,32 @@ const auction = await seaport.createSellOrder({ tokenId, tokenAddress, accountAd
 The units for `startAmount` and `endAmount` are Ether, ETH. If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
 
 See [Listening to Events](#listening-to-events) to respond to the setup transactions that occur the first time a user sells an item.
+
+### Running Crowdsales
+
+You can now sell items to users **without having to pay gas to mint them**!
+
+To create a presale or crowdsale and create batches of sell orders for a single asset factory, first follow the [tutorial](https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial) for creating your crowdsale contract.
+
+Then call `createFactorySellOrders` with your factory contract address and asset option identifier, and set `numberOfOrders` to the number of assets you'd like to let users buy and mint:
+
+```JavaScript
+// Expire these auctions one day from now
+const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
+
+const sellOrders = await seaport.createFactorySellOrders({
+  assetId: ASSET_OPTION_ID,
+  factoryAddress: FACTORY_CONTRACT_ADDRESS,
+  accountAddress, startAmount, endAmount, expirationTime,
+  numberOfOrders: 100 // Will create 100 sell orders in parallel batches of 10, to speed things up
+})
+```
+
+Here's an [example script](https://github.com/ProjectOpenSea/opensea-creatures/blob/master/scripts/sell.js) you can use to mint items.
+
+**NOTE:** If `numberOfOrders` is greater than 5, we will automatically batch them in groups of 5 so you can post orders in parallel. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
+
+Games using this method include [Coins & Steel](https://opensea.io/assets/coins&steelfounderssale) and a couple in stealth :) If you have questions or want support, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)).
 
 ### Fetching Orders
 

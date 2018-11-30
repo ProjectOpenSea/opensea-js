@@ -1,5 +1,5 @@
 import * as Web3 from 'web3'
-import { WyvernProtocol } from 'wyvern-js/lib'
+import { WyvernProtocol } from 'wyvern-js'
 import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
@@ -14,7 +14,8 @@ import {
   DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
   encodeAtomicizedTransfer,
   encodeProxyCall,
-  NULL_BLOCK_HASH
+  NULL_BLOCK_HASH,
+  SELL_ORDER_BATCH_SIZE
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -193,7 +194,12 @@ export class OpenSeaPort {
       { tokenId: string; tokenAddress: string; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string }
     ): Promise<Order> {
 
-    const order = await this._makeBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime, paymentTokenAddress })
+    const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
+    if (!asset) {
+      throw new Error('No asset found for this order')
+    }
+
+    const order = await this._makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress })
 
     // NOTE not in Wyvern exchange code:
     // frontend checks to make sure
@@ -237,56 +243,12 @@ export class OpenSeaPort {
       { tokenId: string; tokenAddress: string; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string }
     ): Promise<Order> {
 
-    const schema = this._getSchema()
-    const wyAsset = getWyvernAsset(schema, tokenId, tokenAddress)
-    // Small offset to account for latency
-    const listingTime = Math.round(Date.now() / 1000 - 100)
-
     const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
     if (!asset) {
       throw new Error('No asset found for this order')
     }
-    const buyerFee = asset.assetContract.buyerFeeBasisPoints
-    const sellerFee = asset.assetContract.sellerFeeBasisPoints
 
-    const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
-
-    const orderSaleKind = endAmount != null && endAmount !== startAmount
-      ? SaleKind.DutchAuction
-      : SaleKind.FixedPrice
-
-    const paymentToken = paymentTokenAddress || NULL_ADDRESS
-    const { basePrice, extra } = await this._getPriceParameters(paymentToken, startAmount, endAmount)
-
-    const order: UnhashedOrder = {
-      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
-      maker: accountAddress,
-      taker: NULL_ADDRESS,
-      makerRelayerFee: makeBigNumber(sellerFee),
-      takerRelayerFee: makeBigNumber(buyerFee),
-      makerProtocolFee: makeBigNumber(0),
-      takerProtocolFee: makeBigNumber(0),
-      feeMethod: FeeMethod.SplitFee,
-      feeRecipient,
-      side: OrderSide.Sell,
-      saleKind: orderSaleKind,
-      target,
-      howToCall: HowToCall.Call,
-      calldata,
-      replacementPattern,
-      staticTarget: NULL_ADDRESS,
-      staticExtradata: '0x',
-      paymentToken,
-      basePrice,
-      extra,
-      listingTime: makeBigNumber(listingTime),
-      expirationTime: makeBigNumber(expirationTime),
-      salt: WyvernProtocol.generatePseudoRandomSalt(),
-      metadata: {
-        asset: wyAsset,
-        schema: schema.name,
-      },
-    }
+    const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -308,6 +270,81 @@ export class OpenSeaPort {
     }
 
     return this._validateAndPostOrder(orderWithSignature)
+  }
+
+  /**
+   * Create multiple sell orders in bulk to auction assets out of an asset factory.
+   * Will throw a 'You do not own this asset' error if the maker doesn't own the factory.
+   * Items will mint to users' wallets only when they buy them. See https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial for more info.
+   * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
+   * @param param0 __namedParameters Object
+   * @param assetId Identifier for the asset factory
+   * @param factoryAddress Address of the factory contract
+   * @param accountAddress Address of the factory owner's wallet
+   * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+   * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+   * @param expirationTime Expiration time for the orders, in seconds. An expiration time of 0 means "never expire."
+   * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
+   * @param numberOfOrders Number of times to repeat creating the same order. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
+   */
+  public async createFactorySellOrders(
+      { assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, numberOfOrders = 1 }:
+      { assetId: string; factoryAddress: string; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; numberOfOrders?: number }
+    ): Promise<Order[]> {
+
+    const asset: OpenSeaAsset | null = await this.api.getAsset(factoryAddress, assetId)
+    if (!asset) {
+      throw new Error('No asset found for this order')
+    }
+
+    if (numberOfOrders < 1) {
+      throw new Error('Need to make at least one sell order')
+    }
+
+    // Validate just a single dummy order but don't post it
+    const dummyOrder = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress })
+    await this._validateSellOrderParameters({ order: dummyOrder, accountAddress })
+
+    async function _makeAndPostOneSellOrder(): Promise<Order> {
+      const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress })
+
+      const hashedOrder = {
+        ...order,
+        hash: getOrderHash(order)
+      }
+      let signature
+      try {
+        signature = await this._signOrder(hashedOrder)
+      } catch (error) {
+        console.error(error)
+        throw new Error("You declined to sign your auction, or your web3 provider can't sign using personal_sign. Try 'web3-provider-engine' and make sure a mnemonic is set. Just a reminder: there's no gas needed anymore to mint tokens!")
+      }
+
+      const orderWithSignature = {
+        ...hashedOrder,
+        ...signature
+      }
+
+      return this._validateAndPostOrder(orderWithSignature)
+    }
+
+    const range = _.range(numberOfOrders)
+    const batches  = _.chunk(range, SELL_ORDER_BATCH_SIZE)
+    let allOrdersCreated: Order[] = []
+
+    batches.forEach(async subRange => {
+
+      // Will block until all SELL_ORDER_BATCH_SIZE orders
+      // have come back in parallel
+      const batchOrdersCreated = await Promise.all(subRange.map(_makeAndPostOneSellOrder))
+
+      allOrdersCreated = [
+        ...allOrdersCreated,
+        ...batchOrdersCreated
+      ]
+    })
+
+    return allOrdersCreated
   }
 
   /**
@@ -942,23 +979,18 @@ export class OpenSeaPort {
   }
 
   public async _makeBuyOrder(
-      { tokenId, tokenAddress, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress }:
-      { tokenId: string; tokenAddress: string; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string }
+      { asset, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress }:
+      { asset: OpenSeaAsset; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string }
     ): Promise<UnhashedOrder> {
 
     const schema = this._getSchema()
-    const wyAsset = getWyvernAsset(schema, tokenId, tokenAddress)
+    const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.assetContract.address)
     const metadata = {
       asset: wyAsset,
       schema: schema.name,
     }
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
-
-    const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
-    if (!asset) {
-      throw new Error('No asset found for this order')
-    }
     const buyerFee = asset.assetContract.buyerFeeBasisPoints
     const sellerFee = asset.assetContract.sellerFeeBasisPoints
 
@@ -992,6 +1024,58 @@ export class OpenSeaPort {
       expirationTime: makeBigNumber(expirationTime),
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata,
+    }
+  }
+
+  public async _makeSellOrder(
+      { asset, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress }:
+      { asset: OpenSeaAsset; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string }
+    ): Promise<UnhashedOrder> {
+
+    const schema = this._getSchema()
+    const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.assetContract.address)
+    // Small offset to account for latency
+    const listingTime = Math.round(Date.now() / 1000 - 100)
+    const buyerFee = asset.assetContract.buyerFeeBasisPoints
+    const sellerFee = asset.assetContract.sellerFeeBasisPoints
+
+    const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
+
+    const orderSaleKind = endAmount != null && endAmount !== startAmount
+      ? SaleKind.DutchAuction
+      : SaleKind.FixedPrice
+
+    const paymentToken = paymentTokenAddress || NULL_ADDRESS
+    const { basePrice, extra } = await this._getPriceParameters(paymentToken, startAmount, endAmount)
+
+    return {
+      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
+      maker: accountAddress,
+      taker: NULL_ADDRESS,
+      makerRelayerFee: makeBigNumber(sellerFee),
+      takerRelayerFee: makeBigNumber(buyerFee),
+      makerProtocolFee: makeBigNumber(0),
+      takerProtocolFee: makeBigNumber(0),
+      feeMethod: FeeMethod.SplitFee,
+      feeRecipient,
+      side: OrderSide.Sell,
+      saleKind: orderSaleKind,
+      target,
+      howToCall: HowToCall.Call,
+      calldata,
+      replacementPattern,
+      staticTarget: NULL_ADDRESS,
+      staticExtradata: '0x',
+      paymentToken,
+      basePrice,
+      extra,
+      listingTime: makeBigNumber(listingTime),
+      expirationTime: makeBigNumber(expirationTime),
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
+      metadata: {
+        asset: wyAsset,
+        schema: schema.name,
+      }
     }
   }
 

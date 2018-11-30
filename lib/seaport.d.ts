@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, FungibleToken, WyvernAsset } from './types';
+import { OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, FungibleToken, WyvernAsset } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -107,6 +107,31 @@ export declare class OpenSeaPort {
         expirationTime?: number;
         paymentTokenAddress?: string;
     }): Promise<Order>;
+    /**
+     * Create multiple sell orders in bulk to auction assets out of an asset factory.
+     * Will throw a 'You do not own this asset' error if the maker doesn't own the factory.
+     * Items will mint to users' wallets only when they buy them. See https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial for more info.
+     * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
+     * @param param0 __namedParameters Object
+     * @param assetId Identifier for the asset factory
+     * @param factoryAddress Address of the factory contract
+     * @param accountAddress Address of the factory owner's wallet
+     * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+     * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+     * @param expirationTime Expiration time for the orders, in seconds. An expiration time of 0 means "never expire."
+     * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
+     * @param numberOfOrders Number of times to repeat creating the same order. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
+     */
+    createFactorySellOrders({ assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, numberOfOrders }: {
+        assetId: string;
+        factoryAddress: string;
+        accountAddress: string;
+        startAmount: number;
+        endAmount?: number;
+        expirationTime?: number;
+        paymentTokenAddress?: string;
+        numberOfOrders?: number;
+    }): Promise<Order[]>;
     /**
      * Create a sell order to auction a bundle of assets.
      * Will throw a 'You do not own this asset' error if the maker doesn't have one of the assets.
@@ -351,11 +376,18 @@ export declare class OpenSeaPort {
         accountAddress: string;
         tokenAddress?: string;
     }): Promise<BigNumber>;
-    _makeBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime, paymentTokenAddress }: {
-        tokenId: string;
-        tokenAddress: string;
+    _makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress }: {
+        asset: OpenSeaAsset;
         accountAddress: string;
         startAmount: number;
+        expirationTime?: number;
+        paymentTokenAddress?: string;
+    }): Promise<UnhashedOrder>;
+    _makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress }: {
+        asset: OpenSeaAsset;
+        accountAddress: string;
+        startAmount: number;
+        endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
     }): Promise<UnhashedOrder>;

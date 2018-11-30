@@ -147,7 +147,7 @@ export interface OpenSeaAsset {
     // Name of the asset's contract
     name: string;
     // Address of this contract
-    address: OpenSeaAccount;
+    address: string;
     // Fee levied on sellers by this contract, in basis points
     sellerFeeBasisPoints: number;
     // Fee levied on buyers by this contract, in basis points
