@@ -305,7 +305,7 @@ export class OpenSeaPort {
     const dummyOrder = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress })
     await this._validateSellOrderParameters({ order: dummyOrder, accountAddress })
 
-    async function _makeAndPostOneSellOrder(): Promise<Order> {
+    const _makeAndPostOneSellOrder = async () => {
       const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress })
 
       const hashedOrder = {
@@ -332,19 +332,18 @@ export class OpenSeaPort {
     const batches  = _.chunk(range, SELL_ORDER_BATCH_SIZE)
     let allOrdersCreated: Order[] = []
 
-    batches.forEach(async subRange => {
-
+    for (const subRange of batches) {
       // Will block until all SELL_ORDER_BATCH_SIZE orders
       // have come back in parallel
       const batchOrdersCreated = await Promise.all(subRange.map(_makeAndPostOneSellOrder))
 
-      this.logger(`Created and posted ${batchOrdersCreated.length} orders`)
+      this.logger(`Created and posted a batch of ${batchOrdersCreated.length} orders in parallel`)
 
       allOrdersCreated = [
         ...allOrdersCreated,
         ...batchOrdersCreated
       ]
-    })
+    }
 
     return allOrdersCreated
   }
