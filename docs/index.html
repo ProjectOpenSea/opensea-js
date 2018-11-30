@@ -75,6 +75,7 @@
 					<li><a href="#getting-started">Getting Started</a><ul>
 							<li><a href="#making-offers">Making Offers</a></li>
 							<li><a href="#making-auctions">Making Auctions</a></li>
+							<li><a href="#running-crowdsales">Running Crowdsales</a></li>
 							<li><a href="#fetching-orders">Fetching Orders</a></li>
 							<li><a href="#buying-items">Buying Items</a></li>
 							<li><a href="#accepting-offers">Accepting Offers</a></li>
@@ -130,6 +131,23 @@
 </code></pre>
 				<p>The units for <code>startAmount</code> and <code>endAmount</code> are Ether, ETH. If you want to specify another ERC-20 token to use, see <a href="#using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</a>.</p>
 				<p>See <a href="#listening-to-events">Listening to Events</a> to respond to the setup transactions that occur the first time a user sells an item.</p>
+				<h3 id="running-crowdsales">Running Crowdsales</h3>
+				<p>You can now sell items to users <strong>without having to pay gas to mint them</strong>!</p>
+				<p>To create a presale or crowdsale and create batches of sell orders for a single asset factory, first follow the <a href="https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial">tutorial</a> for creating your crowdsale contract.</p>
+				<p>Then call <code>createFactorySellOrders</code> with your factory contract address and asset option identifier, and set <code>numberOfOrders</code> to the number of assets you&#39;d like to let users buy and mint:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire these auctions one day from now</span>
+<span class="hljs-keyword">const</span> expirationTime = (<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
+
+<span class="hljs-keyword">const</span> sellOrders = <span class="hljs-keyword">await</span> seaport.createFactorySellOrders({
+  <span class="hljs-attr">assetId</span>: ASSET_OPTION_ID,
+  <span class="hljs-attr">factoryAddress</span>: FACTORY_CONTRACT_ADDRESS,
+  accountAddress, startAmount, endAmount, expirationTime,
+  <span class="hljs-attr">numberOfOrders</span>: <span class="hljs-number">100</span> <span class="hljs-comment">// Will create 100 sell orders in parallel batches of 10, to speed things up</span>
+})
+</code></pre>
+				<p>Here&#39;s an <a href="https://github.com/ProjectOpenSea/opensea-creatures/blob/master/scripts/sell.js">example script</a> you can use to mint items.</p>
+				<p><strong>NOTE:</strong> If <code>numberOfOrders</code> is greater than 5, we will automatically batch them in groups of 5 so you can post orders in parallel. Requires an <code>apiKey</code> to be set during seaport initialization in order to not be throttled by the API.</p>
+				<p>Games using this method include <a href="https://opensea.io/assets/coins&amp;steelfounderssale">Coins &amp; Steel</a> and a couple in stealth :) If you have questions or want support, contact us at <a href="mailto:contact@opensea.io">contact@opensea.io</a> (or in <a href="https://discord.gg/ga8EJbv">Discord</a>).</p>
 				<h3 id="fetching-orders">Fetching Orders</h3>
 				<p>To retrieve a list of offers and auction on an asset, you can use an instance of the <code>OpenSeaAPI</code> exposed on the client. Parameters passed into API filter objects are underscored instead of camel-cased, similar to the main <a href="https://docs.opensea.io/v1.0/reference">OpenSea API parameters</a>:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">import</span> { OrderSide } <span class="hljs-keyword">from</span> <span class="hljs-string">'opensea-js/lib/types'</span>
@@ -477,6 +495,9 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#orderbook_version" class="tsd-kind-icon">ORDERBOOK_<wbr>VERSION</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#sell_order_batch_size" class="tsd-kind-icon">SELL_<wbr>ORDER_<wbr>BATCH_<wbr>SIZE</a>
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#site_host_mainnet" class="tsd-kind-icon">SITE_<wbr>HOST_<wbr>MAINNET</a>
