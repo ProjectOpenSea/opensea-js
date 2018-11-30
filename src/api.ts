@@ -296,15 +296,18 @@ async function handleApiErrors(response: Response) {
 
   if (!response.ok) {
     switch (response.status) {
-      case 401:
-      case 403:
-        errorMessage = 'Unauthorized'
-        break
       case 400:
         result = await response.json()
         errorMessage = result && result.errors
           ? result.errors.join(', ')
           : "Invalid request"
+        break
+      case 401:
+      case 403:
+        errorMessage = 'Unauthorized'
+        break
+      case 404:
+        errorMessage = 'Not found'
         break
       case 500:
         errorMessage = "Internal server error"

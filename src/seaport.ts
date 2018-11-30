@@ -294,7 +294,7 @@ export class OpenSeaPort {
 
     const asset: OpenSeaAsset | null = await this.api.getAsset(factoryAddress, assetId)
     if (!asset) {
-      throw new Error('No asset found for this order')
+      throw new Error('No asset template found')
     }
 
     if (numberOfOrders < 1) {
@@ -337,6 +337,8 @@ export class OpenSeaPort {
       // Will block until all SELL_ORDER_BATCH_SIZE orders
       // have come back in parallel
       const batchOrdersCreated = await Promise.all(subRange.map(_makeAndPostOneSellOrder))
+
+      this.logger(`Created and posted ${batchOrdersCreated.length} orders`)
 
       allOrdersCreated = [
         ...allOrdersCreated,
