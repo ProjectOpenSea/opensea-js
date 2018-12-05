@@ -337,12 +337,15 @@ export class OpenSeaPort {
       // have come back in parallel
       const batchOrdersCreated = await Promise.all(subRange.map(_makeAndPostOneSellOrder))
 
-      this.logger(`Created and posted a batch of ${batchOrdersCreated.length} orders in parallel`)
+      this.logger(`Created and posted a batch of ${batchOrdersCreated.length} orders in parallel.`)
 
       allOrdersCreated = [
         ...allOrdersCreated,
         ...batchOrdersCreated
       ]
+
+      // Don't overwhelm router
+      await delay(1000)
     }
 
     return allOrdersCreated
