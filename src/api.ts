@@ -291,33 +291,39 @@ export class OpenSeaAPI {
 }
 
 async function handleApiErrors(response: Response) {
+  if (response.ok) {
+    return response
+  }
+
   let result
   let errorMessage
-
-  if (!response.ok) {
-    switch (response.status) {
-      case 400:
-        result = await response.json()
-        errorMessage = result && result.errors
-          ? result.errors.join(', ')
-          : "Invalid request"
-        break
-      case 401:
-      case 403:
-        errorMessage = 'Unauthorized'
-        break
-      case 404:
-        errorMessage = 'Not found'
-        break
-      case 500:
-        errorMessage = "Internal server error"
-        break
-      default:
-        errorMessage = "Please try again later!"
-        break
-    }
-
-    throw new Error(`API Error: ${errorMessage}`)
+  try {
+    result = await response.text()
+    result = JSON.parse(result)
+  } catch {
+    // Result will be undefined or text
   }
-  return response
+
+  switch (response.status) {
+    case 400:
+      errorMessage = result && result.errors
+        ? result.errors.join(', ')
+        : `Invalid request: ${JSON.stringify(result)}`
+      break
+    case 401:
+    case 403:
+      errorMessage = `Unauthorized. Full message was '${JSON.stringify(result)}'`
+      break
+    case 404:
+      errorMessage = `Not found. Full message was '${JSON.stringify(result)}'`
+      break
+    case 500:
+      errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(result)}`
+      break
+    default:
+      errorMessage = `status code ${response.status}. Message: ${JSON.stringify(result)}`
+      break
+  }
+
+  throw new Error(`API Error: ${errorMessage}`)
 }

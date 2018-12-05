@@ -160,14 +160,23 @@ suite('api', () => {
   })
 
   test('API handles errors', async () => {
+    // 401 Unauthorized
     try {
       await apiToTest.get('/user')
     } catch (error) {
       assert.include(error.message, "Unauthorized")
     }
 
-    // Get an old order to make sure listing time is too early
+    // 404 Not found
+    try {
+      await apiToTest.get(`/asset/${CK_RINKEBY_ADDRESS}/0`)
+    } catch (error) {
+      assert.include(error.message, "Not found")
+    }
+
+    // 400 malformed
     const res = await apiToTest.getOrders({
+      // Get an old order to make sure listing time is too early
       listed_before: Math.round(Date.now() / 1000 - 3600)
     })
     const order = res.orders[0]
