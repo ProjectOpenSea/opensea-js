@@ -917,6 +917,7 @@ export class OpenSeaPort {
 
     if (!proxyAddress || proxyAddress == NULL_ADDRESS) {
       if (retries > 0) {
+        await delay(3000)
         return this._getProxy(accountAddress, retries - 1)
       }
       proxyAddress = null
@@ -946,7 +947,6 @@ export class OpenSeaPort {
 
     await this._confirmTransaction(transactionHash, EventType.InitializeAccount, "Initializing proxy for account")
 
-    // Fix for Cipher and any other clients who get receipts too early
     await delay(1000)
 
     const proxyAddress = await this._getProxy(accountAddress, 2)
