@@ -264,6 +264,7 @@ export interface Order extends UnsignedOrder, ECSignature {
   currentPrice?: BigNumber
   makerAccount?: OpenSeaAccount
   takerAccount?: OpenSeaAccount
+  paymentTokenContract?: FungibleToken
   feeRecipientAccount?: OpenSeaAccount
   cancelledOrFinalized?: boolean
   markedInvalid?: boolean

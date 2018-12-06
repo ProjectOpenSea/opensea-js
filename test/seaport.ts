@@ -64,6 +64,11 @@ suite('seaport', () => {
       return
     }
 
+    assert.isNotNull(order.paymentTokenContract)
+    if (!order.paymentTokenContract) {
+      return
+    }
+    assert.equal(order.paymentTokenContract.address, token.address)
     assert.equal(order.paymentToken, token.address)
     // TODO why can't we test atomicMatch?
     await testMatchingOrder(order, takerAddress, false)
@@ -334,13 +339,14 @@ suite('seaport', () => {
     })
   })
 
-  test('orderToJSON deserializes asset and hashes if necessary', async () => {
+  test('orderToJSON deserializes completely and hashes if necessary', async () => {
     const order = await client.api.getOrder({})
     assert.isNotNull(order)
     if (!order || !order.asset) {
       return
     }
     assert.isNotEmpty(order.asset.assetContract)
+    assert.isNotEmpty(order.paymentTokenContract)
     assert.isNotEmpty(order.asset.tokenId)
 
     const accountAddress = ALEX_ADDRESS

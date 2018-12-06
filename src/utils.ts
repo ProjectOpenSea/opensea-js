@@ -203,6 +203,7 @@ export const orderFromJSON = (order: any): Order => {
     r: order.r,
     s: order.s,
 
+    paymentTokenContract: order.payment_token_contract ? tokenFromJSON(order.payment_token_contract) : undefined,
     asset: order.asset ? assetFromJSON(order.asset) : undefined,
     assetBundle: order.asset_bundle ? assetBundleFromJSON(order.asset_bundle) : undefined
   }
