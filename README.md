@@ -38,7 +38,9 @@ Happy seafaring! ⛵️
 
 ## Installation
 
-In your project, run:
+We recommend switching to Node.js version 8.11 to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
+
+Then, in your project, run:
 ```bash
 npm install --save opensea-js
 ```
