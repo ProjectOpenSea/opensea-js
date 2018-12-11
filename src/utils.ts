@@ -13,7 +13,9 @@ import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, Ord
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export const feeRecipient = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
-export const INFURA_KEY = 'e8695bce67944848aa95459fac052f8e'
+export const DEP_INFURA_KEY = 'e8695bce67944848aa95459fac052f8e'
+export const MAINNET_PROVIDER_URL = 'https://eth-mainnet.alchemyapi.io/jsonrpc/y5dLONzfAJh-oCY02DCP3UWCT2pSEXMo'
+export const RINKEBY_PROVIDER_URL = 'https://eth-rinkeby.alchemyapi.io/jsonrpc/-yDg7wmgGw5LdsP4p4kyxRYuDzCkXtoI'
 export const INVERSE_BASIS_POINT = 10000
 export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256
 export const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"

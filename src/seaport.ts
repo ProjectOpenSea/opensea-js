@@ -10,12 +10,14 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset, INVERSE_BASIS_POINT, INFURA_KEY, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
+  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
   encodeAtomicizedTransfer,
   encodeProxyCall,
   NULL_BLOCK_HASH,
-  SELL_ORDER_BATCH_SIZE
+  SELL_ORDER_BATCH_SIZE,
+  RINKEBY_PROVIDER_URL,
+  MAINNET_PROVIDER_URL
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -66,8 +68,7 @@ export class OpenSeaPort {
     })
 
     // WyvernJS config for readonly (optimization for infura calls)
-    const networkPrefix = this._networkName + (this._networkName == Network.Main ? "net" : "")
-    const readonlyProvider = new Web3.providers.HttpProvider(`https://${networkPrefix}.infura.io/v3/${INFURA_KEY}`)
+    const readonlyProvider = new Web3.providers.HttpProvider(this._networkName == Network.Main ? MAINNET_PROVIDER_URL : RINKEBY_PROVIDER_URL)
     this._wyvernProtocolReadOnly = new WyvernProtocol(readonlyProvider, {
       network: this._networkName,
       gasPrice: apiConfig.gasPrice,
