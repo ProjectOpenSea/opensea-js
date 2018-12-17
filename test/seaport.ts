@@ -422,7 +422,7 @@ suite('seaport', () => {
   })
 
   test('Matches a referred order via sell_orders and getAssets', async () => {
-    const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "asc", limit: 5 })
+    const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "desc" })
 
     const asset = assets[0]
     assert.isNotNull(asset)

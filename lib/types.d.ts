@@ -164,6 +164,7 @@ export interface OpenSeaAssetBundleJSON {
     search?: string;
 }
 export interface UnhashedOrder extends WyvernOrder {
+    makerReferrerFee: BigNumber;
     feeMethod: FeeMethod;
     side: OrderSide;
     saleKind: SaleKind;

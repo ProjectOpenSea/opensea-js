@@ -189,10 +189,17 @@ export class OpenSeaPort {
    * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
    * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
+   * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    */
   public async createBuyOrder(
-      { tokenId, tokenAddress, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress }:
-      { tokenId: string; tokenAddress: string; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string }
+      { tokenId, tokenAddress, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
+      { tokenId: string;
+        tokenAddress: string;
+        accountAddress: string;
+        startAmount: number;
+        expirationTime?: number;
+        paymentTokenAddress?: string;
+        bountyBasisPoints?: number; }
     ): Promise<Order> {
 
     const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
@@ -200,7 +207,7 @@ export class OpenSeaPort {
       throw new Error('No asset found for this order')
     }
 
-    const order = await this._makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress })
+    const order = await this._makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, bountyBasisPoints })
 
     // NOTE not in Wyvern exchange code:
     // frontend checks to make sure
@@ -238,10 +245,18 @@ export class OpenSeaPort {
    * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
+   * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    */
   public async createSellOrder(
-      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress }:
-      { tokenId: string; tokenAddress: string; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string }
+      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
+      { tokenId: string;
+        tokenAddress: string;
+        accountAddress: string;
+        startAmount: number;
+        endAmount?: number;
+        expirationTime?: number;
+        paymentTokenAddress?: string;
+        bountyBasisPoints?: number; }
     ): Promise<Order> {
 
     const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
@@ -249,7 +264,7 @@ export class OpenSeaPort {
       throw new Error('No asset found for this order')
     }
 
-    const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress })
+    const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -366,13 +381,23 @@ export class OpenSeaPort {
    * @param endAmount Optional price of the asset at the end of its expiration time
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
+   * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress }:
-      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string }
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
+      { bundleName: string;
+        bundleDescription?: string;
+        bundleExternalLink?: string;
+        assets: Array<{tokenId: string; tokenAddress: string}>;
+        accountAddress: string;
+        startAmount: number;
+        endAmount?: number;
+        expirationTime?: number;
+        paymentTokenAddress?: string;
+        bountyBasisPoints?: number; }
     ): Promise<Order> {
 
-    const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress })
+    const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -984,8 +1009,8 @@ export class OpenSeaPort {
   }
 
   public async _makeBuyOrder(
-      { asset, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress }:
-      { asset: OpenSeaAsset; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string }
+      { asset, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
+      { asset: OpenSeaAsset; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number }
     ): Promise<UnhashedOrder> {
 
     const schema = this._getSchema()
@@ -1012,6 +1037,7 @@ export class OpenSeaPort {
       takerRelayerFee: makeBigNumber(sellerFee),
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
+      makerReferrerFee: makeBigNumber(bountyBasisPoints),
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Buy,
@@ -1033,8 +1059,8 @@ export class OpenSeaPort {
   }
 
   public async _makeSellOrder(
-      { asset, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress }:
-      { asset: OpenSeaAsset; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string }
+      { asset, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
+      { asset: OpenSeaAsset; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number }
     ): Promise<UnhashedOrder> {
 
     const schema = this._getSchema()
@@ -1061,6 +1087,7 @@ export class OpenSeaPort {
       takerRelayerFee: makeBigNumber(buyerFee),
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
+      makerReferrerFee: makeBigNumber(bountyBasisPoints),
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Sell,
@@ -1085,8 +1112,8 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress }:
-      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string }
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
+      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number }
     ): Promise<UnhashedOrder> {
 
     const schema = this._getSchema()
@@ -1134,6 +1161,7 @@ export class OpenSeaPort {
       takerRelayerFee: makeBigNumber(buyerFee),
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
+      makerReferrerFee: makeBigNumber(bountyBasisPoints),
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Sell,
@@ -1194,6 +1222,7 @@ export class OpenSeaPort {
       takerRelayerFee: order.takerRelayerFee,
       makerProtocolFee: order.makerProtocolFee,
       takerProtocolFee: order.takerProtocolFee,
+      makerReferrerFee: order.makerReferrerFee,
       feeMethod: order.feeMethod,
       feeRecipient: NULL_ADDRESS,
       side: (order.side + 1) % 2,

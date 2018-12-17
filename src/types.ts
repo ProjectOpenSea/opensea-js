@@ -243,6 +243,7 @@ export interface OpenSeaAssetBundleJSON {
 }
 
 export interface UnhashedOrder extends WyvernOrder {
+  makerReferrerFee: BigNumber
   feeMethod: FeeMethod
   side: OrderSide
   saleKind: SaleKind
