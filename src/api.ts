@@ -36,21 +36,20 @@ export class OpenSeaAPI {
 
   /**
    * Create an instance of the OpenSea API
-   * @param param0 __namedParamters Object
-   * @param apiKey Optional key to use for API
-   * @param networkName `Network` type to use. Defaults to `Network.Main` (mainnet)
+   * @param config OpenSeaAPIConfig for setting up the API, including an optional API key, network name, and base URL
+   * @param logger Optional function for logging debug strings before and after requests are made
    */
-  constructor({apiKey, networkName}: OpenSeaAPIConfig, logger?: (arg: string) => void) {
-    this.apiKey = apiKey
+  constructor(config: OpenSeaAPIConfig, logger?: (arg: string) => void) {
+    this.apiKey = config.apiKey
 
-    switch (networkName) {
+    switch (config.networkName) {
       case Network.Rinkeby:
-        this.apiBaseUrl = API_BASE_RINKEBY
+        this.apiBaseUrl = config.apiBaseUrl || API_BASE_RINKEBY
         this.hostUrl = SITE_HOST_RINKEBY
         break
       case Network.Main:
       default:
-        this.apiBaseUrl = API_BASE_MAINNET
+        this.apiBaseUrl = config.apiBaseUrl || API_BASE_MAINNET
         this.hostUrl = SITE_HOST_MAINNET
         break
     }

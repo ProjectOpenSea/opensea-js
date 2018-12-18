@@ -26,11 +26,10 @@ export declare class OpenSeaAPI {
     private apiKey;
     /**
      * Create an instance of the OpenSea API
-     * @param param0 __namedParamters Object
-     * @param apiKey Optional key to use for API
-     * @param networkName `Network` type to use. Defaults to `Network.Main` (mainnet)
+     * @param config OpenSeaAPIConfig for setting up the API, including an optional API key, network name, and base URL
+     * @param logger Optional function for logging debug strings before and after requests are made
      */
-    constructor({ apiKey, networkName }: OpenSeaAPIConfig, logger?: (arg: string) => void);
+    constructor(config: OpenSeaAPIConfig, logger?: (arg: string) => void);
     /**
      * Send an order to the orderbook.
      * Throws when the order is invalid.

@@ -89,6 +89,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="openseaapi.html#apibaseurl" class="tsd-kind-icon">api<wbr>Base<wbr>Url</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="openseaapi.html#hosturl" class="tsd-kind-icon">host<wbr>Url</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="openseaapi.html#logger" class="tsd-kind-icon">logger</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="openseaapi.html#pagesize" class="tsd-kind-icon">page<wbr>Size</a></li>
 							</ul>
 						</section>
@@ -117,13 +118,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Open<wbr>SeaAPI<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="openseaapi.html" class="tsd-signature-type">OpenSeaAPI</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Open<wbr>SeaAPI<span class="tsd-signature-symbol">(</span>config<span class="tsd-signature-symbol">: </span><a href="../interfaces/openseaapiconfig.html" class="tsd-signature-type">OpenSeaAPIConfig</a>, logger<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="openseaapi.html" class="tsd-signature-type">OpenSeaAPI</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L31">api.ts:31</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L35">api.ts:35</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -134,21 +135,20 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>__namedParameters: <span class="tsd-signature-type">object</span></h5>
-									<ul class="tsd-parameters">
-										<li class="tsd-parameter">
-											<h5>api<wbr>Key<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
-											<div class="tsd-comment tsd-typography">
-												<p>Optional key to use for API</p>
-											</div>
-										</li>
-										<li class="tsd-parameter">
-											<h5>network<wbr>Name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Main</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Rinkeby</span></h5>
-											<div class="tsd-comment tsd-typography">
-												<p><code>Network</code> type to use. Defaults to <code>Network.Main</code> (mainnet)</p>
-											</div>
-										</li>
-									</ul>
+									<h5>config: <a href="../interfaces/openseaapiconfig.html" class="tsd-signature-type">OpenSeaAPIConfig</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>OpenSeaAPIConfig for setting up the API, including an optional API key, network name, and base URL</p>
+										</div>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> logger: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">function</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>Optional function for logging debug strings before and after requests are made</p>
+										</div>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="openseaapi.html" class="tsd-signature-type">OpenSeaAPI</a></h4>
@@ -164,7 +164,7 @@
 					<div class="tsd-signature tsd-kind-icon">api<wbr>Base<wbr>Url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L25">api.ts:25</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L25">api.ts:25</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -179,7 +179,7 @@
 					<div class="tsd-signature tsd-kind-icon">host<wbr>Url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L21">api.ts:21</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L21">api.ts:21</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -189,12 +189,48 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="logger" class="tsd-anchor"></a>
+					<h3>logger</h3>
+					<div class="tsd-signature tsd-kind-icon">logger<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L33">api.ts:33</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Logger function to use when debugging</p>
+						</div>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property tsd-is-not-exported">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>arg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>arg: <span class="tsd-signature-type">string</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="pagesize" class="tsd-anchor"></a>
 					<h3>page<wbr>Size</h3>
 					<div class="tsd-signature tsd-kind-icon">page<wbr>Size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;20</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L29">api.ts:29</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L29">api.ts:29</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -216,7 +252,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L229">api.ts:229</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L235">api.ts:235</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -253,7 +289,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L135">api.ts:135</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L141">api.ts:141</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -290,7 +326,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L148">api.ts:148</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L154">api.ts:154</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -327,7 +363,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L193">api.ts:193</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L199">api.ts:199</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -355,7 +391,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L206">api.ts:206</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L212">api.ts:212</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -392,7 +428,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L76">api.ts:76</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L82">api.ts:82</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -424,7 +460,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L101">api.ts:101</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L107">api.ts:107</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -463,7 +499,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L171">api.ts:171</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L177">api.ts:177</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -500,7 +536,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L244">api.ts:244</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L250">api.ts:250</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -544,7 +580,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L61">api.ts:61</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L67">api.ts:67</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -577,7 +613,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e07fb74/src/api.ts#L266">api.ts:266</a></li>
+									<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/5e79690/src/api.ts#L272">api.ts:272</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -636,6 +672,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="openseaapi.html#hosturl" class="tsd-kind-icon">host<wbr>Url</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="openseaapi.html#logger" class="tsd-kind-icon">logger</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="openseaapi.html#pagesize" class="tsd-kind-icon">page<wbr>Size</a>

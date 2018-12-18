@@ -66,7 +66,7 @@ suite('seaport', () => {
           assert.include(log, `"X-API-KEY":"${MAINNET_API_KEY}"`)
           resolve()
         } catch (e) {
-          reject()
+          reject(e)
         } finally {
           client.api.logger = oldLogger
         }
