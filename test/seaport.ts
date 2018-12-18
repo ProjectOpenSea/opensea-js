@@ -14,15 +14,22 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 const rinkebyProvider = new Web3.providers.HttpProvider('https://rinkeby.infura.io')
 
-const client = new OpenSeaPort(provider, { networkName: Network.Main }, line => console.info(`MAINNET: ${line}`))
-const rinkebyClient = new OpenSeaPort(rinkebyProvider, { networkName: Network.Rinkeby }, line => console.info(`RINKEBY: ${line}`))
+const client = new OpenSeaPort(provider, {
+  networkName: Network.Main,
+  apiKey: MAINNET_API_KEY
+}, line => console.info(`MAINNET: ${line}`))
+
+const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
+  networkName: Network.Rinkeby,
+  apiKey: RINKEBY_API_KEY
+}, line => console.info(`RINKEBY: ${line}`))
 
 const assetsForBundleOrder = [
   { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
@@ -47,6 +54,25 @@ suite('seaport', () => {
   test('Instance exposes some underscored methods', () => {
     assert.equal(typeof client._initializeProxy, 'function')
     assert.equal(typeof client._getProxy, 'function')
+  })
+
+  test('Includes API key in token request', async () => {
+    const oldLogger = client.api.logger
+
+    return new Promise((resolve, reject) => {
+
+      client.api.logger = log => {
+        try {
+          assert.include(log, `"X-API-KEY":"${MAINNET_API_KEY}"`)
+          resolve()
+        } catch (e) {
+          reject()
+        } finally {
+          client.api.logger = oldLogger
+        }
+      }
+      client.api.getTokens({ symbol: "MANA" })
+    })
   })
 
   test('Serializes payment token and matches most recent ERC-20 sale', async () => {

@@ -19,6 +19,10 @@ export declare class OpenSeaAPI {
      * Page size to use for fetching orders
      */
     pageSize: number;
+    /**
+     * Logger function to use when debugging
+     */
+    logger: (arg: string) => void;
     private apiKey;
     /**
      * Create an instance of the OpenSea API
@@ -26,7 +30,7 @@ export declare class OpenSeaAPI {
      * @param apiKey Optional key to use for API
      * @param networkName `Network` type to use. Defaults to `Network.Main` (mainnet)
      */
-    constructor({ apiKey, networkName }: OpenSeaAPIConfig);
+    constructor({ apiKey, networkName }: OpenSeaAPIConfig, logger?: (arg: string) => void);
     /**
      * Send an order to the orderbook.
      * Throws when the order is invalid.
@@ -117,4 +121,5 @@ export declare class OpenSeaAPI {
      * @param opts RequestInit opts, similar to Fetch API
      */
     private _fetch;
+    private _handleApiResponse;
 }

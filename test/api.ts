@@ -20,6 +20,19 @@ suite('api', () => {
     assert.equal(rinkebyApi.apiBaseUrl, 'https://rinkeby-api.opensea.io')
   })
 
+  test('API fetches bundles and prefetches sell orders', async () => {
+    const { bundles } = await apiToTest.getBundles({asset_contract_address: CK_RINKEBY_ADDRESS, on_sale: true})
+    assert.isArray(bundles)
+
+    const bundle = bundles[0]
+    assert.isNotNull(bundle)
+    if (!bundle) {
+      return
+    }
+    assert.include(bundle.assets.map(a => a.assetContract.name), "CryptoKittiesRinkeby")
+    assert.isNotEmpty(bundle.sellOrders)
+  })
+
   // Skip these tests, since many are redundant with other tests
   skip(() => {
 
@@ -144,19 +157,6 @@ suite('api', () => {
       assert.equal(asset.assetContract.name, "CryptoKittiesRinkeby")
       assert.isNotEmpty(asset.sellOrders)
     })
-  })
-
-  test('API fetches bundles and prefetches sell orders', async () => {
-    const { bundles } = await apiToTest.getBundles({asset_contract_address: CK_RINKEBY_ADDRESS, on_sale: true})
-    assert.isArray(bundles)
-
-    const bundle = bundles[0]
-    assert.isNotNull(bundle)
-    if (!bundle) {
-      return
-    }
-    assert.include(bundle.assets.map(a => a.assetContract.name), "CryptoKittiesRinkeby")
-    assert.isNotEmpty(bundle.sellOrders)
   })
 
   test('API handles errors', async () => {

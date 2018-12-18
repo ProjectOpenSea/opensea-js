@@ -27,6 +27,10 @@ export class OpenSeaAPI {
    * Page size to use for fetching orders
    */
   public pageSize = 20
+  /**
+   * Logger function to use when debugging
+   */
+  public logger: (arg: string) => void
 
   private apiKey: string | undefined
 
@@ -36,7 +40,7 @@ export class OpenSeaAPI {
    * @param apiKey Optional key to use for API
    * @param networkName `Network` type to use. Defaults to `Network.Main` (mainnet)
    */
-  constructor({apiKey, networkName}: OpenSeaAPIConfig) {
+  constructor({apiKey, networkName}: OpenSeaAPIConfig, logger?: (arg: string) => void) {
     this.apiKey = apiKey
 
     switch (networkName) {
@@ -50,6 +54,9 @@ export class OpenSeaAPI {
         this.hostUrl = SITE_HOST_MAINNET
         break
     }
+
+    // Debugging: default to nothing
+    this.logger = logger || ((arg: string) => arg)
   }
 
   /**
@@ -280,50 +287,58 @@ export class OpenSeaAPI {
 
     const apiBase = this.apiBaseUrl
     const apiKey = this.apiKey
-    return fetch(apiBase + apiPath, {
+    const finalUrl = apiBase + apiPath
+    const finalOpts = {
       ...opts,
       headers: {
         ...(apiKey ? { 'X-API-KEY': apiKey } : {}),
         ...(opts.headers || {}),
-      },
-    }).then(handleApiErrors)
-  }
-}
+      }
+    }
 
-async function handleApiErrors(response: Response) {
-  if (response.ok) {
-    return response
+    this.logger(`Sending request: ${finalUrl} ${JSON.stringify(finalOpts)}`)
+
+    return fetch(finalUrl, finalOpts).then(async res => this._handleApiResponse(res))
   }
 
-  let result
-  let errorMessage
-  try {
-    result = await response.text()
-    result = JSON.parse(result)
-  } catch {
-    // Result will be undefined or text
-  }
+  private async _handleApiResponse(response: Response) {
+    if (response.ok) {
+      this.logger(`Got success: ${response.status}`)
+      return response
+    }
 
-  switch (response.status) {
-    case 400:
-      errorMessage = result && result.errors
-        ? result.errors.join(', ')
-        : `Invalid request: ${JSON.stringify(result)}`
-      break
-    case 401:
-    case 403:
-      errorMessage = `Unauthorized. Full message was '${JSON.stringify(result)}'`
-      break
-    case 404:
-      errorMessage = `Not found. Full message was '${JSON.stringify(result)}'`
-      break
-    case 500:
-      errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(result)}`
-      break
-    default:
-      errorMessage = `status code ${response.status}. Message: ${JSON.stringify(result)}`
-      break
-  }
+    let result
+    let errorMessage
+    try {
+      result = await response.text()
+      result = JSON.parse(result)
+    } catch {
+      // Result will be undefined or text
+    }
 
-  throw new Error(`API Error: ${errorMessage}`)
+    this.logger(`Got error ${response.status}: ${JSON.stringify(result)}`)
+
+    switch (response.status) {
+      case 400:
+        errorMessage = result && result.errors
+          ? result.errors.join(', ')
+          : `Invalid request: ${JSON.stringify(result)}`
+        break
+      case 401:
+      case 403:
+        errorMessage = `Unauthorized. Full message was '${JSON.stringify(result)}'`
+        break
+      case 404:
+        errorMessage = `Not found. Full message was '${JSON.stringify(result)}'`
+        break
+      case 500:
+        errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(result)}`
+        break
+      default:
+        errorMessage = `status code ${response.status}. Message: ${JSON.stringify(result)}`
+        break
+    }
+
+    throw new Error(`API Error: ${errorMessage}`)
+  }
 }
