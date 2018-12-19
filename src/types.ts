@@ -143,7 +143,7 @@ export interface OpenSeaAccount {
   // More information explicitly set by this account's owner on OpenSea
   user: null | {
     // Username for this account
-    username: string;
+    username: string
   }
 }
 
@@ -153,27 +153,27 @@ export interface OpenSeaAccount {
 export interface OpenSeaAsset {
   assetContract: {
     // Name of the asset's contract
-    name: string;
+    name: string
     // Address of this contract
-    address: string;
+    address: string
     // Fee levied on sellers by this contract, in basis points
-    sellerFeeBasisPoints: number;
+    sellerFeeBasisPoints: number
     // Fee levied on buyers by this contract, in basis points
-    buyerFeeBasisPoints: number;
+    buyerFeeBasisPoints: number
     // Description of the contract
-    description: string;
+    description: string
     // Contract's Etherscan / OpenSea symbol
-    tokenSymbol: string;
+    tokenSymbol: string
     // Image for the contract
-    imageUrl: string;
+    imageUrl: string
     // Object with stats about the contract
-    stats?: object;
+    stats?: object
     // Array of trait types for the contract
-    traits?: object[];
+    traits?: object[]
     // Link to the contract's main website
-    externalLink?: string;
+    externalLink?: string
     // Link to the contract's wiki, if available
-    wikiLink?: string;
+    wikiLink?: string
   }
   // The asset's given name
   name: string
@@ -258,9 +258,9 @@ export interface UnhashedOrder extends WyvernOrder {
   howToCall: HowToCall
 
   metadata: {
-    asset?: WyvernAsset;
-    bundle?: OpenSeaAssetBundleJSON;
-    schema: WyvernSchemaName;
+    asset?: WyvernAsset
+    bundle?: OpenSeaAssetBundleJSON
+    schema: WyvernSchemaName
   }
 }
 
@@ -307,8 +307,8 @@ export interface OrderJSON {
   salt: string
 
   metadata: {
-    asset: WyvernAsset;
-    schema: WyvernSchemaName;
+    asset: WyvernAsset
+    schema: WyvernSchemaName
   }
 
   hash: string

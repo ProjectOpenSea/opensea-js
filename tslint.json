@@ -61,7 +61,7 @@
         "promise-function-async": true,
         "quotemark": false,
         "radix": false,
-        "semicolon": [true, "never", "ignore-interfaces"],
+        "semicolon": [true, "never"],
         "space-before-function-paren": [
             true,
             {
@@ -74,7 +74,7 @@
         ],
         "space-within-parens": false,
         "triple-equals": false,
-        "type-literal-delimiter": true,
+        "type-literal-delimiter": false,
         "variable-name": [true, "ban-keywords", "allow-pascal-case"],
         "whitespace": [
             true,
