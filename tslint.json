@@ -19,7 +19,7 @@
         "eofline": true,
         "encoding": true,
         "import-spacing": true,
-        "indent": [true, "spaces", 4],
+        "indent": [true, "spaces", 2],
         "interface-name": false,
         "interface-over-type-literal": true,
         "linebreak-style": [true, "LF"],
@@ -41,6 +41,7 @@
         "no-redundant-jsdoc": true,
         "no-return-await": true,
         "no-string-throw": true,
+        "no-string-literal": false,
         "no-submodule-imports": false,
         "no-unnecessary-type-assertion": true,
         "no-implicit-dependencies": [true, "dev"],
@@ -60,7 +61,7 @@
         "promise-function-async": true,
         "quotemark": false,
         "radix": false,
-        "semicolon": [true, "never"],
+        "semicolon": [true, "never", "ignore-interfaces"],
         "space-before-function-paren": [
             true,
             {
