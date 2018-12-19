@@ -20,35 +20,43 @@ export {
 }
 
 /**
- * Events emitted by the SDK. There are four types:
- * 1. transaction events, which tell you when a new transaction was
- *    created, confirmed, or failed
+ * Events emitted by the SDK. There are five types:
+ * 1. Transaction events, which tell you when a new transaction was
+ *    created, confirmed, denied, or failed.
  * 2. pre-transaction events, which are named (like "WrapEth") and indicate
- *    that Web3 is asking for a signature on a transaction
- * 3. One "CreateOrder" event, which fires when a signature is being prompted
- *    to create an off-chain order
+ *    that Web3 is asking for a signature on a transaction that needs to occur before
+ *    an order is made or fulfilled. This includes approval events and account
+ *    initialization.
+ * 3. Basic actions: matching, cancelling, and creating orders.
+ *    The "CreateOrder" event fires when a signature is being prompted
+ *    to create an off-chain order. The "OrderDenied" event fires when a signature
+ *    request is denied by the user.
  * 4. The "TransferAll" event, which fires when a user is about to directly
  *    transfer one or more assets to another account
  */
 export enum EventType {
+  // Transactions and signature requests
   TransactionCreated = "TransactionCreated",
   TransactionConfirmed = "TransactionConfirmed",
+  TransactionDenied = "TransactionDenied",
   TransactionFailed = "TransactionFailed",
 
+  // Pre-transaction events
   InitializeAccount = "InitializeAccount",
-
   WrapEth = "WrapEth",
   UnwrapWeth = "UnwrapWeth",
-
   ApproveCurrency = "ApproveCurrency",
   ApproveAsset = "ApproveAsset",
   ApproveAllAssets = "ApproveAllAssets",
 
+  // Basic actions: matching orders, creating orders, and cancelling orders
   MatchOrders = "MatchOrders",
   CancelOrder = "CancelOrder",
-
   CreateOrder = "CreateOrder",
+  // When the signature request for an order is denied
+  OrderDenied = "OrderDenied",
 
+  // When transferring one or more assets
   TransferAll = "TransferAll",
 }
 

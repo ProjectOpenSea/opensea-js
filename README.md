@@ -297,6 +297,10 @@ handleSeaportEvents() {
         dispatch({ type: ActionTypes.RESET_EXCHANGE })
       }
     })
+    openSeaPort.addListener(EventType.TransactionDenied, ({ transactionHash, event }) => {
+      console.info({ transactionHash, event })
+      dispatch({ type: ActionTypes.RESET_EXCHANGE })
+    })
     openSeaPort.addListener(EventType.TransactionFailed, ({ transactionHash, event }) => {
       console.info({ transactionHash, event })
       dispatch({ type: ActionTypes.RESET_EXCHANGE })
@@ -328,6 +332,10 @@ handleSeaportEvents() {
     openSeaPort.addListener(EventType.CreateOrder, ({ order, accountAddress }) => {
       console.info({ order, accountAddress })
       dispatch({ type: ActionTypes.CREATE_ORDER })
+    })
+    openSeaPort.addListener(EventType.OrderDenied, ({ order, accountAddress }) => {
+      console.info({ order, accountAddress })
+      dispatch({ type: ActionTypes.RESET_EXCHANGE })
     })
     openSeaPort.addListener(EventType.MatchOrders, ({ buy, sell, accountAddress }) => {
       console.info({ buy, sell, accountAddress })

@@ -223,6 +223,7 @@ export class OpenSeaPort {
       signature = await this._signOrder(hashedOrder)
     } catch (error) {
       console.error(error)
+      this._dispatch(EventType.OrderDenied, { order: hashedOrder, accountAddress })
       throw new Error("You declined to sign your offer. Just a reminder: there's no gas needed anymore to create offers!")
     }
 
@@ -277,6 +278,7 @@ export class OpenSeaPort {
       signature = await this._signOrder(hashedOrder)
     } catch (error) {
       console.error(error)
+      this._dispatch(EventType.OrderDenied, { order: hashedOrder, accountAddress })
       throw new Error("You declined to sign your auction. Just a reminder: there's no gas needed anymore to create auctions!")
     }
 
@@ -333,6 +335,7 @@ export class OpenSeaPort {
         signature = await this._signOrder(hashedOrder)
       } catch (error) {
         console.error(error)
+        this._dispatch(EventType.OrderDenied, { order: hashedOrder, accountAddress })
         throw new Error("You declined to sign your auction, or your web3 provider can't sign using personal_sign. Try 'web3-provider-engine' and make sure a mnemonic is set. Just a reminder: there's no gas needed anymore to mint tokens!")
       }
 
@@ -410,6 +413,7 @@ export class OpenSeaPort {
       signature = await this._signOrder(hashedOrder)
     } catch (error) {
       console.error(error)
+      this._dispatch(EventType.OrderDenied, { order: hashedOrder, accountAddress })
       throw new Error("You declined to sign your auction. Just a reminder: there's no gas needed anymore to create auctions!")
     }
 
@@ -1538,6 +1542,9 @@ export class OpenSeaPort {
       txHash = await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
     } catch (error) {
       console.error(error)
+
+      this._dispatch(EventType.TransactionDenied, { buy, sell, accountAddress, matchMetadata: metadata })
+
       throw new Error(`Failed to authorize transaction: "${
         error.message
           ? error.message
