@@ -353,28 +353,30 @@ export function makeBigNumber(arg: number | string | BigNumber): BigNumber {
  * @param data data to send to contract
  * @param gasPrice gas price to use. If unspecified, uses web3 default (mean gas price)
  * @param value value in ETH to send with data. Defaults to 0
- * @param awaitConfirmation whether we should wait for blockchain to confirm. Defaults to false
+ * @param onError callback when user denies transaction
  */
 export async function sendRawTransaction(
     web3: Web3,
     {from, to, data, gasPrice, value = 0}: Web3.TxData,
-    awaitConfirmation = false
+    onError: (error: Error) => void
   ): Promise<string> {
 
-  const txHashRes = await promisify(c => web3.eth.sendTransaction({
-    from,
-    to,
-    value,
-    data,
-    gasPrice
-  }, c))
-  const txHash = txHashRes.toString()
+  try {
+    const txHashRes = await promisify(c => web3.eth.sendTransaction({
+      from,
+      to,
+      value,
+      data,
+      gasPrice
+    }, c))
+    const txHash = txHashRes.toString()
+    return txHash
 
-  if (awaitConfirmation) {
-    await confirmTransaction(web3, txHash)
+  } catch (error) {
+
+    onError(error)
+    throw error
   }
-
-  return txHash
 }
 
 /**

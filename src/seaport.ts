@@ -143,6 +143,8 @@ export class OpenSeaPort {
       value: amount,
       data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'deposit'), []),
       gasPrice
+    }, error => {
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
 
     await this._confirmTransaction(txHash, EventType.WrapEth, "Wrapping ETH")
@@ -173,6 +175,8 @@ export class OpenSeaPort {
       value: 0,
       data: WyvernSchemas.encodeCall(getMethod(CanonicalWETH, 'withdraw'), [amount.toString()]),
       gasPrice
+    }, error => {
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
 
     await this._confirmTransaction(txHash, EventType.UnwrapWeth, "Unwrapping W-ETH")
@@ -223,7 +227,6 @@ export class OpenSeaPort {
       signature = await this._signOrder(hashedOrder)
     } catch (error) {
       console.error(error)
-      this._dispatch(EventType.OrderDenied, { order: hashedOrder, accountAddress })
       throw new Error("You declined to sign your offer. Just a reminder: there's no gas needed anymore to create offers!")
     }
 
@@ -278,7 +281,6 @@ export class OpenSeaPort {
       signature = await this._signOrder(hashedOrder)
     } catch (error) {
       console.error(error)
-      this._dispatch(EventType.OrderDenied, { order: hashedOrder, accountAddress })
       throw new Error("You declined to sign your auction. Just a reminder: there's no gas needed anymore to create auctions!")
     }
 
@@ -335,7 +337,6 @@ export class OpenSeaPort {
         signature = await this._signOrder(hashedOrder)
       } catch (error) {
         console.error(error)
-        this._dispatch(EventType.OrderDenied, { order: hashedOrder, accountAddress })
         throw new Error("You declined to sign your auction, or your web3 provider can't sign using personal_sign. Try 'web3-provider-engine' and make sure a mnemonic is set. Just a reminder: there's no gas needed anymore to mint tokens!")
       }
 
@@ -413,7 +414,6 @@ export class OpenSeaPort {
       signature = await this._signOrder(hashedOrder)
     } catch (error) {
       console.error(error)
-      this._dispatch(EventType.OrderDenied, { order: hashedOrder, accountAddress })
       throw new Error("You declined to sign your auction. Just a reminder: there's no gas needed anymore to create auctions!")
     }
 
@@ -552,6 +552,8 @@ export class OpenSeaPort {
           to: erc721.address,
           data: erc721.setApprovalForAll.getData(proxyAddress, true),
           gasPrice
+        }, error => {
+          this._dispatch(EventType.TransactionDenied, { error, accountAddress })
         })
         await this._confirmTransaction(txHash, EventType.ApproveAllAssets, 'Approving all tokens of this type for trading')
         return txHash
@@ -605,6 +607,8 @@ export class OpenSeaPort {
         to: erc721.address,
         data: erc721.approve.getData(proxyAddress, tokenId),
         gasPrice
+      }, error => {
+        this._dispatch(EventType.TransactionDenied, { error, accountAddress })
       })
 
       await this._confirmTransaction(txHash, EventType.ApproveAsset, "Approving single token for trading")
@@ -647,6 +651,8 @@ export class OpenSeaPort {
       data: WyvernSchemas.encodeCall(getMethod(ERC20, 'approve'),
         [contractAddress, WyvernProtocol.MAX_UINT_256.toString()]),
       gasPrice
+    }, error => {
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
 
     await this._confirmTransaction(txHash, EventType.ApproveCurrency, "Approving currency for trading")
@@ -775,6 +781,8 @@ export class OpenSeaPort {
       to: proxyAddress,
       data: encodeProxyCall(WyvernProtocol.getAtomicizerContractAddress(this._networkName), HowToCall.DelegateCall, calldata),
       gasPrice
+    }, error => {
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress: fromAddress })
     })
 
     await this._confirmTransaction(txHash, EventType.TransferAll, `Transferring ${assets.length} asset${assets.length == 1 ? '' : 's'}`)
@@ -1543,7 +1551,7 @@ export class OpenSeaPort {
     } catch (error) {
       console.error(error)
 
-      this._dispatch(EventType.TransactionDenied, { buy, sell, accountAddress, matchMetadata: metadata })
+      this._dispatch(EventType.TransactionDenied, { error, buy, sell, accountAddress, matchMetadata: metadata })
 
       throw new Error(`Failed to authorize transaction: "${
         error.message
@@ -1618,7 +1626,12 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.CreateOrder, { order, accountAddress: order.maker })
 
-    return personalSignAsync(this.web3, message, signerAddress)
+    try {
+      return personalSignAsync(this.web3, message, signerAddress)
+    } catch (error) {
+      this._dispatch(EventType.OrderDenied, { order, accountAddress: signerAddress })
+      throw error
+    }
   }
 
   private _getSchema(schemaName = WyvernSchemaName.ERC721) {
