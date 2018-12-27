@@ -55,8 +55,9 @@ export declare function makeBigNumber(arg: number | string | BigNumber): BigNumb
 /**
  * Send a transaction to the blockchain and optionally confirm it
  * @param web3 Web3 instance
- * @param fromAddress address sending transaction
- * @param toAddress destination contract address
+ * @param param0 __namedParameters
+ * @param from address sending transaction
+ * @param to destination contract address
  * @param data data to send to contract
  * @param gasPrice gas price to use. If unspecified, uses web3 default (mean gas price)
  * @param value value in ETH to send with data. Defaults to 0

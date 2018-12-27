@@ -42,7 +42,7 @@
     "json-loader": "^0.5.7",
     "lodash": "^4.17.4",
     "query-string": "^6.1.0",
-    "web3": "^0.20.4",
+    "web3": "^0.20.6",
     "webpack": "^3.10.0",
     "wyvern-js": "github:ProjectOpenSea/wyvern-js",
     "wyvern-schemas": "github:ProjectOpenSea/wyvern-schemas"
