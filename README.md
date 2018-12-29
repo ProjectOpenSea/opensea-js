@@ -16,8 +16,10 @@ A JavaScript library for crypto-native ecommerce: buying, selling, and bidding o
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
+- [Affiliate Program](#affiliate-program)
+  - [Referring listings](#referring-listings)
+  - [Custom referral bounties](#custom-referral-bounties)
 - [Advanced](#advanced)
-  - [Affiliate Program](#affiliate-program)
   - [Creating Bundles](#creating-bundles)
   - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
   - [Sharing Sale Fees with OpenSea](#sharing-sale-fees-with-opensea)
@@ -185,13 +187,13 @@ await this.props.seaport.fulfillOrder({ order, accountAddress })
 
 If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
 
-## Advanced
+## Affiliate Program
 
-Interested in making an affiliate program, bundling items together, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+New in version 0.4, OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It's the crypto-equivalent of bounty hunting 💰
 
-### Affiliate Program
+You can use this to **win between 1% and 50%** of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.
 
-**NOTE:** This feature is in beta.
+### Referring listings
 
 You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders! Whenever someone refers a sale or the acceptance of an offer, you can add a `referrerAddress` to give their wallet credit:
 
@@ -200,11 +202,39 @@ const referrerAddress = "0x..." // The referrer's wallet address
 await this.props.seaport.fulfillOrder({ order, accountAddress, referrerAddress })
 ```
 
-This works for buying assets and bundles, along with accepting bids!
+This works for buying assets and bundles, along with accepting bids.
 
-OpenSea will send the referrer **1%** of the item's sale price. Soon, if you've customized your fees using the storefront editor, you'll be able to set an amount that you can send referrers as well.
+OpenSea will send the referrer an email congradulating them, along with **1%** of the item's sale price.
 
-More information will appear here when our redesigned affiliate program is ready. In the meantime, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or use our legacy affiliate program at https://opensea.io/account#referrals.
+### Custom referral bounties
+
+Sellers can customize the bounties they add to their items when listing them for sale. By default, OpenSea will pay referrers 1% and sellers pay them nothing, but sellers can add up to 50% for both assets and bundles:
+
+```JavaScript
+// Price the Genesis CryptoKitty at 100 ETH
+const startAmount = 100
+// Reward referrers with 10% of the final sale price,
+// or 10 ETH in this case
+const bountyPercent = 10
+// The final bounty will be 10% + 1% from OpenSea, or 11 ETH!
+
+const auction = await seaport.createSellOrder({
+  tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
+  tokenId: "1", // Token ID
+  accountAddress: OWNERS_WALLET_ADDRESS,
+  startAmount,
+  expirationTime: 0,
+  bountyBasisPoints: bountyPercent * 100
+})
+```
+
+**NOTE:**: The final bounty in the example above will be 10% from the seller plus 1% from OpenSea, or 11 ETH in total!
+
+If you have any questions, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or join the program at https://opensea.io/account#referrals.
+
+## Advanced
+
+Interested in making bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.
 
 ### Creating Bundles
 
