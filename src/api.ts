@@ -295,7 +295,7 @@ export class OpenSeaAPI {
       }
     }
 
-    this.logger(`Sending request: ${finalUrl} ${JSON.stringify(finalOpts)}`)
+    this.logger(`Sending request: ${finalUrl} ${JSON.stringify(finalOpts).substr(0, 100)}...`)
 
     return fetch(finalUrl, finalOpts).then(async res => this._handleApiResponse(res))
   }

@@ -1033,7 +1033,7 @@ export class OpenSeaPort {
     }
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
-    const buyerFee = asset.assetContract.buyerFeeBasisPoints
+    const buyerFee = asset.assetContract.buyerFeeBasisPoints + bountyBasisPoints
     const sellerFee = asset.assetContract.sellerFeeBasisPoints
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
@@ -1080,7 +1080,7 @@ export class OpenSeaPort {
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
     const buyerFee = asset.assetContract.buyerFeeBasisPoints
-    const sellerFee = asset.assetContract.sellerFeeBasisPoints
+    const sellerFee = asset.assetContract.sellerFeeBasisPoints + bountyBasisPoints
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
 
@@ -1152,6 +1152,9 @@ export class OpenSeaPort {
       buyerFee = asset.assetContract.buyerFeeBasisPoints
       sellerFee = asset.assetContract.sellerFeeBasisPoints
     }
+
+    // Add bounty
+    sellerFee += bountyBasisPoints
 
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
