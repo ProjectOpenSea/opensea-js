@@ -194,6 +194,7 @@ export interface UnsignedOrder extends UnhashedOrder {
 }
 export interface Order extends UnsignedOrder, ECSignature {
     currentPrice?: BigNumber;
+    currentBounty?: BigNumber;
     makerAccount?: OpenSeaAccount;
     takerAccount?: OpenSeaAccount;
     paymentTokenContract?: FungibleToken;

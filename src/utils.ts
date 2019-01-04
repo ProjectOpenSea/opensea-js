@@ -199,6 +199,8 @@ export const orderFromJSON = (order: any): Order => {
     paymentToken: order.payment_token,
     basePrice: new BigNumber(order.base_price),
     extra: new BigNumber(order.extra),
+    currentBounty: new BigNumber(order.current_bounty),
+    currentPrice: new BigNumber(order.current_price),
     listingTime: new BigNumber(order.listing_time),
     expirationTime: new BigNumber(order.expiration_time),
     salt: new BigNumber(order.salt),
@@ -211,6 +213,8 @@ export const orderFromJSON = (order: any): Order => {
     assetBundle: order.asset_bundle ? assetBundleFromJSON(order.asset_bundle) : undefined
   }
 
+  // Use most recent price calc, to account for latency
+  // TODO is this necessary?
   fromJSON.currentPrice = estimateCurrentPrice(fromJSON)
 
   return fromJSON
