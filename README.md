@@ -22,6 +22,7 @@ A JavaScript library for crypto-native ecommerce: buying, selling, and bidding o
 - [Advanced](#advanced)
   - [Creating Bundles](#creating-bundles)
   - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
+  - [Private Auctions](#private-auctions)
   - [Sharing Sale Fees with OpenSea](#sharing-sale-fees-with-opensea)
   - [Listening to Events](#listening-to-events)
 - [Learning More](#learning-more)
@@ -228,7 +229,7 @@ const auction = await seaport.createSellOrder({
 })
 ```
 
-**NOTE:**: The final bounty in the example above will be 10% from the seller plus 1% from OpenSea, or 11 ETH in total!
+**NOTE:** The final bounty in the example above will be 10% from the seller plus 1% from OpenSea, or 11 ETH in total!
 
 If you have any questions, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or join the program at https://opensea.io/account#referrals.
 
@@ -292,6 +293,25 @@ const order = await seaport.api.getOrders({
 
 * MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942 
 * DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
+
+### Private Auctions
+
+Now you can make auctions and listings that can only be fulfilled by an address of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on OpenSea, **without having to trust that the counterparty will abide by your terms!**
+
+Here's an example of listing a Decentraland parcel for 10 ETH with a specific buyer address allowed to take it. No more needing to worry about whether they'll give you enough back!
+
+```JavaScript
+// Address allowed to buy from you
+const buyerAddress = "0x123..."
+
+const listing = await seaport.createSellOrder({
+  tokenAddress: "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d", // Decentraland
+  tokenId: "115792089237316195423570985008687907832853042650384256231655107562007036952461", // Token ID
+  accountAddress: OWNERS_WALLET_ADDRESS,
+  startAmount: 10,
+  buyerAddress
+})
+```
 
 ### Sharing Sale Fees with OpenSea
 

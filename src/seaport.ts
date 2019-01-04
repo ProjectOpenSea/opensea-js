@@ -250,9 +250,10 @@ export class OpenSeaPort {
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+   * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order.
    */
   public async createSellOrder(
-      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
+      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress }:
       { tokenId: string;
         tokenAddress: string;
         accountAddress: string;
@@ -260,7 +261,8 @@ export class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number; }
+        bountyBasisPoints?: number;
+        buyerAddress?: string; }
     ): Promise<Order> {
 
     const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
@@ -268,7 +270,7 @@ export class OpenSeaPort {
       throw new Error('No asset found for this order')
     }
 
-    const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints })
+    const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -305,11 +307,22 @@ export class OpenSeaPort {
    * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param expirationTime Expiration time for the orders, in seconds. An expiration time of 0 means "never expire."
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
+   * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
+   * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
    * @param numberOfOrders Number of times to repeat creating the same order. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
    */
   public async createFactorySellOrders(
-      { assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, numberOfOrders = 1 }:
-      { assetId: string; factoryAddress: string; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; numberOfOrders?: number }
+      { assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress, numberOfOrders = 1 }:
+      { assetId: string;
+        factoryAddress: string;
+        accountAddress: string;
+        startAmount: number;
+        endAmount?: number;
+        expirationTime?: number;
+        paymentTokenAddress?: string;
+        bountyBasisPoints?: number;
+        buyerAddress?: string;
+        numberOfOrders?: number; }
     ): Promise<Order[]> {
 
     const asset: OpenSeaAsset | null = await this.api.getAsset(factoryAddress, assetId)
@@ -322,11 +335,11 @@ export class OpenSeaPort {
     }
 
     // Validate just a single dummy order but don't post it
-    const dummyOrder = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress })
+    const dummyOrder = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress })
     await this._validateSellOrderParameters({ order: dummyOrder, accountAddress })
 
     const _makeAndPostOneSellOrder = async () => {
-      const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress })
+      const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress })
 
       const hashedOrder = {
         ...order,
@@ -386,9 +399,10 @@ export class OpenSeaPort {
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+   * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order.
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -398,10 +412,11 @@ export class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number; }
+        bountyBasisPoints?: number;
+        buyerAddress?: string; }
     ): Promise<Order> {
 
-    const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints })
+    const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -1071,8 +1086,8 @@ export class OpenSeaPort {
   }
 
   public async _makeSellOrder(
-      { asset, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
-      { asset: OpenSeaAsset; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number }
+      { asset, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress }:
+      { asset: OpenSeaAsset; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number; buyerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
     const schema = this._getSchema()
@@ -1088,13 +1103,14 @@ export class OpenSeaPort {
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
+    const taker = buyerAddress || NULL_ADDRESS
     const paymentToken = paymentTokenAddress || NULL_ADDRESS
     const { basePrice, extra } = await this._getPriceParameters(paymentToken, startAmount, endAmount)
 
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
-      taker: NULL_ADDRESS,
+      taker,
       makerRelayerFee: makeBigNumber(sellerFee),
       takerRelayerFee: makeBigNumber(buyerFee),
       makerProtocolFee: makeBigNumber(0),
@@ -1124,8 +1140,8 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
-      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number }
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress }:
+      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number; buyerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
     const schema = this._getSchema()
@@ -1158,6 +1174,7 @@ export class OpenSeaPort {
 
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
+    const taker = buyerAddress || NULL_ADDRESS
     const paymentToken = paymentTokenAddress || NULL_ADDRESS
     const { basePrice, extra } = await this._getPriceParameters(paymentToken, startAmount, endAmount)
 
@@ -1171,7 +1188,7 @@ export class OpenSeaPort {
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
-      taker: NULL_ADDRESS,
+      taker,
       makerRelayerFee: makeBigNumber(sellerFee),
       takerRelayerFee: makeBigNumber(buyerFee),
       makerProtocolFee: makeBigNumber(0),
@@ -1452,10 +1469,6 @@ export class OpenSeaPort {
 
     return { basePrice, extra }
   }
-
-  /**
-   * Private helper methods
-   */
 
   private async _atomicMatch(
       { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH }:

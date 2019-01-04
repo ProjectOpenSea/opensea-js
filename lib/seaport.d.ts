@@ -100,8 +100,9 @@ export declare class OpenSeaPort {
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+     * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order.
      */
-    createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints }: {
+    createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
@@ -110,6 +111,7 @@ export declare class OpenSeaPort {
         expirationTime?: number;
         paymentTokenAddress?: string;
         bountyBasisPoints?: number;
+        buyerAddress?: string;
     }): Promise<Order>;
     /**
      * Create multiple sell orders in bulk to auction assets out of an asset factory.
@@ -124,9 +126,11 @@ export declare class OpenSeaPort {
      * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param expirationTime Expiration time for the orders, in seconds. An expiration time of 0 means "never expire."
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
+     * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
+     * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
      * @param numberOfOrders Number of times to repeat creating the same order. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
      */
-    createFactorySellOrders({ assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, numberOfOrders }: {
+    createFactorySellOrders({ assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress, numberOfOrders }: {
         assetId: string;
         factoryAddress: string;
         accountAddress: string;
@@ -134,6 +138,8 @@ export declare class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
+        bountyBasisPoints?: number;
+        buyerAddress?: string;
         numberOfOrders?: number;
     }): Promise<Order[]>;
     /**
@@ -151,8 +157,9 @@ export declare class OpenSeaPort {
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+     * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order.
      */
-    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints }: {
+    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -166,6 +173,7 @@ export declare class OpenSeaPort {
         expirationTime?: number;
         paymentTokenAddress?: string;
         bountyBasisPoints?: number;
+        buyerAddress?: string;
     }): Promise<Order>;
     /**
      * Fullfill or "take" an order for an asset, either a buy or sell order
@@ -390,7 +398,7 @@ export declare class OpenSeaPort {
         paymentTokenAddress?: string;
         bountyBasisPoints?: number;
     }): Promise<UnhashedOrder>;
-    _makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints }: {
+    _makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress }: {
         asset: OpenSeaAsset;
         accountAddress: string;
         startAmount: number;
@@ -398,8 +406,9 @@ export declare class OpenSeaPort {
         expirationTime?: number;
         paymentTokenAddress?: string;
         bountyBasisPoints?: number;
+        buyerAddress?: string;
     }): Promise<UnhashedOrder>;
-    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints }: {
+    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -413,6 +422,7 @@ export declare class OpenSeaPort {
         expirationTime?: number;
         paymentTokenAddress?: string;
         bountyBasisPoints?: number;
+        buyerAddress?: string;
     }): Promise<UnhashedOrder>;
     _makeMatchingOrder({ order, accountAddress }: {
         order: UnsignedOrder;
@@ -452,9 +462,6 @@ export declare class OpenSeaPort {
      * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
      */
     private _getPriceParameters;
-    /**
-     * Private helper methods
-     */
     private _atomicMatch;
     private _getRequiredAmountForTakingSellOrder;
     private _validateAndPostOrder;

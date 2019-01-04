@@ -193,6 +193,50 @@ suite('seaport', () => {
     })
   })
 
+  test("Matches a private sell order, doesn't for wrong taker", async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+    const amountInToken = 2
+    const bountyPercent = 0
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const assetContractFee = asset.assetContract.sellerFeeBasisPoints
+
+    const order = await client._makeSellOrder({
+      asset,
+      accountAddress,
+      startAmount: amountInToken,
+      bountyBasisPoints: bountyPercent * 100,
+      buyerAddress: takerAddress
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, assetContractFee, bountyPercent * 100, 0)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+    // Make sure no one else can take it
+    try {
+      await testMatchingNewOrder(order, DEVIN_ADDRESS)
+    } catch (e) {
+      // It works!
+      return
+    }
+    assert.fail("Matched order", "But should have failed to match")
+  })
+
   test('Matches a new bountied sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
