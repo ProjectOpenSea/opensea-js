@@ -132,6 +132,7 @@ export interface OpenSeaAsset {
         wikiLink?: string;
     };
     name: string;
+    description: string;
     tokenId: string;
     owner: OpenSeaAccount;
     orders: Order[] | null;
