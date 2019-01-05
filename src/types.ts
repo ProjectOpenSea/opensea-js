@@ -185,6 +185,8 @@ export interface OpenSeaAsset {
   }
   // The asset's given name
   name: string
+  // Description of the asset
+  description: string
   // The asset's token ID
   tokenId: string
   // Owner of the asset

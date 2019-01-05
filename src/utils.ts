@@ -92,6 +92,7 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
   const fromJSON: OpenSeaAsset = {
     tokenId: asset.token_id.toString(),
     name: asset.name,
+    description: asset.description,
     owner: asset.owner,
     assetContract: {
       name: asset.asset_contract.name,
