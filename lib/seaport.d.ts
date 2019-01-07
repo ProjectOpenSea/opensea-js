@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, FungibleToken, WyvernAsset } from './types';
+import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, FungibleToken, WyvernAsset, OpenSeaFees } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -324,6 +324,23 @@ export declare class OpenSeaPort {
         tokenAbi?: PartialReadonlyContractAbi;
     }): Promise<BigNumber>;
     /**
+     * Compute the fees for an order
+     * @param param0 __namedParameters
+     * @param assets Array of addresses and ids that will be in the order
+     * @param side The side of the order (buy or sell)
+     * @param isPrivate Whether the order is private or not (known taker)
+     * @param bountyBasisPoints The basis points to add for the bounty
+     */
+    computeFees({ assets, side, isPrivate, bountyBasisPoints }: {
+        assets: Array<{
+            tokenAddress: string;
+            tokenId: string;
+        }>;
+        side: OrderSide;
+        isPrivate?: boolean;
+        bountyBasisPoints?: number;
+    }): Promise<OpenSeaFees>;
+    /**
      * Compute the gas price for sending a txn, in wei
      * Will be slightly above the mean to make it faster
      */
@@ -391,7 +408,10 @@ export declare class OpenSeaPort {
         tokenAddress?: string;
     }): Promise<BigNumber>;
     _makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, bountyBasisPoints }: {
-        asset: OpenSeaAsset;
+        asset: {
+            tokenAddress: string;
+            tokenId: string;
+        };
         accountAddress: string;
         startAmount: number;
         expirationTime?: number;
@@ -399,7 +419,10 @@ export declare class OpenSeaPort {
         bountyBasisPoints?: number;
     }): Promise<UnhashedOrder>;
     _makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress }: {
-        asset: OpenSeaAsset;
+        asset: {
+            tokenAddress: string;
+            tokenId: string;
+        };
         accountAddress: string;
         startAmount: number;
         endAmount?: number;

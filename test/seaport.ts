@@ -79,6 +79,248 @@ suite('seaport', () => {
     })
   })
 
+  ordersJSON.map((orderJSON: OrderJSON, index: number) => {
+    test('Order #' + index + ' has correct types', () => {
+      const order = orderFromJSON(orderJSON)
+      assert.instanceOf(order.basePrice, BigNumber)
+      assert.typeOf(order.hash, "string")
+      assert.typeOf(order.maker, "string")
+      // client._validateBuyOrderParameters({order, accountAddress: order.maker})
+    })
+  })
+
+  ordersJSON.map((orderJSON: OrderJSON, index: number) => {
+    test('Order #' + index + ' has correct hash', () => {
+      const order = orderFromJSON(orderJSON)
+      assert.equal(order.hash, getOrderHash(order))
+    })
+  })
+
+  test("Computes fees", async () => {
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+    const bountyPercent = 3.5
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const assetContractSellerFee = asset.assetContract.sellerFeeBasisPoints
+    const assetContractBuyerFee = asset.assetContract.buyerFeeBasisPoints
+
+    const buyerFees = await client.computeFees({
+      assets: [{ tokenAddress, tokenId }],
+      bountyBasisPoints: bountyPercent * 100,
+      side: OrderSide.Buy
+    })
+    assert.equal(buyerFees.totalBuyerFeeBPS, assetContractBuyerFee + bountyPercent * 100)
+    assert.equal(buyerFees.totalSellerFeeBPS, assetContractSellerFee)
+    assert.equal(buyerFees.buyerBountyBPS, bountyPercent * 100)
+    assert.equal(buyerFees.sellerBountyBPS, 0)
+
+    const sellerFees = await client.computeFees({
+      assets: [{ tokenAddress, tokenId }],
+      bountyBasisPoints: bountyPercent * 100,
+      side: OrderSide.Sell
+    })
+    assert.equal(sellerFees.totalBuyerFeeBPS, assetContractBuyerFee)
+    assert.equal(sellerFees.totalSellerFeeBPS, assetContractSellerFee + bountyPercent * 100)
+    assert.equal(sellerFees.buyerBountyBPS, 0)
+    assert.equal(sellerFees.sellerBountyBPS, bountyPercent * 100)
+
+    const privateSellerFees = await client.computeFees({
+      assets: [{ tokenAddress, tokenId }],
+      bountyBasisPoints: bountyPercent * 100,
+      side: OrderSide.Sell,
+      isPrivate: true
+    })
+    assert.equal(privateSellerFees.totalBuyerFeeBPS, 0)
+    assert.equal(privateSellerFees.totalSellerFeeBPS, 0)
+    assert.equal(privateSellerFees.buyerBountyBPS, 0)
+    assert.equal(privateSellerFees.sellerBountyBPS, 0)
+
+    const privateBuyerFees = await client.computeFees({
+      assets: [{ tokenAddress, tokenId }],
+      bountyBasisPoints: bountyPercent * 100,
+      side: OrderSide.Buy,
+      isPrivate: true
+    })
+    assert.equal(privateBuyerFees.totalBuyerFeeBPS, 0)
+    assert.equal(privateBuyerFees.totalSellerFeeBPS, 0)
+    assert.equal(privateBuyerFees.buyerBountyBPS, 0)
+    assert.equal(privateBuyerFees.sellerBountyBPS, 0)
+  })
+
+  test("Matches a private sell order, doesn't for wrong taker", async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+    const amountInToken = 2
+    const bountyPercent = 0
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const order = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress,
+      startAmount: amountInToken,
+      bountyBasisPoints: bountyPercent * 100,
+      buyerAddress: takerAddress
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, 0, 0, 0)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+    // Make sure no one else can take it
+    try {
+      await testMatchingNewOrder(order, DEVIN_ADDRESS)
+    } catch (e) {
+      // It works!
+      return
+    }
+    assert.fail("Matched order", "But should have failed to match")
+  })
+
+  test('Matches a new bountied sell order for an ERC-20 token (MANA)', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+    const paymentToken = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
+    const amountInToken = 4000
+    const bountyPercent = 1
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const assetContractFee = asset.assetContract.sellerFeeBasisPoints
+
+    const order = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress: paymentToken.address,
+      bountyBasisPoints: bountyPercent * 100
+    })
+
+    assert.equal(order.paymentToken, paymentToken.address)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, assetContractFee, bountyPercent * 100, 0)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches a buy order with an ERC-20 token (DAI)', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const paymentToken = (await client.getFungibleTokens({ symbol: 'DAI'}))[0]
+    const amountInToken = 3
+
+    const tokenId = CK_TOKEN_ID.toString()
+    const tokenAddress = CK_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const order = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress: paymentToken.address
+    })
+
+    assert.equal(order.paymentToken, paymentToken.address)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, 0)
+
+    await client._validateBuyOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches fixed bountied bundle sell order', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 1
+    const bountyPercent = 40
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with different types of assets",
+      assets: assetsForBundleOrder,
+      accountAddress,
+      startAmount: amountInEth,
+      bountyBasisPoints: bountyPercent * 100
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, DEFAULT_SELLER_FEE_BASIS_POINTS, bountyPercent * 100)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches homogenous, bountied bundle sell order', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 1
+    const bountyPercent = 80
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Homogenous Bundle",
+      bundleDescription: "This is a test with one type of asset",
+      assets: homogenousAssetsForBundleOrder,
+      accountAddress,
+      startAmount: amountInEth,
+      bountyBasisPoints: bountyPercent * 100
+    })
+
+    const asset = await client.api.getAsset(homogenousAssetsForBundleOrder[0].tokenAddress, homogenousAssetsForBundleOrder[0].tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const assetContractFee = asset.assetContract.sellerFeeBasisPoints
+    // This should be a contract with a custom fee
+    assert.notEqual(assetContractFee, DEFAULT_SELLER_FEE_BASIS_POINTS)
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, assetContractFee, bountyPercent * 100, 0)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
   test('Serializes payment token and matches most recent ERC-20 sell order', async () => {
     const takerAddress = ALEX_ADDRESS
 
@@ -176,104 +418,6 @@ suite('seaport', () => {
     assert.isTrue(isTransferrable)
   })
 
-  ordersJSON.map((orderJSON: OrderJSON, index: number) => {
-    test('Order #' + index + ' has correct types', () => {
-      const order = orderFromJSON(orderJSON)
-      assert.instanceOf(order.basePrice, BigNumber)
-      assert.typeOf(order.hash, "string")
-      assert.typeOf(order.maker, "string")
-      // client._validateBuyOrderParameters({order, accountAddress: order.maker})
-    })
-  })
-
-  ordersJSON.map((orderJSON: OrderJSON, index: number) => {
-    test('Order #' + index + ' has correct hash', () => {
-      const order = orderFromJSON(orderJSON)
-      assert.equal(order.hash, getOrderHash(order))
-    })
-  })
-
-  test("Matches a private sell order, doesn't for wrong taker", async () => {
-    const accountAddress = ALEX_ADDRESS
-    const takerAddress = ALEX_ADDRESS_2
-    const amountInToken = 2
-    const bountyPercent = 0
-
-    const tokenId = MYTHEREUM_TOKEN_ID.toString()
-    const tokenAddress = MYTHEREUM_ADDRESS
-
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
-
-    const assetContractFee = asset.assetContract.sellerFeeBasisPoints
-
-    const order = await client._makeSellOrder({
-      asset,
-      accountAddress,
-      startAmount: amountInToken,
-      bountyBasisPoints: bountyPercent * 100,
-      buyerAddress: takerAddress
-    })
-
-    assert.equal(order.paymentToken, NULL_ADDRESS)
-    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
-    assert.equal(order.extra.toNumber(), 0)
-    assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, assetContractFee, bountyPercent * 100, 0)
-
-    await client._validateSellOrderParameters({ order, accountAddress })
-    // Make sure match is valid
-    await testMatchingNewOrder(order, takerAddress)
-    // Make sure no one else can take it
-    try {
-      await testMatchingNewOrder(order, DEVIN_ADDRESS)
-    } catch (e) {
-      // It works!
-      return
-    }
-    assert.fail("Matched order", "But should have failed to match")
-  })
-
-  test('Matches a new bountied sell order for an ERC-20 token (MANA)', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const takerAddress = ALEX_ADDRESS_2
-    const paymentToken = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
-    const amountInToken = 4000
-    const bountyPercent = 1
-
-    const tokenId = MYTHEREUM_TOKEN_ID.toString()
-    const tokenAddress = MYTHEREUM_ADDRESS
-
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
-
-    const assetContractFee = asset.assetContract.sellerFeeBasisPoints
-
-    const order = await client._makeSellOrder({
-      asset,
-      accountAddress,
-      startAmount: amountInToken,
-      paymentTokenAddress: paymentToken.address,
-      bountyBasisPoints: bountyPercent * 100
-    })
-
-    assert.equal(order.paymentToken, paymentToken.address)
-    assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
-    assert.equal(order.extra.toNumber(), 0)
-    assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, assetContractFee, bountyPercent * 100, 0)
-
-    await client._validateSellOrderParameters({ order, accountAddress })
-    // Make sure match is valid
-    await testMatchingNewOrder(order, takerAddress)
-  })
-
   test('Matches a new bundle sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
@@ -293,100 +437,6 @@ suite('seaport', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, token.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-
-    await client._validateSellOrderParameters({ order, accountAddress })
-    // Make sure match is valid
-    await testMatchingNewOrder(order, takerAddress)
-  })
-
-  test('Matches a buy order with an ERC-20 token (DAI)', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const takerAddress = ALEX_ADDRESS
-    const paymentToken = (await client.getFungibleTokens({ symbol: 'DAI'}))[0]
-    const amountInToken = 3
-
-    const tokenId = CK_TOKEN_ID.toString()
-    const tokenAddress = CK_ADDRESS
-
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
-
-    const order = await client._makeBuyOrder({
-      asset,
-      accountAddress,
-      startAmount: amountInToken,
-      paymentTokenAddress: paymentToken.address
-    })
-
-    assert.equal(order.paymentToken, paymentToken.address)
-    assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
-    assert.equal(order.extra.toNumber(), 0)
-    assert.equal(order.expirationTime.toNumber(), 0)
-
-    await client._validateBuyOrderParameters({ order, accountAddress })
-    // Make sure match is valid
-    await testMatchingNewOrder(order, takerAddress)
-  })
-
-  test('Matches fixed bountied bundle sell order', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const takerAddress = ALEX_ADDRESS
-    const amountInEth = 1
-    const bountyPercent = 40
-
-    const order = await client._makeBundleSellOrder({
-      bundleName: "Test Bundle",
-      bundleDescription: "This is a test with different types of assets",
-      assets: assetsForBundleOrder,
-      accountAddress,
-      startAmount: amountInEth,
-      bountyBasisPoints: bountyPercent * 100
-    })
-
-    assert.equal(order.paymentToken, NULL_ADDRESS)
-    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
-    assert.equal(order.extra.toNumber(), 0)
-    assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, DEFAULT_SELLER_FEE_BASIS_POINTS, bountyPercent * 100)
-
-    await client._validateSellOrderParameters({ order, accountAddress })
-    // Make sure match is valid
-    await testMatchingNewOrder(order, takerAddress)
-  })
-
-  test('Matches homogenous, bountied bundle sell order', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const takerAddress = ALEX_ADDRESS
-    const amountInEth = 1
-    const bountyPercent = 80
-
-    const order = await client._makeBundleSellOrder({
-      bundleName: "Test Homogenous Bundle",
-      bundleDescription: "This is a test with one type of asset",
-      assets: homogenousAssetsForBundleOrder,
-      accountAddress,
-      startAmount: amountInEth,
-      bountyBasisPoints: bountyPercent * 100
-    })
-
-    const asset = await client.api.getAsset(homogenousAssetsForBundleOrder[0].tokenAddress, homogenousAssetsForBundleOrder[0].tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
-
-    const assetContractFee = asset.assetContract.sellerFeeBasisPoints
-    // This should be a contract with a custom fee
-    assert.notEqual(assetContractFee, DEFAULT_SELLER_FEE_BASIS_POINTS)
-
-    assert.equal(order.paymentToken, NULL_ADDRESS)
-    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
-    assert.equal(order.extra.toNumber(), 0)
-    assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, assetContractFee, bountyPercent * 100, 0)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -626,12 +676,17 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
   }))
 }
 
-function testFees(order: Order | UnhashedOrder, makerFee?: number, bounty?: number, takerFee?: number) {
+function testFees(order: Order | UnhashedOrder, makerFeeMinusBounty?: number, makerBounty?: number, takerFee?: number) {
   assert.equal(order.makerProtocolFee.toNumber(), 0)
   assert.equal(order.takerProtocolFee.toNumber(), 0)
-  if (makerFee != null && bounty != null) {
-    assert.equal(order.makerReferrerFee.toNumber(), bounty)
-    assert.equal(order.makerRelayerFee.toNumber(), makerFee + bounty)
+  if (order.taker != NULL_ADDRESS) {
+    // Private order
+    assert.equal(order.makerReferrerFee.toNumber(), 0)
+    assert.equal(order.makerRelayerFee.toNumber(), 0)
+  }
+  if (makerFeeMinusBounty != null && makerBounty != null) {
+    assert.equal(order.makerReferrerFee.toNumber(), makerBounty)
+    assert.equal(order.makerRelayerFee.toNumber(), makerFeeMinusBounty + makerBounty)
   }
   if (takerFee != null) {
     assert.equal(order.takerRelayerFee.toNumber(), takerFee)

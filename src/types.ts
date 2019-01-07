@@ -260,6 +260,32 @@ export interface OpenSeaAssetBundleJSON {
   search?: string
 }
 
+/**
+ * The basis point values of each type of fee
+ * added to each order.
+ * The first two values are the totals of
+ * the other values.
+ */
+export interface OpenSeaFees {
+  // Total fees
+  totalBuyerFeeBPS: number
+  totalSellerFeeBPS: number
+
+  // Fees that go to whoever refers the order to the taker
+  sellerBountyBPS: number
+  buyerBountyBPS: number
+
+  // Will be required in a future version:
+
+  // Fees that go to the asset contract's developer
+  devSellerFeeBPS?: number
+  devBuyerFeeBPS?: number
+
+  // Fees that go to OpenSea
+  openseaSellerFeeBPS?: number
+  openseaBuyerFeeBPS?: number
+}
+
 export interface UnhashedOrder extends WyvernOrder {
   makerReferrerFee: BigNumber
   feeMethod: FeeMethod

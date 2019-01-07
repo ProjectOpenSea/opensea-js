@@ -140,7 +140,7 @@
         "address": "0x0000000000000000000000000000000000000000",
         "config": ""
     },
-    "current_price": "<bound method Order.current_price of <Order: wanderer (0x6be4a7bbb812bfa6a63126ee7b76c8a13529bdb8) valued \"Miranda Holst (CryptoCrystal #764)\" at Ξ0.01>>",
+    "current_price": "0.01",
     "maker_relayer_fee": "0",
     "taker_relayer_fee": "0",
     "maker_protocol_fee": "0",
