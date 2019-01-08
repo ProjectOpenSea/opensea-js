@@ -1087,6 +1087,7 @@ export class OpenSeaPort {
       { asset: {tokenAddress: string; tokenId: string }; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number }
     ): Promise<UnhashedOrder> {
 
+    accountAddress = accountAddress.toLowerCase()
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.tokenAddress)
     const metadata = {
@@ -1145,6 +1146,7 @@ export class OpenSeaPort {
         buyerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
+    accountAddress = accountAddress.toLowerCase()
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.tokenAddress)
     // Small offset to account for latency
@@ -1200,6 +1202,7 @@ export class OpenSeaPort {
       { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number; buyerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
+    accountAddress = accountAddress.toLowerCase()
     const schema = this._getSchema()
 
     const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
@@ -1265,6 +1268,8 @@ export class OpenSeaPort {
       { order, accountAddress }:
       { order: UnsignedOrder; accountAddress: string}
     ): UnsignedOrder {
+
+    accountAddress = accountAddress.toLowerCase()
     const schema = this._getSchema()
     const listingTime = Math.round(Date.now() / 1000 - 1000)
 
