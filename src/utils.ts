@@ -91,6 +91,7 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
   const isSvg = asset.image_url && asset.image_url.endsWith('.svg')
   const fromJSON: OpenSeaAsset = {
     tokenId: asset.token_id.toString(),
+    tokenAddress: asset.asset_contract.address,
     name: asset.name,
     description: asset.description,
     owner: asset.owner,
@@ -101,6 +102,10 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
       tokenSymbol: asset.asset_contract.symbol,
       buyerFeeBasisPoints: asset.asset_contract.buyer_fee_basis_points,
       sellerFeeBasisPoints: asset.asset_contract.seller_fee_basis_points,
+      openseaBuyerFeeBasisPoints: asset.asset_contract.opensea_buyer_fee_basis_points,
+      openseaSellerFeeBasisPoints: asset.asset_contract.opensea_seller_fee_basis_points,
+      devBuyerFeeBasisPoints: asset.asset_contract.dev_buyer_fee_basis_points,
+      devSellerFeeBasisPoints: asset.asset_contract.dev_seller_fee_basis_points,
       imageUrl: asset.asset_contract.image_url,
       stats: asset.asset_contract.stats,
       traits: asset.asset_contract.traits,

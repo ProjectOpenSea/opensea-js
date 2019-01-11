@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types'
 import {
   confirmTransaction, feeRecipient, findAsset,
   makeBigNumber, orderToJSON,
@@ -206,7 +206,7 @@ export class OpenSeaPort {
         bountyBasisPoints?: number; }
     ): Promise<Order> {
 
-    const asset = { tokenAddress, tokenId }
+    const asset: Asset = { tokenAddress, tokenId }
 
     const order = await this._makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, bountyBasisPoints })
 
@@ -397,7 +397,7 @@ export class OpenSeaPort {
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
-        assets: Array<{tokenId: string; tokenAddress: string}>;
+        assets: Asset[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -764,7 +764,7 @@ export class OpenSeaPort {
    */
   public async transferAll(
       { assets, fromAddress, toAddress }:
-      { assets: Array<{tokenId: string; tokenAddress: string}>; fromAddress: string; toAddress: string }
+      { assets: Asset[]; fromAddress: string; toAddress: string }
     ): Promise<void> {
 
     const schema = this._getSchema()
@@ -866,53 +866,78 @@ export class OpenSeaPort {
    * Compute the fees for an order
    * @param param0 __namedParameters
    * @param assets Array of addresses and ids that will be in the order
+   * @param assetContract Prefetched asset contract (including fees) to use instead of assets
    * @param side The side of the order (buy or sell)
    * @param isPrivate Whether the order is private or not (known taker)
-   * @param bountyBasisPoints The basis points to add for the bounty
+   * @param bountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
    */
   public async computeFees(
-    { assets, side, isPrivate = false, bountyBasisPoints = 0 }:
-    { assets: Array<{tokenAddress: string; tokenId: string}>;
+    { assets, assetContract, side, isPrivate = false, bountyBasisPoints = 0 }:
+    { assets?: Asset[];
+      assetContract?: OpenSeaAssetContract;
       side: OrderSide;
       isPrivate?: boolean;
       bountyBasisPoints?: number }
   ): Promise<OpenSeaFees> {
 
-  let buyerFeeBPS = DEFAULT_BUYER_FEE_BASIS_POINTS
-  let sellerFeeBPS = DEFAULT_SELLER_FEE_BASIS_POINTS
+  let contractFees: Partial<OpenSeaAssetContract>
 
   // If all assets are for the same contract, use its fees
-  if (_.uniqBy(assets, a => a.tokenAddress).length == 1) {
+  if (assetContract) {
+    contractFees = assetContract
+  } else if (assets && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
     const { tokenAddress, tokenId } = assets[0]
     const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
     if (!asset) {
-      throw new Error('No asset found for this order')
+      throw new Error(`Could not find asset with ID ${tokenId} and address ${tokenAddress}`)
     }
-    buyerFeeBPS = asset.assetContract.buyerFeeBasisPoints
-    sellerFeeBPS = asset.assetContract.sellerFeeBasisPoints
+    contractFees = asset.assetContract
+  } else {
+    contractFees = {}
   }
+
+  let totalBuyerFeeBPS = contractFees.buyerFeeBasisPoints || DEFAULT_BUYER_FEE_BASIS_POINTS
+  let totalSellerFeeBPS = contractFees.sellerFeeBasisPoints || DEFAULT_SELLER_FEE_BASIS_POINTS
+  let openseaBuyerFeeBPS = contractFees.openseaBuyerFeeBasisPoints || totalBuyerFeeBPS
+  let openseaSellerFeeBPS = contractFees.openseaSellerFeeBasisPoints || totalSellerFeeBPS
+  let devBuyerFeeBPS = contractFees.devBuyerFeeBasisPoints || 0
+  let devSellerFeeBPS = contractFees.devSellerFeeBasisPoints || 0
+
+  // Compute bounties
+  let sellerBountyBPS = side == OrderSide.Sell
+    ? bountyBasisPoints
+    : 0
+  let buyerBountyBPS = side == OrderSide.Buy
+    ? bountyBasisPoints
+    : 0
 
   // Remove fees for private orders
   if (isPrivate) {
-    buyerFeeBPS = 0
-    sellerFeeBPS = 0
-    bountyBasisPoints = 0
+    totalBuyerFeeBPS = 0
+    totalSellerFeeBPS = 0
+    openseaBuyerFeeBPS = 0
+    openseaSellerFeeBPS = 0
+    devBuyerFeeBPS = 0
+    devSellerFeeBPS = 0
+    sellerBountyBPS = 0
+    buyerBountyBPS = 0
   }
 
-  const sellerBountyBPS = side == OrderSide.Sell
-    ? bountyBasisPoints
-    : 0
-  const buyerBountyBPS = side == OrderSide.Buy
-    ? bountyBasisPoints
-    : 0
-
-  // Add bounty to totals
-  const totalSellerFeeBPS = sellerFeeBPS + sellerBountyBPS
-  const totalBuyerFeeBPS = buyerFeeBPS + buyerBountyBPS
+  // Check that bounty is in range of the opensea fee
+  if (sellerBountyBPS > openseaSellerFeeBPS) {
+    throw new Error(`Seller bounty exceeds the maximum for this asset type (${openseaSellerFeeBPS / 100}%)`)
+  }
+  if (buyerBountyBPS > openseaBuyerFeeBPS) {
+    throw new Error(`Buyer bounty exceeds the maximum for this asset type (${openseaBuyerFeeBPS / 100}%)`)
+  }
 
   return {
     totalBuyerFeeBPS,
     totalSellerFeeBPS,
+    openseaBuyerFeeBPS,
+    openseaSellerFeeBPS,
+    devBuyerFeeBPS,
+    devSellerFeeBPS,
     sellerBountyBPS,
     buyerBountyBPS
   }
@@ -980,7 +1005,7 @@ export class OpenSeaPort {
    */
   public async _estimateGasForTransfer(
       { assets, fromAddress, toAddress }:
-      { assets: Array<{tokenId: string; tokenAddress: string}>; fromAddress: string; toAddress: string }
+      { assets: Asset[]; fromAddress: string; toAddress: string }
     ): Promise<number> {
 
     const schema = this._getSchema()
@@ -1084,7 +1109,7 @@ export class OpenSeaPort {
 
   public async _makeBuyOrder(
       { asset, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
-      { asset: {tokenAddress: string; tokenId: string }; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number }
+      { asset: Asset; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number }
     ): Promise<UnhashedOrder> {
 
     accountAddress = accountAddress.toLowerCase()
@@ -1136,7 +1161,7 @@ export class OpenSeaPort {
 
   public async _makeSellOrder(
       { asset, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress }:
-      { asset: {tokenAddress: string; tokenId: string};
+      { asset: Asset;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -1199,7 +1224,7 @@ export class OpenSeaPort {
 
   public async _makeBundleSellOrder(
       { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress }:
-      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Array<{tokenId: string; tokenAddress: string}>; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number; buyerAddress?: string; }
+      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Asset[]; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number; buyerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
     accountAddress = accountAddress.toLowerCase()

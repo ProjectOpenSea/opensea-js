@@ -10,7 +10,7 @@ import {
 
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, OpenSeaAsset } from '../src/types'
+import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, OpenSeaAsset, Asset } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
@@ -695,7 +695,7 @@ function testFees(order: Order | UnhashedOrder, makerFeeMinusBounty?: number, ma
 
 function getAssets(
     order: Order | UnsignedOrder | UnhashedOrder
-  ): Array<{tokenAddress: string; tokenId: string }> {
+  ): Asset[] {
 
   const wyAssets = order.metadata.bundle
     ? order.metadata.bundle.assets

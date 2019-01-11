@@ -45,10 +45,7 @@ export interface EventData {
     amount?: BigNumber;
     tokenAddress?: string;
     tokenId?: string;
-    assets?: Array<{
-        tokenAddress: string;
-        tokenId: string;
-    }>;
+    assets?: Asset[];
     transactionHash?: string;
     event?: EventType;
     error?: Error;
@@ -115,25 +112,39 @@ export interface OpenSeaAccount {
     };
 }
 /**
+ * Simple OpenSea asset spec
+ */
+export interface Asset {
+    tokenId: string;
+    tokenAddress: string;
+}
+/**
+ * OpenSea asset contract
+ */
+export interface OpenSeaAssetContract {
+    name: string;
+    address: string;
+    sellerFeeBasisPoints: number;
+    buyerFeeBasisPoints: number;
+    openseaSellerFeeBasisPoints: number;
+    openseaBuyerFeeBasisPoints: number;
+    devSellerFeeBasisPoints: number;
+    devBuyerFeeBasisPoints: number;
+    description: string;
+    tokenSymbol: string;
+    imageUrl: string;
+    stats?: object;
+    traits?: object[];
+    externalLink?: string;
+    wikiLink?: string;
+}
+/**
  * The OpenSea asset fetched by the API
  */
-export interface OpenSeaAsset {
-    assetContract: {
-        name: string;
-        address: string;
-        sellerFeeBasisPoints: number;
-        buyerFeeBasisPoints: number;
-        description: string;
-        tokenSymbol: string;
-        imageUrl: string;
-        stats?: object;
-        traits?: object[];
-        externalLink?: string;
-        wikiLink?: string;
-    };
+export interface OpenSeaAsset extends Asset {
+    assetContract: OpenSeaAssetContract;
     name: string;
     description: string;
-    tokenId: string;
     owner: OpenSeaAccount;
     orders: Order[] | null;
     buyOrders: Order[] | null;
@@ -181,18 +192,18 @@ export interface OpenSeaAssetBundleJSON {
 /**
  * The basis point values of each type of fee
  * added to each order.
- * The first two values are the totals of
- * the other values.
+ * The first pair of values are the total of
+ * the second two pairs
  */
 export interface OpenSeaFees {
     totalBuyerFeeBPS: number;
     totalSellerFeeBPS: number;
+    devSellerFeeBPS: number;
+    devBuyerFeeBPS: number;
+    openseaSellerFeeBPS: number;
+    openseaBuyerFeeBPS: number;
     sellerBountyBPS: number;
     buyerBountyBPS: number;
-    devSellerFeeBPS?: number;
-    devBuyerFeeBPS?: number;
-    openseaSellerFeeBPS?: number;
-    openseaBuyerFeeBPS?: number;
 }
 export interface UnhashedOrder extends WyvernOrder {
     makerReferrerFee: BigNumber;

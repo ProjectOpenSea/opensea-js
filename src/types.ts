@@ -70,7 +70,7 @@ export interface EventData {
   amount?: BigNumber
   tokenAddress?: string
   tokenId?: string
-  assets?: Array<{tokenAddress: string; tokenId: string}>
+  assets?: Asset[]
 
   transactionHash?: string
   event?: EventType
@@ -156,39 +156,62 @@ export interface OpenSeaAccount {
 }
 
 /**
+ * Simple OpenSea asset spec
+ */
+export interface Asset {
+  // The asset's token ID
+  tokenId: string
+  // The asset's contract address
+  tokenAddress: string
+}
+
+/**
+ * OpenSea asset contract
+ */
+export interface OpenSeaAssetContract {
+  // Name of the asset's contract
+  name: string
+  // Address of this contract
+  address: string
+
+  // Total fee levied on sellers by this contract, in basis points
+  sellerFeeBasisPoints: number
+  // Total fee levied on buyers by this contract, in basis points
+  buyerFeeBasisPoints: number
+  // Fee for OpenSea levied on sellers
+  openseaSellerFeeBasisPoints: number
+  // Fee for OpenSea levied on buyers
+  openseaBuyerFeeBasisPoints: number
+  // Fee for the asset contract owner levied on sellers
+  devSellerFeeBasisPoints: number
+  // Fee for the asset contract owner levied on buyers
+  devBuyerFeeBasisPoints: number
+
+  // Description of the contract
+  description: string
+  // Contract's Etherscan / OpenSea symbol
+  tokenSymbol: string
+  // Image for the contract
+  imageUrl: string
+  // Object with stats about the contract
+  stats?: object
+  // Array of trait types for the contract
+  traits?: object[]
+  // Link to the contract's main website
+  externalLink?: string
+  // Link to the contract's wiki, if available
+  wikiLink?: string
+}
+
+/**
  * The OpenSea asset fetched by the API
  */
-export interface OpenSeaAsset {
-  assetContract: {
-    // Name of the asset's contract
-    name: string
-    // Address of this contract
-    address: string
-    // Fee levied on sellers by this contract, in basis points
-    sellerFeeBasisPoints: number
-    // Fee levied on buyers by this contract, in basis points
-    buyerFeeBasisPoints: number
-    // Description of the contract
-    description: string
-    // Contract's Etherscan / OpenSea symbol
-    tokenSymbol: string
-    // Image for the contract
-    imageUrl: string
-    // Object with stats about the contract
-    stats?: object
-    // Array of trait types for the contract
-    traits?: object[]
-    // Link to the contract's main website
-    externalLink?: string
-    // Link to the contract's wiki, if available
-    wikiLink?: string
-  }
+export interface OpenSeaAsset extends Asset {
+  assetContract: OpenSeaAssetContract
   // The asset's given name
   name: string
   // Description of the asset
   description: string
-  // The asset's token ID
-  tokenId: string
   // Owner of the asset
   owner: OpenSeaAccount
   // Orders on the asset. Null if asset was fetched in a list
@@ -263,27 +286,26 @@ export interface OpenSeaAssetBundleJSON {
 /**
  * The basis point values of each type of fee
  * added to each order.
- * The first two values are the totals of
- * the other values.
+ * The first pair of values are the total of
+ * the second two pairs
  */
 export interface OpenSeaFees {
-  // Total fees
+  // Total fees. dev + opensea
   totalBuyerFeeBPS: number
   totalSellerFeeBPS: number
 
-  // Fees that go to whoever refers the order to the taker
-  sellerBountyBPS: number
-  buyerBountyBPS: number
-
-  // Will be required in a future version:
-
   // Fees that go to the asset contract's developer
-  devSellerFeeBPS?: number
-  devBuyerFeeBPS?: number
+  devSellerFeeBPS: number
+  devBuyerFeeBPS: number
 
   // Fees that go to OpenSea
-  openseaSellerFeeBPS?: number
-  openseaBuyerFeeBPS?: number
+  openseaSellerFeeBPS: number
+  openseaBuyerFeeBPS: number
+
+  // Fees that go to whoever refers the order to the taker.
+  // Comes out of OpenSea fees
+  sellerBountyBPS: number
+  buyerBountyBPS: number
 }
 
 export interface UnhashedOrder extends WyvernOrder {

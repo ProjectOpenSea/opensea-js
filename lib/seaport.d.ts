@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, FungibleToken, WyvernAsset, OpenSeaFees } from './types';
+import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -163,10 +163,7 @@ export declare class OpenSeaPort {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
-        assets: Array<{
-            tokenId: string;
-            tokenAddress: string;
-        }>;
+        assets: Asset[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -285,10 +282,7 @@ export declare class OpenSeaPort {
      * @param toAddress The recipient's wallet address
      */
     transferAll({ assets, fromAddress, toAddress }: {
-        assets: Array<{
-            tokenId: string;
-            tokenAddress: string;
-        }>;
+        assets: Asset[];
         fromAddress: string;
         toAddress: string;
     }): Promise<void>;
@@ -327,15 +321,14 @@ export declare class OpenSeaPort {
      * Compute the fees for an order
      * @param param0 __namedParameters
      * @param assets Array of addresses and ids that will be in the order
+     * @param assetContract Prefetched asset contract (including fees) to use instead of assets
      * @param side The side of the order (buy or sell)
      * @param isPrivate Whether the order is private or not (known taker)
-     * @param bountyBasisPoints The basis points to add for the bounty
+     * @param bountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
      */
-    computeFees({ assets, side, isPrivate, bountyBasisPoints }: {
-        assets: Array<{
-            tokenAddress: string;
-            tokenId: string;
-        }>;
+    computeFees({ assets, assetContract, side, isPrivate, bountyBasisPoints }: {
+        assets?: Asset[];
+        assetContract?: OpenSeaAssetContract;
         side: OrderSide;
         isPrivate?: boolean;
         bountyBasisPoints?: number;
@@ -373,10 +366,7 @@ export declare class OpenSeaPort {
      * @param toAddress The recipient's wallet address
      */
     _estimateGasForTransfer({ assets, fromAddress, toAddress }: {
-        assets: Array<{
-            tokenId: string;
-            tokenAddress: string;
-        }>;
+        assets: Asset[];
         fromAddress: string;
         toAddress: string;
     }): Promise<number>;
@@ -408,10 +398,7 @@ export declare class OpenSeaPort {
         tokenAddress?: string;
     }): Promise<BigNumber>;
     _makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, bountyBasisPoints }: {
-        asset: {
-            tokenAddress: string;
-            tokenId: string;
-        };
+        asset: Asset;
         accountAddress: string;
         startAmount: number;
         expirationTime?: number;
@@ -419,10 +406,7 @@ export declare class OpenSeaPort {
         bountyBasisPoints?: number;
     }): Promise<UnhashedOrder>;
     _makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress }: {
-        asset: {
-            tokenAddress: string;
-            tokenId: string;
-        };
+        asset: Asset;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -435,10 +419,7 @@ export declare class OpenSeaPort {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
-        assets: Array<{
-            tokenId: string;
-            tokenAddress: string;
-        }>;
+        assets: Asset[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
