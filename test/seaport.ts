@@ -321,7 +321,8 @@ suite('seaport', () => {
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken.address,
-      extraBountyBasisPoints: bountyPercent * 100
+      extraBountyBasisPoints: bountyPercent * 100,
+      buyerAddress: NULL_ADDRESS // Check that null doesn't trigger private orders
     })
 
     assert.equal(order.paymentToken, paymentToken.address)

@@ -1132,8 +1132,8 @@ export class OpenSeaPort {
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
 
-    const paymentToken = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
-    const { basePrice, extra } = await this._getPriceParameters(paymentToken, startAmount)
+    paymentTokenAddress = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
+    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, startAmount)
 
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
@@ -1154,7 +1154,7 @@ export class OpenSeaPort {
       replacementPattern,
       staticTarget: NULL_ADDRESS,
       staticExtradata: '0x',
-      paymentToken,
+      paymentToken: paymentTokenAddress,
       basePrice,
       extra,
       listingTime: makeBigNumber(listingTime),
@@ -1165,7 +1165,7 @@ export class OpenSeaPort {
   }
 
   public async _makeSellOrder(
-      { asset, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
+      { asset, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS }:
       { asset: Asset;
         accountAddress: string;
         startAmount: number;
@@ -1181,9 +1181,10 @@ export class OpenSeaPort {
     const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.tokenAddress)
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
+    const isPrivate = buyerAddress != NULL_ADDRESS
     const { totalSellerFeeBPS,
             totalBuyerFeeBPS,
-            sellerBountyBPS } = await this.computeFees({ assets: [asset], side: OrderSide.Sell, isPrivate: !!buyerAddress, extraBountyBasisPoints })
+            sellerBountyBPS } = await this.computeFees({ assets: [asset], side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
 
@@ -1191,14 +1192,12 @@ export class OpenSeaPort {
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
-    const taker = buyerAddress || NULL_ADDRESS
-    const paymentToken = paymentTokenAddress || NULL_ADDRESS
-    const { basePrice, extra } = await this._getPriceParameters(paymentToken, startAmount, endAmount)
+    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, startAmount, endAmount)
 
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
-      taker,
+      taker: buyerAddress,
       makerRelayerFee: makeBigNumber(totalSellerFeeBPS),
       takerRelayerFee: makeBigNumber(totalBuyerFeeBPS),
       makerProtocolFee: makeBigNumber(0),
@@ -1214,7 +1213,7 @@ export class OpenSeaPort {
       replacementPattern,
       staticTarget: NULL_ADDRESS,
       staticExtradata: '0x',
-      paymentToken,
+      paymentToken: paymentTokenAddress,
       basePrice,
       extra,
       listingTime: makeBigNumber(listingTime),
@@ -1228,7 +1227,7 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS }:
       { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Asset[]; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; extraBountyBasisPoints?: number; buyerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
@@ -1244,16 +1243,15 @@ export class OpenSeaPort {
       external_link: bundleExternalLink
     }
 
+    const isPrivate = buyerAddress != NULL_ADDRESS
     const {
       totalSellerFeeBPS,
       totalBuyerFeeBPS,
-      sellerBountyBPS } = await this.computeFees({ assets, side: OrderSide.Sell, isPrivate: !!buyerAddress, extraBountyBasisPoints })
+      sellerBountyBPS } = await this.computeFees({ assets, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
-    const taker = buyerAddress || NULL_ADDRESS
-    const paymentToken = paymentTokenAddress || NULL_ADDRESS
-    const { basePrice, extra } = await this._getPriceParameters(paymentToken, startAmount, endAmount)
+    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, startAmount, endAmount)
 
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
@@ -1265,7 +1263,7 @@ export class OpenSeaPort {
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
-      taker,
+      taker: buyerAddress,
       makerRelayerFee: makeBigNumber(totalSellerFeeBPS),
       takerRelayerFee: makeBigNumber(totalBuyerFeeBPS),
       makerProtocolFee: makeBigNumber(0),
@@ -1281,7 +1279,7 @@ export class OpenSeaPort {
       replacementPattern,
       staticTarget: NULL_ADDRESS,
       staticExtradata: '0x',
-      paymentToken,
+      paymentToken: paymentTokenAddress,
       basePrice,
       extra,
       listingTime: makeBigNumber(listingTime),
