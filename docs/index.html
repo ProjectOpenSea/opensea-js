@@ -209,7 +209,7 @@
 				<p>If the order is a buy order (<code>order.side === OrderSide.Buy</code>), then the taker is the <em>owner</em> and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See <a href="#listening-to-events">Listening to Events</a> below to respond to the setup transactions that occur the first time a user accepts a bid.</p>
 				<h2 id="affiliate-program">Affiliate Program</h2>
 				<p>New in version 0.4, OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It&#39;s the crypto-equivalent of bounty hunting 💰</p>
-				<p>You can use this to <strong>win between 1% and 50%</strong> of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.</p>
+				<p>You can use this to <strong>win at least 1%</strong> of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.</p>
 				<h3 id="referring-listings">Referring listings</h3>
 				<p>You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders! Whenever someone refers a sale or the acceptance of an offer, you can add a <code>referrerAddress</code> to give their wallet credit:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> referrerAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The referrer's wallet address</span>
@@ -218,12 +218,12 @@
 				<p>This works for buying assets and bundles, along with accepting bids.</p>
 				<p>OpenSea will send the referrer an email congradulating them, along with <strong>1%</strong> of the item&#39;s sale price.</p>
 				<h3 id="custom-referral-bounties">Custom referral bounties</h3>
-				<p>Sellers can customize the bounties they add to their items when listing them for sale. By default, OpenSea will pay referrers 1% and sellers pay them nothing, but sellers can add up to 50% for both assets and bundles:</p>
+				<p>Sellers can customize the bounties they add to their items when listing them for sale. By default, OpenSea will pay referrers 1% and sellers pay them nothing, but sellers can increase this up to the full OpenSea fee (currently 2.5% for most assets) for both assets and bundles:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Price the Genesis CryptoKitty at 100 ETH</span>
 <span class="hljs-keyword">const</span> startAmount = <span class="hljs-number">100</span>
 <span class="hljs-comment">// Reward referrers with 10% of the final sale price,</span>
 <span class="hljs-comment">// or 10 ETH in this case</span>
-<span class="hljs-keyword">const</span> bountyPercent = <span class="hljs-number">10</span>
+<span class="hljs-keyword">const</span> extraBountyPercent = <span class="hljs-number">10</span>
 <span class="hljs-comment">// The final bounty will be 10% + 1% from OpenSea, or 11 ETH!</span>
 
 <span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({
@@ -232,11 +232,11 @@
   accountAddress: OWNERS_WALLET_ADDRESS,
   startAmount,
   <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span>,
-  <span class="hljs-attr">bountyBasisPoints</span>: bountyPercent * <span class="hljs-number">100</span>
+  <span class="hljs-attr">extraBountyBasisPoints</span>: extraBountyPercent * <span class="hljs-number">100</span>
 })
 </code></pre>
 				<p><strong>NOTE:</strong> The final bounty in the example above will be 10% from the seller plus 1% from OpenSea, or 11 ETH in total!</p>
-				<p>If you have any questions, contact us at <a href="mailto:contact@opensea.io">contact@opensea.io</a> (or in <a href="https://discord.gg/ga8EJbv">Discord</a>), or join the program at <a href="https://opensea.io/account#referrals">https://opensea.io/account#referrals</a>.</p>
+				<p>Developers can request to increase the OpenSea fee to allow for higher bounties - by default, it&#39;s capped at 2.5%. If you have any questions, contact us at <a href="mailto:contact@opensea.io">contact@opensea.io</a> (or in <a href="https://discord.gg/ga8EJbv">Discord</a>), or join the program at <a href="https://opensea.io/account#referrals">https://opensea.io/account#referrals</a>.</p>
 				<h2 id="advanced">Advanced</h2>
 				<p>Interested in making bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.</p>
 				<h3 id="creating-bundles">Creating Bundles</h3>
@@ -438,6 +438,9 @@ handleSeaportEvents() {
 						<a href="classes/openseaport.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Port</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="interfaces/asset.html" class="tsd-kind-icon">Asset</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="interfaces/eventdata.html" class="tsd-kind-icon">Event<wbr>Data</a>
 					</li>
 					<li class=" tsd-kind-interface">
@@ -456,7 +459,13 @@ handleSeaportEvents() {
 						<a href="interfaces/openseaassetbundlejson.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Asset<wbr>BundleJSON</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="interfaces/openseaassetcontract.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Asset<wbr>Contract</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="interfaces/openseaassetjson.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>AssetJSON</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/openseafees.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Fees</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/order.html" class="tsd-kind-icon">Order</a>
@@ -513,6 +522,9 @@ handleSeaportEvents() {
 						<a href="globals.html#default_buyer_fee_basis_points" class="tsd-kind-icon">DEFAULT_<wbr>BUYER_<wbr>FEE_<wbr>BASIS_<wbr>POINTS</a>
 					</li>
 					<li class=" tsd-kind-variable">
+						<a href="globals.html#default_max_bounty" class="tsd-kind-icon">DEFAULT_<wbr>MAX_<wbr>BOUNTY</a>
+					</li>
+					<li class=" tsd-kind-variable">
 						<a href="globals.html#default_seller_fee_basis_points" class="tsd-kind-icon">DEFAULT_<wbr>SELLER_<wbr>FEE_<wbr>BASIS_<wbr>POINTS</a>
 					</li>
 					<li class=" tsd-kind-variable">
@@ -542,6 +554,12 @@ handleSeaportEvents() {
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#null_block_hash" class="tsd-kind-icon">NULL_<wbr>BLOCK_<wbr>HASH</a>
 					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#opensea_fee_recipient" class="tsd-kind-icon">OPENSEA_<wbr>FEE_<wbr>RECIPIENT</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#opensea_seller_bounty_basis_points" class="tsd-kind-icon">OPENSEA_<wbr>SELLER_<wbr>BOUNTY_<wbr>BASIS_<wbr>POINTS</a>
+					</li>
 					<li class=" tsd-kind-variable tsd-is-not-exported">
 						<a href="globals.html#orderbook_path" class="tsd-kind-icon">ORDERBOOK_<wbr>PATH</a>
 					</li>
@@ -565,9 +583,6 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#wyvern_exchange_address_rinkeby" class="tsd-kind-icon">WYVERN_<wbr>EXCHANGE_<wbr>ADDRESS_<wbr>RINKEBY</a>
-					</li>
-					<li class=" tsd-kind-variable">
-						<a href="globals.html#feerecipient" class="tsd-kind-icon">fee<wbr>Recipient</a>
 					</li>
 					<li class=" tsd-kind-variable tsd-is-not-exported">
 						<a href="globals.html#txcallbacks" class="tsd-kind-icon">tx<wbr>Callbacks</a>

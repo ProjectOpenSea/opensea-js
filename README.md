@@ -231,7 +231,7 @@ const auction = await seaport.createSellOrder({
 
 **NOTE:** The final bounty in the example above will be 10% from the seller plus 1% from OpenSea, or 11 ETH in total!
 
-Developers can request to increase the OpenSea fee to allow for higher bounties - in most cases, it's capped at 2.5%. If you have any questions, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or join the program at https://opensea.io/account#referrals.
+Developers can request to increase the OpenSea fee to allow for higher bounties - by default, it's capped at 2.5%. If you have any questions, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or join the program at https://opensea.io/account#referrals.
 
 ## Advanced
 

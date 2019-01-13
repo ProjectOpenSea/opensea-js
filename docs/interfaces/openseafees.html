@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>OpenSeaAPIConfig | opensea-js</title>
+	<title>OpenSeaFees | opensea-js</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,10 +56,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="openseaapiconfig.html">OpenSeaAPIConfig</a>
+					<a href="openseafees.html">OpenSeaFees</a>
 				</li>
 			</ul>
-			<h1>Interface OpenSeaAPIConfig</h1>
+			<h1>Interface OpenSeaFees</h1>
 		</div>
 	</div>
 </header>
@@ -69,29 +69,18 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>OpenSea API configuration object</p>
+						<p>The basis point values of each type of fee
+							added to each order.
+							The first pair of values are the total of
+						the second two pairs</p>
 					</div>
-					<dl class="tsd-comment-tags">
-						<dt>param</dt>
-						<dd><p>Optional key to use for API</p>
-						</dd>
-						<dt>param</dt>
-						<dd><p><code>Network</code> type to use. Defaults to <code>Network.Main</code> (mainnet)</p>
-						</dd>
-						<dt>param</dt>
-						<dd><p>Default gas price to send to the Wyvern Protocol</p>
-						</dd>
-						<dt>param</dt>
-						<dd><p>Optional base URL to use for the API</p>
-						</dd>
-					</dl>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">OpenSeaAPIConfig</span>
+						<span class="target">OpenSeaFees</span>
 					</li>
 				</ul>
 			</section>
@@ -102,10 +91,13 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaapiconfig.html#apibaseurl" class="tsd-kind-icon">api<wbr>Base<wbr>Url</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaapiconfig.html#apikey" class="tsd-kind-icon">api<wbr>Key</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaapiconfig.html#gasprice" class="tsd-kind-icon">gas<wbr>Price</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaapiconfig.html#networkname" class="tsd-kind-icon">network<wbr>Name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseafees.html#devbuyerfeebps" class="tsd-kind-icon">dev<wbr>Buyer<wbr>FeeBPS</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseafees.html#devsellerfeebps" class="tsd-kind-icon">dev<wbr>Seller<wbr>FeeBPS</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseafees.html#openseabuyerfeebps" class="tsd-kind-icon">opensea<wbr>Buyer<wbr>FeeBPS</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseafees.html#openseasellerfeebps" class="tsd-kind-icon">opensea<wbr>Seller<wbr>FeeBPS</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseafees.html#sellerbountybps" class="tsd-kind-icon">seller<wbr>BountyBPS</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseafees.html#totalbuyerfeebps" class="tsd-kind-icon">total<wbr>Buyer<wbr>FeeBPS</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseafees.html#totalsellerfeebps" class="tsd-kind-icon">total<wbr>Seller<wbr>FeeBPS</a></li>
 							</ul>
 						</section>
 					</div>
@@ -114,42 +106,72 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="apibaseurl" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> api<wbr>Base<wbr>Url</h3>
-					<div class="tsd-signature tsd-kind-icon">api<wbr>Base<wbr>Url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
+					<a name="devbuyerfeebps" class="tsd-anchor"></a>
+					<h3>dev<wbr>Buyer<wbr>FeeBPS</h3>
+					<div class="tsd-signature tsd-kind-icon">dev<wbr>Buyer<wbr>FeeBPS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L95">types.ts:95</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L299">types.ts:299</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="apikey" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> api<wbr>Key</h3>
-					<div class="tsd-signature tsd-kind-icon">api<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
+					<a name="devsellerfeebps" class="tsd-anchor"></a>
+					<h3>dev<wbr>Seller<wbr>FeeBPS</h3>
+					<div class="tsd-signature tsd-kind-icon">dev<wbr>Seller<wbr>FeeBPS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L94">types.ts:94</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L298">types.ts:298</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="gasprice" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> gas<wbr>Price</h3>
-					<div class="tsd-signature tsd-kind-icon">gas<wbr>Price<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">BigNumber</span></div>
+					<a name="openseabuyerfeebps" class="tsd-anchor"></a>
+					<h3>opensea<wbr>Buyer<wbr>FeeBPS</h3>
+					<div class="tsd-signature tsd-kind-icon">opensea<wbr>Buyer<wbr>FeeBPS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L97">types.ts:97</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L303">types.ts:303</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="networkname" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> network<wbr>Name</h3>
-					<div class="tsd-signature tsd-kind-icon">network<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Network</span></div>
+					<a name="openseasellerfeebps" class="tsd-anchor"></a>
+					<h3>opensea<wbr>Seller<wbr>FeeBPS</h3>
+					<div class="tsd-signature tsd-kind-icon">opensea<wbr>Seller<wbr>FeeBPS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L93">types.ts:93</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L302">types.ts:302</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="sellerbountybps" class="tsd-anchor"></a>
+					<h3>seller<wbr>BountyBPS</h3>
+					<div class="tsd-signature tsd-kind-icon">seller<wbr>BountyBPS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L307">types.ts:307</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="totalbuyerfeebps" class="tsd-anchor"></a>
+					<h3>total<wbr>Buyer<wbr>FeeBPS</h3>
+					<div class="tsd-signature tsd-kind-icon">total<wbr>Buyer<wbr>FeeBPS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L294">types.ts:294</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="totalsellerfeebps" class="tsd-anchor"></a>
+					<h3>total<wbr>Seller<wbr>FeeBPS</h3>
+					<div class="tsd-signature tsd-kind-icon">total<wbr>Seller<wbr>FeeBPS<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/a9b3032/src/types.ts#L295">types.ts:295</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -168,19 +190,28 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="openseaapiconfig.html" class="tsd-kind-icon">Open<wbr>SeaAPIConfig</a>
+						<a href="openseafees.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Fees</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaapiconfig.html#apibaseurl" class="tsd-kind-icon">api<wbr>Base<wbr>Url</a>
+								<a href="openseafees.html#devbuyerfeebps" class="tsd-kind-icon">dev<wbr>Buyer<wbr>FeeBPS</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaapiconfig.html#apikey" class="tsd-kind-icon">api<wbr>Key</a>
+								<a href="openseafees.html#devsellerfeebps" class="tsd-kind-icon">dev<wbr>Seller<wbr>FeeBPS</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaapiconfig.html#gasprice" class="tsd-kind-icon">gas<wbr>Price</a>
+								<a href="openseafees.html#openseabuyerfeebps" class="tsd-kind-icon">opensea<wbr>Buyer<wbr>FeeBPS</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaapiconfig.html#networkname" class="tsd-kind-icon">network<wbr>Name</a>
+								<a href="openseafees.html#openseasellerfeebps" class="tsd-kind-icon">opensea<wbr>Seller<wbr>FeeBPS</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="openseafees.html#sellerbountybps" class="tsd-kind-icon">seller<wbr>BountyBPS</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="openseafees.html#totalbuyerfeebps" class="tsd-kind-icon">total<wbr>Buyer<wbr>FeeBPS</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="openseafees.html#totalsellerfeebps" class="tsd-kind-icon">total<wbr>Seller<wbr>FeeBPS</a>
 							</li>
 						</ul>
 					</li>
