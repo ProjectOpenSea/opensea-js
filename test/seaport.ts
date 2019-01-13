@@ -574,20 +574,14 @@ suite('seaport', () => {
     await testMatchingNewOrder(order, takerAddress)
   })
 
-  test('API order has asset and correct hash', async () => {
-    const order = await client.api.getOrder({})
-    assert.isNotNull(order)
-    if (!order) {
+  test('An API asset\'s order has correct hash', async () => {
+    const asset = await client.api.getAsset(CK_ADDRESS, 1)
+    assert.isNotNull(asset)
+    if (!asset) {
       return
     }
-    assert.isNotNull(order.asset)
-    assert.equal(order.hash, getOrderHash(order))
-  })
-
-  test('API asset\'s order has correct hash', async () => {
-    const asset = await client.api.getAsset("0x06012c8cf97bead5deae237070f9587f8e7a266d", 1)
-    assert.isNotNull(asset)
-    if (!asset || !asset.orders) {
+    assert.isNotNull(asset.orders)
+    if (!asset.orders) {
       return
     }
     const order = asset.orders[0]
@@ -599,7 +593,7 @@ suite('seaport', () => {
   })
 
   test('orderToJSON computes correct current price for Dutch auctions', async () => {
-    const { orders, count } = await client.api.getOrders({ sale_kind: SaleKind.DutchAuction })
+    const { orders } = await client.api.getOrders({ sale_kind: SaleKind.DutchAuction })
     assert.equal(orders.length, client.api.pageSize)
     orders.map(order => {
       assert.isNotNull(order.currentPrice)
@@ -612,26 +606,29 @@ suite('seaport', () => {
     })
   })
 
-  test('orderToJSON deserializes completely for asset orders and hashes if necessary', async () => {
-    const order = await client.api.getOrder({})
-    assert.isNotNull(order)
-    if (!order || !order.asset) {
-      return
-    }
-    assert.isNotEmpty(order.asset.assetContract)
-    assert.isNotEmpty(order.paymentTokenContract)
-    assert.isNotEmpty(order.asset.tokenId)
-    testFees(order, order.asset.assetContract)
+  test('First page of orders have valid hashes and fees', async () => {
+    const { orders, count } = await client.api.getOrders()
+    assert.isNotEmpty(orders)
+    assert.isAbove(count, orders.length)
 
-    const accountAddress = ALEX_ADDRESS
-    const matchingOrder = client._makeMatchingOrder({order, accountAddress})
-    const matchingOrderHash = matchingOrder.hash
-    delete matchingOrder.hash
-    assert.isUndefined(matchingOrder.hash)
+    orders.forEach(order => {
+      if (order.asset) {
+        assert.isNotEmpty(order.asset.assetContract)
+        assert.isNotEmpty(order.asset.tokenId)
+        testFees(order, order.asset.assetContract)
+      }
+      assert.isNotEmpty(order.paymentTokenContract)
 
-    const orderJSON = orderToJSON(matchingOrder)
-    assert.equal(orderJSON.hash, matchingOrderHash)
-    assert.equal(orderJSON.hash, getOrderHash(matchingOrder))
+      const accountAddress = ALEX_ADDRESS
+      const matchingOrder = client._makeMatchingOrder({order, accountAddress})
+      const matchingOrderHash = matchingOrder.hash
+      delete matchingOrder.hash
+      assert.isUndefined(matchingOrder.hash)
+
+      const orderJSON = orderToJSON(matchingOrder)
+      assert.equal(orderJSON.hash, matchingOrderHash)
+      assert.equal(orderJSON.hash, getOrderHash(matchingOrder))
+    })
   })
 
   test('Uses a gas price above the mean', async () => {
