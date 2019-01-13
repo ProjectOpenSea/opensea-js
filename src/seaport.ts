@@ -6,7 +6,7 @@ import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
 import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types'
 import {
-  confirmTransaction, feeRecipient, findAsset,
+  confirmTransaction, OPENSEA_FEE_RECIPIENT, findAsset,
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
@@ -1145,7 +1145,7 @@ export class OpenSeaPort {
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
       feeMethod: FeeMethod.SplitFee,
-      feeRecipient,
+      feeRecipient: OPENSEA_FEE_RECIPIENT,
       side: OrderSide.Buy,
       saleKind: SaleKind.FixedPrice,
       target,
@@ -1205,7 +1205,7 @@ export class OpenSeaPort {
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(sellerBountyBPS),
       feeMethod: FeeMethod.SplitFee,
-      feeRecipient,
+      feeRecipient: NULL_ADDRESS,
       side: OrderSide.Sell,
       saleKind: orderSaleKind,
       target,
@@ -1272,7 +1272,7 @@ export class OpenSeaPort {
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(sellerBountyBPS),
       feeMethod: FeeMethod.SplitFee,
-      feeRecipient,
+      feeRecipient: NULL_ADDRESS,
       side: OrderSide.Sell,
       saleKind: orderSaleKind,
       target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
@@ -1324,6 +1324,9 @@ export class OpenSeaPort {
     }
 
     const { target, calldata, replacementPattern } = computeOrderParams()
+    const feeRecipient = order.feeRecipient == NULL_ADDRESS
+      ? OPENSEA_FEE_RECIPIENT
+      : NULL_ADDRESS
 
     const matchingOrder: UnhashedOrder = {
       exchange: order.exchange,
@@ -1335,7 +1338,7 @@ export class OpenSeaPort {
       takerProtocolFee: order.takerProtocolFee,
       makerReferrerFee: order.makerReferrerFee,
       feeMethod: order.feeMethod,
-      feeRecipient: NULL_ADDRESS,
+      feeRecipient,
       side: (order.side + 1) % 2,
       saleKind: SaleKind.FixedPrice,
       target,

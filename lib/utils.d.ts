@@ -6,7 +6,7 @@ import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
 import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
-export declare const feeRecipient = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
+export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
 export declare const DEP_INFURA_KEY = "e8695bce67944848aa95459fac052f8e";
 export declare const MAINNET_PROVIDER_URL = "https://eth-mainnet.alchemyapi.io/jsonrpc/y5dLONzfAJh-oCY02DCP3UWCT2pSEXMo";
 export declare const RINKEBY_PROVIDER_URL = "https://eth-rinkeby.alchemyapi.io/jsonrpc/-yDg7wmgGw5LdsP4p4kyxRYuDzCkXtoI";
