@@ -203,7 +203,6 @@ export interface OpenSeaFees {
     openseaSellerFeeBPS: number;
     openseaBuyerFeeBPS: number;
     sellerBountyBPS: number;
-    buyerBountyBPS: number;
 }
 export interface UnhashedOrder extends WyvernOrder {
     makerReferrerFee: BigNumber;

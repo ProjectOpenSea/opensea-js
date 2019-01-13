@@ -17,7 +17,9 @@ import {
   NULL_BLOCK_HASH,
   SELL_ORDER_BATCH_SIZE,
   RINKEBY_PROVIDER_URL,
-  MAINNET_PROVIDER_URL
+  MAINNET_PROVIDER_URL,
+  OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
+  DEFAULT_MAX_BOUNTY
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -193,22 +195,22 @@ export class OpenSeaPort {
    * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
    * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
-   * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+   * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    */
   public async createBuyOrder(
-      { tokenId, tokenAddress, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
+      { tokenId, tokenAddress, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0 }:
       { tokenId: string;
         tokenAddress: string;
         accountAddress: string;
         startAmount: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number; }
+        extraBountyBasisPoints?: number; }
     ): Promise<Order> {
 
     const asset: Asset = { tokenAddress, tokenId }
 
-    const order = await this._makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, bountyBasisPoints })
+    const order = await this._makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints })
 
     // NOTE not in Wyvern exchange code:
     // frontend checks to make sure
@@ -246,11 +248,11 @@ export class OpenSeaPort {
    * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
-   * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+   * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order.
    */
   public async createSellOrder(
-      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress }:
+      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
       { tokenId: string;
         tokenAddress: string;
         accountAddress: string;
@@ -258,13 +260,13 @@ export class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
         buyerAddress?: string; }
     ): Promise<Order> {
 
     const asset = { tokenAddress, tokenId }
 
-    const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress })
+    const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -301,12 +303,12 @@ export class OpenSeaPort {
    * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param expirationTime Expiration time for the orders, in seconds. An expiration time of 0 means "never expire."
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
-   * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
+   * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
    * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
    * @param numberOfOrders Number of times to repeat creating the same order. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
    */
   public async createFactorySellOrders(
-      { assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress, numberOfOrders = 1 }:
+      { assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, numberOfOrders = 1 }:
       { assetId: string;
         factoryAddress: string;
         accountAddress: string;
@@ -314,7 +316,7 @@ export class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
         buyerAddress?: string;
         numberOfOrders?: number; }
     ): Promise<Order[]> {
@@ -326,11 +328,11 @@ export class OpenSeaPort {
     }
 
     // Validate just a single dummy order but don't post it
-    const dummyOrder = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress })
+    const dummyOrder = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
     await this._validateSellOrderParameters({ order: dummyOrder, accountAddress })
 
     const _makeAndPostOneSellOrder = async () => {
-      const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress })
+      const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
 
       const hashedOrder = {
         ...order,
@@ -389,11 +391,11 @@ export class OpenSeaPort {
    * @param endAmount Optional price of the asset at the end of its expiration time
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
-   * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+   * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order.
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -403,11 +405,11 @@ export class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
         buyerAddress?: string; }
     ): Promise<Order> {
 
-    const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress })
+    const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -866,82 +868,86 @@ export class OpenSeaPort {
    * Compute the fees for an order
    * @param param0 __namedParameters
    * @param assets Array of addresses and ids that will be in the order
-   * @param assetContract Prefetched asset contract (including fees) to use instead of assets
+   * @param assetContract Optional prefetched asset contract (including fees) to use instead of assets
    * @param side The side of the order (buy or sell)
    * @param isPrivate Whether the order is private or not (known taker)
-   * @param bountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
+   * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
    */
   public async computeFees(
-    { assets, assetContract, side, isPrivate = false, bountyBasisPoints = 0 }:
-    { assets?: Asset[];
-      assetContract?: OpenSeaAssetContract;
-      side: OrderSide;
-      isPrivate?: boolean;
-      bountyBasisPoints?: number }
-  ): Promise<OpenSeaFees> {
+      { assets, assetContract, side, isPrivate = false, extraBountyBasisPoints = 0 }:
+      { assets?: Asset[];
+        assetContract?: OpenSeaAssetContract;
+        side: OrderSide;
+        isPrivate?: boolean;
+        extraBountyBasisPoints?: number }
+    ): Promise<OpenSeaFees> {
 
-  let contractFees: Partial<OpenSeaAssetContract>
+    let totalBuyerFeeBPS = DEFAULT_BUYER_FEE_BASIS_POINTS
+    let totalSellerFeeBPS = DEFAULT_SELLER_FEE_BASIS_POINTS
+    let openseaBuyerFeeBPS = totalBuyerFeeBPS
+    let openseaSellerFeeBPS = totalSellerFeeBPS
+    let devBuyerFeeBPS = 0
+    let devSellerFeeBPS = 0
+    let maxTotalBountyBPS = DEFAULT_MAX_BOUNTY
 
-  // If all assets are for the same contract, use its fees
-  if (assetContract) {
-    contractFees = assetContract
-  } else if (assets && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
-    const { tokenAddress, tokenId } = assets[0]
-    const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
-    if (!asset) {
-      throw new Error(`Could not find asset with ID ${tokenId} and address ${tokenAddress}`)
+    // If all assets are for the same contract and it's a non-private sale, use its fees
+    if (!assetContract && assets && !isPrivate && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
+      const { tokenAddress, tokenId } = assets[0]
+      const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
+      if (!asset) {
+        throw new Error(`Could not find asset with ID ${tokenId} and address ${tokenAddress}`)
+      }
+      assetContract = asset.assetContract
     }
-    contractFees = asset.assetContract
-  } else {
-    contractFees = {}
-  }
 
-  let totalBuyerFeeBPS = contractFees.buyerFeeBasisPoints || DEFAULT_BUYER_FEE_BASIS_POINTS
-  let totalSellerFeeBPS = contractFees.sellerFeeBasisPoints || DEFAULT_SELLER_FEE_BASIS_POINTS
-  let openseaBuyerFeeBPS = contractFees.openseaBuyerFeeBasisPoints || totalBuyerFeeBPS
-  let openseaSellerFeeBPS = contractFees.openseaSellerFeeBasisPoints || totalSellerFeeBPS
-  let devBuyerFeeBPS = contractFees.devBuyerFeeBasisPoints || 0
-  let devSellerFeeBPS = contractFees.devSellerFeeBasisPoints || 0
+    if (assetContract) {
+      totalBuyerFeeBPS = assetContract.buyerFeeBasisPoints
+      totalSellerFeeBPS = assetContract.sellerFeeBasisPoints
+      openseaBuyerFeeBPS = assetContract.openseaBuyerFeeBasisPoints
+      openseaSellerFeeBPS = assetContract.openseaSellerFeeBasisPoints
+      devBuyerFeeBPS = assetContract.devBuyerFeeBasisPoints
+      devSellerFeeBPS = assetContract.devSellerFeeBasisPoints
 
-  // Compute bounties
-  let sellerBountyBPS = side == OrderSide.Sell
-    ? bountyBasisPoints
-    : 0
-  let buyerBountyBPS = side == OrderSide.Buy
-    ? bountyBasisPoints
-    : 0
+      maxTotalBountyBPS = openseaSellerFeeBPS
+    }
 
-  // Remove fees for private orders
-  if (isPrivate) {
-    totalBuyerFeeBPS = 0
-    totalSellerFeeBPS = 0
-    openseaBuyerFeeBPS = 0
-    openseaSellerFeeBPS = 0
-    devBuyerFeeBPS = 0
-    devSellerFeeBPS = 0
-    sellerBountyBPS = 0
-    buyerBountyBPS = 0
-  }
+    // Compute bounty
+    let sellerBountyBPS = side == OrderSide.Sell
+      ? extraBountyBasisPoints
+      : 0
 
-  // Check that bounty is in range of the opensea fee
-  if (sellerBountyBPS > openseaSellerFeeBPS) {
-    throw new Error(`Seller bounty exceeds the maximum for this asset type (${openseaSellerFeeBPS / 100}%)`)
-  }
-  if (buyerBountyBPS > openseaBuyerFeeBPS) {
-    throw new Error(`Buyer bounty exceeds the maximum for this asset type (${openseaBuyerFeeBPS / 100}%)`)
-  }
+    // Check that bounty is in range of the opensea fee
+    const bountyTooLarge = sellerBountyBPS + OPENSEA_SELLER_BOUNTY_BASIS_POINTS > maxTotalBountyBPS
+    if (sellerBountyBPS > 0 && bountyTooLarge) {
+      let errorMessage = `Total bounty exceeds the maximum for this asset type (${maxTotalBountyBPS / 100}%).`
+      if (maxTotalBountyBPS >= OPENSEA_SELLER_BOUNTY_BASIS_POINTS) {
+        errorMessage += ` Remember that OpenSea will add ${OPENSEA_SELLER_BOUNTY_BASIS_POINTS / 100}% for referrers with OpenSea accounts!`
+      }
+      throw new Error(errorMessage)
+    }
 
-  return {
-    totalBuyerFeeBPS,
-    totalSellerFeeBPS,
-    openseaBuyerFeeBPS,
-    openseaSellerFeeBPS,
-    devBuyerFeeBPS,
-    devSellerFeeBPS,
-    sellerBountyBPS,
-    buyerBountyBPS
+    // Remove fees for private orders
+    if (isPrivate) {
+      totalBuyerFeeBPS = 0
+      totalSellerFeeBPS = 0
+      openseaBuyerFeeBPS = 0
+      openseaSellerFeeBPS = 0
+      devBuyerFeeBPS = 0
+      devSellerFeeBPS = 0
+      sellerBountyBPS = 0
+    }
+
+    return {
+      totalBuyerFeeBPS,
+      totalSellerFeeBPS,
+      openseaBuyerFeeBPS,
+      openseaSellerFeeBPS,
+      devBuyerFeeBPS,
+      devSellerFeeBPS,
+      sellerBountyBPS,
+      // buyerBountyBPS
+    }
   }
-}
 
   /**
    * Compute the gas price for sending a txn, in wei
@@ -1108,8 +1114,8 @@ export class OpenSeaPort {
   }
 
   public async _makeBuyOrder(
-      { asset, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0 }:
-      { asset: Asset; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number }
+      { asset, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0 }:
+      { asset: Asset; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string; extraBountyBasisPoints?: number }
     ): Promise<UnhashedOrder> {
 
     accountAddress = accountAddress.toLowerCase()
@@ -1122,8 +1128,7 @@ export class OpenSeaPort {
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
     const { totalBuyerFeeBPS,
-            totalSellerFeeBPS,
-            buyerBountyBPS } = await this.computeFees({ assets: [asset], bountyBasisPoints, side: OrderSide.Buy })
+            totalSellerFeeBPS } = await this.computeFees({ assets: [asset], extraBountyBasisPoints, side: OrderSide.Buy })
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
 
@@ -1138,7 +1143,7 @@ export class OpenSeaPort {
       takerRelayerFee: makeBigNumber(totalSellerFeeBPS),
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
-      makerReferrerFee: makeBigNumber(buyerBountyBPS),
+      makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Buy,
@@ -1160,14 +1165,14 @@ export class OpenSeaPort {
   }
 
   public async _makeSellOrder(
-      { asset, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress }:
+      { asset, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
       { asset: Asset;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
         buyerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
@@ -1178,7 +1183,7 @@ export class OpenSeaPort {
     const listingTime = Math.round(Date.now() / 1000 - 100)
     const { totalSellerFeeBPS,
             totalBuyerFeeBPS,
-            sellerBountyBPS } = await this.computeFees({ assets: [asset], side: OrderSide.Sell, isPrivate: !!buyerAddress, bountyBasisPoints })
+            sellerBountyBPS } = await this.computeFees({ assets: [asset], side: OrderSide.Sell, isPrivate: !!buyerAddress, extraBountyBasisPoints })
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
 
@@ -1223,8 +1228,8 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, bountyBasisPoints = 0, buyerAddress }:
-      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Asset[]; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; bountyBasisPoints?: number; buyerAddress?: string; }
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
+      { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Asset[]; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; extraBountyBasisPoints?: number; buyerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
     accountAddress = accountAddress.toLowerCase()
@@ -1242,7 +1247,7 @@ export class OpenSeaPort {
     const {
       totalSellerFeeBPS,
       totalBuyerFeeBPS,
-      sellerBountyBPS } = await this.computeFees({ assets, side: OrderSide.Sell, isPrivate: !!buyerAddress, bountyBasisPoints })
+      sellerBountyBPS } = await this.computeFees({ assets, side: OrderSide.Sell, isPrivate: !!buyerAddress, extraBountyBasisPoints })
 
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 

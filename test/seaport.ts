@@ -10,8 +10,8 @@ import {
 
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, OpenSeaAsset, Asset } from '../src/types'
-import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS } from '../src/utils'
+import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, OpenSeaAsset, Asset, OpenSeaAssetContract } from '../src/types'
+import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY } from './constants'
@@ -34,10 +34,6 @@ const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
 const assetsForBundleOrder = [
   { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
   { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
-]
-
-const homogenousAssetsForBundleOrder = [
-  { tokenId: CK_TOKEN_ID.toString(), tokenAddress: CK_ADDRESS },
 ]
 
 const assetsForBulkTransfer = assetsForBundleOrder
@@ -96,10 +92,11 @@ suite('seaport', () => {
     })
   })
 
-  test("Computes fees", async () => {
+  test("Computes fees correctly for non-zero-fee asset", async () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
-    const bountyPercent = 3.5
+    const bountyPercent = 1.5
+    const extraBountyBasisPoints = bountyPercent * 100
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
     assert.isNotNull(asset)
@@ -107,50 +104,158 @@ suite('seaport', () => {
       return
     }
 
-    const assetContractSellerFee = asset.assetContract.sellerFeeBasisPoints
-    const assetContractBuyerFee = asset.assetContract.buyerFeeBasisPoints
+    const contract = asset.assetContract
 
     const buyerFees = await client.computeFees({
       assets: [{ tokenAddress, tokenId }],
-      bountyBasisPoints: bountyPercent * 100,
+      extraBountyBasisPoints,
       side: OrderSide.Buy
     })
-    assert.equal(buyerFees.totalBuyerFeeBPS, assetContractBuyerFee + bountyPercent * 100)
-    assert.equal(buyerFees.totalSellerFeeBPS, assetContractSellerFee)
-    assert.equal(buyerFees.buyerBountyBPS, bountyPercent * 100)
+    assert.equal(buyerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
+    assert.equal(buyerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
+    assert.equal(buyerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
+    assert.equal(buyerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
+    assert.equal(buyerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
+    assert.equal(buyerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
     assert.equal(buyerFees.sellerBountyBPS, 0)
 
     const sellerFees = await client.computeFees({
-      assets: [{ tokenAddress, tokenId }],
-      bountyBasisPoints: bountyPercent * 100,
+      assetContract: asset.assetContract, // alternate fee param
+      extraBountyBasisPoints,
       side: OrderSide.Sell
     })
-    assert.equal(sellerFees.totalBuyerFeeBPS, assetContractBuyerFee)
-    assert.equal(sellerFees.totalSellerFeeBPS, assetContractSellerFee + bountyPercent * 100)
-    assert.equal(sellerFees.buyerBountyBPS, 0)
-    assert.equal(sellerFees.sellerBountyBPS, bountyPercent * 100)
+    assert.equal(sellerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
+    assert.equal(sellerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
+    assert.equal(sellerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
+    assert.equal(sellerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
+    assert.equal(sellerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
+    assert.equal(sellerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
+    assert.equal(sellerFees.sellerBountyBPS, extraBountyBasisPoints)
+
+    const heterogenousBundleSellerFees = await client.computeFees({
+      assets: [],
+      extraBountyBasisPoints,
+      side: OrderSide.Sell
+    })
+    assert.equal(heterogenousBundleSellerFees.totalBuyerFeeBPS, DEFAULT_BUYER_FEE_BASIS_POINTS)
+    assert.equal(heterogenousBundleSellerFees.totalSellerFeeBPS, DEFAULT_SELLER_FEE_BASIS_POINTS)
+    assert.equal(heterogenousBundleSellerFees.devBuyerFeeBPS, 0)
+    assert.equal(heterogenousBundleSellerFees.devSellerFeeBPS, 0)
+    assert.equal(heterogenousBundleSellerFees.openseaBuyerFeeBPS, DEFAULT_BUYER_FEE_BASIS_POINTS)
+    assert.equal(heterogenousBundleSellerFees.openseaSellerFeeBPS, DEFAULT_SELLER_FEE_BASIS_POINTS)
+    assert.equal(heterogenousBundleSellerFees.sellerBountyBPS, extraBountyBasisPoints)
 
     const privateSellerFees = await client.computeFees({
       assets: [{ tokenAddress, tokenId }],
-      bountyBasisPoints: bountyPercent * 100,
+      extraBountyBasisPoints,
       side: OrderSide.Sell,
       isPrivate: true
     })
     assert.equal(privateSellerFees.totalBuyerFeeBPS, 0)
     assert.equal(privateSellerFees.totalSellerFeeBPS, 0)
-    assert.equal(privateSellerFees.buyerBountyBPS, 0)
+    assert.equal(privateSellerFees.devBuyerFeeBPS, 0)
+    assert.equal(privateSellerFees.devSellerFeeBPS, 0)
+    assert.equal(privateSellerFees.openseaBuyerFeeBPS, 0)
+    assert.equal(privateSellerFees.openseaSellerFeeBPS, 0)
     assert.equal(privateSellerFees.sellerBountyBPS, 0)
 
     const privateBuyerFees = await client.computeFees({
       assets: [{ tokenAddress, tokenId }],
-      bountyBasisPoints: bountyPercent * 100,
+      extraBountyBasisPoints,
       side: OrderSide.Buy,
       isPrivate: true
     })
     assert.equal(privateBuyerFees.totalBuyerFeeBPS, 0)
     assert.equal(privateBuyerFees.totalSellerFeeBPS, 0)
-    assert.equal(privateBuyerFees.buyerBountyBPS, 0)
+    assert.equal(privateBuyerFees.devBuyerFeeBPS, 0)
+    assert.equal(privateBuyerFees.devSellerFeeBPS, 0)
+    assert.equal(privateBuyerFees.openseaBuyerFeeBPS, 0)
+    assert.equal(privateBuyerFees.openseaSellerFeeBPS, 0)
     assert.equal(privateBuyerFees.sellerBountyBPS, 0)
+  })
+
+  test("Computes fees correctly for zero-fee asset", async () => {
+    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
+    assert.isNotNull(zeroFeeAsset)
+    if (!zeroFeeAsset) {
+      return
+    }
+    const bountyPercent = 0
+
+    const contract = zeroFeeAsset.assetContract
+
+    const buyerFees = await client.computeFees({
+      assetContract: contract,
+      extraBountyBasisPoints: bountyPercent * 100,
+      side: OrderSide.Buy
+    })
+    assert.equal(buyerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
+    assert.equal(buyerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
+    assert.equal(buyerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
+    assert.equal(buyerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
+    assert.equal(buyerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
+    assert.equal(buyerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
+    assert.equal(buyerFees.sellerBountyBPS, 0)
+
+    const sellerFees = await client.computeFees({
+      assetContract: contract,
+      extraBountyBasisPoints: bountyPercent * 100,
+      side: OrderSide.Sell
+    })
+    assert.equal(sellerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
+    assert.equal(sellerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
+    assert.equal(sellerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
+    assert.equal(sellerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
+    assert.equal(sellerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
+    assert.equal(sellerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
+    assert.equal(sellerFees.sellerBountyBPS, bountyPercent * 100)
+
+  })
+
+  test("Errors for computing fees correctly", async () => {
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
+    assert.isNotNull(zeroFeeAsset)
+    if (!zeroFeeAsset) {
+      return
+    }
+
+    try {
+      await client.computeFees({
+        assets: [asset],
+        extraBountyBasisPoints: 200,
+        side: OrderSide.Sell
+      })
+      assert.fail("Fees computed", "But should have thrown that the bounty was too high")
+    } catch (error) {
+      if (!error.message.includes('bounty exceeds the maximum') ||
+          !error.message.includes('OpenSea will add')) {
+        assert.fail(error.message)
+      }
+    }
+
+    try {
+      await client.computeFees({
+        assetContract: zeroFeeAsset.assetContract,
+        extraBountyBasisPoints: 100,
+        side: OrderSide.Sell
+      })
+      assert.fail("Fees computed", "But should have thrown that the bounty was too high")
+    } catch (error) {
+      if (!error.message.includes('bounty exceeds the maximum') ||
+          error.message.includes('OpenSea will add')) {
+        // OpenSea won't add a bounty for this type
+        assert.fail(error.message)
+      }
+    }
   })
 
   test("Matches a private sell order, doesn't for wrong taker", async () => {
@@ -162,11 +267,17 @@ suite('seaport', () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
 
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
       accountAddress,
       startAmount: amountInToken,
-      bountyBasisPoints: bountyPercent * 100,
+      extraBountyBasisPoints: bountyPercent * 100,
       buyerAddress: takerAddress
     })
 
@@ -174,7 +285,7 @@ suite('seaport', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, 0, 0, 0)
+    testFees(order, asset.assetContract, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -205,21 +316,19 @@ suite('seaport', () => {
       return
     }
 
-    const assetContractFee = asset.assetContract.sellerFeeBasisPoints
-
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken.address,
-      bountyBasisPoints: bountyPercent * 100
+      extraBountyBasisPoints: bountyPercent * 100
     })
 
     assert.equal(order.paymentToken, paymentToken.address)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, assetContractFee, bountyPercent * 100, 0)
+    testFees(order, asset.assetContract, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -252,18 +361,18 @@ suite('seaport', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, 0)
+    testFees(order, asset.assetContract)
 
     await client._validateBuyOrderParameters({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
 
-  test('Matches fixed bountied bundle sell order', async () => {
+  test('Matches fixed heterogenous bountied bundle sell order', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
     const amountInEth = 1
-    const bountyPercent = 40
+    const bountyPercent = 1.5
 
     const order = await client._makeBundleSellOrder({
       bundleName: "Test Bundle",
@@ -271,14 +380,14 @@ suite('seaport', () => {
       assets: assetsForBundleOrder,
       accountAddress,
       startAmount: amountInEth,
-      bountyBasisPoints: bountyPercent * 100
+      extraBountyBasisPoints: bountyPercent * 100
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, DEFAULT_SELLER_FEE_BASIS_POINTS, bountyPercent * 100)
+    testFees(order, undefined, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -289,32 +398,28 @@ suite('seaport', () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
     const amountInEth = 1
-    const bountyPercent = 80
+    const bountyPercent = 0.8
 
     const order = await client._makeBundleSellOrder({
       bundleName: "Test Homogenous Bundle",
       bundleDescription: "This is a test with one type of asset",
-      assets: homogenousAssetsForBundleOrder,
+      assets: [{ tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS }],
       accountAddress,
       startAmount: amountInEth,
-      bountyBasisPoints: bountyPercent * 100
+      extraBountyBasisPoints: bountyPercent * 100
     })
 
-    const asset = await client.api.getAsset(homogenousAssetsForBundleOrder[0].tokenAddress, homogenousAssetsForBundleOrder[0].tokenId)
+    const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
     assert.isNotNull(asset)
     if (!asset) {
       return
     }
 
-    const assetContractFee = asset.assetContract.sellerFeeBasisPoints
-    // This should be a contract with a custom fee
-    assert.notEqual(assetContractFee, DEFAULT_SELLER_FEE_BASIS_POINTS)
-
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, assetContractFee, bountyPercent * 100, 0)
+    testFees(order, asset.assetContract, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -507,7 +612,7 @@ suite('seaport', () => {
     })
   })
 
-  test('orderToJSON deserializes completely and hashes if necessary', async () => {
+  test('orderToJSON deserializes completely for asset orders and hashes if necessary', async () => {
     const order = await client.api.getOrder({})
     assert.isNotNull(order)
     if (!order || !order.asset) {
@@ -516,7 +621,7 @@ suite('seaport', () => {
     assert.isNotEmpty(order.asset.assetContract)
     assert.isNotEmpty(order.paymentTokenContract)
     assert.isNotEmpty(order.asset.tokenId)
-    testFees(order)
+    testFees(order, order.asset.assetContract)
 
     const accountAddress = ALEX_ADDRESS
     const matchingOrder = client._makeMatchingOrder({order, accountAddress})
@@ -593,13 +698,17 @@ suite('seaport', () => {
   test('Matches a referred order via sell_orders and getAssets', async () => {
     const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "desc" })
 
-    const asset = assets[0]
+    const asset = assets.filter(a => !!a.sellOrders)[0]
     assert.isNotNull(asset)
-    assert.isNotEmpty(asset.sellOrders)
     if (!asset || !asset.sellOrders) {
       return
     }
+
     const order = asset.sellOrders[0]
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
     // Make sure match is valid
     const takerAddress = ALEX_ADDRESS
     const referrerAddress = ALEX_ADDRESS_2
@@ -676,20 +785,48 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
   }))
 }
 
-function testFees(order: Order | UnhashedOrder, makerFeeMinusBounty?: number, makerBounty?: number, takerFee?: number) {
+function testFees(order: Order | UnhashedOrder, assetContract?: OpenSeaAssetContract, makerBounty = 0) {
   assert.equal(order.makerProtocolFee.toNumber(), 0)
   assert.equal(order.takerProtocolFee.toNumber(), 0)
   if (order.taker != NULL_ADDRESS) {
     // Private order
     assert.equal(order.makerReferrerFee.toNumber(), 0)
+    assert.equal(order.takerRelayerFee.toNumber(), 0)
     assert.equal(order.makerRelayerFee.toNumber(), 0)
+    return
   }
-  if (makerFeeMinusBounty != null && makerBounty != null) {
-    assert.equal(order.makerReferrerFee.toNumber(), makerBounty)
-    assert.equal(order.makerRelayerFee.toNumber(), makerFeeMinusBounty + makerBounty)
-  }
-  if (takerFee != null) {
-    assert.equal(order.takerRelayerFee.toNumber(), takerFee)
+  // Public order
+  assert.equal(order.makerReferrerFee.toNumber(), makerBounty)
+  if (assetContract) {
+    // Homogenous sale
+    if (order.side == OrderSide.Sell) {
+      assert.equal(order.makerRelayerFee.toNumber(), assetContract.sellerFeeBasisPoints)
+      assert.equal(order.takerRelayerFee.toNumber(), assetContract.buyerFeeBasisPoints)
+
+      assert.equal(order.makerRelayerFee.toNumber(), assetContract.devSellerFeeBasisPoints + assetContract.openseaSellerFeeBasisPoints)
+      // Check bounty
+      if (assetContract.openseaSellerFeeBasisPoints >= OPENSEA_SELLER_BOUNTY_BASIS_POINTS) {
+        assert.isAtMost(OPENSEA_SELLER_BOUNTY_BASIS_POINTS + order.makerReferrerFee.toNumber(), assetContract.openseaSellerFeeBasisPoints)
+      } else {
+        // No extra bounty allowed if < 1%
+        assert.equal(order.makerReferrerFee.toNumber(), 0)
+      }
+    } else {
+      assert.equal(order.makerRelayerFee.toNumber(), assetContract.buyerFeeBasisPoints)
+      assert.equal(order.takerRelayerFee.toNumber(), assetContract.sellerFeeBasisPoints)
+
+      assert.equal(order.makerRelayerFee.toNumber(), assetContract.devBuyerFeeBasisPoints + assetContract.openseaBuyerFeeBasisPoints)
+    }
+  } else {
+    // Heterogenous
+    if (order.side == OrderSide.Sell) {
+      assert.equal(order.makerRelayerFee.toNumber(), DEFAULT_SELLER_FEE_BASIS_POINTS)
+      assert.equal(order.takerRelayerFee.toNumber(), DEFAULT_BUYER_FEE_BASIS_POINTS)
+      assert.isAtMost(OPENSEA_SELLER_BOUNTY_BASIS_POINTS + order.makerReferrerFee.toNumber(), DEFAULT_MAX_BOUNTY)
+    } else {
+      assert.equal(order.makerRelayerFee.toNumber(), DEFAULT_BUYER_FEE_BASIS_POINTS)
+      assert.equal(order.takerRelayerFee.toNumber(), DEFAULT_SELLER_FEE_BASIS_POINTS)
+    }
   }
 }
 

@@ -192,7 +192,7 @@ If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is 
 
 New in version 0.4, OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It's the crypto-equivalent of bounty hunting 💰
 
-You can use this to **win between 1% and 50%** of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.
+You can use this to **win at least 1%** of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.
 
 ### Referring listings
 
@@ -209,14 +209,14 @@ OpenSea will send the referrer an email congradulating them, along with **1%** o
 
 ### Custom referral bounties
 
-Sellers can customize the bounties they add to their items when listing them for sale. By default, OpenSea will pay referrers 1% and sellers pay them nothing, but sellers can add up to 50% for both assets and bundles:
+Sellers can customize the bounties they add to their items when listing them for sale. By default, OpenSea will pay referrers 1% and sellers pay them nothing, but sellers can increase this up to the full OpenSea fee (currently 2.5% for most assets) for both assets and bundles:
 
 ```JavaScript
 // Price the Genesis CryptoKitty at 100 ETH
 const startAmount = 100
 // Reward referrers with 10% of the final sale price,
 // or 10 ETH in this case
-const bountyPercent = 10
+const extraBountyPercent = 10
 // The final bounty will be 10% + 1% from OpenSea, or 11 ETH!
 
 const auction = await seaport.createSellOrder({
@@ -225,13 +225,13 @@ const auction = await seaport.createSellOrder({
   accountAddress: OWNERS_WALLET_ADDRESS,
   startAmount,
   expirationTime: 0,
-  bountyBasisPoints: bountyPercent * 100
+  extraBountyBasisPoints: extraBountyPercent * 100
 })
 ```
 
 **NOTE:** The final bounty in the example above will be 10% from the seller plus 1% from OpenSea, or 11 ETH in total!
 
-If you have any questions, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or join the program at https://opensea.io/account#referrals.
+Developers can request to increase the OpenSea fee to allow for higher bounties - in most cases, it's capped at 2.5%. If you have any questions, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or join the program at https://opensea.io/account#referrals.
 
 ## Advanced
 

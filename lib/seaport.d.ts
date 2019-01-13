@@ -76,16 +76,16 @@ export declare class OpenSeaPort {
      * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
      * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
-     * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+     * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
      */
-    createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime, paymentTokenAddress, bountyBasisPoints }: {
+    createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
         startAmount: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
     }): Promise<Order>;
     /**
      * Create a sell order to auction an asset.
@@ -99,10 +99,10 @@ export declare class OpenSeaPort {
      * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
-     * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+     * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
      * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order.
      */
-    createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress }: {
+    createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
@@ -110,7 +110,7 @@ export declare class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
         buyerAddress?: string;
     }): Promise<Order>;
     /**
@@ -126,11 +126,11 @@ export declare class OpenSeaPort {
      * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param expirationTime Expiration time for the orders, in seconds. An expiration time of 0 means "never expire."
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
-     * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
+     * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
      * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
      * @param numberOfOrders Number of times to repeat creating the same order. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
      */
-    createFactorySellOrders({ assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress, numberOfOrders }: {
+    createFactorySellOrders({ assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, numberOfOrders }: {
         assetId: string;
         factoryAddress: string;
         accountAddress: string;
@@ -138,7 +138,7 @@ export declare class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
         buyerAddress?: string;
         numberOfOrders?: number;
     }): Promise<Order[]>;
@@ -156,10 +156,10 @@ export declare class OpenSeaPort {
      * @param endAmount Optional price of the asset at the end of its expiration time
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
-     * @param bountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+     * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
      * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order.
      */
-    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress }: {
+    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -169,7 +169,7 @@ export declare class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
         buyerAddress?: string;
     }): Promise<Order>;
     /**
@@ -321,17 +321,17 @@ export declare class OpenSeaPort {
      * Compute the fees for an order
      * @param param0 __namedParameters
      * @param assets Array of addresses and ids that will be in the order
-     * @param assetContract Prefetched asset contract (including fees) to use instead of assets
+     * @param assetContract Optional prefetched asset contract (including fees) to use instead of assets
      * @param side The side of the order (buy or sell)
      * @param isPrivate Whether the order is private or not (known taker)
-     * @param bountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
+     * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
      */
-    computeFees({ assets, assetContract, side, isPrivate, bountyBasisPoints }: {
+    computeFees({ assets, assetContract, side, isPrivate, extraBountyBasisPoints }: {
         assets?: Asset[];
         assetContract?: OpenSeaAssetContract;
         side: OrderSide;
         isPrivate?: boolean;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
     }): Promise<OpenSeaFees>;
     /**
      * Compute the gas price for sending a txn, in wei
@@ -397,25 +397,25 @@ export declare class OpenSeaPort {
         accountAddress: string;
         tokenAddress?: string;
     }): Promise<BigNumber>;
-    _makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, bountyBasisPoints }: {
+    _makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints }: {
         asset: Asset;
         accountAddress: string;
         startAmount: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
     }): Promise<UnhashedOrder>;
-    _makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress }: {
+    _makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         asset: Asset;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
         buyerAddress?: string;
     }): Promise<UnhashedOrder>;
-    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, bountyBasisPoints, buyerAddress }: {
+    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -425,7 +425,7 @@ export declare class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        bountyBasisPoints?: number;
+        extraBountyBasisPoints?: number;
         buyerAddress?: string;
     }): Promise<UnhashedOrder>;
     _makeMatchingOrder({ order, accountAddress }: {

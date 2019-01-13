@@ -16,6 +16,8 @@ export declare const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c
 export declare const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9";
 export declare const DEFAULT_BUYER_FEE_BASIS_POINTS = 0;
 export declare const DEFAULT_SELLER_FEE_BASIS_POINTS = 250;
+export declare const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100;
+export declare const DEFAULT_MAX_BOUNTY = 250;
 export declare const MAX_ERROR_LENGTH = 120;
 export declare const SELL_ORDER_BATCH_SIZE = 2;
 /**
