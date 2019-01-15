@@ -10,7 +10,8 @@ import {
   makeBigNumber, orderToJSON,
   personalSignAsync, promisify,
   sendRawTransaction, estimateCurrentPrice,
-  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash, getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
+  getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash,
+  getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
   OPENSEA_FEE_RECIPIENT,
   encodeAtomicizedTransfer,
@@ -1146,7 +1147,7 @@ export class OpenSeaPort {
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
       feeMethod: FeeMethod.SplitFee,
-      feeRecipient: OPENSEA_FEE_RECIPIENT,
+      feeRecipient: NULL_ADDRESS,
       side: OrderSide.Buy,
       saleKind: SaleKind.FixedPrice,
       target,
@@ -1323,6 +1324,10 @@ export class OpenSeaPort {
     }
 
     const { target, calldata, replacementPattern } = computeOrderParams()
+    // Compat for matching buy orders that have fee recipient still on them
+    const feeRecipient = order.feeRecipient == NULL_ADDRESS
+      ? OPENSEA_FEE_RECIPIENT
+      : NULL_ADDRESS
 
     const matchingOrder: UnhashedOrder = {
       exchange: order.exchange,
@@ -1334,7 +1339,7 @@ export class OpenSeaPort {
       takerProtocolFee: order.takerProtocolFee,
       makerReferrerFee: order.makerReferrerFee,
       feeMethod: order.feeMethod,
-      feeRecipient: NULL_ADDRESS,
+      feeRecipient,
       side: (order.side + 1) % 2,
       saleKind: SaleKind.FixedPrice,
       target,
@@ -1555,7 +1560,7 @@ export class OpenSeaPort {
     let value
 
     // Case: user is the seller (and fulfilling a buy order)
-    if (sell.maker.toLowerCase() == accountAddress.toLowerCase() && sell.feeRecipient == NULL_ADDRESS) {
+    if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
       // USER IS THE SELLER
       await this._validateSellOrderParameters({ order: sell, accountAddress })
 
