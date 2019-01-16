@@ -100,7 +100,7 @@ export declare class OpenSeaPort {
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
-     * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order.
+     * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
      */
     createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         tokenId: string;
@@ -122,9 +122,9 @@ export declare class OpenSeaPort {
      * @param assetId Identifier for the asset factory
      * @param factoryAddress Address of the factory contract
      * @param accountAddress Address of the factory owner's wallet
-     * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-     * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-     * @param expirationTime Expiration time for the orders, in seconds. An expiration time of 0 means "never expire."
+     * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+     * @param endAmount Optional price of the asset at the end of its expiration time. If specified, this becomes a set-price sell order, which can either be flat or declining in price. If not specified, this becomes an English auction that increases in price for every bid. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+     * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
      * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
@@ -152,12 +152,12 @@ export declare class OpenSeaPort {
      * @param bundleExternalLink Optional link to a page that adds context to the bundle.
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
      * @param accountAddress The address of the maker of the bundle and the owner of all the assets.
-     * @param startAmount Price of the asset at the start of the auction
-     * @param endAmount Optional price of the asset at the end of its expiration time
+     * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction.
+     * @param endAmount Optional price of the asset at the end of its expiration time. If specified, this becomes a set-price sell order, which can either be flat or declining in price. If not specified, this becomes an English auction that increases in price for every bid.
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
-     * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order.
+     * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
      */
     createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
