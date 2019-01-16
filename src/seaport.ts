@@ -22,7 +22,8 @@ import {
   RINKEBY_PROVIDER_URL,
   MAINNET_PROVIDER_URL,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
-  DEFAULT_MAX_BOUNTY
+  DEFAULT_MAX_BOUNTY,
+  validateAndFormatWalletAddress
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -704,6 +705,7 @@ export class OpenSeaPort {
       { order, accountAddress, referrerAddress }:
       { order: Order; accountAddress: string; referrerAddress?: string }
     ): Promise<boolean> {
+
     const matchingOrder = this._makeMatchingOrder({ order, accountAddress })
 
     const { buy, sell } = assignOrdersToSides(order, matchingOrder)
@@ -992,7 +994,7 @@ export class OpenSeaPort {
     { buy: Order; sell: Order; accountAddress: string; metadata?: string }): Promise<number> {
 
     let value
-    if (buy.maker == accountAddress && buy.paymentToken == NULL_ADDRESS) {
+    if (buy.maker.toLowerCase() == accountAddress.toLowerCase() && buy.paymentToken == NULL_ADDRESS) {
       value = await this._getRequiredAmountForTakingSellOrder(sell)
     }
 
@@ -1129,7 +1131,7 @@ export class OpenSeaPort {
       { asset: Asset; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string; extraBountyBasisPoints?: number }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = accountAddress.toLowerCase()
+    accountAddress = validateAndFormatWalletAddress(accountAddress)
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.tokenAddress)
     const metadata = {
@@ -1187,7 +1189,7 @@ export class OpenSeaPort {
         buyerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = accountAddress.toLowerCase()
+    accountAddress = validateAndFormatWalletAddress(accountAddress)
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.tokenAddress)
     // Small offset to account for latency
@@ -1248,7 +1250,7 @@ export class OpenSeaPort {
       { bundleName: string; bundleDescription?: string; bundleExternalLink?: string; assets: Asset[]; accountAddress: string; startAmount: number; endAmount?: number; expirationTime?: number; paymentTokenAddress?: string; extraBountyBasisPoints?: number; buyerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = accountAddress.toLowerCase()
+    accountAddress = validateAndFormatWalletAddress(accountAddress)
     const schema = this._getSchema()
 
     const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
@@ -1314,7 +1316,7 @@ export class OpenSeaPort {
       { order: UnsignedOrder; accountAddress: string}
     ): UnsignedOrder {
 
-    accountAddress = accountAddress.toLowerCase()
+    accountAddress = validateAndFormatWalletAddress(accountAddress)
     const schema = this._getSchema()
     const listingTime = Math.round(Date.now() / 1000 - 1000)
 

@@ -678,3 +678,18 @@ export function encodeProxyCall(address: string, howToCall: HowToCall, calldata:
   const abi = shouldAssert ? proxyAssertABI : proxyABI
   return WyvernSchemas.encodeCall(abi, [address, howToCall, Buffer.from(calldata.slice(2), 'hex')])
 }
+
+/**
+ * Validates that an address exists, isn't null, and is properly
+ * formatted for Wyvern and Opensea
+ * @param address input address
+ */
+export function validateAndFormatWalletAddress(address?: string): string {
+  if (!address) {
+    throw new Error('Wallet disconnected')
+  }
+  if (address == NULL_ADDRESS) {
+    throw new Error('Invalid wallet address')
+  }
+  return address.toLowerCase()
+}

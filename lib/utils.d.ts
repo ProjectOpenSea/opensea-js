@@ -142,3 +142,9 @@ export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, fr
  * @param shouldAssert Whether to assert success in the proxy call
  */
 export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert?: boolean): any;
+/**
+ * Validates that an address exists, isn't null, and is properly
+ * formatted for Wyvern and Opensea
+ * @param address input address
+ */
+export declare function validateAndFormatWalletAddress(address?: string): string;
