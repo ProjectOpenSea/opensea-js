@@ -717,7 +717,10 @@ export class OpenSeaPort {
       this.logger(`Gas estimate for ${order.side == OrderSide.Sell ? "sell" : "buy"} order: ${gas}`)
 
       return gas > 0
+
     } catch (error) {
+
+      console.error(error)
       return false
     }
   }
@@ -742,6 +745,7 @@ export class OpenSeaPort {
     const tokenContract = this.web3.eth.contract(tokenAbi as any[])
     const erc721 = await tokenContract.at(tokenAddress)
     const proxy = await this._getProxy(fromAddress)
+
     if (!proxy) {
       console.error(`This asset's owner (${fromAddress}) no longer has a proxy!`)
       return false
@@ -749,13 +753,17 @@ export class OpenSeaPort {
     const data = erc721.transferFrom.getData(fromAddress, toAddress, tokenId)
 
     try {
+
       const gas = await estimateGas(this.web3, {
         from: proxy,
         to: tokenAddress,
         data
       })
       return gas > 0
+
     } catch (error) {
+
+      console.error(error)
       return false
     }
   }
