@@ -783,7 +783,7 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
   }))
 }
 
-function testFees(order: Order | UnhashedOrder, assetContract?: OpenSeaAssetContract, makerBounty = 0) {
+function testFees(order: Order | UnhashedOrder, assetContract?: OpenSeaAssetContract, makerBounty?: number) {
   assert.equal(order.makerProtocolFee.toNumber(), 0)
   assert.equal(order.takerProtocolFee.toNumber(), 0)
   if (order.taker != NULL_ADDRESS) {
@@ -794,7 +794,9 @@ function testFees(order: Order | UnhashedOrder, assetContract?: OpenSeaAssetCont
     return
   }
   // Public order
-  assert.equal(order.makerReferrerFee.toNumber(), makerBounty)
+  if (makerBounty != null) {
+    assert.equal(order.makerReferrerFee.toNumber(), makerBounty)
+  }
   if (assetContract) {
     // Homogenous sale
     if (order.side == OrderSide.Sell) {

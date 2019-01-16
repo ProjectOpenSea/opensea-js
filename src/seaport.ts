@@ -13,6 +13,7 @@ import {
   getWyvernAsset, INVERSE_BASIS_POINT, getOrderHash,
   getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
+  DEFAULT_GAS_INCREASE_FACTOR,
   OPENSEA_FEE_RECIPIENT,
   encodeAtomicizedTransfer,
   encodeProxyCall,
@@ -37,7 +38,7 @@ export class OpenSeaPort {
   // Extra gwei to add to the mean gas price when making transactions
   public gasPriceAddition = new BigNumber(3)
   // Multiply gas estimate by this factor when making transactions
-  public gasIncreaseFactor = 1.2
+  public gasIncreaseFactor = DEFAULT_GAS_INCREASE_FACTOR
 
   private _networkName: Network
   private _wyvernProtocol: WyvernProtocol

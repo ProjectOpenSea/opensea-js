@@ -26,6 +26,7 @@ export const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100
 export const DEFAULT_MAX_BOUNTY = DEFAULT_SELLER_FEE_BASIS_POINTS
 export const MAX_ERROR_LENGTH = 120
 export const SELL_ORDER_BATCH_SIZE = 2
+export const DEFAULT_GAS_INCREASE_FACTOR = 1.1
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 const proxyAssertABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxyAssert', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
@@ -377,6 +378,7 @@ export async function sendRawTransaction(
 
   if (gas == null) {
     gas = await estimateGas(web3, { from, to, data, value })
+    gas = gas * DEFAULT_GAS_INCREASE_FACTOR // Unused gas is refunded
   }
 
   try {
