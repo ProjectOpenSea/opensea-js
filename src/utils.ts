@@ -371,9 +371,13 @@ export function makeBigNumber(arg: number | string | BigNumber): BigNumber {
  */
 export async function sendRawTransaction(
     web3: Web3,
-    {from, to, data, gasPrice, value = 0}: Web3.TxData,
+    {from, to, data, gasPrice, value = 0, gas}: Web3.TxData,
     onError: (error: Error) => void
   ): Promise<string> {
+
+  if (gas == null) {
+    gas = await estimateGas(web3, { from, to, data, value })
+  }
 
   try {
     const txHashRes = await promisify(c => web3.eth.sendTransaction({
@@ -381,6 +385,7 @@ export async function sendRawTransaction(
       to,
       value,
       data,
+      gas,
       gasPrice
     }, c))
     const txHash = txHashRes.toString()

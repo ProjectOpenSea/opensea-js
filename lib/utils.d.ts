@@ -65,7 +65,7 @@ export declare function makeBigNumber(arg: number | string | BigNumber): BigNumb
  * @param value value in ETH to send with data. Defaults to 0
  * @param onError callback when user denies transaction
  */
-export declare function sendRawTransaction(web3: Web3, { from, to, data, gasPrice, value }: Web3.TxData, onError: (error: Error) => void): Promise<string>;
+export declare function sendRawTransaction(web3: Web3, { from, to, data, gasPrice, value, gas }: Web3.TxData, onError: (error: Error) => void): Promise<string>;
 /**
  * Estimate Gas usage for a transaction
  * @param web3 Web3 instance
