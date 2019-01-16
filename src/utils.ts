@@ -377,8 +377,8 @@ export async function sendRawTransaction(
   ): Promise<string> {
 
   if (gas == null) {
+    // This gas cannot be increased due to an ethjs error
     gas = await estimateGas(web3, { from, to, data, value })
-    gas = gas * DEFAULT_GAS_INCREASE_FACTOR // Unused gas is refunded
   }
 
   try {
