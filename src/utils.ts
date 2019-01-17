@@ -194,6 +194,7 @@ export const orderFromJSON = (order: any): Order => {
     makerProtocolFee: new BigNumber(order.maker_protocol_fee),
     takerProtocolFee: new BigNumber(order.taker_protocol_fee),
     makerReferrerFee: new BigNumber(order.maker_referrer_fee || 0),
+    waitForBestCounterOrder: order.fee_recipient.address == NULL_ADDRESS,
     feeMethod: order.fee_method,
     feeRecipientAccount: order.fee_recipient,
     feeRecipient: order.fee_recipient.address,

@@ -205,11 +205,12 @@ export interface OpenSeaFees {
     sellerBountyBPS: number;
 }
 export interface UnhashedOrder extends WyvernOrder {
-    makerReferrerFee: BigNumber;
     feeMethod: FeeMethod;
     side: OrderSide;
     saleKind: SaleKind;
     howToCall: HowToCall;
+    makerReferrerFee: BigNumber;
+    waitForBestCounterOrder: boolean;
     metadata: {
         asset?: WyvernAsset;
         bundle?: OpenSeaAssetBundleJSON;

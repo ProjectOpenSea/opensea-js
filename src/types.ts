@@ -310,11 +310,14 @@ export interface OpenSeaFees {
 }
 
 export interface UnhashedOrder extends WyvernOrder {
-  makerReferrerFee: BigNumber
   feeMethod: FeeMethod
   side: OrderSide
   saleKind: SaleKind
   howToCall: HowToCall
+
+  // OpenSea-specific
+  makerReferrerFee: BigNumber
+  waitForBestCounterOrder: boolean
 
   metadata: {
     asset?: WyvernAsset

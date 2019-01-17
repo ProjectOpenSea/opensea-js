@@ -251,20 +251,20 @@ export class OpenSeaPort {
    * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
-   * @param shouldWaitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
+   * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    */
   public async createSellOrder(
-      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, shouldWaitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS }:
+      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS }:
       { tokenId: string;
         tokenAddress: string;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         expirationTime?: number;
-        shouldWaitForHighestBid?: boolean;
+        waitForHighestBid?: boolean;
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string; }
@@ -272,7 +272,7 @@ export class OpenSeaPort {
 
     const asset = { tokenAddress, tokenId }
 
-    const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
+    const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -308,21 +308,21 @@ export class OpenSeaPort {
    * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
-   * @param shouldWaitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
+   * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
    * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
    * @param numberOfOrders Number of times to repeat creating the same order. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
    */
   public async createFactorySellOrders(
-      { assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, shouldWaitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS, numberOfOrders = 1 }:
+      { assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS, numberOfOrders = 1 }:
       { assetId: string;
         factoryAddress: string;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         expirationTime?: number;
-        shouldWaitForHighestBid?: boolean;
+        waitForHighestBid?: boolean;
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
@@ -336,11 +336,11 @@ export class OpenSeaPort {
     }
 
     // Validate just a single dummy order but don't post it
-    const dummyOrder = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
+    const dummyOrder = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
     await this._validateSellOrderParameters({ order: dummyOrder, accountAddress })
 
     const _makeAndPostOneSellOrder = async () => {
-      const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
+      const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
 
       const hashedOrder = {
         ...order,
@@ -398,13 +398,13 @@ export class OpenSeaPort {
    * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction.
    * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
-   * @param shouldWaitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
+   * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, shouldWaitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -413,13 +413,13 @@ export class OpenSeaPort {
         startAmount: number;
         endAmount?: number;
         expirationTime?: number;
-        shouldWaitForHighestBid?: boolean;
+        waitForHighestBid?: boolean;
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string; }
     ): Promise<Order> {
 
-    const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
+    const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
 
     await this._validateSellOrderParameters({ order, accountAddress })
 
@@ -1163,6 +1163,7 @@ export class OpenSeaPort {
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
+      waitForBestCounterOrder: false,
       feeMethod: FeeMethod.SplitFee,
       feeRecipient: OPENSEA_FEE_RECIPIENT,
       side: OrderSide.Buy,
@@ -1184,12 +1185,12 @@ export class OpenSeaPort {
   }
 
   public async _makeSellOrder(
-      { asset, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
+      { asset, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
       { asset: Asset;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
-        shouldWaitForHighestBid: boolean;
+        waitForHighestBid: boolean;
         expirationTime: number;
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
@@ -1212,9 +1213,9 @@ export class OpenSeaPort {
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
-    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, shouldWaitForHighestBid)
+    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
-    const feeRecipient = shouldWaitForHighestBid
+    const feeRecipient = waitForHighestBid
       ? NULL_ADDRESS
       : OPENSEA_FEE_RECIPIENT
 
@@ -1227,6 +1228,7 @@ export class OpenSeaPort {
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(sellerBountyBPS),
+      waitForBestCounterOrder: waitForHighestBid,
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Sell,
@@ -1251,7 +1253,7 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -1260,7 +1262,7 @@ export class OpenSeaPort {
         startAmount: number;
         endAmount?: number;
         expirationTime: number;
-        shouldWaitForHighestBid: boolean;
+        waitForHighestBid: boolean;
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         buyerAddress: string; }
@@ -1286,7 +1288,7 @@ export class OpenSeaPort {
 
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
-    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, shouldWaitForHighestBid)
+    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
 
     // Small offset to account for latency
     const listingTime = Math.round(Date.now() / 1000 - 100)
@@ -1295,7 +1297,7 @@ export class OpenSeaPort {
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
-    const feeRecipient = shouldWaitForHighestBid
+    const feeRecipient = waitForHighestBid
       ? NULL_ADDRESS
       : OPENSEA_FEE_RECIPIENT
 
@@ -1308,6 +1310,7 @@ export class OpenSeaPort {
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(sellerBountyBPS),
+      waitForBestCounterOrder: waitForHighestBid,
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Sell,
@@ -1375,6 +1378,7 @@ export class OpenSeaPort {
       makerProtocolFee: order.makerProtocolFee,
       takerProtocolFee: order.takerProtocolFee,
       makerReferrerFee: order.makerReferrerFee,
+      waitForBestCounterOrder: false,
       feeMethod: order.feeMethod,
       feeRecipient,
       side: (order.side + 1) % 2,
@@ -1565,9 +1569,9 @@ export class OpenSeaPort {
    * @param expirationTime When the auction expires, or 0 if never.
    * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
    * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
-   * @param shouldWaitForHighestCounterOrder If true, this is an English auction order that should increase in price with every counter order until `expirationTime`.
+   * @param waitForBestCounterOrder If true, this is an English auction order that should increase in price with every counter order until `expirationTime`.
    */
-  private async _getPriceParameters(tokenAddress: string, expirationTime: number, startAmount: number, endAmount?: number, shouldWaitForHighestCounterOrder?: boolean) {
+  private async _getPriceParameters(tokenAddress: string, expirationTime: number, startAmount: number, endAmount?: number, waitForBestCounterOrder?: boolean) {
 
     const priceDiff = endAmount != null
       ? startAmount - endAmount
@@ -1580,7 +1584,7 @@ export class OpenSeaPort {
     if (expirationTime < 0) {
       throw new Error('Expiration time must be at least zero (meaning non-expiring).')
     }
-    if (shouldWaitForHighestCounterOrder && expirationTime == 0) {
+    if (waitForBestCounterOrder && expirationTime == 0) {
       throw new Error('English auctions must have a positive expiration time.')
     }
     if (!isEther && !token) {
