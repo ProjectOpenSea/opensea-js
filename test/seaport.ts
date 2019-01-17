@@ -11,7 +11,7 @@ import {
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, OpenSeaAsset, Asset, OpenSeaAssetContract } from '../src/types'
-import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY } from '../src/utils'
+import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY } from './constants'
@@ -110,9 +110,9 @@ suite('seaport', () => {
         paymentTokenAddress: NULL_ADDRESS,
         waitForHighestBid: true
       })
-      assert.fail("Order valid", "But should have thrown")
+      assert.fail()
     } catch (error) {
-      assert.include(error.message, 'English auctions must have a positive expiration time')
+      assert.include(error.message, 'English auctions must have an expiration time')
     }
 
     try {
@@ -127,7 +127,7 @@ suite('seaport', () => {
         paymentTokenAddress: NULL_ADDRESS,
         waitForHighestBid: false
       })
-      assert.fail("Order valid", "But should have thrown")
+      assert.fail()
     } catch (error) {
       assert.include(error.message, 'End price must be less than or equal to the start price')
     }
@@ -144,18 +144,19 @@ suite('seaport', () => {
         paymentTokenAddress: NULL_ADDRESS,
         waitForHighestBid: false
       })
-      assert.fail("Order valid", "But should have thrown")
+      assert.fail()
     } catch (error) {
-      assert.include(error.message, 'Expiration time must be positive if order will change in price')
+      assert.include(error.message, 'Expiration time must be set if order will change in price')
     }
   })
 
-  test('Matches an English auction sell order', async () => {
+  test('Matches a English auction sell order, bountied', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 1.2
-    const expirationTime = 6000
-    const bountyPercent = 0
+    const bidAmountInToken = 1.8
+    const expirationTime = (Date.now() / 1000 + 60) // one minute from now
+    const bountyPercent = 1.1
 
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
@@ -174,7 +175,7 @@ suite('seaport', () => {
       extraBountyBasisPoints: bountyPercent * 100,
       buyerAddress: NULL_ADDRESS,
       expirationTime,
-      waitForHighestBid: false
+      waitForHighestBid: true
     })
 
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
@@ -184,650 +185,652 @@ suite('seaport', () => {
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress, Math.pow(10, 18) * bidAmountInToken )
+    // We can't make sure a too-low bid is invalid without signing orders and doing atomicMatch
+    // since buy > sell is required in funds transfe
+  })
+
+  test("Computes fees correctly for non-zero-fee asset", async () => {
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+    const bountyPercent = 1.5
+    const extraBountyBasisPoints = bountyPercent * 100
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const contract = asset.assetContract
+
+    const buyerFees = await client.computeFees({
+      assets: [{ tokenAddress, tokenId }],
+      extraBountyBasisPoints,
+      side: OrderSide.Buy
+    })
+    assert.equal(buyerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
+    assert.equal(buyerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
+    assert.equal(buyerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
+    assert.equal(buyerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
+    assert.equal(buyerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
+    assert.equal(buyerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
+    assert.equal(buyerFees.sellerBountyBPS, 0)
+
+    const sellerFees = await client.computeFees({
+      assetContract: asset.assetContract, // alternate fee param
+      extraBountyBasisPoints,
+      side: OrderSide.Sell
+    })
+    assert.equal(sellerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
+    assert.equal(sellerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
+    assert.equal(sellerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
+    assert.equal(sellerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
+    assert.equal(sellerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
+    assert.equal(sellerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
+    assert.equal(sellerFees.sellerBountyBPS, extraBountyBasisPoints)
+
+    const heterogenousBundleSellerFees = await client.computeFees({
+      assets: [],
+      extraBountyBasisPoints,
+      side: OrderSide.Sell
+    })
+    assert.equal(heterogenousBundleSellerFees.totalBuyerFeeBPS, DEFAULT_BUYER_FEE_BASIS_POINTS)
+    assert.equal(heterogenousBundleSellerFees.totalSellerFeeBPS, DEFAULT_SELLER_FEE_BASIS_POINTS)
+    assert.equal(heterogenousBundleSellerFees.devBuyerFeeBPS, 0)
+    assert.equal(heterogenousBundleSellerFees.devSellerFeeBPS, 0)
+    assert.equal(heterogenousBundleSellerFees.openseaBuyerFeeBPS, DEFAULT_BUYER_FEE_BASIS_POINTS)
+    assert.equal(heterogenousBundleSellerFees.openseaSellerFeeBPS, DEFAULT_SELLER_FEE_BASIS_POINTS)
+    assert.equal(heterogenousBundleSellerFees.sellerBountyBPS, extraBountyBasisPoints)
+
+    const privateSellerFees = await client.computeFees({
+      assets: [{ tokenAddress, tokenId }],
+      extraBountyBasisPoints,
+      side: OrderSide.Sell,
+      isPrivate: true
+    })
+    assert.equal(privateSellerFees.totalBuyerFeeBPS, 0)
+    assert.equal(privateSellerFees.totalSellerFeeBPS, 0)
+    assert.equal(privateSellerFees.devBuyerFeeBPS, 0)
+    assert.equal(privateSellerFees.devSellerFeeBPS, 0)
+    assert.equal(privateSellerFees.openseaBuyerFeeBPS, 0)
+    assert.equal(privateSellerFees.openseaSellerFeeBPS, 0)
+    assert.equal(privateSellerFees.sellerBountyBPS, 0)
+
+    const privateBuyerFees = await client.computeFees({
+      assets: [{ tokenAddress, tokenId }],
+      extraBountyBasisPoints,
+      side: OrderSide.Buy,
+      isPrivate: true
+    })
+    assert.equal(privateBuyerFees.totalBuyerFeeBPS, 0)
+    assert.equal(privateBuyerFees.totalSellerFeeBPS, 0)
+    assert.equal(privateBuyerFees.devBuyerFeeBPS, 0)
+    assert.equal(privateBuyerFees.devSellerFeeBPS, 0)
+    assert.equal(privateBuyerFees.openseaBuyerFeeBPS, 0)
+    assert.equal(privateBuyerFees.openseaSellerFeeBPS, 0)
+    assert.equal(privateBuyerFees.sellerBountyBPS, 0)
+  })
+
+  test("Computes fees correctly for zero-fee asset", async () => {
+    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
+    assert.isNotNull(zeroFeeAsset)
+    if (!zeroFeeAsset) {
+      return
+    }
+    const bountyPercent = 0
+
+    const contract = zeroFeeAsset.assetContract
+
+    const buyerFees = await client.computeFees({
+      assetContract: contract,
+      extraBountyBasisPoints: bountyPercent * 100,
+      side: OrderSide.Buy
+    })
+    assert.equal(buyerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
+    assert.equal(buyerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
+    assert.equal(buyerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
+    assert.equal(buyerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
+    assert.equal(buyerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
+    assert.equal(buyerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
+    assert.equal(buyerFees.sellerBountyBPS, 0)
+
+    const sellerFees = await client.computeFees({
+      assetContract: contract,
+      extraBountyBasisPoints: bountyPercent * 100,
+      side: OrderSide.Sell
+    })
+    assert.equal(sellerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
+    assert.equal(sellerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
+    assert.equal(sellerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
+    assert.equal(sellerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
+    assert.equal(sellerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
+    assert.equal(sellerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
+    assert.equal(sellerFees.sellerBountyBPS, bountyPercent * 100)
+
+  })
+
+  test("Errors for computing fees correctly", async () => {
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
+    assert.isNotNull(zeroFeeAsset)
+    if (!zeroFeeAsset) {
+      return
+    }
+
+    try {
+      await client.computeFees({
+        assets: [asset],
+        extraBountyBasisPoints: 200,
+        side: OrderSide.Sell
+      })
+      assert.fail()
+    } catch (error) {
+      if (!error.message.includes('bounty exceeds the maximum') ||
+          !error.message.includes('OpenSea will add')) {
+        assert.fail(error.message)
+      }
+    }
+
+    try {
+      await client.computeFees({
+        assetContract: zeroFeeAsset.assetContract,
+        extraBountyBasisPoints: 100,
+        side: OrderSide.Sell
+      })
+      assert.fail()
+    } catch (error) {
+      if (!error.message.includes('bounty exceeds the maximum') ||
+          error.message.includes('OpenSea will add')) {
+        // OpenSea won't add a bounty for this type
+        assert.fail(error.message)
+      }
+    }
+  })
+
+  test("Matches a private sell order, doesn't for wrong taker", async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+    const amountInToken = 2
+    const bountyPercent = 0
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const order = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress,
+      startAmount: amountInToken,
+      extraBountyBasisPoints: bountyPercent * 100,
+      buyerAddress: takerAddress,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, asset.assetContract, bountyPercent * 100)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+    // Make sure no one else can take it
+    try {
+      await testMatchingNewOrder(order, DEVIN_ADDRESS)
+    } catch (e) {
+      // It works!
+      return
+    }
+    assert.fail()
+  })
+
+  test('Matches a new bountied sell order for an ERC-20 token (MANA)', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+    const paymentToken = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
+    const amountInToken = 4000
+    const bountyPercent = 1
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const order = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress: paymentToken.address,
+      extraBountyBasisPoints: bountyPercent * 100,
+      buyerAddress: NULL_ADDRESS, // Check that null doesn't trigger private orders
+      expirationTime: 0,
+      waitForHighestBid: false
+    })
+
+    assert.equal(order.paymentToken, paymentToken.address)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, asset.assetContract, bountyPercent * 100)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
 
-  // test("Computes fees correctly for non-zero-fee asset", async () => {
-  //   const tokenId = MYTHEREUM_TOKEN_ID.toString()
-  //   const tokenAddress = MYTHEREUM_ADDRESS
-  //   const bountyPercent = 1.5
-  //   const extraBountyBasisPoints = bountyPercent * 100
-
-  //   const asset = await client.api.getAsset(tokenAddress, tokenId)
-  //   assert.isNotNull(asset)
-  //   if (!asset) {
-  //     return
-  //   }
-
-  //   const contract = asset.assetContract
-
-  //   const buyerFees = await client.computeFees({
-  //     assets: [{ tokenAddress, tokenId }],
-  //     extraBountyBasisPoints,
-  //     side: OrderSide.Buy
-  //   })
-  //   assert.equal(buyerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
-  //   assert.equal(buyerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
-  //   assert.equal(buyerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
-  //   assert.equal(buyerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
-  //   assert.equal(buyerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
-  //   assert.equal(buyerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
-  //   assert.equal(buyerFees.sellerBountyBPS, 0)
-
-  //   const sellerFees = await client.computeFees({
-  //     assetContract: asset.assetContract, // alternate fee param
-  //     extraBountyBasisPoints,
-  //     side: OrderSide.Sell
-  //   })
-  //   assert.equal(sellerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
-  //   assert.equal(sellerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
-  //   assert.equal(sellerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
-  //   assert.equal(sellerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
-  //   assert.equal(sellerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
-  //   assert.equal(sellerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
-  //   assert.equal(sellerFees.sellerBountyBPS, extraBountyBasisPoints)
-
-  //   const heterogenousBundleSellerFees = await client.computeFees({
-  //     assets: [],
-  //     extraBountyBasisPoints,
-  //     side: OrderSide.Sell
-  //   })
-  //   assert.equal(heterogenousBundleSellerFees.totalBuyerFeeBPS, DEFAULT_BUYER_FEE_BASIS_POINTS)
-  //   assert.equal(heterogenousBundleSellerFees.totalSellerFeeBPS, DEFAULT_SELLER_FEE_BASIS_POINTS)
-  //   assert.equal(heterogenousBundleSellerFees.devBuyerFeeBPS, 0)
-  //   assert.equal(heterogenousBundleSellerFees.devSellerFeeBPS, 0)
-  //   assert.equal(heterogenousBundleSellerFees.openseaBuyerFeeBPS, DEFAULT_BUYER_FEE_BASIS_POINTS)
-  //   assert.equal(heterogenousBundleSellerFees.openseaSellerFeeBPS, DEFAULT_SELLER_FEE_BASIS_POINTS)
-  //   assert.equal(heterogenousBundleSellerFees.sellerBountyBPS, extraBountyBasisPoints)
-
-  //   const privateSellerFees = await client.computeFees({
-  //     assets: [{ tokenAddress, tokenId }],
-  //     extraBountyBasisPoints,
-  //     side: OrderSide.Sell,
-  //     isPrivate: true
-  //   })
-  //   assert.equal(privateSellerFees.totalBuyerFeeBPS, 0)
-  //   assert.equal(privateSellerFees.totalSellerFeeBPS, 0)
-  //   assert.equal(privateSellerFees.devBuyerFeeBPS, 0)
-  //   assert.equal(privateSellerFees.devSellerFeeBPS, 0)
-  //   assert.equal(privateSellerFees.openseaBuyerFeeBPS, 0)
-  //   assert.equal(privateSellerFees.openseaSellerFeeBPS, 0)
-  //   assert.equal(privateSellerFees.sellerBountyBPS, 0)
-
-  //   const privateBuyerFees = await client.computeFees({
-  //     assets: [{ tokenAddress, tokenId }],
-  //     extraBountyBasisPoints,
-  //     side: OrderSide.Buy,
-  //     isPrivate: true
-  //   })
-  //   assert.equal(privateBuyerFees.totalBuyerFeeBPS, 0)
-  //   assert.equal(privateBuyerFees.totalSellerFeeBPS, 0)
-  //   assert.equal(privateBuyerFees.devBuyerFeeBPS, 0)
-  //   assert.equal(privateBuyerFees.devSellerFeeBPS, 0)
-  //   assert.equal(privateBuyerFees.openseaBuyerFeeBPS, 0)
-  //   assert.equal(privateBuyerFees.openseaSellerFeeBPS, 0)
-  //   assert.equal(privateBuyerFees.sellerBountyBPS, 0)
-  // })
-
-  // test("Computes fees correctly for zero-fee asset", async () => {
-  //   const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
-  //   assert.isNotNull(zeroFeeAsset)
-  //   if (!zeroFeeAsset) {
-  //     return
-  //   }
-  //   const bountyPercent = 0
-
-  //   const contract = zeroFeeAsset.assetContract
-
-  //   const buyerFees = await client.computeFees({
-  //     assetContract: contract,
-  //     extraBountyBasisPoints: bountyPercent * 100,
-  //     side: OrderSide.Buy
-  //   })
-  //   assert.equal(buyerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
-  //   assert.equal(buyerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
-  //   assert.equal(buyerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
-  //   assert.equal(buyerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
-  //   assert.equal(buyerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
-  //   assert.equal(buyerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
-  //   assert.equal(buyerFees.sellerBountyBPS, 0)
-
-  //   const sellerFees = await client.computeFees({
-  //     assetContract: contract,
-  //     extraBountyBasisPoints: bountyPercent * 100,
-  //     side: OrderSide.Sell
-  //   })
-  //   assert.equal(sellerFees.totalBuyerFeeBPS, contract.buyerFeeBasisPoints)
-  //   assert.equal(sellerFees.totalSellerFeeBPS, contract.sellerFeeBasisPoints)
-  //   assert.equal(sellerFees.devBuyerFeeBPS, contract.devBuyerFeeBasisPoints)
-  //   assert.equal(sellerFees.devSellerFeeBPS, contract.devSellerFeeBasisPoints)
-  //   assert.equal(sellerFees.openseaBuyerFeeBPS, contract.openseaBuyerFeeBasisPoints)
-  //   assert.equal(sellerFees.openseaSellerFeeBPS, contract.openseaSellerFeeBasisPoints)
-  //   assert.equal(sellerFees.sellerBountyBPS, bountyPercent * 100)
-
-  // })
-
-  // test("Errors for computing fees correctly", async () => {
-  //   const tokenId = MYTHEREUM_TOKEN_ID.toString()
-  //   const tokenAddress = MYTHEREUM_ADDRESS
-
-  //   const asset = await client.api.getAsset(tokenAddress, tokenId)
-  //   assert.isNotNull(asset)
-  //   if (!asset) {
-  //     return
-  //   }
-
-  //   const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
-  //   assert.isNotNull(zeroFeeAsset)
-  //   if (!zeroFeeAsset) {
-  //     return
-  //   }
-
-  //   try {
-  //     await client.computeFees({
-  //       assets: [asset],
-  //       extraBountyBasisPoints: 200,
-  //       side: OrderSide.Sell
-  //     })
-  //     assert.fail("Fees computed", "But should have thrown that the bounty was too high")
-  //   } catch (error) {
-  //     if (!error.message.includes('bounty exceeds the maximum') ||
-  //         !error.message.includes('OpenSea will add')) {
-  //       assert.fail(error.message)
-  //     }
-  //   }
-
-  //   try {
-  //     await client.computeFees({
-  //       assetContract: zeroFeeAsset.assetContract,
-  //       extraBountyBasisPoints: 100,
-  //       side: OrderSide.Sell
-  //     })
-  //     assert.fail("Fees computed", "But should have thrown that the bounty was too high")
-  //   } catch (error) {
-  //     if (!error.message.includes('bounty exceeds the maximum') ||
-  //         error.message.includes('OpenSea will add')) {
-  //       // OpenSea won't add a bounty for this type
-  //       assert.fail(error.message)
-  //     }
-  //   }
-  // })
-
-  // test("Matches a private sell order, doesn't for wrong taker", async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const takerAddress = ALEX_ADDRESS_2
-  //   const amountInToken = 2
-  //   const bountyPercent = 0
-
-  //   const tokenId = MYTHEREUM_TOKEN_ID.toString()
-  //   const tokenAddress = MYTHEREUM_ADDRESS
-
-  //   const asset = await client.api.getAsset(tokenAddress, tokenId)
-  //   assert.isNotNull(asset)
-  //   if (!asset) {
-  //     return
-  //   }
-
-  //   const order = await client._makeSellOrder({
-  //     asset: { tokenAddress, tokenId },
-  //     accountAddress,
-  //     startAmount: amountInToken,
-  //     extraBountyBasisPoints: bountyPercent * 100,
-  //     buyerAddress: takerAddress,
-  //     expirationTime: 0,
-  //     paymentTokenAddress: NULL_ADDRESS,
-  //     waitForHighestBid: false
-  //   })
-
-  //   assert.equal(order.paymentToken, NULL_ADDRESS)
-  //   assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
-  //   assert.equal(order.extra.toNumber(), 0)
-  //   assert.equal(order.expirationTime.toNumber(), 0)
-  //   testFees(order, asset.assetContract, bountyPercent * 100)
-
-  //   await client._validateSellOrderParameters({ order, accountAddress })
-  //   // Make sure match is valid
-  //   await testMatchingNewOrder(order, takerAddress)
-  //   // Make sure no one else can take it
-  //   try {
-  //     await testMatchingNewOrder(order, DEVIN_ADDRESS)
-  //   } catch (e) {
-  //     // It works!
-  //     return
-  //   }
-  //   assert.fail("Matched order", "But should have failed to match")
-  // })
-
-  // test('Matches a new bountied sell order for an ERC-20 token (MANA)', async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const takerAddress = ALEX_ADDRESS_2
-  //   const paymentToken = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
-  //   const amountInToken = 4000
-  //   const bountyPercent = 1
-
-  //   const tokenId = MYTHEREUM_TOKEN_ID.toString()
-  //   const tokenAddress = MYTHEREUM_ADDRESS
-
-  //   const asset = await client.api.getAsset(tokenAddress, tokenId)
-  //   assert.isNotNull(asset)
-  //   if (!asset) {
-  //     return
-  //   }
-
-  //   const order = await client._makeSellOrder({
-  //     asset: { tokenAddress, tokenId },
-  //     accountAddress,
-  //     startAmount: amountInToken,
-  //     paymentTokenAddress: paymentToken.address,
-  //     extraBountyBasisPoints: bountyPercent * 100,
-  //     buyerAddress: NULL_ADDRESS, // Check that null doesn't trigger private orders
-  //     expirationTime: 0,
-  //     waitForHighestBid: false
-  //   })
-
-  //   assert.equal(order.paymentToken, paymentToken.address)
-  //   assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
-  //   assert.equal(order.extra.toNumber(), 0)
-  //   assert.equal(order.expirationTime.toNumber(), 0)
-  //   testFees(order, asset.assetContract, bountyPercent * 100)
-
-  //   await client._validateSellOrderParameters({ order, accountAddress })
-  //   // Make sure match is valid
-  //   await testMatchingNewOrder(order, takerAddress)
-  // })
-
-  // test('Matches a buy order with an ERC-20 token (DAI)', async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const takerAddress = ALEX_ADDRESS
-  //   const paymentToken = (await client.getFungibleTokens({ symbol: 'DAI'}))[0]
-  //   const amountInToken = 3
-
-  //   const tokenId = CK_TOKEN_ID.toString()
-  //   const tokenAddress = CK_ADDRESS
-
-  //   const asset = await client.api.getAsset(tokenAddress, tokenId)
-  //   assert.isNotNull(asset)
-  //   if (!asset) {
-  //     return
-  //   }
-
-  //   const order = await client._makeBuyOrder({
-  //     asset: { tokenAddress, tokenId },
-  //     accountAddress,
-  //     startAmount: amountInToken,
-  //     paymentTokenAddress: paymentToken.address
-  //   })
-
-  //   assert.equal(order.paymentToken, paymentToken.address)
-  //   assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
-  //   assert.equal(order.extra.toNumber(), 0)
-  //   assert.equal(order.expirationTime.toNumber(), 0)
-  //   testFees(order, asset.assetContract)
-
-  //   await client._validateBuyOrderParameters({ order, accountAddress })
-  //   // Make sure match is valid
-  //   await testMatchingNewOrder(order, takerAddress)
-  // })
-
-  // test('Matches fixed heterogenous bountied bundle sell order', async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const takerAddress = ALEX_ADDRESS
-  //   const amountInEth = 1
-  //   const bountyPercent = 1.5
-
-  //   const order = await client._makeBundleSellOrder({
-  //     bundleName: "Test Bundle",
-  //     bundleDescription: "This is a test with different types of assets",
-  //     assets: assetsForBundleOrder,
-  //     accountAddress,
-  //     startAmount: amountInEth,
-  //     extraBountyBasisPoints: bountyPercent * 100,
-  //     expirationTime: 0,
-  //     paymentTokenAddress: NULL_ADDRESS,
-  //     waitForHighestBid: false,
-  //     buyerAddress: NULL_ADDRESS
-  //   })
-
-  //   assert.equal(order.paymentToken, NULL_ADDRESS)
-  //   assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
-  //   assert.equal(order.extra.toNumber(), 0)
-  //   assert.equal(order.expirationTime.toNumber(), 0)
-  //   testFees(order, undefined, bountyPercent * 100)
-
-  //   await client._validateSellOrderParameters({ order, accountAddress })
-  //   // Make sure match is valid
-  //   await testMatchingNewOrder(order, takerAddress)
-  // })
-
-  // test('Matches homogenous, bountied bundle sell order', async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const takerAddress = ALEX_ADDRESS
-  //   const amountInEth = 1
-  //   const bountyPercent = 0.8
-
-  //   const order = await client._makeBundleSellOrder({
-  //     bundleName: "Test Homogenous Bundle",
-  //     bundleDescription: "This is a test with one type of asset",
-  //     assets: [{ tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS }],
-  //     accountAddress,
-  //     startAmount: amountInEth,
-  //     extraBountyBasisPoints: bountyPercent * 100,
-  //     expirationTime: 0,
-  //     paymentTokenAddress: NULL_ADDRESS,
-  //     waitForHighestBid: false,
-  //     buyerAddress: NULL_ADDRESS
-  //   })
-
-  //   const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
-  //   assert.isNotNull(asset)
-  //   if (!asset) {
-  //     return
-  //   }
-
-  //   assert.equal(order.paymentToken, NULL_ADDRESS)
-  //   assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
-  //   assert.equal(order.extra.toNumber(), 0)
-  //   assert.equal(order.expirationTime.toNumber(), 0)
-  //   testFees(order, asset.assetContract, bountyPercent * 100)
-
-  //   await client._validateSellOrderParameters({ order, accountAddress })
-  //   // Make sure match is valid
-  //   await testMatchingNewOrder(order, takerAddress)
-  // })
-
-  // test('Serializes payment token and matches most recent ERC-20 sell order', async () => {
-  //   const takerAddress = ALEX_ADDRESS
-
-  //   const token = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
-
-  //   const order = await client.api.getOrder({
-  //     side: OrderSide.Sell,
-  //     payment_token_address: token.address
-  //   })
-
-  //   assert.isNotNull(order)
-  //   if (!order) {
-  //     return
-  //   }
-
-  //   assert.isNotNull(order.paymentTokenContract)
-  //   if (!order.paymentTokenContract) {
-  //     return
-  //   }
-  //   assert.equal(order.paymentTokenContract.address, token.address)
-  //   assert.equal(order.paymentToken, token.address)
-  //   // TODO why can't we test atomicMatch?
-  //   await testMatchingOrder(order, takerAddress, false)
-  // })
-
-  // test('Bulk transfer', async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const takerAddress = ALEX_ADDRESS_2
-
-  //   const gas = await client._estimateGasForTransfer({
-  //     assets: assetsForBulkTransfer,
-  //     fromAddress: accountAddress,
-  //     toAddress: takerAddress
-  //   })
-
-  //   assert.isAbove(gas, 0)
-  // })
-
-  // test('Fungible tokens filter', async () => {
-  //   const manaTokens = (await client.getFungibleTokens({ symbol: "MANA" }))
-  //   // API returns another version of MANA,
-  //   // and one version is offline (in sdk)
-  //   assert.equal(manaTokens.length, 2)
-  //   const mana = manaTokens[0]
-  //   assert.isNotNull(mana)
-  //   assert.equal(mana.name, "Decentraland")
-  //   assert.equal(mana.address, "0x0f5d2fb29fb7d3cfee444a200298f468908cc942")
-  //   assert.equal(mana.decimals, 18)
-
-  //   const dai = (await client.getFungibleTokens({ symbol: "DAI" }))[0]
-  //   assert.isNotNull(dai)
-  //   assert.equal(dai.name, "")
-
-  //   const all = await client.getFungibleTokens()
-  //   assert.isNotEmpty(all)
-  // })
-
-  // test('Asset locked in contract is not transferrable', async () => {
-  //   const isTransferrable = await client.isAssetTransferrable({
-  //     tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
-  //     tokenAddress: GODS_UNCHAINED_ADDRESS,
-  //     fromAddress: ALEX_ADDRESS,
-  //     toAddress: ALEX_ADDRESS_2
-  //   })
-  //   assert.isNotTrue(isTransferrable)
-  // })
-
-  // test('ERC-721 v3 asset not owned by fromAddress is not transferrable', async () => {
-  //   const isTransferrable = await client.isAssetTransferrable({
-  //     tokenId: "1",
-  //     tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
-  //     fromAddress: ALEX_ADDRESS,
-  //     toAddress: ALEX_ADDRESS_2
-  //   })
-  //   assert.isNotTrue(isTransferrable)
-  // })
-
-  // test('ERC-721 v3 asset owned by fromAddress is transferrable', async () => {
-  //   const isTransferrable = await client.isAssetTransferrable({
-  //     tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
-  //     tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
-  //     fromAddress: ALEX_ADDRESS,
-  //     toAddress: ALEX_ADDRESS_2
-  //   })
-  //   assert.isTrue(isTransferrable)
-  // })
-
-  // test('ERC-721 v1 asset owned by fromAddress is transferrable', async () => {
-  //   const isTransferrable = await client.isAssetTransferrable({
-  //     tokenId: CK_TOKEN_ID.toString(),
-  //     tokenAddress: CK_ADDRESS,
-  //     fromAddress: ALEX_ADDRESS,
-  //     toAddress: ALEX_ADDRESS_2
-  //   })
-  //   assert.isTrue(isTransferrable)
-  // })
-
-  // test('Matches a new bundle sell order for an ERC-20 token (MANA)', async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const takerAddress = ALEX_ADDRESS
-  //   const token = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
-  //   const amountInToken = 2.422
-
-  //   const order = await client._makeBundleSellOrder({
-  //     bundleName: "Test Bundle",
-  //     bundleDescription: "This is a test with different types of assets",
-  //     assets: assetsForBundleOrder,
-  //     accountAddress,
-  //     startAmount: amountInToken,
-  //     paymentTokenAddress: token.address,
-  //     extraBountyBasisPoints: 0,
-  //     expirationTime: 0,
-  //     waitForHighestBid: false,
-  //     buyerAddress: NULL_ADDRESS
-  //   })
-
-  //   assert.equal(order.paymentToken, token.address)
-  //   assert.equal(order.basePrice.toNumber(), Math.pow(10, token.decimals) * amountInToken)
-  //   assert.equal(order.extra.toNumber(), 0)
-  //   assert.equal(order.expirationTime.toNumber(), 0)
-
-  //   await client._validateSellOrderParameters({ order, accountAddress })
-  //   // Make sure match is valid
-  //   await testMatchingNewOrder(order, takerAddress)
-  // })
-
-  // test('Matches Dutch bundle order for different approve-all assets', async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const takerAddress = ALEX_ADDRESS
-  //   const expirationTime = (Date.now() / 1000 + 60 * 60 * 24) // one day from now
-  //   const amountInEth = 1
-
-  //   const order = await client._makeBundleSellOrder({
-  //     bundleName: "Test Bundle",
-  //     bundleDescription: "This is a test with different types of assets",
-  //     assets: assetsForBundleOrder,
-  //     accountAddress,
-  //     startAmount: amountInEth,
-  //     endAmount: 0,
-  //     expirationTime,
-  //     extraBountyBasisPoints: 0,
-  //     waitForHighestBid: false,
-  //     buyerAddress: NULL_ADDRESS,
-  //     paymentTokenAddress: NULL_ADDRESS
-  //   })
-
-  //   assert.equal(order.paymentToken, NULL_ADDRESS)
-  //   assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
-  //   assert.equal(order.extra.toNumber(), Math.pow(10, 18) * amountInEth)
-  //   assert.equal(order.expirationTime.toNumber(), expirationTime)
-
-  //   await client._validateSellOrderParameters({ order, accountAddress })
-  //   // Make sure match is valid
-  //   await testMatchingNewOrder(order, takerAddress)
-  // })
-
-  // test('An API asset\'s order has correct hash', async () => {
-  //   const asset = await client.api.getAsset(CK_ADDRESS, 1)
-  //   assert.isNotNull(asset)
-  //   if (!asset) {
-  //     return
-  //   }
-  //   assert.isNotNull(asset.orders)
-  //   if (!asset.orders) {
-  //     return
-  //   }
-  //   const order = asset.orders[0]
-  //   assert.isNotNull(order)
-  //   if (!order) {
-  //     return
-  //   }
-  //   assert.equal(order.hash, getOrderHash(order))
-  // })
-
-  // test('orderToJSON computes correct current price for Dutch auctions', async () => {
-  //   const { orders } = await client.api.getOrders({ sale_kind: SaleKind.DutchAuction })
-  //   assert.equal(orders.length, client.api.pageSize)
-  //   orders.map(order => {
-  //     assert.isNotNull(order.currentPrice)
-  //     if (!order.currentPrice) {
-  //       return
-  //     }
-  //     // Possible race condition
-  //     assert.equal(order.currentPrice.toPrecision(3), estimateCurrentPrice(order).toPrecision(3))
-  //     assert.isAtLeast(order.basePrice.toNumber(), order.currentPrice.toNumber())
-  //   })
-  // })
-
-  // test('First page of orders have valid hashes and fees', async () => {
-  //   const { orders, count } = await client.api.getOrders()
-  //   assert.isNotEmpty(orders)
-  //   assert.isAbove(count, orders.length)
-
-  //   orders.forEach(order => {
-  //     if (order.asset) {
-  //       assert.isNotEmpty(order.asset.assetContract)
-  //       assert.isNotEmpty(order.asset.tokenId)
-  //       testFees(order, order.asset.assetContract)
-  //     }
-  //     assert.isNotEmpty(order.paymentTokenContract)
-
-  //     const accountAddress = ALEX_ADDRESS
-  //     const matchingOrder = client._makeMatchingOrder({order, accountAddress})
-  //     const matchingOrderHash = matchingOrder.hash
-  //     delete matchingOrder.hash
-  //     assert.isUndefined(matchingOrder.hash)
-
-  //     const orderJSON = orderToJSON(matchingOrder)
-  //     assert.equal(orderJSON.hash, matchingOrderHash)
-  //     assert.equal(orderJSON.hash, getOrderHash(matchingOrder))
-  //   })
-  // })
-
-  // test('Uses a gas price above the mean', async () => {
-  //   const gasPrice = await client._computeGasPrice()
-  //   const meanGasPrice = await getCurrentGasPrice(client.web3)
-  //   assert.isAbove(meanGasPrice.toNumber(), 0)
-  //   assert.isAbove(gasPrice.toNumber(), meanGasPrice.toNumber())
-  // })
-
-  // test('Fetches proxy for an account', async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const proxy = await client._getProxy(accountAddress)
-  //   assert.isNotNull(proxy)
-  // })
-
-  // test('Fetches positive token balance for an account', async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const balance = await client.getTokenBalance({ accountAddress })
-  //   assert.isAbove(balance.toNumber(), 0)
-  // })
-
-  // test('Accounts have maximum token balance approved', async () => {
-  //   const accountAddress = ALEX_ADDRESS
-  //   const approved = await client._getApprovedTokenCount({ accountAddress })
-  //   assert.equal(approved.toString(), MAX_UINT_256.toString())
-  // })
-
-  // test('Matches first buy order in book', async () => {
-  //   const order = await client.api.getOrder({side: OrderSide.Buy})
-  //   assert.isNotNull(order)
-  //   if (!order) {
-  //     return
-  //   }
-  //   assert.isNotNull(order.asset)
-  //   if (!order.asset) {
-  //     return
-  //   }
-  //   const takerAddress = order.asset.owner.address
-  //   // Taker might not have all approval permissions so only test match
-  //   await testMatchingOrder(order, takerAddress, false)
-  // })
-
-  // test('Matches a buy order and estimates gas on fulfillment', async () => {
-  //   // Need to use a taker who has created a proxy and approved W-ETH already
-  //   const takerAddress = ALEX_ADDRESS
-
-  //   const order = await client.api.getOrder({
-  //     side: OrderSide.Buy,
-  //     owner: takerAddress,
-  //     // Use a token that has already been approved via approve-all
-  //     asset_contract_address: DIGITAL_ART_CHAIN_ADDRESS
-  //   })
-  //   assert.isNotNull(order)
-  //   if (!order) {
-  //     return
-  //   }
-  //   assert.isNotNull(order.asset)
-  //   if (!order.asset) {
-  //     return
-  //   }
-  //   await testMatchingOrder(order, takerAddress, true)
-  // })
-
-  // test('Matches a referred order via sell_orders and getAssets', async () => {
-  //   const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "desc" })
-
-  //   const asset = assets.filter(a => !!a.sellOrders)[0]
-  //   assert.isNotNull(asset)
-  //   if (!asset || !asset.sellOrders) {
-  //     return
-  //   }
-
-  //   const order = asset.sellOrders[0]
-  //   assert.isNotNull(order)
-  //   if (!order) {
-  //     return
-  //   }
-  //   // Make sure match is valid
-  //   const takerAddress = ALEX_ADDRESS
-  //   const referrerAddress = ALEX_ADDRESS_2
-  //   await testMatchingOrder(order, takerAddress, true, referrerAddress)
-  // })
+  test('Matches a buy order with an ERC-20 token (DAI)', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const paymentToken = (await client.getFungibleTokens({ symbol: 'DAI'}))[0]
+    const amountInToken = 3
+
+    const tokenId = CK_TOKEN_ID.toString()
+    const tokenAddress = CK_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const order = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress: paymentToken.address
+    })
+
+    assert.equal(order.paymentToken, paymentToken.address)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, asset.assetContract)
+
+    await client._validateBuyOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches fixed heterogenous bountied bundle sell order', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 1
+    const bountyPercent = 1.5
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with different types of assets",
+      assets: assetsForBundleOrder,
+      accountAddress,
+      startAmount: amountInEth,
+      extraBountyBasisPoints: bountyPercent * 100,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, undefined, bountyPercent * 100)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches homogenous, bountied bundle sell order', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 1
+    const bountyPercent = 0.8
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Homogenous Bundle",
+      bundleDescription: "This is a test with one type of asset",
+      assets: [{ tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS }],
+      accountAddress,
+      startAmount: amountInEth,
+      extraBountyBasisPoints: bountyPercent * 100,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS
+    })
+
+    const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFees(order, asset.assetContract, bountyPercent * 100)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Serializes payment token and matches most recent ERC-20 sell order', async () => {
+    const takerAddress = ALEX_ADDRESS
+
+    const token = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
+
+    const order = await client.api.getOrder({
+      side: OrderSide.Sell,
+      payment_token_address: token.address
+    })
+
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+
+    assert.isNotNull(order.paymentTokenContract)
+    if (!order.paymentTokenContract) {
+      return
+    }
+    assert.equal(order.paymentTokenContract.address, token.address)
+    assert.equal(order.paymentToken, token.address)
+    // TODO why can't we test atomicMatch?
+    await testMatchingOrder(order, takerAddress, false)
+  })
+
+  test('Bulk transfer', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+
+    const gas = await client._estimateGasForTransfer({
+      assets: assetsForBulkTransfer,
+      fromAddress: accountAddress,
+      toAddress: takerAddress
+    })
+
+    assert.isAbove(gas, 0)
+  })
+
+  test('Fungible tokens filter', async () => {
+    const manaTokens = (await client.getFungibleTokens({ symbol: "MANA" }))
+    // API returns another version of MANA,
+    // and one version is offline (in sdk)
+    assert.equal(manaTokens.length, 2)
+    const mana = manaTokens[0]
+    assert.isNotNull(mana)
+    assert.equal(mana.name, "Decentraland")
+    assert.equal(mana.address, "0x0f5d2fb29fb7d3cfee444a200298f468908cc942")
+    assert.equal(mana.decimals, 18)
+
+    const dai = (await client.getFungibleTokens({ symbol: "DAI" }))[0]
+    assert.isNotNull(dai)
+    assert.equal(dai.name, "")
+
+    const all = await client.getFungibleTokens()
+    assert.isNotEmpty(all)
+  })
+
+  test('Asset locked in contract is not transferrable', async () => {
+    const isTransferrable = await client.isAssetTransferrable({
+      tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
+      tokenAddress: GODS_UNCHAINED_ADDRESS,
+      fromAddress: ALEX_ADDRESS,
+      toAddress: ALEX_ADDRESS_2
+    })
+    assert.isNotTrue(isTransferrable)
+  })
+
+  test('ERC-721 v3 asset not owned by fromAddress is not transferrable', async () => {
+    const isTransferrable = await client.isAssetTransferrable({
+      tokenId: "1",
+      tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      fromAddress: ALEX_ADDRESS,
+      toAddress: ALEX_ADDRESS_2
+    })
+    assert.isNotTrue(isTransferrable)
+  })
+
+  test('ERC-721 v3 asset owned by fromAddress is transferrable', async () => {
+    const isTransferrable = await client.isAssetTransferrable({
+      tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
+      tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      fromAddress: ALEX_ADDRESS,
+      toAddress: ALEX_ADDRESS_2
+    })
+    assert.isTrue(isTransferrable)
+  })
+
+  test('ERC-721 v1 asset owned by fromAddress is transferrable', async () => {
+    const isTransferrable = await client.isAssetTransferrable({
+      tokenId: CK_TOKEN_ID.toString(),
+      tokenAddress: CK_ADDRESS,
+      fromAddress: ALEX_ADDRESS,
+      toAddress: ALEX_ADDRESS_2
+    })
+    assert.isTrue(isTransferrable)
+  })
+
+  test('Matches a new bundle sell order for an ERC-20 token (MANA)', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const token = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
+    const amountInToken = 2.422
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with different types of assets",
+      assets: assetsForBundleOrder,
+      accountAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress: token.address,
+      extraBountyBasisPoints: 0,
+      expirationTime: 0,
+      waitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS
+    })
+
+    assert.equal(order.paymentToken, token.address)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, token.decimals) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches Dutch bundle order for different approve-all assets', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const expirationTime = (Date.now() / 1000 + 60 * 60 * 24) // one day from now
+    const amountInEth = 1
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with different types of assets",
+      assets: assetsForBundleOrder,
+      accountAddress,
+      startAmount: amountInEth,
+      endAmount: 0,
+      expirationTime,
+      extraBountyBasisPoints: 0,
+      waitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS,
+      paymentTokenAddress: NULL_ADDRESS
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.expirationTime.toNumber(), expirationTime)
+
+    await client._validateSellOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('An API asset\'s order has correct hash', async () => {
+    const asset = await client.api.getAsset(CK_ADDRESS, 1)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+    assert.isNotNull(asset.orders)
+    if (!asset.orders) {
+      return
+    }
+    const order = asset.orders[0]
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+    assert.equal(order.hash, getOrderHash(order))
+  })
+
+  test('orderToJSON computes correct current price for Dutch auctions', async () => {
+    const { orders } = await client.api.getOrders({ sale_kind: SaleKind.DutchAuction })
+    assert.equal(orders.length, client.api.pageSize)
+    orders.map(order => {
+      assert.isNotNull(order.currentPrice)
+      if (!order.currentPrice) {
+        return
+      }
+      // Possible race condition
+      assert.equal(order.currentPrice.toPrecision(3), estimateCurrentPrice(order).toPrecision(3))
+      assert.isAtLeast(order.basePrice.toNumber(), order.currentPrice.toNumber())
+    })
+  })
+
+  test('First page of orders have valid hashes and fees', async () => {
+    const { orders, count } = await client.api.getOrders()
+    assert.isNotEmpty(orders)
+    assert.isAbove(count, orders.length)
+
+    orders.forEach(order => {
+      if (order.asset) {
+        assert.isNotEmpty(order.asset.assetContract)
+        assert.isNotEmpty(order.asset.tokenId)
+        testFees(order, order.asset.assetContract)
+      }
+      assert.isNotEmpty(order.paymentTokenContract)
+
+      const accountAddress = ALEX_ADDRESS
+      const matchingOrder = client._makeMatchingOrder({order, accountAddress})
+      const matchingOrderHash = matchingOrder.hash
+      delete matchingOrder.hash
+      assert.isUndefined(matchingOrder.hash)
+
+      const orderJSON = orderToJSON(matchingOrder)
+      assert.equal(orderJSON.hash, matchingOrderHash)
+      assert.equal(orderJSON.hash, getOrderHash(matchingOrder))
+    })
+  })
+
+  test('Uses a gas price above the mean', async () => {
+    const gasPrice = await client._computeGasPrice()
+    const meanGasPrice = await getCurrentGasPrice(client.web3)
+    assert.isAbove(meanGasPrice.toNumber(), 0)
+    assert.isAbove(gasPrice.toNumber(), meanGasPrice.toNumber())
+  })
+
+  test('Fetches proxy for an account', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const proxy = await client._getProxy(accountAddress)
+    assert.isNotNull(proxy)
+  })
+
+  test('Fetches positive token balance for an account', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const balance = await client.getTokenBalance({ accountAddress })
+    assert.isAbove(balance.toNumber(), 0)
+  })
+
+  test('Accounts have maximum token balance approved', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const approved = await client._getApprovedTokenCount({ accountAddress })
+    assert.equal(approved.toString(), MAX_UINT_256.toString())
+  })
+
+  test('Matches first buy order in book', async () => {
+    const order = await client.api.getOrder({side: OrderSide.Buy})
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+    assert.isNotNull(order.asset)
+    if (!order.asset) {
+      return
+    }
+    const takerAddress = order.asset.owner.address
+    // Taker might not have all approval permissions so only test match
+    await testMatchingOrder(order, takerAddress, false)
+  })
+
+  test('Matches a buy order and estimates gas on fulfillment', async () => {
+    // Need to use a taker who has created a proxy and approved W-ETH already
+    const takerAddress = ALEX_ADDRESS
+
+    const order = await client.api.getOrder({
+      side: OrderSide.Buy,
+      owner: takerAddress,
+      // Use a token that has already been approved via approve-all
+      asset_contract_address: DIGITAL_ART_CHAIN_ADDRESS
+    })
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+    assert.isNotNull(order.asset)
+    if (!order.asset) {
+      return
+    }
+    await testMatchingOrder(order, takerAddress, true)
+  })
+
+  test('Matches a referred order via sell_orders and getAssets', async () => {
+    const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "desc" })
+
+    const asset = assets.filter(a => !!a.sellOrders)[0]
+    assert.isNotNull(asset)
+    if (!asset || !asset.sellOrders) {
+      return
+    }
+
+    const order = asset.sellOrders[0]
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+    // Make sure match is valid
+    const takerAddress = ALEX_ADDRESS
+    const referrerAddress = ALEX_ADDRESS_2
+    await testMatchingOrder(order, takerAddress, true, referrerAddress)
+  })
 })
 
 async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch = false, referrerAddress?: string) {
@@ -848,13 +851,17 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   }
 }
 
-async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string) {
+async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string, counterOrderBasePrice?: number) {
   const order = {
     ...unhashedOrder,
     hash: getOrderHash(unhashedOrder)
   }
 
   const matchingOrder = client._makeMatchingOrder({ order, accountAddress })
+  if (counterOrderBasePrice != null) {
+    matchingOrder.basePrice = makeBigNumber(counterOrderBasePrice)
+    matchingOrder.hash = getOrderHash(matchingOrder)
+  }
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
 
   const isSellOrder = order.side == OrderSide.Sell

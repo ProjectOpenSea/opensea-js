@@ -1579,13 +1579,14 @@ export class OpenSeaPort {
     const isEther = tokenAddress == NULL_ADDRESS
     const tokens = await this.getFungibleTokens({ address: tokenAddress })
     const token = tokens[0]
+    const minimumExpirationTime = Date.now() / 1000
 
     // Validation
-    if (expirationTime < 0) {
-      throw new Error('Expiration time must be at least zero (meaning non-expiring).')
+    if (expirationTime != 0 && expirationTime < minimumExpirationTime) {
+      throw new Error('Expiration time must be past current time, or zero (non-expiring).')
     }
     if (waitForBestCounterOrder && expirationTime == 0) {
-      throw new Error('English auctions must have a positive expiration time.')
+      throw new Error('English auctions must have an expiration time.')
     }
     if (!isEther && !token) {
       throw new Error(`No ERC-20 token found for '${tokenAddress}'`)
@@ -1594,7 +1595,7 @@ export class OpenSeaPort {
       throw new Error('End price must be less than or equal to the start price.')
     }
     if (priceDiff > 0 && expirationTime == 0) {
-      throw new Error('Expiration time must be positive if order will change in price.')
+      throw new Error('Expiration time must be set if order will change in price.')
     }
 
     // Note: WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
