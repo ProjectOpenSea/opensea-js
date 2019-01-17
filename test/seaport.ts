@@ -278,7 +278,10 @@ suite('seaport', () => {
       accountAddress,
       startAmount: amountInToken,
       extraBountyBasisPoints: bountyPercent * 100,
-      buyerAddress: takerAddress
+      buyerAddress: takerAddress,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      shouldWaitForHighestBid: false
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
@@ -322,7 +325,9 @@ suite('seaport', () => {
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken.address,
       extraBountyBasisPoints: bountyPercent * 100,
-      buyerAddress: NULL_ADDRESS // Check that null doesn't trigger private orders
+      buyerAddress: NULL_ADDRESS, // Check that null doesn't trigger private orders
+      expirationTime: 0,
+      shouldWaitForHighestBid: false
     })
 
     assert.equal(order.paymentToken, paymentToken.address)
@@ -381,7 +386,11 @@ suite('seaport', () => {
       assets: assetsForBundleOrder,
       accountAddress,
       startAmount: amountInEth,
-      extraBountyBasisPoints: bountyPercent * 100
+      extraBountyBasisPoints: bountyPercent * 100,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      shouldWaitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
@@ -407,7 +416,11 @@ suite('seaport', () => {
       assets: [{ tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS }],
       accountAddress,
       startAmount: amountInEth,
-      extraBountyBasisPoints: bountyPercent * 100
+      extraBountyBasisPoints: bountyPercent * 100,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      shouldWaitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS
     })
 
     const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
@@ -536,7 +549,11 @@ suite('seaport', () => {
       assets: assetsForBundleOrder,
       accountAddress,
       startAmount: amountInToken,
-      paymentTokenAddress: token.address
+      paymentTokenAddress: token.address,
+      extraBountyBasisPoints: 0,
+      expirationTime: 0,
+      shouldWaitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS
     })
 
     assert.equal(order.paymentToken, token.address)
@@ -562,7 +579,11 @@ suite('seaport', () => {
       accountAddress,
       startAmount: amountInEth,
       endAmount: 0,
-      expirationTime
+      expirationTime,
+      extraBountyBasisPoints: 0,
+      shouldWaitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS,
+      paymentTokenAddress: NULL_ADDRESS
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)

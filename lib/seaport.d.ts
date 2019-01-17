@@ -98,17 +98,19 @@ export declare class OpenSeaPort {
      * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+     * @param shouldWaitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
      * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
      */
-    createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
+    createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         expirationTime?: number;
+        shouldWaitForHighestBid?: boolean;
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
@@ -123,20 +125,22 @@ export declare class OpenSeaPort {
      * @param factoryAddress Address of the factory contract
      * @param accountAddress Address of the factory owner's wallet
      * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-     * @param endAmount Optional price of the asset at the end of its expiration time. If specified, this becomes a set-price sell order, which can either be flat or declining in price. If not specified, this becomes an English auction that increases in price for every bid. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+     * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+     * @param shouldWaitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
      * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
      * @param numberOfOrders Number of times to repeat creating the same order. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
      */
-    createFactorySellOrders({ assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, numberOfOrders }: {
+    createFactorySellOrders({ assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, numberOfOrders }: {
         assetId: string;
         factoryAddress: string;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         expirationTime?: number;
+        shouldWaitForHighestBid?: boolean;
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
@@ -153,13 +157,14 @@ export declare class OpenSeaPort {
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
      * @param accountAddress The address of the maker of the bundle and the owner of all the assets.
      * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction.
-     * @param endAmount Optional price of the asset at the end of its expiration time. If specified, this becomes a set-price sell order, which can either be flat or declining in price. If not specified, this becomes an English auction that increases in price for every bid.
+     * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`.
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+     * @param shouldWaitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
      * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
      */
-    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
+    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -168,6 +173,7 @@ export declare class OpenSeaPort {
         startAmount: number;
         endAmount?: number;
         expirationTime?: number;
+        shouldWaitForHighestBid?: boolean;
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
@@ -405,17 +411,18 @@ export declare class OpenSeaPort {
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
     }): Promise<UnhashedOrder>;
-    _makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
+    _makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         asset: Asset;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
-        expirationTime?: number;
-        paymentTokenAddress?: string;
-        extraBountyBasisPoints?: number;
-        buyerAddress?: string;
+        shouldWaitForHighestBid: boolean;
+        expirationTime: number;
+        paymentTokenAddress: string;
+        extraBountyBasisPoints: number;
+        buyerAddress: string;
     }): Promise<UnhashedOrder>;
-    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
+    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, shouldWaitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -423,10 +430,11 @@ export declare class OpenSeaPort {
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
-        expirationTime?: number;
-        paymentTokenAddress?: string;
-        extraBountyBasisPoints?: number;
-        buyerAddress?: string;
+        expirationTime: number;
+        shouldWaitForHighestBid: boolean;
+        paymentTokenAddress: string;
+        extraBountyBasisPoints: number;
+        buyerAddress: string;
     }): Promise<UnhashedOrder>;
     _makeMatchingOrder({ order, accountAddress }: {
         order: UnsignedOrder;
@@ -460,10 +468,13 @@ export declare class OpenSeaPort {
     }): Promise<void>;
     /**
      * Compute the `basePrice` and `extra` parameters to be used to price an order.
+     * Also validates the expiration time and auction type.
      * @param tokenAddress Address of the ERC-20 token to use for trading.
      * Use the null address for ETH
+     * @param expirationTime When the auction expires, or 0 if never.
      * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
      * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
+     * @param shouldWaitForHighestCounterOrder If true, this is an English auction order that should increase in price with every counter order until `expirationTime`.
      */
     private _getPriceParameters;
     private _atomicMatch;
