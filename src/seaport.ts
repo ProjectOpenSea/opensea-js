@@ -1163,7 +1163,7 @@ export class OpenSeaPort {
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
-      waitForBestCounterOrder: false,
+      waitingForBestCounterOrder: false,
       feeMethod: FeeMethod.SplitFee,
       feeRecipient: OPENSEA_FEE_RECIPIENT,
       side: OrderSide.Buy,
@@ -1228,7 +1228,7 @@ export class OpenSeaPort {
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(sellerBountyBPS),
-      waitForBestCounterOrder: waitForHighestBid,
+      waitingForBestCounterOrder: waitForHighestBid,
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Sell,
@@ -1310,7 +1310,7 @@ export class OpenSeaPort {
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(sellerBountyBPS),
-      waitForBestCounterOrder: waitForHighestBid,
+      waitingForBestCounterOrder: waitForHighestBid,
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Sell,
@@ -1378,7 +1378,7 @@ export class OpenSeaPort {
       makerProtocolFee: order.makerProtocolFee,
       takerProtocolFee: order.takerProtocolFee,
       makerReferrerFee: order.makerReferrerFee,
-      waitForBestCounterOrder: false,
+      waitingForBestCounterOrder: false,
       feeMethod: order.feeMethod,
       feeRecipient,
       side: (order.side + 1) % 2,
@@ -1569,9 +1569,9 @@ export class OpenSeaPort {
    * @param expirationTime When the auction expires, or 0 if never.
    * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
    * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
-   * @param waitForBestCounterOrder If true, this is an English auction order that should increase in price with every counter order until `expirationTime`.
+   * @param waitingForBestCounterOrder If true, this is an English auction order that should increase in price with every counter order until `expirationTime`.
    */
-  private async _getPriceParameters(tokenAddress: string, expirationTime: number, startAmount: number, endAmount?: number, waitForBestCounterOrder?: boolean) {
+  private async _getPriceParameters(tokenAddress: string, expirationTime: number, startAmount: number, endAmount?: number, waitingForBestCounterOrder?: boolean) {
 
     const priceDiff = endAmount != null
       ? startAmount - endAmount
@@ -1585,7 +1585,7 @@ export class OpenSeaPort {
     if (expirationTime != 0 && expirationTime < minimumExpirationTime) {
       throw new Error('Expiration time must be past current time, or zero (non-expiring).')
     }
-    if (waitForBestCounterOrder && expirationTime == 0) {
+    if (waitingForBestCounterOrder && expirationTime == 0) {
       throw new Error('English auctions must have an expiration time.')
     }
     if (!isEther && !token) {

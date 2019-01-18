@@ -210,7 +210,7 @@ export interface UnhashedOrder extends WyvernOrder {
     saleKind: SaleKind;
     howToCall: HowToCall;
     makerReferrerFee: BigNumber;
-    waitForBestCounterOrder: boolean;
+    waitingForBestCounterOrder: boolean;
     metadata: {
         asset?: WyvernAsset;
         bundle?: OpenSeaAssetBundleJSON;

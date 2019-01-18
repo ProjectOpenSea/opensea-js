@@ -317,7 +317,7 @@ export interface UnhashedOrder extends WyvernOrder {
 
   // OpenSea-specific
   makerReferrerFee: BigNumber
-  waitForBestCounterOrder: boolean
+  waitingForBestCounterOrder: boolean
 
   metadata: {
     asset?: WyvernAsset
