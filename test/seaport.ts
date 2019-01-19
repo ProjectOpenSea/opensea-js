@@ -11,7 +11,7 @@ import {
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, OpenSeaAsset, Asset, OpenSeaAssetContract } from '../src/types'
-import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber } from '../src/utils'
+import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY } from './constants'
@@ -181,7 +181,7 @@ suite('seaport', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), expirationTime)
-    testFees(order, asset.assetContract, bountyPercent * 100)
+    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -386,7 +386,7 @@ suite('seaport', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, asset.assetContract, bountyPercent * 100)
+    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -432,7 +432,7 @@ suite('seaport', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, asset.assetContract, bountyPercent * 100)
+    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -465,7 +465,7 @@ suite('seaport', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, asset.assetContract)
+    testFeesMakerOrder(order, asset.assetContract)
 
     await client._validateBuyOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -495,7 +495,7 @@ suite('seaport', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, undefined, bountyPercent * 100)
+    testFeesMakerOrder(order, undefined, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -531,7 +531,7 @@ suite('seaport', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFees(order, asset.assetContract, bountyPercent * 100)
+    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is valid
@@ -735,7 +735,7 @@ suite('seaport', () => {
       if (order.asset) {
         assert.isNotEmpty(order.asset.assetContract)
         assert.isNotEmpty(order.asset.tokenId)
-        testFees(order, order.asset.assetContract)
+        testFeesMakerOrder(order, order.asset.assetContract)
       }
       assert.isNotEmpty(order.paymentTokenContract)
 
@@ -864,7 +864,17 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
   }
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
 
-  const isSellOrder = order.side == OrderSide.Sell
+  // Test fees
+  assert.equal(matchingOrder.makerProtocolFee.toNumber(), 0)
+  assert.equal(matchingOrder.takerProtocolFee.toNumber(), 0)
+  if (order.waitingForBestCounterOrder) {
+    assert.equal(matchingOrder.feeRecipient, OPENSEA_FEE_RECIPIENT)
+  } else {
+    assert.equal(matchingOrder.feeRecipient, NULL_ADDRESS)
+  }
+  assert.equal(matchingOrder.makerRelayerFee.toNumber(), order.makerRelayerFee.toNumber())
+  assert.equal(matchingOrder.takerRelayerFee.toNumber(), order.takerRelayerFee.toNumber())
+  assert.equal(matchingOrder.makerReferrerFee.toNumber(), order.makerReferrerFee.toNumber())
 
   const v = 27
   const r = ''
@@ -872,7 +882,7 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
 
   let buy: Order
   let sell: Order
-  if (!isSellOrder) {
+  if (order.side == OrderSide.Buy) {
     buy = {
       ...order,
       v, r, s
@@ -906,9 +916,14 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
   }))
 }
 
-function testFees(order: Order | UnhashedOrder, assetContract?: OpenSeaAssetContract, makerBountyBPS?: number) {
+function testFeesMakerOrder(order: Order | UnhashedOrder, assetContract?: OpenSeaAssetContract, makerBountyBPS?: number) {
   assert.equal(order.makerProtocolFee.toNumber(), 0)
   assert.equal(order.takerProtocolFee.toNumber(), 0)
+  if (order.waitingForBestCounterOrder) {
+    assert.equal(order.feeRecipient, NULL_ADDRESS)
+  } else {
+    assert.equal(order.feeRecipient, OPENSEA_FEE_RECIPIENT)
+  }
   if (order.taker != NULL_ADDRESS) {
     // Private order
     assert.equal(order.makerReferrerFee.toNumber(), 0)
