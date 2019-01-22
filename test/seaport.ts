@@ -94,7 +94,8 @@ suite('seaport', () => {
 
   test("Correctly errors for invalid price parameters", async () => {
     const accountAddress = ALEX_ADDRESS
-
+    const expirationTime = (Date.now() / 1000 + 60) // one minute from now
+    const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'MANA'}))[0].address
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
 
@@ -107,7 +108,7 @@ suite('seaport', () => {
         extraBountyBasisPoints: 0,
         buyerAddress: NULL_ADDRESS,
         expirationTime: 0,
-        paymentTokenAddress: NULL_ADDRESS,
+        paymentTokenAddress,
         waitForHighestBid: true
       })
       assert.fail()
@@ -120,10 +121,27 @@ suite('seaport', () => {
         asset: { tokenAddress, tokenId },
         accountAddress,
         startAmount: 2,
+        endAmount: 1, // Allow declining minimum bid
+        extraBountyBasisPoints: 0,
+        buyerAddress: NULL_ADDRESS,
+        expirationTime,
+        paymentTokenAddress: NULL_ADDRESS,
+        waitForHighestBid: true
+      })
+      assert.fail()
+    } catch (error) {
+      assert.include(error.message, 'English auctions must use wrapped ETH')
+    }
+
+    try {
+      await client._makeSellOrder({
+        asset: { tokenAddress, tokenId },
+        accountAddress,
+        startAmount: 2,
         endAmount: 3,
         extraBountyBasisPoints: 0,
         buyerAddress: NULL_ADDRESS,
-        expirationTime: 0,
+        expirationTime,
         paymentTokenAddress: NULL_ADDRESS,
         waitForHighestBid: false
       })
@@ -155,6 +173,7 @@ suite('seaport', () => {
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 1.2
     const bidAmountInToken = 1.8
+    const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
     const expirationTime = (Date.now() / 1000 + 60) // one minute from now
     const bountyPercent = 1.1
 
@@ -171,7 +190,7 @@ suite('seaport', () => {
       asset: { tokenAddress, tokenId },
       accountAddress,
       startAmount: amountInToken,
-      paymentTokenAddress: NULL_ADDRESS,
+      paymentTokenAddress,
       extraBountyBasisPoints: bountyPercent * 100,
       buyerAddress: NULL_ADDRESS,
       expirationTime,

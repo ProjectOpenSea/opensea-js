@@ -14,6 +14,7 @@ import {
   getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
   DEFAULT_GAS_INCREASE_FACTOR,
+  MIN_EXPIRATION_SECONDS,
   OPENSEA_FEE_RECIPIENT,
   encodeAtomicizedTransfer,
   encodeProxyCall,
@@ -1579,17 +1580,20 @@ export class OpenSeaPort {
     const isEther = tokenAddress == NULL_ADDRESS
     const tokens = await this.getFungibleTokens({ address: tokenAddress })
     const token = tokens[0]
-    const minimumExpirationTime = Date.now() / 1000
+    const minimumExpirationTime = Date.now() / 1000 + MIN_EXPIRATION_SECONDS
 
     // Validation
     if (expirationTime != 0 && expirationTime < minimumExpirationTime) {
-      throw new Error('Expiration time must be past current time, or zero (non-expiring).')
+      throw new Error(`Expiration time must be at least ${MIN_EXPIRATION_SECONDS} from now, or zero (non-expiring).`)
     }
     if (waitingForBestCounterOrder && expirationTime == 0) {
       throw new Error('English auctions must have an expiration time.')
     }
     if (!isEther && !token) {
       throw new Error(`No ERC-20 token found for '${tokenAddress}'`)
+    }
+    if (isEther && waitingForBestCounterOrder) {
+      throw new Error(`English auctions must use wrapped ETH or an ERC-20 token.`)
     }
     if (priceDiff < 0) {
       throw new Error('End price must be less than or equal to the start price.')
