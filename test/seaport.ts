@@ -104,7 +104,6 @@ suite('seaport', () => {
         asset: { tokenAddress, tokenId },
         accountAddress,
         startAmount: 2,
-        endAmount: 1, // Allow declining minimum bid
         extraBountyBasisPoints: 0,
         buyerAddress: NULL_ADDRESS,
         expirationTime: 0,
@@ -168,7 +167,7 @@ suite('seaport', () => {
     }
   })
 
-  test('Matches a English auction sell order, bountied', async () => {
+  test('Cannot yet match an English auction sell order, bountied', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 1.2
@@ -199,14 +198,20 @@ suite('seaport', () => {
 
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
-    assert.equal(order.expirationTime.toNumber(), expirationTime)
+    // Make sure there's gap time to expire it
+    assert.isAbove(order.expirationTime.toNumber(), expirationTime)
+    // Make sure it's listed in the future
+    assert.equal(order.listingTime.toNumber(), expirationTime)
     testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
-    // Make sure match is valid
-    await testMatchingNewOrder(order, takerAddress, Math.pow(10, 18) * bidAmountInToken )
-    // We can't make sure a too-low bid is invalid without signing orders and doing atomicMatch
-    // since buy > sell is required in funds transfe
+    // Make sure match is impossible
+    try {
+      await testMatchingNewOrder(order, takerAddress, expirationTime + 100)
+      assert.fail()
+    } catch (error) {
+      assert.include(error.message, "Unable to match offer with auction.")
+    }
   })
 
   test("Computes fees correctly for non-zero-fee asset", async () => {
@@ -870,15 +875,15 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   }
 }
 
-async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string, counterOrderBasePrice?: number) {
+async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string, counterOrderListingTime?: number) {
   const order = {
     ...unhashedOrder,
     hash: getOrderHash(unhashedOrder)
   }
 
   const matchingOrder = client._makeMatchingOrder({ order, accountAddress })
-  if (counterOrderBasePrice != null) {
-    matchingOrder.basePrice = makeBigNumber(counterOrderBasePrice)
+  if (counterOrderListingTime != null) {
+    matchingOrder.listingTime = makeBigNumber(counterOrderListingTime)
     matchingOrder.hash = getOrderHash(matchingOrder)
   }
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))

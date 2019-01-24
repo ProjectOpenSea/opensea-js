@@ -107,11 +107,6 @@ export class OpenSeaPort {
    * @param subscription The event subscription returned from `addListener`
    */
   public removeListener(subscription: EventSubscription) {
-    // Kill tslint "no this used" warning
-    if (!this._emitter) {
-      return
-    }
-
     subscription.remove()
   }
 
@@ -1145,8 +1140,6 @@ export class OpenSeaPort {
       asset: wyAsset,
       schema: schema.name,
     }
-    // Small offset to account for latency
-    const listingTime = Math.round(Date.now() / 1000 - 100)
     const { totalBuyerFeeBPS,
             totalSellerFeeBPS } = await this.computeFees({ assets: [asset], extraBountyBasisPoints, side: OrderSide.Buy })
 
@@ -1154,6 +1147,7 @@ export class OpenSeaPort {
 
     paymentTokenAddress = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
+    const times = this._getTimeParameters(expirationTime)
 
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
@@ -1178,8 +1172,8 @@ export class OpenSeaPort {
       paymentToken: paymentTokenAddress,
       basePrice,
       extra,
-      listingTime: makeBigNumber(listingTime),
-      expirationTime: makeBigNumber(expirationTime),
+      listingTime: times.listingTime,
+      expirationTime: times.expirationTime,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata,
     }
@@ -1201,8 +1195,6 @@ export class OpenSeaPort {
     accountAddress = validateAndFormatWalletAddress(accountAddress)
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.tokenAddress)
-    // Small offset to account for latency
-    const listingTime = Math.round(Date.now() / 1000 - 100)
     const isPrivate = buyerAddress != NULL_ADDRESS
     const { totalSellerFeeBPS,
             totalBuyerFeeBPS,
@@ -1215,6 +1207,7 @@ export class OpenSeaPort {
       : SaleKind.FixedPrice
 
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
+    const times = this._getTimeParameters(expirationTime, waitForHighestBid)
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
     const feeRecipient = waitForHighestBid
       ? NULL_ADDRESS
@@ -1243,8 +1236,8 @@ export class OpenSeaPort {
       paymentToken: paymentTokenAddress,
       basePrice,
       extra,
-      listingTime: makeBigNumber(listingTime),
-      expirationTime: makeBigNumber(expirationTime),
+      listingTime: times.listingTime,
+      expirationTime: times.expirationTime,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         asset: wyAsset,
@@ -1290,9 +1283,7 @@ export class OpenSeaPort {
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
-
-    // Small offset to account for latency
-    const listingTime = Math.round(Date.now() / 1000 - 100)
+    const times = this._getTimeParameters(expirationTime, waitForHighestBid)
 
     const orderSaleKind = endAmount != null && endAmount !== startAmount
       ? SaleKind.DutchAuction
@@ -1325,8 +1316,8 @@ export class OpenSeaPort {
       paymentToken: paymentTokenAddress,
       basePrice,
       extra,
-      listingTime: makeBigNumber(listingTime),
-      expirationTime: makeBigNumber(expirationTime),
+      listingTime: times.listingTime,
+      expirationTime: times.expirationTime,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle,
@@ -1342,7 +1333,6 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(accountAddress)
     const schema = this._getSchema()
-    const listingTime = Math.round(Date.now() / 1000 - 1000)
 
     const computeOrderParams = () => {
       if (order.metadata.asset) {
@@ -1365,6 +1355,7 @@ export class OpenSeaPort {
     }
 
     const { target, calldata, replacementPattern } = computeOrderParams()
+    const times = this._getTimeParameters(0)
     // Compat for matching buy orders that have fee recipient still on them
     const feeRecipient = order.feeRecipient == NULL_ADDRESS
       ? OPENSEA_FEE_RECIPIENT
@@ -1393,8 +1384,8 @@ export class OpenSeaPort {
       paymentToken: order.paymentToken,
       basePrice: order.basePrice,
       extra: makeBigNumber(0),
-      listingTime: makeBigNumber(listingTime),
-      expirationTime: makeBigNumber(0),
+      listingTime: times.listingTime,
+      expirationTime: times.expirationTime,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: order.metadata,
     }
@@ -1563,6 +1554,41 @@ export class OpenSeaPort {
   }
 
   /**
+   * Get the listing and expiration time paramters for a new order
+   * @param expirationTimestamp Timestamp to expire the order, or 0 for non-expiring
+   * @param waitingForBestCounterOrder Whether this order should be hidden until the best match is found
+   */
+  private _getTimeParameters(
+      expirationTimestamp: number,
+      waitingForBestCounterOrder?: boolean
+    ) {
+
+    // Validation
+    const minExpirationTimestamp = Date.now() / 1000 + MIN_EXPIRATION_SECONDS
+    if (expirationTimestamp != 0 && expirationTimestamp < minExpirationTimestamp) {
+      throw new Error(`Expiration time must be at least ${MIN_EXPIRATION_SECONDS} from now, or zero (non-expiring).`)
+    }
+    if (waitingForBestCounterOrder && expirationTimestamp == 0) {
+      throw new Error('English auctions must have an expiration time.')
+    }
+
+    let listingTimestamp
+    if (waitingForBestCounterOrder) {
+      listingTimestamp = expirationTimestamp
+      // Expire one week from now, to ensure server can match it
+      expirationTimestamp = expirationTimestamp + 60 * 60 * 24 * 7
+    } else {
+      // Small offset to account for latency
+      listingTimestamp = Math.round(Date.now() / 1000 - 100)
+    }
+
+    return {
+      listingTime: makeBigNumber(listingTimestamp),
+      expirationTime: makeBigNumber(expirationTimestamp),
+    }
+  }
+
+  /**
    * Compute the `basePrice` and `extra` parameters to be used to price an order.
    * Also validates the expiration time and auction type.
    * @param tokenAddress Address of the ERC-20 token to use for trading.
@@ -1572,7 +1598,13 @@ export class OpenSeaPort {
    * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
    * @param waitingForBestCounterOrder If true, this is an English auction order that should increase in price with every counter order until `expirationTime`.
    */
-  private async _getPriceParameters(tokenAddress: string, expirationTime: number, startAmount: number, endAmount?: number, waitingForBestCounterOrder?: boolean) {
+  private async _getPriceParameters(
+      tokenAddress: string,
+      expirationTime: number,
+      startAmount: number,
+      endAmount?: number,
+      waitingForBestCounterOrder?: boolean
+    ) {
 
     const priceDiff = endAmount != null
       ? startAmount - endAmount
@@ -1580,15 +1612,8 @@ export class OpenSeaPort {
     const isEther = tokenAddress == NULL_ADDRESS
     const tokens = await this.getFungibleTokens({ address: tokenAddress })
     const token = tokens[0]
-    const minimumExpirationTime = Date.now() / 1000 + MIN_EXPIRATION_SECONDS
 
     // Validation
-    if (expirationTime != 0 && expirationTime < minimumExpirationTime) {
-      throw new Error(`Expiration time must be at least ${MIN_EXPIRATION_SECONDS} from now, or zero (non-expiring).`)
-    }
-    if (waitingForBestCounterOrder && expirationTime == 0) {
-      throw new Error('English auctions must have an expiration time.')
-    }
     if (!isEther && !token) {
       throw new Error(`No ERC-20 token found for '${tokenAddress}'`)
     }

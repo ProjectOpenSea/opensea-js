@@ -57,7 +57,7 @@
         "trailing-comma": false,
         "prefer-const": true,
         "prefer-for-of": true,
-        "prefer-function-over-method": true,
+        "prefer-function-over-method": false,
         "promise-function-async": true,
         "quotemark": false,
         "radix": false,

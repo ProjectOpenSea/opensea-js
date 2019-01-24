@@ -467,6 +467,12 @@ export declare class OpenSeaPort {
         accountAddress: string;
     }): Promise<void>;
     /**
+     * Get the listing and expiration time paramters for a new order
+     * @param expirationTimestamp Timestamp to expire the order, or 0 for non-expiring
+     * @param waitingForBestCounterOrder Whether this order should be hidden until the best match is found
+     */
+    private _getTimeParameters;
+    /**
      * Compute the `basePrice` and `extra` parameters to be used to price an order.
      * Also validates the expiration time and auction type.
      * @param tokenAddress Address of the ERC-20 token to use for trading.
