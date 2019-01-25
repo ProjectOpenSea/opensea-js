@@ -24,7 +24,8 @@ import {
   MAINNET_PROVIDER_URL,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
   DEFAULT_MAX_BOUNTY,
-  validateAndFormatWalletAddress
+  validateAndFormatWalletAddress,
+  ORDER_MATCHING_LATENCY_SECONDS
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -1566,7 +1567,7 @@ export class OpenSeaPort {
     // Validation
     const minExpirationTimestamp = Date.now() / 1000 + MIN_EXPIRATION_SECONDS
     if (expirationTimestamp != 0 && expirationTimestamp < minExpirationTimestamp) {
-      throw new Error(`Expiration time must be at least ${MIN_EXPIRATION_SECONDS} from now, or zero (non-expiring).`)
+      throw new Error(`Expiration time must be at least ${MIN_EXPIRATION_SECONDS} seconds from now, or zero (non-expiring).`)
     }
     if (waitingForBestCounterOrder && expirationTimestamp == 0) {
       throw new Error('English auctions must have an expiration time.')
@@ -1576,7 +1577,8 @@ export class OpenSeaPort {
     if (waitingForBestCounterOrder) {
       listingTimestamp = expirationTimestamp
       // Expire one week from now, to ensure server can match it
-      expirationTimestamp = expirationTimestamp + 60 * 60 * 24 * 7
+      // Later, this will expire closer to the listingTime
+      expirationTimestamp = expirationTimestamp + ORDER_MATCHING_LATENCY_SECONDS
     } else {
       // Small offset to account for latency
       listingTimestamp = Math.round(Date.now() / 1000 - 100)
