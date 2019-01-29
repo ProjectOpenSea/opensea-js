@@ -14,9 +14,10 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
+const englishSellOrderJSON = ordersJSON[0] as OrderJSON
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 const rinkebyProvider = new Web3.providers.HttpProvider('https://rinkeby.infura.io')
@@ -167,11 +168,10 @@ suite('seaport', () => {
     }
   })
 
-  test('Cannot yet match an English auction sell order, bountied', async () => {
+  test('Cannot yet match a new English auction sell order, bountied', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 1.2
-    const bidAmountInToken = 1.8
     const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
     const expirationTime = (Date.now() / 1000 + 60) // one minute from now
     const bountyPercent = 1.1
@@ -202,7 +202,6 @@ suite('seaport', () => {
     assert.isAbove(order.expirationTime.toNumber(), expirationTime)
     // Make sure it's listed in the future
     assert.equal(order.listingTime.toNumber(), expirationTime)
-    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
     await client._validateSellOrderParameters({ order, accountAddress })
     // Make sure match is impossible
@@ -212,6 +211,49 @@ suite('seaport', () => {
     } catch (error) {
       assert.include(error.message, "Unable to match offer with auction.")
     }
+  })
+
+  test('Can match a finished English auction sell order', async () => {
+    const makerAddress = ALEX_ADDRESS_2
+    const takerAddress = ALEX_ADDRESS
+    const matcherAddress = DEVIN_ADDRESS
+    const now = Date.now() / 1000
+    // Get bid from server
+    const paymentTokenAddress = (await rinkebyClient.getFungibleTokens({ symbol: 'WETH'}))[0].address
+    const { orders } = await rinkebyClient.api.getOrders({
+      asset_contract_address: CK_RINKEBY_ADDRESS,
+      token_id: CK_RINKEBY_TOKEN_ID,
+      payment_token_address: paymentTokenAddress,
+      maker: makerAddress
+    })
+    const buy = orders[0]
+    assert.isNotNull(buy)
+    assert.isNotNull(buy.asset)
+    if (!buy || !buy.asset) {
+      return
+    }
+    // Make sure it's listed in the past
+    assert.isBelow(buy.listingTime.toNumber(), now)
+    testFeesMakerOrder(buy, buy.asset.assetContract)
+
+    const sell = orderFromJSON(englishSellOrderJSON)
+    assert.equal(sell.feeRecipient, NULL_ADDRESS)
+    assert.equal(sell.paymentToken, paymentTokenAddress)
+
+    /* Requirements in Wyvern contract for funds transfer. */
+    assert.isAtMost(buy.takerRelayerFee.toNumber(), sell.takerRelayerFee.toNumber())
+    assert.isAtMost(buy.takerProtocolFee.toNumber(), sell.takerProtocolFee.toNumber())
+    const sellPrice = await rinkebyClient.getCurrentPrice(sell)
+    const buyPrice = await rinkebyClient.getCurrentPrice(buy)
+    assert.isAtLeast(buyPrice.toNumber(), sellPrice.toNumber())
+    console.info(`Matching two orders that differ in price by ${buyPrice.toNumber() - sellPrice.toNumber()}`)
+
+    await rinkebyClient._validateBuyOrderParameters({ order: buy, accountAddress: makerAddress })
+    await rinkebyClient._validateSellOrderParameters({ order: sell, accountAddress: takerAddress })
+
+    const gas = await rinkebyClient._estimateGasForMatch({ buy, sell, accountAddress: matcherAddress })
+    assert.isAbove(gas, 0)
+    console.info(`Match gas cost: ${gas}`)
   })
 
   test("Computes fees correctly for non-zero-fee asset", async () => {

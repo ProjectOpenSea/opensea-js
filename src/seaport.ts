@@ -1214,12 +1214,20 @@ export class OpenSeaPort {
       ? NULL_ADDRESS
       : OPENSEA_FEE_RECIPIENT
 
+    // Swap maker/taker fees when it's an English auction, so Wyvern sets fees correctly
+    const makerRelayerFee = waitForHighestBid
+      ? makeBigNumber(totalBuyerFeeBPS)
+      : makeBigNumber(totalSellerFeeBPS)
+    const takerRelayerFee = waitForHighestBid
+      ? makeBigNumber(totalSellerFeeBPS)
+      : makeBigNumber(totalBuyerFeeBPS)
+
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: buyerAddress,
-      makerRelayerFee: makeBigNumber(totalSellerFeeBPS),
-      takerRelayerFee: makeBigNumber(totalBuyerFeeBPS),
+      makerRelayerFee,
+      takerRelayerFee,
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(sellerBountyBPS),
@@ -1561,7 +1569,7 @@ export class OpenSeaPort {
    */
   private _getTimeParameters(
       expirationTimestamp: number,
-      waitingForBestCounterOrder?: boolean
+      waitingForBestCounterOrder = false
     ) {
 
     // Validation
@@ -1605,7 +1613,7 @@ export class OpenSeaPort {
       expirationTime: number,
       startAmount: number,
       endAmount?: number,
-      waitingForBestCounterOrder?: boolean
+      waitingForBestCounterOrder = false
     ) {
 
     const priceDiff = endAmount != null
@@ -1647,12 +1655,28 @@ export class OpenSeaPort {
       { buy: Order; sell: Order; accountAddress: string; metadata?: string }
     ) {
     let value
+    let shouldValidateBuy = true
+    let shouldValidateSell = true
 
-    // Case: user is the seller (and fulfilling a buy order)
     if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
-      // USER IS THE SELLER
+      // USER IS THE SELLER, only validate the buy order
       await this._validateSellOrderParameters({ order: sell, accountAddress })
+      shouldValidateSell = false
 
+    } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
+      // USER IS THE BUYER, only validate the sell order
+      await this._validateBuyOrderParameters({ order: buy, counterOrder: sell, accountAddress })
+      shouldValidateBuy = false
+
+      // If using ETH to pay, set the value of the transaction to the current price
+      if (buy.paymentToken == NULL_ADDRESS) {
+        value = await this._getRequiredAmountForTakingSellOrder(sell)
+      }
+    } else {
+      // User is neither - matching service
+    }
+
+    if (shouldValidateBuy) {
       const buyValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
         [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken],
         [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt],
@@ -1666,14 +1690,12 @@ export class OpenSeaPort {
         buy.v, buy.r, buy.s,
         { from: accountAddress })
       if (!buyValid) {
-        throw new Error('Invalid offer. Please restart your wallet/browser and try again!')
+        throw new Error('Invalid buy order. Please restart your wallet/browser and try again!')
       }
       this.logger(`Buy order is valid: ${buyValid}`)
+    }
 
-    } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
-      // USER IS THE BUYER
-      await this._validateBuyOrderParameters({ order: buy, counterOrder: sell, accountAddress })
-
+    if (shouldValidateSell) {
       const sellValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
         [sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
         [sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
@@ -1687,16 +1709,9 @@ export class OpenSeaPort {
         sell.v, sell.r, sell.s,
         { from: accountAddress })
       if (!sellValid) {
-        throw new Error('Invalid auction. Please restart your wallet/browser and try again!')
+        throw new Error('Invalid sell order. Please restart your wallet/browser and try again!')
       }
       this.logger(`Sell order validation: ${sellValid}`)
-
-      // If using ETH to pay, set the value of the transaction to the current price
-      if (buy.paymentToken == NULL_ADDRESS) {
-        value = await this._getRequiredAmountForTakingSellOrder(sell)
-      }
-    } else {
-      // User is neither - matching service
     }
 
     await this._validateMatch({ buy, sell, accountAddress })
