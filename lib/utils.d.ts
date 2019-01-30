@@ -149,4 +149,4 @@ export declare function encodeProxyCall(address: string, howToCall: HowToCall, c
  * formatted for Wyvern and Opensea
  * @param address input address
  */
-export declare function validateAndFormatWalletAddress(address?: string): string;
+export declare function validateAndFormatWalletAddress(web3: Web3, address: string): string;

@@ -50,6 +50,13 @@ npm install --save opensea-js
 
 Install [web3](https://github.com/ethereum/web3.js) too if you haven't already.
 
+If you run into an error while building the dependencies and you're on a Mac, run this:
+
+```bash
+xcode-select --install # Install Command Line Tools if you haven't already.
+sudo xcode-select --switch /Library/Developer/CommandLineTools # Enable command line tools
+```
+
 ## Getting Started
 
 To get started, create a new OpenSeaJS client, called an OpenSeaPort 🚢, using your Web3 provider:

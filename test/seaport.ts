@@ -221,14 +221,15 @@ suite('seaport', () => {
     // Get bid from server
     const paymentTokenAddress = (await rinkebyClient.getFungibleTokens({ symbol: 'WETH'}))[0].address
     const { orders } = await rinkebyClient.api.getOrders({
+      side: OrderSide.Buy,
       asset_contract_address: CK_RINKEBY_ADDRESS,
       token_id: CK_RINKEBY_TOKEN_ID,
       payment_token_address: paymentTokenAddress,
       maker: makerAddress
     })
     const buy = orders[0]
-    assert.isNotNull(buy)
-    assert.isNotNull(buy.asset)
+    assert.isDefined(buy)
+    assert.isDefined(buy.asset)
     if (!buy || !buy.asset) {
       return
     }

@@ -785,6 +785,8 @@ export class OpenSeaPort {
       { assets: Asset[]; fromAddress: string; toAddress: string }
     ): Promise<void> {
 
+    toAddress = validateAndFormatWalletAddress(this.web3, toAddress)
+
     const schema = this._getSchema()
     const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
 
@@ -1134,7 +1136,7 @@ export class OpenSeaPort {
       { asset: Asset; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string; extraBountyBasisPoints?: number }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = validateAndFormatWalletAddress(accountAddress)
+    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.tokenAddress)
     const metadata = {
@@ -1193,7 +1195,7 @@ export class OpenSeaPort {
         buyerAddress: string; }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = validateAndFormatWalletAddress(accountAddress)
+    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.tokenAddress)
     const isPrivate = buyerAddress != NULL_ADDRESS
@@ -1271,7 +1273,7 @@ export class OpenSeaPort {
         buyerAddress: string; }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = validateAndFormatWalletAddress(accountAddress)
+    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema()
 
     const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
@@ -1340,7 +1342,7 @@ export class OpenSeaPort {
       { order: UnsignedOrder; accountAddress: string}
     ): UnsignedOrder {
 
-    accountAddress = validateAndFormatWalletAddress(accountAddress)
+    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema()
 
     const computeOrderParams = () => {
