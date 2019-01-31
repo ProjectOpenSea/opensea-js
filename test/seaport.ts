@@ -257,6 +257,54 @@ suite('seaport', () => {
     console.info(`Match gas cost: ${gas}`)
   })
 
+  test('Ensures buy order compatibility with an English sell order', async () => {
+    const accountAddress = ALEX_ADDRESS_2
+    const takerAddress = ALEX_ADDRESS
+    const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
+    const amountInToken = 0.01
+    const expirationTime = (Date.now() / 1000 + 60 * 60 * 24) // one day from now
+    const extraBountyBasisPoints = 1.1 * 100
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const sellOrder = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress: takerAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress,
+      expirationTime,
+      extraBountyBasisPoints,
+      buyerAddress: NULL_ADDRESS,
+      waitForHighestBid: true
+    })
+
+    const buyOrder = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress,
+      paymentTokenAddress,
+      startAmount: amountInToken,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      sellOrder
+    })
+
+    testFeesMakerOrder(buyOrder, asset.assetContract)
+    assert.equal(buyOrder.makerRelayerFee.toNumber(), sellOrder.makerRelayerFee.toNumber())
+    assert.equal(buyOrder.takerRelayerFee.toNumber(), sellOrder.takerRelayerFee.toNumber())
+    assert.equal(buyOrder.makerProtocolFee.toNumber(), sellOrder.makerProtocolFee.toNumber())
+    assert.equal(buyOrder.takerProtocolFee.toNumber(), sellOrder.takerProtocolFee.toNumber())
+
+    await client._validateBuyOrderParameters({ order: buyOrder, accountAddress })
+    await client._validateSellOrderParameters({ order: sellOrder, accountAddress: takerAddress })
+  })
+
   test("Computes fees correctly for non-zero-fee asset", async () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
@@ -539,54 +587,6 @@ suite('seaport', () => {
     await client._validateBuyOrderParameters({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
-  })
-
-  test('Matches a buy order and ensures compatibility with an English sell order', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const takerAddress = ALEX_ADDRESS_2
-    const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
-    const amountInToken = 3
-    const expirationTime = (Date.now() / 1000 + 60 * 60 * 24) // one day from now
-    const extraBountyBasisPoints = 1.1 * 100
-
-    const tokenId = CK_TOKEN_ID.toString()
-    const tokenAddress = CK_ADDRESS
-
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
-
-    const sellOrder = await client._makeSellOrder({
-      asset: { tokenAddress, tokenId },
-      accountAddress,
-      startAmount: amountInToken,
-      paymentTokenAddress,
-      expirationTime,
-      extraBountyBasisPoints,
-      buyerAddress: NULL_ADDRESS,
-      waitForHighestBid: true
-    })
-
-    const buyOrder = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId },
-      accountAddress: takerAddress,
-      paymentTokenAddress,
-      startAmount: amountInToken,
-      expirationTime: 0,
-      extraBountyBasisPoints: 0,
-      sellOrder
-    })
-
-    testFeesMakerOrder(sellOrder, asset.assetContract, extraBountyBasisPoints)
-    assert.equal(buyOrder.makerRelayerFee.toNumber(), sellOrder.makerRelayerFee.toNumber())
-    assert.equal(buyOrder.takerRelayerFee.toNumber(), sellOrder.takerRelayerFee.toNumber())
-    assert.equal(buyOrder.makerProtocolFee.toNumber(), sellOrder.makerProtocolFee.toNumber())
-    assert.equal(buyOrder.takerProtocolFee.toNumber(), sellOrder.takerProtocolFee.toNumber())
-
-    await client._validateBuyOrderParameters({ order: buyOrder, accountAddress: takerAddress })
-    await client._validateSellOrderParameters({ order: sellOrder, accountAddress })
   })
 
   test('Matches fixed heterogenous bountied bundle sell order', async () => {

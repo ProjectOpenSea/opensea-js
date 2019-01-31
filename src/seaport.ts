@@ -1189,8 +1189,8 @@ export class OpenSeaPort {
     if (sellOrder) {
       // Use the sell order's fees to ensure compatiblity
       // TODO add extraBountyBasisPoints when making bidder bounties
-      makerRelayerFee = sellOrder.makerRelayerFee
-      takerRelayerFee = sellOrder.takerRelayerFee
+      makerRelayerFee = makeBigNumber(sellOrder.makerRelayerFee)
+      takerRelayerFee = makeBigNumber(sellOrder.takerRelayerFee)
     } else {
       const { totalBuyerFeeBPS,
               totalSellerFeeBPS } = await this.computeFees({ assets: [asset], extraBountyBasisPoints, side: OrderSide.Buy })
