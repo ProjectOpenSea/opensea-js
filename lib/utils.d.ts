@@ -146,7 +146,7 @@ export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, fr
 export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert?: boolean): any;
 /**
  * Validates that an address exists, isn't null, and is properly
- * formatted for Wyvern and Opensea
+ * formatted for Wyvern and OpenSea
  * @param address input address
  */
 export declare function validateAndFormatWalletAddress(web3: Web3, address: string): string;

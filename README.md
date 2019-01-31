@@ -55,6 +55,7 @@ If you run into an error while building the dependencies and you're on a Mac, ru
 ```bash
 xcode-select --install # Install Command Line Tools if you haven't already.
 sudo xcode-select --switch /Library/Developer/CommandLineTools # Enable command line tools
+sudo npm explore npm -g -- npm install node-gyp@latest # (Optional) update node-gyp
 ```
 
 ## Getting Started

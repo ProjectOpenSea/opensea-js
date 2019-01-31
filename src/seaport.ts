@@ -196,22 +196,32 @@ export class OpenSeaPort {
    * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
    * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
-   * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+   * @param sellOrder Optional sell order (like an English auction) to ensure fee compatibility
    */
   public async createBuyOrder(
-      { tokenId, tokenAddress, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0 }:
+      { tokenId, tokenAddress, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder }:
       { tokenId: string;
         tokenAddress: string;
         accountAddress: string;
         startAmount: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        extraBountyBasisPoints?: number; }
+        sellOrder?: Order }
     ): Promise<Order> {
 
     const asset: Asset = { tokenAddress, tokenId }
 
-    const order = await this._makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints })
+    paymentTokenAddress = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
+
+    const order = await this._makeBuyOrder({
+      asset,
+      accountAddress,
+      startAmount,
+      expirationTime,
+      paymentTokenAddress,
+      extraBountyBasisPoints: 0,
+      sellOrder
+    })
 
     // NOTE not in Wyvern exchange code:
     // frontend checks to make sure
@@ -449,7 +459,9 @@ export class OpenSeaPort {
    */
   public async fulfillOrder(
       { order, accountAddress, referrerAddress }:
-      { order: Order; accountAddress: string; referrerAddress?: string }
+      { order: Order;
+        accountAddress: string;
+        referrerAddress?: string }
     ) {
     const matchingOrder = this._makeMatchingOrder({ order, accountAddress })
 
@@ -469,7 +481,8 @@ export class OpenSeaPort {
    */
   public async cancelOrder(
       { order, accountAddress }:
-      { order: Order; accountAddress: string}
+      { order: Order;
+        accountAddress: string}
     ) {
 
     this._dispatch(EventType.CancelOrder, { order, accountAddress })
@@ -510,7 +523,12 @@ export class OpenSeaPort {
    */
   public async approveNonFungibleToken(
       { tokenId, tokenAddress, accountAddress, proxyAddress = null, tokenAbi = ERC721, skipApproveAllIfTokenAddressIn = [] }:
-      { tokenId: string; tokenAddress: string; accountAddress: string; proxyAddress: string | null; tokenAbi?: PartialReadonlyContractAbi; skipApproveAllIfTokenAddressIn?: string[] }
+      { tokenId: string;
+        tokenAddress: string;
+        accountAddress: string;
+        proxyAddress: string | null;
+        tokenAbi?: PartialReadonlyContractAbi;
+        skipApproveAllIfTokenAddressIn?: string[] }
     ): Promise<string | null> {
     const tokenContract = this.web3.eth.contract(tokenAbi as any[])
     const erc721 = await tokenContract.at(tokenAddress)
@@ -528,10 +546,6 @@ export class OpenSeaPort {
     // result for isApprovedForAllCallHash was '0x'
 
     const isApprovedCheckData = erc721.isApprovedForAll.getData(accountAddress, proxyAddress)
-    // Decentraland used to reverse the arguments to isApprovedForAll, so we needed to special case that. :(
-    // if (erc721.address == DECENTRALAND_AUCTION_CONFIG['1']) {
-    //   isApprovedCheckData = erc721.isApprovedForAll.getData(proxyAddress, accountAddress)
-    // }
 
     const isApprovedForAllCallHash = await promisify<string>(c => this.web3.eth.call({
       from: accountAddress,
@@ -646,7 +660,9 @@ export class OpenSeaPort {
    */
   public async approveFungibleToken(
       { accountAddress, tokenAddress, minimumAmount = WyvernProtocol.MAX_UINT_256 }:
-      { accountAddress: string; tokenAddress: string; minimumAmount?: BigNumber }
+      { accountAddress: string;
+        tokenAddress: string;
+        minimumAmount?: BigNumber }
     ): Promise<string | null> {
     const approvedAmount = await this._getApprovedTokenCount({ accountAddress, tokenAddress })
     if (approvedAmount.toNumber() >= minimumAmount.toNumber()) {
@@ -706,7 +722,8 @@ export class OpenSeaPort {
    */
   public async isOrderFulfillable(
       { order, accountAddress, referrerAddress }:
-      { order: Order; accountAddress: string; referrerAddress?: string }
+      { order: Order; accountAddress: string;
+        referrerAddress?: string }
     ): Promise<boolean> {
 
     const matchingOrder = this._makeMatchingOrder({ order, accountAddress })
@@ -745,7 +762,11 @@ export class OpenSeaPort {
    */
   public async isAssetTransferrable(
     { tokenId, tokenAddress, fromAddress, toAddress, tokenAbi = ERC721 }:
-    { tokenId: string; tokenAddress: string; fromAddress: string; toAddress: string; tokenAbi?: PartialReadonlyContractAbi }
+    { tokenId: string;
+      tokenAddress: string;
+      fromAddress: string;
+      toAddress: string;
+      tokenAbi?: PartialReadonlyContractAbi }
   ): Promise<boolean> {
     const tokenContract = this.web3.eth.contract(tokenAbi as any[])
     const erc721 = await tokenContract.at(tokenAddress)
@@ -829,7 +850,9 @@ export class OpenSeaPort {
    */
   public async getFungibleTokens(
       { symbol, address, name }:
-      { symbol?: string; address?: string; name?: string } = {}
+      { symbol?: string;
+        address?: string;
+        name?: string } = {}
     ): Promise<FungibleToken[]> {
 
     const tokenSettings = WyvernSchemas.tokens[this._networkName]
@@ -868,7 +891,9 @@ export class OpenSeaPort {
    */
   public async getTokenBalance(
       { accountAddress, tokenAddress, tokenAbi = ERC20 }:
-      { accountAddress: string; tokenAddress?: string; tokenAbi?: PartialReadonlyContractAbi }
+      { accountAddress: string;
+        tokenAddress?: string;
+        tokenAbi?: PartialReadonlyContractAbi }
     ) {
     if (!tokenAddress) {
       tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
@@ -995,8 +1020,12 @@ export class OpenSeaPort {
    * @param metadata Metadata bytes32 to send with the match
    */
   public async _estimateGasForMatch(
-    { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH }:
-    { buy: Order; sell: Order; accountAddress: string; metadata?: string }): Promise<number> {
+      { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH }:
+      { buy: Order;
+        sell: Order;
+        accountAddress: string;
+        metadata?: string }
+    ): Promise<number> {
 
     let value
     if (buy.maker.toLowerCase() == accountAddress.toLowerCase() && buy.paymentToken == NULL_ADDRESS) {
@@ -1022,6 +1051,7 @@ export class OpenSeaPort {
 
   /**
    * Estimate the gas needed to transfer assets in bulk
+   * Used for tests
    * @param param0 __namedParamaters Object
    * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
    * @param fromAddress The owner's wallet address
@@ -1029,7 +1059,9 @@ export class OpenSeaPort {
    */
   public async _estimateGasForTransfer(
       { assets, fromAddress, toAddress }:
-      { assets: Asset[]; fromAddress: string; toAddress: string }
+      { assets: Asset[];
+        fromAddress: string;
+        toAddress: string }
     ): Promise<number> {
 
     const schema = this._getSchema()
@@ -1116,7 +1148,8 @@ export class OpenSeaPort {
    */
   public async _getApprovedTokenCount(
       { accountAddress, tokenAddress }:
-      { accountAddress: string; tokenAddress?: string}
+      { accountAddress: string;
+        tokenAddress?: string}
     ) {
     if (!tokenAddress) {
       tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
@@ -1132,8 +1165,14 @@ export class OpenSeaPort {
   }
 
   public async _makeBuyOrder(
-      { asset, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0 }:
-      { asset: Asset; accountAddress: string; startAmount: number; expirationTime?: number; paymentTokenAddress?: string; extraBountyBasisPoints?: number }
+      { asset, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder }:
+      { asset: Asset;
+        accountAddress: string;
+        startAmount: number;
+        expirationTime: number;
+        paymentTokenAddress: string;
+        extraBountyBasisPoints: number;
+        sellOrder?: UnhashedOrder }
     ): Promise<UnhashedOrder> {
 
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
@@ -1143,12 +1182,24 @@ export class OpenSeaPort {
       asset: wyAsset,
       schema: schema.name,
     }
-    const { totalBuyerFeeBPS,
-            totalSellerFeeBPS } = await this.computeFees({ assets: [asset], extraBountyBasisPoints, side: OrderSide.Buy })
+
+    let makerRelayerFee
+    let takerRelayerFee
+
+    if (sellOrder) {
+      // Use the sell order's fees to ensure compatiblity
+      // TODO add extraBountyBasisPoints when making bidder bounties
+      makerRelayerFee = sellOrder.makerRelayerFee
+      takerRelayerFee = sellOrder.takerRelayerFee
+    } else {
+      const { totalBuyerFeeBPS,
+              totalSellerFeeBPS } = await this.computeFees({ assets: [asset], extraBountyBasisPoints, side: OrderSide.Buy })
+      makerRelayerFee = makeBigNumber(totalBuyerFeeBPS)
+      takerRelayerFee = makeBigNumber(totalSellerFeeBPS)
+    }
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
 
-    paymentTokenAddress = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
 
@@ -1156,8 +1207,8 @@ export class OpenSeaPort {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: NULL_ADDRESS,
-      makerRelayerFee: makeBigNumber(totalBuyerFeeBPS),
-      takerRelayerFee: makeBigNumber(totalSellerFeeBPS),
+      makerRelayerFee,
+      takerRelayerFee,
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS

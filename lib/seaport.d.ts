@@ -76,16 +76,16 @@ export declare class OpenSeaPort {
      * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
      * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
-     * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
+     * @param sellOrder Optional sell order (like an English auction) to ensure fee compatibility
      */
-    createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints }: {
+    createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
         startAmount: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
-        extraBountyBasisPoints?: number;
+        sellOrder?: Order;
     }): Promise<Order>;
     /**
      * Create a sell order to auction an asset.
@@ -366,6 +366,7 @@ export declare class OpenSeaPort {
     }): Promise<number>;
     /**
      * Estimate the gas needed to transfer assets in bulk
+     * Used for tests
      * @param param0 __namedParamaters Object
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
      * @param fromAddress The owner's wallet address
@@ -403,13 +404,14 @@ export declare class OpenSeaPort {
         accountAddress: string;
         tokenAddress?: string;
     }): Promise<BigNumber>;
-    _makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints }: {
+    _makeBuyOrder({ asset, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder }: {
         asset: Asset;
         accountAddress: string;
         startAmount: number;
-        expirationTime?: number;
-        paymentTokenAddress?: string;
-        extraBountyBasisPoints?: number;
+        expirationTime: number;
+        paymentTokenAddress: string;
+        extraBountyBasisPoints: number;
+        sellOrder?: UnhashedOrder;
     }): Promise<UnhashedOrder>;
     _makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         asset: Asset;

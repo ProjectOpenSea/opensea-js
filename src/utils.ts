@@ -684,18 +684,18 @@ export function encodeProxyCall(address: string, howToCall: HowToCall, calldata:
 
 /**
  * Validates that an address exists, isn't null, and is properly
- * formatted for Wyvern and Opensea
+ * formatted for Wyvern and OpenSea
  * @param address input address
  */
 export function validateAndFormatWalletAddress(web3: Web3, address: string): string {
   if (!address) {
-    throw new Error('Wallet disconnected')
+    throw new Error('No wallet address found')
   }
   if (!web3.isAddress(address)) {
     throw new Error('Invalid wallet address')
   }
   if (address == NULL_ADDRESS) {
-    throw new Error('Cannot be the null address')
+    throw new Error('Wallet cannot be the null address')
   }
   return address.toLowerCase()
 }
