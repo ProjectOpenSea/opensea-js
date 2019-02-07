@@ -101,6 +101,9 @@ export interface WyvernAsset {
 }
 export interface WyvernBundle {
     assets: WyvernAsset[];
+    name?: string;
+    description?: string;
+    external_link?: string;
 }
 export declare type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<(number | BigNumber)>, string, string, string, string, string, string, Array<(number | BigNumber)>, string[]];
 /**
@@ -168,8 +171,9 @@ export interface OpenSeaAsset extends Asset {
  * Bundles of assets, grouped together into one OpenSea order
  * URLs for bundles are auto-generated from the name
  */
-export interface OpenSeaAssetBundle extends WyvernBundle {
+export interface OpenSeaAssetBundle {
     maker: OpenSeaAccount;
+    assets: OpenSeaAsset[];
     name: string;
     slug: string;
     permalink: string;
@@ -177,7 +181,8 @@ export interface OpenSeaAssetBundle extends WyvernBundle {
     description?: string;
     externalLink?: string;
 }
-export interface OpenSeaAssetBundleJSON extends WyvernBundle {
+export interface OpenSeaAssetBundleJSON {
+    assets: OpenSeaAsset[];
     name: string;
     description?: string;
     external_link?: string;

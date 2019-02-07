@@ -2,6 +2,8 @@ import {
   assert,
 } from 'chai'
 
+import { before } from 'mocha'
+
 import {
   suite,
   test,
@@ -39,7 +41,15 @@ const assetsForBundleOrder = [
 
 const assetsForBulkTransfer = assetsForBundleOrder
 
+let wethAddress: string
+let manaAddress: string
+
 suite('seaport', () => {
+
+  before(async () => {
+    wethAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
+    manaAddress = (await client.getFungibleTokens({ symbol: 'MANA'}))[0].address
+  })
 
   test('Instance has public methods', () => {
     assert.equal(typeof client.getCurrentPrice, 'function')
@@ -96,7 +106,7 @@ suite('seaport', () => {
   test("Correctly errors for invalid price parameters", async () => {
     const accountAddress = ALEX_ADDRESS
     const expirationTime = (Date.now() / 1000 + 60) // one minute from now
-    const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'MANA'}))[0].address
+    const paymentTokenAddress = manaAddress
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
 
@@ -168,6 +178,62 @@ suite('seaport', () => {
     }
   })
 
+  test('Matches heterogenous bundle buy order', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 0.01
+
+    const order = await client._makeBundleBuyOrder({
+      assets: assetsForBundleOrder,
+      accountAddress,
+      startAmount: amountInEth,
+      extraBountyBasisPoints: 0,
+      expirationTime: 0,
+      paymentTokenAddress: wethAddress
+    })
+
+    assert.equal(order.paymentToken, wethAddress)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFeesMakerOrder(order, undefined)
+
+    await client._validateBuyOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches homogenous bundle buy order', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInToken = 10
+
+    const order = await client._makeBundleBuyOrder({
+      assets: [{ tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS }],
+      accountAddress,
+      startAmount: amountInToken,
+      extraBountyBasisPoints: 0,
+      expirationTime: 0,
+      paymentTokenAddress: manaAddress
+    })
+
+    const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    assert.equal(order.paymentToken, manaAddress)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFeesMakerOrder(order, asset.assetContract)
+
+    await client._validateBuyOrderParameters({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
   test('Cannot yet match a new English auction sell order, bountied', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
@@ -213,7 +279,7 @@ suite('seaport', () => {
     }
   })
 
-  test('Can match a finished English auction sell order', async () => {
+  test.skip('Can match a finished English auction sell order', async () => {
     const makerAddress = ALEX_ADDRESS_2
     const takerAddress = ALEX_ADDRESS
     const matcherAddress = DEVIN_ADDRESS

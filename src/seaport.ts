@@ -1252,9 +1252,14 @@ export class OpenSeaPort {
 
     if (sellOrder) {
       // Use the sell order's fees to ensure compatiblity
+      // Swap maker/taker depending on whether it's an English auction (taker)
       // TODO add extraBountyBasisPoints when making bidder bounties
-      makerRelayerFee = makeBigNumber(sellOrder.makerRelayerFee)
-      takerRelayerFee = makeBigNumber(sellOrder.takerRelayerFee)
+      makerRelayerFee = sellOrder.waitingForBestCounterOrder
+        ? makeBigNumber(sellOrder.makerRelayerFee)
+        : makeBigNumber(sellOrder.takerRelayerFee)
+      takerRelayerFee = sellOrder.waitingForBestCounterOrder
+        ? makeBigNumber(sellOrder.takerRelayerFee)
+        : makeBigNumber(sellOrder.makerRelayerFee)
     } else {
       const { totalBuyerFeeBPS,
               totalSellerFeeBPS } = await this.computeFees({ assets: [asset], extraBountyBasisPoints, side: OrderSide.Buy })
@@ -1334,7 +1339,8 @@ export class OpenSeaPort {
       ? NULL_ADDRESS
       : OPENSEA_FEE_RECIPIENT
 
-    // Swap maker/taker fees when it's an English auction, so Wyvern sets fees correctly
+    // Swap maker/taker fees when it's an English auction,
+    // since these sell orders are takers not makers
     const makerRelayerFee = waitForHighestBid
       ? makeBigNumber(totalBuyerFeeBPS)
       : makeBigNumber(totalSellerFeeBPS)
@@ -1400,9 +1406,14 @@ export class OpenSeaPort {
 
     if (sellOrder) {
       // Use the sell order's fees to ensure compatiblity
+      // Swap maker/taker depending on whether it's an English auction (taker)
       // TODO add extraBountyBasisPoints when making bidder bounties
-      makerRelayerFee = makeBigNumber(sellOrder.makerRelayerFee)
-      takerRelayerFee = makeBigNumber(sellOrder.takerRelayerFee)
+      makerRelayerFee = sellOrder.waitingForBestCounterOrder
+        ? makeBigNumber(sellOrder.makerRelayerFee)
+        : makeBigNumber(sellOrder.takerRelayerFee)
+      takerRelayerFee = sellOrder.waitingForBestCounterOrder
+        ? makeBigNumber(sellOrder.takerRelayerFee)
+        : makeBigNumber(sellOrder.makerRelayerFee)
     } else {
       const { totalBuyerFeeBPS,
               totalSellerFeeBPS } = await this.computeFees({ assets, extraBountyBasisPoints, side: OrderSide.Buy })
@@ -1469,7 +1480,7 @@ export class OpenSeaPort {
 
     const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
 
-    const bundle: OpenSeaAssetBundleJSON = {
+    const bundle: WyvernBundle = {
       assets: wyAssets,
       name: bundleName,
       description: bundleDescription,
