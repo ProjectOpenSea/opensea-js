@@ -66,6 +66,28 @@ export declare class OpenSeaPort {
         accountAddress: string;
     }): Promise<void>;
     /**
+     * Create a buy order to make an offer on a bundle or group of assets.
+     * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
+     * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
+     * @param param0 __namedParameters Object
+     * @param tokenIds Token IDs of the assets.
+     * @param tokenAddresses Addresses of the tokens' contracts. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+     * @param accountAddress Address of the maker's wallet
+     * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
+     * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
+     * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
+     * @param sellOrder Optional sell order (like an English auction) to ensure fee compatibility
+     */
+    createBundleBuyOrder({ tokenIds, tokenAddresses, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder }: {
+        tokenIds: string[];
+        tokenAddresses: string[];
+        accountAddress: string;
+        startAmount: number;
+        expirationTime?: number;
+        paymentTokenAddress?: string;
+        sellOrder?: Order;
+    }): Promise<Order>;
+    /**
      * Create a buy order to make an offer on an asset.
      * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
      * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
@@ -423,6 +445,15 @@ export declare class OpenSeaPort {
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         buyerAddress: string;
+    }): Promise<UnhashedOrder>;
+    _makeBundleBuyOrder({ assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder }: {
+        assets: Asset[];
+        accountAddress: string;
+        startAmount: number;
+        expirationTime: number;
+        paymentTokenAddress: string;
+        extraBountyBasisPoints: number;
+        sellOrder?: UnhashedOrder;
     }): Promise<UnhashedOrder>;
     _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;

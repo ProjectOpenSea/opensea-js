@@ -11,6 +11,7 @@ A JavaScript library for crypto-native ecommerce: buying, selling, and bidding o
 - [Installation](#installation)
 - [Getting Started](#getting-started)
   - [Making Offers](#making-offers)
+    - [Bidding on Multiple Assets](#bidding-on-multiple-assets)
   - [Making Auctions](#making-auctions)
   - [Running Crowdsales](#running-crowdsales)
   - [Fetching Orders](#fetching-orders)
@@ -78,11 +79,34 @@ const seaport = new OpenSeaPort(provider, {
 Then, you can do this to make an offer on an asset:
 
 ```JavaScript
-// An expirationTime of 0 means it will never expire
-const offer = await seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, expirationTime: 0 })
+const { tokenId, tokenAddress } = YOUR_ASSET
+const offer = await seaport.createBuyOrder({
+  tokenId,
+  tokenAddress,
+  accountAddress,
+  startAmount,
+  expirationTime: 0 // An expirationTime of 0 means it will never expire
+})
 ```
 
 When you make an offer on an item owned by an OpenSea user, **that user will automatically get an email notifying them with the offer amount**, if it's above their desired threshold.
+
+#### Bidding on Multiple Assets
+
+You can also make an offer on a bundle of assets. This could also be used for creating a bounty for whoever can acquire a list of items. Here's how you do it:
+
+```JavaScript
+const assets = YOUR_ASSETS
+const offer = await seaport.createBundleBuyOrder({
+  tokenIds: assets.map(a => a.tokenId),
+  tokenAddresses: assets.map(a => a.tokenAddress),
+  accountAddress,
+  startAmount,
+  expirationTime: 0 // An expirationTime of 0 means it will never expire
+})
+```
+
+When you bid on multiple assets, an email will be sent to the owner if a bundle exists on OpenSea that contains the assets. In the future, OpenSea will send emails to multiple owners if the assets aren't all owned by the same wallet.
 
 ### Making Auctions
 

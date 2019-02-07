@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaAssetBundleJSON, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernBundle } from './types'
 import {
   confirmTransaction, findAsset,
   makeBigNumber, orderToJSON,
@@ -183,6 +183,74 @@ export class OpenSeaPort {
     })
 
     await this._confirmTransaction(txHash, EventType.UnwrapWeth, "Unwrapping W-ETH")
+  }
+
+  /**
+   * Create a buy order to make an offer on a bundle or group of assets.
+   * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
+   * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
+   * @param param0 __namedParameters Object
+   * @param tokenIds Token IDs of the assets.
+   * @param tokenAddresses Addresses of the tokens' contracts. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+   * @param accountAddress Address of the maker's wallet
+   * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
+   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
+   * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
+   * @param sellOrder Optional sell order (like an English auction) to ensure fee compatibility
+   */
+  public async createBundleBuyOrder(
+      { tokenIds, tokenAddresses, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder }:
+      { tokenIds: string[];
+        tokenAddresses: string[];
+        accountAddress: string;
+        startAmount: number;
+        expirationTime?: number;
+        paymentTokenAddress?: string;
+        sellOrder?: Order }
+    ): Promise<Order> {
+
+    if (!tokenIds || !tokenAddresses || tokenIds.length != tokenAddresses.length) {
+      throw new Error("The 'tokenIds' and 'tokenAddresses' arrays must exist and have the same length.")
+    }
+
+    const assets: Asset[] = _.zipWith(tokenIds, tokenAddresses, (tokenId, tokenAddress) => {
+      return { tokenAddress, tokenId }
+    })
+
+    paymentTokenAddress = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
+
+    const order = await this._makeBundleBuyOrder({
+      assets,
+      accountAddress,
+      startAmount,
+      expirationTime,
+      paymentTokenAddress,
+      extraBountyBasisPoints: 0,
+      sellOrder
+    })
+
+    // NOTE not in Wyvern exchange code:
+    // frontend checks to make sure
+    // token is approved and sufficiently available
+    await this._validateBuyOrderParameters({ order, accountAddress })
+
+    const hashedOrder = {
+      ...order,
+      hash: getOrderHash(order)
+    }
+    let signature
+    try {
+      signature = await this._signOrder(hashedOrder)
+    } catch (error) {
+      console.error(error)
+      throw new Error("You declined to sign your offer. Just a reminder: there's no gas needed anymore to create offers!")
+    }
+
+    const orderWithSignature = {
+      ...hashedOrder,
+      ...signature
+    }
+    return this._validateAndPostOrder(orderWithSignature)
   }
 
   /**
@@ -1178,10 +1246,6 @@ export class OpenSeaPort {
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema()
     const wyAsset = getWyvernAsset(schema, asset.tokenId, asset.tokenAddress)
-    const metadata = {
-      asset: wyAsset,
-      schema: schema.name,
-    }
 
     let makerRelayerFee
     let takerRelayerFee
@@ -1229,7 +1293,10 @@ export class OpenSeaPort {
       listingTime: times.listingTime,
       expirationTime: times.expirationTime,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
-      metadata,
+      metadata: {
+        asset: wyAsset,
+        schema: schema.name,
+      }
     }
   }
 
@@ -1303,6 +1370,79 @@ export class OpenSeaPort {
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         asset: wyAsset,
+        schema: schema.name,
+      }
+    }
+  }
+
+  public async _makeBundleBuyOrder(
+      { assets, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder }:
+      { assets: Asset[];
+        accountAddress: string;
+        startAmount: number;
+        expirationTime: number;
+        paymentTokenAddress: string;
+        extraBountyBasisPoints: number;
+        sellOrder?: UnhashedOrder }
+    ): Promise<UnhashedOrder> {
+
+    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
+    const schema = this._getSchema()
+
+    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
+
+    const bundle: WyvernBundle = {
+      assets: wyAssets
+    }
+
+    let makerRelayerFee
+    let takerRelayerFee
+
+    if (sellOrder) {
+      // Use the sell order's fees to ensure compatiblity
+      // TODO add extraBountyBasisPoints when making bidder bounties
+      makerRelayerFee = makeBigNumber(sellOrder.makerRelayerFee)
+      takerRelayerFee = makeBigNumber(sellOrder.takerRelayerFee)
+    } else {
+      const { totalBuyerFeeBPS,
+              totalSellerFeeBPS } = await this.computeFees({ assets, extraBountyBasisPoints, side: OrderSide.Buy })
+      makerRelayerFee = makeBigNumber(totalBuyerFeeBPS)
+      takerRelayerFee = makeBigNumber(totalSellerFeeBPS)
+    }
+
+    const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+
+    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
+    const times = this._getTimeParameters(expirationTime)
+
+    return {
+      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
+      maker: accountAddress,
+      taker: NULL_ADDRESS,
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee: makeBigNumber(0),
+      takerProtocolFee: makeBigNumber(0),
+      makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
+      waitingForBestCounterOrder: false,
+      feeMethod: FeeMethod.SplitFee,
+      feeRecipient: OPENSEA_FEE_RECIPIENT,
+      side: OrderSide.Buy,
+      saleKind: SaleKind.FixedPrice,
+      target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
+      howToCall: HowToCall.DelegateCall, // required DELEGATECALL to library for atomicizer
+      calldata,
+      replacementPattern,
+      staticTarget: NULL_ADDRESS,
+      staticExtradata: '0x',
+      paymentToken: paymentTokenAddress,
+      basePrice,
+      extra,
+      listingTime: times.listingTime,
+      expirationTime: times.expirationTime,
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
+      metadata: {
+        bundle,
         schema: schema.name,
       }
     }

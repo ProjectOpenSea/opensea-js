@@ -135,6 +135,11 @@ export interface WyvernAsset {
   address: string
 }
 
+// Abstractions over Wyvern assets for bundles
+export interface WyvernBundle {
+  assets: WyvernAsset[]
+}
+
 export type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<(number | BigNumber)>, string, string, string, string, string, string, Array<(number | BigNumber)>, string[]]
 
 /**
@@ -250,9 +255,8 @@ export interface OpenSeaAsset extends Asset {
  * Bundles of assets, grouped together into one OpenSea order
  * URLs for bundles are auto-generated from the name
  */
-export interface OpenSeaAssetBundle {
+export interface OpenSeaAssetBundle extends WyvernBundle {
   maker: OpenSeaAccount
-  assets: OpenSeaAsset[]
   name: string
   slug: string
   permalink: string
@@ -264,8 +268,7 @@ export interface OpenSeaAssetBundle {
   externalLink?: string
 }
 
-export interface OpenSeaAssetBundleJSON {
-  assets: WyvernAsset[]
+export interface OpenSeaAssetBundleJSON extends WyvernBundle {
   name: string
   description?: string
   external_link?: string
@@ -321,7 +324,7 @@ export interface UnhashedOrder extends WyvernOrder {
 
   metadata: {
     asset?: WyvernAsset
-    bundle?: OpenSeaAssetBundleJSON
+    bundle?: WyvernBundle
     schema: WyvernSchemaName
   }
 }
