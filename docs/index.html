@@ -73,7 +73,10 @@
 					<li><a href="#synopsis">Synopsis</a></li>
 					<li><a href="#installation">Installation</a></li>
 					<li><a href="#getting-started">Getting Started</a><ul>
-							<li><a href="#making-offers">Making Offers</a></li>
+							<li><a href="#making-offers">Making Offers</a><ul>
+									<li><a href="#bidding-on-multiple-assets">Bidding on Multiple Assets</a></li>
+								</ul>
+							</li>
 							<li><a href="#making-auctions">Making Auctions</a></li>
 							<li><a href="#running-crowdsales">Running Crowdsales</a></li>
 							<li><a href="#fetching-orders">Fetching Orders</a></li>
@@ -129,10 +132,28 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 </code></pre>
 				<h3 id="making-offers">Making Offers</h3>
 				<p>Then, you can do this to make an offer on an asset:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
-<span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({ tokenId, tokenAddress, accountAddress, startAmount, <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> })
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> { tokenId, tokenAddress } = YOUR_ASSET
+<span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({
+  tokenId,
+  tokenAddress,
+  accountAddress,
+  startAmount,
+  <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> <span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
+})
 </code></pre>
 				<p>When you make an offer on an item owned by an OpenSea user, <strong>that user will automatically get an email notifying them with the offer amount</strong>, if it&#39;s above their desired threshold.</p>
+				<h4 id="bidding-on-multiple-assets">Bidding on Multiple Assets</h4>
+				<p>You can also make an offer on a bundle of assets. This could also be used for creating a bounty for whoever can acquire a list of items. Here&#39;s how you do it:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> assets = YOUR_ASSETS
+<span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBundleBuyOrder({
+  <span class="hljs-attr">tokenIds</span>: assets.map(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> a.tokenId),
+  <span class="hljs-attr">tokenAddresses</span>: assets.map(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> a.tokenAddress),
+  accountAddress,
+  startAmount,
+  <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> <span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
+})
+</code></pre>
+				<p>When you bid on multiple assets, an email will be sent to the owner if a bundle exists on OpenSea that contains the assets. In the future, OpenSea will send emails to multiple owners if the assets aren&#39;t all owned by the same wallet.</p>
 				<h3 id="making-auctions">Making Auctions</h3>
 				<p>To sell an asset, call <code>createSellOrder</code>. You can do a fixed-price sale, where <code>startAmount</code> is equal to <code>endAmount</code>, or a declining <a href="https://en.wikipedia.org/wiki/Dutch_auction">Dutch auction</a>, where <code>endAmount</code> is lower and the price declines until <code>expirationTime</code> is hit:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire this auction one day from now</span>
@@ -492,6 +513,9 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/wyvernasset.html" class="tsd-kind-icon">Wyvern<wbr>Asset</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/wyvernbundle.html" class="tsd-kind-icon">Wyvern<wbr>Bundle</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#partialreadonlycontractabi" class="tsd-kind-icon">Partial<wbr>Readonly<wbr>Contract<wbr>Abi</a>
