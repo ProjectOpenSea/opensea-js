@@ -1421,7 +1421,7 @@ export class OpenSeaPort {
       takerRelayerFee = makeBigNumber(totalSellerFeeBPS)
     }
 
-    const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedBuy(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
