@@ -3,7 +3,7 @@ import * as Web3 from 'web3';
 import * as WyvernSchemas from 'wyvern-schemas';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
@@ -98,6 +98,13 @@ export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: 
  * @param tokenAddress The address of the token's contract
  */
 export declare function getWyvernAsset(schema: any, tokenId: string, tokenAddress: string): WyvernAsset;
+/**
+ * Get the Wyvern representation of a group of assets
+ * Sort order is enforced here
+ * @param schema The WyvernSchema needed to access these assets
+ * @param assets Assets to bundle
+ */
+export declare function getWyvernBundle(schema: any, assets: Asset[]): WyvernBundle;
 /**
  * Get the non-prefixed hash for the order
  * (Fixes a Wyvern typescript issue and casing issue)

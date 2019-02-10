@@ -8,7 +8,7 @@ import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicize
 import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/lib/types'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -528,10 +528,30 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
 export function getWyvernAsset(
     schema: any, tokenId: string, tokenAddress: string
   ): WyvernAsset {
+
   return schema.assetFromFields({
     'ID': tokenId.toString(),
     'Address': tokenAddress,
   })
+}
+
+/**
+ * Get the Wyvern representation of a group of assets
+ * Sort order is enforced here
+ * @param schema The WyvernSchema needed to access these assets
+ * @param assets Assets to bundle
+ */
+export function getWyvernBundle(
+    schema: any, assets: Asset[]
+  ): WyvernBundle {
+
+  const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
+
+  const sortedWyAssets = _.sortBy(wyAssets, [(a: WyvernAsset) => a.address, (a: WyvernAsset) => a.id])
+
+  return {
+    assets: sortedWyAssets
+  }
 }
 
 /**

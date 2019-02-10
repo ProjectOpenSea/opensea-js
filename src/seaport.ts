@@ -25,7 +25,8 @@ import {
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
   DEFAULT_MAX_BOUNTY,
   validateAndFormatWalletAddress,
-  ORDER_MATCHING_LATENCY_SECONDS
+  ORDER_MATCHING_LATENCY_SECONDS,
+  getWyvernBundle
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -1394,12 +1395,7 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema()
-
-    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
-
-    const bundle: WyvernBundle = {
-      assets: wyAssets
-    }
+    const bundle = getWyvernBundle(schema, assets)
 
     let makerRelayerFee
     let takerRelayerFee
@@ -1421,7 +1417,7 @@ export class OpenSeaPort {
       takerRelayerFee = makeBigNumber(totalSellerFeeBPS)
     }
 
-    const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedBuy(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedBuy(schema, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
@@ -1478,14 +1474,10 @@ export class OpenSeaPort {
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema()
 
-    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
-
-    const bundle: WyvernBundle = {
-      assets: wyAssets,
-      name: bundleName,
-      description: bundleDescription,
-      external_link: bundleExternalLink
-    }
+    const bundle = getWyvernBundle(schema, assets)
+    bundle.name = bundleName
+    bundle.description = bundleDescription
+    bundle.external_link = bundleExternalLink
 
     const isPrivate = buyerAddress != NULL_ADDRESS
     const {
@@ -1493,7 +1485,7 @@ export class OpenSeaPort {
       totalBuyerFeeBPS,
       sellerBountyBPS } = await this.computeFees({ assets, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
-    const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, wyAssets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
 
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
