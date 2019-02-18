@@ -8,7 +8,7 @@ import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicize
 import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/lib/types'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernERC721Asset, WyvernERC1155Asset, WyvernENSNameAsset } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -276,10 +276,11 @@ export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
 
 // Taken from Wyvern demo exchange
 export const findAsset = async (
-  web3: Web3,
-  {account, proxy, wyAsset, schema}:
-  {account: string; proxy: string; wyAsset: any; schema: any}
-  ) => {
+    web3: Web3,
+    {account, proxy, wyAsset, schema}:
+    {account: string; proxy: string; wyAsset: any; schema: any}
+  ): Promise<WyvernAssetLocation | undefined> => {
+
   let owner
   const ownerOf = schema.functions.ownerOf
   if (ownerOf) {
@@ -309,24 +310,24 @@ export const findAsset = async (
   }
   if (owner !== undefined) {
     if (proxy && owner.toLowerCase() === proxy.toLowerCase()) {
-      return 'proxy'
+      return WyvernAssetLocation.Proxy
     } else if (owner.toLowerCase() === account.toLowerCase()) {
-      return 'account'
+      return WyvernAssetLocation.Account
     } else if (owner === '0x') {
-      return 'unknown'
+      return undefined
     } else {
-      return 'other'
+      return WyvernAssetLocation.Other
     }
   } else if (myCount !== undefined && proxyCount !== undefined) {
     if (proxyCount >= 1000000000000000000) {
-      return 'proxy'
+      return WyvernAssetLocation.Proxy
     } else if (myCount >= 1000000000000000000) {
-      return 'account'
+      return WyvernAssetLocation.Account
     } else {
-      return 'other'
+      return WyvernAssetLocation.Other
     }
   }
-  return 'unknown'
+  return undefined
 }
 
 /**
@@ -520,19 +521,37 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
 }
 
 /**
- * Get the Wyvern representation of an asset
+ * Get the Wyvern representation of an ERC721 asset
  * @param schema The WyvernSchema needed to access this asset
  * @param tokenId The token's id
  * @param tokenAddress The address of the token's contract
  */
-export function getWyvernAsset(
-    schema: any, tokenId: string, tokenAddress: string
-  ): WyvernAsset {
+export function getWyvernERC721Asset(
+    schema: WyvernSchemas.Schema<WyvernERC721Asset>, tokenId: string, tokenAddress: string
+  ): WyvernERC721Asset {
 
   return schema.assetFromFields({
     'ID': tokenId.toString(),
     'Address': tokenAddress,
   })
+}
+
+/**
+ * Get the Wyvern representation of an ENS name as an asset
+ * @param schema The WyvernSchema needed to access this asset
+ * @param name The ENS name, ending in .eth
+ */
+export function getWyvernENSNameAsset(
+    schema: WyvernSchemas.Schema<WyvernENSNameAsset>, name: string
+  ): WyvernENSNameAsset {
+
+  if (!schema.unifyFields) {
+    throw new Error("Incorrect schema type for this asset")
+  }
+
+  return schema.assetFromFields(schema.unifyFields({
+    'Name': name,
+  }))
 }
 
 /**
@@ -545,9 +564,9 @@ export function getWyvernBundle(
     schema: any, assets: Asset[]
   ): WyvernBundle {
 
-  const wyAssets = assets.map(asset => getWyvernAsset(schema, asset.tokenId, asset.tokenAddress))
+  const wyAssets = assets.map(asset => getWyvernERC721Asset(schema, asset.tokenId, asset.tokenAddress))
 
-  const sortedWyAssets = _.sortBy(wyAssets, [(a: WyvernAsset) => a.address, (a: WyvernAsset) => a.id])
+  const sortedWyAssets = _.sortBy(wyAssets, [(a: WyvernERC721Asset) => a.address, (a: WyvernERC721Asset) => a.id])
 
   return {
     assets: sortedWyAssets

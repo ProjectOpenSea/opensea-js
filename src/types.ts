@@ -58,6 +58,7 @@ export enum EventType {
 
   // When transferring one or more assets
   TransferAll = "TransferAll",
+  TransferOne = "TransferOne",
 }
 
 /**
@@ -68,9 +69,9 @@ export interface EventData {
   toAddress?: string
   proxyAddress?: string
   amount?: BigNumber
-  tokenAddress?: string
-  tokenId?: string
-  assets?: Asset[]
+  contractAddress?: string
+  assets?: WyvernAsset[]
+  asset?: WyvernAsset
 
   transactionHash?: string
   event?: EventType
@@ -127,12 +128,32 @@ export enum SaleKind {
 
 // Wyvern Schemas (see https://github.com/ProjectOpenSea/wyvern-schemas)
 export enum WyvernSchemaName {
-  ERC721 = 'ERC721'
+  ERC721 = 'ERC721',
+  ERC1155 = 'ERC1155',
+  ENSName = 'ENSName'
 }
 
-export interface WyvernAsset {
+export enum WyvernAssetLocation {
+  Account = 'account',
+  Proxy = 'proxy',
+  Other = 'other'
+}
+
+export interface WyvernAsset {}
+
+export interface WyvernERC721Asset extends WyvernAsset {
   id: string
   address: string
+}
+
+export interface WyvernERC1155Asset extends WyvernAsset {
+  identifier: string
+}
+
+export interface WyvernENSNameAsset extends WyvernAsset {
+  nodeHash: string
+  nameHash?: string
+  name?: string
 }
 
 // Abstractions over Wyvern assets for bundles
