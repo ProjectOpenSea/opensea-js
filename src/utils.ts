@@ -180,6 +180,8 @@ export const tokenFromJSON = (token: any): WyvernSchemas.FungibleToken => {
 
 export const orderFromJSON = (order: any): Order => {
 
+  const createdDate = new Date(`${order.created_date}Z`)
+
   const fromJSON: Order = {
     hash: order.order_hash || order.hash,
     cancelledOrFinalized: order.cancelled || order.finalized,
@@ -213,8 +215,11 @@ export const orderFromJSON = (order: any): Order => {
     extra: new BigNumber(order.extra),
     currentBounty: new BigNumber(order.current_bounty || 0),
     currentPrice: new BigNumber(order.current_price || 0),
+
+    createdTime: new BigNumber(Math.round(createdDate.getTime() / 1000)),
     listingTime: new BigNumber(order.listing_time),
     expirationTime: new BigNumber(order.expiration_time),
+
     salt: new BigNumber(order.salt),
     v: parseInt(order.v),
     r: order.r,

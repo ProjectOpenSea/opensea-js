@@ -21,6 +21,7 @@ A JavaScript library for crypto-native ecommerce: buying, selling, and bidding o
   - [Referring listings](#referring-listings)
   - [Custom referral bounties](#custom-referral-bounties)
 - [Advanced](#advanced)
+  - [Bulk Transfers](#bulk-transfers)
   - [Creating Bundles](#creating-bundles)
   - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
   - [Private Auctions](#private-auctions)
@@ -173,7 +174,9 @@ const { orders, count } = await seaport.api.getOrders({
 
 Note that the listing price of an asset is equal to the `currentPrice` of the **lowest valid sell order** on the asset. Users can lower their listing price without invalidating previous sell orders, so all get shipped down until they're cancelled or one is fulfilled.
 
-The available API filters for the orders endpoint is documented in the `OrderJSON` interface:
+To learn more about signatures, makers, takers, listingTime vs createdTime and other kinds of order terminology, please read the [**Terminology Section**](https://docs.opensea.io/reference#terminology) of the API Docs.
+
+The available API filters for the orders endpoint is documented in the `OrderJSON` interface below, but see the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanantions.
 
 ```TypeScript
 /**
@@ -269,9 +272,27 @@ Developers can request to increase the OpenSea fee to allow for higher bounties 
 
 Interested in making bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.
 
+### Bulk Transfers
+
+A handy feature in OpenSea.js is the ability to transfer multiple items at once in a single transaction. This works by grouping together as many `transferFrom` calls as the Ethereum gas limit allows, which is usually under 30 items, for most item contracts.
+
+To make a bulk transfer, it's just one call:
+
+```JavaScript
+const assets: Array<{tokenId: string; tokenAddress: string}> = [...]
+
+const transactionHash = await seaport.transferAll({
+  assets,
+  fromAddress, // Must own all the assets
+  toAddress
+})
+```
+
+This will automatically approve the assets for trading and confirm the transaction for sending them.
+
 ### Creating Bundles
 
-New in version 0.2.9, you can create bundles of assets to sell at the same time! If the owner has approved all the assets in the bundle already, only a signature is needed to create it.
+You can also create bundles of assets to sell at the same time! If the owner has approved all the assets in the bundle already, only a signature is needed to create it.
 
 To make a bundle, it's just one call:
 
@@ -279,7 +300,9 @@ To make a bundle, it's just one call:
 const assets: Array<{tokenId: string; tokenAddress: string}> = [...]
 
 const bundle = await seaport.createBundleSellOrder({
-  bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, paymentTokenAddress
+  bundleName, bundleDescription, bundleExternalLink,
+  assets, accountAddress, startAmount, endAmount,
+  expirationTime, paymentTokenAddress
 })
 ```
 

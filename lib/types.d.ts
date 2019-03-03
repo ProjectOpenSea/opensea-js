@@ -227,6 +227,7 @@ export interface UnsignedOrder extends UnhashedOrder {
     hash: string;
 }
 export interface Order extends UnsignedOrder, ECSignature {
+    createdTime?: BigNumber;
     currentPrice?: BigNumber;
     currentBounty?: BigNumber;
     makerAccount?: OpenSeaAccount;
@@ -238,6 +239,11 @@ export interface Order extends UnsignedOrder, ECSignature {
     asset?: OpenSeaAsset;
     assetBundle?: OpenSeaAssetBundle;
 }
+/**
+ * Order attributes, including orderbook-specific query options
+ * See https://docs.opensea.io/reference#retrieving-orders for the full
+ * list of API query parameters and documentation.
+ */
 export interface OrderJSON {
     exchange: string;
     maker: string;
@@ -273,12 +279,16 @@ export interface OrderJSON {
     /**
      * Attrs used by orderbook to make queries easier
      * Includes `maker`, `taker` and `side` from above
+     * See https://docs.opensea.io/reference#retrieving-orders for
+     * full docs.
      */
     owner?: string;
     sale_kind?: SaleKind;
     asset_contract_address?: string;
     payment_token_address?: string;
+    only_english?: boolean;
     bundled?: boolean;
+    include_invalid?: boolean;
     token_id?: number | string;
     token_ids?: Array<number | string>;
     listed_after?: number | string;

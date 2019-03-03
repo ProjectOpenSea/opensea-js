@@ -1023,10 +1023,14 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
 
   const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
-  const isValid = await client._validateMatch({ buy, sell, accountAddress })
-  assert.isTrue(isValid)
+  if (!order.waitingForBestCounterOrder) {
+    const isValid = await client._validateMatch({ buy, sell, accountAddress })
+    assert.isTrue(isValid)
+  } else {
+    console.info(`English Auction detected, skipping validation`)
+  }
 
-  if (testAtomicMatch) {
+  if (testAtomicMatch && !order.waitingForBestCounterOrder) {
     const isFulfillable = await client.isOrderFulfillable({ order, accountAddress, referrerAddress })
     assert.isTrue(isFulfillable)
     const gasPrice = await client._computeGasPrice()
@@ -1120,7 +1124,10 @@ function testFeesMakerOrder(order: Order | UnhashedOrder, assetContract?: OpenSe
   }
   if (assetContract) {
     // Homogenous sale
-    if (order.side == OrderSide.Sell) {
+    if (order.side == OrderSide.Sell && order.waitingForBestCounterOrder) {
+      // Fees may not match the contract's fees, which are changeable.
+    } else if (order.side == OrderSide.Sell) {
+
       assert.equal(order.makerRelayerFee.toNumber(), assetContract.sellerFeeBasisPoints)
       assert.equal(order.takerRelayerFee.toNumber(), assetContract.buyerFeeBasisPoints)
 
@@ -1133,6 +1140,7 @@ function testFeesMakerOrder(order: Order | UnhashedOrder, assetContract?: OpenSe
         assert.equal(order.makerReferrerFee.toNumber(), 0)
       }
     } else {
+
       assert.equal(order.makerRelayerFee.toNumber(), assetContract.buyerFeeBasisPoints)
       assert.equal(order.takerRelayerFee.toNumber(), assetContract.sellerFeeBasisPoints)
 

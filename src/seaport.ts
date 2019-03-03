@@ -869,11 +869,12 @@ export class OpenSeaPort {
    * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
    * @param fromAddress The owner's wallet address
    * @param toAddress The recipient's wallet address
+   * @returns transaction hash
    */
   public async transferAll(
       { assets, fromAddress, toAddress }:
       { assets: Asset[]; fromAddress: string; toAddress: string }
-    ): Promise<void> {
+    ): Promise<string> {
 
     toAddress = validateAndFormatWalletAddress(this.web3, toAddress)
 
@@ -902,6 +903,8 @@ export class OpenSeaPort {
     })
 
     await this._confirmTransaction(txHash, EventType.TransferAll, `Transferring ${assets.length} asset${assets.length == 1 ? '' : 's'}`)
+
+    return txHash
   }
 
   /**
