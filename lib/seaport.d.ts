@@ -283,8 +283,7 @@ export declare class OpenSeaPort {
         referrerAddress?: string;
     }): Promise<boolean>;
     /**
-     * WIP Returns whether an asset is transferrable.
-     * (Currently returns true too often, even when asset is locked by contract.)
+     * Returns whether an asset is transferrable.
      * An asset may not be transferrable if its transfer function
      * is locked for some reason, e.g. an item is being rented within a game
      * or trading has been locked for an item type.
@@ -293,13 +292,15 @@ export declare class OpenSeaPort {
      * @param tokenAddress Address of the token's contract
      * @param fromAddress The account address that currently owns the asset
      * @param toAddress The account address that will be acquiring the asset
+     * @param didOwnerApprove If the owner and fromAddress has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
      * @param tokenAbi ABI for the token contract. Defaults to ERC-721
      */
-    isAssetTransferrable({ tokenId, tokenAddress, fromAddress, toAddress, tokenAbi }: {
+    isAssetTransferrable({ tokenId, tokenAddress, fromAddress, toAddress, didOwnerApprove, tokenAbi }: {
         tokenId: string;
         tokenAddress: string;
         fromAddress: string;
         toAddress: string;
+        didOwnerApprove?: boolean;
         tokenAbi?: PartialReadonlyContractAbi;
     }): Promise<boolean>;
     /**
@@ -308,12 +309,13 @@ export declare class OpenSeaPort {
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
      * @param fromAddress The owner's wallet address
      * @param toAddress The recipient's wallet address
+     * @returns transaction hash
      */
     transferAll({ assets, fromAddress, toAddress }: {
         assets: Asset[];
         fromAddress: string;
         toAddress: string;
-    }): Promise<void>;
+    }): Promise<string>;
     /**
      * Get known fungible tokens (ERC-20) that match your filters.
      * @param param0 __namedParamters Object

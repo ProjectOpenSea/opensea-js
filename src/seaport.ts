@@ -817,8 +817,7 @@ export class OpenSeaPort {
   }
 
   /**
-   * WIP Returns whether an asset is transferrable.
-   * (Currently returns true too often, even when asset is locked by contract.)
+   * Returns whether an asset is transferrable.
    * An asset may not be transferrable if its transfer function
    * is locked for some reason, e.g. an item is being rented within a game
    * or trading has been locked for an item type.
@@ -827,31 +826,39 @@ export class OpenSeaPort {
    * @param tokenAddress Address of the token's contract
    * @param fromAddress The account address that currently owns the asset
    * @param toAddress The account address that will be acquiring the asset
+   * @param didOwnerApprove If the owner and fromAddress has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
    * @param tokenAbi ABI for the token contract. Defaults to ERC-721
    */
   public async isAssetTransferrable(
-    { tokenId, tokenAddress, fromAddress, toAddress, tokenAbi = ERC721 }:
+    { tokenId, tokenAddress, fromAddress, toAddress, didOwnerApprove = false, tokenAbi = ERC721 }:
     { tokenId: string;
       tokenAddress: string;
       fromAddress: string;
       toAddress: string;
+      didOwnerApprove?: boolean;
       tokenAbi?: PartialReadonlyContractAbi }
   ): Promise<boolean> {
+
     const tokenContract = this.web3.eth.contract(tokenAbi as any[])
     const erc721 = await tokenContract.at(tokenAddress)
-    const proxy = await this._getProxy(fromAddress)
-
-    if (!proxy) {
-      console.error(`This asset's owner (${fromAddress}) no longer has a proxy!`)
-      return false
+    const to = tokenAddress
+    let from = fromAddress
+    if (didOwnerApprove) {
+      const proxyAddress = await this._getProxy(fromAddress)
+      if (!proxyAddress) {
+        console.error(`This asset's owner (${fromAddress}) does not have a proxy!`)
+        return false
+      }
+      from = proxyAddress
     }
+
     const data = erc721.transferFrom.getData(fromAddress, toAddress, tokenId)
 
     try {
 
       const gas = await estimateGas(this.web3, {
-        from: proxy,
-        to: tokenAddress,
+        from,
+        to,
         data
       })
       return gas > 0

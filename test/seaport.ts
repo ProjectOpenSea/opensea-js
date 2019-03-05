@@ -783,7 +783,8 @@ suite('seaport', () => {
       tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
       tokenAddress: GODS_UNCHAINED_ADDRESS,
       fromAddress: ALEX_ADDRESS,
-      toAddress: ALEX_ADDRESS_2
+      toAddress: ALEX_ADDRESS_2,
+      didOwnerApprove: true
     })
     assert.isNotTrue(isTransferrable)
   })
@@ -813,7 +814,8 @@ suite('seaport', () => {
       tokenId: CK_TOKEN_ID.toString(),
       tokenAddress: CK_ADDRESS,
       fromAddress: ALEX_ADDRESS,
-      toAddress: ALEX_ADDRESS_2
+      toAddress: ALEX_ADDRESS_2,
+      didOwnerApprove: true
     })
     assert.isTrue(isTransferrable)
   })
@@ -1097,7 +1099,8 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
     const isTransferrable = await client.isAssetTransferrable({
       tokenId, tokenAddress,
       fromAddress: sell.maker,
-      toAddress: buy.maker
+      toAddress: buy.maker,
+      didOwnerApprove: true
     })
     assert.isTrue(isTransferrable)
   }))
