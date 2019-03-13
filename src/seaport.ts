@@ -251,7 +251,7 @@ export class OpenSeaPort {
       ...hashedOrder,
       ...signature
     }
-    return this._validateAndPostOrder(orderWithSignature)
+    return this.validateAndPostOrder(orderWithSignature)
   }
 
   /**
@@ -313,7 +313,7 @@ export class OpenSeaPort {
       ...hashedOrder,
       ...signature
     }
-    return this._validateAndPostOrder(orderWithSignature)
+    return this.validateAndPostOrder(orderWithSignature)
   }
 
   /**
@@ -369,7 +369,7 @@ export class OpenSeaPort {
       ...signature
     }
 
-    return this._validateAndPostOrder(orderWithSignature)
+    return this.validateAndPostOrder(orderWithSignature)
   }
 
   /**
@@ -435,7 +435,7 @@ export class OpenSeaPort {
         ...signature
       }
 
-      return this._validateAndPostOrder(orderWithSignature)
+      return this.validateAndPostOrder(orderWithSignature)
     }
 
     const range = _.range(numberOfOrders)
@@ -516,7 +516,7 @@ export class OpenSeaPort {
       ...signature
     }
 
-    return this._validateAndPostOrder(orderWithSignature)
+    return this.validateAndPostOrder(orderWithSignature)
   }
 
   /**
@@ -567,7 +567,9 @@ export class OpenSeaPort {
       order.calldata,
       order.replacementPattern,
       order.staticExtradata,
-      order.v, order.r, order.s,
+      order.v || 0,
+      order.r || '0x',
+      order.s || '0x',
       { from: accountAddress, gasPrice })
 
     await this._confirmTransaction(transactionHash.toString(), EventType.CancelOrder, "Cancelling order")
@@ -1072,6 +1074,53 @@ export class OpenSeaPort {
   }
 
   /**
+   * Validate and post an order to the OpenSea orderbook.
+   * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder_. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
+   * @returns The order as stored by the orderbook
+   */
+  public async validateAndPostOrder(order: Order): Promise<Order> {
+    const hash = await this._wyvernProtocolReadOnly.wyvernExchange.hashOrder_.callAsync(
+      [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
+      order.feeMethod,
+      order.side,
+      order.saleKind,
+      order.howToCall,
+      order.calldata,
+      order.replacementPattern,
+      order.staticExtradata)
+
+    if (hash !== order.hash) {
+      console.error(order)
+      throw new Error(`Order couldn't be validated by the exchange due to a hash mismatch. Make sure your wallet is on the right network!`)
+    }
+    this.logger('Order hashes match')
+
+    const valid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
+      [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
+      order.feeMethod,
+      order.side,
+      order.saleKind,
+      order.howToCall,
+      order.calldata,
+      order.replacementPattern,
+      order.staticExtradata,
+      order.v || 0,
+      order.r || '0x',
+      order.s || '0x')
+
+    if (!valid) {
+      console.error(order)
+      throw new Error('Invalid order. Please restart your wallet/browser and try again!')
+    }
+    this.logger('Order is valid')
+
+    const confirmedOrder = await this.api.postOrder(orderToJSON(order))
+    return confirmedOrder
+  }
+
+  /**
    * Compute the gas price for sending a txn, in wei
    * Will be slightly above the mean to make it faster
    */
@@ -1121,9 +1170,17 @@ export class OpenSeaPort {
         sell.replacementPattern,
         buy.staticExtradata,
         sell.staticExtradata,
-        [buy.v, sell.v],
-        [buy.r, buy.s, sell.r, sell.s,
-          metadata],
+        [
+          buy.v || 0,
+          sell.v || 0
+        ],
+        [
+          buy.r || '0x',
+          buy.s || '0x',
+          sell.r || '0x',
+          sell.s || '0x',
+          metadata
+        ],
           // Typescript error in estimate gas method, so use any
           { from: accountAddress, value } as any)
   }
@@ -1893,7 +1950,9 @@ export class OpenSeaPort {
         buy.calldata,
         buy.replacementPattern,
         buy.staticExtradata,
-        buy.v, buy.r, buy.s,
+        buy.v || 0,
+        buy.r || '0x',
+        buy.s || '0x',
         { from: accountAddress })
       if (!buyValid) {
         throw new Error('Invalid buy order. Please restart your wallet/browser and try again!')
@@ -1912,7 +1971,9 @@ export class OpenSeaPort {
         sell.calldata,
         sell.replacementPattern,
         sell.staticExtradata,
-        sell.v, sell.r, sell.s,
+        sell.v || 0,
+        sell.r || '0x',
+        sell.s || '0x',
         { from: accountAddress })
       if (!sellValid) {
         throw new Error('Invalid sell order. Please restart your wallet/browser and try again!')
@@ -1938,9 +1999,17 @@ export class OpenSeaPort {
       sell.replacementPattern,
       buy.staticExtradata,
       sell.staticExtradata,
-      [buy.v, sell.v],
-      [buy.r, buy.s, sell.r, sell.s,
-        metadata]
+      [
+        buy.v || 0,
+        sell.v || 0
+      ],
+      [
+        buy.r || '0x',
+        buy.s || '0x',
+        sell.r || '0x',
+        sell.s || '0x',
+        metadata
+      ]
     ]
 
     // Estimate gas first
@@ -1982,49 +2051,6 @@ export class OpenSeaPort {
     const feePercentage = sell.takerRelayerFee.div(INVERSE_BASIS_POINT)
     const fee = feePercentage.times(maxPrice)
     return fee.plus(maxPrice).ceil()
-  }
-
-  // Throws
-  private async _validateAndPostOrder(order: Order) {
-    const hash = await this._wyvernProtocolReadOnly.wyvernExchange.hashOrder_.callAsync(
-      [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
-      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
-      order.feeMethod,
-      order.side,
-      order.saleKind,
-      order.howToCall,
-      order.calldata,
-      order.replacementPattern,
-      order.staticExtradata)
-
-    if (hash !== order.hash) {
-      console.error(order)
-      throw new Error(`Order couldn't be validated by the exchange due to a hash mismatch. Make sure your wallet is on the right network!`)
-    }
-    this.logger('Order hashes match')
-
-    const valid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
-      [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
-      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
-      order.feeMethod,
-      order.side,
-      order.saleKind,
-      order.howToCall,
-      order.calldata,
-      order.replacementPattern,
-      order.staticExtradata,
-      order.v,
-      order.r || '0x',
-      order.s || '0x')
-
-    if (!valid) {
-      console.error(order)
-      throw new Error('Invalid order. Please restart your wallet/browser and try again!')
-    }
-    this.logger('Order is valid')
-
-    const confirmedOrder = await this.api.postOrder(orderToJSON(order))
-    return confirmedOrder
   }
 
   private async _signOrder(

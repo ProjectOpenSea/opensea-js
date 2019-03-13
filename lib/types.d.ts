@@ -231,7 +231,11 @@ export interface UnhashedOrder extends WyvernOrder {
 export interface UnsignedOrder extends UnhashedOrder {
     hash: string;
 }
-export interface Order extends UnsignedOrder, ECSignature {
+/**
+ * Orders don't need to be signed if they're pre-approved
+ * with a transaction on the contract to approveOrder_
+ */
+export interface Order extends UnsignedOrder, Partial<ECSignature> {
     createdTime?: BigNumber;
     currentPrice?: BigNumber;
     currentBounty?: BigNumber;
@@ -249,7 +253,7 @@ export interface Order extends UnsignedOrder, ECSignature {
  * See https://docs.opensea.io/reference#retrieving-orders for the full
  * list of API query parameters and documentation.
  */
-export interface OrderJSON {
+export interface OrderJSON extends Partial<ECSignature> {
     exchange: string;
     maker: string;
     taker: string;
@@ -281,9 +285,6 @@ export interface OrderJSON {
         schema: WyvernSchemaName;
     };
     hash: string;
-    v: number;
-    r: string;
-    s: string;
 }
 /**
  * Query interface for Orders

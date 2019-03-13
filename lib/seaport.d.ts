@@ -364,6 +364,12 @@ export declare class OpenSeaPort {
         extraBountyBasisPoints?: number;
     }): Promise<OpenSeaFees>;
     /**
+     * Validate and post an order to the OpenSea orderbook.
+     * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder_. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
+     * @returns The order as stored by the orderbook
+     */
+    validateAndPostOrder(order: Order): Promise<Order>;
+    /**
      * Compute the gas price for sending a txn, in wei
      * Will be slightly above the mean to make it faster
      */
@@ -520,7 +526,6 @@ export declare class OpenSeaPort {
     private _getPriceParameters;
     private _atomicMatch;
     private _getRequiredAmountForTakingSellOrder;
-    private _validateAndPostOrder;
     private _signOrder;
     private _getSchema;
     private _dispatch;
