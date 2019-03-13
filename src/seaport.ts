@@ -1887,6 +1887,9 @@ export class OpenSeaPort {
     const token = tokens[0]
 
     // Validation
+    if (isNaN(startAmount) || startAmount == null || startAmount < 0) {
+      throw new Error(`Starting price must be a number >= 0`)
+    }
     if (!isEther && !token) {
       throw new Error(`No ERC-20 token found for '${tokenAddress}'`)
     }
