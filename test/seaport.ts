@@ -12,7 +12,7 @@ import {
 
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, OpenSeaAsset, Asset, OpenSeaAssetContract } from '../src/types'
+import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
@@ -930,9 +930,8 @@ suite('seaport', () => {
       delete matchingOrder.hash
       assert.isUndefined(matchingOrder.hash)
 
-      const orderJSON = orderToJSON(matchingOrder)
-      assert.equal(orderJSON.hash, matchingOrderHash)
-      assert.equal(orderJSON.hash, getOrderHash(matchingOrder))
+      const orderHash = getOrderHash(matchingOrder)
+      assert.equal(orderHash, matchingOrderHash)
     })
   })
 

@@ -1,5 +1,5 @@
 import 'isomorphic-unfetch';
-import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset, OpenSeaAssetJSON, OpenSeaAssetBundle, OpenSeaAssetBundleJSON, FungibleToken } from './types';
+import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset, OpenSeaAssetBundle, FungibleToken, OrderQuery, OpenSeaAssetQuery, OpenSeaAssetBundleQuery, FungibleTokenQuery } from './types';
 export declare const ORDERBOOK_VERSION: number;
 export declare const API_VERSION: number;
 export declare const API_BASE_MAINNET = "https://api.opensea.io";
@@ -42,15 +42,16 @@ export declare class OpenSeaAPI {
      * @param query Query to use for getting orders. A subset of parameters
      *  on the `OrderJSON` type is supported
      */
-    getOrder(query: Partial<OrderJSON>): Promise<Order | null>;
+    getOrder(query: OrderQuery): Promise<Order | null>;
     /**
      * Get a list of orders from the orderbook, returning the page of orders
      *  and the count of total orders found.
      * @param query Query to use for getting orders. A subset of parameters
      *  on the `OrderJSON` type is supported
-     * @param page Page number, defaults to 1
+     * @param page Page number, defaults to 1. Can be overridden by
+     * `limit` and `offset` attributes from OrderQuery
      */
-    getOrders(query?: Partial<OrderJSON>, page?: number): Promise<{
+    getOrders(query?: OrderQuery, page?: number): Promise<{
         orders: Order[];
         count: number;
     }>;
@@ -63,18 +64,20 @@ export declare class OpenSeaAPI {
     /**
      * Fetch list of assets from the API, returning the page of assets and the count of total assets
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
-     * @param page Page number, defaults to 1
+     * @param page Page number, defaults to 1. Can be overridden by
+     * `limit` and `offset` attributes from OpenSeaAssetQuery
      */
-    getAssets(query?: Partial<OpenSeaAssetJSON>, page?: number): Promise<{
+    getAssets(query?: OpenSeaAssetQuery, page?: number): Promise<{
         assets: OpenSeaAsset[];
         estimatedCount: number;
     }>;
     /**
      * Fetch list of fungible tokens from the API matching paramters
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
-     * @param page Page number, defaults to 1
+     * @param page Page number, defaults to 1. Can be overridden by
+     * `limit` and `offset` attributes from FungibleTokenQuery
      */
-    getTokens(query?: Partial<FungibleToken>, page?: number): Promise<{
+    getTokens(query?: FungibleTokenQuery, page?: number): Promise<{
         tokens: FungibleToken[];
     }>;
     /**
@@ -86,9 +89,10 @@ export declare class OpenSeaAPI {
     /**
      * Fetch list of bundles from the API, returning the page of bundles and the count of total bundles
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetBundleJSON` type is supported
-     * @param page Page number, defaults to 1
+     * @param page Page number, defaults to 1. Can be overridden by
+     * `limit` and `offset` attributes from OpenSeaAssetBundleQuery
      */
-    getBundles(query?: Partial<OpenSeaAssetBundleJSON>, page?: number): Promise<{
+    getBundles(query?: OpenSeaAssetBundleQuery, page?: number): Promise<{
         bundles: OpenSeaAssetBundle[];
         estimatedCount: number;
     }>;

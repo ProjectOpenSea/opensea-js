@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>OpenSeaAssetContract | opensea-js</title>
+	<title>OrderQuery | opensea-js</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,10 +56,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="openseaassetcontract.html">OpenSeaAssetContract</a>
+					<a href="orderquery.html">OrderQuery</a>
 				</li>
 			</ul>
-			<h1>Interface OpenSeaAssetContract</h1>
+			<h1>Interface OrderQuery</h1>
 		</div>
 	</div>
 </header>
@@ -69,7 +69,10 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>OpenSea asset contract</p>
+						<p>Query interface for Orders
+							Includes <code>maker</code>, <code>taker</code> and <code>side</code> from above
+							See <a href="https://docs.opensea.io/reference#retrieving-orders">https://docs.opensea.io/reference#retrieving-orders</a> for
+						full docs.</p>
 					</div>
 				</div>
 			</section>
@@ -77,7 +80,12 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">OpenSeaAssetContract</span>
+						<span class="tsd-signature-type">object</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">OrderQuery</span>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</section>
@@ -88,21 +96,19 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#address" class="tsd-kind-icon">address</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#buyerfeebasispoints" class="tsd-kind-icon">buyer<wbr>Fee<wbr>Basis<wbr>Points</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#description" class="tsd-kind-icon">description</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#devbuyerfeebasispoints" class="tsd-kind-icon">dev<wbr>Buyer<wbr>Fee<wbr>Basis<wbr>Points</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#devsellerfeebasispoints" class="tsd-kind-icon">dev<wbr>Seller<wbr>Fee<wbr>Basis<wbr>Points</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#externallink" class="tsd-kind-icon">external<wbr>Link</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#imageurl" class="tsd-kind-icon">image<wbr>Url</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#name" class="tsd-kind-icon">name</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#openseabuyerfeebasispoints" class="tsd-kind-icon">opensea<wbr>Buyer<wbr>Fee<wbr>Basis<wbr>Points</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#openseasellerfeebasispoints" class="tsd-kind-icon">opensea<wbr>Seller<wbr>Fee<wbr>Basis<wbr>Points</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#sellerfeebasispoints" class="tsd-kind-icon">seller<wbr>Fee<wbr>Basis<wbr>Points</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#stats" class="tsd-kind-icon">stats</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#tokensymbol" class="tsd-kind-icon">token<wbr>Symbol</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#traits" class="tsd-kind-icon">traits</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseaassetcontract.html#wikilink" class="tsd-kind-icon">wiki<wbr>Link</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#asset_contract_address" class="tsd-kind-icon">asset_<wbr>contract_<wbr>address</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#bundled" class="tsd-kind-icon">bundled</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#include_invalid" class="tsd-kind-icon">include_<wbr>invalid</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#limit" class="tsd-kind-icon">limit</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#listed_after" class="tsd-kind-icon">listed_<wbr>after</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#listed_before" class="tsd-kind-icon">listed_<wbr>before</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#offset" class="tsd-kind-icon">offset</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#only_english" class="tsd-kind-icon">only_<wbr>english</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#owner" class="tsd-kind-icon">owner</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#payment_token_address" class="tsd-kind-icon">payment_<wbr>token_<wbr>address</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#sale_kind" class="tsd-kind-icon">sale_<wbr>kind</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#token_id" class="tsd-kind-icon">token_<wbr>id</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderquery.html#token_ids" class="tsd-kind-icon">token_<wbr>ids</a></li>
 							</ul>
 						</section>
 					</div>
@@ -111,152 +117,132 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="address" class="tsd-anchor"></a>
-					<h3>address</h3>
-					<div class="tsd-signature tsd-kind-icon">address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="asset_contract_address" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> asset_<wbr>contract_<wbr>address</h3>
+					<div class="tsd-signature tsd-kind-icon">asset_<wbr>contract_<wbr>address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L183">types.ts:183</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L418">types.ts:418</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="buyerfeebasispoints" class="tsd-anchor"></a>
-					<h3>buyer<wbr>Fee<wbr>Basis<wbr>Points</h3>
-					<div class="tsd-signature tsd-kind-icon">buyer<wbr>Fee<wbr>Basis<wbr>Points<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="bundled" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> bundled</h3>
+					<div class="tsd-signature tsd-kind-icon">bundled<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L188">types.ts:188</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L421">types.ts:421</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="description" class="tsd-anchor"></a>
-					<h3>description</h3>
-					<div class="tsd-signature tsd-kind-icon">description<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="include_invalid" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> include_<wbr>invalid</h3>
+					<div class="tsd-signature tsd-kind-icon">include_<wbr>invalid<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L199">types.ts:199</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L422">types.ts:422</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="devbuyerfeebasispoints" class="tsd-anchor"></a>
-					<h3>dev<wbr>Buyer<wbr>Fee<wbr>Basis<wbr>Points</h3>
-					<div class="tsd-signature tsd-kind-icon">dev<wbr>Buyer<wbr>Fee<wbr>Basis<wbr>Points<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="limit" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> limit</h3>
+					<div class="tsd-signature tsd-kind-icon">limit<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L196">types.ts:196</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L429">types.ts:429</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="devsellerfeebasispoints" class="tsd-anchor"></a>
-					<h3>dev<wbr>Seller<wbr>Fee<wbr>Basis<wbr>Points</h3>
-					<div class="tsd-signature tsd-kind-icon">dev<wbr>Seller<wbr>Fee<wbr>Basis<wbr>Points<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="listed_after" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> listed_<wbr>after</h3>
+					<div class="tsd-signature tsd-kind-icon">listed_<wbr>after<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L194">types.ts:194</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L426">types.ts:426</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="externallink" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> external<wbr>Link</h3>
-					<div class="tsd-signature tsd-kind-icon">external<wbr>Link<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
+					<a name="listed_before" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> listed_<wbr>before</h3>
+					<div class="tsd-signature tsd-kind-icon">listed_<wbr>before<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L209">types.ts:209</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L428">types.ts:428</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="imageurl" class="tsd-anchor"></a>
-					<h3>image<wbr>Url</h3>
-					<div class="tsd-signature tsd-kind-icon">image<wbr>Url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="offset" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> offset</h3>
+					<div class="tsd-signature tsd-kind-icon">offset<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L203">types.ts:203</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L430">types.ts:430</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="name" class="tsd-anchor"></a>
-					<h3>name</h3>
-					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="only_english" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> only_<wbr>english</h3>
+					<div class="tsd-signature tsd-kind-icon">only_<wbr>english<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L181">types.ts:181</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L420">types.ts:420</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="openseabuyerfeebasispoints" class="tsd-anchor"></a>
-					<h3>opensea<wbr>Buyer<wbr>Fee<wbr>Basis<wbr>Points</h3>
-					<div class="tsd-signature tsd-kind-icon">opensea<wbr>Buyer<wbr>Fee<wbr>Basis<wbr>Points<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="owner" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> owner</h3>
+					<div class="tsd-signature tsd-kind-icon">owner<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L192">types.ts:192</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L416">types.ts:416</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="openseasellerfeebasispoints" class="tsd-anchor"></a>
-					<h3>opensea<wbr>Seller<wbr>Fee<wbr>Basis<wbr>Points</h3>
-					<div class="tsd-signature tsd-kind-icon">opensea<wbr>Seller<wbr>Fee<wbr>Basis<wbr>Points<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="payment_token_address" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> payment_<wbr>token_<wbr>address</h3>
+					<div class="tsd-signature tsd-kind-icon">payment_<wbr>token_<wbr>address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L190">types.ts:190</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L419">types.ts:419</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="sellerfeebasispoints" class="tsd-anchor"></a>
-					<h3>seller<wbr>Fee<wbr>Basis<wbr>Points</h3>
-					<div class="tsd-signature tsd-kind-icon">seller<wbr>Fee<wbr>Basis<wbr>Points<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="sale_kind" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> sale_<wbr>kind</h3>
+					<div class="tsd-signature tsd-kind-icon">sale_<wbr>kind<span class="tsd-signature-symbol">:</span> <a href="../enums/salekind.html" class="tsd-signature-type">SaleKind</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L186">types.ts:186</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L417">types.ts:417</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="stats" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> stats</h3>
-					<div class="tsd-signature tsd-kind-icon">stats<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span></div>
+					<a name="token_id" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> token_<wbr>id</h3>
+					<div class="tsd-signature tsd-kind-icon">token_<wbr>id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L205">types.ts:205</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L423">types.ts:423</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="tokensymbol" class="tsd-anchor"></a>
-					<h3>token<wbr>Symbol</h3>
-					<div class="tsd-signature tsd-kind-icon">token<wbr>Symbol<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="token_ids" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> token_<wbr>ids</h3>
+					<div class="tsd-signature tsd-kind-icon">token_<wbr>ids<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L201">types.ts:201</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="traits" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> traits</h3>
-					<div class="tsd-signature tsd-kind-icon">traits<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L207">types.ts:207</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="wikilink" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> wiki<wbr>Link</h3>
-					<div class="tsd-signature tsd-kind-icon">wiki<wbr>Link<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L211">types.ts:211</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/4a231fa/src/types.ts#L424">types.ts:424</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -275,52 +261,46 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="openseaassetcontract.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Asset<wbr>Contract</a>
+						<a href="orderquery.html" class="tsd-kind-icon">Order<wbr>Query</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#address" class="tsd-kind-icon">address</a>
+								<a href="orderquery.html#asset_contract_address" class="tsd-kind-icon">asset_<wbr>contract_<wbr>address</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#buyerfeebasispoints" class="tsd-kind-icon">buyer<wbr>Fee<wbr>Basis<wbr>Points</a>
+								<a href="orderquery.html#bundled" class="tsd-kind-icon">bundled</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#description" class="tsd-kind-icon">description</a>
+								<a href="orderquery.html#include_invalid" class="tsd-kind-icon">include_<wbr>invalid</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#devbuyerfeebasispoints" class="tsd-kind-icon">dev<wbr>Buyer<wbr>Fee<wbr>Basis<wbr>Points</a>
+								<a href="orderquery.html#limit" class="tsd-kind-icon">limit</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#devsellerfeebasispoints" class="tsd-kind-icon">dev<wbr>Seller<wbr>Fee<wbr>Basis<wbr>Points</a>
+								<a href="orderquery.html#listed_after" class="tsd-kind-icon">listed_<wbr>after</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#externallink" class="tsd-kind-icon">external<wbr>Link</a>
+								<a href="orderquery.html#listed_before" class="tsd-kind-icon">listed_<wbr>before</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#imageurl" class="tsd-kind-icon">image<wbr>Url</a>
+								<a href="orderquery.html#offset" class="tsd-kind-icon">offset</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#name" class="tsd-kind-icon">name</a>
+								<a href="orderquery.html#only_english" class="tsd-kind-icon">only_<wbr>english</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#openseabuyerfeebasispoints" class="tsd-kind-icon">opensea<wbr>Buyer<wbr>Fee<wbr>Basis<wbr>Points</a>
+								<a href="orderquery.html#owner" class="tsd-kind-icon">owner</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#openseasellerfeebasispoints" class="tsd-kind-icon">opensea<wbr>Seller<wbr>Fee<wbr>Basis<wbr>Points</a>
+								<a href="orderquery.html#payment_token_address" class="tsd-kind-icon">payment_<wbr>token_<wbr>address</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#sellerfeebasispoints" class="tsd-kind-icon">seller<wbr>Fee<wbr>Basis<wbr>Points</a>
+								<a href="orderquery.html#sale_kind" class="tsd-kind-icon">sale_<wbr>kind</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#stats" class="tsd-kind-icon">stats</a>
+								<a href="orderquery.html#token_id" class="tsd-kind-icon">token_<wbr>id</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#tokensymbol" class="tsd-kind-icon">token<wbr>Symbol</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#traits" class="tsd-kind-icon">traits</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="openseaassetcontract.html#wikilink" class="tsd-kind-icon">wiki<wbr>Link</a>
+								<a href="orderquery.html#token_ids" class="tsd-kind-icon">token_<wbr>ids</a>
 							</li>
 						</ul>
 					</li>

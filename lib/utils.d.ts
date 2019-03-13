@@ -38,7 +38,7 @@ export declare const orderFromJSON: (order: any) => Order;
  * Convert an order to JSON, hashing it as well if necessary
  * @param order order (hashed or unhashed)
  */
-export declare const orderToJSON: (order: Order | UnhashedOrder) => OrderJSON;
+export declare const orderToJSON: (order: Order) => OrderJSON;
 export declare const findAsset: (web3: Web3, { account, proxy, wyAsset, schema }: {
     account: string;
     proxy: string;

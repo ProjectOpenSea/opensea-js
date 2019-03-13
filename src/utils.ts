@@ -241,8 +241,8 @@ export const orderFromJSON = (order: any): Order => {
  * Convert an order to JSON, hashing it as well if necessary
  * @param order order (hashed or unhashed)
  */
-export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
-  const asJSON: any = {
+export const orderToJSON = (order: Order): OrderJSON => {
+  const asJSON: OrderJSON = {
     exchange: order.exchange.toLowerCase(),
     maker: order.maker.toLowerCase(),
     taker: order.taker.toLowerCase(),
@@ -251,12 +251,12 @@ export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
     makerProtocolFee: order.makerProtocolFee.toString(),
     takerProtocolFee: order.takerProtocolFee.toString(),
     makerReferrerFee: order.makerReferrerFee.toString(),
-    feeMethod: order.feeMethod.toString(),
+    feeMethod: order.feeMethod,
     feeRecipient: order.feeRecipient.toLowerCase(),
-    side: order.side.toString(),
-    saleKind: order.saleKind.toString(),
+    side: order.side,
+    saleKind: order.saleKind,
     target: order.target.toLowerCase(),
-    howToCall: order.howToCall.toString(),
+    howToCall: order.howToCall,
     calldata: order.calldata,
     replacementPattern: order.replacementPattern,
     staticTarget: order.staticTarget.toLowerCase(),
@@ -264,18 +264,21 @@ export const orderToJSON = (order: Order | UnhashedOrder): OrderJSON => {
     paymentToken: order.paymentToken.toLowerCase(),
     basePrice: order.basePrice.toString(),
     extra: order.extra.toString(),
+    createdTime: order.createdTime
+      ? order.createdTime.toString()
+      : undefined,
     listingTime: order.listingTime.toString(),
     expirationTime: order.expirationTime.toString(),
-    salt: order.salt.toString()
+    salt: order.salt.toString(),
+
+    metadata: order.metadata,
+
+    v: order.v,
+    r: order.r,
+    s: order.s,
+
+    hash: order.hash
   }
-  const hash = 'hash' in order ? order.hash : getOrderHash(asJSON)
-  if ('v' in order) {
-    asJSON.v = order.v
-    asJSON.r = order.r
-    asJSON.s = order.s
-  }
-  asJSON.hash = hash
-  asJSON.metadata = order.metadata
   return asJSON
 }
 

@@ -1,6 +1,6 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
-import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetJSON, OpenSeaAssetBundle, OpenSeaAssetBundleJSON, FungibleToken} from './types'
+import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetBundle, FungibleToken, OrderQuery, OpenSeaAssetQuery, OpenSeaAssetBundleQuery, FungibleTokenQuery} from './types'
 import { orderFromJSON, assetFromJSON, assetBundleFromJSON, tokenFromJSON } from './utils'
 
 export const ORDERBOOK_VERSION: number = 1
@@ -79,7 +79,7 @@ export class OpenSeaAPI {
    * @param query Query to use for getting orders. A subset of parameters
    *  on the `OrderJSON` type is supported
    */
-  public async getOrder(query: Partial<OrderJSON>): Promise<Order | null> {
+  public async getOrder(query: OrderQuery): Promise<Order | null> {
 
     const response = await this.get(
       `${ORDERBOOK_PATH}/orders`,
@@ -102,19 +102,20 @@ export class OpenSeaAPI {
    *  and the count of total orders found.
    * @param query Query to use for getting orders. A subset of parameters
    *  on the `OrderJSON` type is supported
-   * @param page Page number, defaults to 1
+   * @param page Page number, defaults to 1. Can be overridden by
+   * `limit` and `offset` attributes from OrderQuery
    */
   public async getOrders(
-      query: Partial<OrderJSON> = {},
+      query: OrderQuery = {},
       page = 1
     ): Promise<{orders: Order[]; count: number}> {
 
     const response = await this.get(
       `${ORDERBOOK_PATH}/orders`,
       {
-        ...query,
         limit: this.pageSize,
-        offset: (page - 1) * this.pageSize
+        offset: (page - 1) * this.pageSize,
+        ...query,
       }
     )
 
@@ -149,17 +150,18 @@ export class OpenSeaAPI {
   /**
    * Fetch list of assets from the API, returning the page of assets and the count of total assets
    * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
-   * @param page Page number, defaults to 1
+   * @param page Page number, defaults to 1. Can be overridden by
+   * `limit` and `offset` attributes from OpenSeaAssetQuery
    */
   public async getAssets(
-      query: Partial<OpenSeaAssetJSON> = {},
+      query: OpenSeaAssetQuery = {},
       page = 1
     ): Promise<{assets: OpenSeaAsset[]; estimatedCount: number}> {
 
     const response = await this.get(`${API_PATH}/assets/`, {
-      ...query,
       limit: this.pageSize,
-      offset: (page - 1) * this.pageSize
+      offset: (page - 1) * this.pageSize,
+      ...query
     })
 
     const json: any = await response.json()
@@ -172,10 +174,11 @@ export class OpenSeaAPI {
   /**
    * Fetch list of fungible tokens from the API matching paramters
    * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
-   * @param page Page number, defaults to 1
+   * @param page Page number, defaults to 1. Can be overridden by
+   * `limit` and `offset` attributes from FungibleTokenQuery
    */
   public async getTokens(
-      query: Partial<FungibleToken> = {},
+      query: FungibleTokenQuery = {},
       page = 1
     ): Promise<{tokens: FungibleToken[]}> {
 
@@ -207,10 +210,11 @@ export class OpenSeaAPI {
   /**
    * Fetch list of bundles from the API, returning the page of bundles and the count of total bundles
    * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetBundleJSON` type is supported
-   * @param page Page number, defaults to 1
+   * @param page Page number, defaults to 1. Can be overridden by
+   * `limit` and `offset` attributes from OpenSeaAssetBundleQuery
    */
   public async getBundles(
-      query: Partial<OpenSeaAssetBundleJSON> = {},
+      query: OpenSeaAssetBundleQuery = {},
       page = 1
     ): Promise<{bundles: OpenSeaAssetBundle[]; estimatedCount: number}> {
 

@@ -280,8 +280,13 @@ export interface OpenSeaAssetBundleJSON {
 
   // From API only
   maker?: OpenSeaAccount
+}
 
-  // For querying
+/**
+ * Query interface for Bundles
+ */
+export interface OpenSeaAssetBundleQuery extends Partial<OpenSeaAssetBundleJSON> {
+
   asset_contract_address?: string
   token_ids?: Array<number | string>
   on_sale?: boolean
@@ -338,7 +343,11 @@ export interface UnsignedOrder extends UnhashedOrder {
   hash: string
 }
 
-export interface Order extends UnsignedOrder, ECSignature {
+/**
+ * Orders don't need to be signed if they're pre-approved
+ * with a transaction on the contract to approveOrder_
+ */
+export interface Order extends UnsignedOrder, Partial<ECSignature> {
   // Read-only server-side appends
   createdTime?: BigNumber
   currentPrice?: BigNumber
@@ -358,7 +367,7 @@ export interface Order extends UnsignedOrder, ECSignature {
  * See https://docs.opensea.io/reference#retrieving-orders for the full
  * list of API query parameters and documentation.
  */
-export interface OrderJSON {
+export interface OrderJSON extends Partial<ECSignature> {
   exchange: string
   maker: string
   taker: string
@@ -366,12 +375,13 @@ export interface OrderJSON {
   takerRelayerFee: string
   makerProtocolFee: string
   takerProtocolFee: string
+  makerReferrerFee: string
   feeRecipient: string
-  feeMethod: FeeMethod
-  side: OrderSide
-  saleKind: SaleKind
+  feeMethod: number
+  side: number
+  saleKind: number
   target: string
-  howToCall: HowToCall
+  howToCall: number
   calldata: string
   replacementPattern: string
   staticTarget: string
@@ -379,28 +389,30 @@ export interface OrderJSON {
   paymentToken: string
   basePrice: string
   extra: string
+
+  // createdTime is undefined when order hasn't been posted yet
+  createdTime?: number | string
   listingTime: number | string
   expirationTime: number | string
+
   salt: string
 
   metadata: {
-    asset: WyvernAsset
+    asset?: WyvernAsset
+    bundle?: WyvernBundle
     schema: WyvernSchemaName
   }
 
   hash: string
+}
 
-  // In future, make signature required
-  v?: number
-  r?: string
-  s?: string
-
-  /**
-   * Attrs used by orderbook to make queries easier
-   * Includes `maker`, `taker` and `side` from above
-   * See https://docs.opensea.io/reference#retrieving-orders for
-   * full docs.
-   */
+/**
+ * Query interface for Orders
+ * Includes `maker`, `taker` and `side` from above
+ * See https://docs.opensea.io/reference#retrieving-orders for
+ * full docs.
+ */
+export interface OrderQuery extends Partial<OrderJSON> {
   owner?: string,
   sale_kind?: SaleKind,
   asset_contract_address?: string,
@@ -418,15 +430,24 @@ export interface OrderJSON {
   offset?: number
 }
 
-// IN PROGRESS
-export interface OpenSeaAssetJSON {
-  // For querying
+/**
+ * Query interface for Assets
+ */
+export interface OpenSeaAssetQuery {
   owner?: string
   asset_contract_address?: string
   token_ids?: Array<number | string>
   search?: string
   order_by?: string
   order_direction?: string
+  limit?: number
+  offset?: number
+}
+
+/**
+ * Query interface for Fungible Tokens
+ */
+export interface FungibleTokenQuery extends Partial<FungibleToken> {
   limit?: number
   offset?: number
 }

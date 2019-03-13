@@ -187,6 +187,11 @@ export interface OpenSeaAssetBundleJSON {
     description?: string;
     external_link?: string;
     maker?: OpenSeaAccount;
+}
+/**
+ * Query interface for Bundles
+ */
+export interface OpenSeaAssetBundleQuery extends Partial<OpenSeaAssetBundleJSON> {
     asset_contract_address?: string;
     token_ids?: Array<number | string>;
     on_sale?: boolean;
@@ -252,12 +257,13 @@ export interface OrderJSON {
     takerRelayerFee: string;
     makerProtocolFee: string;
     takerProtocolFee: string;
+    makerReferrerFee: string;
     feeRecipient: string;
-    feeMethod: FeeMethod;
-    side: OrderSide;
-    saleKind: SaleKind;
+    feeMethod: number;
+    side: number;
+    saleKind: number;
     target: string;
-    howToCall: HowToCall;
+    howToCall: number;
     calldata: string;
     replacementPattern: string;
     staticTarget: string;
@@ -265,23 +271,27 @@ export interface OrderJSON {
     paymentToken: string;
     basePrice: string;
     extra: string;
+    createdTime?: number | string;
     listingTime: number | string;
     expirationTime: number | string;
     salt: string;
     metadata: {
-        asset: WyvernAsset;
+        asset?: WyvernAsset;
+        bundle?: WyvernBundle;
         schema: WyvernSchemaName;
     };
     hash: string;
-    v?: number;
-    r?: string;
-    s?: string;
-    /**
-     * Attrs used by orderbook to make queries easier
-     * Includes `maker`, `taker` and `side` from above
-     * See https://docs.opensea.io/reference#retrieving-orders for
-     * full docs.
-     */
+    v: number;
+    r: string;
+    s: string;
+}
+/**
+ * Query interface for Orders
+ * Includes `maker`, `taker` and `side` from above
+ * See https://docs.opensea.io/reference#retrieving-orders for
+ * full docs.
+ */
+export interface OrderQuery extends Partial<OrderJSON> {
     owner?: string;
     sale_kind?: SaleKind;
     asset_contract_address?: string;
@@ -296,13 +306,23 @@ export interface OrderJSON {
     limit?: number;
     offset?: number;
 }
-export interface OpenSeaAssetJSON {
+/**
+ * Query interface for Assets
+ */
+export interface OpenSeaAssetQuery {
     owner?: string;
     asset_contract_address?: string;
     token_ids?: Array<number | string>;
     search?: string;
     order_by?: string;
     order_direction?: string;
+    limit?: number;
+    offset?: number;
+}
+/**
+ * Query interface for Fungible Tokens
+ */
+export interface FungibleTokenQuery extends Partial<FungibleToken> {
     limit?: number;
     offset?: number;
 }
