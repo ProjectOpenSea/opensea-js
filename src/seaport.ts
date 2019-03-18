@@ -30,6 +30,7 @@ import {
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
+import { isValidAddress } from 'ethereumjs-util'
 
 export class OpenSeaPort {
 
@@ -536,7 +537,7 @@ export class OpenSeaPort {
 
     const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
-    const metadata = referrerAddress
+    const metadata = this._getMetadata(order, referrerAddress)
     const transactionHash = await this._atomicMatch({ buy, sell, accountAddress, metadata })
 
     await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders, "Fulfilling order")
@@ -804,7 +805,7 @@ export class OpenSeaPort {
     try {
       // TODO check calldataCanMatch too?
       // const isValid = await this._validateMatch({ buy, sell, accountAddress })
-      const metadata = referrerAddress
+      const metadata = this._getMetadata(order, referrerAddress)
       const gas = await this._estimateGasForMatch({ buy, sell, accountAddress, metadata })
 
       this.logger(`Gas estimate for ${order.side == OrderSide.Sell ? "sell" : "buy"} order: ${gas}`)
@@ -1914,6 +1915,14 @@ export class OpenSeaPort {
       : WyvernProtocol.toBaseUnitAmount(makeBigNumber(priceDiff), token.decimals)
 
     return { basePrice, extra }
+  }
+
+  private _getMetadata(order: Order, referrerAddress?: string) {
+    // TODO order.referrer
+    if (!referrerAddress || !isValidAddress(referrerAddress)) {
+      return undefined
+    }
+    return referrerAddress
   }
 
   private async _atomicMatch(

@@ -524,6 +524,7 @@ export declare class OpenSeaPort {
      * @param waitingForBestCounterOrder If true, this is an English auction order that should increase in price with every counter order until `expirationTime`.
      */
     private _getPriceParameters;
+    private _getMetadata;
     private _atomicMatch;
     private _getRequiredAmountForTakingSellOrder;
     private _signOrder;
