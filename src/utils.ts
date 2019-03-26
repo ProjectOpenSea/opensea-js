@@ -539,7 +539,7 @@ export function getWyvernAsset(
 
   return schema.assetFromFields({
     'ID': tokenId.toString(),
-    'Address': tokenAddress,
+    'Address': tokenAddress.toLowerCase(),
   })
 }
 
