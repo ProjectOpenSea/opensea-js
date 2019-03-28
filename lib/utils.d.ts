@@ -21,7 +21,7 @@ export declare const DEFAULT_MAX_BOUNTY = 250;
 export declare const MAX_ERROR_LENGTH = 120;
 export declare const MIN_EXPIRATION_SECONDS = 10;
 export declare const ORDER_MATCHING_LATENCY_SECONDS: number;
-export declare const SELL_ORDER_BATCH_SIZE = 2;
+export declare const SELL_ORDER_BATCH_SIZE = 5;
 export declare const DEFAULT_GAS_INCREASE_FACTOR = 1.1;
 /**
  * Promisify a callback-syntax web3 function

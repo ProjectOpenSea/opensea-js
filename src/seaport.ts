@@ -379,7 +379,8 @@ export class OpenSeaPort {
    * Items will mint to users' wallets only when they buy them. See https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial for more info.
    * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
    * @param param0 __namedParameters Object
-   * @param assetId Identifier for the asset factory
+   * @param assetId Identifier for the asset, if you just want to post orders for one asset.
+   * @param assetIds Identifiers for the assets, if you want to post orders for many assets at once.
    * @param factoryAddress Address of the factory contract
    * @param accountAddress Address of the factory owner's wallet
    * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
@@ -392,8 +393,9 @@ export class OpenSeaPort {
    * @param numberOfOrders Number of times to repeat creating the same order. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
    */
   public async createFactorySellOrders(
-      { assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS, numberOfOrders = 1 }:
-      { assetId: string;
+      { assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS, numberOfOrders = 1 }:
+      { assetId?: string;
+        assetIds?: string[];
         factoryAddress: string;
         accountAddress: string;
         startAmount: number;
@@ -406,17 +408,22 @@ export class OpenSeaPort {
         numberOfOrders?: number; }
     ): Promise<Order[]> {
 
-    const asset = { tokenAddress: factoryAddress, tokenId: assetId }
-
     if (numberOfOrders < 1) {
       throw new Error('Need to make at least one sell order')
     }
 
+    const factoryIds = assetIds || (assetId ? [ assetId ] : [])
+    if (!factoryIds.length) {
+      throw new Error('Need either one assetId or an array of assetIds')
+    }
+
+    const assets: Asset[] = factoryIds.map(tokenId => ({ tokenAddress: factoryAddress, tokenId }))
+
     // Validate just a single dummy order but don't post it
-    const dummyOrder = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
+    const dummyOrder = await this._makeSellOrder({ asset: assets[0], accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
     await this._validateSellOrderParameters({ order: dummyOrder, accountAddress })
 
-    const _makeAndPostOneSellOrder = async () => {
+    const _makeAndPostOneSellOrder = async (asset: Asset) => {
       const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress })
 
       const hashedOrder = {
@@ -439,14 +446,23 @@ export class OpenSeaPort {
       return this.validateAndPostOrder(orderWithSignature)
     }
 
-    const range = _.range(numberOfOrders)
+    const range = _.range(numberOfOrders * assets.length)
     const batches  = _.chunk(range, SELL_ORDER_BATCH_SIZE)
     let allOrdersCreated: Order[] = []
 
+    // 2 orders, 10 assets
+    // range = [0, 1, 2, 3, 4, ... 19]
+
     for (const subRange of batches) {
+      // subRange = e.g. [5, 6, 7, 8, 9]
+      // batches of assets = e.g. [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, ... 10]
+
       // Will block until all SELL_ORDER_BATCH_SIZE orders
       // have come back in parallel
-      const batchOrdersCreated = await Promise.all(subRange.map(_makeAndPostOneSellOrder))
+      const batchOrdersCreated = await Promise.all(subRange.map(async assetOrderIndex => {
+        const assetIndex = Math.floor(assetOrderIndex / numberOfOrders)
+        return _makeAndPostOneSellOrder(assets[assetIndex])
+      }))
 
       this.logger(`Created and posted a batch of ${batchOrdersCreated.length} orders in parallel.`)
 

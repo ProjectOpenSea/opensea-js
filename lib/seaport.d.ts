@@ -143,7 +143,8 @@ export declare class OpenSeaPort {
      * Items will mint to users' wallets only when they buy them. See https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial for more info.
      * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
      * @param param0 __namedParameters Object
-     * @param assetId Identifier for the asset factory
+     * @param assetId Identifier for the asset, if you just want to post orders for one asset.
+     * @param assetIds Identifiers for the assets, if you want to post orders for many assets at once.
      * @param factoryAddress Address of the factory contract
      * @param accountAddress Address of the factory owner's wallet
      * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
@@ -155,8 +156,9 @@ export declare class OpenSeaPort {
      * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
      * @param numberOfOrders Number of times to repeat creating the same order. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
      */
-    createFactorySellOrders({ assetId, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, numberOfOrders }: {
-        assetId: string;
+    createFactorySellOrders({ assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, numberOfOrders }: {
+        assetId?: string;
+        assetIds?: string[];
         factoryAddress: string;
         accountAddress: string;
         startAmount: number;
