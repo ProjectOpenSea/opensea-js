@@ -36,7 +36,7 @@ export declare class OpenSeaAPI {
      * IN NEXT VERSION: change order input to Order type
      * @param order Order to post to the orderbook
      */
-    postOrder(order: OrderJSON): Promise<Order>;
+    postOrder(order: OrderJSON, retries?: number): Promise<Order>;
     /**
      * Get an order from the orderbook, returning `null` if none are found.
      * @param query Query to use for getting orders. A subset of parameters

@@ -1,7 +1,7 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
 import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetBundle, FungibleToken, OrderQuery, OpenSeaAssetQuery, OpenSeaAssetBundleQuery, FungibleTokenQuery} from './types'
-import { orderFromJSON, assetFromJSON, assetBundleFromJSON, tokenFromJSON } from './utils'
+import { orderFromJSON, assetFromJSON, assetBundleFromJSON, tokenFromJSON, delay } from './utils'
 
 export const ORDERBOOK_VERSION: number = 1
 export const API_VERSION: number = 1
@@ -63,13 +63,23 @@ export class OpenSeaAPI {
    * Throws when the order is invalid.
    * IN NEXT VERSION: change order input to Order type
    * @param order Order to post to the orderbook
+   * @param retries Number of times to retry if the service is unavailable for any reason
    */
-  public async postOrder(order: OrderJSON): Promise<Order> {
-
-    const response = await this.post(
-      `${ORDERBOOK_PATH}/orders/post`,
-      order,
-    )
+  public async postOrder(order: OrderJSON, retries = 2): Promise<Order> {
+    let response
+    try {
+      response = await this.post(
+        `${ORDERBOOK_PATH}/orders/post`,
+        order
+      )
+    } catch (error) {
+      const isUnavailable = !!error.message && error.message.includes('503')
+      if (retries <= 0 || !isUnavailable) {
+        throw error
+      }
+      await delay(3000)
+      return this.postOrder(order, retries - 1)
+    }
     const json: OrderJSON = await response.json()
     return orderFromJSON(json)
   }
@@ -335,7 +345,10 @@ export class OpenSeaAPI {
         errorMessage = `Not found. Full message was '${JSON.stringify(result)}'`
         break
       case 500:
-        errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(result)}`
+        errorMessage = `Internal server error (code ${response.status}). OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(result)}`
+        break
+      case 503:
+        errorMessage = `Service unavailable (code ${response.status}). Please try again in a few minutes. If the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(result)}`
         break
       default:
         errorMessage = `status code ${response.status}. Message: ${JSON.stringify(result)}`
