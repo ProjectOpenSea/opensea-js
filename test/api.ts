@@ -9,8 +9,8 @@ import {
 } from 'mocha-typescript'
 
 import { ORDERBOOK_VERSION } from '../src/api'
-import { Order, OrderSide } from '../src/types'
-import { orderToJSON, orderFromJSON } from '../src'
+import { Order, OrderSide, OrderJSON } from '../src/types'
+import { orderToJSON } from '../src'
 import { mainApi, rinkebyApi, apiToTest, ALEX_ADDRESS, CK_RINKEBY_TOKEN_ID, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE } from './constants'
 
 suite('api', () => {
@@ -194,5 +194,4 @@ suite('api', () => {
       assert.include(error.message, "Expected the listing time to be at or past the current time")
     }
   })
-
 })
