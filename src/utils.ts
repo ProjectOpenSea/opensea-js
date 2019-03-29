@@ -27,7 +27,7 @@ export const DEFAULT_MAX_BOUNTY = DEFAULT_SELLER_FEE_BASIS_POINTS
 export const MAX_ERROR_LENGTH = 120
 export const MIN_EXPIRATION_SECONDS = 10
 export const ORDER_MATCHING_LATENCY_SECONDS = 60 * 60 * 24 * 7
-export const SELL_ORDER_BATCH_SIZE = 5
+export const SELL_ORDER_BATCH_SIZE = 3
 export const DEFAULT_GAS_INCREASE_FACTOR = 1.1
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
