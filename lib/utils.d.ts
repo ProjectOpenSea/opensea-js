@@ -3,7 +3,7 @@ import * as Web3 from 'web3';
 import * as WyvernSchemas from 'wyvern-schemas';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
@@ -44,7 +44,7 @@ export declare const findAsset: (web3: Web3, { account, proxy, wyAsset, schema }
     proxy: string;
     wyAsset: any;
     schema: any;
-}) => Promise<"unknown" | "proxy" | "account" | "other">;
+}, retries?: number) => Promise<WyvernAssetLocation | undefined>;
 /**
  * Sign messages using web3 personal signatures
  * @param web3 Web3 instance

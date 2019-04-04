@@ -127,7 +127,15 @@ export enum SaleKind {
 
 // Wyvern Schemas (see https://github.com/ProjectOpenSea/wyvern-schemas)
 export enum WyvernSchemaName {
-  ERC721 = 'ERC721'
+  ERC721 = 'ERC721',
+  ERC1155 = 'ERC1155',
+  ENSName = 'ENSName'
+}
+
+export enum WyvernAssetLocation {
+  Account = 'account',
+  Proxy = 'proxy',
+  Other = 'other'
 }
 
 export interface WyvernAsset {

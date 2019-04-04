@@ -93,7 +93,14 @@ export declare enum SaleKind {
     DutchAuction = 1
 }
 export declare enum WyvernSchemaName {
-    ERC721 = "ERC721"
+    ERC721 = "ERC721",
+    ERC1155 = "ERC1155",
+    ENSName = "ENSName"
+}
+export declare enum WyvernAssetLocation {
+    Account = "account",
+    Proxy = "proxy",
+    Other = "other"
 }
 export interface WyvernAsset {
     id: string;

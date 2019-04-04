@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation } from './types'
 import {
   confirmTransaction, findAsset,
   makeBigNumber, orderToJSON,
@@ -1779,7 +1779,7 @@ export class OpenSeaPort {
     return Promise.all(wyAssets.map(async wyAsset => {
       // Verify that the taker owns the asset
       const where = await findAsset(this.web3, { account: accountAddress, proxy, wyAsset, schema })
-      if (where != 'account') {
+      if (where != WyvernAssetLocation.Account) {
         // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
         throw new Error('You do not own this asset.')
       }

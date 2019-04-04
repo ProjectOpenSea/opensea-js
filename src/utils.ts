@@ -8,7 +8,7 @@ import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicize
 import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/lib/types'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -284,10 +284,11 @@ export const orderToJSON = (order: Order): OrderJSON => {
 
 // Taken from Wyvern demo exchange
 export const findAsset = async (
-  web3: Web3,
-  {account, proxy, wyAsset, schema}:
-  {account: string; proxy: string; wyAsset: any; schema: any}
-  ) => {
+    web3: Web3,
+    {account, proxy, wyAsset, schema}:
+    {account: string; proxy: string; wyAsset: any; schema: any},
+    retries = 1
+  ): Promise<WyvernAssetLocation | undefined> => {
   let owner
   const ownerOf = schema.functions.ownerOf
   if (ownerOf) {
@@ -317,24 +318,32 @@ export const findAsset = async (
   }
   if (owner !== undefined) {
     if (proxy && owner.toLowerCase() === proxy.toLowerCase()) {
-      return 'proxy'
+      return WyvernAssetLocation.Proxy
     } else if (owner.toLowerCase() === account.toLowerCase()) {
-      return 'account'
-    } else if (owner === '0x') {
-      return 'unknown'
+      return WyvernAssetLocation.Account
     } else {
-      return 'other'
+      return _handleOtherOwner(owner)
     }
   } else if (myCount !== undefined && proxyCount !== undefined) {
     if (proxyCount >= 1000000000000000000) {
-      return 'proxy'
+      return WyvernAssetLocation.Proxy
     } else if (myCount >= 1000000000000000000) {
-      return 'account'
+      return WyvernAssetLocation.Account
     } else {
-      return 'other'
+      return WyvernAssetLocation.Other
     }
   }
-  return 'unknown'
+  return _handleOtherOwner(owner)
+
+  async function _handleOtherOwner(o?: string) {
+    if (o && o != '0x') {
+      return WyvernAssetLocation.Other
+    }
+    if (retries > 0) {
+      return findAsset(web3, {account, proxy, wyAsset, schema}, retries - 1)
+    }
+    return undefined
+  }
 }
 
 /**
