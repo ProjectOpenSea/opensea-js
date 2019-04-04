@@ -807,11 +807,14 @@ export class OpenSeaPort {
    * @param order Order to check
    * @param accountAddress The account address that will be fulfilling the order
    * @param referrerAddress The optional address that referred the order
+   * @param retries How many times to retry if false
    */
   public async isOrderFulfillable(
       { order, accountAddress, referrerAddress }:
-      { order: Order; accountAddress: string;
-        referrerAddress?: string }
+      { order: Order;
+        accountAddress: string;
+        referrerAddress?: string },
+      retries = 1
     ): Promise<boolean> {
 
     const matchingOrder = this._makeMatchingOrder({ order, accountAddress })
@@ -830,8 +833,12 @@ export class OpenSeaPort {
 
     } catch (error) {
 
-      console.error(error)
-      return false
+      if (retries <= 0) {
+        console.error(error)
+        return false
+      }
+      await delay(500)
+      return this.isOrderFulfillable({ order, accountAddress, referrerAddress }, retries - 1)
     }
   }
 
@@ -847,6 +854,7 @@ export class OpenSeaPort {
    * @param toAddress The account address that will be acquiring the asset
    * @param didOwnerApprove If the owner and fromAddress has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
    * @param tokenAbi ABI for the token contract. Defaults to ERC-721
+   * @param retries How many times to retry if false
    */
   public async isAssetTransferrable(
     { tokenId, tokenAddress, fromAddress, toAddress, didOwnerApprove = false, tokenAbi = ERC721 }:
@@ -855,7 +863,8 @@ export class OpenSeaPort {
       fromAddress: string;
       toAddress: string;
       didOwnerApprove?: boolean;
-      tokenAbi?: PartialReadonlyContractAbi }
+      tokenAbi?: PartialReadonlyContractAbi },
+    retries = 1
   ): Promise<boolean> {
 
     const tokenContract = this.web3.eth.contract(tokenAbi as any[])
@@ -884,8 +893,12 @@ export class OpenSeaPort {
 
     } catch (error) {
 
-      console.error(error)
-      return false
+      if (retries <= 0) {
+        console.error(error)
+        return false
+      }
+      await delay(500)
+      return this.isAssetTransferrable({ tokenId, tokenAddress, fromAddress, toAddress, didOwnerApprove, tokenAbi }, retries - 1)
     }
   }
 
@@ -1126,12 +1139,11 @@ export class OpenSeaPort {
       order.v || 0,
       order.r || '0x',
       order.s || '0x')
+    this.logger(`Order validity: ${valid}`)
 
     if (!valid) {
-      console.error(order)
       throw new Error('Invalid order. Please restart your wallet/browser and try again!')
     }
-    this.logger('Order is valid')
 
     const confirmedOrder = await this.api.postOrder(orderToJSON(order))
     return confirmedOrder
@@ -1251,7 +1263,7 @@ export class OpenSeaPort {
 
     if (!proxyAddress || proxyAddress == NULL_ADDRESS) {
       if (retries > 0) {
-        await delay(3000)
+        await delay(1000)
         return this._getProxy(accountAddress, retries - 1)
       }
       proxyAddress = null
@@ -1691,37 +1703,99 @@ export class OpenSeaPort {
    * @param buy The buy order to validate
    * @param sell The sell order to validate
    * @param accountAddress Address for the user's wallet
+   * @param shouldValidateBuy Whether to validate the buy order individually.
+   * @param shouldValidateSell Whether to validate the sell order individually.
+   * @param retries How many times to retry if validation fails
    */
   public async _validateMatch(
-      { buy, sell, accountAddress }:
-      { buy: Order; sell: Order; accountAddress: string }
+      { buy, sell, accountAddress, shouldValidateBuy = false, shouldValidateSell = false }:
+      { buy: Order;
+        sell: Order;
+        accountAddress: string;
+        shouldValidateBuy?: boolean;
+        shouldValidateSell?: boolean; },
+      retries = 1
     ): Promise<boolean> {
 
-    const ordersCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.ordersCanMatch_.callAsync(
-      [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
-      [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
-      [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
-      buy.calldata,
-      sell.calldata,
-      buy.replacementPattern,
-      sell.replacementPattern,
-      buy.staticExtradata,
-      sell.staticExtradata,
-      { from: accountAddress },
-    )
+    try {
+      if (shouldValidateBuy) {
+        const buyValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
+          [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken],
+          [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt],
+          buy.feeMethod,
+          buy.side,
+          buy.saleKind,
+          buy.howToCall,
+          buy.calldata,
+          buy.replacementPattern,
+          buy.staticExtradata,
+          buy.v || 0,
+          buy.r || '0x',
+          buy.s || '0x',
+          { from: accountAddress })
+        this.logger(`Buy order is valid: ${buyValid}`)
 
-    if (!ordersCanMatch) {
-      throw new Error('Unable to match offer with auction. Please refresh or restart your wallet and try again!')
+        if (!buyValid) {
+          throw new Error('Invalid buy order. Please restart your wallet/browser and try again!')
+        }
+      }
+
+      if (shouldValidateSell) {
+        const sellValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
+          [sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
+          [sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
+          sell.feeMethod,
+          sell.side,
+          sell.saleKind,
+          sell.howToCall,
+          sell.calldata,
+          sell.replacementPattern,
+          sell.staticExtradata,
+          sell.v || 0,
+          sell.r || '0x',
+          sell.s || '0x',
+          { from: accountAddress })
+        this.logger(`Sell order is valid: ${sellValid}`)
+
+        if (!sellValid) {
+          throw new Error('Invalid sell order. Please restart your wallet/browser and try again!')
+        }
+      }
+
+      const ordersCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.ordersCanMatch_.callAsync(
+        [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
+        [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
+        [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
+        buy.calldata,
+        sell.calldata,
+        buy.replacementPattern,
+        sell.replacementPattern,
+        buy.staticExtradata,
+        sell.staticExtradata,
+        { from: accountAddress },
+      )
+      this.logger(`Orders matching: ${ordersCanMatch}`)
+
+      if (!ordersCanMatch) {
+        throw new Error('Unable to match offer with auction. Please refresh or restart your wallet and try again!')
+      }
+
+      const orderCalldataCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
+      this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
+
+      if (!orderCalldataCanMatch) {
+        throw new Error('Unable to match offer details with auction. Please refresh or restart your wallet and try again!')
+      }
+      return true
+
+    } catch (error) {
+
+      if (retries <= 0) {
+        throw error
+      }
+      await delay(500)
+      return this._validateMatch({ buy, sell, accountAddress, shouldValidateBuy, shouldValidateSell }, retries - 1)
     }
-    this.logger(`Orders matching: ${ordersCanMatch}`)
-
-    const orderCalldataCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
-    this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
-
-    if (!orderCalldataCanMatch) {
-      throw new Error('Unable to match offer details with auction. Please refresh or restart your wallet and try again!')
-    }
-    return true
   }
 
   // Throws
@@ -1967,49 +2041,7 @@ export class OpenSeaPort {
       // User is neither - matching service
     }
 
-    if (shouldValidateBuy) {
-      const buyValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
-        [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken],
-        [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt],
-        buy.feeMethod,
-        buy.side,
-        buy.saleKind,
-        buy.howToCall,
-        buy.calldata,
-        buy.replacementPattern,
-        buy.staticExtradata,
-        buy.v || 0,
-        buy.r || '0x',
-        buy.s || '0x',
-        { from: accountAddress })
-      if (!buyValid) {
-        throw new Error('Invalid buy order. Please restart your wallet/browser and try again!')
-      }
-      this.logger(`Buy order is valid: ${buyValid}`)
-    }
-
-    if (shouldValidateSell) {
-      const sellValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
-        [sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
-        [sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
-        sell.feeMethod,
-        sell.side,
-        sell.saleKind,
-        sell.howToCall,
-        sell.calldata,
-        sell.replacementPattern,
-        sell.staticExtradata,
-        sell.v || 0,
-        sell.r || '0x',
-        sell.s || '0x',
-        { from: accountAddress })
-      if (!sellValid) {
-        throw new Error('Invalid sell order. Please restart your wallet/browser and try again!')
-      }
-      this.logger(`Sell order validation: ${sellValid}`)
-    }
-
-    await this._validateMatch({ buy, sell, accountAddress })
+    await this._validateMatch({ buy, sell, accountAddress, shouldValidateBuy, shouldValidateSell })
 
     this._dispatch(EventType.MatchOrders, { buy, sell, accountAddress, matchMetadata: metadata })
 

@@ -278,12 +278,13 @@ export declare class OpenSeaPort {
      * @param order Order to check
      * @param accountAddress The account address that will be fulfilling the order
      * @param referrerAddress The optional address that referred the order
+     * @param retries How many times to retry if false
      */
     isOrderFulfillable({ order, accountAddress, referrerAddress }: {
         order: Order;
         accountAddress: string;
         referrerAddress?: string;
-    }): Promise<boolean>;
+    }, retries?: number): Promise<boolean>;
     /**
      * Returns whether an asset is transferrable.
      * An asset may not be transferrable if its transfer function
@@ -296,6 +297,7 @@ export declare class OpenSeaPort {
      * @param toAddress The account address that will be acquiring the asset
      * @param didOwnerApprove If the owner and fromAddress has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
      * @param tokenAbi ABI for the token contract. Defaults to ERC-721
+     * @param retries How many times to retry if false
      */
     isAssetTransferrable({ tokenId, tokenAddress, fromAddress, toAddress, didOwnerApprove, tokenAbi }: {
         tokenId: string;
@@ -304,7 +306,7 @@ export declare class OpenSeaPort {
         toAddress: string;
         didOwnerApprove?: boolean;
         tokenAbi?: PartialReadonlyContractAbi;
-    }): Promise<boolean>;
+    }, retries?: number): Promise<boolean>;
     /**
      * Transfer one or more assets to another address
      * @param param0 __namedParamaters Object
@@ -489,12 +491,17 @@ export declare class OpenSeaPort {
      * @param buy The buy order to validate
      * @param sell The sell order to validate
      * @param accountAddress Address for the user's wallet
+     * @param shouldValidateBuy Whether to validate the buy order individually.
+     * @param shouldValidateSell Whether to validate the sell order individually.
+     * @param retries How many times to retry if validation fails
      */
-    _validateMatch({ buy, sell, accountAddress }: {
+    _validateMatch({ buy, sell, accountAddress, shouldValidateBuy, shouldValidateSell }: {
         buy: Order;
         sell: Order;
         accountAddress: string;
-    }): Promise<boolean>;
+        shouldValidateBuy?: boolean;
+        shouldValidateSell?: boolean;
+    }, retries?: number): Promise<boolean>;
     _validateSellOrderParameters({ order, accountAddress }: {
         order: UnhashedOrder;
         accountAddress: string;

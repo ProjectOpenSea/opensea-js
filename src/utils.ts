@@ -339,10 +339,11 @@ export const findAsset = async (
     if (o && o != '0x') {
       return WyvernAssetLocation.Other
     }
-    if (retries > 0) {
-      return findAsset(web3, {account, proxy, wyAsset, schema}, retries - 1)
+    if (retries <= 0) {
+      return undefined
     }
-    return undefined
+    await delay(500)
+    return findAsset(web3, {account, proxy, wyAsset, schema}, retries - 1)
   }
 }
 
