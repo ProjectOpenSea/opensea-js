@@ -1,6 +1,7 @@
 import * as Web3 from 'web3';
+import * as WyvernSchemas from 'wyvern-schemas';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types';
+import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, WyvernSchemaName, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -308,12 +309,27 @@ export declare class OpenSeaPort {
         tokenAbi?: PartialReadonlyContractAbi;
     }, retries?: number): Promise<boolean>;
     /**
-     * Transfer one or more assets to another address
+     * Transfer any asset to another address
+     * @param param0 __namedParamaters Object
+     * @param schemaName The Wyvern schema name corresponding to the asset type
+     * @param asset The asset to transfer
+     * @param fromAddress The owner's wallet address
+     * @param toAddress The recipient's wallet address
+     * @returns Transaction hash
+     */
+    transferOne({ schemaName, asset, fromAddress, toAddress }: {
+        schemaName?: WyvernSchemaName;
+        asset: WyvernAsset;
+        fromAddress: string;
+        toAddress: string;
+    }): Promise<string>;
+    /**
+     * Transfer one or more ERC721 assets to another address
      * @param param0 __namedParamaters Object
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
      * @param fromAddress The owner's wallet address
      * @param toAddress The recipient's wallet address
-     * @returns transaction hash
+     * @returns Transaction hash
      */
     transferAll({ assets, fromAddress, toAddress }: {
         assets: Asset[];
@@ -506,11 +522,12 @@ export declare class OpenSeaPort {
         order: UnhashedOrder;
         accountAddress: string;
     }): Promise<void>;
-    _approveAll({ wyAssets, accountAddress, proxyAddress }: {
+    _approveAll({ schema, wyAssets, accountAddress, proxyAddress }: {
+        schema: WyvernSchemas.Schema<any>;
         wyAssets: WyvernAsset[];
         accountAddress: string;
         proxyAddress?: string | null;
-    }): Promise<(string | null)[]>;
+    }): Promise<(string | true | null)[]>;
     _validateBuyOrderParameters({ order, counterOrder, accountAddress }: {
         order: UnhashedOrder;
         counterOrder?: Order;

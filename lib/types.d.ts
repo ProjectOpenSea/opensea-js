@@ -33,7 +33,8 @@ export declare enum EventType {
     CancelOrder = "CancelOrder",
     CreateOrder = "CreateOrder",
     OrderDenied = "OrderDenied",
-    TransferAll = "TransferAll"
+    TransferAll = "TransferAll",
+    TransferOne = "TransferOne"
 }
 /**
  * Data that gets sent with each EventType
@@ -43,9 +44,9 @@ export interface EventData {
     toAddress?: string;
     proxyAddress?: string;
     amount?: BigNumber;
-    tokenAddress?: string;
-    tokenId?: string;
-    assets?: Asset[];
+    contractAddress?: string;
+    assets?: WyvernAsset[];
+    asset?: WyvernAsset;
     transactionHash?: string;
     event?: EventType;
     error?: Error;
@@ -103,8 +104,18 @@ export declare enum WyvernAssetLocation {
     Other = "other"
 }
 export interface WyvernAsset {
+}
+export interface WyvernERC721Asset extends WyvernAsset {
     id: string;
     address: string;
+}
+export interface WyvernERC1155Asset extends WyvernAsset {
+    identifier: string;
+}
+export interface WyvernENSNameAsset extends WyvernAsset {
+    nodeHash: string;
+    nameHash?: string;
+    name?: string;
 }
 export interface WyvernBundle {
     assets: WyvernAsset[];

@@ -3,7 +3,7 @@ import * as Web3 from 'web3';
 import * as WyvernSchemas from 'wyvern-schemas';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernERC721Asset } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
@@ -92,12 +92,18 @@ export declare function getCurrentGasPrice(web3: Web3): Promise<BigNumber>;
  */
 export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: number, shouldRoundUp?: boolean): BigNumber;
 /**
- * Get the Wyvern representation of an asset
+ * Get the Wyvern representation of an ERC721 asset
  * @param schema The WyvernSchema needed to access this asset
  * @param tokenId The token's id
  * @param tokenAddress The address of the token's contract
  */
-export declare function getWyvernAsset(schema: any, tokenId: string, tokenAddress: string): WyvernAsset;
+export declare function getWyvernERC721Asset(schema: WyvernSchemas.Schema<WyvernERC721Asset>, tokenId: string, tokenAddress: string): WyvernERC721Asset;
+/**
+ * Get the Wyvern representation of an ENS name as an asset
+ * @param schema The WyvernSchema needed to access this asset
+ * @param name The ENS name, ending in .eth
+ */
+export declare function getWyvernENSNameAsset(schema: WyvernSchemas.Schema<WyvernENSNameAsset>, name: string): WyvernENSNameAsset;
 /**
  * Get the Wyvern representation of a group of assets
  * Sort order is enforced here

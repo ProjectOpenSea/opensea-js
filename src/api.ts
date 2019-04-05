@@ -62,7 +62,7 @@ export class OpenSeaAPI {
    * Send an order to the orderbook.
    * Throws when the order is invalid.
    * IN NEXT VERSION: change order input to Order type
-   * @param order Order to post to the orderbook
+   * @param order Order JSON to post to the orderbook
    * @param retries Number of times to retry if the service is unavailable for any reason
    */
   public async postOrder(order: OrderJSON, retries = 2): Promise<Order> {
