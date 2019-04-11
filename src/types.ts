@@ -157,7 +157,7 @@ export interface WyvernENSNameAsset extends WyvernAsset {
 
 // Abstractions over Wyvern assets for bundles
 export interface WyvernBundle {
-  assets: WyvernAsset[]
+  assets: WyvernNFTAsset[]
   name?: string
   description?: string
   external_link?: string
@@ -353,7 +353,7 @@ export interface UnhashedOrder extends WyvernOrder {
   waitingForBestCounterOrder: boolean
 
   metadata: {
-    asset?: WyvernAsset
+    asset?: WyvernNFTAsset
     bundle?: WyvernBundle
     schema: WyvernSchemaName
   }

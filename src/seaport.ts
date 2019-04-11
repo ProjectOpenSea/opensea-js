@@ -1905,9 +1905,13 @@ export class OpenSeaPort {
   }
 
   public async _approveAll(
-      { schema, wyAssets, accountAddress, proxyAddress = null}:
-      { schema: WyvernSchemas.Schema<any>; wyAssets: WyvernAsset[]; accountAddress: string; proxyAddress?: string | null}
+      { schema, wyAssets, accountAddress, proxyAddress = null }:
+      { schema: WyvernSchemas.Schema<any>;
+        wyAssets: WyvernAsset[];
+        accountAddress: string;
+        proxyAddress?: string | null }
     ) {
+
     proxyAddress = proxyAddress || await this._getProxy(accountAddress)
     if (!proxyAddress) {
       proxyAddress = await this._initializeProxy(accountAddress)
@@ -1935,11 +1939,12 @@ export class OpenSeaPort {
             skipApproveAllIfTokenAddressIn: contractsWithApproveAll
           })
         case WyvernSchemaName.ENSName:
-          // TODO: non-NFTs
+          // Handling non-NFTs
           if (where != WyvernAssetLocation.Proxy) {
             return this.transferOne({
               schemaName: schema.name,
               asset: wyAssets[0],
+              isWyvernAsset: true,
               fromAddress: accountAddress,
               toAddress: proxy
             })
@@ -2047,7 +2052,7 @@ export class OpenSeaPort {
       tokenAddress: string,
       expirationTime: number,
       startAmount: number,
-      endAmount?: number,
+      endAmount ?: number,
       waitingForBestCounterOrder = false
     ) {
 
@@ -2088,7 +2093,7 @@ export class OpenSeaPort {
     return { basePrice, extra }
   }
 
-  private _getMetadata(order: Order, referrerAddress?: string) {
+  private _getMetadata(order: Order, referrerAddress ?: string) {
     // TODO order.referrer
     if (!referrerAddress || !isValidAddress(referrerAddress)) {
       return undefined
@@ -2196,7 +2201,7 @@ export class OpenSeaPort {
 
   private async _signOrder(
       order: UnsignedOrder
-    ): Promise<ECSignature> {
+    ): Promise < ECSignature > {
     const message = order.hash
     const signerAddress = order.maker
 
@@ -2210,7 +2215,7 @@ export class OpenSeaPort {
     }
   }
 
-  private _getSchema(schemaName = WyvernSchemaName.ERC721): WyvernSchemas.Schema<any> {
+  private _getSchema(schemaName = WyvernSchemaName.ERC721): WyvernSchemas.Schema < any > {
     const schema = WyvernSchemas.schemas[this._networkName].filter(s => s.name == schemaName)[0]
 
     if (!schema) {

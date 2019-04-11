@@ -8,7 +8,7 @@ import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicize
 import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/lib/types'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, WyvernSchemaName } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'

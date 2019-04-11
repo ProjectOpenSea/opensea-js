@@ -73,10 +73,7 @@ export class OpenSeaAPI {
         order
       )
     } catch (error) {
-      const isUnavailable = !!error.message && error.message.includes('503')
-      if (retries <= 0 || !isUnavailable) {
-        throw error
-      }
+      _throwOrContinue(error, retries)
       await delay(3000)
       return this.postOrder(order, retries - 1)
     }
@@ -148,10 +145,22 @@ export class OpenSeaAPI {
    * Fetch an asset from the API, return null if it isn't found
    * @param tokenAddress Address of the asset's contract
    * @param tokenId The asset's token ID
+   * @param retries Number of times to retry if the service is unavailable for any reason
    */
-  public async getAsset(tokenAddress: string, tokenId: string | number): Promise<OpenSeaAsset | null> {
+  public async getAsset(
+      tokenAddress: string,
+      tokenId: string | number,
+      retries = 1
+    ): Promise<OpenSeaAsset | null> {
 
-    const response = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId}`)
+    let response
+    try {
+      response = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId}`)
+    } catch (error) {
+      _throwOrContinue(error, retries)
+      await delay(1000)
+      return this.getAsset(tokenAddress, tokenId, retries - 1)
+    }
 
     const json: any = await response.json()
     return json ? assetFromJSON(json) : null
@@ -186,17 +195,26 @@ export class OpenSeaAPI {
    * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
    * @param page Page number, defaults to 1. Can be overridden by
    * `limit` and `offset` attributes from FungibleTokenQuery
+   * @param retries Number of times to retry if the service is unavailable for any reason
    */
   public async getTokens(
       query: FungibleTokenQuery = {},
-      page = 1
+      page = 1,
+      retries = 1
     ): Promise<{tokens: FungibleToken[]}> {
 
-    const response = await this.get(`${API_PATH}/tokens/`, {
-      ...query,
-      limit: this.pageSize,
-      offset: (page - 1) * this.pageSize
-    })
+    let response
+    try {
+      response = await this.get(`${API_PATH}/tokens/`, {
+        ...query,
+        limit: this.pageSize,
+        offset: (page - 1) * this.pageSize
+      })
+    } catch (error) {
+      _throwOrContinue(error, retries)
+      await delay(1000)
+      return this.getTokens(query, page, retries - 1)
+    }
 
     const json: any = await response.json()
     return {
@@ -356,5 +374,15 @@ export class OpenSeaAPI {
     }
 
     throw new Error(`API Error ${response.status}: ${errorMessage}`)
+  }
+}
+
+function _throwOrContinue(error: Error, retries: number) {
+  const isUnavailable = !!error.message && (
+    error.message.includes('503') ||
+    error.message.includes('429')
+  )
+  if (retries <= 0 || !isUnavailable) {
+    throw error
   }
 }

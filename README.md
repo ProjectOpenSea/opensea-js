@@ -5,7 +5,9 @@
 [![https://badges.frapsoft.com/os/mit/mit.svg?v=102](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://opensource.org/licenses/MIT)
 <!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
 
-A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea JS, you can easily build your own native marketplace for your ERC721 items without having to deploy your own smart contracts or backend orderbooks. [GitHub](https://github.com/ProjectOpenSea/opensea-js) | [npm](https://www.npmjs.com/package/opensea-js)
+A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 items. You don't have to deploy your own smart contracts or backend orderbooks.
+
+Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](https://www.npmjs.com/package/opensea-js)
 
 - [Synopsis](#synopsis)
 - [Installation](#installation)
@@ -17,6 +19,7 @@ A JavaScript library for crypto-native ecommerce: buying, selling, and bidding o
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
+  - [Transferring (gifting) items](#transferring-gifting-items)
 - [Affiliate Program](#affiliate-program)
   - [Referring listings](#referring-listings)
   - [Custom referral bounties](#custom-referral-bounties)
@@ -222,6 +225,23 @@ await this.props.seaport.fulfillOrder({ order, accountAddress })
 ```
 
 If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
+
+### Transferring (gifting) items
+
+A handy feature in OpenSea.js is the ability to transfer any supported asset (not just non-fungible tokens) in one line of JavaScript.
+
+To transfer an ERC-721 asset or an ERC-1155 asset, it's just one call:
+
+```JavaScript
+
+const transactionHash = await seaport.transferOne({
+  asset: { tokenId, tokenAddress },
+  fromAddress, // Must own the asset
+  toAddress
+})
+```
+
+To transfer other types of assets, like ENS names, you can pass in a WyvernAsset as the `asset`, set a `schemaName`, and set `isWyvernAsset` to `true`. For more information, check out the documentation for WyvernSchemas on https://projectopensea.github.io/opensea-js/.
 
 ## Affiliate Program
 

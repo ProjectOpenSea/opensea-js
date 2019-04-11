@@ -119,7 +119,7 @@ export interface WyvernENSNameAsset extends WyvernAsset {
     name?: string;
 }
 export interface WyvernBundle {
-    assets: WyvernAsset[];
+    assets: WyvernNFTAsset[];
     name?: string;
     description?: string;
     external_link?: string;
@@ -242,7 +242,7 @@ export interface UnhashedOrder extends WyvernOrder {
     makerReferrerFee: BigNumber;
     waitingForBestCounterOrder: boolean;
     metadata: {
-        asset?: WyvernAsset;
+        asset?: WyvernNFTAsset;
         bundle?: WyvernBundle;
         schema: WyvernSchemaName;
     };

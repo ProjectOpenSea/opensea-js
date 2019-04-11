@@ -60,8 +60,9 @@ export declare class OpenSeaAPI {
      * Fetch an asset from the API, return null if it isn't found
      * @param tokenAddress Address of the asset's contract
      * @param tokenId The asset's token ID
+     * @param retries Number of times to retry if the service is unavailable for any reason
      */
-    getAsset(tokenAddress: string, tokenId: string | number): Promise<OpenSeaAsset | null>;
+    getAsset(tokenAddress: string, tokenId: string | number, retries?: number): Promise<OpenSeaAsset | null>;
     /**
      * Fetch list of assets from the API, returning the page of assets and the count of total assets
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
@@ -77,8 +78,9 @@ export declare class OpenSeaAPI {
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
      * @param page Page number, defaults to 1. Can be overridden by
      * `limit` and `offset` attributes from FungibleTokenQuery
+     * @param retries Number of times to retry if the service is unavailable for any reason
      */
-    getTokens(query?: FungibleTokenQuery, page?: number): Promise<{
+    getTokens(query?: FungibleTokenQuery, page?: number, retries?: number): Promise<{
         tokens: FungibleToken[];
     }>;
     /**
