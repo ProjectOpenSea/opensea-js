@@ -715,12 +715,16 @@ export function encodeAtomicizedTransfer(schema: WyvernSchemas.Schema<any>, asse
 export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string) {
   const parameters = transferAbi.inputs.map(input => {
     switch (input.kind) {
-      case FunctionInputKind.Asset:
-        return input.value
       case FunctionInputKind.Replaceable:
         return to
       case FunctionInputKind.Owner:
         return from
+      case FunctionInputKind.Asset:
+      default:
+        if (input.value == null) {
+          throw new Error(`Unsupported function input kind: ${input.kind}`)
+        }
+        return input.value
     }
   })
   return WyvernSchemas.encodeCall(transferAbi, parameters)

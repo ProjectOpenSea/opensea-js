@@ -68,7 +68,8 @@
 				<h1 id="opensea-js-omit-in-toc-">OpenSea.js <!-- omit in toc --></h1>
 				<p><a href="https://opensource.org/licenses/MIT"><img src="https://badges.frapsoft.com/os/mit/mit.svg?v=102" alt="https://badges.frapsoft.com/os/mit/mit.svg?v=102"></a>
 				<!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) --></p>
-				<p>A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea JS, you can easily build your own native marketplace for your ERC721 items without having to deploy your own smart contracts or backend orderbooks. <a href="https://github.com/ProjectOpenSea/opensea-js">GitHub</a> | <a href="https://www.npmjs.com/package/opensea-js">npm</a></p>
+				<p>A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 items. You don&#39;t have to deploy your own smart contracts or backend orderbooks.</p>
+				<p>Published on <a href="https://github.com/ProjectOpenSea/opensea-js">GitHub</a> and <a href="https://www.npmjs.com/package/opensea-js">npm</a></p>
 				<ul>
 					<li><a href="#synopsis">Synopsis</a></li>
 					<li><a href="#installation">Installation</a></li>
@@ -82,6 +83,7 @@
 							<li><a href="#fetching-orders">Fetching Orders</a></li>
 							<li><a href="#buying-items">Buying Items</a></li>
 							<li><a href="#accepting-offers">Accepting Offers</a></li>
+							<li><a href="#transferring-gifting-items">Transferring (gifting) items</a></li>
 						</ul>
 					</li>
 					<li><a href="#affiliate-program">Affiliate Program</a><ul>
@@ -235,6 +237,17 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 <span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress })
 </code></pre>
 				<p>If the order is a buy order (<code>order.side === OrderSide.Buy</code>), then the taker is the <em>owner</em> and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See <a href="#listening-to-events">Listening to Events</a> below to respond to the setup transactions that occur the first time a user accepts a bid.</p>
+				<h3 id="transferring-gifting-items">Transferring (gifting) items</h3>
+				<p>A handy feature in OpenSea.js is the ability to transfer any supported asset (not just non-fungible tokens) in one line of JavaScript.</p>
+				<p>To transfer an ERC-721 asset or an ERC-1155 asset, it&#39;s just one call:</p>
+				<pre><code class="lang-JavaScript">
+<span class="hljs-keyword">const</span> transactionHash = <span class="hljs-keyword">await</span> seaport.transferOne({
+  <span class="hljs-attr">asset</span>: { tokenId, tokenAddress },
+  fromAddress, <span class="hljs-comment">// Must own the asset</span>
+  toAddress
+})
+</code></pre>
+				<p>To transfer other types of assets, like ENS names, you can pass in a WyvernAsset as the <code>asset</code>, set a <code>schemaName</code>, and set <code>isWyvernAsset</code> to <code>true</code>. For more information, check out the documentation for WyvernSchemas on <a href="https://projectopensea.github.io/opensea-js/">https://projectopensea.github.io/opensea-js/</a>.</p>
 				<h2 id="affiliate-program">Affiliate Program</h2>
 				<p>New in version 0.4, OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It&#39;s the crypto-equivalent of bounty hunting 💰</p>
 				<p>You can use this to <strong>win at least 1%</strong> of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.</p>
@@ -471,6 +484,9 @@ handleSeaportEvents() {
 						<a href="enums/salekind.html" class="tsd-kind-icon">Sale<wbr>Kind</a>
 					</li>
 					<li class=" tsd-kind-enum">
+						<a href="enums/wyvernassetlocation.html" class="tsd-kind-icon">Wyvern<wbr>Asset<wbr>Location</a>
+					</li>
+					<li class=" tsd-kind-enum">
 						<a href="enums/wyvernschemaname.html" class="tsd-kind-icon">Wyvern<wbr>Schema<wbr>Name</a>
 					</li>
 					<li class=" tsd-kind-class">
@@ -541,6 +557,18 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/wyvernbundle.html" class="tsd-kind-icon">Wyvern<wbr>Bundle</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/wyvernensnameasset.html" class="tsd-kind-icon">WyvernENSName<wbr>Asset</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/wyvernerc1155asset.html" class="tsd-kind-icon">WyvernERC1155<wbr>Asset</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/wyvernerc721asset.html" class="tsd-kind-icon">WyvernERC721<wbr>Asset</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/wyvernnftasset.html" class="tsd-kind-icon">WyvernNFTAsset</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#partialreadonlycontractabi" class="tsd-kind-icon">Partial<wbr>Readonly<wbr>Contract<wbr>Abi</a>
@@ -650,6 +678,9 @@ handleSeaportEvents() {
 					<li class=" tsd-kind-variable tsd-is-not-exported">
 						<a href="globals.html#txcallbacks" class="tsd-kind-icon">tx<wbr>Callbacks</a>
 					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="globals.html#_throworcontinue" class="tsd-kind-icon">_throw<wbr>OrContinue</a>
+					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#assetbundlefromjson" class="tsd-kind-icon">asset<wbr>Bundle<wbr>FromJSON</a>
 					</li>
@@ -699,10 +730,13 @@ handleSeaportEvents() {
 						<a href="globals.html#getorderhash" class="tsd-kind-icon">get<wbr>Order<wbr>Hash</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="globals.html#getwyvernasset" class="tsd-kind-icon">get<wbr>Wyvern<wbr>Asset</a>
+						<a href="globals.html#getwyvernbundle" class="tsd-kind-icon">get<wbr>Wyvern<wbr>Bundle</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="globals.html#getwyvernbundle" class="tsd-kind-icon">get<wbr>Wyvern<wbr>Bundle</a>
+						<a href="globals.html#getwyvernensnameasset" class="tsd-kind-icon">get<wbr>WyvernENSName<wbr>Asset</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#getwyvernnftasset" class="tsd-kind-icon">get<wbr>WyvernNFTAsset</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#makebignumber" class="tsd-kind-icon">make<wbr>Big<wbr>Number</a>

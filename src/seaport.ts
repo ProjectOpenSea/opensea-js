@@ -27,6 +27,7 @@ import {
   ORDER_MATCHING_LATENCY_SECONDS,
   getWyvernBundle,
   getWyvernNFTAsset,
+  encodeTransferCall,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -943,8 +944,6 @@ export class OpenSeaPort {
     }
 
     const abi = schema.functions.transfer(wyAsset)
-    const recipient = abi.inputs.filter((i: any) => i.kind === 'replaceable')[0]
-    recipient.value = toAddress
 
     this._dispatch(EventType.TransferOne, { accountAddress: fromAddress, toAddress, asset })
 
@@ -952,7 +951,7 @@ export class OpenSeaPort {
     const txHash = await sendRawTransaction(this.web3, {
       from: fromAddress,
       to: abi.target,
-      data: WyvernSchemas.encodeCall(abi, abi.inputs.map((i: any) => i.value.toString())),
+      data: encodeTransferCall(abi, fromAddress, toAddress),
       gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress: fromAddress })
@@ -2218,7 +2217,7 @@ export class OpenSeaPort {
     const schema = WyvernSchemas.schemas[this._networkName].filter(s => s.name == schemaName)[0]
 
     if (!schema) {
-      throw new Error('No schema found for this asset; please check back later!')
+      throw new Error('Trading for this asset is not yet supported. Please contact us or check back later!')
     }
     return schema
   }

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>OrderbookResponse | opensea-js</title>
+	<title>WyvernENSNameAsset | opensea-js</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,10 +56,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="orderbookresponse.html">OrderbookResponse</a>
+					<a href="wyvernensnameasset.html">WyvernENSNameAsset</a>
 				</li>
 			</ul>
-			<h1>Interface OrderbookResponse</h1>
+			<h1>Interface WyvernENSNameAsset</h1>
 		</div>
 	</div>
 </header>
@@ -70,7 +70,12 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">OrderbookResponse</span>
+						<a href="wyvernasset.html" class="tsd-signature-type">WyvernAsset</a>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">WyvernENSNameAsset</span>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</section>
@@ -81,8 +86,9 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderbookresponse.html#count" class="tsd-kind-icon">count</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="orderbookresponse.html#orders" class="tsd-kind-icon">orders</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="wyvernensnameasset.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="wyvernensnameasset.html#namehash" class="tsd-kind-icon">name<wbr>Hash</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="wyvernensnameasset.html#nodehash" class="tsd-kind-icon">node<wbr>Hash</a></li>
 							</ul>
 						</section>
 					</div>
@@ -91,22 +97,32 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="count" class="tsd-anchor"></a>
-					<h3>count</h3>
-					<div class="tsd-signature tsd-kind-icon">count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="name" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> name</h3>
+					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/f718106/src/types.ts#L477">types.ts:477</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/f718106/src/types.ts#L155">types.ts:155</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="orders" class="tsd-anchor"></a>
-					<h3>orders</h3>
-					<div class="tsd-signature tsd-kind-icon">orders<span class="tsd-signature-symbol">:</span> <a href="orderjson.html" class="tsd-signature-type">OrderJSON</a><span class="tsd-signature-symbol">[]</span></div>
+					<a name="namehash" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> name<wbr>Hash</h3>
+					<div class="tsd-signature tsd-kind-icon">name<wbr>Hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/f718106/src/types.ts#L476">types.ts:476</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/f718106/src/types.ts#L154">types.ts:154</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="nodehash" class="tsd-anchor"></a>
+					<h3>node<wbr>Hash</h3>
+					<div class="tsd-signature tsd-kind-icon">node<wbr>Hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/f718106/src/types.ts#L153">types.ts:153</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -125,13 +141,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="orderbookresponse.html" class="tsd-kind-icon">Orderbook<wbr>Response</a>
+						<a href="wyvernensnameasset.html" class="tsd-kind-icon">WyvernENSName<wbr>Asset</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="orderbookresponse.html#count" class="tsd-kind-icon">count</a>
+								<a href="wyvernensnameasset.html#name" class="tsd-kind-icon">name</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="orderbookresponse.html#orders" class="tsd-kind-icon">orders</a>
+								<a href="wyvernensnameasset.html#namehash" class="tsd-kind-icon">name<wbr>Hash</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="wyvernensnameasset.html#nodehash" class="tsd-kind-icon">node<wbr>Hash</a>
 							</li>
 						</ul>
 					</li>
