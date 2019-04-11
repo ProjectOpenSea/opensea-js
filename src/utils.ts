@@ -8,7 +8,7 @@ import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicize
 import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/lib/types'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernERC721Asset } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, WyvernSchemaName } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -538,14 +538,14 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
 }
 
 /**
- * Get the Wyvern representation of an ERC721 asset
+ * Get the Wyvern representation of an NFT asset
  * @param schema The WyvernSchema needed to access this asset
  * @param tokenId The token's id
  * @param tokenAddress The address of the token's contract
  */
-export function getWyvernERC721Asset(
-    schema: WyvernSchemas.Schema<WyvernERC721Asset>, tokenId: string, tokenAddress: string
-  ): WyvernERC721Asset {
+export function getWyvernNFTAsset(
+    schema: WyvernSchemas.Schema<WyvernNFTAsset>, tokenId: string, tokenAddress: string
+  ): WyvernNFTAsset {
 
   return schema.assetFromFields({
     'ID': tokenId.toString(),
@@ -572,7 +572,7 @@ export function getWyvernENSNameAsset(
 }
 
 /**
- * Get the Wyvern representation of a group of assets
+ * Get the Wyvern representation of a group of NFT assets
  * Sort order is enforced here
  * @param schema The WyvernSchema needed to access these assets
  * @param assets Assets to bundle
@@ -581,9 +581,9 @@ export function getWyvernBundle(
     schema: any, assets: Asset[]
   ): WyvernBundle {
 
-  const wyAssets = assets.map(asset => getWyvernERC721Asset(schema, asset.tokenId, asset.tokenAddress))
+  const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress))
 
-  const sortedWyAssets = _.sortBy(wyAssets, [(a: WyvernERC721Asset) => a.address, (a: WyvernERC721Asset) => a.id])
+  const sortedWyAssets = _.sortBy(wyAssets, [(a: WyvernNFTAsset) => a.address, (a: WyvernNFTAsset) => a.id])
 
   return {
     assets: sortedWyAssets
@@ -675,6 +675,15 @@ export async function delay(ms: number) {
 }
 
 /**
+ * Get the transfer function for a given schema
+ * @param schema Wyvern Schema for the assets
+ */
+export function getTransferFunction(schema: WyvernSchemas.Schema<any>) {
+  return schema.functions.transferFrom
+      || schema.functions.transfer
+}
+
+/**
  * Encode the atomicized transfer of many assets
  * @param schema Wyvern Schema for the assets
  * @param assets List of assets to transfer
@@ -682,10 +691,10 @@ export async function delay(ms: number) {
  * @param to Destination address
  * @param atomicizer Wyvern Atomicizer instance
  */
-export function encodeAtomicizedTransfer(schema: any, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
+export function encodeAtomicizedTransfer(schema: WyvernSchemas.Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
 
   const transactions = assets.map((asset: any) => {
-    const transfer = schema.functions.transferFrom(asset)
+    const transfer = getTransferFunction(schema)(asset)
     const calldata = encodeTransferCall(transfer, from, to)
     return {
       calldata,

@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernERC721Asset } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset } from './types'
 import {
   confirmTransaction, findAsset,
   makeBigNumber, orderToJSON,
@@ -26,7 +26,8 @@ import {
   validateAndFormatWalletAddress,
   ORDER_MATCHING_LATENCY_SECONDS,
   getWyvernBundle,
-  getWyvernERC721Asset
+  getWyvernNFTAsset,
+  getTransferFunction,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -724,7 +725,7 @@ export class OpenSeaPort {
       this._dispatch(EventType.ApproveAsset, {
         accountAddress,
         proxyAddress,
-        asset: getWyvernERC721Asset(schema, tokenId, tokenAddress)
+        asset: getWyvernNFTAsset(schema, tokenId, tokenAddress)
       })
 
       const gasPrice = await this._computeGasPrice()
@@ -915,21 +916,34 @@ export class OpenSeaPort {
   }
 
   /**
-   * Transfer any asset to another address
+   * Transfer an NFT asset or any Wyvern asset to another address
    * @param param0 __namedParamaters Object
-   * @param schemaName The Wyvern schema name corresponding to the asset type
    * @param asset The asset to transfer
    * @param fromAddress The owner's wallet address
    * @param toAddress The recipient's wallet address
+   * @param isWyvernAsset Whether the passed asset is a generic WyvernAsset, for backwards compatibility
+   * @param schemaName The Wyvern schema name corresponding to the asset type
    * @returns Transaction hash
    */
   public async transferOne(
-      { schemaName = WyvernSchemaName.ERC721, asset, fromAddress, toAddress }:
-      { schemaName?: WyvernSchemaName; asset: WyvernAsset; fromAddress: string; toAddress: string }
+      { asset, fromAddress, toAddress, isWyvernAsset = false, schemaName = WyvernSchemaName.ERC721 }:
+      { asset: Asset | WyvernAsset;
+        fromAddress: string;
+        toAddress: string;
+        isWyvernAsset?: boolean;
+        schemaName?: WyvernSchemaName; }
     ): Promise<string> {
 
     const schema = this._getSchema(schemaName)
-    const abi = schema.functions.transfer(asset)
+    let wyAsset
+    if (isWyvernAsset) {
+      wyAsset = asset as WyvernAsset
+    } else {
+      const openseaAsset = asset as Asset
+      wyAsset = getWyvernNFTAsset(schema, openseaAsset.tokenId, openseaAsset.tokenAddress)
+    }
+
+    const abi = getTransferFunction(schema)(wyAsset)
     const recipient = abi.inputs.filter((i: any) => i.kind === 'replaceable')[0]
     recipient.value = toAddress
 
@@ -950,22 +964,27 @@ export class OpenSeaPort {
   }
 
   /**
-   * Transfer one or more ERC721 assets to another address
+   * Transfer one or more assets to another address.
+   * ERC-721 and ERC-1155 assets are supported
    * @param param0 __namedParamaters Object
    * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
    * @param fromAddress The owner's wallet address
    * @param toAddress The recipient's wallet address
+   * @param schemaName The Wyvern schema name corresponding to the asset type
    * @returns Transaction hash
    */
   public async transferAll(
-      { assets, fromAddress, toAddress }:
-      { assets: Asset[]; fromAddress: string; toAddress: string }
+      { assets, fromAddress, toAddress, schemaName = WyvernSchemaName.ERC721 }:
+      { assets: Asset[];
+        fromAddress: string;
+        toAddress: string;
+        schemaName?: WyvernSchemaName; }
     ): Promise<string> {
 
     toAddress = validateAndFormatWalletAddress(this.web3, toAddress)
 
-    const schema = this._getSchema()
-    const wyAssets = assets.map(asset => getWyvernERC721Asset(schema, asset.tokenId, asset.tokenAddress))
+    const schema = this._getSchema(schemaName)
+    const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress))
 
     const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
 
@@ -1276,7 +1295,7 @@ export class OpenSeaPort {
     ): Promise<number> {
 
     const schema = this._getSchema()
-    const wyAssets = assets.map(asset => getWyvernERC721Asset(schema, asset.tokenId, asset.tokenAddress))
+    const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress))
 
     const proxyAddress = await this._getProxy(fromAddress)
     if (!proxyAddress) {
@@ -1388,7 +1407,7 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema()
-    const wyAsset = getWyvernERC721Asset(schema, asset.tokenId, asset.tokenAddress)
+    const wyAsset = getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress)
 
     let makerRelayerFee
     let takerRelayerFee
@@ -1463,7 +1482,7 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema()
-    const wyAsset = getWyvernERC721Asset(schema, asset.tokenId, asset.tokenAddress)
+    const wyAsset = getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress)
     const isPrivate = buyerAddress != NULL_ADDRESS
     const { totalSellerFeeBPS,
             totalBuyerFeeBPS,
@@ -1903,27 +1922,29 @@ export class OpenSeaPort {
         // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
         throw new Error('You do not own this asset.')
       }
-      if (schema.name != WyvernSchemaName.ERC721) {
-        // Handle non-NFTs
-        if (where != WyvernAssetLocation.Proxy) {
-          return this.transferOne({
-            schemaName: schema.name,
-            asset: wyAssets[0],
-            fromAddress: accountAddress,
-            toAddress: proxy
+      switch (schema.name as WyvernSchemaName) {
+        case WyvernSchemaName.ERC721:
+        case WyvernSchemaName.ERC1155:
+          // Handle NFTs
+          const wyNFTAsset = wyAsset as WyvernNFTAsset
+          return this.approveNonFungibleToken({
+            tokenId: wyNFTAsset.id.toString(),
+            tokenAddress: wyNFTAsset.address,
+            accountAddress,
+            proxyAddress,
+            skipApproveAllIfTokenAddressIn: contractsWithApproveAll
           })
-        }
-        return true
-      } else {
-        // Handle NFTs
-        const wyNFTAsset = wyAsset as WyvernERC721Asset
-        return this.approveNonFungibleToken({
-          tokenId: wyNFTAsset.id.toString(),
-          tokenAddress: wyNFTAsset.address,
-          accountAddress,
-          proxyAddress,
-          skipApproveAllIfTokenAddressIn: contractsWithApproveAll
-        })
+        case WyvernSchemaName.ENSName:
+          // TODO: non-NFTs
+          if (where != WyvernAssetLocation.Proxy) {
+            return this.transferOne({
+              schemaName: schema.name,
+              asset: wyAssets[0],
+              fromAddress: accountAddress,
+              toAddress: proxy
+            })
+          }
+          return true
       }
     }))
   }

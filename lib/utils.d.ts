@@ -3,7 +3,7 @@ import * as Web3 from 'web3';
 import * as WyvernSchemas from 'wyvern-schemas';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernERC721Asset } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
@@ -92,12 +92,12 @@ export declare function getCurrentGasPrice(web3: Web3): Promise<BigNumber>;
  */
 export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: number, shouldRoundUp?: boolean): BigNumber;
 /**
- * Get the Wyvern representation of an ERC721 asset
+ * Get the Wyvern representation of an NFT asset
  * @param schema The WyvernSchema needed to access this asset
  * @param tokenId The token's id
  * @param tokenAddress The address of the token's contract
  */
-export declare function getWyvernERC721Asset(schema: WyvernSchemas.Schema<WyvernERC721Asset>, tokenId: string, tokenAddress: string): WyvernERC721Asset;
+export declare function getWyvernNFTAsset(schema: WyvernSchemas.Schema<WyvernNFTAsset>, tokenId: string, tokenAddress: string): WyvernNFTAsset;
 /**
  * Get the Wyvern representation of an ENS name as an asset
  * @param schema The WyvernSchema needed to access this asset
@@ -105,7 +105,7 @@ export declare function getWyvernERC721Asset(schema: WyvernSchemas.Schema<Wyvern
  */
 export declare function getWyvernENSNameAsset(schema: WyvernSchemas.Schema<WyvernENSNameAsset>, name: string): WyvernENSNameAsset;
 /**
- * Get the Wyvern representation of a group of assets
+ * Get the Wyvern representation of a group of NFT assets
  * Sort order is enforced here
  * @param schema The WyvernSchema needed to access these assets
  * @param assets Assets to bundle
@@ -132,6 +132,11 @@ export declare function assignOrdersToSides(order: Order, matchingOrder: Unsigne
  */
 export declare function delay(ms: number): Promise<{}>;
 /**
+ * Get the transfer function for a given schema
+ * @param schema Wyvern Schema for the assets
+ */
+export declare function getTransferFunction(schema: WyvernSchemas.Schema<any>): (asset: any) => any;
+/**
  * Encode the atomicized transfer of many assets
  * @param schema Wyvern Schema for the assets
  * @param assets List of assets to transfer
@@ -139,7 +144,7 @@ export declare function delay(ms: number): Promise<{}>;
  * @param to Destination address
  * @param atomicizer Wyvern Atomicizer instance
  */
-export declare function encodeAtomicizedTransfer(schema: any, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract): {
+export declare function encodeAtomicizedTransfer(schema: WyvernSchemas.Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract): {
     calldata: string;
 };
 /**

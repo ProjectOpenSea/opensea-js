@@ -309,32 +309,37 @@ export declare class OpenSeaPort {
         tokenAbi?: PartialReadonlyContractAbi;
     }, retries?: number): Promise<boolean>;
     /**
-     * Transfer any asset to another address
+     * Transfer an NFT asset or any Wyvern asset to another address
      * @param param0 __namedParamaters Object
-     * @param schemaName The Wyvern schema name corresponding to the asset type
      * @param asset The asset to transfer
      * @param fromAddress The owner's wallet address
      * @param toAddress The recipient's wallet address
+     * @param isWyvernAsset Whether the passed asset is a generic WyvernAsset, for backwards compatibility
+     * @param schemaName The Wyvern schema name corresponding to the asset type
      * @returns Transaction hash
      */
-    transferOne({ schemaName, asset, fromAddress, toAddress }: {
-        schemaName?: WyvernSchemaName;
-        asset: WyvernAsset;
+    transferOne({ asset, fromAddress, toAddress, isWyvernAsset, schemaName }: {
+        asset: Asset | WyvernAsset;
         fromAddress: string;
         toAddress: string;
+        isWyvernAsset?: boolean;
+        schemaName?: WyvernSchemaName;
     }): Promise<string>;
     /**
-     * Transfer one or more ERC721 assets to another address
+     * Transfer one or more assets to another address.
+     * ERC-721 and ERC-1155 assets are supported
      * @param param0 __namedParamaters Object
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
      * @param fromAddress The owner's wallet address
      * @param toAddress The recipient's wallet address
+     * @param schemaName The Wyvern schema name corresponding to the asset type
      * @returns Transaction hash
      */
-    transferAll({ assets, fromAddress, toAddress }: {
+    transferAll({ assets, fromAddress, toAddress, schemaName }: {
         assets: Asset[];
         fromAddress: string;
         toAddress: string;
+        schemaName?: WyvernSchemaName;
     }): Promise<string>;
     /**
      * Get known fungible tokens (ERC-20) that match your filters.

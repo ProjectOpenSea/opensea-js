@@ -141,14 +141,13 @@ export enum WyvernAssetLocation {
 
 export interface WyvernAsset {}
 
-export interface WyvernERC721Asset extends WyvernAsset {
+export interface WyvernNFTAsset extends WyvernAsset {
   id: string
   address: string
 }
 
-export interface WyvernERC1155Asset extends WyvernAsset {
-  identifier: string
-}
+export interface WyvernERC1155Asset extends WyvernNFTAsset {}
+export interface WyvernERC721Asset extends WyvernNFTAsset {}
 
 export interface WyvernENSNameAsset extends WyvernAsset {
   nodeHash: string

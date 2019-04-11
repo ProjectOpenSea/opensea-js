@@ -14,19 +14,6 @@ declare module '*.json' {
     /* tslint:enable */
 }
 
-// truffle-hdwallet-provider declarations
-declare module 'truffle-hdwallet-provider' {
-    import * as Web3 from 'web3'
-    class HDWalletProvider implements Web3.Provider {
-        constructor(mnemonic: string, rpcUrl: string);
-        public sendAsync(
-            payload: Web3.JSONRPCRequestPayload,
-            callback: (err: Error, result: Web3.JSONRPCResponsePayload) => void,
-        ): void
-    }
-    export = HDWalletProvider
-}
-
 declare module 'wyvern-schemas' {
     interface FungibleToken {
         name: string
