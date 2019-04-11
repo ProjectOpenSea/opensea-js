@@ -132,11 +132,6 @@ export declare function assignOrdersToSides(order: Order, matchingOrder: Unsigne
  */
 export declare function delay(ms: number): Promise<{}>;
 /**
- * Get the transfer function for a given schema
- * @param schema Wyvern Schema for the assets
- */
-export declare function getTransferFunction(schema: WyvernSchemas.Schema<any>): (asset: any) => any;
-/**
  * Encode the atomicized transfer of many assets
  * @param schema Wyvern Schema for the assets
  * @param assets List of assets to transfer

@@ -27,7 +27,6 @@ import {
   ORDER_MATCHING_LATENCY_SECONDS,
   getWyvernBundle,
   getWyvernNFTAsset,
-  getTransferFunction,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -943,7 +942,7 @@ export class OpenSeaPort {
       wyAsset = getWyvernNFTAsset(schema, openseaAsset.tokenId, openseaAsset.tokenAddress)
     }
 
-    const abi = getTransferFunction(schema)(wyAsset)
+    const abi = schema.functions.transfer(wyAsset)
     const recipient = abi.inputs.filter((i: any) => i.kind === 'replaceable')[0]
     recipient.value = toAddress
 

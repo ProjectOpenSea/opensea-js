@@ -675,15 +675,6 @@ export async function delay(ms: number) {
 }
 
 /**
- * Get the transfer function for a given schema
- * @param schema Wyvern Schema for the assets
- */
-export function getTransferFunction(schema: WyvernSchemas.Schema<any>) {
-  return schema.functions.transferFrom
-      || schema.functions.transfer
-}
-
-/**
  * Encode the atomicized transfer of many assets
  * @param schema Wyvern Schema for the assets
  * @param assets List of assets to transfer
@@ -694,7 +685,7 @@ export function getTransferFunction(schema: WyvernSchemas.Schema<any>) {
 export function encodeAtomicizedTransfer(schema: WyvernSchemas.Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
 
   const transactions = assets.map((asset: any) => {
-    const transfer = getTransferFunction(schema)(asset)
+    const transfer = schema.functions.transfer(asset)
     const calldata = encodeTransferCall(transfer, from, to)
     return {
       calldata,
