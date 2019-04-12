@@ -12,11 +12,11 @@ import {
 
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract } from '../src/types'
+import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, CATS_IN_MECHS_ID } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 const englishSellOrderJSON = ordersJSON[0] as OrderJSON
@@ -119,7 +119,8 @@ suite('seaport', () => {
         buyerAddress: NULL_ADDRESS,
         expirationTime: 0,
         paymentTokenAddress,
-        waitForHighestBid: true
+        waitForHighestBid: true,
+        schemaName: WyvernSchemaName.ERC721
       })
       assert.fail()
     } catch (error) {
@@ -136,7 +137,8 @@ suite('seaport', () => {
         buyerAddress: NULL_ADDRESS,
         expirationTime,
         paymentTokenAddress: NULL_ADDRESS,
-        waitForHighestBid: true
+        waitForHighestBid: true,
+        schemaName: WyvernSchemaName.ERC721
       })
       assert.fail()
     } catch (error) {
@@ -153,7 +155,8 @@ suite('seaport', () => {
         buyerAddress: NULL_ADDRESS,
         expirationTime,
         paymentTokenAddress: NULL_ADDRESS,
-        waitForHighestBid: false
+        waitForHighestBid: false,
+        schemaName: WyvernSchemaName.ERC721
       })
       assert.fail()
     } catch (error) {
@@ -170,7 +173,8 @@ suite('seaport', () => {
         buyerAddress: NULL_ADDRESS,
         expirationTime: 0,
         paymentTokenAddress: NULL_ADDRESS,
-        waitForHighestBid: false
+        waitForHighestBid: false,
+        schemaName: WyvernSchemaName.ERC721
       })
       assert.fail()
     } catch (error) {
@@ -189,7 +193,8 @@ suite('seaport', () => {
       startAmount: amountInEth,
       extraBountyBasisPoints: 0,
       expirationTime: 0,
-      paymentTokenAddress: wethAddress
+      paymentTokenAddress: wethAddress,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.paymentToken, wethAddress)
@@ -214,7 +219,8 @@ suite('seaport', () => {
       startAmount: amountInToken,
       extraBountyBasisPoints: 0,
       expirationTime: 0,
-      paymentTokenAddress: manaAddress
+      paymentTokenAddress: manaAddress,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
@@ -259,7 +265,8 @@ suite('seaport', () => {
       extraBountyBasisPoints: bountyPercent * 100,
       buyerAddress: NULL_ADDRESS,
       expirationTime,
-      waitForHighestBid: true
+      waitForHighestBid: true,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
@@ -348,7 +355,8 @@ suite('seaport', () => {
       expirationTime,
       extraBountyBasisPoints,
       buyerAddress: NULL_ADDRESS,
-      waitForHighestBid: true
+      waitForHighestBid: true,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     const buyOrder = await client._makeBuyOrder({
@@ -358,7 +366,8 @@ suite('seaport', () => {
       startAmount: amountInToken,
       expirationTime: 0,
       extraBountyBasisPoints: 0,
-      sellOrder
+      sellOrder,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     testFeesMakerOrder(buyOrder, asset.assetContract)
@@ -537,6 +546,37 @@ suite('seaport', () => {
     }
   })
 
+  test("Computes per-transfer fees correctly", async () => {
+
+    const asset = await client.api.getAsset(ENJIN_ADDRESS, CATS_IN_MECHS_ID)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID)
+    assert.isNotNull(zeroFeeAsset)
+    if (!zeroFeeAsset) {
+      return
+    }
+
+    const sellerFees = await client.computeFees({
+      assets: [asset],
+      side: OrderSide.Sell
+    })
+
+    const sellerZeroFees = await client.computeFees({
+      assets: [zeroFeeAsset],
+      side: OrderSide.Sell
+    })
+
+    assert.equal(sellerZeroFees.transferFee.toString(), "0")
+    assert.isNull(sellerZeroFees.transferFeeTokenAddress)
+
+    // assert.notEqual(sellerFees.transferFee.toString(), "0")
+    // assert.equal(sellerFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS)
+  })
+
   test("Matches a private sell order, doesn't for wrong taker", async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
@@ -560,7 +600,8 @@ suite('seaport', () => {
       buyerAddress: takerAddress,
       expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
-      waitForHighestBid: false
+      waitForHighestBid: false,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
@@ -606,7 +647,8 @@ suite('seaport', () => {
       extraBountyBasisPoints: bountyPercent * 100,
       buyerAddress: NULL_ADDRESS, // Check that null doesn't trigger private orders
       expirationTime: 0,
-      waitForHighestBid: false
+      waitForHighestBid: false,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.paymentToken, paymentToken.address)
@@ -641,7 +683,8 @@ suite('seaport', () => {
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken.address,
       expirationTime: 0,
-      extraBountyBasisPoints: 0
+      extraBountyBasisPoints: 0,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.paymentToken, paymentToken.address)
@@ -671,7 +714,8 @@ suite('seaport', () => {
       expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
-      buyerAddress: NULL_ADDRESS
+      buyerAddress: NULL_ADDRESS,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
@@ -701,7 +745,8 @@ suite('seaport', () => {
       expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
-      buyerAddress: NULL_ADDRESS
+      buyerAddress: NULL_ADDRESS,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
@@ -836,7 +881,8 @@ suite('seaport', () => {
       extraBountyBasisPoints: 0,
       expirationTime: 0,
       waitForHighestBid: false,
-      buyerAddress: NULL_ADDRESS
+      buyerAddress: NULL_ADDRESS,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.paymentToken, token.address)
@@ -866,7 +912,8 @@ suite('seaport', () => {
       extraBountyBasisPoints: 0,
       waitForHighestBid: false,
       buyerAddress: NULL_ADDRESS,
-      paymentTokenAddress: NULL_ADDRESS
+      paymentTokenAddress: NULL_ADDRESS,
+      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)

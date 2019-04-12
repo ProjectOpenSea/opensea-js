@@ -898,7 +898,6 @@ export class OpenSeaPort {
     const wyAsset = getWyvernNFTAsset(schema, tokenId, tokenAddress)
     const abi = schema.functions.transfer(wyAsset)
 
-    const to = tokenAddress
     let from = fromAddress
     if (didOwnerApprove) {
       const proxyAddress = await this._getProxy(fromAddress)
@@ -914,7 +913,7 @@ export class OpenSeaPort {
       const gas = await estimateGas(this.web3, {
         from,
         to: abi.target,
-        data: encodeTransferCall(abi, from, to)
+        data: encodeTransferCall(abi, fromAddress, toAddress)
       })
       return gas > 0
 
@@ -1113,18 +1112,22 @@ export class OpenSeaPort {
         extraBountyBasisPoints?: number }
     ): Promise<OpenSeaFees> {
 
+    let asset: OpenSeaAsset | null = null
+
     let totalBuyerFeeBPS = DEFAULT_BUYER_FEE_BASIS_POINTS
     let totalSellerFeeBPS = DEFAULT_SELLER_FEE_BASIS_POINTS
     let openseaBuyerFeeBPS = totalBuyerFeeBPS
     let openseaSellerFeeBPS = totalSellerFeeBPS
     let devBuyerFeeBPS = 0
     let devSellerFeeBPS = 0
+    let transferFee = makeBigNumber(0)
+    let transferFeeTokenAddress = null
     let maxTotalBountyBPS = DEFAULT_MAX_BOUNTY
 
     // If all assets are for the same contract and it's a non-private sale, use its fees
-    if (!assetContract && assets && !isPrivate && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
+    if (assets && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
       const { tokenAddress, tokenId } = assets[0]
-      const asset: OpenSeaAsset | null = await this.api.getAsset(tokenAddress, tokenId)
+      asset = await this.api.getAsset(tokenAddress, tokenId)
       if (!asset) {
         throw new Error(`Could not find asset with ID ${tokenId} and address ${tokenAddress}`)
       }
@@ -1140,6 +1143,13 @@ export class OpenSeaPort {
       devSellerFeeBPS = assetContract.devSellerFeeBasisPoints
 
       maxTotalBountyBPS = openseaSellerFeeBPS
+    }
+
+    // Compute transferFrom fees
+    if (side == OrderSide.Sell && asset && asset.transferFee && asset.transferFeePaymentToken) {
+      // TODO web3 call to update it
+      transferFee = makeBigNumber(asset.transferFee)
+      transferFeeTokenAddress = asset.transferFeePaymentToken.address
     }
 
     // Compute bounty
@@ -1176,6 +1186,8 @@ export class OpenSeaPort {
       devBuyerFeeBPS,
       devSellerFeeBPS,
       sellerBountyBPS,
+      transferFee,
+      transferFeeTokenAddress,
       // buyerBountyBPS
     }
   }

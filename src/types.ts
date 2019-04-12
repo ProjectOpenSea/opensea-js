@@ -271,7 +271,11 @@ export interface OpenSeaAsset extends Asset {
   // Data about the last time this token was sold
   lastSale: object | null
   // The suggested background color for the image url
-  backgroundColor: string | null
+  backgroundColor: string | null,
+  // The per-transfer fee, in base units, for this asset in its transfer method
+  transferFee: BigNumber | string | null,
+  // The transfer fee token for this asset in its transfer method
+  transferFeePaymentToken: FungibleToken | null
 }
 
 /**
@@ -334,6 +338,10 @@ export interface OpenSeaFees {
   // Fees that go to OpenSea
   openseaSellerFeeBPS: number
   openseaBuyerFeeBPS: number
+
+  // Fees that the item's creator takes on every transfer
+  transferFee: BigNumber
+  transferFeeTokenAddress: string | null
 
   // Fees that go to whoever refers the order to the taker.
   // Comes out of OpenSea fees
@@ -470,6 +478,8 @@ export interface OpenSeaAssetQuery {
 export interface FungibleTokenQuery extends Partial<FungibleToken> {
   limit?: number
   offset?: number
+  // Typescript bug requires this duplication
+  symbol?: string
 }
 
 export interface OrderbookResponse {

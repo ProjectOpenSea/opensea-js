@@ -185,6 +185,8 @@ export interface OpenSeaAsset extends Asset {
     numSales: number;
     lastSale: object | null;
     backgroundColor: string | null;
+    transferFee: BigNumber | string | null;
+    transferFeePaymentToken: FungibleToken | null;
 }
 /**
  * Bundles of assets, grouped together into one OpenSea order
@@ -232,6 +234,8 @@ export interface OpenSeaFees {
     devBuyerFeeBPS: number;
     openseaSellerFeeBPS: number;
     openseaBuyerFeeBPS: number;
+    transferFee: BigNumber;
+    transferFeeTokenAddress: string | null;
     sellerBountyBPS: number;
 }
 export interface UnhashedOrder extends WyvernOrder {
@@ -345,6 +349,7 @@ export interface OpenSeaAssetQuery {
 export interface FungibleTokenQuery extends Partial<FungibleToken> {
     limit?: number;
     offset?: number;
+    symbol?: string;
 }
 export interface OrderbookResponse {
     orders: OrderJSON[];
