@@ -14,6 +14,8 @@ export declare const INVERSE_BASIS_POINT = 10000;
 export declare const MAX_UINT_256: BigNumber;
 export declare const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b";
 export declare const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9";
+export declare const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";
+export declare const ENJIN_ADDRESS = "0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab";
 export declare const DEFAULT_BUYER_FEE_BASIS_POINTS = 0;
 export declare const DEFAULT_SELLER_FEE_BASIS_POINTS = 250;
 export declare const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100;
@@ -72,8 +74,8 @@ export declare function sendRawTransaction(web3: Web3, { from, to, data, gasPric
 /**
  * Estimate Gas usage for a transaction
  * @param web3 Web3 instance
- * @param fromAddress address sending transaction
- * @param toAddress destination contract address
+ * @param from address sending transaction
+ * @param to destination contract address
  * @param data data to send to contract
  * @param value value in ETH to send with data
  */
@@ -83,6 +85,17 @@ export declare function estimateGas(web3: Web3, { from, to, data, value }: Web3.
  * @param web3 Web3 instance
  */
 export declare function getCurrentGasPrice(web3: Web3): Promise<BigNumber>;
+/**
+ * Get current transfer fees for an asset
+ * @param web3 Web3 instance
+ * @param asset The asset to check for transfer fees
+ */
+export declare function getTransferFeeSettings(web3: Web3, { asset }: {
+    asset: Asset;
+}): Promise<{
+    transferFee: BigNumber | undefined;
+    transferFeeTokenAddress: string | undefined;
+}>;
 /**
  * Estimates the price of an order
  * @param order The order to estimate price on

@@ -6,6 +6,7 @@ import * as Web3 from 'web3'
 import * as WyvernSchemas from 'wyvern-schemas'
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
 import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/lib/types'
+import { ERC1155, getMethod } from './contracts'
 
 import { OpenSeaPort } from '../src'
 import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset } from './types'
@@ -20,6 +21,8 @@ export const INVERSE_BASIS_POINT = 10000
 export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256
 export const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"
 export const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9"
+export const ENJIN_COIN_ADDRESS = '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c'
+export const ENJIN_ADDRESS = '0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab'
 export const DEFAULT_BUYER_FEE_BASIS_POINTS = 0
 export const DEFAULT_SELLER_FEE_BASIS_POINTS = 250
 export const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100
@@ -431,8 +434,8 @@ export async function sendRawTransaction(
 /**
  * Estimate Gas usage for a transaction
  * @param web3 Web3 instance
- * @param fromAddress address sending transaction
- * @param toAddress destination contract address
+ * @param from address sending transaction
+ * @param to destination contract address
  * @param data data to send to contract
  * @param value value in ETH to send with data
  */
@@ -458,6 +461,31 @@ export async function estimateGas(
 export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
   const meanGas = await promisify<BigNumber>(c => web3.eth.getGasPrice(c))
   return meanGas
+}
+
+/**
+ * Get current transfer fees for an asset
+ * @param web3 Web3 instance
+ * @param asset The asset to check for transfer fees
+ */
+export async function getTransferFeeSettings(
+    web3: Web3,
+    { asset }: { asset: Asset }
+  ) {
+  let transferFee: BigNumber | undefined
+  let transferFeeTokenAddress: string | undefined
+
+  if (asset.tokenAddress.toLowerCase() == ENJIN_ADDRESS.toLowerCase()) {
+    // Enjin asset
+    const feeContract = web3.eth.contract(ERC1155 as any).at(asset.tokenAddress)
+
+    const params = await feeContract.transferSettings(asset.tokenId)
+    transferFee = makeBigNumber(params[3])
+    if (params[2] == 0) {
+      transferFeeTokenAddress = ENJIN_COIN_ADDRESS
+    }
+  }
+  return { transferFee, transferFeeTokenAddress }
 }
 
 // sourced from 0x.js:

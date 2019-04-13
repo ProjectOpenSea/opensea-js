@@ -28,6 +28,7 @@ import {
   getWyvernBundle,
   getWyvernNFTAsset,
   encodeTransferCall,
+  getTransferFeeSettings,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -1146,10 +1147,19 @@ export class OpenSeaPort {
     }
 
     // Compute transferFrom fees
-    if (side == OrderSide.Sell && asset && asset.transferFee && asset.transferFeePaymentToken) {
-      // TODO web3 call to update it
-      transferFee = makeBigNumber(asset.transferFee)
-      transferFeeTokenAddress = asset.transferFeePaymentToken.address
+    if (side == OrderSide.Sell && asset) {
+      // TODO when server ready, use  `&& asset.transferFee && asset.transferFeePaymentToken`
+      // transferFee = makeBigNumber(asset.transferFee)
+      // transferFeeTokenAddress = asset.transferFeePaymentToken.address
+      try {
+        // web3 call to update it
+        const result = await getTransferFeeSettings(this.web3, { asset })
+        transferFee = result.transferFee != null ? result.transferFee : transferFee
+        transferFeeTokenAddress = result.transferFeeTokenAddress || transferFeeTokenAddress
+      } catch (error) {
+        // Use server defaults
+        console.error(error)
+      }
     }
 
     // Compute bounty
