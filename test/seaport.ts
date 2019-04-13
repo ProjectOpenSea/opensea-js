@@ -546,7 +546,7 @@ suite('seaport', () => {
     }
   })
 
-  test.only("Computes per-transfer fees correctly", async () => {
+  test("Computes per-transfer fees correctly", async () => {
 
     const asset = await client.api.getAsset(ENJIN_ADDRESS, CATS_IN_MECHS_ID)
     assert.isNotNull(asset)
@@ -573,7 +573,7 @@ suite('seaport', () => {
     assert.equal(sellerZeroFees.transferFee.toString(), "0")
     assert.isNull(sellerZeroFees.transferFeeTokenAddress)
 
-    assert.notEqual(sellerFees.transferFee.toString(), "0")
+    assert.equal(sellerFees.transferFee.toString(), "1000000000000000000")
     assert.equal(sellerFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS)
   })
 
