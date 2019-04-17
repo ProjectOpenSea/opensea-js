@@ -647,15 +647,23 @@ export class OpenSeaPort {
       }
     }
 
-    const isApprovedForAll = await promisifyCall<boolean>(c => erc721.isApprovedForAll.call(accountAddress, proxyAddress, c))
+    // NOTE:
+    // Use this long way of calling so we can check for method existence on a bool-returning method.
 
-    if (isApprovedForAll == true) {
+    const isApprovedForAllRaw = await rawCall(this.web3, {
+      from: accountAddress,
+      to: erc721.address,
+      data: erc721.isApprovedForAll.getData(accountAddress, proxyAddress)
+    })
+    const isApprovedForAll = parseInt(isApprovedForAllRaw)
+
+    if (isApprovedForAll == 1) {
       // Supports ApproveAll
       this.logger('Already approved proxy for all tokens')
       return null
     }
 
-    if (isApprovedForAll == false) {
+    if (isApprovedForAll == 0) {
       // Supports ApproveAll
       //  not approved for all yet
 
