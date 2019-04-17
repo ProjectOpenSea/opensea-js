@@ -45,7 +45,7 @@ const txCallbacks: {[key: string]: TxnCallback[]} = {}
  * @param inner callback function that accepts a Web3 callback function and passes
  * it to the Web3 function
  */
-export async function promisify<T>(
+async function promisify<T>(
     inner: (fn: Web3Callback<T>) => void
   ) {
   return new Promise<T>((resolve, reject) =>
@@ -54,6 +54,36 @@ export async function promisify<T>(
       resolve(res)
     })
   )
+}
+
+/**
+ * Promisify a call a method on a contract,
+ * handling Parity errors. Returns '0x' if error.
+ * @param callback An anonymous function that takes a web3 callback
+ * and returns a Web3 Contract's call result, e.g. `c => erc721.ownerOf(3, c)`
+ * @param onError callback when user denies transaction
+ */
+export async function promisifyCall<T>(
+    callback: (fn: Web3Callback<T>) => void,
+    onError?: (error: Error) => void
+  ): Promise<T | undefined> {
+
+  try {
+
+    const result: any = await promisify<T>(callback)
+    if (result == '0x') {
+      // Geth compatibility
+      return undefined
+    }
+    return result as T
+
+  } catch (error) {
+    // Probably method not found, and web3 is a Parity node
+    if (onError) {
+      onError(error)
+    }
+    return undefined
+  }
 }
 
 const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
@@ -428,6 +458,40 @@ export async function sendRawTransaction(
 
     onError(error)
     throw error
+  }
+}
+
+/**
+ * Call a method on a contract, sending arbitrary data and
+ * handling Parity errors. Returns '0x' if error.
+ * @param web3 Web3 instance
+ * @param param0 __namedParameters
+ * @param from address sending call
+ * @param to destination contract address
+ * @param data data to send to contract
+ * @param onError callback when user denies transaction
+ */
+export async function rawCall(
+    web3: Web3,
+    { from, to, data }: Web3.CallData,
+    onError?: (error: Error) => void
+  ): Promise<string> {
+
+  try {
+    const result = await promisify<string>(c => web3.eth.call({
+      from,
+      to,
+      data
+    }, c))
+    return result
+
+  } catch (error) {
+    // Probably method not found, and web3 is a Parity node
+    if (onError) {
+      onError(error)
+    }
+    // Backwards compatibility with Geth nodes
+    return '0x'
   }
 }
 

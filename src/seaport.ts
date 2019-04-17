@@ -8,7 +8,7 @@ import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide
 import {
   confirmTransaction, findAsset,
   makeBigNumber, orderToJSON,
-  personalSignAsync, promisify,
+  personalSignAsync,
   sendRawTransaction, estimateCurrentPrice, INVERSE_BASIS_POINT, getOrderHash,
   getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
@@ -29,6 +29,8 @@ import {
   getWyvernNFTAsset,
   encodeTransferCall,
   getTransferFeeSettings,
+  rawCall,
+  promisifyCall,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -645,30 +647,16 @@ export class OpenSeaPort {
       }
     }
 
-    // NOTE:
-    // Use this long way of calling so we can check for method existence.
-    // If isNaN(isApprovedForAll) == true, then
-    // result for isApprovedForAllCallHash was '0x'
+    const isApprovedForAll = await promisifyCall<boolean>(c => erc721.isApprovedForAll.call(accountAddress, proxyAddress, c))
 
-    const isApprovedCheckData = erc721.isApprovedForAll.getData(accountAddress, proxyAddress)
-
-    const isApprovedForAllCallHash = await promisify<string>(c => this.web3.eth.call({
-      from: accountAddress,
-      to: erc721.address,
-      data: isApprovedCheckData,
-    }, c))
-    const isApprovedForAll = parseInt(isApprovedForAllCallHash)
-
-    if (isApprovedForAll == 1) {
+    if (isApprovedForAll == true) {
       // Supports ApproveAll
-      // Result was NULL_BLOCK_HASH + 1
       this.logger('Already approved proxy for all tokens')
       return null
     }
 
-    if (isApprovedForAll == 0) {
+    if (isApprovedForAll == false) {
       // Supports ApproveAll
-      //  Result was NULL_BLOCK_HASH
       //  not approved for all yet
 
       if (skipApproveAllIfTokenAddressIn.includes(tokenAddress)) {
@@ -697,7 +685,7 @@ export class OpenSeaPort {
         return txHash
       } catch (error) {
         console.error(error)
-        throw new Error("Couldn't get permission to trade these tokens. Remember, you only have to approve them once for this item type!")
+        throw new Error("Couldn't get permission to approve these tokens for trading. Their contract might not be implemented correctly. Please contact the developer!")
       }
     }
 
@@ -705,7 +693,7 @@ export class OpenSeaPort {
     this.logger('Contract does not support Approve All')
 
     // Note: approvedAddr will be '0x' if not supported
-    let approvedAddr = await promisify(c => erc721.getApproved.call(tokenId, c))
+    let approvedAddr = await promisifyCall<string>(c => erc721.getApproved.call(tokenId, c))
     if (approvedAddr == proxyAddress) {
       this.logger('Already approved proxy for this token')
       return null
@@ -714,9 +702,9 @@ export class OpenSeaPort {
 
     // SPECIAL CASING
 
-    if (approvedAddr == '0x') {
+    if (!approvedAddr) {
       // CRYPTOKITTIES check
-      approvedAddr = await promisify(c => erc721.kittyIndexToApproved.call(tokenId, c))
+      approvedAddr = await promisifyCall<string>(c => erc721.kittyIndexToApproved.call(tokenId, c))
       if (approvedAddr == proxyAddress) {
         this.logger('Already approved proxy for this kitty')
         return null
@@ -724,9 +712,9 @@ export class OpenSeaPort {
       this.logger(`CryptoKitties approve response: ${approvedAddr}`)
     }
 
-    if (approvedAddr == '0x') {
+    if (!approvedAddr) {
       // ETHEREMON check
-      approvedAddr = await promisify(c => erc721.allowed.call(accountAddress, tokenId, c))
+      approvedAddr = await promisifyCall<string>(c => erc721.allowed.call(accountAddress, tokenId, c))
       if (approvedAddr == proxyAddress) {
         this.logger('Already allowed proxy for this token')
         return null
@@ -757,7 +745,7 @@ export class OpenSeaPort {
       return txHash
     } catch (error) {
       console.error(error)
-      throw new Error("Couldn't get permission to trade this token.")
+      throw new Error("Couldn't get permission to approve this token for trading. Its contract might not be implemented correctly. Please contact the developer!")
     }
   }
 
@@ -1086,11 +1074,11 @@ export class OpenSeaPort {
     if (!tokenAddress) {
       tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     }
-    const amount = await promisify(c => this.web3.eth.call({
+    const amount = await rawCall(this.web3, {
       from: accountAddress,
       to: tokenAddress,
       data: WyvernSchemas.encodeCall(getMethod(tokenAbi, 'balanceOf'), [accountAddress]),
-    }, c))
+    })
 
     return makeBigNumber(amount.toString())
   }
@@ -1421,12 +1409,12 @@ export class OpenSeaPort {
       tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     }
     const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
-    const approved = await promisify<string>(c => this.web3.eth.call({
+    const approved = await rawCall(this.web3, {
       from: accountAddress,
       to: tokenAddress,
       data: WyvernSchemas.encodeCall(getMethod(ERC20, 'allowance'),
         [accountAddress, contractAddress]),
-    }, c))
+    })
     return makeBigNumber(approved)
   }
 
@@ -2255,7 +2243,7 @@ export class OpenSeaPort {
     }
   }
 
-  private _getSchema(schemaName: WyvernSchemaName): WyvernSchemas.Schema < any > {
+  private _getSchema(schemaName: WyvernSchemaName): WyvernSchemas.Schema <any> {
     const schema = WyvernSchemas.schemas[this._networkName].filter(s => s.name == schemaName)[0]
 
     if (!schema) {

@@ -26,11 +26,13 @@ export declare const ORDER_MATCHING_LATENCY_SECONDS: number;
 export declare const SELL_ORDER_BATCH_SIZE = 3;
 export declare const DEFAULT_GAS_INCREASE_FACTOR = 1.1;
 /**
- * Promisify a callback-syntax web3 function
- * @param inner callback function that accepts a Web3 callback function and passes
- * it to the Web3 function
+ * Promisify a call a method on a contract,
+ * handling Parity errors. Returns '0x' if error.
+ * @param callback An anonymous function that takes a web3 callback
+ * and returns a Web3 Contract's call result, e.g. `c => erc721.ownerOf(3, c)`
+ * @param onError callback when user denies transaction
  */
-export declare function promisify<T>(inner: (fn: Web3Callback<T>) => void): Promise<T>;
+export declare function promisifyCall<T>(callback: (fn: Web3Callback<T>) => void, onError?: (error: Error) => void): Promise<T | undefined>;
 export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise<{}>;
 export declare const assetFromJSON: (asset: any) => OpenSeaAsset;
 export declare const assetBundleFromJSON: (asset_bundle: any) => OpenSeaAssetBundle;
@@ -71,6 +73,17 @@ export declare function makeBigNumber(arg: number | string | BigNumber): BigNumb
  * @param onError callback when user denies transaction
  */
 export declare function sendRawTransaction(web3: Web3, { from, to, data, gasPrice, value, gas }: Web3.TxData, onError: (error: Error) => void): Promise<string>;
+/**
+ * Call a method on a contract, sending arbitrary data and
+ * handling Parity errors. Returns '0x' if error.
+ * @param web3 Web3 instance
+ * @param param0 __namedParameters
+ * @param from address sending call
+ * @param to destination contract address
+ * @param data data to send to contract
+ * @param onError callback when user denies transaction
+ */
+export declare function rawCall(web3: Web3, { from, to, data }: Web3.CallData, onError?: (error: Error) => void): Promise<string>;
 /**
  * Estimate Gas usage for a transaction
  * @param web3 Web3 instance
