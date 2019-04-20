@@ -19,10 +19,10 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
-  - [Transferring (gifting) items](#transferring-gifting-items)
+  - [Transferring Items (Gifting)](#transferring-items-gifting)
 - [Affiliate Program](#affiliate-program)
-  - [Referring listings](#referring-listings)
-  - [Custom referral bounties](#custom-referral-bounties)
+  - [Referring Listings](#referring-listings)
+  - [Custom Referral Bounties](#custom-referral-bounties)
 - [Advanced](#advanced)
   - [Bulk Transfers](#bulk-transfers)
   - [Creating Bundles](#creating-bundles)
@@ -83,6 +83,7 @@ const seaport = new OpenSeaPort(provider, {
 Then, you can do this to make an offer on an asset:
 
 ```JavaScript
+// Token ID and smart contract address for a non-fungible token:
 const { tokenId, tokenAddress } = YOUR_ASSET
 // The offerer's wallet address:
 const accountAddress = "0x1234..."
@@ -93,8 +94,7 @@ const offer = await seaport.createBuyOrder({
   accountAddress,
   // Value of the offer, in units of the payment token (or wrapped ETH if none is specified):
   startAmount: 1.2,
-  // Expiration time for the order, in seconds. `0` or `undefined` means it will never expire:
-  expirationTime: 0
+  // Read below for other options
 })
 ```
 
@@ -110,7 +110,9 @@ const offer = await seaport.createBundleBuyOrder({
   tokenIds: assets.map(a => a.tokenId),
   tokenAddresses: assets.map(a => a.tokenAddress),
   accountAddress,
-  startAmount: 2.4
+  startAmount: 2.4,
+  // Optional expiration time for the order, in Unix time (seconds):
+  expirationTime: (Date.now() / 1000 + 60 * 60 * 24) // One day from now
 })
 ```
 
@@ -121,16 +123,17 @@ When you bid on multiple assets, an email will be sent to the owner if a bundle 
 To sell an asset, call `createSellOrder`. You can do a fixed-price sale, where `startAmount` is equal to `endAmount`, or a declining [Dutch auction](https://en.wikipedia.org/wiki/Dutch_auction), where `endAmount` is lower and the price declines until `expirationTime` is hit:
 
 ```JavaScript
-// Expire this auction one day from now
+// Expire this auction one day from now.
+// Note that we convert from the JavaScript timestamp (milliseconds):
 const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
 
 const auction = await seaport.createSellOrder({
   tokenId,
   tokenAddress,
   accountAddress,
-  startAmount,
+  startAmount: 3,
   // If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order:
-  endAmount,
+  endAmount: 0.1,
   expirationTime
 })
 ```
@@ -154,7 +157,10 @@ const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
 const sellOrders = await seaport.createFactorySellOrders({
   assetId: ASSET_OPTION_ID,
   factoryAddress: FACTORY_CONTRACT_ADDRESS,
-  accountAddress, startAmount, endAmount, expirationTime,
+  accountAddress,
+  startAmount,
+  endAmount,
+  expirationTime,
   // Will create 100 sell orders in parallel batches of 10, to speed things up:
   numberOfOrders: 100
 })
@@ -239,7 +245,7 @@ await this.props.seaport.fulfillOrder({ order, accountAddress })
 
 If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
 
-### Transferring (gifting) items
+### Transferring Items (Gifting)
 
 A handy feature in OpenSea.js is the ability to transfer any supported asset (not just non-fungible tokens) in one line of JavaScript.
 
@@ -262,7 +268,7 @@ New in version 0.4, OpenSea.js allows to you easily create an affiliate program 
 
 You can use this to **win at least 1%** of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.
 
-### Referring listings
+### Referring Listings
 
 You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders! Whenever someone refers a sale or the acceptance of an offer, you can add a `referrerAddress` to give their wallet credit:
 
@@ -275,7 +281,7 @@ This works for buying assets and bundles, along with accepting bids.
 
 OpenSea will send the referrer an email congradulating them, along with **1%** of the item's sale price.
 
-### Custom referral bounties
+### Custom Referral Bounties
 
 Sellers can customize the bounties they add to their items when listing them for sale. By default, OpenSea will pay referrers 1% and sellers pay them nothing, but sellers can increase this up to the full OpenSea fee (currently 2.5% for most assets) for both assets and bundles:
 

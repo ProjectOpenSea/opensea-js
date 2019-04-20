@@ -83,12 +83,12 @@
 							<li><a href="#fetching-orders">Fetching Orders</a></li>
 							<li><a href="#buying-items">Buying Items</a></li>
 							<li><a href="#accepting-offers">Accepting Offers</a></li>
-							<li><a href="#transferring-gifting-items">Transferring (gifting) items</a></li>
+							<li><a href="#transferring-items-gifting">Transferring Items (Gifting)</a></li>
 						</ul>
 					</li>
 					<li><a href="#affiliate-program">Affiliate Program</a><ul>
-							<li><a href="#referring-listings">Referring listings</a></li>
-							<li><a href="#custom-referral-bounties">Custom referral bounties</a></li>
+							<li><a href="#referring-listings">Referring Listings</a></li>
+							<li><a href="#custom-referral-bounties">Custom Referral Bounties</a></li>
 						</ul>
 					</li>
 					<li><a href="#advanced">Advanced</a><ul>
@@ -135,7 +135,8 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 </code></pre>
 				<h3 id="making-offers">Making Offers</h3>
 				<p>Then, you can do this to make an offer on an asset:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> { tokenId, tokenAddress } = YOUR_ASSET
+				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Token ID and smart contract address for a non-fungible token:</span>
+<span class="hljs-keyword">const</span> { tokenId, tokenAddress } = YOUR_ASSET
 <span class="hljs-comment">// The offerer's wallet address:</span>
 <span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x1234..."</span>
 
@@ -145,8 +146,7 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   accountAddress,
   <span class="hljs-comment">// Value of the offer, in units of the payment token (or wrapped ETH if none is specified):</span>
   startAmount: <span class="hljs-number">1.2</span>,
-  <span class="hljs-comment">// Expiration time for the order, in seconds. `0` or `undefined` means it will never expire:</span>
-  expirationTime: <span class="hljs-number">0</span>
+  <span class="hljs-comment">// Read below for other options</span>
 })
 </code></pre>
 				<p>When you make an offer on an item owned by an OpenSea user, <strong>that user will automatically get an email notifying them with the offer amount</strong>, if it&#39;s above their desired threshold.</p>
@@ -157,22 +157,25 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   <span class="hljs-attr">tokenIds</span>: assets.map(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> a.tokenId),
   <span class="hljs-attr">tokenAddresses</span>: assets.map(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> a.tokenAddress),
   accountAddress,
-  <span class="hljs-attr">startAmount</span>: <span class="hljs-number">2.4</span>
+  <span class="hljs-attr">startAmount</span>: <span class="hljs-number">2.4</span>,
+  <span class="hljs-comment">// Optional expiration time for the order, in Unix time (seconds):</span>
+  expirationTime: (<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>) <span class="hljs-comment">// One day from now</span>
 })
 </code></pre>
 				<p>When you bid on multiple assets, an email will be sent to the owner if a bundle exists on OpenSea that contains the assets. In the future, OpenSea will send emails to multiple owners if the assets aren&#39;t all owned by the same wallet.</p>
 				<h3 id="making-auctions">Making Auctions</h3>
 				<p>To sell an asset, call <code>createSellOrder</code>. You can do a fixed-price sale, where <code>startAmount</code> is equal to <code>endAmount</code>, or a declining <a href="https://en.wikipedia.org/wiki/Dutch_auction">Dutch auction</a>, where <code>endAmount</code> is lower and the price declines until <code>expirationTime</code> is hit:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire this auction one day from now</span>
+				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire this auction one day from now.</span>
+<span class="hljs-comment">// Note that we convert from the JavaScript timestamp (milliseconds):</span>
 <span class="hljs-keyword">const</span> expirationTime = (<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
 
 <span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({
   tokenId,
   tokenAddress,
   accountAddress,
-  startAmount,
+  <span class="hljs-attr">startAmount</span>: <span class="hljs-number">3</span>,
   <span class="hljs-comment">// If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order:</span>
-  endAmount,
+  endAmount: <span class="hljs-number">0.1</span>,
   expirationTime
 })
 </code></pre>
@@ -188,7 +191,10 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 <span class="hljs-keyword">const</span> sellOrders = <span class="hljs-keyword">await</span> seaport.createFactorySellOrders({
   <span class="hljs-attr">assetId</span>: ASSET_OPTION_ID,
   <span class="hljs-attr">factoryAddress</span>: FACTORY_CONTRACT_ADDRESS,
-  accountAddress, startAmount, endAmount, expirationTime,
+  accountAddress,
+  startAmount,
+  endAmount,
+  expirationTime,
   <span class="hljs-comment">// Will create 100 sell orders in parallel batches of 10, to speed things up:</span>
   numberOfOrders: <span class="hljs-number">100</span>
 })
@@ -250,7 +256,7 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 <span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress })
 </code></pre>
 				<p>If the order is a buy order (<code>order.side === OrderSide.Buy</code>), then the taker is the <em>owner</em> and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See <a href="#listening-to-events">Listening to Events</a> below to respond to the setup transactions that occur the first time a user accepts a bid.</p>
-				<h3 id="transferring-gifting-items">Transferring (gifting) items</h3>
+				<h3 id="transferring-items-gifting-">Transferring Items (Gifting)</h3>
 				<p>A handy feature in OpenSea.js is the ability to transfer any supported asset (not just non-fungible tokens) in one line of JavaScript.</p>
 				<p>To transfer an ERC-721 asset or an ERC-1155 asset, it&#39;s just one call:</p>
 				<pre><code class="lang-JavaScript">
@@ -264,14 +270,14 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 				<h2 id="affiliate-program">Affiliate Program</h2>
 				<p>New in version 0.4, OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It&#39;s the crypto-equivalent of bounty hunting 💰</p>
 				<p>You can use this to <strong>win at least 1%</strong> of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.</p>
-				<h3 id="referring-listings">Referring listings</h3>
+				<h3 id="referring-listings">Referring Listings</h3>
 				<p>You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders! Whenever someone refers a sale or the acceptance of an offer, you can add a <code>referrerAddress</code> to give their wallet credit:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> referrerAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The referrer's wallet address</span>
 <span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress, referrerAddress })
 </code></pre>
 				<p>This works for buying assets and bundles, along with accepting bids.</p>
 				<p>OpenSea will send the referrer an email congradulating them, along with <strong>1%</strong> of the item&#39;s sale price.</p>
-				<h3 id="custom-referral-bounties">Custom referral bounties</h3>
+				<h3 id="custom-referral-bounties">Custom Referral Bounties</h3>
 				<p>Sellers can customize the bounties they add to their items when listing them for sale. By default, OpenSea will pay referrers 1% and sellers pay them nothing, but sellers can increase this up to the full OpenSea fee (currently 2.5% for most assets) for both assets and bundles:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Price the Genesis CryptoKitty at 100 ETH</span>
 <span class="hljs-keyword">const</span> startAmount = <span class="hljs-number">100</span>
