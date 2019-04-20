@@ -71,12 +71,17 @@ To get started, create a new OpenSeaJS client, called an OpenSeaPort 🚢, using
 import * as Web3 from 'web3'
 import { OpenSeaPort, Network } from 'opensea-js'
 
+// This example provider won't let you make transactions, only read-only calls:
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
 const seaport = new OpenSeaPort(provider, {
   networkName: Network.Main
 })
 ```
+
+**NOTE:** Using the sample Infura provider above won't let you authorize transactions, which are needed when approving and trading assets and currency. To make transactions, you need a provider with a private key or mnemonic set.
+
+In a browser with web3 or [MetaMask](https://metamask.io/), you can use `window.ethereum` or `window.web3.currentProvider` to access the native provider. In a Node.js script, you can follow [this example](https://github.com/ProjectOpenSea/opensea-creatures/blob/master/scripts/sell.js) to use a custom mnemonic.
 
 ### Making Offers
 
