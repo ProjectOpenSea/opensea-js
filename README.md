@@ -84,12 +84,17 @@ Then, you can do this to make an offer on an asset:
 
 ```JavaScript
 const { tokenId, tokenAddress } = YOUR_ASSET
+// The offerer's wallet address:
+const accountAddress = "0x1234..."
+
 const offer = await seaport.createBuyOrder({
   tokenId,
   tokenAddress,
   accountAddress,
-  startAmount,
-  expirationTime: 0 // An expirationTime of 0 means it will never expire
+  // Value of the offer, in units of the payment token (or wrapped ETH if none is specified):
+  startAmount: 1.2,
+  // Expiration time for the order, in seconds. `0` or `undefined` means it will never expire:
+  expirationTime: 0
 })
 ```
 
@@ -105,8 +110,7 @@ const offer = await seaport.createBundleBuyOrder({
   tokenIds: assets.map(a => a.tokenId),
   tokenAddresses: assets.map(a => a.tokenAddress),
   accountAddress,
-  startAmount,
-  expirationTime: 0 // An expirationTime of 0 means it will never expire
+  startAmount: 2.4
 })
 ```
 
@@ -119,8 +123,16 @@ To sell an asset, call `createSellOrder`. You can do a fixed-price sale, where `
 ```JavaScript
 // Expire this auction one day from now
 const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
-// If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order.
-const auction = await seaport.createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime })
+
+const auction = await seaport.createSellOrder({
+  tokenId,
+  tokenAddress,
+  accountAddress,
+  startAmount,
+  // If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order:
+  endAmount,
+  expirationTime
+})
 ```
 
 The units for `startAmount` and `endAmount` are Ether, ETH. If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
@@ -143,7 +155,8 @@ const sellOrders = await seaport.createFactorySellOrders({
   assetId: ASSET_OPTION_ID,
   factoryAddress: FACTORY_CONTRACT_ADDRESS,
   accountAddress, startAmount, endAmount, expirationTime,
-  numberOfOrders: 100 // Will create 100 sell orders in parallel batches of 10, to speed things up
+  // Will create 100 sell orders in parallel batches of 10, to speed things up:
+  numberOfOrders: 100
 })
 ```
 
@@ -279,7 +292,6 @@ const auction = await seaport.createSellOrder({
   tokenId: "1", // Token ID
   accountAddress: OWNERS_WALLET_ADDRESS,
   startAmount,
-  expirationTime: 0,
   extraBountyBasisPoints: extraBountyPercent * 100
 })
 ```
@@ -348,7 +360,6 @@ const auction = await seaport.createSellOrder({
   tokenId: "1", // Token ID
   accountAddress: OWNERS_WALLET_ADDRESS,
   startAmount: 100,
-  expirationTime: 0,
   paymentTokenAddress
 })
 ```

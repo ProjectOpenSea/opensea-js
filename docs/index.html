@@ -136,12 +136,17 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 				<h3 id="making-offers">Making Offers</h3>
 				<p>Then, you can do this to make an offer on an asset:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> { tokenId, tokenAddress } = YOUR_ASSET
+<span class="hljs-comment">// The offerer's wallet address:</span>
+<span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x1234..."</span>
+
 <span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({
   tokenId,
   tokenAddress,
   accountAddress,
-  startAmount,
-  <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> <span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
+  <span class="hljs-comment">// Value of the offer, in units of the payment token (or wrapped ETH if none is specified):</span>
+  startAmount: <span class="hljs-number">1.2</span>,
+  <span class="hljs-comment">// Expiration time for the order, in seconds. `0` or `undefined` means it will never expire:</span>
+  expirationTime: <span class="hljs-number">0</span>
 })
 </code></pre>
 				<p>When you make an offer on an item owned by an OpenSea user, <strong>that user will automatically get an email notifying them with the offer amount</strong>, if it&#39;s above their desired threshold.</p>
@@ -152,8 +157,7 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   <span class="hljs-attr">tokenIds</span>: assets.map(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> a.tokenId),
   <span class="hljs-attr">tokenAddresses</span>: assets.map(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> a.tokenAddress),
   accountAddress,
-  startAmount,
-  <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span> <span class="hljs-comment">// An expirationTime of 0 means it will never expire</span>
+  <span class="hljs-attr">startAmount</span>: <span class="hljs-number">2.4</span>
 })
 </code></pre>
 				<p>When you bid on multiple assets, an email will be sent to the owner if a bundle exists on OpenSea that contains the assets. In the future, OpenSea will send emails to multiple owners if the assets aren&#39;t all owned by the same wallet.</p>
@@ -161,8 +165,16 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 				<p>To sell an asset, call <code>createSellOrder</code>. You can do a fixed-price sale, where <code>startAmount</code> is equal to <code>endAmount</code>, or a declining <a href="https://en.wikipedia.org/wiki/Dutch_auction">Dutch auction</a>, where <code>endAmount</code> is lower and the price declines until <code>expirationTime</code> is hit:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire this auction one day from now</span>
 <span class="hljs-keyword">const</span> expirationTime = (<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
-<span class="hljs-comment">// If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order.</span>
-<span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime })
+
+<span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({
+  tokenId,
+  tokenAddress,
+  accountAddress,
+  startAmount,
+  <span class="hljs-comment">// If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order:</span>
+  endAmount,
+  expirationTime
+})
 </code></pre>
 				<p>The units for <code>startAmount</code> and <code>endAmount</code> are Ether, ETH. If you want to specify another ERC-20 token to use, see <a href="#using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</a>.</p>
 				<p>See <a href="#listening-to-events">Listening to Events</a> to respond to the setup transactions that occur the first time a user sells an item.</p>
@@ -177,7 +189,8 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   <span class="hljs-attr">assetId</span>: ASSET_OPTION_ID,
   <span class="hljs-attr">factoryAddress</span>: FACTORY_CONTRACT_ADDRESS,
   accountAddress, startAmount, endAmount, expirationTime,
-  <span class="hljs-attr">numberOfOrders</span>: <span class="hljs-number">100</span> <span class="hljs-comment">// Will create 100 sell orders in parallel batches of 10, to speed things up</span>
+  <span class="hljs-comment">// Will create 100 sell orders in parallel batches of 10, to speed things up:</span>
+  numberOfOrders: <span class="hljs-number">100</span>
 })
 </code></pre>
 				<p>Here&#39;s an <a href="https://github.com/ProjectOpenSea/opensea-creatures/blob/master/scripts/sell.js">example script</a> you can use to mint items.</p>
@@ -272,7 +285,6 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   tokenId: <span class="hljs-string">"1"</span>, <span class="hljs-comment">// Token ID</span>
   accountAddress: OWNERS_WALLET_ADDRESS,
   startAmount,
-  <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span>,
   <span class="hljs-attr">extraBountyBasisPoints</span>: extraBountyPercent * <span class="hljs-number">100</span>
 })
 </code></pre>
@@ -318,7 +330,6 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   tokenId: <span class="hljs-string">"1"</span>, <span class="hljs-comment">// Token ID</span>
   accountAddress: OWNERS_WALLET_ADDRESS,
   <span class="hljs-attr">startAmount</span>: <span class="hljs-number">100</span>,
-  <span class="hljs-attr">expirationTime</span>: <span class="hljs-number">0</span>,
   paymentTokenAddress
 })
 </code></pre>
@@ -616,6 +627,15 @@ handleSeaportEvents() {
 						<a href="globals.html#dep_infura_key" class="tsd-kind-icon">DEP_<wbr>INFURA_<wbr>KEY</a>
 					</li>
 					<li class=" tsd-kind-variable">
+						<a href="globals.html#enjin_address" class="tsd-kind-icon">ENJIN_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#enjin_coin_address" class="tsd-kind-icon">ENJIN_<wbr>COIN_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#erc1155" class="tsd-kind-icon">ERC1155</a>
+					</li>
+					<li class=" tsd-kind-variable">
 						<a href="globals.html#erc20" class="tsd-kind-icon">ERC20</a>
 					</li>
 					<li class=" tsd-kind-variable">
@@ -730,6 +750,9 @@ handleSeaportEvents() {
 						<a href="globals.html#getorderhash" class="tsd-kind-icon">get<wbr>Order<wbr>Hash</a>
 					</li>
 					<li class=" tsd-kind-function">
+						<a href="globals.html#gettransferfeesettings" class="tsd-kind-icon">get<wbr>Transfer<wbr>Fee<wbr>Settings</a>
+					</li>
+					<li class=" tsd-kind-function">
 						<a href="globals.html#getwyvernbundle" class="tsd-kind-icon">get<wbr>Wyvern<wbr>Bundle</a>
 					</li>
 					<li class=" tsd-kind-function">
@@ -753,8 +776,14 @@ handleSeaportEvents() {
 					<li class=" tsd-kind-function">
 						<a href="globals.html#personalsignasync" class="tsd-kind-icon">personal<wbr>Sign<wbr>Async</a>
 					</li>
-					<li class=" tsd-kind-function tsd-has-type-parameter">
+					<li class=" tsd-kind-function tsd-has-type-parameter tsd-is-not-exported">
 						<a href="globals.html#promisify" class="tsd-kind-icon">promisify</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="globals.html#promisifycall" class="tsd-kind-icon">promisify<wbr>Call</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#rawcall" class="tsd-kind-icon">raw<wbr>Call</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#sendrawtransaction" class="tsd-kind-icon">send<wbr>Raw<wbr>Transaction</a>
