@@ -401,7 +401,7 @@ export declare class OpenSeaPort {
     }): Promise<OpenSeaFees>;
     /**
      * Validate and post an order to the OpenSea orderbook.
-     * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder_. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
+     * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
      * @returns The order as stored by the orderbook
      */
     validateAndPostOrder(order: Order): Promise<Order>;
@@ -544,6 +544,14 @@ export declare class OpenSeaPort {
         order: UnhashedOrder;
         accountAddress: string;
     }): Promise<void>;
+    /**
+     * Instead of signing an off-chain order, you can approve an order
+     * with on on-chain transaction using this method
+     * @param order Order to approve
+     * @returns Transaction hash of the approval transaction
+     */
+    _approveOrder(order: UnsignedOrder): Promise<string>;
+    _validateOrder(order: Order): Promise<boolean>;
     _approveAll({ schema, wyAssets, accountAddress, proxyAddress }: {
         schema: WyvernSchemas.Schema<any>;
         wyAssets: WyvernAsset[];
@@ -575,8 +583,9 @@ export declare class OpenSeaPort {
     private _getMetadata;
     private _atomicMatch;
     private _getRequiredAmountForTakingSellOrder;
-    private _signOrder;
+    private _authorizeOrder;
     private _getSchema;
     private _dispatch;
     private _confirmTransaction;
+    private _pollCallbackForConfirmation;
 }

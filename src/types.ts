@@ -52,6 +52,7 @@ export enum EventType {
   // Basic actions: matching orders, creating orders, and cancelling orders
   MatchOrders = "MatchOrders",
   CancelOrder = "CancelOrder",
+  ApproveOrder = "ApproveOrder",
   CreateOrder = "CreateOrder",
   // When the signature request for an order is denied
   OrderDenied = "OrderDenied",

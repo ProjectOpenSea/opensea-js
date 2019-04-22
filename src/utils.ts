@@ -394,9 +394,10 @@ export const findAsset = async (
  * @param web3 Web3 instance
  * @param message message to sign
  * @param signerAddress web3 address signing the message
+ * @returns A signature if provider can sign, otherwise null
  */
 export async function personalSignAsync(web3: Web3, message: string, signerAddress: string
-  ): Promise<ECSignature> {
+  ): Promise<ECSignature | null> {
 
   const signature = await promisify<Web3.JSONRPCResponsePayload>(c => web3.currentProvider.sendAsync({
       method: 'personal_sign', // 'eth_signTypedData',
@@ -404,6 +405,11 @@ export async function personalSignAsync(web3: Web3, message: string, signerAddre
       from: signerAddress,
     } as any, c)
   )
+
+  const error = (signature as any).error
+  if (error) {
+    return null
+  }
 
   return parseSignatureHex(signature.result)
 }

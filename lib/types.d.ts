@@ -31,6 +31,7 @@ export declare enum EventType {
     ApproveAllAssets = "ApproveAllAssets",
     MatchOrders = "MatchOrders",
     CancelOrder = "CancelOrder",
+    ApproveOrder = "ApproveOrder",
     CreateOrder = "CreateOrder",
     OrderDenied = "OrderDenied",
     TransferAll = "TransferAll",

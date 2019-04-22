@@ -56,8 +56,9 @@ export declare const findAsset: (web3: Web3, { account, proxy, wyAsset, schema }
  * @param web3 Web3 instance
  * @param message message to sign
  * @param signerAddress web3 address signing the message
+ * @returns A signature if provider can sign, otherwise null
  */
-export declare function personalSignAsync(web3: Web3, message: string, signerAddress: string): Promise<ECSignature>;
+export declare function personalSignAsync(web3: Web3, message: string, signerAddress: string): Promise<ECSignature | null>;
 /**
  * Special fixes for making BigNumbers using web3 results
  * @param arg An arg or the result of a web3 call to turn into a BigNumber

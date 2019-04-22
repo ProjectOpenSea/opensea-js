@@ -249,10 +249,10 @@ export class OpenSeaPort {
     }
     let signature
     try {
-      signature = await this._signOrder(hashedOrder)
+      signature = await this._authorizeOrder(hashedOrder)
     } catch (error) {
       console.error(error)
-      throw new Error("You declined to sign your offer. Just a reminder: there's no gas needed anymore to create offers!")
+      throw new Error("You declined to authorize your offer")
     }
 
     const orderWithSignature = {
@@ -314,10 +314,10 @@ export class OpenSeaPort {
     }
     let signature
     try {
-      signature = await this._signOrder(hashedOrder)
+      signature = await this._authorizeOrder(hashedOrder)
     } catch (error) {
       console.error(error)
-      throw new Error("You declined to sign your offer. Just a reminder: there's no gas needed anymore to create offers!")
+      throw new Error("You declined to authorize your offer")
     }
 
     const orderWithSignature = {
@@ -371,10 +371,10 @@ export class OpenSeaPort {
     }
     let signature
     try {
-      signature = await this._signOrder(hashedOrder)
+      signature = await this._authorizeOrder(hashedOrder)
     } catch (error) {
       console.error(error)
-      throw new Error("You declined to sign your auction. Just a reminder: there's no gas needed anymore to create auctions!")
+      throw new Error("You declined to authorize your auction")
     }
 
     const orderWithSignature = {
@@ -445,10 +445,10 @@ export class OpenSeaPort {
       }
       let signature
       try {
-        signature = await this._signOrder(hashedOrder)
+        signature = await this._authorizeOrder(hashedOrder)
       } catch (error) {
         console.error(error)
-        throw new Error("You declined to sign your auction, or your web3 provider can't sign using personal_sign. Try 'web3-provider-engine' and make sure a mnemonic is set. Just a reminder: there's no gas needed anymore to mint tokens!")
+        throw new Error("You declined to authorize your auction, or your web3 provider can't sign using personal_sign. Try 'web3-provider-engine' and make sure a mnemonic is set. Just a reminder: there's no gas needed anymore to mint tokens!")
       }
 
       const orderWithSignature = {
@@ -537,10 +537,10 @@ export class OpenSeaPort {
     }
     let signature
     try {
-      signature = await this._signOrder(hashedOrder)
+      signature = await this._authorizeOrder(hashedOrder)
     } catch (error) {
       console.error(error)
-      throw new Error("You declined to sign your auction. Just a reminder: there's no gas needed anymore to create auctions!")
+      throw new Error("You declined to authorize your auction")
     }
 
     const orderWithSignature = {
@@ -571,7 +571,10 @@ export class OpenSeaPort {
     const metadata = this._getMetadata(order, referrerAddress)
     const transactionHash = await this._atomicMatch({ buy, sell, accountAddress, metadata })
 
-    await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders, "Fulfilling order")
+    await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders, "Fulfilling order", async () => {
+      const isOpen = await this._validateOrder(order)
+      return !isOpen
+    })
   }
 
   /**
@@ -604,7 +607,10 @@ export class OpenSeaPort {
       order.s || '0x',
       { from: accountAddress, gasPrice })
 
-    await this._confirmTransaction(transactionHash.toString(), EventType.CancelOrder, "Cancelling order")
+    await this._confirmTransaction(transactionHash.toString(), EventType.CancelOrder, "Cancelling order", async () => {
+      const isOpen = await this._validateOrder(order)
+      return !isOpen
+    })
   }
 
   /**
@@ -647,15 +653,17 @@ export class OpenSeaPort {
       }
     }
 
-    // NOTE:
-    // Use this long way of calling so we can check for method existence on a bool-returning method.
-
-    const isApprovedForAllRaw = await rawCall(this.web3, {
-      from: accountAddress,
-      to: erc721.address,
-      data: erc721.isApprovedForAll.getData(accountAddress, proxyAddress)
-    })
-    const isApprovedForAll = parseInt(isApprovedForAllRaw)
+    const approvalAllCheck = async () => {
+      // NOTE:
+      // Use this long way of calling so we can check for method existence on a bool-returning method.
+      const isApprovedForAllRaw = await rawCall(this.web3, {
+        from: accountAddress,
+        to: erc721.address,
+        data: erc721.isApprovedForAll.getData(accountAddress, proxyAddress)
+      })
+      return parseInt(isApprovedForAllRaw)
+    }
+    const isApprovedForAll = await approvalAllCheck()
 
     if (isApprovedForAll == 1) {
       // Supports ApproveAll
@@ -689,7 +697,10 @@ export class OpenSeaPort {
         }, error => {
           this._dispatch(EventType.TransactionDenied, { error, accountAddress })
         })
-        await this._confirmTransaction(txHash, EventType.ApproveAllAssets, 'Approving all tokens of this type for trading')
+        await this._confirmTransaction(txHash, EventType.ApproveAllAssets, 'Approving all tokens of this type for trading', async () => {
+          const result = await approvalAllCheck()
+          return result == 1
+        })
         return txHash
       } catch (error) {
         console.error(error)
@@ -700,34 +711,42 @@ export class OpenSeaPort {
     // Does not support ApproveAll (ERC721 v1 or v2)
     this.logger('Contract does not support Approve All')
 
-    // Note: approvedAddr will be '0x' if not supported
-    let approvedAddr = await promisifyCall<string>(c => erc721.getApproved.call(tokenId, c))
-    if (approvedAddr == proxyAddress) {
+    const approvalOneCheck = async () => {
+      // Note: approvedAddr will be '0x' if not supported
+      let approvedAddr = await promisifyCall<string>(c => erc721.getApproved.call(tokenId, c))
+      if (approvedAddr == proxyAddress) {
+        return true
+      }
+      this.logger(`Approve response: ${approvedAddr}`)
+
+      // SPECIAL CASING
+
+      if (!approvedAddr) {
+        // CRYPTOKITTIES check
+        approvedAddr = await promisifyCall<string>(c => erc721.kittyIndexToApproved.call(tokenId, c))
+        if (approvedAddr == proxyAddress) {
+          this.logger('Already approved proxy for this kitty')
+          return true
+        }
+        this.logger(`CryptoKitties approve response: ${approvedAddr}`)
+      }
+
+      if (!approvedAddr) {
+        // ETHEREMON check
+        approvedAddr = await promisifyCall<string>(c => erc721.allowed.call(accountAddress, tokenId, c))
+        if (approvedAddr == proxyAddress) {
+          this.logger('Already allowed proxy for this Etheremon')
+          return true
+        }
+        this.logger(`"allowed" response: ${approvedAddr}`)
+      }
+      return false
+    }
+
+    const isApprovedForOne = await approvalOneCheck()
+    if (isApprovedForOne) {
       this.logger('Already approved proxy for this token')
       return null
-    }
-    this.logger(`Approve response: ${approvedAddr}`)
-
-    // SPECIAL CASING
-
-    if (!approvedAddr) {
-      // CRYPTOKITTIES check
-      approvedAddr = await promisifyCall<string>(c => erc721.kittyIndexToApproved.call(tokenId, c))
-      if (approvedAddr == proxyAddress) {
-        this.logger('Already approved proxy for this kitty')
-        return null
-      }
-      this.logger(`CryptoKitties approve response: ${approvedAddr}`)
-    }
-
-    if (!approvedAddr) {
-      // ETHEREMON check
-      approvedAddr = await promisifyCall<string>(c => erc721.allowed.call(accountAddress, tokenId, c))
-      if (approvedAddr == proxyAddress) {
-        this.logger('Already allowed proxy for this token')
-        return null
-      }
-      this.logger(`"allowed" response: ${approvedAddr}`)
     }
 
     // Call `approve`
@@ -749,7 +768,7 @@ export class OpenSeaPort {
         this._dispatch(EventType.TransactionDenied, { error, accountAddress })
       })
 
-      await this._confirmTransaction(txHash, EventType.ApproveAsset, "Approving single token for trading")
+      await this._confirmTransaction(txHash, EventType.ApproveAsset, "Approving single token for trading", approvalOneCheck)
       return txHash
     } catch (error) {
       console.error(error)
@@ -1200,7 +1219,7 @@ export class OpenSeaPort {
 
   /**
    * Validate and post an order to the OpenSea orderbook.
-   * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder_. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
+   * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
    * @returns The order as stored by the orderbook
    */
   public async validateAndPostOrder(order: Order): Promise<Order> {
@@ -1221,19 +1240,7 @@ export class OpenSeaPort {
     }
     this.logger('Order hashes match')
 
-    const valid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
-      [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
-      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
-      order.feeMethod,
-      order.side,
-      order.saleKind,
-      order.howToCall,
-      order.calldata,
-      order.replacementPattern,
-      order.staticExtradata,
-      order.v || 0,
-      order.r || '0x',
-      order.s || '0x')
+    const valid = await this._validateOrder(order)
     this.logger(`Order validity: ${valid}`)
 
     if (!valid) {
@@ -1388,7 +1395,10 @@ export class OpenSeaPort {
       gas: this._correctGasAmount(gasEstimate)
     })
 
-    await this._confirmTransaction(transactionHash, EventType.InitializeAccount, "Initializing proxy for account")
+    await this._confirmTransaction(transactionHash, EventType.InitializeAccount, "Initializing proxy for account", async () => {
+      const polledProxy = await this._getProxy(accountAddress)
+      return !!polledProxy
+    })
 
     await delay(1000)
 
@@ -1820,20 +1830,7 @@ export class OpenSeaPort {
 
     try {
       if (shouldValidateBuy) {
-        const buyValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
-          [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken],
-          [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt],
-          buy.feeMethod,
-          buy.side,
-          buy.saleKind,
-          buy.howToCall,
-          buy.calldata,
-          buy.replacementPattern,
-          buy.staticExtradata,
-          buy.v || 0,
-          buy.r || '0x',
-          buy.s || '0x',
-          { from: accountAddress })
+        const buyValid = await this._validateOrder(buy)
         this.logger(`Buy order is valid: ${buyValid}`)
 
         if (!buyValid) {
@@ -1842,20 +1839,7 @@ export class OpenSeaPort {
       }
 
       if (shouldValidateSell) {
-        const sellValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
-          [sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
-          [sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
-          sell.feeMethod,
-          sell.side,
-          sell.saleKind,
-          sell.howToCall,
-          sell.calldata,
-          sell.replacementPattern,
-          sell.staticExtradata,
-          sell.v || 0,
-          sell.r || '0x',
-          sell.s || '0x',
-          { from: accountAddress })
+        const sellValid = await this._validateOrder(sell)
         this.logger(`Sell order is valid: ${sellValid}`)
 
         if (!sellValid) {
@@ -1938,6 +1922,59 @@ export class OpenSeaPort {
       console.error(order)
       throw new Error(`Failed to validate sell order parameters. Make sure you're on the right network!`)
     }
+  }
+
+  /**
+   * Instead of signing an off-chain order, you can approve an order
+   * with on on-chain transaction using this method
+   * @param order Order to approve
+   * @returns Transaction hash of the approval transaction
+   */
+  public async _approveOrder(order: UnsignedOrder) {
+    const accountAddress = order.maker
+    const gasPrice = await this._computeGasPrice()
+    const includeInOrderBook = true
+
+    this._dispatch(EventType.ApproveOrder, { order, accountAddress })
+
+    const transactionHash = await this._wyvernProtocol.wyvernExchange.approveOrder_.sendTransactionAsync(
+      [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
+      order.feeMethod,
+      order.side,
+      order.saleKind,
+      order.howToCall,
+      order.calldata,
+      order.replacementPattern,
+      order.staticExtradata,
+      includeInOrderBook,
+      { from: accountAddress, gasPrice }
+    )
+
+    console.warn(transactionHash)
+
+    await this._confirmTransaction(transactionHash.toString(), EventType.ApproveOrder, "Approving order", async () => {
+      const isOpen = await this._validateOrder(order)
+      return !isOpen
+    })
+
+    return transactionHash
+  }
+
+  public async _validateOrder(order: Order) {
+    return this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
+      [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
+      [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
+      order.feeMethod,
+      order.side,
+      order.saleKind,
+      order.howToCall,
+      order.calldata,
+      order.replacementPattern,
+      order.staticExtradata,
+      order.v || 0,
+      order.r || '0x',
+      order.s || '0x')
   }
 
   public async _approveAll(
@@ -2235,16 +2272,24 @@ export class OpenSeaPort {
     return fee.plus(maxPrice).ceil()
   }
 
-  private async _signOrder(
+  private async _authorizeOrder(
       order: UnsignedOrder
-    ): Promise < ECSignature > {
+    ): Promise<Partial<ECSignature>> {
     const message = order.hash
     const signerAddress = order.maker
 
     this._dispatch(EventType.CreateOrder, { order, accountAddress: order.maker })
 
     try {
-      return personalSignAsync(this.web3, message, signerAddress)
+      const signature = await personalSignAsync(this.web3, message, signerAddress)
+      if (signature) {
+        return signature
+      }
+      // The web3 provider is probably a smart contract wallet
+      // Fallback to on-chain approval
+      await this._approveOrder(order)
+      // Return an empty signature
+      return {}
     } catch (error) {
       this._dispatch(EventType.OrderDenied, { order, accountAddress: signerAddress })
       throw error
@@ -2264,10 +2309,26 @@ export class OpenSeaPort {
     this._emitter.emit(event, data)
   }
 
-  private async _confirmTransaction(transactionHash: string, event: EventType, description: string) {
+  private async _confirmTransaction(transactionHash: string, event: EventType, description: string, testForSuccess?: () => Promise<boolean>): Promise<any> {
 
     const transactionEventData = { transactionHash, event }
     this.logger(`Transaction started: ${description}`)
+
+    if (transactionHash == NULL_BLOCK_HASH) {
+      // This was a smart contract wallet that doesn't know the transaction
+      this._dispatch(EventType.TransactionCreated, { event })
+
+      if (!testForSuccess) {
+        // Wait one minute if test not implemented
+        this.logger(`Unknown action, waiting one minute: ${description}`)
+        await delay(60 * 1000)
+        return
+      }
+
+      return this._pollCallbackForConfirmation(event, description, testForSuccess)
+    }
+
+    // Normal wallet
     try {
       this._dispatch(EventType.TransactionCreated, transactionEventData)
       await confirmTransaction(this.web3, transactionHash)
@@ -2280,5 +2341,33 @@ export class OpenSeaPort {
       })
       throw error
     }
+  }
+
+  private async _pollCallbackForConfirmation(event: EventType, description: string, testForSuccess: () => Promise<boolean>): Promise<any> {
+
+    return new Promise(async (resolve, reject) => {
+
+      const initialRetries = 60
+
+      const testResolve: (r: number) => Promise<any> = async retries => {
+
+        const wasSuccessful = await testForSuccess()
+        if (wasSuccessful) {
+          this.logger(`Transaction succeeded: ${description}`)
+          this._dispatch(EventType.TransactionConfirmed, { event })
+          return resolve()
+        } else if (retries <= 0) {
+          return reject()
+        }
+
+        if (retries % 10 == 0) {
+          this.logger(`Tested transaction ${initialRetries - retries + 1} times: ${description}`)
+        }
+        await delay(5000)
+        return testResolve(retries - 1)
+      }
+
+      return testResolve(initialRetries)
+    })
   }
 }
