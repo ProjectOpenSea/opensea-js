@@ -603,8 +603,8 @@ export class OpenSeaPort {
       order.replacementPattern,
       order.staticExtradata,
       order.v || 0,
-      order.r || '0x',
-      order.s || '0x',
+      order.r || NULL_BLOCK_HASH,
+      order.s || NULL_BLOCK_HASH,
       { from: accountAddress, gasPrice })
 
     await this._confirmTransaction(transactionHash.toString(), EventType.CancelOrder, "Cancelling order", async () => {
@@ -1306,10 +1306,10 @@ export class OpenSeaPort {
           sell.v || 0
         ],
         [
-          buy.r || '0x',
-          buy.s || '0x',
-          sell.r || '0x',
-          sell.s || '0x',
+          buy.r || NULL_BLOCK_HASH,
+          buy.s || NULL_BLOCK_HASH,
+          sell.r || NULL_BLOCK_HASH,
+          sell.s || NULL_BLOCK_HASH,
           metadata
         ],
           // Typescript error in estimate gas method, so use any
@@ -1951,18 +1951,17 @@ export class OpenSeaPort {
       { from: accountAddress, gasPrice }
     )
 
-    console.warn(transactionHash)
-
     await this._confirmTransaction(transactionHash.toString(), EventType.ApproveOrder, "Approving order", async () => {
-      const isOpen = await this._validateOrder(order)
-      return !isOpen
+      const isApproved = await this._validateOrder(order)
+      return isApproved
     })
 
     return transactionHash
   }
 
-  public async _validateOrder(order: Order) {
-    return this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
+  public async _validateOrder(order: Order): Promise<boolean> {
+
+    const isValid = await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
       order.feeMethod,
@@ -1973,8 +1972,11 @@ export class OpenSeaPort {
       order.replacementPattern,
       order.staticExtradata,
       order.v || 0,
-      order.r || '0x',
-      order.s || '0x')
+      order.r || NULL_BLOCK_HASH,
+      order.s || NULL_BLOCK_HASH)
+
+    return isValid
+
   }
 
   public async _approveAll(
@@ -2223,10 +2225,10 @@ export class OpenSeaPort {
         sell.v || 0
       ],
       [
-        buy.r || '0x',
-        buy.s || '0x',
-        sell.r || '0x',
-        sell.s || '0x',
+        buy.r || NULL_BLOCK_HASH,
+        buy.s || NULL_BLOCK_HASH,
+        sell.r || NULL_BLOCK_HASH,
+        sell.s || NULL_BLOCK_HASH,
         metadata
       ]
     ]
@@ -2319,8 +2321,8 @@ export class OpenSeaPort {
       this._dispatch(EventType.TransactionCreated, { event })
 
       if (!testForSuccess) {
-        // Wait one minute if test not implemented
-        this.logger(`Unknown action, waiting one minute: ${description}`)
+        // Wait if test not implemented
+        this.logger(`Unknown action, waiting 1 minute: ${description}`)
         await delay(60 * 1000)
         return
       }

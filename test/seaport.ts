@@ -1079,6 +1079,8 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   }
 
   if (testAtomicMatch && !order.waitingForBestCounterOrder) {
+    const isValid = await client._validateOrder(order)
+    assert.isTrue(isValid)
     const isFulfillable = await client.isOrderFulfillable({ order, accountAddress, referrerAddress })
     assert.isTrue(isFulfillable)
     const gasPrice = await client._computeGasPrice()
