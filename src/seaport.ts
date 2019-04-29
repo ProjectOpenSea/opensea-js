@@ -715,6 +715,7 @@ export class OpenSeaPort {
       // Note: approvedAddr will be '0x' if not supported
       let approvedAddr = await promisifyCall<string>(c => erc721.getApproved.call(tokenId, c))
       if (approvedAddr == proxyAddress) {
+        this.logger('Already approved proxy for this token')
         return true
       }
       this.logger(`Approve response: ${approvedAddr}`)
@@ -745,7 +746,6 @@ export class OpenSeaPort {
 
     const isApprovedForOne = await approvalOneCheck()
     if (isApprovedForOne) {
-      this.logger('Already approved proxy for this token')
       return null
     }
 
@@ -1163,9 +1163,14 @@ export class OpenSeaPort {
 
     // Compute transferFrom fees
     if (side == OrderSide.Sell && asset) {
-      // TODO when server ready, use  `&& asset.transferFee && asset.transferFeePaymentToken`
-      // transferFee = makeBigNumber(asset.transferFee)
-      // transferFeeTokenAddress = asset.transferFeePaymentToken.address
+      // Server-side knowledge
+      transferFee = asset.transferFee
+        ? makeBigNumber(asset.transferFee)
+        : transferFee
+      transferFeeTokenAddress = asset.transferFeePaymentToken
+        ? asset.transferFeePaymentToken.address
+        : transferFeeTokenAddress
+
       try {
         // web3 call to update it
         const result = await getTransferFeeSettings(this.web3, { asset })
@@ -1213,7 +1218,6 @@ export class OpenSeaPort {
       sellerBountyBPS,
       transferFee,
       transferFeeTokenAddress,
-      // buyerBountyBPS
     }
   }
 

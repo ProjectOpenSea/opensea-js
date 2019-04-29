@@ -6,7 +6,7 @@ import * as Web3 from 'web3'
 import * as WyvernSchemas from 'wyvern-schemas'
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
 import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/lib/types'
-import { ERC1155, getMethod } from './contracts'
+import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
 import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset } from './types'
@@ -551,10 +551,12 @@ export async function getTransferFeeSettings(
     // Enjin asset
     const feeContract = web3.eth.contract(ERC1155 as any).at(asset.tokenAddress)
 
-    const params = await feeContract.transferSettings(asset.tokenId)
-    transferFee = makeBigNumber(params[3])
-    if (params[2] == 0) {
-      transferFeeTokenAddress = ENJIN_COIN_ADDRESS
+    const params = await promisifyCall<any[]>(c => feeContract.transferSettings(asset.tokenId, c))
+    if (params) {
+      transferFee = makeBigNumber(params[3])
+      if (params[2] == 0) {
+        transferFeeTokenAddress = ENJIN_COIN_ADDRESS
+      }
     }
   }
   return { transferFee, transferFeeTokenAddress }

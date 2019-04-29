@@ -347,8 +347,6 @@ export interface OpenSeaFees {
   // Fees that go to whoever refers the order to the taker.
   // Comes out of OpenSea fees
   sellerBountyBPS: number
-  // Will be built later
-  // buyerBountyBPS?: number
 }
 
 export interface UnhashedOrder extends WyvernOrder {
