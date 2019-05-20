@@ -9,7 +9,7 @@ import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/li
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -135,23 +135,7 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     name: asset.name,
     description: asset.description,
     owner: asset.owner,
-    assetContract: {
-      name: asset.asset_contract.name,
-      description: asset.asset_contract.description,
-      address: asset.asset_contract.address,
-      tokenSymbol: asset.asset_contract.symbol,
-      buyerFeeBasisPoints: asset.asset_contract.buyer_fee_basis_points,
-      sellerFeeBasisPoints: asset.asset_contract.seller_fee_basis_points,
-      openseaBuyerFeeBasisPoints: asset.asset_contract.opensea_buyer_fee_basis_points,
-      openseaSellerFeeBasisPoints: asset.asset_contract.opensea_seller_fee_basis_points,
-      devBuyerFeeBasisPoints: asset.asset_contract.dev_buyer_fee_basis_points,
-      devSellerFeeBasisPoints: asset.asset_contract.dev_seller_fee_basis_points,
-      imageUrl: asset.asset_contract.image_url,
-      stats: asset.asset_contract.stats,
-      traits: asset.asset_contract.traits,
-      externalLink: asset.asset_contract.external_link,
-      wikiLink: asset.asset_contract.wiki_link,
-    },
+    assetContract: assetContractFromJSON(asset.asset_contract),
     orders: asset.orders ? asset.orders.map(orderFromJSON) : null,
     sellOrders: asset.sell_orders ? asset.sell_orders.map(orderFromJSON) : null,
     buyOrders: asset.buy_orders ? asset.buy_orders.map(orderFromJSON) : null,
@@ -194,6 +178,9 @@ export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
   const fromJSON: OpenSeaAssetBundle = {
     maker: asset_bundle.maker,
     assets: asset_bundle.assets.map(assetFromJSON),
+    assetContract: asset_bundle.asset_contract
+      ? assetContractFromJSON(asset_bundle.asset_contract)
+      : undefined,
     name: asset_bundle.name,
     slug: asset_bundle.slug,
     description: asset_bundle.description,
@@ -204,6 +191,26 @@ export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
   }
 
   return fromJSON
+}
+
+export const assetContractFromJSON = (asset_contract: any): OpenSeaAssetContract => {
+  return {
+    name: asset_contract.name,
+    description: asset_contract.description,
+    address: asset_contract.address,
+    tokenSymbol: asset_contract.symbol,
+    buyerFeeBasisPoints: asset_contract.buyer_fee_basis_points,
+    sellerFeeBasisPoints: asset_contract.seller_fee_basis_points,
+    openseaBuyerFeeBasisPoints: asset_contract.opensea_buyer_fee_basis_points,
+    openseaSellerFeeBasisPoints: asset_contract.opensea_seller_fee_basis_points,
+    devBuyerFeeBasisPoints: asset_contract.dev_buyer_fee_basis_points,
+    devSellerFeeBasisPoints: asset_contract.dev_seller_fee_basis_points,
+    imageUrl: asset_contract.image_url,
+    stats: asset_contract.stats,
+    traits: asset_contract.traits,
+    externalLink: asset_contract.external_link,
+    wikiLink: asset_contract.wiki_link,
+  }
 }
 
 export const tokenFromJSON = (token: any): WyvernSchemas.FungibleToken => {
@@ -641,6 +648,17 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
       ? basePrice.minus(diff)
       /* Buy-side - start price: basePrice. End price: basePrice + extra. */
       : basePrice.plus(diff)
+  }
+
+  // Add buyer fee if asset/bundle present
+  const buyerFeeBPS = order.asset
+    ? order.asset.assetContract.buyerFeeBasisPoints
+    : order.assetBundle && order.assetBundle.assetContract
+      ? order.assetBundle.assetContract.buyerFeeBasisPoints
+      : null
+
+  if (buyerFeeBPS != null) {
+    exactPrice = exactPrice.times(buyerFeeBPS / INVERSE_BASIS_POINT + 1)
   }
 
   return shouldRoundUp ? exactPrice.ceil() : exactPrice

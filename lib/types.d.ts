@@ -200,6 +200,7 @@ export interface OpenSeaAssetBundle {
     slug: string;
     permalink: string;
     sellOrders: Order[] | null;
+    assetContract?: OpenSeaAssetContract;
     description?: string;
     externalLink?: string;
 }

@@ -293,6 +293,7 @@ export interface OpenSeaAssetBundle {
   // Sell orders (auctions) on the bundle. Null if bundle in a list and didn't prefetch sell orders
   sellOrders: Order[] | null
 
+  assetContract?: OpenSeaAssetContract
   description?: string
   externalLink?: string
 }
