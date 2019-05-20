@@ -44,7 +44,7 @@
     "query-string": "^6.1.0",
     "web3": "^0.20.6",
     "webpack": "^3.10.0",
-    "wyvern-js": "github:ProjectOpenSea/wyvern-js#v3.0.2",
+    "wyvern-js": "github:ProjectOpenSea/wyvern-js#v3.0.3",
     "wyvern-schemas": "github:ProjectOpenSea/wyvern-schemas#v0.8.1"
   },
   "devDependencies": {
