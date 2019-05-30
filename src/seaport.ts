@@ -1244,13 +1244,7 @@ export class OpenSeaPort {
     }
     this.logger('Order hashes match')
 
-    const valid = await this._validateOrder(order)
-    this.logger(`Order validity: ${valid}`)
-
-    if (!valid) {
-      throw new Error('Invalid order. Please restart your wallet/browser and try again!')
-    }
-
+    // Validation is called server-side
     const confirmedOrder = await this.api.postOrder(orderToJSON(order))
     return confirmedOrder
   }
