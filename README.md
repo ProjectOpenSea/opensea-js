@@ -265,7 +265,20 @@ const transactionHash = await seaport.transfer({
 })
 ```
 
-To transfer fungible assets without token IDs, like ERC20 or ERC1155 tokens, you can omit `tokenID` on `asset`, set `schemaName` to e.g. "ERC20" or "ERC1155", and include `quantity` to indicate how many:
+For fungible ERC-1155 assets, you can set `schemaName` to "ERC1155" and pass a `quantity` in to transfer multiple at once:
+
+```JavaScript
+
+const transactionHash = await seaport.transfer({
+  asset: { tokenId, tokenAddress },
+  fromAddress, // Must own the asset
+  toAddress,
+  quantity: 2,
+  schemaName: "ERC1155"
+})
+```
+
+To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in a `FungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` to indicate how many:
 
 ```JavaScript
 
@@ -273,6 +286,7 @@ const transactionHash = await seaport.transfer({
   asset: { tokenAddress },
   fromAddress, // Must own the tokens
   toAddress,
+  schemaName: "ERC20"
   quantity: 2.6
 })
 ```

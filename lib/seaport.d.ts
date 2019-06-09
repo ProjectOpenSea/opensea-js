@@ -342,18 +342,16 @@ export declare class OpenSeaPort {
      * @param param0 __namedParamaters Object
      * @param fromAddress The owner's wallet address
      * @param toAddress The recipient's wallet address
-     * @param asset The non-fungible asset to transfer (ERC-721 or ERC-1155), or...
-     * @param tokenAddress The address of the fungible token to transfer (for ERC-20)
+     * @param asset The fungible or non-fungible asset to transfer
      * @param quantity The amount of the asset to transfer, if it's fungible (optional)
      * @param schemaName The Wyvern schema name corresponding to the asset type.
      * Defaults to "ERC721" (non-fungible) assets, but can be ERC1155, ERC20, and others.
      * @returns Transaction hash
      */
-    transfer({ fromAddress, toAddress, asset, tokenAddress, quantity, schemaName }: {
+    transfer({ fromAddress, toAddress, asset, quantity, schemaName }: {
         fromAddress: string;
         toAddress: string;
-        asset?: Asset;
-        tokenAddress?: string;
+        asset: Asset | FungibleToken;
         quantity?: number;
         schemaName?: WyvernSchemaName;
     }): Promise<string>;

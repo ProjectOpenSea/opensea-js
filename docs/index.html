@@ -83,7 +83,7 @@
 							<li><a href="#fetching-orders">Fetching Orders</a></li>
 							<li><a href="#buying-items">Buying Items</a></li>
 							<li><a href="#accepting-offers">Accepting Offers</a></li>
-							<li><a href="#transferring-items-gifting">Transferring Items (Gifting)</a></li>
+							<li><a href="#transferring-items-or-coins-gifting">Transferring Items or Coins (Gifting)</a></li>
 						</ul>
 					</li>
 					<li><a href="#affiliate-program">Affiliate Program</a><ul>
@@ -259,17 +259,37 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 <span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress })
 </code></pre>
 				<p>If the order is a buy order (<code>order.side === OrderSide.Buy</code>), then the taker is the <em>owner</em> and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See <a href="#listening-to-events">Listening to Events</a> below to respond to the setup transactions that occur the first time a user accepts a bid.</p>
-				<h3 id="transferring-items-gifting-">Transferring Items (Gifting)</h3>
-				<p>A handy feature in OpenSea.js is the ability to transfer any supported asset (not just non-fungible tokens) in one line of JavaScript.</p>
+				<h3 id="transferring-items-or-coins-gifting-">Transferring Items or Coins (Gifting)</h3>
+				<p>A handy feature in OpenSea.js is the ability to transfer any supported asset (fungible or non-fungible tokens) in one line of JavaScript.</p>
 				<p>To transfer an ERC-721 asset or an ERC-1155 asset, it&#39;s just one call:</p>
 				<pre><code class="lang-JavaScript">
-<span class="hljs-keyword">const</span> transactionHash = <span class="hljs-keyword">await</span> seaport.transferOne({
+<span class="hljs-keyword">const</span> transactionHash = <span class="hljs-keyword">await</span> seaport.transfer({
   <span class="hljs-attr">asset</span>: { tokenId, tokenAddress },
   fromAddress, <span class="hljs-comment">// Must own the asset</span>
   toAddress
 })
 </code></pre>
-				<p>To transfer other types of assets, like ENS names, you can pass in a WyvernAsset as the <code>asset</code>, set a <code>schemaName</code>, and set <code>isWyvernAsset</code> to <code>true</code>. For more information, check out the documentation for WyvernSchemas on <a href="https://projectopensea.github.io/opensea-js/">https://projectopensea.github.io/opensea-js/</a>.</p>
+				<p>For fungible ERC-1155 assets, you can set <code>schemaName</code> to &quot;ERC1155&quot; and pass a <code>quantity</code> in to transfer multiple at once:</p>
+				<pre><code class="lang-JavaScript">
+<span class="hljs-keyword">const</span> transactionHash = <span class="hljs-keyword">await</span> seaport.transfer({
+  <span class="hljs-attr">asset</span>: { tokenId, tokenAddress },
+  fromAddress, <span class="hljs-comment">// Must own the asset</span>
+  toAddress,
+  <span class="hljs-attr">quantity</span>: <span class="hljs-number">2</span>,
+  <span class="hljs-attr">schemaName</span>: <span class="hljs-string">"ERC1155"</span>
+})
+</code></pre>
+				<p>To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in a <code>FungibleToken</code> as the <code>asset</code>, set <code>schemaName</code> to &quot;ERC20&quot;, and include <code>quantity</code> to indicate how many:</p>
+				<pre><code class="lang-JavaScript">
+<span class="hljs-keyword">const</span> transactionHash = <span class="hljs-keyword">await</span> seaport.transfer({
+  <span class="hljs-attr">asset</span>: { tokenAddress },
+  fromAddress, <span class="hljs-comment">// Must own the tokens</span>
+  toAddress,
+  <span class="hljs-attr">schemaName</span>: <span class="hljs-string">"ERC20"</span>
+  quantity: <span class="hljs-number">2.6</span>
+})
+</code></pre>
+				<p>For more information, check out the documentation for WyvernSchemas on <a href="https://projectopensea.github.io/opensea-js/">https://projectopensea.github.io/opensea-js/</a>.</p>
 				<h2 id="affiliate-program">Affiliate Program</h2>
 				<p>New in version 0.4, OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It&#39;s the crypto-equivalent of bounty hunting 💰</p>
 				<p>You can use this to <strong>win at least 1%</strong> of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.</p>
@@ -585,7 +605,13 @@ handleSeaportEvents() {
 						<a href="interfaces/wyvernerc1155asset.html" class="tsd-kind-icon">WyvernERC1155<wbr>Asset</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="interfaces/wyvernerc20asset.html" class="tsd-kind-icon">WyvernERC20<wbr>Asset</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="interfaces/wyvernerc721asset.html" class="tsd-kind-icon">WyvernERC721<wbr>Asset</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/wyvernftasset.html" class="tsd-kind-icon">WyvernFTAsset</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/wyvernnftasset.html" class="tsd-kind-icon">WyvernNFTAsset</a>
@@ -712,6 +738,9 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#assetbundlefromjson" class="tsd-kind-icon">asset<wbr>Bundle<wbr>FromJSON</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#assetcontractfromjson" class="tsd-kind-icon">asset<wbr>Contract<wbr>FromJSON</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#assetfromjson" class="tsd-kind-icon">asset<wbr>FromJSON</a>
