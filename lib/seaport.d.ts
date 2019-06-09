@@ -320,7 +320,8 @@ export declare class OpenSeaPort {
         schemaName?: WyvernSchemaName;
     }, retries?: number): Promise<boolean>;
     /**
-     * Transfer an NFT asset or any Wyvern asset to another address
+     * DEPRECATED: use `transfer` instead
+     * Transfer an NFT asset to another address
      * @param param0 __namedParamaters Object
      * @param asset The asset to transfer
      * @param fromAddress The owner's wallet address
@@ -334,6 +335,26 @@ export declare class OpenSeaPort {
         fromAddress: string;
         toAddress: string;
         isWyvernAsset?: boolean;
+        schemaName?: WyvernSchemaName;
+    }): Promise<string>;
+    /**
+     * Transfer a fungible or non-fungible asset to another address
+     * @param param0 __namedParamaters Object
+     * @param fromAddress The owner's wallet address
+     * @param toAddress The recipient's wallet address
+     * @param asset The non-fungible asset to transfer (ERC-721 or ERC-1155), or...
+     * @param tokenAddress The address of the fungible token to transfer (for ERC-20)
+     * @param quantity The amount of the asset to transfer, if it's fungible (optional)
+     * @param schemaName The Wyvern schema name corresponding to the asset type.
+     * Defaults to "ERC721" (non-fungible) assets, but can be ERC1155, ERC20, and others.
+     * @returns Transaction hash
+     */
+    transfer({ fromAddress, toAddress, asset, tokenAddress, quantity, schemaName }: {
+        fromAddress: string;
+        toAddress: string;
+        asset?: Asset;
+        tokenAddress?: string;
+        quantity?: number;
         schemaName?: WyvernSchemaName;
     }): Promise<string>;
     /**
@@ -557,7 +578,7 @@ export declare class OpenSeaPort {
         wyAssets: WyvernAsset[];
         accountAddress: string;
         proxyAddress?: string | null;
-    }): Promise<(string | true | null)[]>;
+    }): Promise<(string | null)[]>;
     _validateBuyOrderParameters({ order, counterOrder, accountAddress }: {
         order: UnhashedOrder;
         counterOrder?: Order;

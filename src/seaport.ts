@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset, WyvernFTAsset } from './types'
 import {
   confirmTransaction, findAsset,
   makeBigNumber, orderToJSON,
@@ -945,7 +945,8 @@ export class OpenSeaPort {
   }
 
   /**
-   * Transfer an NFT asset or any Wyvern asset to another address
+   * DEPRECATED: use `transfer` instead
+   * Transfer an NFT asset to another address
    * @param param0 __namedParamaters Object
    * @param asset The asset to transfer
    * @param fromAddress The owner's wallet address
@@ -973,6 +974,65 @@ export class OpenSeaPort {
     }
 
     const abi = schema.functions.transfer(wyAsset)
+
+    this._dispatch(EventType.TransferOne, { accountAddress: fromAddress, toAddress, asset })
+
+    const gasPrice = await this._computeGasPrice()
+    const txHash = await sendRawTransaction(this.web3, {
+      from: fromAddress,
+      to: abi.target,
+      data: encodeTransferCall(abi, fromAddress, toAddress),
+      gasPrice
+    }, error => {
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress: fromAddress })
+    })
+
+    await this._confirmTransaction(txHash, EventType.TransferOne, `Transferring asset`)
+    return txHash
+  }
+
+  /**
+   * Transfer a fungible or non-fungible asset to another address
+   * @param param0 __namedParamaters Object
+   * @param fromAddress The owner's wallet address
+   * @param toAddress The recipient's wallet address
+   * @param asset The non-fungible asset to transfer (ERC-721 or ERC-1155), or...
+   * @param tokenAddress The address of the fungible token to transfer (for ERC-20)
+   * @param quantity The amount of the asset to transfer, if it's fungible (optional)
+   * @param schemaName The Wyvern schema name corresponding to the asset type.
+   * Defaults to "ERC721" (non-fungible) assets, but can be ERC1155, ERC20, and others.
+   * @returns Transaction hash
+   */
+  public async transfer(
+      { fromAddress, toAddress, asset, tokenAddress, quantity, schemaName = WyvernSchemaName.ERC721 }:
+      { fromAddress: string;
+        toAddress: string;
+        asset?: Asset;
+        tokenAddress?: string;
+        quantity?: number;
+        schemaName?: WyvernSchemaName; }
+    ): Promise<string> {
+
+    const schema = this._getSchema(schemaName)
+    const wyAsset = tokenAddress
+      ? { address: tokenAddress }
+      : asset
+        ? getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress)
+        : undefined
+
+    if (!wyAsset) {
+      throw new Error("Either an `asset` or `tokenAddress` is needed for transfers.")
+    }
+
+    let abi
+    if (quantity != null) {
+      if (!schema.functions.transferQuantity) {
+        throw new Error("This asset is non-fungible and does not support transferring quantities.")
+      }
+      abi = schema.functions.transferQuantity(wyAsset, quantity)
+    } else {
+      abi = schema.functions.transfer(wyAsset)
+    }
 
     this._dispatch(EventType.TransferOne, { accountAddress: fromAddress, toAddress, asset })
 
@@ -2002,6 +2062,7 @@ export class OpenSeaPort {
       switch (schema.name as WyvernSchemaName) {
         case WyvernSchemaName.ERC721:
         case WyvernSchemaName.ERC1155:
+        case WyvernSchemaName.Enjin:
           // Handle NFTs
           const wyNFTAsset = wyAsset as WyvernNFTAsset
           return this.approveNonFungibleToken({
@@ -2011,18 +2072,24 @@ export class OpenSeaPort {
             proxyAddress,
             skipApproveAllIfTokenAddressIn: contractsWithApproveAll
           })
-        case WyvernSchemaName.ENSName:
-          // Handling non-NFTs
-          if (where != WyvernAssetLocation.Proxy) {
-            return this.transferOne({
-              schemaName: schema.name,
-              asset: wyAssets[0],
-              isWyvernAsset: true,
-              fromAddress: accountAddress,
-              toAddress: proxy
-            })
-          }
-          return true
+        case WyvernSchemaName.ERC20:
+          const wyFTAsset = wyAsset as WyvernFTAsset
+          return this.approveFungibleToken({
+            tokenAddress: wyFTAsset.address,
+            accountAddress
+          })
+        // For other assets, including contracts:
+        // Send them to the user's proxy
+        // if (where != WyvernAssetLocation.Proxy) {
+        //   return this.transferOne({
+        //     schemaName: schema.name,
+        //     asset: wyAsset,
+        //     isWyvernAsset: true,
+        //     fromAddress: accountAddress,
+        //     toAddress: proxy
+        //   })
+        // }
+        // return true
       }
     }))
   }

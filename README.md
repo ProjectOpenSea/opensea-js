@@ -19,7 +19,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
-  - [Transferring Items (Gifting)](#transferring-items-gifting)
+  - [Transferring Items or Coins (Gifting)](#transferring-items-or-coins-gifting)
 - [Affiliate Program](#affiliate-program)
   - [Referring Listings](#referring-listings)
   - [Custom Referral Bounties](#custom-referral-bounties)
@@ -250,22 +250,34 @@ await this.props.seaport.fulfillOrder({ order, accountAddress })
 
 If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
 
-### Transferring Items (Gifting)
+### Transferring Items or Coins (Gifting)
 
-A handy feature in OpenSea.js is the ability to transfer any supported asset (not just non-fungible tokens) in one line of JavaScript.
+A handy feature in OpenSea.js is the ability to transfer any supported asset (fungible or non-fungible tokens) in one line of JavaScript.
 
 To transfer an ERC-721 asset or an ERC-1155 asset, it's just one call:
 
 ```JavaScript
 
-const transactionHash = await seaport.transferOne({
+const transactionHash = await seaport.transfer({
   asset: { tokenId, tokenAddress },
   fromAddress, // Must own the asset
   toAddress
 })
 ```
 
-To transfer other types of assets, like ENS names, you can pass in a WyvernAsset as the `asset`, set a `schemaName`, and set `isWyvernAsset` to `true`. For more information, check out the documentation for WyvernSchemas on https://projectopensea.github.io/opensea-js/.
+To transfer fungible assets without token IDs, like ERC20 or ERC1155 tokens, you can omit `tokenID` on `asset`, set `schemaName` to e.g. "ERC20" or "ERC1155", and include `quantity` to indicate how many:
+
+```JavaScript
+
+const transactionHash = await seaport.transfer({
+  asset: { tokenAddress },
+  fromAddress, // Must own the tokens
+  toAddress,
+  quantity: 2.6
+})
+```
+
+For more information, check out the documentation for WyvernSchemas on https://projectopensea.github.io/opensea-js/.
 
 ## Affiliate Program
 
