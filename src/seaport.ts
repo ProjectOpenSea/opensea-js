@@ -949,7 +949,9 @@ export class OpenSeaPort {
   }
 
   /**
-   * DEPRECATED: use `transfer` instead
+   * DEPRECATED: use `transfer` instead, which works for
+   * more types of assets (including fungibles and old
+   * non-fungibles).
    * Transfer an NFT asset to another address
    * @param param0 __namedParamaters Object
    * @param asset The asset to transfer
