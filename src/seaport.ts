@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset, WyvernFTAsset } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset, WyvernFTAsset, NFTVersion } from './types'
 import {
   confirmTransaction, findAsset,
   makeBigNumber, orderToJSON,
@@ -31,10 +31,14 @@ import {
   getTransferFeeSettings,
   rawCall,
   promisifyCall,
+  ERC721_V1_TRANSFER_ANNOTATED_ABI,
+  CK_ADDRESS,
+  CK_RINKEBY_ADDRESS,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
 import { isValidAddress } from 'ethereumjs-util'
+import { AnnotatedFunctionABI } from 'wyvern-js/lib/types'
 
 export class OpenSeaPort {
 
@@ -1016,15 +1020,29 @@ export class OpenSeaPort {
     const wyAsset = 'tokenId' in asset
       ? getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress)
       : { address: asset.address }
+    const isCryptoKitties = wyAsset.address in [CK_ADDRESS, CK_RINKEBY_ADDRESS]
+    const isOldNFT = 'nftVersion' in asset && asset.nftVersion != NFTVersion.ERC721v3
 
-    let abi
+    let abi: AnnotatedFunctionABI
+
     if (quantity != 1) {
+
       if (!schema.functions.transferQuantity) {
         throw new Error("This asset is non-fungible and does not support transferring quantities.")
       }
       abi = schema.functions.transferQuantity(wyAsset, quantity)
+
+    } else if (isOldNFT || isCryptoKitties) {
+
+      abi = {
+        ...ERC721_V1_TRANSFER_ANNOTATED_ABI,
+        target: wyAsset.address
+      }
+
     } else {
+
       abi = schema.functions.transfer(wyAsset)
+
     }
 
     this._dispatch(EventType.TransferOne, { accountAddress: fromAddress, toAddress, asset })

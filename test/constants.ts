@@ -1,5 +1,6 @@
 import { OpenSeaAPI } from '../src/api'
 import { Network } from '../src/types'
+import { CK_RINKEBY_ADDRESS, CK_ADDRESS } from '../src/utils'
 
 export const MAINNET_API_KEY = "testKeyMainnet"
 export const RINKEBY_API_KEY = "testKeyRinkeby"
@@ -16,7 +17,10 @@ export const rinkebyApi = new OpenSeaAPI({
 
 export const apiToTest = rinkebyApi
 
-export const CK_ADDRESS = '0x06012c8cf97bead5deae237070f9587f8e7a266d'
+export {
+  CK_ADDRESS,
+  CK_RINKEBY_ADDRESS
+}
 export const GODS_UNCHAINED_ADDRESS = '0x6ebeaf8e8e946f0716e6533a6f2cefc83f60e8ab'
 export const CRYPTO_CRYSTAL_ADDRESS = '0xcfbc9103362aec4ce3089f155c2da2eea1cb7602'
 export const DIGITAL_ART_CHAIN_ADDRESS = '0x323a3e1693e7a0959f65972f3bf2dfcb93239dfe'
@@ -26,7 +30,6 @@ export const GODS_UNCHAINED_TOKEN_ID = 76719
 export const MYTHEREUM_TOKEN_ID = 4367
 export const CK_RINKEBY_BUNDLE_SLUG = 'puff-kitty'
 
-export const CK_RINKEBY_ADDRESS = '0x16baf0de678e52367adc69fd067e5edd1d33e3bf'
 export const CK_RINKEBY_TOKEN_ID = 505
 export const CK_TOKEN_ID = 637488
 export const CK_RINKEBY_SELLER_FEE = 125

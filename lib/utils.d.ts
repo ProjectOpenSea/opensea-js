@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import * as WyvernSchemas from 'wyvern-schemas';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
-import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
+import { AnnotatedFunctionABI, FunctionInputKind, HowToCall, StateMutability, AbiType } from 'wyvern-js/lib/types';
 import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -16,6 +16,8 @@ export declare const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c
 export declare const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9";
 export declare const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";
 export declare const ENJIN_ADDRESS = "0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab";
+export declare const CK_ADDRESS = "0x06012c8cf97bead5deae237070f9587f8e7a266d";
+export declare const CK_RINKEBY_ADDRESS = "0x16baf0de678e52367adc69fd067e5edd1d33e3bf";
 export declare const DEFAULT_BUYER_FEE_BASIS_POINTS = 0;
 export declare const DEFAULT_SELLER_FEE_BASIS_POINTS = 250;
 export declare const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100;
@@ -25,6 +27,19 @@ export declare const MIN_EXPIRATION_SECONDS = 10;
 export declare const ORDER_MATCHING_LATENCY_SECONDS: number;
 export declare const SELL_ORDER_BATCH_SIZE = 3;
 export declare const DEFAULT_GAS_INCREASE_FACTOR = 1.1;
+export declare const ERC721_V1_TRANSFER_ANNOTATED_ABI: {
+    "constant": boolean;
+    "inputs": {
+        "name": string;
+        "type": string;
+        "kind": FunctionInputKind;
+    }[];
+    "name": string;
+    "outputs": never[];
+    "payable": boolean;
+    "stateMutability": StateMutability;
+    "type": AbiType;
+};
 /**
  * Promisify a call a method on a contract,
  * handling Parity errors. Returns '0x' if error.

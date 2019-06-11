@@ -135,6 +135,24 @@ export enum WyvernSchemaName {
   Enjin = 'Enjin',
 }
 
+/**
+ * The NFT version that this contract uses.
+ * ERC721 versions are:
+ * 1.0: CryptoKitties and early 721s, which lack approve-all and
+ *      have problems calling `transferFrom` from the owner's account.
+ * 2.0: CryptoSaga and others that lack `transferFrom` and have
+ *      `takeOwnership` instead
+ * 3.0: The current OpenZeppelin standard:
+ *      https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC721/ERC721.sol
+ */
+export enum NFTVersion {
+  Unsupported = 'unsupported',
+  Enjin = '1155-1.0',
+  ERC721v1 = '1.0',
+  ERC721v2 = '2.0',
+  ERC721v3 = '3.0',
+}
+
 export enum WyvernAssetLocation {
   Account = 'account',
   Proxy = 'proxy',
@@ -196,7 +214,9 @@ export interface Asset {
   // The asset's token ID
   tokenId: string
   // The asset's contract address
-  tokenAddress: string
+  tokenAddress: string,
+  // The NFT version of this asset
+  nftVersion?: NFTVersion
 }
 
 /**

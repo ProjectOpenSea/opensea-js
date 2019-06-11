@@ -5,7 +5,7 @@ import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import * as WyvernSchemas from 'wyvern-schemas'
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
-import { AnnotatedFunctionABI, FunctionInputKind, HowToCall } from 'wyvern-js/lib/types'
+import { AnnotatedFunctionABI, FunctionInputKind, HowToCall, StateMutability, AbiType } from 'wyvern-js/lib/types'
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
@@ -23,6 +23,8 @@ export const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481
 export const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9"
 export const ENJIN_COIN_ADDRESS = '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c'
 export const ENJIN_ADDRESS = '0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab'
+export const CK_ADDRESS = '0x06012c8cf97bead5deae237070f9587f8e7a266d'
+export const CK_RINKEBY_ADDRESS = '0x16baf0de678e52367adc69fd067e5edd1d33e3bf'
 export const DEFAULT_BUYER_FEE_BASIS_POINTS = 0
 export const DEFAULT_SELLER_FEE_BASIS_POINTS = 250
 export const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100
@@ -35,6 +37,26 @@ export const DEFAULT_GAS_INCREASE_FACTOR = 1.1
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 const proxyAssertABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxyAssert', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
+export const ERC721_V1_TRANSFER_ANNOTATED_ABI = {
+  "constant": false,
+  "inputs": [
+    {
+      "name": "_to",
+      "type": "address",
+      "kind": FunctionInputKind.Replaceable
+    },
+    {
+      "name": "_tokenId",
+      "type": "uint256",
+      "kind": FunctionInputKind.Asset
+    }
+  ],
+  "name": "transfer",
+  "outputs": [],
+  "payable": false,
+  "stateMutability": StateMutability.Nonpayable,
+  "type": AbiType.Function
+}
 
 // OTHER
 
