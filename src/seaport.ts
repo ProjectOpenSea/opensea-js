@@ -31,7 +31,7 @@ import {
   getTransferFeeSettings,
   rawCall,
   promisifyCall,
-  ERC721_V1_TRANSFER_ANNOTATED_ABI,
+  annotateERC721TransferABI,
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
 } from './utils'
@@ -1023,7 +1023,9 @@ export class OpenSeaPort {
       ? getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress)
       : { address: asset.address }
     const isCryptoKitties = wyAsset.address in [CK_ADDRESS, CK_RINKEBY_ADDRESS]
-    const isOldNFT = 'nftVersion' in asset && asset.nftVersion != NFTVersion.ERC721v3
+    // Since CK is common, infer isOldNFT from it in case user
+    // didn't pass in `nftVersion`
+    const isOldNFT = 'tokenId' in asset && 'nftVersion' in asset && asset.nftVersion != NFTVersion.ERC721v3 || isCryptoKitties
 
     let abi: AnnotatedFunctionABI
 
@@ -1034,12 +1036,9 @@ export class OpenSeaPort {
       }
       abi = schema.functions.transferQuantity(wyAsset, quantity)
 
-    } else if (isOldNFT || isCryptoKitties) {
-
-      abi = {
-        ...ERC721_V1_TRANSFER_ANNOTATED_ABI,
-        target: wyAsset.address
-      }
+    } else if (isOldNFT && 'id' in wyAsset) {
+      // TODO: why does typescript need 'id' in wyAsset? redundant
+      abi = annotateERC721TransferABI(wyAsset)
 
     } else {
 

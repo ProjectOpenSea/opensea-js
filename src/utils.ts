@@ -9,7 +9,7 @@ import { AnnotatedFunctionABI, FunctionInputKind, HowToCall, StateMutability, Ab
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -37,7 +37,7 @@ export const DEFAULT_GAS_INCREASE_FACTOR = 1.1
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 const proxyAssertABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxyAssert', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
-export const ERC721_V1_TRANSFER_ANNOTATED_ABI = {
+export const annotateERC721TransferABI = (asset: WyvernERC721Asset): AnnotatedFunctionABI => ({
   "constant": false,
   "inputs": [
     {
@@ -48,15 +48,17 @@ export const ERC721_V1_TRANSFER_ANNOTATED_ABI = {
     {
       "name": "_tokenId",
       "type": "uint256",
-      "kind": FunctionInputKind.Asset
+      "kind": FunctionInputKind.Asset,
+      "value": asset.id
     }
   ],
+  "target": asset.address,
   "name": "transfer",
   "outputs": [],
   "payable": false,
   "stateMutability": StateMutability.Nonpayable,
   "type": AbiType.Function
-}
+})
 
 // OTHER
 

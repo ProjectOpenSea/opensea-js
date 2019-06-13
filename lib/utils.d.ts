@@ -2,8 +2,8 @@ import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import * as WyvernSchemas from 'wyvern-schemas';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
-import { AnnotatedFunctionABI, FunctionInputKind, HowToCall, StateMutability, AbiType } from 'wyvern-js/lib/types';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract } from './types';
+import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
@@ -27,19 +27,7 @@ export declare const MIN_EXPIRATION_SECONDS = 10;
 export declare const ORDER_MATCHING_LATENCY_SECONDS: number;
 export declare const SELL_ORDER_BATCH_SIZE = 3;
 export declare const DEFAULT_GAS_INCREASE_FACTOR = 1.1;
-export declare const ERC721_V1_TRANSFER_ANNOTATED_ABI: {
-    "constant": boolean;
-    "inputs": {
-        "name": string;
-        "type": string;
-        "kind": FunctionInputKind;
-    }[];
-    "name": string;
-    "outputs": never[];
-    "payable": boolean;
-    "stateMutability": StateMutability;
-    "type": AbiType;
-};
+export declare const annotateERC721TransferABI: (asset: WyvernERC721Asset) => AnnotatedFunctionABI;
 /**
  * Promisify a call a method on a contract,
  * handling Parity errors. Returns '0x' if error.
