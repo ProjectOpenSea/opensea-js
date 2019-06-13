@@ -1025,7 +1025,7 @@ export class OpenSeaPort {
     const isCryptoKitties = wyAsset.address in [CK_ADDRESS, CK_RINKEBY_ADDRESS]
     // Since CK is common, infer isOldNFT from it in case user
     // didn't pass in `nftVersion`
-    const isOldNFT = 'tokenId' in asset && 'nftVersion' in asset && asset.nftVersion != NFTVersion.ERC721v3 || isCryptoKitties
+    const isOldNFT = isCryptoKitties || [NFTVersion.ERC721v1, NFTVersion.ERC721v2].includes((asset as any).nftVersion)
 
     let abi: AnnotatedFunctionABI
 
@@ -2067,7 +2067,7 @@ export class OpenSeaPort {
     return Promise.all(wyAssets.map(async wyAsset => {
       // Verify that the taker owns the asset
       const where = await findAsset(this.web3, { account: accountAddress, proxy, wyAsset, schema })
-      if (where != WyvernAssetLocation.Account && where != WyvernAssetLocation.Proxy) {
+      if (where == WyvernAssetLocation.Other) {
         // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
         throw new Error('You do not own this asset.')
       }

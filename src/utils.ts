@@ -356,6 +356,7 @@ export const orderToJSON = (order: Order): OrderJSON => {
 }
 
 // Taken from Wyvern demo exchange
+// TODO implement countOf. Redo this whole function!
 export const findAsset = async (
     web3: Web3,
     {account, proxy, wyAsset, schema}:
@@ -363,32 +364,43 @@ export const findAsset = async (
     retries = 1
   ): Promise<WyvernAssetLocation | undefined> => {
   let owner
+  const proxyCount = undefined
+  const myCount = undefined
   const ownerOf = schema.functions.ownerOf
+  const countOf = schema.functions.countOf
+
   if (ownerOf) {
     const abi = ownerOf(wyAsset)
     const contract = web3.eth.contract([abi]).at(abi.target)
     if (abi.inputs.filter((x: any) => x.value === undefined).length === 0) {
-      owner = await promisify<string>(c => contract[abi.name].call(...abi.inputs.map((i: any) => i.value.toString()), c))
+      const inputs = abi.inputs.map((i: any) => i.value.toString())
+      owner = await promisify<string>(c => contract[abi.name].call(...inputs, c))
       owner = owner.toLowerCase()
+    } else {
+      return undefined
     }
+  } else if (countOf) {
+    // ERC20 or ERC1155 (non-Enjin)
+    // TODO
+    return undefined
+    // const abi = countOf(wyAsset)
+    // const inputs = abi.inputs.filter((x: any) => x.value !== undefined).map((x: any) => x.value)
+    // // console.warn(proxy, [account, ...inputs], abi.inputs)
+    // const contract = web3.eth.contract([abi]).at(abi.target)
+    // if (proxy) {
+    //   proxyCount = await promisify<BigNumber>(c => contract[abi.name].call([...inputs, proxy], c))
+    //   proxyCount = proxyCount.toNumber()
+    // } else {
+    //   proxyCount = 0
+    // }
+    // myCount = await promisify<BigNumber>(c => contract[abi.name].call([...inputs, account], c))
+    // myCount = myCount.toNumber()
+  } else {
+    // Missing ownership call - skip check to allow listings
+    // by default
+    return undefined
   }
 
-  /* This is a bit Ethercraft-specific. */
-  let proxyCount
-  let myCount
-  const countOf = schema.functions.countOf
-  if (countOf) {
-    const abi = countOf(wyAsset)
-    const contract = web3.eth.contract([abi]).at(abi.target)
-    if (proxy) {
-      proxyCount = await promisify<BigNumber>(c => contract[abi.name].call([proxy], c))
-      proxyCount = proxyCount.toNumber()
-    } else {
-      proxyCount = 0
-    }
-    myCount = await promisify<BigNumber>(c => contract[abi.name].call([account], c))
-    myCount = myCount.toNumber()
-  }
   if (owner !== undefined) {
     if (proxy && owner.toLowerCase() === proxy.toLowerCase()) {
       return WyvernAssetLocation.Proxy
@@ -398,6 +410,7 @@ export const findAsset = async (
       return _handleOtherOwner(owner)
     }
   } else if (myCount !== undefined && proxyCount !== undefined) {
+    /* This is a bit Ethercraft-specific. */
     if (proxyCount >= 1000000000000000000) {
       return WyvernAssetLocation.Proxy
     } else if (myCount >= 1000000000000000000) {
