@@ -3,7 +3,7 @@ import { WyvernProtocol } from 'wyvern-js'
 import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
-import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
+import { CanonicalWETH, ERC20, ERC721, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy, getMethod } from './contracts'
 import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset, WyvernFTAsset, NFTVersion } from './types'
 import {
   confirmTransaction, findAsset,
@@ -34,6 +34,7 @@ import {
   annotateERC721TransferABI,
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
+  WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -128,6 +129,185 @@ export class OpenSeaPort {
    */
   public removeAllListeners(event?: EventType) {
     this._emitter.removeAllListeners(event)
+  }
+
+  /**
+   * Wraps an arbirary group of NFTs into their corresponding WrappedNFT ERC20 tokens.
+   * Emits the `WrapAssets` event when the transaction is prompted.
+   * @param param0 __namedParameters Object
+   * @param tokenIds Token IDs of the assets.
+   * @param tokenAddresses Addresses of the tokens' contracts. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+   * @param accountAddress Address of the user's wallet
+   */
+  public async wrapAssets(
+      { tokenIds, tokenAddresses, accountAddress }:
+      { tokenIds: string[];
+        tokenAddresses: string[];
+        accountAddress: string; }
+    ) {
+
+    if (!tokenIds || !tokenAddresses || tokenIds.length != tokenAddresses.length) {
+      throw new Error("The 'tokenIds' and 'tokenAddresses' arrays must exist and have the same length.")
+    }
+
+    // Check if all tokenAddresses match. If not, then we have a mixedBatch of
+    // NFTs from different NFT core contracts
+    const isMixedBatchOfAssets: boolean = !tokenAddresses.every( (val, i, arr) => val === arr[0] )
+
+    const assets: Asset[] = _.zipWith(tokenIds, tokenAddresses, (tokenId, tokenAddress) => {
+      return { tokenAddress, tokenId }
+    })
+
+    this._dispatch(EventType.WrapAssets, { assets, accountAddress })
+
+    const gasPrice = await this._computeGasPrice()
+    const txHash = await sendRawTransaction(this.web3, {
+      from: accountAddress,
+      to: WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
+      value: 0,
+      data: WyvernSchemas.encodeCall(getMethod(WrappedNFTLiquidationProxy, 'wrapNFTs'),
+        [tokenIds, tokenAddresses, isMixedBatchOfAssets]),
+      gasPrice
+    }, error => {
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress })
+    })
+
+    await this._confirmTransaction(txHash, EventType.WrapAssets, "Wrapping Assets")
+  }
+
+  /**
+   * Unwraps an arbirary group of NFTs from their corresponding WrappedNFT ERC20 tokens back into ERC721 tokens.
+   * Emits the `UnwrapAssets` event when the transaction is prompted.
+   * @param param0 __namedParameters Object
+   * @param tokenIds Token IDs of the assets.
+   * @param tokenAddresses Addresses of the tokens' contracts. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+   * @param destinationAddresses Addresses that each resulting ERC721 token will be sent to. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+   * @param accountAddress Address of the user's wallet
+   */
+  public async unwrapAssets(
+      { tokenIds, tokenAddresses, destinationAddresses, accountAddress }:
+      { tokenIds: string[];
+        tokenAddresses: string[];
+        destinationAddresses: string[];
+        accountAddress: string; }
+    ) {
+
+    if (!tokenIds || !tokenAddresses || tokenIds.length != tokenAddresses.length) {
+      throw new Error("The 'tokenIds' and 'tokenAddresses' arrays must exist and have the same length.")
+    }
+
+    if (!tokenIds || !destinationAddresses || tokenIds.length != destinationAddresses.length) {
+      throw new Error("The 'tokenIds' and 'destinationAddresses' arrays must exist and have the same length.")
+    }
+
+    // Check if all tokenAddresses match. If not, then we have a mixedBatch of
+    // NFTs from different NFT core contracts
+    const isMixedBatchOfAssets: boolean = !tokenAddresses.every( (val, i, arr) => val === arr[0] )
+
+    const assets: Asset[] = _.zipWith(tokenIds, tokenAddresses, (tokenId, tokenAddress) => {
+      return { tokenAddress, tokenId }
+    })
+
+    this._dispatch(EventType.UnwrapAssets, { assets, accountAddress })
+
+    const gasPrice = await this._computeGasPrice()
+    const txHash = await sendRawTransaction(this.web3, {
+      from: accountAddress,
+      to: WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
+      value: 0,
+      data: WyvernSchemas.encodeCall(getMethod(WrappedNFTLiquidationProxy, 'unwrapNFTs'),
+        [tokenIds, tokenAddresses, destinationAddresses, isMixedBatchOfAssets]),
+      gasPrice
+    }, error => {
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress })
+    })
+
+    await this._confirmTransaction(txHash, EventType.UnwrapAssets, "Unwrapping Assets")
+  }
+
+  /**
+   * Liquidates an arbirary group of NFTs by atomically wrapping them into their
+   * corresponding WrappedNFT ERC20 tokens, and then immediately selling those
+   * ERC20 tokens on their corresponding Uniswap exchange.
+   * Emits the `LiquidateAssets` event when the transaction is prompted.
+   * @param param0 __namedParameters Object
+   * @param tokenIds Token IDs of the assets.
+   * @param tokenAddresses Addresses of the tokens' contracts. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+   * @param accountAddress Address of the user's wallet
+   * @param uniswapSlippageAllowedInBasisPoints The amount of slippage that a user will tolerate in their Uniswap trade; if Uniswap cannot fulfill the order without more slippage, the whole function will revert.
+   */
+  public async liquidateAssets(
+      { tokenIds, tokenAddresses, accountAddress, uniswapSlippageAllowedInBasisPoints }:
+      { tokenIds: string[];
+        tokenAddresses: string[];
+        accountAddress: string;
+        uniswapSlippageAllowedInBasisPoints: number; }
+    ) {
+
+    if (!tokenIds || !tokenAddresses || tokenIds.length != tokenAddresses.length) {
+      throw new Error("The 'tokenIds' and 'tokenAddresses' arrays must exist and have the same length.")
+    }
+
+    // Check if all tokenAddresses match. If not, then we have a mixedBatch of
+    // NFTs from different NFT core contracts
+    const isMixedBatchOfAssets: boolean = !tokenAddresses.every( (val, i, arr) => val === arr[0] )
+
+    const assets: Asset[] = _.zipWith(tokenIds, tokenAddresses, (tokenId, tokenAddress) => {
+      return { tokenAddress, tokenId }
+    })
+
+    this._dispatch(EventType.LiquidateAssets, { assets, accountAddress })
+
+    const gasPrice = await this._computeGasPrice()
+    const txHash = await sendRawTransaction(this.web3, {
+      from: accountAddress,
+      to: WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
+      value: 0,
+      data: WyvernSchemas.encodeCall(getMethod(WrappedNFTLiquidationProxy, 'liquidateNFTs'),
+        [tokenIds, tokenAddresses, isMixedBatchOfAssets, uniswapSlippageAllowedInBasisPoints]),
+      gasPrice
+    }, error => {
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress })
+    })
+
+    await this._confirmTransaction(txHash, EventType.LiquidateAssets, "Liquidating Assets")
+  }
+
+  /**
+   * Purchases a bundle of WrappedNFT tokens from Uniswap and then unwraps them into ERC721 tokens.
+   * Emits the `PurchaseAssets` event when the transaction is prompted.
+   * @param param0 __namedParameters Object
+   * @param numTokensToBuy The number of WrappedNFT tokens to purchase and unwrap
+   * @param amountInEth The estimated cost in wei for tokens (probably some ratio above the minimum amount to avoid the transaction failing due to frontrunning, minimum amount is found by calling UniswapExchange(uniswapAddress).getEthToTokenOutputPrice(numTokensToBuy.mul(10**18));
+   * @param contractAddress Address of the corresponding NFT core contract for these NFTs.
+   * @param accountAddress Address of the user's wallet
+   */
+  public async purchaseAssets(
+      { numTokensToBuy, amountInEth, contractAddress, accountAddress }:
+      { numTokensToBuy: number;
+        amountInEth: number;
+        contractAddress: string;
+        accountAddress: string; }
+    ) {
+
+    const token = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther
+    const amount = WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals)
+
+    this._dispatch(EventType.PurchaseAssets, { amount, contractAddress, accountAddress })
+
+    const gasPrice = await this._computeGasPrice()
+    const txHash = await sendRawTransaction(this.web3, {
+      from: accountAddress,
+      to: WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
+      value: amount,
+      data: WyvernSchemas.encodeCall(getMethod(WrappedNFTLiquidationProxy, 'purchaseNFTs'),
+        [numTokensToBuy, contractAddress]),
+      gasPrice
+    }, error => {
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress })
+    })
+
+    await this._confirmTransaction(txHash, EventType.PurchaseAssets, "Purchasing Assets")
   }
 
   /**

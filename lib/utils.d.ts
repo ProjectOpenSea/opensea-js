@@ -18,6 +18,7 @@ export declare const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2
 export declare const ENJIN_ADDRESS = "0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab";
 export declare const CK_ADDRESS = "0x06012c8cf97bead5deae237070f9587f8e7a266d";
 export declare const CK_RINKEBY_ADDRESS = "0x16baf0de678e52367adc69fd067e5edd1d33e3bf";
+export declare const WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET = "0x325c8f73a4d3d912d1a1cffc31779f6d0641e95a";
 export declare const DEFAULT_BUYER_FEE_BASIS_POINTS = 0;
 export declare const DEFAULT_SELLER_FEE_BASIS_POINTS = 250;
 export declare const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100;

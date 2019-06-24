@@ -44,6 +44,66 @@ export declare class OpenSeaPort {
      */
     removeAllListeners(event?: EventType): void;
     /**
+     * Wraps an arbirary group of NFTs into their corresponding WrappedNFT ERC20 tokens.
+     * Emits the `WrapAssets` event when the transaction is prompted.
+     * @param param0 __namedParameters Object
+     * @param tokenIds Token IDs of the assets.
+     * @param tokenAddresses Addresses of the tokens' contracts. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+     * @param accountAddress Address of the user's wallet
+     */
+    wrapAssets({ tokenIds, tokenAddresses, accountAddress }: {
+        tokenIds: string[];
+        tokenAddresses: string[];
+        accountAddress: string;
+    }): Promise<void>;
+    /**
+     * Unwraps an arbirary group of NFTs from their corresponding WrappedNFT ERC20 tokens back into ERC721 tokens.
+     * Emits the `UnwrapAssets` event when the transaction is prompted.
+     * @param param0 __namedParameters Object
+     * @param tokenIds Token IDs of the assets.
+     * @param tokenAddresses Addresses of the tokens' contracts. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+     * @param destinationAddresses Addresses that each resulting ERC721 token will be sent to. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+     * @param accountAddress Address of the user's wallet
+     */
+    unwrapAssets({ tokenIds, tokenAddresses, destinationAddresses, accountAddress }: {
+        tokenIds: string[];
+        tokenAddresses: string[];
+        destinationAddresses: string[];
+        accountAddress: string;
+    }): Promise<void>;
+    /**
+     * Liquidates an arbirary group of NFTs by atomically wrapping them into their
+     * corresponding WrappedNFT ERC20 tokens, and then immediately selling those
+     * ERC20 tokens on their corresponding Uniswap exchange.
+     * Emits the `LiquidateAssets` event when the transaction is prompted.
+     * @param param0 __namedParameters Object
+     * @param tokenIds Token IDs of the assets.
+     * @param tokenAddresses Addresses of the tokens' contracts. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+     * @param accountAddress Address of the user's wallet
+     * @param uniswapSlippageAllowedInBasisPoints The amount of slippage that a user will tolerate in their Uniswap trade; if Uniswap cannot fulfill the order without more slippage, the whole function will revert.
+     */
+    liquidateAssets({ tokenIds, tokenAddresses, accountAddress, uniswapSlippageAllowedInBasisPoints }: {
+        tokenIds: string[];
+        tokenAddresses: string[];
+        accountAddress: string;
+        uniswapSlippageAllowedInBasisPoints: number;
+    }): Promise<void>;
+    /**
+     * Purchases a bundle of WrappedNFT tokens from Uniswap and then unwraps them into ERC721 tokens.
+     * Emits the `PurchaseAssets` event when the transaction is prompted.
+     * @param param0 __namedParameters Object
+     * @param numTokensToBuy The number of WrappedNFT tokens to purchase and unwrap
+     * @param amountInEth The estimated cost in wei for tokens (probably some ratio above the minimum amount to avoid the transaction failing due to frontrunning, minimum amount is found by calling UniswapExchange(uniswapAddress).getEthToTokenOutputPrice(numTokensToBuy.mul(10**18));
+     * @param contractAddress Address of the corresponding NFT core contract for these NFTs.
+     * @param accountAddress Address of the user's wallet
+     */
+    purchaseAssets({ numTokensToBuy, amountInEth, contractAddress, accountAddress }: {
+        numTokensToBuy: number;
+        amountInEth: number;
+        contractAddress: string;
+        accountAddress: string;
+    }): Promise<void>;
+    /**
      * Wrap ETH into W-ETH.
      * W-ETH is needed for placing buy orders (making offers).
      * Emits the `WrapEth` event when the transaction is prompted.

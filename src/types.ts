@@ -60,6 +60,12 @@ export enum EventType {
   // When transferring one or more assets
   TransferAll = "TransferAll",
   TransferOne = "TransferOne",
+
+  // When wrapping or unwrapping NFTs
+  WrapAssets = "WrapAssets",
+  UnwrapAssets = "UnwrapAssets",
+  LiquidateAssets = "LiquidateAssets",
+  PurchaseAssets = "PurchaseAssets",
 }
 
 /**
