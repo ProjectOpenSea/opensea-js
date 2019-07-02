@@ -1,11 +1,16 @@
 import { PartialReadonlyContractAbi } from './types'
+import { AbiType, MethodAbi, EventAbi } from 'web3'
 
-export const getMethod = (abi: PartialReadonlyContractAbi, name: string) => {
-  return abi.filter(x => x.type == 'function' && x.name == name)[0]
+export const getMethod = (abi: PartialReadonlyContractAbi, name: string): MethodAbi => {
+  // Have to cast since there's a bug in
+  // web3 types on the 'type' field
+  return abi.filter(x => x.type == AbiType.Function && x.name == name)[0] as MethodAbi
 }
 
-export const event = (abi: PartialReadonlyContractAbi, name: string) => {
-  return abi.filter(x => x.type == 'event' && x.name == name)[0]
+export const event = (abi: PartialReadonlyContractAbi, name: string): EventAbi => {
+  // Have to cast since there's a bug in
+  // web3 types on the 'type' field
+  return abi.filter(x => x.type == AbiType.Event && x.name == name)[0] as EventAbi
 }
 
 export const DECENTRALAND_AUCTION_CONFIG = {

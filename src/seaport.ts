@@ -1,10 +1,11 @@
 import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js'
-import * as WyvernSchemas from 'wyvern-schemas'
+import * as WyvernSchemas from 'wyvern-schemas/dist-tsc'
+import { Schema } from 'wyvern-schemas/dist-tsc/types'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset, WyvernFTAsset, NFTVersion, FungibleAsset } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, OpenSeaFungibleAsset, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset, WyvernFTAsset, NFTVersion, FungibleAsset } from './types'
 import {
   confirmTransaction, findAsset,
   makeBigNumber, orderToJSON,
@@ -338,8 +339,8 @@ export class OpenSeaPort {
    * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
    * @param param0 __namedParameters Object
    * @param tokenId DEPRECATED: Token ID. Use `asset` instead.
-   * @param tokenAddress DEPRECATED: Address of the token's contract. Use `asset` or `fungibleToken` instead.
-   * @param asset The NFT ("Asset") or fungible token ("FungibleToken") to trade
+   * @param tokenAddress DEPRECATED: Address of the token's contract. Use `asset` instead.
+   * @param asset The NFT ("Asset") or fungible token ("FungibleAsset") to trade
    * @param accountAddress Address of the maker's wallet
    * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
@@ -353,8 +354,8 @@ export class OpenSeaPort {
    */
   public async createSellOrder(
       { tokenId, tokenAddress, asset, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS, schemaName = WyvernSchemaName.ERC721 }:
-      { tokenId: string;
-        tokenAddress: string;
+      { tokenId?: string;
+        tokenAddress?: string;
         asset: Asset | FungibleAsset;
         accountAddress: string;
         startAmount: number;
@@ -368,7 +369,7 @@ export class OpenSeaPort {
         schemaName?: WyvernSchemaName; }
     ): Promise<Order> {
 
-    if (!asset && tokenAddress) {
+    if (!asset && tokenAddress && tokenId) {
       asset = { tokenAddress, tokenId }
     }
 
@@ -902,8 +903,9 @@ export class OpenSeaPort {
    * is locked for some reason, e.g. an item is being rented within a game
    * or trading has been locked for an item type.
    * @param param0 __namedParamters Object
-   * @param tokenId ID of the token to check
-   * @param tokenAddress Address of the token's contract
+   * @param tokenId DEPRECATED: Token ID. Use `asset` instead.
+   * @param tokenAddress DEPRECATED: Address of the token's contract. Use `asset` instead.
+   * @param asset The NFT ("Asset") or fungible token ("FungibleAsset") to trade
    * @param fromAddress The account address that currently owns the asset
    * @param toAddress The account address that will be acquiring the asset
    * @param didOwnerApprove If the owner and fromAddress has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
@@ -911,18 +913,25 @@ export class OpenSeaPort {
    * @param retries How many times to retry if false
    */
   public async isAssetTransferrable(
-    { tokenId, tokenAddress, fromAddress, toAddress, didOwnerApprove = false, schemaName = WyvernSchemaName.ERC721 }:
-    { tokenId: string;
-      tokenAddress: string;
+    { tokenId, tokenAddress, asset, fromAddress, toAddress,
+      quantity = 1, didOwnerApprove = false, schemaName = WyvernSchemaName.ERC721 }:
+    { tokenId?: string;
+      tokenAddress?: string;
+      asset: Asset | FungibleAsset;
       fromAddress: string;
       toAddress: string;
+      quantity?: number;
       didOwnerApprove?: boolean;
       schemaName?: WyvernSchemaName; },
     retries = 1
   ): Promise<boolean> {
 
+    if (!asset && tokenAddress && tokenId) {
+      asset = { tokenAddress, tokenId }
+    }
+
     const schema = this._getSchema(schemaName)
-    const wyAsset = getWyvernNFTAsset(schema, tokenId, tokenAddress)
+    const wyAsset = getWyvernAsset(schema, asset, quantity)
     const abi = schema.functions.transfer(wyAsset)
 
     let from = fromAddress
@@ -951,7 +960,7 @@ export class OpenSeaPort {
         return false
       }
       await delay(500)
-      return this.isAssetTransferrable({ tokenId, tokenAddress, fromAddress, toAddress, didOwnerApprove, schemaName }, retries - 1)
+      return this.isAssetTransferrable({ asset, fromAddress, toAddress, quantity, didOwnerApprove, schemaName }, retries - 1)
     }
   }
 
@@ -1032,7 +1041,7 @@ export class OpenSeaPort {
     // didn't pass in `nftVersion`
     const isOldNFT = isCryptoKitties || [NFTVersion.ERC721v1, NFTVersion.ERC721v2].includes((asset as any).nftVersion)
 
-    let abi = isOldNFT && 'id' in wyAsset
+    const abi = isOldNFT && 'id' in wyAsset
       ? annotateERC721TransferABI(wyAsset)
       : schema.functions.transfer(wyAsset)
 
@@ -1118,13 +1127,13 @@ export class OpenSeaPort {
       { symbol?: string;
         address?: string;
         name?: string } = {}
-    ): Promise<FungibleToken[]> {
+    ): Promise<OpenSeaFungibleAsset[]> {
 
     const tokenSettings = WyvernSchemas.tokens[this._networkName]
 
     const { tokens } = await this.api.getTokens({ symbol, address, name })
 
-    const offlineTokens: FungibleToken[] = [
+    const offlineTokens: OpenSeaFungibleAsset[] = [
       tokenSettings.canonicalWrappedEther,
       ...tokenSettings.otherTokens,
     ].filter(t => {
@@ -1190,7 +1199,7 @@ export class OpenSeaPort {
         extraBountyBasisPoints?: number }
     ): Promise<OpenSeaFees> {
 
-    let asset: OpenSeaAsset | undefined
+    let asset: OpenSeaAsset | null = null
 
     let totalBuyerFeeBPS = DEFAULT_BUYER_FEE_BASIS_POINTS
     let totalSellerFeeBPS = DEFAULT_SELLER_FEE_BASIS_POINTS
@@ -1563,7 +1572,7 @@ export class OpenSeaPort {
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         asset: wyAsset,
-        schema: schema.name,
+        schema: schema.name as WyvernSchemaName,
       }
     }
   }
@@ -1591,9 +1600,12 @@ export class OpenSeaPort {
     const schema = this._getSchema(schemaName)
     const wyAsset = getWyvernAsset(schema, asset, quantity)
     const isPrivate = buyerAddress != NULL_ADDRESS
+    const nfts: Asset[] | undefined = 'tokenId' in asset
+      ? [asset]
+      : undefined
     const { totalSellerFeeBPS,
             totalBuyerFeeBPS,
-            sellerBountyBPS } = await this.computeFees({ assets: [asset], side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+            sellerBountyBPS } = await this.computeFees({ assets: nfts, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
 
@@ -1645,7 +1657,7 @@ export class OpenSeaPort {
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         asset: wyAsset,
-        schema: schema.name,
+        schema: schema.name as WyvernSchemaName,
       }
     }
   }
@@ -1687,6 +1699,9 @@ export class OpenSeaPort {
     }
 
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedBuy(schema, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+    if (!calldata || !replacementPattern) {
+      throw new Error("Failed to encode")
+    }
 
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
@@ -1719,7 +1734,7 @@ export class OpenSeaPort {
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle,
-        schema: schema.name,
+        schema: schema.name as WyvernSchemaName,
       }
     }
   }
@@ -1756,6 +1771,9 @@ export class OpenSeaPort {
       sellerBountyBPS } = await this.computeFees({ assets, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+    if (!calldata || !replacementPattern) {
+      throw new Error("Failed to encode")
+    }
 
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
@@ -1796,7 +1814,7 @@ export class OpenSeaPort {
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle,
-        schema: schema.name,
+        schema: schema.name as WyvernSchemaName,
       },
     }
   }
@@ -1830,6 +1848,9 @@ export class OpenSeaPort {
     }
 
     const { target, calldata, replacementPattern } = computeOrderParams()
+    if (!calldata || !replacementPattern) {
+      throw new Error("Failed to encode")
+    }
     const times = this._getTimeParameters(0)
     // Compat for matching buy orders that have fee recipient still on them
     const feeRecipient = order.feeRecipient == NULL_ADDRESS
@@ -2044,7 +2065,7 @@ export class OpenSeaPort {
 
   public async _approveAll(
       { schema, wyAssets, accountAddress, proxyAddress = null }:
-      { schema: WyvernSchemas.Schema<any>;
+      { schema: Schema<any>;
         wyAssets: WyvernAsset[];
         accountAddress: string;
         proxyAddress?: string | null }
@@ -2368,7 +2389,7 @@ export class OpenSeaPort {
     }
   }
 
-  private _getSchema(schemaName: WyvernSchemaName): WyvernSchemas.Schema <any> {
+  private _getSchema(schemaName: WyvernSchemaName): Schema<any> {
     const schema = WyvernSchemas.schemas[this._networkName].filter(s => s.name == schemaName)[0]
 
     if (!schema) {

@@ -8,17 +8,12 @@ import {
   Order as WyvernOrder
 } from 'wyvern-js/lib/types'
 
-import {
-  Token as FungibleToken,
-  ABIType,
-  StateMutability
-} from 'wyvern-schemas/dist-tsc/types'
+import { Token } from 'wyvern-schemas/dist-tsc/types'
 
 export {
   Network,
   HowToCall,
-  ECSignature,
-  FungibleToken
+  ECSignature
 }
 
 /**
@@ -214,14 +209,7 @@ export interface OpenSeaAccount {
 }
 
 /**
- * Simple OpenSea fungible asset spec
- */
-export interface FungibleAsset {
-  address: string
-}
-
-/**
- * Simple OpenSea asset spec
+ * Simple, unannotated non-fungible asset spec
  */
 export interface Asset {
   // The asset's token ID
@@ -233,7 +221,14 @@ export interface Asset {
 }
 
 /**
- * OpenSea asset contract
+ * Simple, unannotated fungible asset spec
+ */
+export interface FungibleAsset {
+  address: string
+}
+
+/**
+ * Annotated asset contract with OpenSea metadata
  */
 export interface OpenSeaAssetContract {
   // Name of the asset's contract
@@ -271,7 +266,7 @@ export interface OpenSeaAssetContract {
 }
 
 /**
- * The OpenSea asset fetched by the API
+ * Annotated asset spec with OpenSea metadata
  */
 export interface OpenSeaAsset extends Asset {
   assetContract: OpenSeaAssetContract
@@ -314,8 +309,19 @@ export interface OpenSeaAsset extends Asset {
   // The per-transfer fee, in base units, for this asset in its transfer method
   transferFee: BigNumber | string | null,
   // The transfer fee token for this asset in its transfer method
-  transferFeePaymentToken: FungibleToken | null
+  transferFeePaymentToken: OpenSeaFungibleAsset | null
 }
+
+/**
+ * Full annotated Fungible Token spec with OpenSea metadata
+ */
+export interface OpenSeaFungibleAsset extends Token {
+  imageUrl?: string
+  ethPrice?: string
+}
+
+// Backwards compat
+export type FungibleToken = OpenSeaFungibleAsset
 
 /**
  * Bundles of assets, grouped together into one OpenSea order
@@ -399,7 +405,7 @@ export interface UnhashedOrder extends WyvernOrder {
   waitingForBestCounterOrder: boolean
 
   metadata: {
-    asset?: WyvernNFTAsset
+    asset?: WyvernFTAsset | WyvernNFTAsset
     bundle?: WyvernBundle
     schema: WyvernSchemaName
   }
@@ -420,7 +426,7 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
   currentBounty?: BigNumber
   makerAccount?: OpenSeaAccount
   takerAccount?: OpenSeaAccount
-  paymentTokenContract?: FungibleToken
+  paymentTokenContract?: OpenSeaFungibleAsset
   feeRecipientAccount?: OpenSeaAccount
   cancelledOrFinalized?: boolean
   markedInvalid?: boolean
@@ -511,14 +517,17 @@ export interface OpenSeaAssetQuery {
 }
 
 /**
- * Query interface for Fungible Tokens
+ * Query interface for Fungible Assets
  */
-export interface FungibleTokenQuery extends Partial<FungibleToken> {
+export interface OpenSeaFungibleAssetQuery extends Partial<OpenSeaFungibleAsset> {
   limit?: number
   offset?: number
   // Typescript bug requires this duplication
   symbol?: string
 }
+
+// Backwards compat
+export type FungibleTokenQuery = OpenSeaFungibleAssetQuery
 
 export interface OrderbookResponse {
   orders: OrderJSON[]
@@ -534,13 +543,13 @@ export type TxnCallback = (result: boolean) => void
  * To simplify typifying ABIs
  */
 export interface PartialAbiDefinition {
-  type: ABIType.Function // Not Partial!
+  type: Web3.AbiType // Not Partial!
   name?: string
   inputs?: object[]
   outputs?: object[]
   payable?: boolean
   constant?: boolean
   anonymous?: boolean
-  stateMutability?: StateMutability
+  stateMutability?: Web3.ConstructorStateMutability
 }
 export type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>

@@ -3,13 +3,14 @@ import { WyvernProtocol } from 'wyvern-js'
 import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
-import * as WyvernSchemas from 'wyvern-schemas'
+import * as WyvernSchemas from 'wyvern-schemas/dist-tsc'
+import { Schema } from 'wyvern-schemas/dist-tsc/types'
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
 import { AnnotatedFunctionABI, FunctionInputKind, HowToCall, StateMutability, AbiType } from 'wyvern-js/lib/types'
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleAsset } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -237,9 +238,9 @@ export const assetContractFromJSON = (asset_contract: any): OpenSeaAssetContract
   }
 }
 
-export const tokenFromJSON = (token: any): WyvernSchemas.FungibleToken => {
+export const tokenFromJSON = (token: any): OpenSeaFungibleAsset => {
 
-  const fromJSON: WyvernSchemas.FungibleToken = {
+  const fromJSON: OpenSeaFungibleAsset = {
     name: token.name,
     symbol: token.symbol,
     decimals: token.decimals,
@@ -706,14 +707,14 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
  * @param asset The fungible or nonfungible asset to format
  */
 export function getWyvernAsset(
-    schema: WyvernSchemas.Schema<WyvernNFTAsset | WyvernFTAsset>,
+    schema: Schema<WyvernNFTAsset | WyvernFTAsset>,
     asset: Asset | FungibleAsset,
     quantity = 1
   ) {
   if ('tokenId' in asset) {
-    return getWyvernNFTAsset(schema as WyvernSchemas.Schema<WyvernNFTAsset>, asset.tokenId, asset.tokenAddress)
+    return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset.tokenId, asset.tokenAddress)
   } else {
-    return { address: asset.address, quantity }
+    return getWyvernFTAsset(schema as Schema<WyvernFTAsset>, asset.address, quantity)
   }
 }
 
@@ -724,7 +725,7 @@ export function getWyvernAsset(
  * @param tokenAddress The address of the token's contract
  */
 export function getWyvernNFTAsset(
-    schema: WyvernSchemas.Schema<WyvernNFTAsset>, tokenId: string, tokenAddress: string
+    schema: Schema<WyvernNFTAsset>, tokenId: string, tokenAddress: string
   ): WyvernNFTAsset {
 
   return schema.assetFromFields({
@@ -734,12 +735,30 @@ export function getWyvernNFTAsset(
 }
 
 /**
+ * Get the Wyvern representation of a fungible asset
+ * @param schema The WyvernSchema needed to access this asset
+ * @param address The address of the token's contract
+ * @param quantity The number of items to trade
+ */
+export function getWyvernFTAsset(
+    schema: Schema<WyvernFTAsset>,
+    address: string,
+    quantity: number
+  ): WyvernFTAsset {
+
+  return schema.assetFromFields({
+    'Quantity': quantity,
+    'Address': address.toLowerCase(),
+  })
+}
+
+/**
  * Get the Wyvern representation of an ENS name as an asset
  * @param schema The WyvernSchema needed to access this asset
  * @param name The ENS name, ending in .eth
  */
 export function getWyvernENSNameAsset(
-    schema: WyvernSchemas.Schema<WyvernENSNameAsset>, name: string
+    schema: Schema<WyvernENSNameAsset>, name: string
   ): WyvernENSNameAsset {
 
   if (!schema.unifyFields) {
@@ -862,7 +881,7 @@ export async function delay(ms: number) {
  * @param to Destination address
  * @param atomicizer Wyvern Atomicizer instance
  */
-export function encodeAtomicizedTransfer(schema: WyvernSchemas.Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
+export function encodeAtomicizedTransfer(schema: Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
 
   const transactions = assets.map((asset: any) => {
     const transfer = schema.functions.transfer(asset)
@@ -907,7 +926,7 @@ export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: stri
         return input.value
     }
   })
-  return WyvernSchemas.encodeCall(transferAbi, parameters)
+  return WyvernSchemas.encodeCall(transferAbi as Web3.MethodAbi, parameters)
 }
 
 /**

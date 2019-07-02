@@ -12,7 +12,7 @@ import {
 
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName } from '../src/types'
+import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName, FungibleAsset } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
@@ -113,6 +113,7 @@ suite('seaport', () => {
     try {
       await client._makeSellOrder({
         asset: { tokenAddress, tokenId },
+        quantity: 1,
         accountAddress,
         startAmount: 2,
         extraBountyBasisPoints: 0,
@@ -130,6 +131,7 @@ suite('seaport', () => {
     try {
       await client._makeSellOrder({
         asset: { tokenAddress, tokenId },
+        quantity: 1,
         accountAddress,
         startAmount: 2,
         endAmount: 1, // Allow declining minimum bid
@@ -148,6 +150,7 @@ suite('seaport', () => {
     try {
       await client._makeSellOrder({
         asset: { tokenAddress, tokenId },
+        quantity: 1,
         accountAddress,
         startAmount: 2,
         endAmount: 3,
@@ -166,6 +169,7 @@ suite('seaport', () => {
     try {
       await client._makeSellOrder({
         asset: { tokenAddress, tokenId },
+        quantity: 1,
         accountAddress,
         startAmount: 2,
         endAmount: 1,
@@ -259,6 +263,7 @@ suite('seaport', () => {
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress,
@@ -349,6 +354,7 @@ suite('seaport', () => {
 
     const sellOrder = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress: takerAddress,
       startAmount: amountInToken,
       paymentTokenAddress,
@@ -594,6 +600,7 @@ suite('seaport', () => {
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress,
       startAmount: amountInToken,
       extraBountyBasisPoints: bountyPercent * 100,
@@ -641,6 +648,7 @@ suite('seaport', () => {
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken.address,
@@ -825,8 +833,10 @@ suite('seaport', () => {
 
   test('Asset locked in contract is not transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
-      tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
-      tokenAddress: GODS_UNCHAINED_ADDRESS,
+      asset: {
+        tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
+        tokenAddress: GODS_UNCHAINED_ADDRESS,
+      },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
       didOwnerApprove: true
@@ -836,8 +846,10 @@ suite('seaport', () => {
 
   test('ERC-721 v3 asset not owned by fromAddress is not transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
-      tokenId: "1",
-      tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      asset: {
+        tokenId: "1",
+        tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2
     })
@@ -846,8 +858,10 @@ suite('seaport', () => {
 
   test('ERC-721 v3 asset owned by fromAddress is transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
-      tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
-      tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      asset: {
+        tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
+        tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2
     })
@@ -856,8 +870,10 @@ suite('seaport', () => {
 
   test('ERC-721 v1 asset owned by fromAddress is transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
-      tokenId: CK_TOKEN_ID.toString(),
-      tokenAddress: CK_ADDRESS,
+      asset: {
+        tokenId: CK_TOKEN_ID.toString(),
+        tokenAddress: CK_ADDRESS,
+      },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
       didOwnerApprove: true
@@ -1164,9 +1180,10 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
   assert.isTrue(isValid)
 
   // Make sure assets are transferrable
-  await Promise.all(getAssets(order).map(async ({ tokenAddress, tokenId }, i) => {
+  await Promise.all(getAssetsAndQuantities(order).map(async ({asset, quantity}) => {
     const isTransferrable = await client.isAssetTransferrable({
-      tokenId, tokenAddress,
+      asset,
+      quantity,
       fromAddress: sell.maker,
       toAddress: buy.maker,
       didOwnerApprove: true
@@ -1231,9 +1248,9 @@ function testFeesMakerOrder(order: Order | UnhashedOrder, assetContract?: OpenSe
   }
 }
 
-function getAssets(
+function getAssetsAndQuantities(
     order: Order | UnsignedOrder | UnhashedOrder
-  ): Asset[] {
+  ): Array<{ asset: Asset | FungibleAsset, quantity: number }> {
 
   const wyAssets = order.metadata.bundle
     ? order.metadata.bundle.assets
@@ -1243,8 +1260,18 @@ function getAssets(
 
   assert.isNotEmpty(wyAssets)
 
-  return wyAssets.map(({ id, address }) => ({
-    tokenId: id,
-    tokenAddress: address
-  }))
+  return wyAssets.map(wyAsset => {
+    if ('id' in wyAsset) {
+      const asset: Asset = {
+        tokenId: wyAsset.id,
+        tokenAddress: wyAsset.address
+      }
+      return { asset, quantity: 1 }
+    } else {
+      const asset: FungibleAsset = {
+        address: wyAsset.address
+      }
+      return { asset, quantity: wyAsset.quantity }
+    }
+  })
 }
