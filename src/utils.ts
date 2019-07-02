@@ -9,7 +9,7 @@ import { AnnotatedFunctionABI, FunctionInputKind, HowToCall, StateMutability, Ab
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -495,7 +495,7 @@ export async function sendRawTransaction(
   }
 
   try {
-    const txHashRes = await promisify(c => web3.eth.sendTransaction({
+    const txHashRes = await promisify<string>(c => web3.eth.sendTransaction({
       from,
       to,
       value,
@@ -503,8 +503,7 @@ export async function sendRawTransaction(
       gas,
       gasPrice
     }, c))
-    const txHash = txHashRes.toString()
-    return txHash
+    return txHashRes.toString()
 
   } catch (error) {
 
@@ -699,6 +698,23 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
   }
 
   return shouldRoundUp ? exactPrice.ceil() : exactPrice
+}
+
+/**
+ * Wrapper function for getting generic Wyvern assets from OpenSea assets
+ * @param schema Wyvern schema for the asset
+ * @param asset The fungible or nonfungible asset to format
+ */
+export function getWyvernAsset(
+    schema: WyvernSchemas.Schema<WyvernNFTAsset | WyvernFTAsset>,
+    asset: Asset | FungibleAsset,
+    quantity = 1
+  ) {
+  if ('tokenId' in asset) {
+    return getWyvernNFTAsset(schema as WyvernSchemas.Schema<WyvernNFTAsset>, asset.tokenId, asset.tokenAddress)
+  } else {
+    return { address: asset.address, quantity }
+  }
 }
 
 /**

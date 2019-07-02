@@ -31,7 +31,6 @@ declare module 'wyvern-schemas' {
 
     interface SchemaFunctions<T> {
         transfer: (asset: T) => any
-        transferQuantity?: (asset: T, quantity: number) => any
         ownerOf?: (asset: T) => any
         countOf?: (asset: T) => any
         assetsOfOwnerByIndex: any[]

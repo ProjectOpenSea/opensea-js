@@ -9,8 +9,10 @@ import {
 } from 'wyvern-js/lib/types'
 
 import {
-  FungibleToken
-} from 'wyvern-schemas'
+  Token as FungibleToken,
+  ABIType,
+  StateMutability
+} from 'wyvern-schemas/dist-tsc/types'
 
 export {
   Network,
@@ -144,9 +146,12 @@ export enum WyvernSchemaName {
  *      `takeOwnership` instead
  * 3.0: The current OpenZeppelin standard:
  *      https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC721/ERC721.sol
+ * Special cases:
+ * locked: When the transfer function has been locked by the dev
  */
 export enum NFTVersion {
   Unsupported = 'unsupported',
+  Locked = 'locked',
   Enjin = '1155-1.0',
   ERC721v1 = '1.0',
   ERC721v2 = '2.0',
@@ -167,6 +172,7 @@ export interface WyvernNFTAsset extends WyvernAsset {
 }
 export interface WyvernFTAsset extends WyvernAsset {
   address: string
+  quantity: number
 }
 
 export interface WyvernERC1155Asset extends WyvernNFTAsset {}
@@ -205,6 +211,13 @@ export interface OpenSeaAccount {
     // Username for this account
     username: string
   }
+}
+
+/**
+ * Simple OpenSea fungible asset spec
+ */
+export interface FungibleAsset {
+  address: string
 }
 
 /**
@@ -521,13 +534,13 @@ export type TxnCallback = (result: boolean) => void
  * To simplify typifying ABIs
  */
 export interface PartialAbiDefinition {
-  type: Web3.AbiType | string // Not Partial!
+  type: ABIType.Function // Not Partial!
   name?: string
   inputs?: object[]
   outputs?: object[]
   payable?: boolean
   constant?: boolean
   anonymous?: boolean
-  stateMutability?: Web3.ConstructorStateMutability | string
+  stateMutability?: StateMutability
 }
 export type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>
