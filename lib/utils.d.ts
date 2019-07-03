@@ -1,9 +1,9 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import * as WyvernSchemas from 'wyvern-schemas';
+import { Schema } from 'wyvern-schemas/dist-tsc/types';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleAsset } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
@@ -42,7 +42,7 @@ export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise
 export declare const assetFromJSON: (asset: any) => OpenSeaAsset;
 export declare const assetBundleFromJSON: (asset_bundle: any) => OpenSeaAssetBundle;
 export declare const assetContractFromJSON: (asset_contract: any) => OpenSeaAssetContract;
-export declare const tokenFromJSON: (token: any) => WyvernSchemas.FungibleToken;
+export declare const tokenFromJSON: (token: any) => OpenSeaFungibleAsset;
 export declare const orderFromJSON: (order: any) => Order;
 /**
  * Convert an order to JSON, hashing it as well if necessary
@@ -125,18 +125,31 @@ export declare function getTransferFeeSettings(web3: Web3, { asset }: {
  */
 export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: number, shouldRoundUp?: boolean): BigNumber;
 /**
+ * Wrapper function for getting generic Wyvern assets from OpenSea assets
+ * @param schema Wyvern schema for the asset
+ * @param asset The fungible or nonfungible asset to format
+ */
+export declare function getWyvernAsset(schema: Schema<WyvernNFTAsset | WyvernFTAsset>, asset: Asset | FungibleAsset, quantity?: number): WyvernNFTAsset | WyvernFTAsset;
+/**
  * Get the Wyvern representation of an NFT asset
  * @param schema The WyvernSchema needed to access this asset
  * @param tokenId The token's id
  * @param tokenAddress The address of the token's contract
  */
-export declare function getWyvernNFTAsset(schema: WyvernSchemas.Schema<WyvernNFTAsset>, tokenId: string, tokenAddress: string): WyvernNFTAsset;
+export declare function getWyvernNFTAsset(schema: Schema<WyvernNFTAsset>, tokenId: string, tokenAddress: string): WyvernNFTAsset;
+/**
+ * Get the Wyvern representation of a fungible asset
+ * @param schema The WyvernSchema needed to access this asset
+ * @param address The address of the token's contract
+ * @param quantity The number of items to trade
+ */
+export declare function getWyvernFTAsset(schema: Schema<WyvernFTAsset>, address: string, quantity: number): WyvernFTAsset;
 /**
  * Get the Wyvern representation of an ENS name as an asset
  * @param schema The WyvernSchema needed to access this asset
  * @param name The ENS name, ending in .eth
  */
-export declare function getWyvernENSNameAsset(schema: WyvernSchemas.Schema<WyvernENSNameAsset>, name: string): WyvernENSNameAsset;
+export declare function getWyvernENSNameAsset(schema: Schema<WyvernENSNameAsset>, name: string): WyvernENSNameAsset;
 /**
  * Get the Wyvern representation of a group of NFT assets
  * Sort order is enforced here
@@ -172,7 +185,7 @@ export declare function delay(ms: number): Promise<{}>;
  * @param to Destination address
  * @param atomicizer Wyvern Atomicizer instance
  */
-export declare function encodeAtomicizedTransfer(schema: WyvernSchemas.Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract): {
+export declare function encodeAtomicizedTransfer(schema: Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract): {
     calldata: string;
 };
 /**
@@ -181,7 +194,7 @@ export declare function encodeAtomicizedTransfer(schema: WyvernSchemas.Schema<an
  * @param from From address
  * @param to To address
  */
-export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string): any;
+export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string): string;
 /**
  * Encode a call to a user's proxy contract
  * @param address The address for the proxy to call
@@ -189,7 +202,7 @@ export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, fr
  * @param calldata The data to use in the call
  * @param shouldAssert Whether to assert success in the proxy call
  */
-export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert?: boolean): any;
+export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert?: boolean): string;
 /**
  * Validates that an address exists, isn't null, and is properly
  * formatted for Wyvern and OpenSea

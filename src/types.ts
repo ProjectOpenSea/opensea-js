@@ -543,13 +543,13 @@ export type TxnCallback = (result: boolean) => void
  * To simplify typifying ABIs
  */
 export interface PartialAbiDefinition {
-  type: Web3.AbiType // Not Partial!
+  type: Web3.AbiType | string // Not Partial!
   name?: string
   inputs?: object[]
   outputs?: object[]
   payable?: boolean
   constant?: boolean
   anonymous?: boolean
-  stateMutability?: Web3.ConstructorStateMutability
+  stateMutability?: Web3.ConstructorStateMutability | string
 }
 export type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>

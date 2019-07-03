@@ -1,5 +1,5 @@
 import 'isomorphic-unfetch';
-import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset, OpenSeaAssetBundle, FungibleToken, OrderQuery, OpenSeaAssetQuery, OpenSeaAssetBundleQuery, FungibleTokenQuery } from './types';
+import { OpenSeaAPIConfig, OrderJSON, Order, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaFungibleAsset, OrderQuery, OpenSeaAssetQuery, OpenSeaAssetBundleQuery, OpenSeaFungibleAssetQuery } from './types';
 export declare const ORDERBOOK_VERSION: number;
 export declare const API_VERSION: number;
 export declare const API_BASE_MAINNET = "https://api.opensea.io";
@@ -77,11 +77,11 @@ export declare class OpenSeaAPI {
      * Fetch list of fungible tokens from the API matching paramters
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
      * @param page Page number, defaults to 1. Can be overridden by
-     * `limit` and `offset` attributes from FungibleTokenQuery
+     * `limit` and `offset` attributes from OpenSeaFungibleAssetQuery
      * @param retries Number of times to retry if the service is unavailable for any reason
      */
-    getTokens(query?: FungibleTokenQuery, page?: number, retries?: number): Promise<{
-        tokens: FungibleToken[];
+    getTokens(query?: OpenSeaFungibleAssetQuery, page?: number, retries?: number): Promise<{
+        tokens: OpenSeaFungibleAsset[];
     }>;
     /**
      * Fetch an bundle from the API, return null if it isn't found
