@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import { Schema } from 'wyvern-schemas/dist-tsc/types';
+import { Schema, AnnotatedFunctionABI } from 'wyvern-schemas/dist-tsc/types';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
-import { AnnotatedFunctionABI, HowToCall } from 'wyvern-js/lib/types';
+import { HowToCall } from 'wyvern-js/lib/types';
 import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleAsset } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";

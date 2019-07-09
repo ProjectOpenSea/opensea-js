@@ -410,11 +410,11 @@ const order = await seaport.api.getOrders({
 })
 ```
 
-**Fun note:** all ERC-20 tokens are allowed! This means you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea:
+**Fun note:** soon, all ERC-20 tokens will be allowed! This will mean you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea:
 
 * MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942 
 * DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
-* And tons more! See the "Currencies" list in the sidebar on https://opensea.io/assets for a full list
+* And tons more! See the "Currencies" list in the sidebar on https://opensea.io/assets for a full list, or contact us to add yours: [Discord](https://discord.gg/ga8EJbv)
 
 ### Private Auctions
 

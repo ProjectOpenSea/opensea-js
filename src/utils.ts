@@ -4,9 +4,9 @@ import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import * as WyvernSchemas from 'wyvern-schemas/dist-tsc'
-import { Schema } from 'wyvern-schemas/dist-tsc/types'
+import { Schema, AnnotatedFunctionABI, FunctionInputKind, StateMutability } from 'wyvern-schemas/dist-tsc/types'
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
-import { AnnotatedFunctionABI, FunctionInputKind, HowToCall, StateMutability, AbiType } from 'wyvern-js/lib/types'
+import { HowToCall } from 'wyvern-js/lib/types'
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
@@ -58,7 +58,7 @@ export const annotateERC721TransferABI = (asset: WyvernERC721Asset): AnnotatedFu
   "outputs": [],
   "payable": false,
   "stateMutability": StateMutability.Nonpayable,
-  "type": AbiType.Function
+  "type": Web3.AbiType.Function
 })
 
 // OTHER
