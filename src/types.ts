@@ -166,6 +166,8 @@ export interface WyvernNFTAsset extends WyvernAsset {
   address: string
 }
 export interface WyvernFTAsset extends WyvernAsset {
+  identifier: string
+  id?: string
   address: string
   quantity: number
 }
@@ -222,9 +224,18 @@ export interface Asset {
 
 /**
  * Simple, unannotated fungible asset spec
+ * `identifier` conforms to the OpenSea UID spec
+ * Examples:
+ * - enjin/TOKEN_ID_CLASS_PREFIX
+ * - erc155/ADDRESS/TOKEN_ID_CLASS_PREFIX
+ * - erc20/ADDRESS
+ * `tokenId` Optional class id for this token (1155)
+ * `tokenAddress` is the address of the smart contract
  */
 export interface FungibleAsset {
-  address: string
+  identifier: string
+  tokenId?: string
+  tokenAddress: string
 }
 
 /**
@@ -309,19 +320,19 @@ export interface OpenSeaAsset extends Asset {
   // The per-transfer fee, in base units, for this asset in its transfer method
   transferFee: BigNumber | string | null,
   // The transfer fee token for this asset in its transfer method
-  transferFeePaymentToken: OpenSeaFungibleAsset | null
+  transferFeePaymentToken: OpenSeaFungibleToken | null
 }
 
 /**
  * Full annotated Fungible Token spec with OpenSea metadata
  */
-export interface OpenSeaFungibleAsset extends Token {
+export interface OpenSeaFungibleToken extends Token {
   imageUrl?: string
   ethPrice?: string
 }
 
 // Backwards compat
-export type FungibleToken = OpenSeaFungibleAsset
+export type FungibleToken = OpenSeaFungibleToken
 
 /**
  * Bundles of assets, grouped together into one OpenSea order
@@ -408,6 +419,7 @@ export interface UnhashedOrder extends WyvernOrder {
     asset?: WyvernFTAsset | WyvernNFTAsset
     bundle?: WyvernBundle
     schema: WyvernSchemaName
+    quantity?: number
   }
 }
 
@@ -426,7 +438,7 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
   currentBounty?: BigNumber
   makerAccount?: OpenSeaAccount
   takerAccount?: OpenSeaAccount
-  paymentTokenContract?: OpenSeaFungibleAsset
+  paymentTokenContract?: OpenSeaFungibleToken
   feeRecipientAccount?: OpenSeaAccount
   cancelledOrFinalized?: boolean
   markedInvalid?: boolean
@@ -519,7 +531,7 @@ export interface OpenSeaAssetQuery {
 /**
  * Query interface for Fungible Assets
  */
-export interface OpenSeaFungibleAssetQuery extends Partial<OpenSeaFungibleAsset> {
+export interface OpenSeaFungibleTokenQuery extends Partial<OpenSeaFungibleToken> {
   limit?: number
   offset?: number
   // Typescript bug requires this duplication
@@ -527,7 +539,7 @@ export interface OpenSeaFungibleAssetQuery extends Partial<OpenSeaFungibleAsset>
 }
 
 // Backwards compat
-export type FungibleTokenQuery = OpenSeaFungibleAssetQuery
+export type FungibleTokenQuery = OpenSeaFungibleTokenQuery
 
 export interface OrderbookResponse {
   orders: OrderJSON[]

@@ -3,7 +3,7 @@ import * as Web3 from 'web3';
 import { Schema, AnnotatedFunctionABI } from 'wyvern-schemas/dist-tsc/types';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { HowToCall } from 'wyvern-js/lib/types';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleAsset } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleToken } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
@@ -42,7 +42,7 @@ export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise
 export declare const assetFromJSON: (asset: any) => OpenSeaAsset;
 export declare const assetBundleFromJSON: (asset_bundle: any) => OpenSeaAssetBundle;
 export declare const assetContractFromJSON: (asset_contract: any) => OpenSeaAssetContract;
-export declare const tokenFromJSON: (token: any) => OpenSeaFungibleAsset;
+export declare const tokenFromJSON: (token: any) => OpenSeaFungibleToken;
 export declare const orderFromJSON: (order: any) => Order;
 /**
  * Convert an order to JSON, hashing it as well if necessary
@@ -143,7 +143,7 @@ export declare function getWyvernNFTAsset(schema: Schema<WyvernNFTAsset>, tokenI
  * @param address The address of the token's contract
  * @param quantity The number of items to trade
  */
-export declare function getWyvernFTAsset(schema: Schema<WyvernFTAsset>, address: string, quantity: number): WyvernFTAsset;
+export declare function getWyvernFTAsset(schema: Schema<WyvernFTAsset>, address: string, identifier: string, quantity: number, id?: string): WyvernFTAsset;
 /**
  * Get the Wyvern representation of an ENS name as an asset
  * @param schema The WyvernSchema needed to access this asset
@@ -209,3 +209,8 @@ export declare function encodeProxyCall(address: string, howToCall: HowToCall, c
  * @param address input address
  */
 export declare function validateAndFormatWalletAddress(web3: Web3, address: string): string;
+/**
+ * Notify developer when a pattern will be deprecated
+ * @param msg message to log to console
+ */
+export declare function onDeprecated(msg: string): void;

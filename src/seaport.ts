@@ -5,7 +5,7 @@ import { Schema } from 'wyvern-schemas/dist-tsc/types'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, OpenSeaFungibleAsset, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset, WyvernFTAsset, NFTVersion, FungibleAsset } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, OpenSeaFungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset, WyvernFTAsset, NFTVersion, FungibleAsset, WyvernERC721Asset } from './types'
 import {
   confirmTransaction, findAsset,
   makeBigNumber, orderToJSON,
@@ -36,11 +36,11 @@ import {
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
   getWyvernAsset,
+  onDeprecated,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
 import { isValidAddress } from 'ethereumjs-util'
-import { AnnotatedFunctionABI } from 'wyvern-js/lib/types'
 
 export class OpenSeaPort {
 
@@ -370,6 +370,7 @@ export class OpenSeaPort {
     ): Promise<Order> {
 
     if (!asset && tokenAddress && tokenId) {
+      onDeprecated("Use `asset` instead of `tokenAddress`")
       asset = { tokenAddress, tokenId }
     }
 
@@ -928,6 +929,7 @@ export class OpenSeaPort {
 
     if (!asset && tokenAddress && tokenId) {
       asset = { tokenAddress, tokenId }
+      onDeprecated("Use `asset` instead of `tokenAddress`")
     }
 
     const schema = this._getSchema(schemaName)
@@ -1041,8 +1043,8 @@ export class OpenSeaPort {
     // didn't pass in `nftVersion`
     const isOldNFT = isCryptoKitties || [NFTVersion.ERC721v1, NFTVersion.ERC721v2].includes((asset as any).nftVersion)
 
-    const abi = isOldNFT && 'id' in wyAsset
-      ? annotateERC721TransferABI(wyAsset)
+    const abi = isOldNFT
+      ? annotateERC721TransferABI(wyAsset as WyvernERC721Asset)
       : schema.functions.transfer(wyAsset)
 
     this._dispatch(EventType.TransferOne, { accountAddress: fromAddress, toAddress, asset })
@@ -1127,13 +1129,13 @@ export class OpenSeaPort {
       { symbol?: string;
         address?: string;
         name?: string } = {}
-    ): Promise<OpenSeaFungibleAsset[]> {
+    ): Promise<OpenSeaFungibleToken[]> {
 
     const tokenSettings = WyvernSchemas.tokens[this._networkName]
 
     const { tokens } = await this.api.getTokens({ symbol, address, name })
 
-    const offlineTokens: OpenSeaFungibleAsset[] = [
+    const offlineTokens: OpenSeaFungibleToken[] = [
       tokenSettings.canonicalWrappedEther,
       ...tokenSettings.otherTokens,
     ].filter(t => {
@@ -1192,7 +1194,7 @@ export class OpenSeaPort {
    */
   public async computeFees(
       { assets, assetContract, side, isPrivate = false, extraBountyBasisPoints = 0 }:
-      { assets?: Asset[];
+      { assets?: Array<Asset | FungibleAsset>;
         assetContract?: OpenSeaAssetContract;
         side: OrderSide;
         isPrivate?: boolean;
@@ -1212,8 +1214,9 @@ export class OpenSeaPort {
     let maxTotalBountyBPS = DEFAULT_MAX_BOUNTY
 
     // If all assets are for the same contract and it's a non-private sale, use its fees
-    if (assets && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
-      const { tokenAddress, tokenId } = assets[0]
+    const firstAsset = assets && assets[0]
+    if (firstAsset && !('identifier' in firstAsset) && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
+      const { tokenAddress, tokenId } = firstAsset
       asset = await this.api.getAsset(tokenAddress, tokenId)
       if (!asset) {
         throw new Error(`Could not find asset with ID ${tokenId} and address ${tokenAddress}`)
@@ -1592,17 +1595,13 @@ export class OpenSeaPort {
         schemaName: WyvernSchemaName }
     ): Promise<UnhashedOrder> {
 
-    if (!('address' in asset) && !('tokenId' in asset)) {
-      throw new Error("Specify an `asset` that's either of type Asset or FungibleAsset")
-    }
-
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema(schemaName)
     const wyAsset = getWyvernAsset(schema, asset, quantity)
     const isPrivate = buyerAddress != NULL_ADDRESS
-    const nfts: Asset[] | undefined = 'tokenId' in asset
-      ? [asset]
-      : undefined
+    const nfts: Asset[] | undefined = 'identifier' in asset
+      ? undefined
+      : [asset]
     const { totalSellerFeeBPS,
             totalBuyerFeeBPS,
             sellerBountyBPS } = await this.computeFees({ assets: nfts, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })

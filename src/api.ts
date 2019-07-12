@@ -1,6 +1,6 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
-import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaFungibleAsset, OrderQuery, OpenSeaAssetQuery, OpenSeaAssetBundleQuery, OpenSeaFungibleAssetQuery} from './types'
+import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaFungibleToken, OrderQuery, OpenSeaAssetQuery, OpenSeaAssetBundleQuery, OpenSeaFungibleTokenQuery} from './types'
 import { orderFromJSON, assetFromJSON, assetBundleFromJSON, tokenFromJSON, delay } from './utils'
 
 export const ORDERBOOK_VERSION: number = 1
@@ -194,14 +194,14 @@ export class OpenSeaAPI {
    * Fetch list of fungible tokens from the API matching paramters
    * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
    * @param page Page number, defaults to 1. Can be overridden by
-   * `limit` and `offset` attributes from OpenSeaFungibleAssetQuery
+   * `limit` and `offset` attributes from OpenSeaFungibleTokenQuery
    * @param retries Number of times to retry if the service is unavailable for any reason
    */
   public async getTokens(
-      query: OpenSeaFungibleAssetQuery = {},
+      query: OpenSeaFungibleTokenQuery = {},
       page = 1,
       retries = 1
-    ): Promise<{tokens: OpenSeaFungibleAsset[]}> {
+    ): Promise<{tokens: OpenSeaFungibleToken[]}> {
 
     let response
     try {

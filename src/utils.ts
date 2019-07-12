@@ -10,7 +10,7 @@ import { HowToCall } from 'wyvern-js/lib/types'
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleAsset } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleToken } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -238,9 +238,9 @@ export const assetContractFromJSON = (asset_contract: any): OpenSeaAssetContract
   }
 }
 
-export const tokenFromJSON = (token: any): OpenSeaFungibleAsset => {
+export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
 
-  const fromJSON: OpenSeaFungibleAsset = {
+  const fromJSON: OpenSeaFungibleToken = {
     name: token.name,
     symbol: token.symbol,
     decimals: token.decimals,
@@ -301,7 +301,7 @@ export const orderFromJSON = (order: any): Order => {
 
     paymentTokenContract: order.payment_token_contract ? tokenFromJSON(order.payment_token_contract) : undefined,
     asset: order.asset ? assetFromJSON(order.asset) : undefined,
-    assetBundle: order.asset_bundle ? assetBundleFromJSON(order.asset_bundle) : undefined
+    assetBundle: order.asset_bundle ? assetBundleFromJSON(order.asset_bundle) : undefined,
   }
 
   // Use most recent price calc, to account for latency
@@ -711,10 +711,10 @@ export function getWyvernAsset(
     asset: Asset | FungibleAsset,
     quantity = 1
   ) {
-  if ('tokenId' in asset) {
-    return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset.tokenId, asset.tokenAddress)
+  if ('identifier' in asset) {
+    return getWyvernFTAsset(schema as Schema<WyvernFTAsset>, asset.tokenAddress, asset.identifier, quantity, asset.tokenId)
   } else {
-    return getWyvernFTAsset(schema as Schema<WyvernFTAsset>, asset.address, quantity)
+    return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset.tokenId, asset.tokenAddress)
   }
 }
 
@@ -743,13 +743,21 @@ export function getWyvernNFTAsset(
 export function getWyvernFTAsset(
     schema: Schema<WyvernFTAsset>,
     address: string,
-    quantity: number
+    identifier: string,
+    quantity: number,
+    id?: string,
   ): WyvernFTAsset {
 
-  return schema.assetFromFields({
+  const fromWySchema = schema.assetFromFields({
+    'ID': id,
     'Quantity': quantity,
     'Address': address.toLowerCase(),
   })
+
+  return {
+    ...fromWySchema,
+    identifier
+  }
 }
 
 /**
@@ -957,4 +965,12 @@ export function validateAndFormatWalletAddress(web3: Web3, address: string): str
     throw new Error('Wallet cannot be the null address')
   }
   return address.toLowerCase()
+}
+
+/**
+ * Notify developer when a pattern will be deprecated
+ * @param msg message to log to console
+ */
+export function onDeprecated(msg: string) {
+  console.warn(`DEPRECATION NOTICE: ${msg}`)
 }

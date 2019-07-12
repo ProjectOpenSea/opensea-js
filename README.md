@@ -278,7 +278,7 @@ const transactionHash = await seaport.transfer({
 })
 ```
 
-To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleAsset` as the `asset`, set `schemaName` to "ERC20", and include `quantity` to indicate how many:
+To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` to indicate how many:
 
 ```JavaScript
 

@@ -1249,7 +1249,8 @@ function testFeesMakerOrder(order: Order | UnhashedOrder, assetContract?: OpenSe
 }
 
 function getAssetsAndQuantities(
-    order: Order | UnsignedOrder | UnhashedOrder
+    order: Order | UnsignedOrder | UnhashedOrder,
+    identifierPrefix = 'erc1155'
   ): Array<{ asset: Asset | FungibleAsset, quantity: number }> {
 
   const wyAssets = order.metadata.bundle
@@ -1261,17 +1262,21 @@ function getAssetsAndQuantities(
   assert.isNotEmpty(wyAssets)
 
   return wyAssets.map(wyAsset => {
-    if ('id' in wyAsset) {
+    const { address } = wyAsset
+    if ('quantity' in wyAsset) {
+      const tokenId = 'id' in wyAsset ? wyAsset.id : undefined
+      const asset: FungibleAsset = {
+        identifier: `${identifierPrefix}/${address}${tokenId ? '/' + tokenId : ''}`,
+        tokenId,
+        tokenAddress: address
+      }
+      return { asset, quantity: wyAsset.quantity }
+    } else {
       const asset: Asset = {
         tokenId: wyAsset.id,
         tokenAddress: wyAsset.address
       }
       return { asset, quantity: 1 }
-    } else {
-      const asset: FungibleAsset = {
-        address: wyAsset.address
-      }
-      return { asset, quantity: wyAsset.quantity }
     }
   })
 }

@@ -1,7 +1,7 @@
 import * as Web3 from 'web3';
 import { Schema } from 'wyvern-schemas/dist-tsc/types';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, WyvernSchemaName, OpenSeaFungibleAsset, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, FungibleAsset } from './types';
+import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, FungibleAsset } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -397,7 +397,7 @@ export declare class OpenSeaPort {
         symbol?: string;
         address?: string;
         name?: string;
-    }): Promise<OpenSeaFungibleAsset[]>;
+    }): Promise<OpenSeaFungibleToken[]>;
     /**
      * Get the balance of a fungible token.
      * @param param0 __namedParameters Object
@@ -421,7 +421,7 @@ export declare class OpenSeaPort {
      * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
      */
     computeFees({ assets, assetContract, side, isPrivate, extraBountyBasisPoints }: {
-        assets?: Asset[];
+        assets?: Array<Asset | FungibleAsset>;
         assetContract?: OpenSeaAssetContract;
         side: OrderSide;
         isPrivate?: boolean;
