@@ -141,9 +141,11 @@ export declare function getWyvernNFTAsset(schema: Schema<WyvernNFTAsset>, tokenI
  * Get the Wyvern representation of a fungible asset
  * @param schema The WyvernSchema needed to access this asset
  * @param address The address of the token's contract
+ * @param identifier The identifier string of the fungible asset
  * @param quantity The number of items to trade
+ * @param classID The numerical ID (converted from hex) for the asset's class. Can be undefined if this asset is fully fungible (ERC-20).
  */
-export declare function getWyvernFTAsset(schema: Schema<WyvernFTAsset>, address: string, identifier: string, quantity: number, id?: string): WyvernFTAsset;
+export declare function getWyvernFTAsset(schema: Schema<WyvernFTAsset>, address: string, identifier: string, quantity: number, classID?: string): WyvernFTAsset;
 /**
  * Get the Wyvern representation of an ENS name as an asset
  * @param schema The WyvernSchema needed to access this asset

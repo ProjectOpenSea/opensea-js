@@ -181,12 +181,12 @@ export interface Asset {
  * - enjin/TOKEN_ID_CLASS_PREFIX
  * - erc155/ADDRESS/TOKEN_ID_CLASS_PREFIX
  * - erc20/ADDRESS
- * `tokenId` Optional class id for this token (1155)
+ * `tokenId` class id for this token (ERC-1155). `null` if no ID is needed (ERC-20)
  * `tokenAddress` is the address of the smart contract
  */
 export interface FungibleAsset {
     identifier: string;
-    tokenId?: string;
+    tokenId: string | null;
     tokenAddress: string;
 }
 /**

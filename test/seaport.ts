@@ -367,6 +367,7 @@ suite('seaport', () => {
 
     const buyOrder = await client._makeBuyOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress,
       paymentTokenAddress,
       startAmount: amountInToken,
@@ -687,6 +688,7 @@ suite('seaport', () => {
 
     const order = await client._makeBuyOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken.address,
@@ -1264,7 +1266,7 @@ function getAssetsAndQuantities(
   return wyAssets.map(wyAsset => {
     const { address } = wyAsset
     if ('quantity' in wyAsset) {
-      const tokenId = 'id' in wyAsset ? wyAsset.id : undefined
+      const tokenId = 'id' in wyAsset ? wyAsset.id : null
       const asset: FungibleAsset = {
         identifier: `${identifierPrefix}/${address}${tokenId ? '/' + tokenId : ''}`,
         tokenId,
