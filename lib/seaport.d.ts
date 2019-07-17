@@ -129,9 +129,10 @@ export declare class OpenSeaPort {
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
      * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
+     * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
      * @param schemaName The Wyvern schema name corresponding to the asset type
      */
-    createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }: {
+    createSellOrder({ tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, schemaName }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
@@ -142,6 +143,7 @@ export declare class OpenSeaPort {
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
+        buyerEmail?: string;
         schemaName?: WyvernSchemaName;
     }): Promise<Order>;
     /**
@@ -561,9 +563,10 @@ export declare class OpenSeaPort {
         shouldValidateBuy?: boolean;
         shouldValidateSell?: boolean;
     }, retries?: number): Promise<boolean>;
-    _validateSellOrderParameters({ order, accountAddress }: {
+    _sellOrderValidationAndApprovals({ order, accountAddress, buyerEmail }: {
         order: UnhashedOrder;
         accountAddress: string;
+        buyerEmail?: string;
     }): Promise<void>;
     /**
      * Instead of signing an off-chain order, you can approve an order
@@ -579,7 +582,7 @@ export declare class OpenSeaPort {
         accountAddress: string;
         proxyAddress?: string | null;
     }): Promise<(string | null)[]>;
-    _validateBuyOrderParameters({ order, counterOrder, accountAddress }: {
+    _buyOrderValidationAndApprovals({ order, counterOrder, accountAddress }: {
         order: UnhashedOrder;
         counterOrder?: Order;
         accountAddress: string;

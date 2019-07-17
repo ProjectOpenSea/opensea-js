@@ -245,7 +245,7 @@ export class OpenSeaPort {
     // NOTE not in Wyvern exchange code:
     // frontend checks to make sure
     // token is approved and sufficiently available
-    await this._validateBuyOrderParameters({ order, accountAddress })
+    await this._buyOrderValidationAndApprovals({ order, accountAddress })
 
     const hashedOrder = {
       ...order,
@@ -310,7 +310,7 @@ export class OpenSeaPort {
     // NOTE not in Wyvern exchange code:
     // frontend checks to make sure
     // token is approved and sufficiently available
-    await this._validateBuyOrderParameters({ order, accountAddress })
+    await this._buyOrderValidationAndApprovals({ order, accountAddress })
 
     const hashedOrder = {
       ...order,
@@ -346,10 +346,11 @@ export class OpenSeaPort {
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
+   * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
    * @param schemaName The Wyvern schema name corresponding to the asset type
    */
   public async createSellOrder(
-      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS, schemaName = WyvernSchemaName.ERC721 }:
+      { tokenId, tokenAddress, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, schemaName = WyvernSchemaName.ERC721 }:
       { tokenId: string;
         tokenAddress: string;
         accountAddress: string;
@@ -360,14 +361,26 @@ export class OpenSeaPort {
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
+        buyerEmail?: string;
         schemaName?: WyvernSchemaName; }
     ): Promise<Order> {
 
     const asset = { tokenAddress, tokenId }
 
-    const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName })
+    const order = await this._makeSellOrder({
+      asset,
+      accountAddress,
+      startAmount,
+      endAmount,
+      expirationTime,
+      waitForHighestBid,
+      paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
+      extraBountyBasisPoints,
+      buyerAddress: buyerAddress || NULL_ADDRESS,
+      schemaName
+    })
 
-    await this._validateSellOrderParameters({ order, accountAddress })
+    await this._sellOrderValidationAndApprovals({ order, accountAddress, buyerEmail })
 
     const hashedOrder = {
       ...order,
@@ -438,7 +451,7 @@ export class OpenSeaPort {
 
     // Validate just a single dummy order but don't post it
     const dummyOrder = await this._makeSellOrder({ asset: assets[0], accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName })
-    await this._validateSellOrderParameters({ order: dummyOrder, accountAddress })
+    await this._sellOrderValidationAndApprovals({ order: dummyOrder, accountAddress })
 
     const _makeAndPostOneSellOrder = async (asset: Asset) => {
       const order = await this._makeSellOrder({ asset, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName })
@@ -533,7 +546,7 @@ export class OpenSeaPort {
 
     const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName })
 
-    await this._validateSellOrderParameters({ order, accountAddress })
+    await this._sellOrderValidationAndApprovals({ order, accountAddress })
 
     const hashedOrder = {
       ...order,
@@ -1954,9 +1967,11 @@ export class OpenSeaPort {
   }
 
   // Throws
-  public async _validateSellOrderParameters(
-      { order, accountAddress }:
-      { order: UnhashedOrder; accountAddress: string }
+  public async _sellOrderValidationAndApprovals(
+      { order, accountAddress, buyerEmail }:
+      { order: UnhashedOrder;
+        accountAddress: string;
+        buyerEmail?: string }
     ) {
 
     const schema = this._getSchema(order.metadata.schema)
@@ -1975,6 +1990,14 @@ export class OpenSeaPort {
     if (tokenAddress != NULL_ADDRESS) {
       const minimumAmount = makeBigNumber(order.basePrice)
       await this.approveFungibleToken({ accountAddress, tokenAddress, minimumAmount })
+    }
+
+    // For creating email whitelists
+    if (buyerEmail) {
+      if (!order.metadata.asset) {
+        throw new Error("Whitelisting only available for assets.")
+      }
+      await this.api.postAssetWhitelist(order.metadata.asset.address, order.metadata.asset.id, buyerEmail)
     }
 
     // Check sell parameters
@@ -2107,7 +2130,7 @@ export class OpenSeaPort {
   }
 
   // Throws
-  public async _validateBuyOrderParameters(
+  public async _buyOrderValidationAndApprovals(
       { order, counterOrder, accountAddress }:
       { order: UnhashedOrder; counterOrder?: Order; accountAddress: string }
     ) {
@@ -2263,12 +2286,12 @@ export class OpenSeaPort {
 
     if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
       // USER IS THE SELLER, only validate the buy order
-      await this._validateSellOrderParameters({ order: sell, accountAddress })
+      await this._sellOrderValidationAndApprovals({ order: sell, accountAddress })
       shouldValidateSell = false
 
     } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
       // USER IS THE BUYER, only validate the sell order
-      await this._validateBuyOrderParameters({ order: buy, counterOrder: sell, accountAddress })
+      await this._buyOrderValidationAndApprovals({ order: buy, counterOrder: sell, accountAddress })
       shouldValidateBuy = false
 
       // If using ETH to pay, set the value of the transaction to the current price
