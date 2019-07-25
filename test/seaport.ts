@@ -92,7 +92,7 @@ suite('seaport', () => {
       assert.instanceOf(order.basePrice, BigNumber)
       assert.typeOf(order.hash, "string")
       assert.typeOf(order.maker, "string")
-      // client._validateBuyOrderParameters({order, accountAddress: order.maker})
+      // client._buyOrderValidationAndApprovals({order, accountAddress: order.maker})
     })
   })
 
@@ -203,7 +203,7 @@ suite('seaport', () => {
     assert.equal(order.expirationTime.toNumber(), 0)
     testFeesMakerOrder(order, undefined)
 
-    await client._validateBuyOrderParameters({ order, accountAddress })
+    await client._buyOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
@@ -235,7 +235,7 @@ suite('seaport', () => {
     assert.equal(order.expirationTime.toNumber(), 0)
     testFeesMakerOrder(order, asset.assetContract)
 
-    await client._validateBuyOrderParameters({ order, accountAddress })
+    await client._buyOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
@@ -276,7 +276,7 @@ suite('seaport', () => {
     // Make sure it's listed in the future
     assert.equal(order.listingTime.toNumber(), expirationTime)
 
-    await client._validateSellOrderParameters({ order, accountAddress })
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is impossible
     try {
       await testMatchingNewOrder(order, takerAddress, expirationTime + 100)
@@ -322,8 +322,8 @@ suite('seaport', () => {
     assert.isAtLeast(buyPrice.toNumber(), sellPrice.toNumber())
     console.info(`Matching two orders that differ in price by ${buyPrice.toNumber() - sellPrice.toNumber()}`)
 
-    await rinkebyClient._validateBuyOrderParameters({ order: buy, accountAddress: makerAddress })
-    await rinkebyClient._validateSellOrderParameters({ order: sell, accountAddress: takerAddress })
+    await rinkebyClient._buyOrderValidationAndApprovals({ order: buy, accountAddress: makerAddress })
+    await rinkebyClient._sellOrderValidationAndApprovals({ order: sell, accountAddress: takerAddress })
 
     const gas = await rinkebyClient._estimateGasForMatch({ buy, sell, accountAddress: matcherAddress })
     assert.isAbove(gas, 0)
@@ -376,8 +376,8 @@ suite('seaport', () => {
     assert.equal(buyOrder.makerProtocolFee.toNumber(), sellOrder.makerProtocolFee.toNumber())
     assert.equal(buyOrder.takerProtocolFee.toNumber(), sellOrder.takerProtocolFee.toNumber())
 
-    await client._validateBuyOrderParameters({ order: buyOrder, accountAddress })
-    await client._validateSellOrderParameters({ order: sellOrder, accountAddress: takerAddress })
+    await client._buyOrderValidationAndApprovals({ order: buyOrder, accountAddress })
+    await client._sellOrderValidationAndApprovals({ order: sellOrder, accountAddress: takerAddress })
   })
 
   test("Computes fees correctly for non-zero-fee asset", async () => {
@@ -610,7 +610,7 @@ suite('seaport', () => {
     assert.equal(order.expirationTime.toNumber(), 0)
     testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
-    await client._validateSellOrderParameters({ order, accountAddress })
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
     // Make sure no one else can take it
@@ -657,7 +657,7 @@ suite('seaport', () => {
     assert.equal(order.expirationTime.toNumber(), 0)
     testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
-    await client._validateSellOrderParameters({ order, accountAddress })
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
@@ -693,7 +693,7 @@ suite('seaport', () => {
     assert.equal(order.expirationTime.toNumber(), 0)
     testFeesMakerOrder(order, asset.assetContract)
 
-    await client._validateBuyOrderParameters({ order, accountAddress })
+    await client._buyOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
@@ -724,7 +724,7 @@ suite('seaport', () => {
     assert.equal(order.expirationTime.toNumber(), 0)
     testFeesMakerOrder(order, undefined, bountyPercent * 100)
 
-    await client._validateSellOrderParameters({ order, accountAddress })
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
@@ -761,7 +761,7 @@ suite('seaport', () => {
     assert.equal(order.expirationTime.toNumber(), 0)
     testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
-    await client._validateSellOrderParameters({ order, accountAddress })
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
@@ -890,7 +890,7 @@ suite('seaport', () => {
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
 
-    await client._validateSellOrderParameters({ order, accountAddress })
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
@@ -921,7 +921,7 @@ suite('seaport', () => {
     assert.equal(order.extra.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.expirationTime.toNumber(), expirationTime)
 
-    await client._validateSellOrderParameters({ order, accountAddress })
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })

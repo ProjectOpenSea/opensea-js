@@ -163,9 +163,10 @@ export declare class OpenSeaPort {
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
      * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
+     * @param buyerEmail Optional email of the user that's allowed to purchase each item. If specified, a user will have to verify this email before being able to take each order.
      * @param numberOfOrders Number of times to repeat creating the same order for each asset. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
      */
-    createFactorySellOrders({ assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, numberOfOrders, schemaName }: {
+    createFactorySellOrders({ assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders, schemaName }: {
         assetId?: string;
         assetIds?: string[];
         factoryAddress: string;
@@ -177,6 +178,7 @@ export declare class OpenSeaPort {
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
+        buyerEmail?: string;
         numberOfOrders?: number;
         schemaName?: WyvernSchemaName;
     }): Promise<Order[]>;
@@ -563,10 +565,13 @@ export declare class OpenSeaPort {
         shouldValidateBuy?: boolean;
         shouldValidateSell?: boolean;
     }, retries?: number): Promise<boolean>;
-    _sellOrderValidationAndApprovals({ order, accountAddress, buyerEmail }: {
+    _createEmailWhitelistEntry({ order, buyerEmail }: {
+        order: UnhashedOrder;
+        buyerEmail: string;
+    }): Promise<void>;
+    _sellOrderValidationAndApprovals({ order, accountAddress }: {
         order: UnhashedOrder;
         accountAddress: string;
-        buyerEmail?: string;
     }): Promise<void>;
     /**
      * Instead of signing an off-chain order, you can approve an order
