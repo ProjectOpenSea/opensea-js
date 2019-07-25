@@ -28,6 +28,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Creating Bundles](#Creating-Bundles)
   - [Using ERC-20 Tokens Instead of Ether](#Using-ERC-20-Tokens-Instead-of-Ether)
   - [Private Auctions](#Private-Auctions)
+  - [Airdrops and Email Whitelisting](#Airdrops-and-Email-Whitelisting)
   - [Sharing Sale Fees with OpenSea](#Sharing-Sale-Fees-with-OpenSea)
   - [Listening to Events](#Listening-to-Events)
 - [Learning More](#Learning-More)
@@ -418,7 +419,7 @@ const order = await seaport.api.getOrders({
 
 ### Private Auctions
 
-Now you can make auctions and listings that can only be fulfilled by an address of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on OpenSea, **without having to trust that the counterparty will abide by your terms!**
+Now you can make auctions and listings that can only be fulfilled by an address or email of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on OpenSea, **without having to trust that the counterparty will abide by your terms!**
 
 Here's an example of listing a Decentraland parcel for 10 ETH with a specific buyer address allowed to take it. No more needing to worry about whether they'll give you enough back!
 
@@ -434,6 +435,24 @@ const listing = await seaport.createSellOrder({
   buyerAddress
 })
 ```
+
+### Airdrops and Email Whitelisting
+
+These work similarly to [Private Auctions](#private-auctions). Just create a private sell order targeted to a specific email. The buyer will have to verify that email to fulfill the order. For example,
+
+```JavaScript
+// Email allowed to buy from you
+const buyerEmail = "captain@byer.com"
+
+const listing = await seaport.createSellOrder({
+  tokenAddress: "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d", // Decentraland
+  tokenId: "115792089237316195423570985008687907832853042650384256231655107562007036952461", // Token ID
+  accountAddress: OWNERS_WALLET_ADDRESS,
+  startAmount: 10,
+  buyerEmail
+})
+```
+
 
 ### Sharing Sale Fees with OpenSea
 

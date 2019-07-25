@@ -82,6 +82,29 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Create a whitelist entry for an asset to prevent others from buying.
+   * Buyers will have to have verified at least one of the emails
+   * on an asset in order to buy.
+   * This will throw a 403 if the given API key isn't allowed to create whitelist entries for this contract or asset.
+   * @param tokenAddress Address of the asset's contract
+   * @param tokenId The asset's token ID
+   * @param email The email allowed to buy.
+   */
+  public async postAssetWhitelist(
+      tokenAddress: string,
+      tokenId: string | number,
+      email: string
+    ): Promise<boolean> {
+
+    const response = await this.post(`${API_PATH}/asset/${tokenAddress}/${tokenId}/whitelist/`, {
+      email
+    })
+
+    const json: any = await response.json()
+    return !!json.success
+  }
+
+  /**
    * Get an order from the orderbook, returning `null` if none are found.
    * @param query Query to use for getting orders. A subset of parameters
    *  on the `OrderJSON` type is supported
