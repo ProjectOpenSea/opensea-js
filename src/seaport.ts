@@ -399,7 +399,11 @@ export class OpenSeaPort {
       schemaName
     })
 
-    await this._sellOrderValidationAndApprovals({ order, accountAddress, buyerEmail })
+    await this._sellOrderValidationAndApprovals({ order, accountAddress })
+
+    if (buyerEmail) {
+      await this._createEmailWhitelistEntry({ order, buyerEmail })
+    }
 
     const hashedOrder = {
       ...order,
@@ -438,10 +442,11 @@ export class OpenSeaPort {
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
    * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
+   * @param buyerEmail Optional email of the user that's allowed to purchase each item. If specified, a user will have to verify this email before being able to take each order.
    * @param numberOfOrders Number of times to repeat creating the same order for each asset. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
    */
   public async createFactorySellOrders(
-      { assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS, numberOfOrders = 1, schemaName = WyvernSchemaName.ERC721 }:
+      { assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, numberOfOrders = 1, schemaName = WyvernSchemaName.ERC721 }:
       { assetId?: string;
         assetIds?: string[];
         factoryAddress: string;
@@ -453,6 +458,7 @@ export class OpenSeaPort {
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
+        buyerEmail?: string;
         numberOfOrders?: number;
         schemaName?: WyvernSchemaName }
     ): Promise<Order[]> {
@@ -469,11 +475,39 @@ export class OpenSeaPort {
     const assets: Asset[] = factoryIds.map(tokenId => ({ tokenAddress: factoryAddress, tokenId }))
 
     // Validate just a single dummy order but don't post it
-    const dummyOrder = await this._makeSellOrder({ asset: assets[0], quantity: 1, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName })
+    const dummyOrder = await this._makeSellOrder({
+      asset: assets[0],
+      quantity: 1,
+      accountAddress,
+      startAmount,
+      endAmount,
+      expirationTime,
+      waitForHighestBid,
+      paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
+      extraBountyBasisPoints,
+      buyerAddress: buyerAddress || NULL_ADDRESS,
+      schemaName
+    })
     await this._sellOrderValidationAndApprovals({ order: dummyOrder, accountAddress })
 
     const _makeAndPostOneSellOrder = async (asset: Asset) => {
-      const order = await this._makeSellOrder({ asset, quantity: 1, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName })
+      const order = await this._makeSellOrder({
+        asset,
+        quantity: 1,
+        accountAddress,
+        startAmount,
+        endAmount,
+        expirationTime,
+        waitForHighestBid,
+        paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
+        extraBountyBasisPoints,
+        buyerAddress: buyerAddress || NULL_ADDRESS,
+        schemaName
+      })
+
+      if (buyerEmail) {
+        await this._createEmailWhitelistEntry({ order, buyerEmail })
+      }
 
       const hashedOrder = {
         ...order,
@@ -547,7 +581,7 @@ export class OpenSeaPort {
    * @param schemaName The Wyvern schema name corresponding to the asset type
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress = NULL_ADDRESS, extraBountyBasisPoints = 0, buyerAddress = NULL_ADDRESS, schemaName = WyvernSchemaName.ERC721 }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, schemaName = WyvernSchemaName.ERC721 }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -563,7 +597,21 @@ export class OpenSeaPort {
         schemaName?: WyvernSchemaName; }
     ): Promise<Order> {
 
-    const order = await this._makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName })
+    const order = await this._makeBundleSellOrder({
+      bundleName,
+      bundleDescription,
+      bundleExternalLink,
+      assets,
+      accountAddress,
+      startAmount,
+      endAmount,
+      expirationTime,
+      waitForHighestBid,
+      paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
+      extraBountyBasisPoints,
+      buyerAddress: buyerAddress || NULL_ADDRESS,
+      schemaName
+    })
 
     await this._sellOrderValidationAndApprovals({ order, accountAddress })
 
@@ -1987,12 +2035,24 @@ export class OpenSeaPort {
     }
   }
 
+  // For creating email whitelists on order takers
+  public async _createEmailWhitelistEntry(
+      { order, buyerEmail }:
+      { order: UnhashedOrder;
+        buyerEmail: string }
+    ) {
+    const asset = order.metadata.asset
+    if (!asset || 'identifier' in asset) {
+      throw new Error("Whitelisting only available for NFT assets.")
+    }
+    await this.api.postAssetWhitelist(asset.address, asset.id, buyerEmail)
+  }
+
   // Throws
   public async _sellOrderValidationAndApprovals(
-      { order, accountAddress, buyerEmail }:
+      { order, accountAddress }:
       { order: UnhashedOrder;
-        accountAddress: string;
-        buyerEmail?: string }
+        accountAddress: string }
     ) {
 
     const schema = this._getSchema(order.metadata.schema)
@@ -2011,15 +2071,6 @@ export class OpenSeaPort {
     if (tokenAddress != NULL_ADDRESS) {
       const minimumAmount = makeBigNumber(order.basePrice)
       await this.approveFungibleToken({ accountAddress, tokenAddress, minimumAmount })
-    }
-
-    // For creating email whitelists
-    if (buyerEmail) {
-      const asset = order.metadata.asset
-      if (!asset || 'identifier' in asset) {
-        throw new Error("Whitelisting only available for NFT assets.")
-      }
-      await this.api.postAssetWhitelist(asset.address, asset.id, buyerEmail)
     }
 
     // Check sell parameters
