@@ -463,14 +463,14 @@ suite('seaport', () => {
   })
 
   test("Computes fees correctly for zero-fee asset", async () => {
-    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
-    assert.isNotNull(zeroFeeAsset)
-    if (!zeroFeeAsset) {
+    const asset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
+    assert.isNotNull(asset)
+    if (!asset) {
       return
     }
     const bountyPercent = 0
 
-    const contract = zeroFeeAsset.assetContract
+    const contract = asset.assetContract
 
     const buyerFees = await client.computeFees({
       assetContract: contract,
@@ -510,12 +510,6 @@ suite('seaport', () => {
       return
     }
 
-    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
-    assert.isNotNull(zeroFeeAsset)
-    if (!zeroFeeAsset) {
-      return
-    }
-
     try {
       await client.computeFees({
         assets: [asset],
@@ -529,21 +523,6 @@ suite('seaport', () => {
         assert.fail(error.message)
       }
     }
-
-    try {
-      await client.computeFees({
-        assetContract: zeroFeeAsset.assetContract,
-        extraBountyBasisPoints: 100,
-        side: OrderSide.Sell
-      })
-      assert.fail()
-    } catch (error) {
-      if (!error.message.includes('bounty exceeds the maximum') ||
-          error.message.includes('OpenSea will add')) {
-        // OpenSea won't add a bounty for this type
-        assert.fail(error.message)
-      }
-    }
   })
 
   test("Computes per-transfer fees correctly", async () => {
@@ -554,9 +533,9 @@ suite('seaport', () => {
       return
     }
 
-    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID)
-    assert.isNotNull(zeroFeeAsset)
-    if (!zeroFeeAsset) {
+    const zeroTransferFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID)
+    assert.isNotNull(zeroTransferFeeAsset)
+    if (!zeroTransferFeeAsset) {
       return
     }
 
@@ -566,7 +545,7 @@ suite('seaport', () => {
     })
 
     const sellerZeroFees = await client.computeFees({
-      assets: [zeroFeeAsset],
+      assets: [zeroTransferFeeAsset],
       side: OrderSide.Sell
     })
 
