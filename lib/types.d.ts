@@ -177,12 +177,12 @@ export interface Asset {
 /**
  * Simple, unannotated fungible asset spec
  * `identifier` conforms to the OpenSea UID spec
- * Examples:
+ * Supported types:
  * - enjin/TOKEN_ID_CLASS_PREFIX
  * - erc155/ADDRESS/TOKEN_ID_CLASS_PREFIX
  * - erc20/ADDRESS
- * `tokenId` class id for this token (ERC-1155). `null` if no ID is needed (ERC-20)
- * `tokenAddress` is the address of the smart contract
+ * `tokenId` id suffix for this token (ERC-1155). `null` if no ID is needed (ERC-20)
+ * `tokenAddress` the address of the smart contract
  */
 export interface FungibleAsset {
     identifier: string;
