@@ -231,11 +231,13 @@ export declare class OpenSeaPort {
      * @param param0 __namedParamaters Object
      * @param order The order to fulfill, a.k.a. "take"
      * @param accountAddress The taker's wallet address
+     * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
      * @param referrerAddress The optional address that referred the order
      */
-    fulfillOrder({ order, accountAddress, referrerAddress }: {
+    fulfillOrder({ order, accountAddress, recipientAddress, referrerAddress }: {
         order: Order;
         accountAddress: string;
+        recipientAddress?: string;
         referrerAddress?: string;
     }): Promise<void>;
     /**
@@ -303,12 +305,14 @@ export declare class OpenSeaPort {
      * @param param0 __namedParamters Object
      * @param order Order to check
      * @param accountAddress The account address that will be fulfilling the order
+     * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
      * @param referrerAddress The optional address that referred the order
      * @param retries How many times to retry if false
      */
-    isOrderFulfillable({ order, accountAddress, referrerAddress }: {
+    isOrderFulfillable({ order, accountAddress, recipientAddress, referrerAddress }: {
         order: Order;
         accountAddress: string;
+        recipientAddress?: string;
         referrerAddress?: string;
     }, retries?: number): Promise<boolean>;
     /**
@@ -559,9 +563,10 @@ export declare class OpenSeaPort {
         buyerAddress: string;
         schemaName: WyvernSchemaName;
     }): Promise<UnhashedOrder>;
-    _makeMatchingOrder({ order, accountAddress }: {
+    _makeMatchingOrder({ order, accountAddress, recipientAddress }: {
         order: UnsignedOrder;
         accountAddress: string;
+        recipientAddress: string;
     }): UnsignedOrder;
     /**
      * Validate against Wyvern that a buy and sell order can match

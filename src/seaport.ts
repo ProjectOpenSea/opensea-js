@@ -640,15 +640,21 @@ export class OpenSeaPort {
    * @param param0 __namedParamaters Object
    * @param order The order to fulfill, a.k.a. "take"
    * @param accountAddress The taker's wallet address
+   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
    * @param referrerAddress The optional address that referred the order
    */
   public async fulfillOrder(
-      { order, accountAddress, referrerAddress }:
+      { order, accountAddress, recipientAddress, referrerAddress }:
       { order: Order;
         accountAddress: string;
-        referrerAddress?: string }
+        recipientAddress?: string;
+        referrerAddress?: string; }
     ) {
-    const matchingOrder = this._makeMatchingOrder({ order, accountAddress })
+    const matchingOrder = this._makeMatchingOrder({
+      order,
+      accountAddress,
+      recipientAddress: recipientAddress || accountAddress
+    })
 
     const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
@@ -933,18 +939,24 @@ export class OpenSeaPort {
    * @param param0 __namedParamters Object
    * @param order Order to check
    * @param accountAddress The account address that will be fulfilling the order
+   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
    * @param referrerAddress The optional address that referred the order
    * @param retries How many times to retry if false
    */
   public async isOrderFulfillable(
-      { order, accountAddress, referrerAddress }:
+      { order, accountAddress, recipientAddress, referrerAddress }:
       { order: Order;
         accountAddress: string;
+        recipientAddress?: string;
         referrerAddress?: string },
       retries = 1
     ): Promise<boolean> {
 
-    const matchingOrder = this._makeMatchingOrder({ order, accountAddress })
+    const matchingOrder = this._makeMatchingOrder({
+      order,
+      accountAddress,
+      recipientAddress: recipientAddress || accountAddress
+    })
 
     const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
@@ -1888,23 +1900,26 @@ export class OpenSeaPort {
   }
 
   public _makeMatchingOrder(
-      { order, accountAddress }:
-      { order: UnsignedOrder; accountAddress: string}
+      { order, accountAddress, recipientAddress }:
+      { order: UnsignedOrder;
+        accountAddress: string;
+        recipientAddress: string; }
     ): UnsignedOrder {
 
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
+    recipientAddress = validateAndFormatWalletAddress(this.web3, recipientAddress)
     const schema = this._getSchema(order.metadata.schema)
 
     const computeOrderParams = () => {
       if (order.metadata.asset) {
         return order.side == OrderSide.Buy
-          ? WyvernSchemas.encodeSell(schema, order.metadata.asset, accountAddress)
-          : WyvernSchemas.encodeBuy(schema, order.metadata.asset, accountAddress)
+          ? WyvernSchemas.encodeSell(schema, order.metadata.asset, recipientAddress)
+          : WyvernSchemas.encodeBuy(schema, order.metadata.asset, recipientAddress)
       } else if (order.metadata.bundle) {
         // We're matching a bundle order
         const atomicized = order.side == OrderSide.Buy
-          ? WyvernSchemas.encodeAtomicizedSell(schema, order.metadata.bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
-          : WyvernSchemas.encodeAtomicizedBuy(schema, order.metadata.bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+          ? WyvernSchemas.encodeAtomicizedSell(schema, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
+          : WyvernSchemas.encodeAtomicizedBuy(schema, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
         return {
           target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
           calldata: atomicized.calldata,

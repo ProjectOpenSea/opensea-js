@@ -24,6 +24,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Referring Listings](#Referring-Listings)
   - [Custom Referral Bounties](#Custom-Referral-Bounties)
 - [Advanced](#Advanced)
+  - [Purchasing Items for Other Users](#Purchasing-Items-for-Other-Users)
   - [Bulk Transfers](#Bulk-Transfers)
   - [Creating Bundles](#Creating-Bundles)
   - [Using ERC-20 Tokens Instead of Ether](#Using-ERC-20-Tokens-Instead-of-Ether)
@@ -340,7 +341,22 @@ Developers can request to increase the OpenSea fee to allow for higher bounties 
 
 ## Advanced
 
-Interested in making bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+Interested in purchasing for users server-side or with a bot, making bundling items together, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+
+### Purchasing Items for Other Users
+
+You can buy and transfer an item to someone else in one step! Just pass the `recipientAddress` parameter:
+
+```JavaScript
+const order = await seaport.api.getOrder({ side: OrderSide.Sell, ... })
+await this.props.seaport.fulfillOrder({
+  order,
+  accountAddress, // The address of your wallet, which will sign the transaction
+  recipientAddress // The address of the recipient, i.e. the wallet you're purchasing on behalf of
+})
+```
+
+If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the *buyer* and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is a buy order ( `OrderSide.Buy`), the taker is the *seller* but the bid amount be sent to the `recipientAddress`.
 
 ### Bulk Transfers
 

@@ -304,8 +304,7 @@ export const orderFromJSON = (order: any): Order => {
     assetBundle: order.asset_bundle ? assetBundleFromJSON(order.asset_bundle) : undefined,
   }
 
-  // Use most recent price calc, to account for latency
-  // TODO is this necessary?
+  // Use client-side price calc, to account for buyer fee (not added by server) and latency
   fromJSON.currentPrice = estimateCurrentPrice(fromJSON)
 
   return fromJSON

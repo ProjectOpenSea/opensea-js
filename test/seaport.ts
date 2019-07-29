@@ -967,7 +967,13 @@ suite('seaport', () => {
     assert.equal(orders.length, client.api.pageSize)
     orders.map(order => {
       assert.isNotNull(order.currentPrice)
-      if (!order.currentPrice) {
+      const buyerFeeBPS = order.asset
+        ? order.asset.assetContract.buyerFeeBasisPoints
+        : order.assetBundle && order.assetBundle.assetContract
+          ? order.assetBundle.assetContract.buyerFeeBasisPoints
+          : null
+      if (!order.currentPrice || buyerFeeBPS) {
+        // Skip checks with buyer fees
         return
       }
       // Possible race condition
@@ -1011,7 +1017,11 @@ suite('seaport', () => {
       assert.isNotEmpty(order.paymentTokenContract)
 
       const accountAddress = ALEX_ADDRESS
-      const matchingOrder = client._makeMatchingOrder({order, accountAddress})
+      const matchingOrder = client._makeMatchingOrder({
+        order,
+        accountAddress,
+        recipientAddress: accountAddress
+      })
       const matchingOrderHash = matchingOrder.hash
       delete matchingOrder.hash
       assert.isUndefined(matchingOrder.hash)
@@ -1104,8 +1114,13 @@ suite('seaport', () => {
 })
 
 async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch = false, referrerAddress?: string) {
+  const recipientAddress = ALEX_ADDRESS_2 // Test a separate recipient
   // TODO test mode for matching order to use 0x11111 in calldata
-  const matchingOrder = client._makeMatchingOrder({order, accountAddress})
+  const matchingOrder = client._makeMatchingOrder({
+    order,
+    accountAddress,
+    recipientAddress
+  })
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
 
   const { buy, sell } = assignOrdersToSides(order, matchingOrder)
@@ -1120,7 +1135,12 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   if (testAtomicMatch && !order.waitingForBestCounterOrder) {
     const isValid = await client._validateOrder(order)
     assert.isTrue(isValid)
-    const isFulfillable = await client.isOrderFulfillable({ order, accountAddress, referrerAddress })
+    const isFulfillable = await client.isOrderFulfillable({
+      order,
+      accountAddress,
+      recipientAddress,
+      referrerAddress
+    })
     assert.isTrue(isFulfillable)
     const gasPrice = await client._computeGasPrice()
     console.info(`Gas price to use: ${client.web3.fromWei(gasPrice, 'gwei')} gwei`)
@@ -1133,7 +1153,11 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
     hash: getOrderHash(unhashedOrder)
   }
 
-  const matchingOrder = client._makeMatchingOrder({ order, accountAddress })
+  const matchingOrder = client._makeMatchingOrder({
+    order,
+    accountAddress,
+    recipientAddress: accountAddress
+  })
   if (counterOrderListingTime != null) {
     matchingOrder.listingTime = makeBigNumber(counterOrderListingTime)
     matchingOrder.hash = getOrderHash(matchingOrder)
@@ -1266,7 +1290,7 @@ function getAssetsAndQuantities(
   return wyAssets.map(wyAsset => {
     const { address } = wyAsset
     if ('quantity' in wyAsset) {
-      const tokenId = 'id' in wyAsset ? wyAsset.id : null
+      const tokenId = 'id' in wyAsset && wyAsset.id != null ? wyAsset.id : null
       const asset: FungibleAsset = {
         identifier: `${identifierPrefix}/${address}${tokenId ? '/' + tokenId : ''}`,
         tokenId,
