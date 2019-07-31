@@ -664,7 +664,7 @@ function parseSignatureHex(signature: string): ECSignature {
  */
 export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shouldRoundUp = true) {
   let { basePrice, listingTime, expirationTime, extra } = order
-  const { side, takerRelayerFee, saleKind } = order
+  const { side, takerRelayerFee, makerRelayerFee, saleKind, feeRecipient } = order
 
   const now = new BigNumber(Date.now() / 1000).minus(secondsToBacktrack)
   basePrice = new BigNumber(basePrice)
@@ -687,9 +687,13 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
       : basePrice.plus(diff)
   }
 
-  if (side == OrderSide.Sell && takerRelayerFee) {
-    // Add buyer fee
-    exactPrice = exactPrice.times(+takerRelayerFee / INVERSE_BASIS_POINT + 1)
+  // Add buyer fee
+  if (side == OrderSide.Sell) {
+    // Buyer fee increases sale price
+    const buyerFeeBPS = order.waitingForBestCounterOrder
+      ? makerRelayerFee
+      : takerRelayerFee
+    exactPrice = exactPrice.times(+buyerFeeBPS / INVERSE_BASIS_POINT + 1)
   }
 
   return shouldRoundUp ? exactPrice.ceil() : exactPrice
