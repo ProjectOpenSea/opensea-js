@@ -3,7 +3,7 @@ import { WyvernProtocol } from 'wyvern-js'
 import * as WyvernSchemas from 'wyvern-schemas'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
-import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
+import { CanonicalWETH, ERC20, ERC721, StaticCheckTxOrigin, StaticCheckCheezeWizards, StaticCheckDecentralandEstates, CheezeWizardsBasicTournament, DecentralandEstates, getMethod } from './contracts'
 import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, FungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernAssetLocation, WyvernNFTAsset, WyvernFTAsset, NFTVersion } from './types'
 import {
   confirmTransaction, findAsset,
@@ -34,6 +34,16 @@ import {
   annotateERC721TransferABI,
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
+  CHEEZE_WIZARDS_ADDRESS,
+  CHEEZE_WIZARDS_RINKEBY_ADDRESS,
+  DECENTRALAND_ESTATE_ADDRESS,
+  DECENTRALAND_ESTATE_RINKEBY_ADDRESS,
+  STATIC_CALL_TX_ORIGIN_ADDRESS,
+  STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS,
+  STATIC_CALL_CHEEZE_WIZARDS_ADDRESS,
+  STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
+  STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS,
+  STATIC_CALL_DECENTRALAND_ESTATES_RINKEBY_ADDRESS,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -1606,6 +1616,8 @@ export class OpenSeaPort {
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
 
+    const staticCallTargetAndExtraData = await this._getStaticCallTargetAndExtraData({asset})
+
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
@@ -1624,8 +1636,8 @@ export class OpenSeaPort {
       howToCall: HowToCall.Call,
       calldata,
       replacementPattern,
-      staticTarget: NULL_ADDRESS,
-      staticExtradata: '0x',
+      staticTarget: staticCallTargetAndExtraData.staticTarget,
+      staticExtradata: staticCallTargetAndExtraData.staticExtradata,
       paymentToken: paymentTokenAddress,
       basePrice,
       extra,
@@ -1683,6 +1695,8 @@ export class OpenSeaPort {
       ? makeBigNumber(totalSellerFeeBPS)
       : makeBigNumber(totalBuyerFeeBPS)
 
+    const staticCallTargetAndExtraData = await this._getStaticCallTargetAndExtraData({asset})
+
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
@@ -1701,8 +1715,8 @@ export class OpenSeaPort {
       howToCall: HowToCall.Call,
       calldata,
       replacementPattern,
-      staticTarget: NULL_ADDRESS,
-      staticExtradata: '0x',
+      staticTarget: staticCallTargetAndExtraData.staticTarget,
+      staticExtradata: staticCallTargetAndExtraData.staticExtradata,
       paymentToken: paymentTokenAddress,
       basePrice,
       extra,
@@ -1714,6 +1728,38 @@ export class OpenSeaPort {
         schema: schema.name,
       }
     }
+  }
+
+  public async _getStaticCallTargetAndExtraData(
+      { asset }:
+      { asset: Asset; }
+    ): Promise<any> {
+        const isCheezeWizards = asset.tokenAddress in [CHEEZE_WIZARDS_ADDRESS, CHEEZE_WIZARDS_RINKEBY_ADDRESS]
+        const isDecentralandEstate = asset.tokenAddress in [DECENTRALAND_ESTATE_ADDRESS, DECENTRALAND_ESTATE_RINKEBY_ADDRESS]
+        if (isCheezeWizards) {
+            const cheezeWizardsBasicTournamentAddress = (this._networkName == Network.Main) ? CHEEZE_WIZARDS_ADDRESS : CHEEZE_WIZARDS_RINKEBY_ADDRESS
+            const cheezeWizardsBasicTournamentABI = this.web3.eth.contract(CheezeWizardsBasicTournament as any[])
+            const cheezeWizardsBasicTournmentInstance = await cheezeWizardsBasicTournamentABI.at(cheezeWizardsBasicTournamentAddress)
+            const wizardFingerprint = await promisifyCall<string>(c => cheezeWizardsBasicTournmentInstance.wizardFingerprint.call(asset.tokenId))
+            return {
+                staticTarget: (this._networkName == Network.Main) ? STATIC_CALL_CHEEZE_WIZARDS_ADDRESS : STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
+                staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckCheezeWizards, 'succeedIfCurrentWizardFingerprintMatchesProvidedWizardFingerprint'), [asset.tokenId, wizardFingerprint]),
+            }
+        } else if (isDecentralandEstate) {
+            const decentralandEstateAddress = (this._networkName == Network.Main) ? DECENTRALAND_ESTATE_ADDRESS : DECENTRALAND_ESTATE_RINKEBY_ADDRESS
+            const decentralandEstateABI = this.web3.eth.contract(DecentralandEstates as any[])
+            const decentralandEstateInstance = await decentralandEstateABI.at(decentralandEstateAddress)
+            const estateFingerprint = await promisifyCall<string>(c => decentralandEstateInstance.getFingerprint.call(asset.tokenId))
+            return {
+                staticTarget: (this._networkName == Network.Main) ? STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS : STATIC_CALL_DECENTRALAND_ESTATES_RINKEBY_ADDRESS,
+                staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckDecentralandEstates, 'succeedIfCurrentEstateFingerprintMatchesProvidedEstateFingerprint'), [asset.tokenId, estateFingerprint]),
+            }
+        } else {
+            return {
+                staticTarget: NULL_ADDRESS,
+                staticExtradata: '0x',
+            }
+        }
   }
 
   public async _makeBundleBuyOrder(
