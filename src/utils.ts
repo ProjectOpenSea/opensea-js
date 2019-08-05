@@ -652,8 +652,7 @@ export function getWyvernAsset(
 /**
  * Get the Wyvern representation of an NFT asset
  * @param schema The WyvernSchema needed to access this asset
- * @param tokenId The token's id
- * @param tokenAddress The address of the token's contract
+ * @param asset The asset
  */
 export function getWyvernNFTAsset(
     schema: Schema<WyvernNFTAsset>, asset: Asset
