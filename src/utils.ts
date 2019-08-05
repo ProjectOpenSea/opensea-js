@@ -67,6 +67,7 @@ const SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE: {[key in WyvernSchemaName]: AssetContr
   [WyvernSchemaName.ERC1155]: AssetContractType.SemiFungible,
   [WyvernSchemaName.ERC20]: AssetContractType.Fungible,
   [WyvernSchemaName.LegacyEnjin]: AssetContractType.SemiFungible,
+  [WyvernSchemaName.ENSShortNameAuction]: AssetContractType.NonFungible,
 }
 
 // OTHER
