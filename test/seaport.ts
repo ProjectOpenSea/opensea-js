@@ -16,7 +16,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT, ENJIN_LEGACY_ADDRESS } from '../src/utils'
 import * as ordersJSONFixture from './fixtures/orders.json'
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, RANDOM_ADDRESS, AGE_OF_RUST_TOKEN_ID } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, RANDOM_ADDRESS, AGE_OF_RUST_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 const englishSellOrderJSON = ordersJSON[0] as OrderJSON
@@ -462,6 +462,26 @@ suite('seaport', () => {
 
     await client._buyOrderValidationAndApprovals({ order: buyOrder, accountAddress })
     await client._sellOrderValidationAndApprovals({ order: sellOrder, accountAddress: takerAddress })
+  })
+
+  test("Creates ENS name buy order", async () => {
+    const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
+    const buyOrder = await client._makeBuyOrder({
+      asset: {
+        tokenId: ENS_HELLO_TOKEN_ID,
+        tokenAddress: ENS_RINKEBY_TOKEN_ADDRESS,
+        name: ENS_HELLO_NAME,
+      },
+      quantity: 1,
+      accountAddress: ALEX_ADDRESS_2,
+      paymentTokenAddress,
+      startAmount: 0.01,
+      expirationTime: (Date.now() / 1000 + 60 * 60 * 24),  // one day from now
+      extraBountyBasisPoints: 0,
+      schemaName: WyvernSchemaName.ENSShortNameAuction
+    })
+    // TODO (joshuawu): Fill this test out after backend supports ENS short names.
+    // assert.equal(buyOrder, {})
   })
 
   test("Computes fees correctly for non-zero-fee asset", async () => {
