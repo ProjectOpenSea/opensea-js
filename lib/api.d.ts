@@ -49,11 +49,11 @@ export declare class OpenSeaAPI {
      */
     postAssetWhitelist(tokenAddress: string, tokenId: string | number, email: string): Promise<boolean>;
     /**
-     * Get an order from the orderbook, returning `null` if none are found.
+     * Get an order from the orderbook, throwing if none is found.
      * @param query Query to use for getting orders. A subset of parameters
      *  on the `OrderJSON` type is supported
      */
-    getOrder(query: OrderQuery): Promise<Order | null>;
+    getOrder(query: OrderQuery): Promise<Order>;
     /**
      * Get a list of orders from the orderbook, returning the page of orders
      *  and the count of total orders found.
@@ -67,12 +67,12 @@ export declare class OpenSeaAPI {
         count: number;
     }>;
     /**
-     * Fetch an asset from the API, return null if it isn't found
+     * Fetch an asset from the API, throwing if none is found
      * @param tokenAddress Address of the asset's contract
      * @param tokenId The asset's token ID
      * @param retries Number of times to retry if the service is unavailable for any reason
      */
-    getAsset(tokenAddress: string, tokenId: string | number, retries?: number): Promise<OpenSeaAsset | null>;
+    getAsset(tokenAddress: string, tokenId: string | number, retries?: number): Promise<OpenSeaAsset>;
     /**
      * Fetch list of assets from the API, returning the page of assets and the count of total assets
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported

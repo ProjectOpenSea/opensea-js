@@ -535,16 +535,8 @@ suite('seaport', () => {
   test("Computes per-transfer fees correctly", async () => {
 
     const asset = await client.api.getAsset(ENJIN_ADDRESS, CATS_IN_MECHS_ID)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     const zeroTransferFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID)
-    assert.isNotNull(zeroTransferFeeAsset)
-    if (!zeroTransferFeeAsset) {
-      return
-    }
 
     const sellerFees = await client.computeFees({
       assets: [asset],
@@ -573,10 +565,6 @@ suite('seaport', () => {
     const tokenAddress = MYTHEREUM_ADDRESS
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -621,10 +609,6 @@ suite('seaport', () => {
     const tokenAddress = MYTHEREUM_ADDRESS
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -660,10 +644,6 @@ suite('seaport', () => {
     const tokenAddress = CK_ADDRESS
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     const order = await client._makeBuyOrder({
       asset: { tokenAddress, tokenId },
@@ -739,10 +719,6 @@ suite('seaport', () => {
     })
 
     const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
@@ -764,11 +740,6 @@ suite('seaport', () => {
       side: OrderSide.Sell,
       payment_token_address: token.address
     })
-
-    assert.isNotNull(order)
-    if (!order) {
-      return
-    }
 
     assert.isNotNull(order.paymentTokenContract)
     if (!order.paymentTokenContract) {
@@ -977,8 +948,11 @@ suite('seaport', () => {
       if (!order.currentPrice || !order.asset) {
         return
       }
+      const buyerFeeBPS = order.waitingForBestCounterOrder
+        ? order.makerRelayerFee
+        : order.takerRelayerFee
       const multiple = order.side == OrderSide.Sell
-        ? +order.takerRelayerFee / INVERSE_BASIS_POINT + 1
+        ? +buyerFeeBPS / INVERSE_BASIS_POINT + 1
         : 1
       assert.equal(
         order.basePrice.times(multiple).toNumber(),

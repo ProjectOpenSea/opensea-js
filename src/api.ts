@@ -105,26 +105,29 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Get an order from the orderbook, returning `null` if none are found.
+   * Get an order from the orderbook, throwing if none is found.
    * @param query Query to use for getting orders. A subset of parameters
    *  on the `OrderJSON` type is supported
    */
-  public async getOrder(query: OrderQuery): Promise<Order | null> {
+  public async getOrder(query: OrderQuery): Promise<Order> {
 
     const response = await this.get(
       `${ORDERBOOK_PATH}/orders`,
       query
     )
 
+    let orderJSON
     if (ORDERBOOK_VERSION == 0) {
       const json: OrderJSON[] = await response.json()
-      const orderJSON = json[0]
-      return orderJSON ? orderFromJSON(orderJSON) : null
+      orderJSON = json[0]
     } else {
       const json: OrderbookResponse = await response.json()
-      const orderJSON = json.orders[0]
-      return orderJSON ? orderFromJSON(orderJSON) : null
+      orderJSON = json.orders[0]
     }
+    if (!orderJSON) {
+      throw new Error(`Not found: no matching order found`)
+    }
+    return orderFromJSON(orderJSON)
   }
 
   /**
@@ -165,7 +168,7 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Fetch an asset from the API, return null if it isn't found
+   * Fetch an asset from the API, throwing if none is found
    * @param tokenAddress Address of the asset's contract
    * @param tokenId The asset's token ID
    * @param retries Number of times to retry if the service is unavailable for any reason
@@ -174,7 +177,7 @@ export class OpenSeaAPI {
       tokenAddress: string,
       tokenId: string | number,
       retries = 1
-    ): Promise<OpenSeaAsset | null> {
+    ): Promise<OpenSeaAsset> {
 
     let response
     try {
@@ -186,7 +189,7 @@ export class OpenSeaAPI {
     }
 
     const json: any = await response.json()
-    return json ? assetFromJSON(json) : null
+    return assetFromJSON(json)
   }
 
   /**
