@@ -470,14 +470,14 @@ suite('seaport', () => {
   })
 
   test("Computes fees correctly for zero-fee asset", async () => {
-    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
-    assert.isNotNull(zeroFeeAsset)
-    if (!zeroFeeAsset) {
+    const asset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
+    assert.isNotNull(asset)
+    if (!asset) {
       return
     }
     const bountyPercent = 0
 
-    const contract = zeroFeeAsset.assetContract
+    const contract = asset.assetContract
 
     const buyerFees = await client.computeFees({
       assetContract: contract,
@@ -517,12 +517,6 @@ suite('seaport', () => {
       return
     }
 
-    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
-    assert.isNotNull(zeroFeeAsset)
-    if (!zeroFeeAsset) {
-      return
-    }
-
     try {
       await client.computeFees({
         assets: [asset],
@@ -536,21 +530,6 @@ suite('seaport', () => {
         assert.fail(error.message)
       }
     }
-
-    try {
-      await client.computeFees({
-        assetContract: zeroFeeAsset.assetContract,
-        extraBountyBasisPoints: 100,
-        side: OrderSide.Sell
-      })
-      assert.fail()
-    } catch (error) {
-      if (!error.message.includes('bounty exceeds the maximum') ||
-          error.message.includes('OpenSea will add')) {
-        // OpenSea won't add a bounty for this type
-        assert.fail(error.message)
-      }
-    }
   })
 
   test("Computes per-transfer fees correctly", async () => {
@@ -561,9 +540,9 @@ suite('seaport', () => {
       return
     }
 
-    const zeroFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID)
-    assert.isNotNull(zeroFeeAsset)
-    if (!zeroFeeAsset) {
+    const zeroTransferFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID)
+    assert.isNotNull(zeroTransferFeeAsset)
+    if (!zeroTransferFeeAsset) {
       return
     }
 
@@ -573,7 +552,7 @@ suite('seaport', () => {
     })
 
     const sellerZeroFees = await client.computeFees({
-      assets: [zeroFeeAsset],
+      assets: [zeroTransferFeeAsset],
       side: OrderSide.Sell
     })
 
@@ -976,9 +955,12 @@ suite('seaport', () => {
         // Skip checks with buyer fees
         return
       }
+      const multiple = order.side == OrderSide.Sell
+        ? +order.takerRelayerFee / INVERSE_BASIS_POINT + 1
+        : 1
       // Possible race condition
       assert.equal(order.currentPrice.toPrecision(3), estimateCurrentPrice(order).toPrecision(3))
-      assert.isAtLeast(order.basePrice.toNumber(), order.currentPrice.toNumber())
+      assert.isAtLeast(order.basePrice.times(multiple).toNumber(), order.currentPrice.toNumber())
     })
   })
 
@@ -995,7 +977,9 @@ suite('seaport', () => {
       if (!order.currentPrice || !order.asset) {
         return
       }
-      const multiple = order.asset.assetContract.buyerFeeBasisPoints / INVERSE_BASIS_POINT + 1
+      const multiple = order.side == OrderSide.Sell
+        ? +order.takerRelayerFee / INVERSE_BASIS_POINT + 1
+        : 1
       assert.equal(
         order.basePrice.times(multiple).toNumber(),
         estimateCurrentPrice(order).toNumber()
