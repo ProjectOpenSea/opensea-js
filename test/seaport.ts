@@ -16,7 +16,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT } from '../src/utils'
 import * as ordersJSONFixture from './fixtures/orders.json'
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, RANDOM_ADDRESS } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, RANDOM_ADDRESS, AGE_OF_RUST_TOKEN_ID } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 const englishSellOrderJSON = ordersJSON[0] as OrderJSON
@@ -152,17 +152,33 @@ suite('seaport', () => {
     const accountAddress = ALEX_ADDRESS
     const schemaName = WyvernSchemaName.ERC1155
 
-    // Ownership
-    const wyAsset: WyvernNFTAsset = {
-      id: CATS_IN_MECHS_ID,
+    const id = CATS_IN_MECHS_ID
+    // const hexId = "0x" + new BigNumber(CATS_IN_MECHS_ID).toString(16)
+
+    // Ownership of NFT
+    const wyAssetNFT: WyvernNFTAsset = {
+      id,
       address: ENJIN_ADDRESS
     }
-    const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset, schemaName })
+    const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetNFT, schemaName })
     assert.isTrue(isOwner)
 
-    // Non-ownership
-    const isOwner2 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset, schemaName })
-    assert.isFalse(isOwner2)
+    // // Non-ownership
+    // const isOwner2 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset: wyAssetNFT, schemaName })
+    // assert.isFalse(isOwner2)
+
+    // // Ownership of FT
+    // const wyAssetFT: WyvernFTAsset = {
+    //   id: AGE_OF_RUST_TOKEN_ID,
+    //   address: ENJIN_ADDRESS,
+    //   quantity: 1
+    // }
+    // const isOwner3 = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetFT, schemaName })
+    // assert.isTrue(isOwner3)
+
+    // // Non-ownership
+    // const isOwner4 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset: wyAssetFT, schemaName })
+    // assert.isFalse(isOwner4)
   })
 
   test("Correctly errors for invalid price parameters", async () => {

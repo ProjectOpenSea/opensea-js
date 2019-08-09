@@ -2168,6 +2168,8 @@ export class OpenSeaPort {
         proxyAddress?: string | null }
     ) {
 
+    const schemaName = schema.name as WyvernSchemaName
+
     proxyAddress = proxyAddress || await this._getProxy(accountAddress)
     if (!proxyAddress) {
       proxyAddress = await this._initializeProxy(accountAddress)
@@ -2180,13 +2182,12 @@ export class OpenSeaPort {
         accountAddress,
         proxyAddress,
         wyAsset,
-        schemaName: (schema.name as WyvernSchemaName)
+        schemaName
       })
       if (!isOwner) {
-        // small todo: handle the 'proxy' case, which shouldn't happen ever anyway
         throw new Error('You do not own this asset.')
       }
-      switch (schema.name as WyvernSchemaName) {
+      switch (schemaName) {
         case WyvernSchemaName.ERC721:
         case WyvernSchemaName.ERC1155:
         case WyvernSchemaName.LegacyEnjin:
@@ -2287,21 +2288,24 @@ export class OpenSeaPort {
 
     if (schema.functions.countOf) {
       // ERC20 or ERC1155 (non-Enjin)
+      /* If ethercraft, minAmount = 1000000000000000000) */
       const minAmount = 'quantity' in wyAsset
         ? wyAsset.quantity
         : 1
-      /* If ethercraft, minAmount = 1000000000000000000) */
       const abi = schema.functions.countOf(wyAsset)
       const contract = this.web3.eth.contract([abi]).at(abi.target)
       const inputValues = abi.inputs.filter(x => x.value !== undefined).map(x => x.value)
-      let count = +(await promisifyCall<BigNumber>(c => contract[abi.name].call([accountAddress, ...inputValues], c)) || 0)
-      console.warn(abi)
-
-      if (count < minAmount && proxyAddress) {
-        const proxyCount = +(await promisifyCall<BigNumber>(c => contract[abi.name].call([proxyAddress, ...inputValues], c)) || 0)
-        count += proxyCount
+      let count = await promisifyCall<BigNumber>(c => contract[abi.name].call([accountAddress, ...inputValues], c))
+      if (count === undefined) {
+        console.warn(abi, [accountAddress, ...inputValues])
+        return undefined
       }
-      return count >= minAmount
+
+      if (+count < minAmount && proxyAddress) {
+        const proxyCount = await promisifyCall<BigNumber>(c => contract[abi.name].call([proxyAddress, ...inputValues], c))
+        count = count.add(proxyCount || 0)
+      }
+      return +count >= minAmount
 
     } else if (schema.functions.ownerOf) {
       // ERC721 asset
