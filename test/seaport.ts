@@ -12,11 +12,11 @@ import {
 
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName, FungibleAsset } from '../src/types'
+import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName, WyvernNFTAsset, WyvernFTAsset } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT } from '../src/utils'
-import ordersJSONFixture = require('./fixtures/orders.json')
+import * as ordersJSONFixture from './fixtures/orders.json'
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, RANDOM_ADDRESS } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 const englishSellOrderJSON = ordersJSON[0] as OrderJSON
@@ -101,6 +101,68 @@ suite('seaport', () => {
       const order = orderFromJSON(orderJSON)
       assert.equal(order.hash, getOrderHash(order))
     })
+  })
+
+  test("On-chain ownership undefined for non-existent assets", async () => {
+    const accountAddress = ALEX_ADDRESS
+    const schemaName = WyvernSchemaName.ERC721
+    const wyAssetRinkeby: WyvernNFTAsset = {
+      id: CK_RINKEBY_TOKEN_ID.toString(),
+      address: CK_RINKEBY_ADDRESS
+    }
+    const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetRinkeby, schemaName })
+    assert.isUndefined(isOwner)
+  })
+
+  test("On-chain ownership correctly pulled for ERC721s", async () => {
+    const accountAddress = ALEX_ADDRESS
+    const schemaName = WyvernSchemaName.ERC721
+
+    // Ownership
+    const wyAsset: WyvernNFTAsset = {
+      id: MYTHEREUM_TOKEN_ID.toString(),
+      address: MYTHEREUM_ADDRESS
+    }
+    const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset, schemaName })
+    assert.isTrue(isOwner)
+
+    // Non-ownership
+    const isOwner2 = await client._ownsAssetOnChain({ accountAddress: ALEX_ADDRESS_2, wyAsset, schemaName })
+    assert.isFalse(isOwner2)
+  })
+
+  test("On-chain ownership correctly pulled for ERC20s", async () => {
+    const accountAddress = ALEX_ADDRESS
+    const schemaName = WyvernSchemaName.ERC20
+
+    // Ownership
+    const wyAsset: WyvernFTAsset = {
+      address: ENJIN_COIN_ADDRESS,
+      quantity: 1
+    }
+    const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset, schemaName })
+    assert.isTrue(isOwner)
+
+    // Non-ownership
+    const isOwner2 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset, schemaName })
+    assert.isFalse(isOwner2)
+  })
+
+  test.only("On-chain ownership correctly pulled for ERC1155s", async () => {
+    const accountAddress = ALEX_ADDRESS
+    const schemaName = WyvernSchemaName.ERC1155
+
+    // Ownership
+    const wyAsset: WyvernNFTAsset = {
+      id: CATS_IN_MECHS_ID,
+      address: ENJIN_ADDRESS
+    }
+    const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset, schemaName })
+    assert.isTrue(isOwner)
+
+    // Non-ownership
+    const isOwner2 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset, schemaName })
+    assert.isFalse(isOwner2)
   })
 
   test("Correctly errors for invalid price parameters", async () => {
@@ -228,10 +290,6 @@ suite('seaport', () => {
     })
 
     const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     assert.equal(order.paymentToken, manaAddress)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
@@ -256,10 +314,6 @@ suite('seaport', () => {
     const tokenAddress = MYTHEREUM_ADDRESS
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -347,10 +401,6 @@ suite('seaport', () => {
     const tokenAddress = MYTHEREUM_ADDRESS
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     const sellOrder = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -394,10 +444,6 @@ suite('seaport', () => {
     const extraBountyBasisPoints = bountyPercent * 100
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     const contract = asset.assetContract
 
@@ -471,10 +517,6 @@ suite('seaport', () => {
 
   test("Computes fees correctly for zero-fee asset", async () => {
     const asset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID.toString())
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
     const bountyPercent = 0
 
     const contract = asset.assetContract
@@ -513,9 +555,6 @@ suite('seaport', () => {
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
     assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     try {
       await client.computeFees({
@@ -896,10 +935,6 @@ suite('seaport', () => {
 
   test('An API asset\'s order has correct hash', async () => {
     const asset = await client.api.getAsset(CK_ADDRESS, 1)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
     assert.isNotNull(asset.orders)
     if (!asset.orders) {
       return
@@ -1233,9 +1268,8 @@ function testFeesMakerOrder(order: Order | UnhashedOrder, assetContract?: OpenSe
 }
 
 function getAssetsAndQuantities(
-    order: Order | UnsignedOrder | UnhashedOrder,
-    identifierPrefix = 'erc1155'
-  ): Array<{ asset: Asset | FungibleAsset, quantity: number }> {
+    order: Order | UnsignedOrder | UnhashedOrder
+  ): Array<{ asset: Asset, quantity: number }> {
 
   const wyAssets = order.metadata.bundle
     ? order.metadata.bundle.assets
@@ -1246,20 +1280,13 @@ function getAssetsAndQuantities(
   assert.isNotEmpty(wyAssets)
 
   return wyAssets.map(wyAsset => {
-    const { address } = wyAsset
+    const asset: Asset = {
+      tokenId: 'id' in wyAsset && wyAsset.id != null ? wyAsset.id : null,
+      tokenAddress: wyAsset.address
+    }
     if ('quantity' in wyAsset) {
-      const tokenId = 'id' in wyAsset && wyAsset.id != null ? wyAsset.id : null
-      const asset: FungibleAsset = {
-        identifier: `${identifierPrefix}/${address}${tokenId ? '/' + tokenId : ''}`,
-        tokenId,
-        tokenAddress: address
-      }
       return { asset, quantity: wyAsset.quantity }
     } else {
-      const asset: Asset = {
-        tokenId: wyAsset.id,
-        tokenAddress: wyAsset.address
-      }
       return { asset, quantity: 1 }
     }
   })

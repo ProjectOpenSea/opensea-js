@@ -112,8 +112,10 @@ export class OpenSeaAPI {
   public async getOrder(query: OrderQuery): Promise<Order> {
 
     const response = await this.get(
-      `${ORDERBOOK_PATH}/orders`,
-      query
+      `${ORDERBOOK_PATH}/orders`, {
+        limit: 1,
+        ...query
+      }
     )
 
     let orderJSON
@@ -170,18 +172,18 @@ export class OpenSeaAPI {
   /**
    * Fetch an asset from the API, throwing if none is found
    * @param tokenAddress Address of the asset's contract
-   * @param tokenId The asset's token ID
+   * @param tokenId The asset's token ID, or null if ERC-20
    * @param retries Number of times to retry if the service is unavailable for any reason
    */
   public async getAsset(
       tokenAddress: string,
-      tokenId: string | number,
+      tokenId: string | number | null,
       retries = 1
     ): Promise<OpenSeaAsset> {
 
     let response
     try {
-      response = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId}`)
+      response = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId || 0}`)
     } catch (error) {
       _throwOrContinue(error, retries)
       await delay(1000)

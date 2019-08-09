@@ -124,12 +124,24 @@ export enum SaleKind {
   DutchAuction = 1,
 }
 
+/**
+ * Types of asset contracts
+ * Given by the asset_contract_type in the OpenSea API
+ */
+export enum AssetContractType {
+  Fungible = 'fungible',
+  SemiFungible = 'semi-fungible',
+  NonFungible = 'non-fungible',
+  Unknown = 'unknown',
+}
+
 // Wyvern Schemas (see https://github.com/ProjectOpenSea/wyvern-schemas)
 export enum WyvernSchemaName {
   ERC20 = 'ERC20',
   ERC721 = 'ERC721',
   ERC1155 = 'ERC1155',
-  Enjin = 'Enjin',
+  LegacyEnjin = 'Enjin',
+  // CryptoPunks = 'CryptoPunks'
 }
 
 /**
@@ -144,7 +156,7 @@ export enum WyvernSchemaName {
  * Special cases:
  * locked: When the transfer function has been locked by the dev
  */
-export enum NFTVersion {
+export enum TokenStandardVersion {
   Unsupported = 'unsupported',
   Locked = 'locked',
   Enjin = '1155-1.0',
@@ -159,28 +171,16 @@ export enum WyvernAssetLocation {
   Other = 'other'
 }
 
-export interface WyvernAsset {}
-
-export interface WyvernNFTAsset extends WyvernAsset {
+export interface WyvernNFTAsset {
   id: string
   address: string
 }
-export interface WyvernFTAsset extends WyvernAsset {
-  identifier: string
+export interface WyvernFTAsset {
   id?: string
   address: string
   quantity: number
 }
-
-export interface WyvernERC1155Asset extends WyvernNFTAsset {}
-export interface WyvernERC721Asset extends WyvernNFTAsset {}
-export interface WyvernERC20Asset extends WyvernFTAsset {}
-
-export interface WyvernENSNameAsset extends WyvernAsset {
-  nodeHash: string
-  nameHash?: string
-  name?: string
-}
+export type WyvernAsset = WyvernNFTAsset | WyvernFTAsset
 
 // Abstractions over Wyvern assets for bundles
 export interface WyvernBundle {
@@ -214,28 +214,14 @@ export interface OpenSeaAccount {
  * Simple, unannotated non-fungible asset spec
  */
 export interface Asset {
-  // The asset's token ID
-  tokenId: string
+  // The asset's token ID, or null if ERC-20
+  tokenId: string | null,
   // The asset's contract address
   tokenAddress: string,
   // The NFT version of this asset
-  nftVersion?: NFTVersion
-}
-
-/**
- * Simple, unannotated fungible asset spec
- * `identifier` conforms to the OpenSea UID spec
- * Supported types:
- * - enjin/TOKEN_ID_CLASS_PREFIX
- * - erc155/ADDRESS/TOKEN_ID_CLASS_PREFIX
- * - erc20/ADDRESS
- * `tokenId` id suffix for this token (ERC-1155). `null` if no ID is needed (ERC-20)
- * `tokenAddress` the address of the smart contract
- */
-export interface FungibleAsset {
-  identifier: string
-  tokenId: string | null
-  tokenAddress: string
+  nftVersion?: TokenStandardVersion,
+  // Optional for ENS names
+  name?: string,
 }
 
 /**
@@ -246,6 +232,8 @@ export interface OpenSeaAssetContract {
   name: string
   // Address of this contract
   address: string
+  // Type of token (fungible/NFT)
+  type: AssetContractType
 
   // Total fee levied on sellers by this contract, in basis points
   sellerFeeBasisPoints: number
@@ -416,7 +404,7 @@ export interface UnhashedOrder extends WyvernOrder {
   waitingForBestCounterOrder: boolean
 
   metadata: {
-    asset?: WyvernFTAsset | WyvernNFTAsset
+    asset?: WyvernAsset
     bundle?: WyvernBundle
     schema: WyvernSchemaName
     quantity?: number

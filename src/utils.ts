@@ -10,7 +10,7 @@ import { HowToCall } from 'wyvern-js/lib/types'
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleToken } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernNFTAsset, OpenSeaAssetContract, WyvernFTAsset, OpenSeaFungibleToken, AssetContractType, WyvernSchemaName } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -23,7 +23,7 @@ export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256
 export const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"
 export const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9"
 export const ENJIN_COIN_ADDRESS = '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c'
-export const ENJIN_ADDRESS = '0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab'
+export const ENJIN_ADDRESS = '0xfaaFDc07907ff5120a76b34b731b278c38d6043C'
 export const CK_ADDRESS = '0x06012c8cf97bead5deae237070f9587f8e7a266d'
 export const CK_RINKEBY_ADDRESS = '0x16baf0de678e52367adc69fd067e5edd1d33e3bf'
 export const DEFAULT_BUYER_FEE_BASIS_POINTS = 0
@@ -38,7 +38,7 @@ export const DEFAULT_GAS_INCREASE_FACTOR = 1.1
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 const proxyAssertABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxyAssert', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
-export const annotateERC721TransferABI = (asset: WyvernERC721Asset): AnnotatedFunctionABI => ({
+export const annotateERC721TransferABI = (asset: WyvernNFTAsset): AnnotatedFunctionABI => ({
   "constant": false,
   "inputs": [
     {
@@ -60,6 +60,13 @@ export const annotateERC721TransferABI = (asset: WyvernERC721Asset): AnnotatedFu
   "stateMutability": StateMutability.Nonpayable,
   "type": Web3.AbiType.Function
 })
+
+const SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE: {[key in WyvernSchemaName]: AssetContractType} = {
+  [WyvernSchemaName.ERC721]: AssetContractType.NonFungible,
+  [WyvernSchemaName.ERC1155]: AssetContractType.SemiFungible,
+  [WyvernSchemaName.ERC20]: AssetContractType.Fungible,
+  [WyvernSchemaName.LegacyEnjin]: AssetContractType.SemiFungible,
+}
 
 // OTHER
 
@@ -222,6 +229,7 @@ export const assetContractFromJSON = (asset_contract: any): OpenSeaAssetContract
   return {
     name: asset_contract.name,
     description: asset_contract.description,
+    type: asset_contract.asset_contract_type,
     address: asset_contract.address,
     tokenSymbol: asset_contract.symbol,
     buyerFeeBasisPoints: asset_contract.buyer_fee_basis_points,
@@ -353,84 +361,6 @@ export const orderToJSON = (order: Order): OrderJSON => {
     hash: order.hash
   }
   return asJSON
-}
-
-// Taken from Wyvern demo exchange
-// TODO implement countOf. Redo this whole function!
-export const findAsset = async (
-    web3: Web3,
-    {account, proxy, wyAsset, schema}:
-    {account: string; proxy: string; wyAsset: any; schema: any},
-    retries = 1
-  ): Promise<WyvernAssetLocation | undefined> => {
-  let owner
-  const proxyCount = undefined
-  const myCount = undefined
-  const ownerOf = schema.functions.ownerOf
-  const countOf = schema.functions.countOf
-
-  if (ownerOf) {
-    const abi = ownerOf(wyAsset)
-    const contract = web3.eth.contract([abi]).at(abi.target)
-    if (abi.inputs.filter((x: any) => x.value === undefined).length === 0) {
-      const inputs = abi.inputs.map((i: any) => i.value.toString())
-      owner = await promisify<string>(c => contract[abi.name].call(...inputs, c))
-      owner = owner.toLowerCase()
-    } else {
-      return undefined
-    }
-  } else if (countOf) {
-    // ERC20 or ERC1155 (non-Enjin)
-    // TODO
-    return undefined
-    // const abi = countOf(wyAsset)
-    // const inputs = abi.inputs.filter((x: any) => x.value !== undefined).map((x: any) => x.value)
-    // // console.warn(proxy, [account, ...inputs], abi.inputs)
-    // const contract = web3.eth.contract([abi]).at(abi.target)
-    // if (proxy) {
-    //   proxyCount = await promisify<BigNumber>(c => contract[abi.name].call([...inputs, proxy], c))
-    //   proxyCount = proxyCount.toNumber()
-    // } else {
-    //   proxyCount = 0
-    // }
-    // myCount = await promisify<BigNumber>(c => contract[abi.name].call([...inputs, account], c))
-    // myCount = myCount.toNumber()
-  } else {
-    // Missing ownership call - skip check to allow listings
-    // by default
-    return undefined
-  }
-
-  if (owner !== undefined) {
-    if (proxy && owner.toLowerCase() === proxy.toLowerCase()) {
-      return WyvernAssetLocation.Proxy
-    } else if (owner.toLowerCase() === account.toLowerCase()) {
-      return WyvernAssetLocation.Account
-    } else {
-      return _handleOtherOwner(owner)
-    }
-  } else if (myCount !== undefined && proxyCount !== undefined) {
-    /* This is a bit Ethercraft-specific. */
-    if (proxyCount >= 1000000000000000000) {
-      return WyvernAssetLocation.Proxy
-    } else if (myCount >= 1000000000000000000) {
-      return WyvernAssetLocation.Account
-    } else {
-      return WyvernAssetLocation.Other
-    }
-  }
-  return _handleOtherOwner(owner)
-
-  async function _handleOtherOwner(o?: string) {
-    if (o && o != '0x') {
-      return WyvernAssetLocation.Other
-    }
-    if (retries <= 0) {
-      return undefined
-    }
-    await delay(500)
-    return findAsset(web3, {account, proxy, wyAsset, schema}, retries - 1)
-  }
 }
 
 /**
@@ -704,17 +634,14 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
  * @param asset The fungible or nonfungible asset to format
  */
 export function getWyvernAsset(
-    schema: Schema<WyvernNFTAsset | WyvernFTAsset>,
-    asset: Asset | FungibleAsset,
+    schema: Schema<WyvernAsset>,
+    asset: Asset,
     quantity = 1
   ) {
-  if ('identifier' in asset) {
-    const classID = asset.tokenId != null
-      ? asset.tokenId
-      : undefined
-    return getWyvernFTAsset(schema as Schema<WyvernFTAsset>, asset.tokenAddress, asset.identifier, quantity, classID)
+  if (SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE[schema.name as WyvernSchemaName] == AssetContractType.NonFungible) {
+    return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset)
   } else {
-    return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset.tokenId, asset.tokenAddress)
+    return getWyvernFTAsset(schema as Schema<WyvernFTAsset>, asset, quantity)
   }
 }
 
@@ -725,59 +652,39 @@ export function getWyvernAsset(
  * @param tokenAddress The address of the token's contract
  */
 export function getWyvernNFTAsset(
-    schema: Schema<WyvernNFTAsset>, tokenId: string, tokenAddress: string
+    schema: Schema<WyvernNFTAsset>, asset: Asset
   ): WyvernNFTAsset {
 
   return schema.assetFromFields({
-    'ID': tokenId.toString(),
-    'Address': tokenAddress.toLowerCase(),
+    'ID': asset.tokenId != null
+      ? asset.tokenId.toString()
+      : undefined,
+    'Address': asset.tokenAddress.toLowerCase(),
+    'Name': asset.name,
   })
 }
 
 /**
  * Get the Wyvern representation of a fungible asset
  * @param schema The WyvernSchema needed to access this asset
- * @param address The address of the token's contract
- * @param identifier The identifier string of the fungible asset
+ * @param asset The asset to trade
  * @param quantity The number of items to trade
- * @param classID The numerical ID (converted from hex) for the asset's class. Can be undefined if this asset is fully fungible (ERC-20).
  */
 export function getWyvernFTAsset(
     schema: Schema<WyvernFTAsset>,
-    address: string,
-    identifier: string,
-    quantity: number,
-    classID?: string
+    asset: Asset,
+    quantity: number
   ): WyvernFTAsset {
 
-  const fromWySchema = schema.assetFromFields({
-    'ID': classID,
+  const tokenId = asset.tokenId != null
+    ? asset.tokenId
+    : undefined
+
+  return schema.assetFromFields({
+    'ID': tokenId,
     'Quantity': quantity,
-    'Address': address.toLowerCase(),
+    'Address': asset.tokenAddress.toLowerCase(),
   })
-
-  return {
-    ...fromWySchema,
-    identifier
-  }
-}
-
-/**
- * Get the Wyvern representation of an ENS name as an asset
- * @param schema The WyvernSchema needed to access this asset
- * @param name The ENS name, ending in .eth
- */
-export function getWyvernENSNameAsset(
-    schema: Schema<WyvernENSNameAsset>, name: string
-  ): WyvernENSNameAsset {
-
-  if (!schema.unifyFields) {
-    throw new Error("Incorrect schema type for this asset")
-  }
-
-  return schema.assetFromFields(schema.unifyFields({
-    'Name': name,
-  }))
 }
 
 /**
@@ -790,7 +697,7 @@ export function getWyvernBundle(
     schema: any, assets: Asset[]
   ): WyvernBundle {
 
-  const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress))
+  const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
 
   const sortedWyAssets = _.sortBy(wyAssets, [(a: WyvernNFTAsset) => a.address, (a: WyvernNFTAsset) => a.id])
 

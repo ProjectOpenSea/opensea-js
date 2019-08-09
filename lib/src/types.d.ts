@@ -135,29 +135,16 @@ export declare enum WyvernAssetLocation {
     Proxy = "proxy",
     Other = "other"
 }
-export interface WyvernAsset {
-}
-export interface WyvernNFTAsset extends WyvernAsset {
+export interface WyvernNFTAsset {
     id: string;
     address: string;
 }
-export interface WyvernFTAsset extends WyvernAsset {
-    identifier: string;
+export interface WyvernFTAsset {
     id?: string;
     address: string;
     quantity: number;
 }
-export interface WyvernERC1155Asset extends WyvernNFTAsset {
-}
-export interface WyvernERC721Asset extends WyvernNFTAsset {
-}
-export interface WyvernERC20Asset extends WyvernFTAsset {
-}
-export interface WyvernENSNameAsset extends WyvernAsset {
-    nodeHash: string;
-    nameHash?: string;
-    name?: string;
-}
+export declare type WyvernAsset = WyvernNFTAsset | WyvernFTAsset;
 export interface WyvernBundle {
     assets: WyvernNFTAsset[];
     name?: string;
@@ -183,6 +170,7 @@ export interface Asset {
     tokenId: string | null;
     tokenAddress: string;
     nftVersion?: TokenStandardVersion;
+    name?: string;
 }
 /**
  * Annotated asset contract with OpenSea metadata
@@ -297,7 +285,7 @@ export interface UnhashedOrder extends WyvernOrder {
     makerReferrerFee: BigNumber;
     waitingForBestCounterOrder: boolean;
     metadata: {
-        asset?: WyvernFTAsset | WyvernNFTAsset;
+        asset?: WyvernAsset;
         bundle?: WyvernBundle;
         schema: WyvernSchemaName;
         quantity?: number;

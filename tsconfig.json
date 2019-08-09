@@ -1,6 +1,7 @@
 {
     "include": [
         "./src/**/*",
+        "./test/**/*",
         "./node_modules/web3-typescript-typings/index.d.ts",
         "./node_modules/types-bn/index.d.ts",
         "./node_modules/types-ethereumjs-util/index.d.ts"

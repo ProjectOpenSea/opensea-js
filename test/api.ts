@@ -45,8 +45,7 @@ suite('api', () => {
 
     test('Rinkeby API orders have correct OpenSea url', async () => {
       const order = await rinkebyApi.getOrder({})
-      assert.isNotNull(order)
-      if (!order || !order.asset) {
+      if (!order.asset) {
         return
       }
       const url = `https://rinkeby.opensea.io/assets/${order.asset.assetContract.address}/${order.asset.tokenId}`
@@ -55,8 +54,7 @@ suite('api', () => {
 
     test('Mainnet API orders have correct OpenSea url', async () => {
       const order = await mainApi.getOrder({})
-      assert.isNotNull(order)
-      if (!order || !order.asset) {
+      if (!order.asset) {
         return
       }
       const url = `https://opensea.io/assets/${order.asset.assetContract.address}/${order.asset.tokenId}`
@@ -135,10 +133,6 @@ suite('api', () => {
 
     test('API fetches fees for an asset', async () => {
       const asset = await apiToTest.getAsset(CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID)
-      assert.isNotNull(asset)
-      if (!asset) {
-        return
-      }
       assert.equal(asset.tokenId, CK_RINKEBY_TOKEN_ID.toString())
       assert.equal(asset.assetContract.name, "CryptoKittiesRinkeby")
       assert.equal(asset.assetContract.sellerFeeBasisPoints, CK_RINKEBY_SELLER_FEE)
@@ -150,10 +144,6 @@ suite('api', () => {
       assert.equal(assets.length, apiToTest.pageSize)
 
       const asset = assets[0]
-      assert.isNotNull(asset)
-      if (!asset) {
-        return
-      }
       assert.equal(asset.assetContract.name, "CryptoKittiesRinkeby")
       assert.isNotEmpty(asset.sellOrders)
     })

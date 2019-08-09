@@ -613,6 +613,19 @@ export declare class OpenSeaPort {
         accountAddress: string;
     }): Promise<void>;
     /**
+     * Check if an account owns an asset on-chain
+     * @param accountAddress Account address for the wallet
+     * @param proxyAddress Proxy address for the account
+     * @param wyAsset asset to check
+     * @param schemaName WyvernSchemaName for the asset
+     */
+    _ownsAssetOnChain({ accountAddress, proxyAddress, wyAsset, schemaName }: {
+        accountAddress: string;
+        proxyAddress?: string | null;
+        wyAsset: WyvernAsset;
+        schemaName: WyvernSchemaName;
+    }, retries?: number): Promise<boolean | undefined>;
+    /**
      * Get the listing and expiration time paramters for a new order
      * @param expirationTimestamp Timestamp to expire the order, or 0 for non-expiring
      * @param waitingForBestCounterOrder Whether this order should be hidden until the best match is found
