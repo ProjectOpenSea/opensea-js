@@ -387,15 +387,11 @@ suite('seaport', () => {
     const extraBountyBasisPoints = bountyPercent * 100
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     const contract = asset.assetContract
 
     const buyerFees = await client.computeFees({
-      assets: [{ tokenAddress, tokenId }],
+      asset: asset,
       extraBountyBasisPoints,
       side: OrderSide.Buy
     })
@@ -408,6 +404,7 @@ suite('seaport', () => {
     assert.equal(buyerFees.sellerBountyBPS, 0)
 
     const sellerFees = await client.computeFees({
+      asset: null,
       assetContract: asset.assetContract, // alternate fee param
       extraBountyBasisPoints,
       side: OrderSide.Sell
@@ -421,7 +418,7 @@ suite('seaport', () => {
     assert.equal(sellerFees.sellerBountyBPS, extraBountyBasisPoints)
 
     const heterogenousBundleSellerFees = await client.computeFees({
-      assets: [],
+      asset: null,
       extraBountyBasisPoints,
       side: OrderSide.Sell
     })
@@ -434,7 +431,7 @@ suite('seaport', () => {
     assert.equal(heterogenousBundleSellerFees.sellerBountyBPS, extraBountyBasisPoints)
 
     const privateSellerFees = await client.computeFees({
-      assets: [{ tokenAddress, tokenId }],
+      asset: asset,
       extraBountyBasisPoints,
       side: OrderSide.Sell,
       isPrivate: true
@@ -448,7 +445,7 @@ suite('seaport', () => {
     assert.equal(privateSellerFees.sellerBountyBPS, 0)
 
     const privateBuyerFees = await client.computeFees({
-      assets: [{ tokenAddress, tokenId }],
+      asset: asset,
       extraBountyBasisPoints,
       side: OrderSide.Buy,
       isPrivate: true
@@ -473,6 +470,7 @@ suite('seaport', () => {
     const contract = asset.assetContract
 
     const buyerFees = await client.computeFees({
+      asset: null,
       assetContract: contract,
       extraBountyBasisPoints: bountyPercent * 100,
       side: OrderSide.Buy
@@ -486,6 +484,7 @@ suite('seaport', () => {
     assert.equal(buyerFees.sellerBountyBPS, 0)
 
     const sellerFees = await client.computeFees({
+      asset: null,
       assetContract: contract,
       extraBountyBasisPoints: bountyPercent * 100,
       side: OrderSide.Sell
@@ -505,14 +504,10 @@ suite('seaport', () => {
     const tokenAddress = MYTHEREUM_ADDRESS
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     try {
       await client.computeFees({
-        assets: [asset],
+        asset: asset,
         extraBountyBasisPoints: 200,
         side: OrderSide.Sell
       })
@@ -534,18 +529,14 @@ suite('seaport', () => {
     }
 
     const zeroTransferFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID)
-    assert.isNotNull(zeroTransferFeeAsset)
-    if (!zeroTransferFeeAsset) {
-      return
-    }
 
     const sellerFees = await client.computeFees({
-      assets: [asset],
+      asset: zeroTransferFeeAsset,
       side: OrderSide.Sell
     })
 
     const sellerZeroFees = await client.computeFees({
-      assets: [zeroTransferFeeAsset],
+      asset: zeroTransferFeeAsset,
       side: OrderSide.Sell
     })
 

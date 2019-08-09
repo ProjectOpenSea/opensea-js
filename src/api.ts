@@ -174,7 +174,7 @@ export class OpenSeaAPI {
       tokenAddress: string,
       tokenId: string | number,
       retries = 1
-    ): Promise<OpenSeaAsset | null> {
+    ): Promise<OpenSeaAsset> {
 
     let response
     try {
@@ -186,7 +186,7 @@ export class OpenSeaAPI {
     }
 
     const json: any = await response.json()
-    return json ? assetFromJSON(json) : null
+    return assetFromJSON(json)
   }
 
   /**

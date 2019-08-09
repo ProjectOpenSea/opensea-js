@@ -1252,7 +1252,7 @@ export class OpenSeaPort {
   /**
    * Compute the fees for an order
    * @param param0 __namedParameters
-   * @param assets Array of addresses and ids that will be in the order
+   * @param asset Addresses and id of asset (null if a bundle, unless all assets are from the same contract, then the first asset)
    * @param assetContract Optional prefetched asset contract (including fees) to use instead of assets
    * @param side The side of the order (buy or sell)
    * @param isPrivate Whether the order is private or not (known taker)
@@ -1584,10 +1584,7 @@ export class OpenSeaPort {
     let makerRelayerFee
     let takerRelayerFee
 
-    const openSeaAsset: OpenSeaAsset | null = await this.api.getAsset(asset.tokenAddress, asset.tokenId)
-    if (!openSeaAsset) {
-      throw new Error(`Could not find asset with ID ${asset.tokenId} and address ${asset.tokenAddress}`)
-    }
+    const openSeaAsset: OpenSeaAsset = await this.api.getAsset(asset.tokenAddress, asset.tokenId)
 
     if (sellOrder) {
       // Use the sell order's fees to ensure compatiblity
@@ -1660,45 +1657,42 @@ export class OpenSeaPort {
         schemaName: WyvernSchemaName }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
-    const schema = this._getSchema(schemaName)
-    const wyAsset = getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress)
-    const isPrivate = buyerAddress != NULL_ADDRESS
+        accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
+        const schema = this._getSchema(schemaName)
+        const wyAsset = getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress)
+        const isPrivate = buyerAddress != NULL_ADDRESS
 
-    const openSeaAsset: OpenSeaAsset | null = await this.api.getAsset(asset.tokenAddress, asset.tokenId)
-    if (!openSeaAsset) {
-      throw new Error(`Could not find asset with ID ${asset.tokenId} and address ${asset.tokenAddress}`)
-    }
+        const openSeaAsset: OpenSeaAsset = await this.api.getAsset(asset.tokenAddress, asset.tokenId)
 
-    const { totalSellerFeeBPS,
-            totalBuyerFeeBPS,
-            sellerBountyBPS } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+        const { totalSellerFeeBPS,
+                totalBuyerFeeBPS,
+                sellerBountyBPS } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
-    const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
+        const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
 
-    const orderSaleKind = endAmount != null && endAmount !== startAmount
+        const orderSaleKind = endAmount != null && endAmount !== startAmount
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
-    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
-    const times = this._getTimeParameters(expirationTime, waitForHighestBid)
+        const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
+        const times = this._getTimeParameters(expirationTime, waitForHighestBid)
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
-    const feeRecipient = waitForHighestBid
+        const feeRecipient = waitForHighestBid
       ? NULL_ADDRESS
       : OPENSEA_FEE_RECIPIENT
 
     // Swap maker/taker fees when it's an English auction,
     // since these sell orders are takers not makers
-    const makerRelayerFee = waitForHighestBid
+        const makerRelayerFee = waitForHighestBid
       ? makeBigNumber(totalBuyerFeeBPS)
       : makeBigNumber(totalSellerFeeBPS)
-    const takerRelayerFee = waitForHighestBid
+        const takerRelayerFee = waitForHighestBid
       ? makeBigNumber(totalSellerFeeBPS)
       : makeBigNumber(totalBuyerFeeBPS)
 
-    const staticCallTargetAndExtraData = await this._getStaticCallTargetAndExtraData({asset: openSeaAsset, useTxnOriginStaticCall: waitForHighestBid})
+        const staticCallTargetAndExtraData = await this._getStaticCallTargetAndExtraData({asset: openSeaAsset, useTxnOriginStaticCall: waitForHighestBid})
 
-    return {
+        return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: buyerAddress,
@@ -1738,8 +1732,9 @@ export class OpenSeaPort {
     ): Promise<any> {
         const isCheezeWizards = asset.tokenAddress in [CHEEZE_WIZARDS_ADDRESS, CHEEZE_WIZARDS_RINKEBY_ADDRESS]
         const isDecentralandEstate = asset.tokenAddress in [DECENTRALAND_ESTATE_ADDRESS]
+        const isMainnet = (this._networkName == Network.Main)
 
-        if (this._networkName == Network.Main) {
+        if (isMainnet) {
             // While testing, we will use dummy values for mainnet. We will remove this if-statement once we have pushed the PR once and tested on Rinkeby
             return {
                 staticTarget: NULL_ADDRESS,
@@ -1747,16 +1742,16 @@ export class OpenSeaPort {
             }
         } else {
             if (isCheezeWizards) {
-                const cheezeWizardsBasicTournamentAddress = (this._networkName == Network.Main) ? CHEEZE_WIZARDS_ADDRESS : CHEEZE_WIZARDS_RINKEBY_ADDRESS
+                const cheezeWizardsBasicTournamentAddress = (isMainnet) ? CHEEZE_WIZARDS_ADDRESS : CHEEZE_WIZARDS_RINKEBY_ADDRESS
                 const cheezeWizardsBasicTournamentABI = this.web3.eth.contract(CheezeWizardsBasicTournament as any[])
                 const cheezeWizardsBasicTournmentInstance = await cheezeWizardsBasicTournamentABI.at(cheezeWizardsBasicTournamentAddress)
                 const wizardFingerprint = await promisifyCall<string>(c => cheezeWizardsBasicTournmentInstance.wizardFingerprint.call(asset.tokenId))
                 return {
-                    staticTarget: (this._networkName == Network.Main) ? STATIC_CALL_CHEEZE_WIZARDS_ADDRESS : STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
+                    staticTarget: (isMainnet) ? STATIC_CALL_CHEEZE_WIZARDS_ADDRESS : STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
                     staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckCheezeWizards, 'succeedIfCurrentWizardFingerprintMatchesProvidedWizardFingerprint'), [asset.tokenId, wizardFingerprint, useTxnOriginStaticCall]),
                 }
             // We stated that we will only use Decentraland estates static calls on mainnet, since Decentraland uses Ropstein
-            } else if (isDecentralandEstate && (this._networkName == Network.Main)) {
+            } else if (isDecentralandEstate && (isMainnet)) {
                 const decentralandEstateAddress = DECENTRALAND_ESTATE_ADDRESS
                 const decentralandEstateABI = this.web3.eth.contract(DecentralandEstates as any[])
                 const decentralandEstateInstance = await decentralandEstateABI.at(decentralandEstateAddress)
@@ -1767,7 +1762,7 @@ export class OpenSeaPort {
                 }
             } else if (useTxnOriginStaticCall) {
                 return {
-                    staticTarget: (this._networkName == Network.Main) ? STATIC_CALL_TX_ORIGIN_ADDRESS : STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS,
+                    staticTarget: (isMainnet) ? STATIC_CALL_TX_ORIGIN_ADDRESS : STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS,
                     staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesHardcodedAddress'), []),
                 }
             } else {
@@ -1814,9 +1809,6 @@ export class OpenSeaPort {
       if (assets && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
         const { tokenAddress, tokenId } = assets[0]
         asset = await this.api.getAsset(tokenAddress, tokenId)
-        if (!asset) {
-          throw new Error(`Could not find asset with ID ${tokenId} and address ${tokenAddress}`)
-        }
       }
       const { totalBuyerFeeBPS,
               totalSellerFeeBPS } = await this.computeFees({ asset, extraBountyBasisPoints, side: OrderSide.Buy })
@@ -1894,9 +1886,6 @@ export class OpenSeaPort {
     if (assets && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
       const { tokenAddress, tokenId } = assets[0]
       asset = await this.api.getAsset(tokenAddress, tokenId)
-      if (!asset) {
-        throw new Error(`Could not find asset with ID ${tokenId} and address ${tokenAddress}`)
-      }
     }
     const {
       totalSellerFeeBPS,
