@@ -549,6 +549,7 @@ suite('seaport', () => {
 
   test("Matches a private sell order, doesn't for wrong taker", async () => {
     const accountAddress = ALEX_ADDRESS
+    console.log(ALEX_ADDRESS)
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 2
     const bountyPercent = 0
@@ -581,6 +582,96 @@ suite('seaport', () => {
     testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+    // Make sure no one else can take it
+    try {
+      await testMatchingNewOrder(order, DEVIN_ADDRESS)
+    } catch (e) {
+      // It works!
+      return
+    }
+    assert.fail()
+  })
+
+  test("Mainnet Decentraland: Matches a private sell order, doesn't for wrong taker", async () => {
+    // Mainnet Decentraland
+    const accountAddress = '0xf293dfe0ac79c2536b9426957ac8898d6c743717' // Mainnet Decentraland Estate owner
+    const takerAddress = ALEX_ADDRESS_2
+    const amountInToken = 2
+    const bountyPercent = 0
+
+    // Mainnet Decentraland
+    const tokenId = '2898' // Mainnet DecentralandEstate TokenID
+    const tokenAddress = '0x959e104e1a4db6317fa58f8295f586e1a978c297' // Mainnet DecentralandEstates Contract
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+
+    const order = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress,
+      startAmount: amountInToken,
+      extraBountyBasisPoints: bountyPercent * 100,
+      buyerAddress: takerAddress,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false,
+      schemaName: WyvernSchemaName.ERC721
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
+
+    console.log(order);
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+    // Make sure no one else can take it
+    try {
+      await testMatchingNewOrder(order, DEVIN_ADDRESS)
+    } catch (e) {
+      // It works!
+      return
+    }
+    assert.fail()
+  })
+
+  test.only("Testnet CheezeWizards: Matches a private sell order, doesn't for wrong taker", async () => {
+    // Testnet Cheezewizards
+    const accountAddress = '0xbF257f41a0982EA780eE37064347A6cBa11e7B81' // Testnet CheezeWizards token owner
+    const takerAddress = ALEX_ADDRESS_2
+    const amountInToken = 2
+    const bountyPercent = 0
+
+    // Testnet Cheezewizards
+    const tokenId = '2' // Testnet CheezeWizards TokenID
+    const tokenAddress = '0x095731b672b76b00A0b5cb9D8258CD3F6E976cB2' // Testnet CheezeWizards Guild address
+
+    const asset = await rinkebyClient.api.getAsset(tokenAddress, tokenId)
+
+    const order = await rinkebyClient._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress,
+      startAmount: amountInToken,
+      extraBountyBasisPoints: bountyPercent * 100,
+      buyerAddress: takerAddress,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false,
+      schemaName: WyvernSchemaName.ERC721
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
+
+    console.log(order);
+    await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
     // Make sure no one else can take it

@@ -34,8 +34,10 @@ import {
   annotateERC721TransferABI,
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
-  CHEEZE_WIZARDS_ADDRESS,
-  CHEEZE_WIZARDS_RINKEBY_ADDRESS,
+  CHEEZE_WIZARDS_GUILD_ADDRESS,
+  CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS,
+  CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS,
+  CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS,
   DECENTRALAND_ESTATE_ADDRESS,
   STATIC_CALL_TX_ORIGIN_ADDRESS,
   STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS,
@@ -1730,22 +1732,28 @@ export class OpenSeaPort {
       { asset: OpenSeaAsset;
         useTxnOriginStaticCall: boolean; }
     ): Promise<any> {
-        const isCheezeWizards = asset.tokenAddress in [CHEEZE_WIZARDS_ADDRESS, CHEEZE_WIZARDS_RINKEBY_ADDRESS]
-        const isDecentralandEstate = asset.tokenAddress in [DECENTRALAND_ESTATE_ADDRESS]
-        const isMainnet = (this._networkName == Network.Main)
-
+        const isCheezeWizards = String(asset.tokenAddress).toLowerCase() === String(CHEEZE_WIZARDS_GUILD_ADDRESS).toLowerCase() || String(asset.tokenAddress).toLowerCase() === String(CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS).toLowerCase()
+        const isDecentralandEstate = String(asset.tokenAddress).toLowerCase() === String(DECENTRALAND_ESTATE_ADDRESS).toLowerCase()
+        const isMainnet = (this._networkName === Network.Main)
+        /*
         if (isMainnet) {
             // While testing, we will use dummy values for mainnet. We will remove this if-statement once we have pushed the PR once and tested on Rinkeby
             return {
                 staticTarget: NULL_ADDRESS,
                 staticExtradata: '0x',
             }
-        } else {
+        } else {*/
             if (isCheezeWizards) {
-                const cheezeWizardsBasicTournamentAddress = (isMainnet) ? CHEEZE_WIZARDS_ADDRESS : CHEEZE_WIZARDS_RINKEBY_ADDRESS
+                const cheezeWizardsBasicTournamentAddress = (isMainnet) ? CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS : CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS
                 const cheezeWizardsBasicTournamentABI = this.web3.eth.contract(CheezeWizardsBasicTournament as any[])
                 const cheezeWizardsBasicTournmentInstance = await cheezeWizardsBasicTournamentABI.at(cheezeWizardsBasicTournamentAddress)
-                const wizardFingerprint = await promisifyCall<string>(c => cheezeWizardsBasicTournmentInstance.wizardFingerprint.call(asset.tokenId))
+                const wizardFingerprint = await rawCall(this.web3, {
+                  to: cheezeWizardsBasicTournmentInstance.address,
+                  data: cheezeWizardsBasicTournmentInstance.wizardFingerprint.getData(asset.tokenId)
+                })
+                console.log('wizardFingerprint is: ')
+                console.log(wizardFingerprint);
+                console.log('That was the wizardFingerprint');
                 return {
                     staticTarget: (isMainnet) ? STATIC_CALL_CHEEZE_WIZARDS_ADDRESS : STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
                     staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckCheezeWizards, 'succeedIfCurrentWizardFingerprintMatchesProvidedWizardFingerprint'), [asset.tokenId, wizardFingerprint, useTxnOriginStaticCall]),
@@ -1755,7 +1763,13 @@ export class OpenSeaPort {
                 const decentralandEstateAddress = DECENTRALAND_ESTATE_ADDRESS
                 const decentralandEstateABI = this.web3.eth.contract(DecentralandEstates as any[])
                 const decentralandEstateInstance = await decentralandEstateABI.at(decentralandEstateAddress)
-                const estateFingerprint = await promisifyCall<string>(c => decentralandEstateInstance.getFingerprint.call(asset.tokenId))
+                const estateFingerprint = await rawCall(this.web3, {
+                  to: decentralandEstateInstance.address,
+                  data: decentralandEstateInstance.getFingerprint.getData(asset.tokenId)
+                })
+                console.log('estateFingerprint is: ')
+                console.log(estateFingerprint);
+                console.log('That was the estateFingerprint');
                 return {
                     staticTarget: STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS,
                     staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckDecentralandEstates, 'succeedIfCurrentEstateFingerprintMatchesProvidedEstateFingerprint'), [asset.tokenId, estateFingerprint, useTxnOriginStaticCall]),
@@ -1771,7 +1785,7 @@ export class OpenSeaPort {
                     staticExtradata: '0x',
                 }
             }
-        }
+        //}
   }
 
   public async _makeBundleBuyOrder(
@@ -2110,7 +2124,12 @@ export class OpenSeaPort {
         ? [order.metadata.asset]
         : []
     const tokenAddress = order.paymentToken
-
+    console.log('\n Schema \n');
+    console.log(schema);
+    console.log('\n wyAssets \n');
+    console.log(wyAssets);
+    console.log('\n accountAddress \n');
+    console.log(accountAddress);
     await this._approveAll({schema, wyAssets, accountAddress})
 
     // For fulfilling bids,
