@@ -108,7 +108,8 @@ export declare enum WyvernSchemaName {
     ERC20 = "ERC20",
     ERC721 = "ERC721",
     ERC1155 = "ERC1155",
-    LegacyEnjin = "Enjin"
+    LegacyEnjin = "Enjin",
+    ENSShortNameAuction = "ENSShortNameAuction"
 }
 /**
  * The NFT version that this contract uses.
