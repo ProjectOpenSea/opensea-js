@@ -286,7 +286,7 @@ To transfer fungible assets without token IDs, like ERC20 tokens, you can pass i
 Example for transfering 2 DAI ($2) to another address:
 
 ```JavaScript
-const paymentToken = (await seaport.getFungibleTokens({ symbol: 'DAI'}))[0]
+const paymentToken = (await seaport.api.getPaymentTokens({ symbol: 'DAI'}))[0]
 const quantity = new BigNumber(Math.pow(10, paymentToken.decimals)).times(2)
 const transactionHash = await seaport.transfer({
   asset: { tokenAddress: paymentToken.address },
@@ -420,10 +420,10 @@ const auction = await seaport.createSellOrder({
 })
 ```
 
-You can use `getFungibleTokens` to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:
+You can use `getPaymentTokens` to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:
 
 ```JavaScript
-const token = await seaport.getFungibleTokens({ symbol: 'MANA'})[0]
+const token = await seaport.api.getPaymentTokens({ symbol: 'MANA'})[0]
 
 const order = await seaport.api.getOrders({
   side: OrderSide.Sell,
@@ -584,6 +584,7 @@ Version 0.6 introduces some major new features, including trading fungible and s
 
 Non-breaking changes with deprecation notices:
 
+- `getFungibleTokens` has been deprecated. Use `api.getPaymentTokens`
 - Methods now show a deprecation warning when used with `tokenId` or `tokenAddress` as arguments, instead of using `asset` or `assets` (of type `Asset`/`Asset[]`)
 
 ## Development Information

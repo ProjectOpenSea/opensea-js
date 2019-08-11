@@ -1198,7 +1198,7 @@ export class OpenSeaPort {
   }
 
   /**
-   * Get known fungible tokens (ERC-20) that match your filters.
+   * Get known payment tokens (ERC-20) that match your filters.
    * @param param0 __namedParamters Object
    * @param symbol Filter by the ERC-20 symbol for the token,
    *    e.g. "DAI" for Dai stablecoin
@@ -1217,9 +1217,11 @@ export class OpenSeaPort {
         name?: string } = {}
     ): Promise<OpenSeaFungibleToken[]> {
 
+    onDeprecated("Use `api.getPaymentTokens` instead")
+
     const tokenSettings = WyvernSchemas.tokens[this._networkName]
 
-    const { tokens } = await this.api.getTokens({ symbol, address, name })
+    const { tokens } = await this.api.getPaymentTokens({ symbol, address, name })
 
     const offlineTokens: OpenSeaFungibleToken[] = [
       tokenSettings.canonicalWrappedEther,
@@ -2396,7 +2398,7 @@ export class OpenSeaPort {
       ? startAmount - endAmount
       : 0
     const isEther = tokenAddress == NULL_ADDRESS
-    const tokens = await this.getFungibleTokens({ address: tokenAddress })
+    const { tokens } = await this.api.getPaymentTokens({ address: tokenAddress })
     const token = tokens[0]
 
     // Validation

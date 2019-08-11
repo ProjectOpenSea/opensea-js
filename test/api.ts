@@ -37,7 +37,7 @@ suite('api', () => {
   skip(() => {
 
     test('API fetches tokens', async () => {
-      const { tokens } = await apiToTest.getTokens({ symbol: "MANA" })
+      const { tokens } = await apiToTest.getPaymentTokens({ symbol: "MANA" })
       assert.isArray(tokens)
       assert.equal(tokens.length, 1)
       assert.equal(tokens[0].name, "Decentraland MANA")

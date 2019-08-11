@@ -225,7 +225,7 @@ export class OpenSeaAPI {
    * `limit` and `offset` attributes from OpenSeaFungibleTokenQuery
    * @param retries Number of times to retry if the service is unavailable for any reason
    */
-  public async getTokens(
+  public async getPaymentTokens(
       query: OpenSeaFungibleTokenQuery = {},
       page = 1,
       retries = 1
@@ -241,7 +241,7 @@ export class OpenSeaAPI {
     } catch (error) {
       _throwOrContinue(error, retries)
       await delay(1000)
-      return this.getTokens(query, page, retries - 1)
+      return this.getPaymentTokens(query, page, retries - 1)
     }
 
     const json: any = await response.json()

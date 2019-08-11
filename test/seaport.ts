@@ -47,8 +47,8 @@ let manaAddress: string
 suite('seaport', () => {
 
   before(async () => {
-    wethAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
-    manaAddress = (await client.getFungibleTokens({ symbol: 'MANA'}))[0].address
+    wethAddress = (await client.api.getPaymentTokens({ symbol: 'WETH'})).tokens[0].address
+    manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0].address
   })
 
   test('Instance has public methods', () => {
@@ -82,7 +82,7 @@ suite('seaport', () => {
           client.api.logger = oldLogger
         }
       }
-      client.api.getTokens({ symbol: "MANA" })
+      client.api.getPaymentTokens({ symbol: "MANA" })
     })
   })
 
@@ -332,7 +332,7 @@ suite('seaport', () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 1.2
-    const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
+    const paymentTokenAddress = wethAddress
     const expirationTime = (Date.now() / 1000 + 60) // one minute from now
     const bountyPercent = 1.1
 
@@ -377,7 +377,7 @@ suite('seaport', () => {
     const matcherAddress = DEVIN_ADDRESS
     const now = Date.now() / 1000
     // Get bid from server
-    const paymentTokenAddress = (await rinkebyClient.getFungibleTokens({ symbol: 'WETH'}))[0].address
+    const paymentTokenAddress = wethAddress
     const { orders } = await rinkebyClient.api.getOrders({
       side: OrderSide.Buy,
       asset_contract_address: CK_RINKEBY_ADDRESS,
@@ -418,7 +418,7 @@ suite('seaport', () => {
   test('Ensures buy order compatibility with an English sell order', async () => {
     const accountAddress = ALEX_ADDRESS_2
     const takerAddress = ALEX_ADDRESS
-    const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
+    const paymentTokenAddress = wethAddress
     const amountInToken = 0.01
     const expirationTime = (Date.now() / 1000 + 60 * 60 * 24) // one day from now
     const extraBountyBasisPoints = 1.1 * 100
@@ -666,7 +666,7 @@ suite('seaport', () => {
   test('Matches a new bountied sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
-    const paymentToken = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
+    const paymentToken = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0]
     const amountInToken = 4000
     const bountyPercent = 1
 
@@ -702,7 +702,7 @@ suite('seaport', () => {
   test('Matches a buy order with an ERC-20 token (DAI)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const paymentToken = (await client.getFungibleTokens({ symbol: 'DAI'}))[0]
+    const paymentToken = (await client.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0]
     const amountInToken = 3
 
     const tokenId = CK_TOKEN_ID.toString()
@@ -799,19 +799,17 @@ suite('seaport', () => {
   test('Serializes payment token and matches most recent ERC-20 sell order', async () => {
     const takerAddress = ALEX_ADDRESS
 
-    const token = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
-
     const order = await client.api.getOrder({
       side: OrderSide.Sell,
-      payment_token_address: token.address
+      payment_token_address: manaAddress
     })
 
     assert.isNotNull(order.paymentTokenContract)
     if (!order.paymentTokenContract) {
       return
     }
-    assert.equal(order.paymentTokenContract.address, token.address)
-    assert.equal(order.paymentToken, token.address)
+    assert.equal(order.paymentTokenContract.address, manaAddress)
+    assert.equal(order.paymentToken, manaAddress)
     // TODO why can't we test atomicMatch?
     await testMatchingOrder(order, takerAddress, false)
   })
@@ -830,21 +828,20 @@ suite('seaport', () => {
   })
 
   test('Fungible tokens filter', async () => {
-    const manaTokens = (await client.getFungibleTokens({ symbol: "MANA" }))
-    // API returns another version of MANA,
-    // and one version is offline (in sdk)
-    assert.equal(manaTokens.length, 2)
+    const manaTokens = (await client.api.getPaymentTokens({ symbol: "MANA" })).tokens
+    assert.equal(manaTokens.length, 1)
     const mana = manaTokens[0]
     assert.isNotNull(mana)
-    assert.equal(mana.name, "Decentraland")
+    assert.equal(mana.name, "Decentraland MANA")
     assert.equal(mana.address, "0x0f5d2fb29fb7d3cfee444a200298f468908cc942")
     assert.equal(mana.decimals, 18)
 
-    const dai = (await client.getFungibleTokens({ symbol: "DAI" }))[0]
+    const dai = (await client.api.getPaymentTokens({ symbol: "DAI" })).tokens[0]
     assert.isNotNull(dai)
-    assert.equal(dai.name, "")
+    assert.equal(dai.name, "Dai Stablecoin")
+    assert.equal(dai.decimals, 18)
 
-    const all = await client.getFungibleTokens()
+    const all = await client.api.getPaymentTokens()
     assert.isNotEmpty(all)
   })
 
@@ -901,7 +898,7 @@ suite('seaport', () => {
   test('Matches a new bundle sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const token = (await client.getFungibleTokens({ symbol: 'MANA'}))[0]
+    const token = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0]
     const amountInToken = 2.422
 
     const order = await client._makeBundleSellOrder({

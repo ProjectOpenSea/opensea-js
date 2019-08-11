@@ -90,7 +90,7 @@ export declare class OpenSeaAPI {
      * `limit` and `offset` attributes from OpenSeaFungibleTokenQuery
      * @param retries Number of times to retry if the service is unavailable for any reason
      */
-    getTokens(query?: OpenSeaFungibleTokenQuery, page?: number, retries?: number): Promise<{
+    getPaymentTokens(query?: OpenSeaFungibleTokenQuery, page?: number, retries?: number): Promise<{
         tokens: OpenSeaFungibleToken[];
     }>;
     /**

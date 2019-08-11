@@ -395,7 +395,7 @@ export declare class OpenSeaPort {
         schemaName?: WyvernSchemaName;
     }): Promise<string>;
     /**
-     * Get known fungible tokens (ERC-20) that match your filters.
+     * Get known payment tokens (ERC-20) that match your filters.
      * @param param0 __namedParamters Object
      * @param symbol Filter by the ERC-20 symbol for the token,
      *    e.g. "DAI" for Dai stablecoin
