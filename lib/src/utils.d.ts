@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import { Schema, AnnotatedFunctionABI } from 'wyvern-schemas/dist-tsc/types';
+import { Schema, AnnotatedFunctionABI } from 'wyvern-schemas/dist/types';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { HowToCall } from 'wyvern-js/lib/types';
 import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernNFTAsset, OpenSeaAssetContract, WyvernFTAsset, OpenSeaFungibleToken } from './types';
@@ -124,7 +124,7 @@ export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: 
  * @param schema Wyvern schema for the asset
  * @param asset The fungible or nonfungible asset to format
  */
-export declare function getWyvernAsset(schema: Schema<WyvernAsset>, asset: Asset, quantity?: number): WyvernAsset;
+export declare function getWyvernAsset(schema: Schema<WyvernAsset>, asset: Asset, quantity?: BigNumber): WyvernAsset;
 /**
  * Get the Wyvern representation of an NFT asset
  * @param schema The WyvernSchema needed to access this asset
@@ -138,7 +138,7 @@ export declare function getWyvernNFTAsset(schema: Schema<WyvernNFTAsset>, asset:
  * @param asset The asset to trade
  * @param quantity The number of items to trade
  */
-export declare function getWyvernFTAsset(schema: Schema<WyvernFTAsset>, asset: Asset, quantity: number): WyvernFTAsset;
+export declare function getWyvernFTAsset(schema: Schema<WyvernFTAsset>, asset: Asset, quantity: BigNumber): WyvernFTAsset;
 /**
  * Get the Wyvern representation of a group of NFT assets
  * Sort order is enforced here

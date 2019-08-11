@@ -1,7 +1,7 @@
 import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js'
-import * as WyvernSchemas from 'wyvern-schemas/dist-tsc'
-import { Schema } from 'wyvern-schemas/dist-tsc/types'
+import * as WyvernSchemas from 'wyvern-schemas'
+import { Schema } from 'wyvern-schemas/dist/types'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, getMethod } from './contracts'
@@ -1004,7 +1004,7 @@ export class OpenSeaPort {
       asset: Asset;
       fromAddress: string;
       toAddress: string;
-      quantity?: number;
+      quantity?: number | BigNumber;
       didOwnerApprove?: boolean;
       schemaName?: WyvernSchemaName; },
     retries = 1
@@ -1016,7 +1016,7 @@ export class OpenSeaPort {
     }
 
     const schema = this._getSchema(schemaName)
-    const wyAsset = getWyvernAsset(schema, asset, quantity)
+    const wyAsset = getWyvernAsset(schema, asset, new BigNumber(quantity))
     const abi = schema.functions.transfer(wyAsset)
 
     let from = fromAddress
@@ -1104,7 +1104,7 @@ export class OpenSeaPort {
    * @param fromAddress The owner's wallet address
    * @param toAddress The recipient's wallet address
    * @param asset The fungible or non-fungible asset to transfer
-   * @param quantity The amount of the asset to transfer, if it's fungible (optional)
+   * @param quantity The amount of the asset to transfer, if it's fungible (optional). In base unites, e.g. wei.
    * @param schemaName The Wyvern schema name corresponding to the asset type.
    * Defaults to "ERC721" (non-fungible) assets, but can be ERC1155, ERC20, and others.
    * @returns Transaction hash
@@ -1115,13 +1115,13 @@ export class OpenSeaPort {
       { fromAddress: string;
         toAddress: string;
         asset: Asset;
-        quantity?: number;
+        quantity?: number | BigNumber;
         schemaName?: WyvernSchemaName; }
     ): Promise<string> {
 
     const schema = this._getSchema(schemaName)
     const nftVersion = asset.version || TokenStandardVersion.ERC721v3
-    const wyAsset = getWyvernAsset(schema, asset, quantity)
+    const wyAsset = getWyvernAsset(schema, asset, new BigNumber(quantity))
     const isCryptoKitties = wyAsset.address in [CK_ADDRESS, CK_RINKEBY_ADDRESS]
     // Since CK is common, infer isOldNFT from it in case user
     // didn't pass in `version`
@@ -1604,7 +1604,7 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema(schemaName)
-    const wyAsset = getWyvernAsset(schema, asset, quantity)
+    const wyAsset = getWyvernAsset(schema, asset, new BigNumber(quantity))
 
     let makerRelayerFee
     let takerRelayerFee
@@ -1681,7 +1681,7 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema(schemaName)
-    const wyAsset = getWyvernAsset(schema, asset, quantity)
+    const wyAsset = getWyvernAsset(schema, asset, new BigNumber(quantity))
     const isPrivate = buyerAddress != NULL_ADDRESS
     const { totalSellerFeeBPS,
             totalBuyerFeeBPS,
@@ -2178,12 +2178,18 @@ export class OpenSeaPort {
 
     return Promise.all(wyAssets.map(async wyAsset => {
       // Verify that the taker owns the asset
-      const isOwner = await this._ownsAssetOnChain({
-        accountAddress,
-        proxyAddress,
-        wyAsset,
-        schemaName
-      })
+      let isOwner
+      try {
+        isOwner = await this._ownsAssetOnChain({
+          accountAddress,
+          proxyAddress,
+          wyAsset,
+          schemaName
+        })
+      } catch (error) {
+        // let it through for assets we don't support yet
+        isOwner = true
+      }
       if (!isOwner) {
         throw new Error('You do not own this asset.')
       }
@@ -2281,7 +2287,7 @@ export class OpenSeaPort {
       { accountAddress, proxyAddress, wyAsset, schemaName }:
       { accountAddress: string; proxyAddress?: string | null; wyAsset: WyvernAsset; schemaName: WyvernSchemaName },
       retries = 1
-    ): Promise<boolean | undefined> {
+    ): Promise<boolean> {
 
     const schema = this._getSchema(schemaName)
     proxyAddress = proxyAddress || await this._getProxy(accountAddress)
@@ -2289,40 +2295,38 @@ export class OpenSeaPort {
     if (schema.functions.countOf) {
       // ERC20 or ERC1155 (non-Enjin)
       /* If ethercraft, minAmount = 1000000000000000000) */
-      const minAmount = 'quantity' in wyAsset
+      const minAmount = new BigNumber('quantity' in wyAsset
         ? wyAsset.quantity
-        : 1
+        : 1)
       const abi = schema.functions.countOf(wyAsset)
       const contract = this.web3.eth.contract([abi]).at(abi.target)
       const inputValues = abi.inputs.filter(x => x.value !== undefined).map(x => x.value)
-      let count = await promisifyCall<BigNumber>(c => contract[abi.name].call([accountAddress, ...inputValues], c))
+      let count = await promisifyCall<BigNumber>(c => contract[abi.name].call(accountAddress, ...inputValues, c))
       if (count === undefined) {
-        console.warn(abi, [accountAddress, ...inputValues])
-        return undefined
+        throw new Error("Incorrect schema for this asset")
       }
 
-      if (+count < minAmount && proxyAddress) {
-        const proxyCount = await promisifyCall<BigNumber>(c => contract[abi.name].call([proxyAddress, ...inputValues], c))
+      if (count.lessThan(minAmount) && proxyAddress) {
+        const proxyCount = await promisifyCall<BigNumber>(c => contract[abi.name].call(proxyAddress, ...inputValues, c))
         count = count.add(proxyCount || 0)
       }
-      return +count >= minAmount
+      return count.greaterThanOrEqualTo(minAmount)
 
     } else if (schema.functions.ownerOf) {
       // ERC721 asset
       const abi = schema.functions.ownerOf(wyAsset)
       const contract = this.web3.eth.contract([abi]).at(abi.target)
       if (abi.inputs.filter(x => x.value === undefined)[0]) {
-        console.warn("Missing an argument for finding the owner of this asset")
-        return undefined
+        throw new Error("Missing an argument for finding the owner of this asset")
       }
       const inputValues = abi.inputs.map(i => i.value.toString())
       const owner = await promisifyCall<string>(c => contract[abi.name].call(...inputValues, c))
-      if (owner && owner != '0x') {
+      if (owner) {
         return owner.toLowerCase() == accountAddress.toLowerCase() || (!!proxyAddress &&
               owner.toLowerCase() == proxyAddress.toLowerCase())
       }
       if (retries <= 0) {
-        return undefined
+        throw new Error('Unable to get current owner from smart contract')
       }
       await delay(500)
       // Recursively check owner again
@@ -2330,8 +2334,7 @@ export class OpenSeaPort {
     } else {
       // Missing ownership call - skip check to allow listings
       // by default
-      console.warn('Missing ownership schema for this asset type')
-      return undefined
+      throw new Error('Missing ownership schema for this asset type')
     }
   }
 

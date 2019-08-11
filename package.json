@@ -48,8 +48,8 @@
     "query-string": "^6.1.0",
     "web3": "^0.20.6",
     "webpack": "^3.10.0",
-    "wyvern-js": "github:ProjectOpenSea/wyvern-js#v3.0.3",
-    "wyvern-schemas": "github:ProjectOpenSea/wyvern-schemas#v0.9.6"
+    "wyvern-js": "github:ProjectOpenSea/wyvern-js#v3.1.0",
+    "wyvern-schemas": "github:ProjectOpenSea/wyvern-schemas#v0.10.3"
   },
   "devDependencies": {
     "@types/chai": "^4.1.3",

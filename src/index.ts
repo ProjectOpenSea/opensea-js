@@ -2,7 +2,7 @@ import { OpenSeaPort } from './seaport'
 import { OpenSeaAPI } from './api'
 import { Network, EventData, EventType } from './types'
 import { orderToJSON, orderFromJSON } from './utils'
-import { encodeCall } from 'wyvern-schemas/dist-tsc'
+import { encodeCall } from 'wyvern-schemas'
 
 /**
  * Example setup:

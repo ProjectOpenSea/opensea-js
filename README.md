@@ -281,16 +281,19 @@ const transactionHash = await seaport.transfer({
 })
 ```
 
-To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` to indicate how many:
+To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` in base units (e.g. wei) to indicate how many.
+
+Example for transfering 2 DAI ($2) to another address:
 
 ```JavaScript
-
+const paymentToken = (await seaport.getFungibleTokens({ symbol: 'DAI'}))[0]
+const quantity = new BigNumber(Math.pow(10, paymentToken.decimals)).times(2)
 const transactionHash = await seaport.transfer({
-  asset: { tokenAddress },
+  asset: { tokenAddress: paymentToken.address },
   fromAddress, // Must own the tokens
   toAddress,
   schemaName: "ERC20"
-  quantity: 2.6
+  quantity
 })
 ```
 

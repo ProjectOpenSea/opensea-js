@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { Network, HowToCall, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
-import { Token } from 'wyvern-schemas/dist-tsc/types';
+import { Token } from 'wyvern-schemas/dist/types';
 export { Network, HowToCall, ECSignature };
 /**
  * Events emitted by the SDK. There are five types:
@@ -142,7 +142,7 @@ export interface WyvernNFTAsset {
 export interface WyvernFTAsset {
     id?: string;
     address: string;
-    quantity: number;
+    quantity: BigNumber;
 }
 export declare type WyvernAsset = WyvernNFTAsset | WyvernFTAsset;
 export interface WyvernBundle {
@@ -289,7 +289,6 @@ export interface UnhashedOrder extends WyvernOrder {
         asset?: WyvernAsset;
         bundle?: WyvernBundle;
         schema: WyvernSchemaName;
-        quantity?: number;
     };
 }
 export interface UnsignedOrder extends UnhashedOrder {

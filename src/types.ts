@@ -8,7 +8,7 @@ import {
   Order as WyvernOrder
 } from 'wyvern-js/lib/types'
 
-import { Token } from 'wyvern-schemas/dist-tsc/types'
+import { Token } from 'wyvern-schemas/dist/types'
 
 export {
   Network,
@@ -178,7 +178,7 @@ export interface WyvernNFTAsset {
 export interface WyvernFTAsset {
   id?: string
   address: string
-  quantity: number
+  quantity: BigNumber
 }
 export type WyvernAsset = WyvernNFTAsset | WyvernFTAsset
 
@@ -409,7 +409,6 @@ export interface UnhashedOrder extends WyvernOrder {
     asset?: WyvernAsset
     bundle?: WyvernBundle
     schema: WyvernSchemaName
-    quantity?: number
   }
 }
 

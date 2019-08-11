@@ -103,15 +103,20 @@ suite('seaport', () => {
     })
   })
 
-  test("On-chain ownership undefined for non-existent assets", async () => {
+  test("On-chain ownership throws for invalid assets", async () => {
     const accountAddress = ALEX_ADDRESS
     const schemaName = WyvernSchemaName.ERC721
     const wyAssetRinkeby: WyvernNFTAsset = {
       id: CK_RINKEBY_TOKEN_ID.toString(),
       address: CK_RINKEBY_ADDRESS
     }
-    const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetRinkeby, schemaName })
-    assert.isUndefined(isOwner)
+    try {
+      // Use mainnet client with rinkeby asset
+      const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetRinkeby, schemaName })
+      assert.fail()
+    } catch (error) {
+      assert.include(error.message, 'Unable to get current owner')
+    }
   })
 
   test("On-chain ownership correctly pulled for ERC721s", async () => {
@@ -138,47 +143,52 @@ suite('seaport', () => {
     // Ownership
     const wyAsset: WyvernFTAsset = {
       address: ENJIN_COIN_ADDRESS,
-      quantity: 1
+      quantity: new BigNumber(1)
     }
     const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset, schemaName })
     assert.isTrue(isOwner)
 
-    // Non-ownership
-    const isOwner2 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset, schemaName })
+    // Not enough ownership
+    const isOwner2 = await client._ownsAssetOnChain({ accountAddress, wyAsset: { ...wyAsset, quantity: MAX_UINT_256 }, schemaName })
     assert.isFalse(isOwner2)
+
+    // Non-ownership
+    const isOwner3 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset, schemaName })
+    assert.isFalse(isOwner3)
   })
 
-  test.only("On-chain ownership correctly pulled for ERC1155s", async () => {
+  test("On-chain ownership correctly pulled for ERC1155s", async () => {
     const accountAddress = ALEX_ADDRESS
     const schemaName = WyvernSchemaName.ERC1155
 
-    const id = CATS_IN_MECHS_ID
-    // const hexId = "0x" + new BigNumber(CATS_IN_MECHS_ID).toString(16)
-
     // Ownership of NFT
     const wyAssetNFT: WyvernNFTAsset = {
-      id,
+      id: CATS_IN_MECHS_ID,
       address: ENJIN_ADDRESS
     }
     const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetNFT, schemaName })
     assert.isTrue(isOwner)
 
-    // // Non-ownership
-    // const isOwner2 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset: wyAssetNFT, schemaName })
-    // assert.isFalse(isOwner2)
+    // Non-ownership
+    const isOwner2 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset: wyAssetNFT, schemaName })
+    assert.isFalse(isOwner2)
 
-    // // Ownership of FT
-    // const wyAssetFT: WyvernFTAsset = {
-    //   id: AGE_OF_RUST_TOKEN_ID,
-    //   address: ENJIN_ADDRESS,
-    //   quantity: 1
-    // }
-    // const isOwner3 = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetFT, schemaName })
-    // assert.isTrue(isOwner3)
+    // Ownership of FT
+    const wyAssetFT: WyvernFTAsset = {
+      id: AGE_OF_RUST_TOKEN_ID,
+      address: ENJIN_ADDRESS,
+      quantity: new BigNumber(1)
+    }
+    const isOwner3 = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetFT, schemaName })
+    assert.isTrue(isOwner3)
 
-    // // Non-ownership
-    // const isOwner4 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset: wyAssetFT, schemaName })
-    // assert.isFalse(isOwner4)
+    // Not enough ownership
+    const isOwner5 = await client._ownsAssetOnChain({ accountAddress, wyAsset: { ...wyAssetFT, quantity: MAX_UINT_256 }, schemaName })
+    assert.isFalse(isOwner5)
+
+    // Non-ownership
+    const isOwner4 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset: wyAssetFT, schemaName })
+    assert.isFalse(isOwner4)
   })
 
   test("Correctly errors for invalid price parameters", async () => {
@@ -1285,7 +1295,7 @@ function testFeesMakerOrder(order: Order | UnhashedOrder, assetContract?: OpenSe
 
 function getAssetsAndQuantities(
     order: Order | UnsignedOrder | UnhashedOrder
-  ): Array<{ asset: Asset, quantity: number }> {
+  ): Array<{ asset: Asset, quantity: BigNumber }> {
 
   const wyAssets = order.metadata.bundle
     ? order.metadata.bundle.assets
@@ -1303,7 +1313,7 @@ function getAssetsAndQuantities(
     if ('quantity' in wyAsset) {
       return { asset, quantity: wyAsset.quantity }
     } else {
-      return { asset, quantity: 1 }
+      return { asset, quantity: new BigNumber(1) }
     }
   })
 }

@@ -3,8 +3,8 @@ import { WyvernProtocol } from 'wyvern-js'
 import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
-import * as WyvernSchemas from 'wyvern-schemas/dist-tsc'
-import { Schema, AnnotatedFunctionABI, FunctionInputKind, StateMutability } from 'wyvern-schemas/dist-tsc/types'
+import * as WyvernSchemas from 'wyvern-schemas'
+import { Schema, AnnotatedFunctionABI, FunctionInputKind, StateMutability } from 'wyvern-schemas/dist/types'
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
 import { HowToCall } from 'wyvern-js/lib/types'
 import { ERC1155 } from './contracts'
@@ -116,6 +116,8 @@ export async function promisifyCall<T>(
     // Probably method not found, and web3 is a Parity node
     if (onError) {
       onError(error)
+    } else {
+      console.error(error)
     }
     return undefined
   }
@@ -638,7 +640,7 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
 export function getWyvernAsset(
     schema: Schema<WyvernAsset>,
     asset: Asset,
-    quantity = 1
+    quantity = new BigNumber(1)
   ) {
   if (SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE[schema.name as WyvernSchemaName] == AssetContractType.NonFungible) {
     return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset)
@@ -675,7 +677,7 @@ export function getWyvernNFTAsset(
 export function getWyvernFTAsset(
     schema: Schema<WyvernFTAsset>,
     asset: Asset,
-    quantity: number
+    quantity: BigNumber
   ): WyvernFTAsset {
 
   const tokenId = asset.tokenId != null

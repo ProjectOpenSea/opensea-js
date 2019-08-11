@@ -1,5 +1,5 @@
 import * as Web3 from 'web3';
-import { Schema } from 'wyvern-schemas/dist-tsc/types';
+import { Schema } from 'wyvern-schemas/dist/types';
 import { OpenSeaAPI } from './api';
 import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types';
 import { BigNumber } from 'bignumber.js';
@@ -336,7 +336,7 @@ export declare class OpenSeaPort {
         asset: Asset;
         fromAddress: string;
         toAddress: string;
-        quantity?: number;
+        quantity?: number | BigNumber;
         didOwnerApprove?: boolean;
         schemaName?: WyvernSchemaName;
     }, retries?: number): Promise<boolean>;
@@ -366,7 +366,7 @@ export declare class OpenSeaPort {
      * @param fromAddress The owner's wallet address
      * @param toAddress The recipient's wallet address
      * @param asset The fungible or non-fungible asset to transfer
-     * @param quantity The amount of the asset to transfer, if it's fungible (optional)
+     * @param quantity The amount of the asset to transfer, if it's fungible (optional). In base unites, e.g. wei.
      * @param schemaName The Wyvern schema name corresponding to the asset type.
      * Defaults to "ERC721" (non-fungible) assets, but can be ERC1155, ERC20, and others.
      * @returns Transaction hash
@@ -375,7 +375,7 @@ export declare class OpenSeaPort {
         fromAddress: string;
         toAddress: string;
         asset: Asset;
-        quantity?: number;
+        quantity?: number | BigNumber;
         schemaName?: WyvernSchemaName;
     }): Promise<string>;
     /**
@@ -624,7 +624,7 @@ export declare class OpenSeaPort {
         proxyAddress?: string | null;
         wyAsset: WyvernAsset;
         schemaName: WyvernSchemaName;
-    }, retries?: number): Promise<boolean | undefined>;
+    }, retries?: number): Promise<boolean>;
     /**
      * Get the listing and expiration time paramters for a new order
      * @param expirationTimestamp Timestamp to expire the order, or 0 for non-expiring
