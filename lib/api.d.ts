@@ -69,10 +69,10 @@ export declare class OpenSeaAPI {
     /**
      * Fetch an asset from the API, throwing if none is found
      * @param tokenAddress Address of the asset's contract
-     * @param tokenId The asset's token ID
+     * @param tokenId The asset's token ID, or null if ERC-20
      * @param retries Number of times to retry if the service is unavailable for any reason
      */
-    getAsset(tokenAddress: string, tokenId: string | number, retries?: number): Promise<OpenSeaAsset>;
+    getAsset(tokenAddress: string, tokenId: string | number | null, retries?: number): Promise<OpenSeaAsset>;
     /**
      * Fetch list of assets from the API, returning the page of assets and the count of total assets
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported

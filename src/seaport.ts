@@ -1104,7 +1104,7 @@ export class OpenSeaPort {
    * @param fromAddress The owner's wallet address
    * @param toAddress The recipient's wallet address
    * @param asset The fungible or non-fungible asset to transfer
-   * @param quantity The amount of the asset to transfer, if it's fungible (optional). In base unites, e.g. wei.
+   * @param quantity The amount of the asset to transfer, if it's fungible (optional). In base units, e.g. wei.
    * @param schemaName The Wyvern schema name corresponding to the asset type.
    * Defaults to "ERC721" (non-fungible) assets, but can be ERC1155, ERC20, and others.
    * @returns Transaction hash

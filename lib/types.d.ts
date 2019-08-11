@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { Network, HowToCall, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
-import { Token } from 'wyvern-schemas/dist-tsc/types';
+import { Token } from 'wyvern-schemas/dist/types';
 export { Network, HowToCall, ECSignature };
 /**
  * Events emitted by the SDK. There are five types:
@@ -135,29 +135,16 @@ export declare enum WyvernAssetLocation {
     Proxy = "proxy",
     Other = "other"
 }
-export interface WyvernAsset {
-}
-export interface WyvernNFTAsset extends WyvernAsset {
+export interface WyvernNFTAsset {
     id: string;
     address: string;
 }
-export interface WyvernFTAsset extends WyvernAsset {
-    identifier: string;
+export interface WyvernFTAsset {
     id?: string;
     address: string;
-    quantity: number;
+    quantity: BigNumber;
 }
-export interface WyvernERC1155Asset extends WyvernNFTAsset {
-}
-export interface WyvernERC721Asset extends WyvernNFTAsset {
-}
-export interface WyvernERC20Asset extends WyvernFTAsset {
-}
-export interface WyvernENSNameAsset extends WyvernAsset {
-    nodeHash: string;
-    nameHash?: string;
-    name?: string;
-}
+export declare type WyvernAsset = WyvernNFTAsset | WyvernFTAsset;
 export interface WyvernBundle {
     assets: WyvernNFTAsset[];
     name?: string;
@@ -182,7 +169,8 @@ export interface OpenSeaAccount {
 export interface Asset {
     tokenId: string | null;
     tokenAddress: string;
-    nftVersion?: TokenStandardVersion;
+    version?: TokenStandardVersion;
+    name?: string;
 }
 /**
  * Annotated asset contract with OpenSea metadata
@@ -191,6 +179,7 @@ export interface OpenSeaAssetContract {
     name: string;
     address: string;
     type: AssetContractType;
+    schemaName: WyvernSchemaName;
     sellerFeeBasisPoints: number;
     buyerFeeBasisPoints: number;
     openseaSellerFeeBasisPoints: number;
@@ -297,10 +286,9 @@ export interface UnhashedOrder extends WyvernOrder {
     makerReferrerFee: BigNumber;
     waitingForBestCounterOrder: boolean;
     metadata: {
-        asset?: WyvernFTAsset | WyvernNFTAsset;
+        asset?: WyvernAsset;
         bundle?: WyvernBundle;
         schema: WyvernSchemaName;
-        quantity?: number;
     };
 }
 export interface UnsignedOrder extends UnhashedOrder {
