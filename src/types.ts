@@ -218,8 +218,8 @@ export interface Asset {
   tokenId: string | null,
   // The asset's contract address
   tokenAddress: string,
-  // The NFT version of this asset
-  nftVersion?: TokenStandardVersion,
+  // The token standard version of this asset
+  version?: TokenStandardVersion,
   // Optional for ENS names
   name?: string,
 }
@@ -234,6 +234,8 @@ export interface OpenSeaAssetContract {
   address: string
   // Type of token (fungible/NFT)
   type: AssetContractType
+  // Wyvern Schema Name for this contract
+  schemaName: WyvernSchemaName
 
   // Total fee levied on sellers by this contract, in basis points
   sellerFeeBasisPoints: number

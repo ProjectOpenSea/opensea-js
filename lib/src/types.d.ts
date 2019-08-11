@@ -169,7 +169,7 @@ export interface OpenSeaAccount {
 export interface Asset {
     tokenId: string | null;
     tokenAddress: string;
-    nftVersion?: TokenStandardVersion;
+    version?: TokenStandardVersion;
     name?: string;
 }
 /**
@@ -179,6 +179,7 @@ export interface OpenSeaAssetContract {
     name: string;
     address: string;
     type: AssetContractType;
+    schemaName: WyvernSchemaName;
     sellerFeeBasisPoints: number;
     buyerFeeBasisPoints: number;
     openseaSellerFeeBasisPoints: number;

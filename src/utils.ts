@@ -10,7 +10,7 @@ import { HowToCall } from 'wyvern-js/lib/types'
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernNFTAsset, OpenSeaAssetContract, WyvernFTAsset, OpenSeaFungibleToken, AssetContractType, WyvernSchemaName } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernNFTAsset, OpenSeaAssetContract, WyvernFTAsset, OpenSeaFungibleToken, AssetContractType, WyvernSchemaName } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -231,6 +231,7 @@ export const assetContractFromJSON = (asset_contract: any): OpenSeaAssetContract
     name: asset_contract.name,
     description: asset_contract.description,
     type: asset_contract.asset_contract_type,
+    schemaName: asset_contract.schema_name,
     address: asset_contract.address,
     tokenSymbol: asset_contract.symbol,
     buyerFeeBasisPoints: asset_contract.buyer_fee_basis_points,

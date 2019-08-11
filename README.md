@@ -9,32 +9,33 @@ A JavaScript library for crypto-native ecommerce: buying, selling, and bidding o
 
 Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](https://www.npmjs.com/package/opensea-js)
 
-- [Synopsis](#Synopsis)
-- [Installation](#Installation)
-- [Getting Started](#Getting-Started)
-  - [Making Offers](#Making-Offers)
-    - [Bidding on Multiple Assets](#Bidding-on-Multiple-Assets)
-  - [Making Auctions](#Making-Auctions)
-  - [Running Crowdsales](#Running-Crowdsales)
-  - [Fetching Orders](#Fetching-Orders)
-  - [Buying Items](#Buying-Items)
-  - [Accepting Offers](#Accepting-Offers)
-  - [Transferring Items or Coins (Gifting)](#Transferring-Items-or-Coins-Gifting)
-- [Affiliate Program](#Affiliate-Program)
-  - [Referring Listings](#Referring-Listings)
-  - [Custom Referral Bounties](#Custom-Referral-Bounties)
-- [Advanced](#Advanced)
-  - [Purchasing Items for Other Users](#Purchasing-Items-for-Other-Users)
-  - [Bulk Transfers](#Bulk-Transfers)
-  - [Creating Bundles](#Creating-Bundles)
-  - [Using ERC-20 Tokens Instead of Ether](#Using-ERC-20-Tokens-Instead-of-Ether)
-  - [Private Auctions](#Private-Auctions)
-  - [Airdrops and Email Whitelisting](#Airdrops-and-Email-Whitelisting)
-  - [Sharing Sale Fees with OpenSea](#Sharing-Sale-Fees-with-OpenSea)
-  - [Listening to Events](#Listening-to-Events)
-- [Learning More](#Learning-More)
-  - [Example Code](#Example-Code)
-- [Development Information](#Development-Information)
+- [Synopsis](#synopsis)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+  - [Making Offers](#making-offers)
+    - [Bidding on Multiple Assets](#bidding-on-multiple-assets)
+  - [Making Auctions](#making-auctions)
+  - [Running Crowdsales](#running-crowdsales)
+  - [Fetching Orders](#fetching-orders)
+  - [Buying Items](#buying-items)
+  - [Accepting Offers](#accepting-offers)
+  - [Transferring Items or Coins (Gifting)](#transferring-items-or-coins-gifting)
+- [Affiliate Program](#affiliate-program)
+  - [Referring Listings](#referring-listings)
+  - [Custom Referral Bounties](#custom-referral-bounties)
+- [Advanced](#advanced)
+  - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
+  - [Bulk Transfers](#bulk-transfers)
+  - [Creating Bundles](#creating-bundles)
+  - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
+  - [Private Auctions](#private-auctions)
+  - [Airdrops and Email Whitelisting](#airdrops-and-email-whitelisting)
+  - [Sharing Sale Fees with OpenSea](#sharing-sale-fees-with-opensea)
+  - [Listening to Events](#listening-to-events)
+- [Learning More](#learning-more)
+  - [Example Code](#example-code)
+- [Migrating to version 0.6](#migrating-to-version-06)
+- [Development Information](#development-information)
 
 ## Synopsis
 
@@ -569,6 +570,18 @@ If you need extra help, support is free! Contact the OpenSea devs. They're avail
 Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
 
 You can view a live demo [here](https://ships-log.herokuapp.com/)! Also check out the [Mythereum marketplace](https://mythereum.io/marketplace), which is entirely powered by OpenSea.js.
+
+## Migrating to version 0.6
+
+Version 0.6 introduces some major new features, including trading fungible and semi-fungible assets (including ERC-20 and ERC-1155 assets). These have been architected to maximize backwards compatibility, but there were a few breaking changes:
+
+- The `Asset` type now has `version` instead of `nftVersion` as a property
+- Similarly, the `NFTVersion` type has been renamed `TokenStandardVersion`
+- `computeFees` now takes in a single, annotated OpenSeaAsset as a parameter instead of a list of assets
+
+Non-breaking changes with deprecation notices:
+
+- Methods now show a deprecation warning when used with `tokenId` or `tokenAddress` as arguments, instead of using `asset` or `assets` (of type `Asset`/`Asset[]`)
 
 ## Development Information
 

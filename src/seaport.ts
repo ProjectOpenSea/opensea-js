@@ -1120,11 +1120,11 @@ export class OpenSeaPort {
     ): Promise<string> {
 
     const schema = this._getSchema(schemaName)
-    const nftVersion = asset.nftVersion || TokenStandardVersion.ERC721v3
+    const nftVersion = asset.version || TokenStandardVersion.ERC721v3
     const wyAsset = getWyvernAsset(schema, asset, quantity)
     const isCryptoKitties = wyAsset.address in [CK_ADDRESS, CK_RINKEBY_ADDRESS]
     // Since CK is common, infer isOldNFT from it in case user
-    // didn't pass in `nftVersion`
+    // didn't pass in `version`
     const isOldNFT = isCryptoKitties || [
       TokenStandardVersion.ERC721v1, TokenStandardVersion.ERC721v2
     ].includes(nftVersion)

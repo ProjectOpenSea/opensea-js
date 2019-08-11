@@ -616,7 +616,7 @@ export declare class OpenSeaPort {
      * Check if an account owns an asset on-chain
      * @param accountAddress Account address for the wallet
      * @param proxyAddress Proxy address for the account
-     * @param wyAsset asset to check
+     * @param wyAsset Asset to check. If fungible, the `quantity` attribute will be the minimum amount to own
      * @param schemaName WyvernSchemaName for the asset
      */
     _ownsAssetOnChain({ accountAddress, proxyAddress, wyAsset, schemaName }: {
