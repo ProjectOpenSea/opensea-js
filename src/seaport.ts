@@ -1735,14 +1735,14 @@ export class OpenSeaPort {
         const isCheezeWizards = String(asset.tokenAddress).toLowerCase() === String(CHEEZE_WIZARDS_GUILD_ADDRESS).toLowerCase() || String(asset.tokenAddress).toLowerCase() === String(CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS).toLowerCase()
         const isDecentralandEstate = String(asset.tokenAddress).toLowerCase() === String(DECENTRALAND_ESTATE_ADDRESS).toLowerCase()
         const isMainnet = (this._networkName === Network.Main)
-        /*
+
         if (isMainnet) {
             // While testing, we will use dummy values for mainnet. We will remove this if-statement once we have pushed the PR once and tested on Rinkeby
             return {
                 staticTarget: NULL_ADDRESS,
                 staticExtradata: '0x',
             }
-        } else {*/
+        } else {
             if (isCheezeWizards) {
                 const cheezeWizardsBasicTournamentAddress = (isMainnet) ? CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS : CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS
                 const cheezeWizardsBasicTournamentABI = this.web3.eth.contract(CheezeWizardsBasicTournament as any[])
@@ -1751,9 +1751,6 @@ export class OpenSeaPort {
                   to: cheezeWizardsBasicTournmentInstance.address,
                   data: cheezeWizardsBasicTournmentInstance.wizardFingerprint.getData(asset.tokenId)
                 })
-                console.log('wizardFingerprint is: ')
-                console.log(wizardFingerprint);
-                console.log('That was the wizardFingerprint');
                 return {
                     staticTarget: (isMainnet) ? STATIC_CALL_CHEEZE_WIZARDS_ADDRESS : STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
                     staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckCheezeWizards, 'succeedIfCurrentWizardFingerprintMatchesProvidedWizardFingerprint'), [asset.tokenId, wizardFingerprint, useTxnOriginStaticCall]),
@@ -1767,9 +1764,6 @@ export class OpenSeaPort {
                   to: decentralandEstateInstance.address,
                   data: decentralandEstateInstance.getFingerprint.getData(asset.tokenId)
                 })
-                console.log('estateFingerprint is: ')
-                console.log(estateFingerprint);
-                console.log('That was the estateFingerprint');
                 return {
                     staticTarget: STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS,
                     staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckDecentralandEstates, 'succeedIfCurrentEstateFingerprintMatchesProvidedEstateFingerprint'), [asset.tokenId, estateFingerprint, useTxnOriginStaticCall]),
@@ -1785,7 +1779,7 @@ export class OpenSeaPort {
                     staticExtradata: '0x',
                 }
             }
-        //}
+        }
   }
 
   public async _makeBundleBuyOrder(
@@ -2124,12 +2118,7 @@ export class OpenSeaPort {
         ? [order.metadata.asset]
         : []
     const tokenAddress = order.paymentToken
-    console.log('\n Schema \n');
-    console.log(schema);
-    console.log('\n wyAssets \n');
-    console.log(wyAssets);
-    console.log('\n accountAddress \n');
-    console.log(accountAddress);
+
     await this._approveAll({schema, wyAssets, accountAddress})
 
     // For fulfilling bids,

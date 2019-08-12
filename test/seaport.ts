@@ -641,13 +641,13 @@ suite('seaport', () => {
 
   test.only("Testnet CheezeWizards: Matches a private sell order, doesn't for wrong taker", async () => {
     // Testnet Cheezewizards
-    const accountAddress = '0xbF257f41a0982EA780eE37064347A6cBa11e7B81' // Testnet CheezeWizards token owner
+    const accountAddress = ALEX_ADDRESS//'0xbF257f41a0982EA780eE37064347A6cBa11e7B81' // Testnet CheezeWizards token owner
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 2
     const bountyPercent = 0
 
     // Testnet Cheezewizards
-    const tokenId = '2' // Testnet CheezeWizards TokenID
+    const tokenId = '3'//'2' // Testnet CheezeWizards TokenID
     const tokenAddress = '0x095731b672b76b00A0b5cb9D8258CD3F6E976cB2' // Testnet CheezeWizards Guild address
 
     const asset = await rinkebyClient.api.getAsset(tokenAddress, tokenId)
