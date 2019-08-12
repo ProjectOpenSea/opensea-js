@@ -143,13 +143,13 @@ suite('seaport', () => {
     // Ownership
     const wyAsset: WyvernFTAsset = {
       address: ENJIN_COIN_ADDRESS,
-      quantity: new BigNumber(1)
+      quantity: "1"
     }
     const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset, schemaName })
     assert.isTrue(isOwner)
 
     // Not enough ownership
-    const isOwner2 = await client._ownsAssetOnChain({ accountAddress, wyAsset: { ...wyAsset, quantity: MAX_UINT_256 }, schemaName })
+    const isOwner2 = await client._ownsAssetOnChain({ accountAddress, wyAsset: { ...wyAsset, quantity: MAX_UINT_256.toString() }, schemaName })
     assert.isFalse(isOwner2)
 
     // Non-ownership
@@ -177,13 +177,13 @@ suite('seaport', () => {
     const wyAssetFT: WyvernFTAsset = {
       id: AGE_OF_RUST_TOKEN_ID,
       address: ENJIN_ADDRESS,
-      quantity: new BigNumber(1)
+      quantity: "1"
     }
     const isOwner3 = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetFT, schemaName })
     assert.isTrue(isOwner3)
 
     // Not enough ownership
-    const isOwner5 = await client._ownsAssetOnChain({ accountAddress, wyAsset: { ...wyAssetFT, quantity: MAX_UINT_256 }, schemaName })
+    const isOwner5 = await client._ownsAssetOnChain({ accountAddress, wyAsset: { ...wyAssetFT, quantity: MAX_UINT_256.toString() }, schemaName })
     assert.isFalse(isOwner5)
 
     // Non-ownership
@@ -1308,7 +1308,7 @@ function getAssetsAndQuantities(
       tokenAddress: wyAsset.address
     }
     if ('quantity' in wyAsset) {
-      return { asset, quantity: wyAsset.quantity }
+      return { asset, quantity: new BigNumber(wyAsset.quantity) }
     } else {
       return { asset, quantity: new BigNumber(1) }
     }

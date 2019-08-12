@@ -142,7 +142,7 @@ export interface WyvernNFTAsset {
 export interface WyvernFTAsset {
     id?: string;
     address: string;
-    quantity: BigNumber;
+    quantity: string;
 }
 export declare type WyvernAsset = WyvernNFTAsset | WyvernFTAsset;
 export interface WyvernBundle {

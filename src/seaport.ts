@@ -214,8 +214,8 @@ export class OpenSeaPort {
    */
   public async createBundleBuyOrder(
       { tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName = WyvernSchemaName.ERC721 }:
-      { tokenIds: string[];
-        tokenAddresses: string[];
+      { tokenIds?: string[];
+        tokenAddresses?: string[];
         assets: Asset[];
         accountAddress: string;
         startAmount: number;
@@ -287,8 +287,8 @@ export class OpenSeaPort {
    */
   public async createBuyOrder(
       { tokenId, tokenAddress, asset, accountAddress, startAmount, quantity = 1, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName = WyvernSchemaName.ERC721 }:
-      { tokenId: string;
-        tokenAddress: string;
+      { tokenId?: string;
+        tokenAddress?: string;
         asset: Asset;
         accountAddress: string;
         startAmount: number;

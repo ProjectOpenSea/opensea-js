@@ -82,8 +82,8 @@ export declare class OpenSeaPort {
      * @param schemaName The Wyvern schema name corresponding to the asset type
      */
     createBundleBuyOrder({ tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, schemaName }: {
-        tokenIds: string[];
-        tokenAddresses: string[];
+        tokenIds?: string[];
+        tokenAddresses?: string[];
         assets: Asset[];
         accountAddress: string;
         startAmount: number;
@@ -109,8 +109,8 @@ export declare class OpenSeaPort {
      * @param schemaName The Wyvern schema name corresponding to the asset type
      */
     createBuyOrder({ tokenId, tokenAddress, asset, accountAddress, startAmount, quantity, expirationTime, paymentTokenAddress, sellOrder, schemaName }: {
-        tokenId: string;
-        tokenAddress: string;
+        tokenId?: string;
+        tokenAddress?: string;
         asset: Asset;
         accountAddress: string;
         startAmount: number;

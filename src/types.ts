@@ -178,7 +178,7 @@ export interface WyvernNFTAsset {
 export interface WyvernFTAsset {
   id?: string
   address: string
-  quantity: BigNumber
+  quantity: string
 }
 export type WyvernAsset = WyvernNFTAsset | WyvernFTAsset
 
