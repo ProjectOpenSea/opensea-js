@@ -13,7 +13,9 @@ import {
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName } from '../src/types'
-import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT } from '../src/utils'
+import * as WyvernSchemas from 'wyvern-schemas'
+import { StaticCheckTxOrigin, getMethod } from '../src/contracts'
+import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT, STATIC_CALL_TX_ORIGIN_ADDRESS } from '../src/utils'
 import ordersJSONFixture = require('./fixtures/orders.json')
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE } from './constants'
@@ -594,7 +596,57 @@ suite('seaport', () => {
     assert.fail()
   })
 
-  test("Mainnet Decentraland: Matches a private sell order, doesn't for wrong taker", async () => {
+  test.only("Mainnet StaticCall Tx.Origin: Matches a private sell order, doesn't for wrong taker", async () => {
+    const accountAddress = ALEX_ADDRESS
+    console.log(ALEX_ADDRESS)
+    const takerAddress = ALEX_ADDRESS_2
+    const amountInToken = 2
+    const bountyPercent = 0
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    assert.isNotNull(asset)
+    if (!asset) {
+      return
+    }
+
+    const order = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      accountAddress,
+      startAmount: amountInToken,
+      extraBountyBasisPoints: bountyPercent * 100,
+      buyerAddress: takerAddress,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false,
+      schemaName: WyvernSchemaName.ERC721
+    })
+    console.log(order);
+    order.staticTarget = STATIC_CALL_TX_ORIGIN_ADDRESS
+    order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'), [takerAddress])
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
+
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+    // Make sure no one else can take it
+    try {
+      await testMatchingNewOrder(order, DEVIN_ADDRESS)
+    } catch (e) {
+      // It works!
+      return
+    }
+    assert.fail()
+  })
+
+  test("Mainnet StaticCall Decentraland: Matches a private sell order, doesn't for wrong taker", async () => {
     // Mainnet Decentraland
     const accountAddress = '0xf293dfe0ac79c2536b9426957ac8898d6c743717' // Mainnet Decentraland Estate owner
     const takerAddress = ALEX_ADDRESS_2
@@ -625,7 +677,6 @@ suite('seaport', () => {
     assert.equal(order.expirationTime.toNumber(), 0)
     testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
-    console.log(order);
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
@@ -639,7 +690,7 @@ suite('seaport', () => {
     assert.fail()
   })
 
-  test.only("Testnet CheezeWizards: Matches a private sell order, doesn't for wrong taker", async () => {
+  test("Testnet StaticCall CheezeWizards: Matches a private sell order, doesn't for wrong taker", async () => {
     // Testnet Cheezewizards
     const accountAddress = ALEX_ADDRESS//'0xbF257f41a0982EA780eE37064347A6cBa11e7B81' // Testnet CheezeWizards token owner
     const takerAddress = ALEX_ADDRESS_2
@@ -670,7 +721,6 @@ suite('seaport', () => {
     assert.equal(order.expirationTime.toNumber(), 0)
     testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
-    console.log(order);
     await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
