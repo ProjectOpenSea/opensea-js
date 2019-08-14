@@ -551,7 +551,6 @@ suite('seaport', () => {
 
   test("Matches a private sell order, doesn't for wrong taker", async () => {
     const accountAddress = ALEX_ADDRESS
-    console.log(ALEX_ADDRESS)
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 2
     const bountyPercent = 0
@@ -596,9 +595,8 @@ suite('seaport', () => {
     assert.fail()
   })
 
-  test.only("Mainnet StaticCall Tx.Origin: Matches a private sell order, doesn't for wrong taker", async () => {
+  test("Mainnet StaticCall Tx.Origin", async () => {
     const accountAddress = ALEX_ADDRESS
-    console.log(ALEX_ADDRESS)
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 2
     const bountyPercent = 0
@@ -607,23 +605,19 @@ suite('seaport', () => {
     const tokenAddress = MYTHEREUM_ADDRESS
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
-    assert.isNotNull(asset)
-    if (!asset) {
-      return
-    }
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
       accountAddress,
       startAmount: amountInToken,
       extraBountyBasisPoints: bountyPercent * 100,
-      buyerAddress: takerAddress,
+      buyerAddress: NULL_ADDRESS,
       expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
       schemaName: WyvernSchemaName.ERC721
     })
-    console.log(order);
+
     order.staticTarget = STATIC_CALL_TX_ORIGIN_ADDRESS
     order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'), [takerAddress])
 
@@ -646,7 +640,7 @@ suite('seaport', () => {
     assert.fail()
   })
 
-  test("Mainnet StaticCall Decentraland: Matches a private sell order, doesn't for wrong taker", async () => {
+  test("Mainnet StaticCall Decentraland", async () => {
     // Mainnet Decentraland
     const accountAddress = '0xf293dfe0ac79c2536b9426957ac8898d6c743717' // Mainnet Decentraland Estate owner
     const takerAddress = ALEX_ADDRESS_2
@@ -664,7 +658,7 @@ suite('seaport', () => {
       accountAddress,
       startAmount: amountInToken,
       extraBountyBasisPoints: bountyPercent * 100,
-      buyerAddress: takerAddress,
+      buyerAddress: NULL_ADDRESS,
       expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
@@ -690,15 +684,15 @@ suite('seaport', () => {
     assert.fail()
   })
 
-  test("Testnet StaticCall CheezeWizards: Matches a private sell order, doesn't for wrong taker", async () => {
+  test("Testnet StaticCall CheezeWizards", async () => {
     // Testnet Cheezewizards
-    const accountAddress = ALEX_ADDRESS//'0xbF257f41a0982EA780eE37064347A6cBa11e7B81' // Testnet CheezeWizards token owner
+    const accountAddress = ALEX_ADDRESS // Testnet CheezeWizards token owner
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 2
     const bountyPercent = 0
 
     // Testnet Cheezewizards
-    const tokenId = '3'//'2' // Testnet CheezeWizards TokenID
+    const tokenId = '3' // Testnet CheezeWizards TokenID
     const tokenAddress = '0x095731b672b76b00A0b5cb9D8258CD3F6E976cB2' // Testnet CheezeWizards Guild address
 
     const asset = await rinkebyClient.api.getAsset(tokenAddress, tokenId)
@@ -708,7 +702,7 @@ suite('seaport', () => {
       accountAddress,
       startAmount: amountInToken,
       extraBountyBasisPoints: bountyPercent * 100,
-      buyerAddress: takerAddress,
+      buyerAddress: NULL_ADDRESS,
       expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,

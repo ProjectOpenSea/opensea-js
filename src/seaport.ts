@@ -1734,7 +1734,7 @@ export class OpenSeaPort {
     ): Promise<any> {
         const isCheezeWizards = String(asset.tokenAddress).toLowerCase() === String(CHEEZE_WIZARDS_GUILD_ADDRESS).toLowerCase() || String(asset.tokenAddress).toLowerCase() === String(CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS).toLowerCase()
         const isDecentralandEstate = String(asset.tokenAddress).toLowerCase() === String(DECENTRALAND_ESTATE_ADDRESS).toLowerCase()
-        const isMainnet = (this._networkName === Network.Main)
+        const isMainnet = this._networkName === Network.Main
 
         if (isMainnet) {
             // While testing, we will use dummy values for mainnet. We will remove this if-statement once we have pushed the PR once and tested on Rinkeby
