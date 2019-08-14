@@ -581,6 +581,7 @@ Version 0.6 introduces some major new features, including trading fungible and s
 - The `Asset` type now has `version` instead of `nftVersion` as a property
 - Similarly, the `NFTVersion` type has been renamed `TokenStandardVersion`
 - `computeFees` now takes in a single, annotated OpenSeaAsset as a parameter instead of a list of assets
+- In `isAssetTransferrable`, `didOwnerApprove` was renamed to `useProxy`
 
 Non-breaking changes with deprecation notices:
 

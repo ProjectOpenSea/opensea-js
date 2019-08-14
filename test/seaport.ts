@@ -597,7 +597,7 @@ suite('seaport', () => {
     }
   })
 
-  test("Computes per-transfer fees correctly", async () => {
+  test("Computes per-transfer fees correctly, Enjin and CK", async () => {
 
     const asset = await client.api.getAsset(ENJIN_ADDRESS, CATS_IN_MECHS_ID)
 
@@ -661,6 +661,104 @@ suite('seaport', () => {
       return
     }
     assert.fail()
+  })
+
+  test('Matches a new dutch sell order of a small amount of ERC-20 item for ETH', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+    const amountInEth = 0.012
+
+    const tokenId = null
+    const tokenAddress = wethAddress
+    const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
+
+    const order = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      quantity: Math.pow(10, 18) * 0.01,
+      accountAddress,
+      startAmount: amountInEth,
+      endAmount: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      extraBountyBasisPoints: 0,
+      buyerAddress: NULL_ADDRESS,
+      expirationTime, // one day from now,
+      waitForHighestBid: false,
+      schemaName: WyvernSchemaName.ERC20
+    })
+
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.expirationTime.toNumber(), expirationTime)
+
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches a new sell order of an 1155 item for ETH', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+    const amountInEth = 2
+
+    const tokenId = CATS_IN_MECHS_ID
+    const tokenAddress = ENJIN_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+
+    const order = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      quantity: 1,
+      accountAddress,
+      startAmount: amountInEth,
+      paymentTokenAddress: NULL_ADDRESS,
+      extraBountyBasisPoints: 0,
+      buyerAddress: NULL_ADDRESS,
+      expirationTime: 0,
+      waitForHighestBid: false,
+      schemaName: WyvernSchemaName.ERC1155
+    })
+
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFeesMakerOrder(order, asset.assetContract)
+
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test('Matches a buy order of an 1155 item for W-ETH', async () => {
+    const accountAddress = ALEX_ADDRESS_2
+    const takerAddress = ALEX_ADDRESS
+    const paymentToken = wethAddress
+    const amountInToken = 0.01
+
+    const tokenId = AGE_OF_RUST_TOKEN_ID
+    const tokenAddress = ENJIN_ADDRESS
+
+    const asset = await client.api.getAsset(tokenAddress, tokenId)
+
+    const order = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId },
+      quantity: 1,
+      accountAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress: paymentToken,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      schemaName: WyvernSchemaName.ERC1155
+    })
+
+    assert.equal(order.paymentToken, paymentToken)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFeesMakerOrder(order, asset.assetContract)
+
+    await client._buyOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
   })
 
   test('Matches a new bountied sell order for an ERC-20 token (MANA)', async () => {
@@ -889,7 +987,7 @@ suite('seaport', () => {
       },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
-      didOwnerApprove: true
+      useProxy: true
     })
     assert.isTrue(isTransferrable)
   })
@@ -913,6 +1011,7 @@ suite('seaport', () => {
         tokenId: null,
         tokenAddress: wethAddress
       },
+      quantity: Math.pow(10, 18) * 0.001,
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
       schemaName: WyvernSchemaName.ERC20
@@ -944,19 +1043,6 @@ suite('seaport', () => {
       schemaName: WyvernSchemaName.ERC1155
     })
     assert.isNotTrue(isTransferrable)
-  })
-
-  test('Enjin mainnet asset owned by fromAddress is transferrable', async () => {
-    const isTransferrable = await client.isAssetTransferrable({
-      asset: {
-        tokenId: CATS_IN_MECHS_ID,
-        tokenAddress: ENJIN_ADDRESS
-      },
-      fromAddress: ALEX_ADDRESS,
-      toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC1155
-    })
-    assert.isTrue(isTransferrable)
   })
 
   test('Rinkeby ERC-1155 asset owned by fromAddress is transferrable', async () => {
@@ -1305,7 +1391,8 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
       quantity,
       fromAddress: sell.maker,
       toAddress: buy.maker,
-      didOwnerApprove: true
+      useProxy: asset.tokenAddress == CK_ADDRESS,
+      schemaName: order.metadata.schema
     })
     assert.isTrue(isTransferrable)
   }))

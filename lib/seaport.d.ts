@@ -326,18 +326,18 @@ export declare class OpenSeaPort {
      * @param asset The asset to trade
      * @param fromAddress The account address that currently owns the asset
      * @param toAddress The account address that will be acquiring the asset
-     * @param didOwnerApprove If the owner and fromAddress has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
+     * @param useProxy Use the `fromAddress`'s proxy contract only if the `fromAddress` has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
      * @param schemaName The Wyvern schema name corresponding to the asset type
      * @param retries How many times to retry if false
      */
-    isAssetTransferrable({ tokenId, tokenAddress, asset, fromAddress, toAddress, quantity, didOwnerApprove, schemaName }: {
+    isAssetTransferrable({ tokenId, tokenAddress, asset, fromAddress, toAddress, quantity, useProxy, schemaName }: {
         tokenId?: string;
         tokenAddress?: string;
         asset: Asset;
         fromAddress: string;
         toAddress: string;
         quantity?: number | BigNumber;
-        didOwnerApprove?: boolean;
+        useProxy?: boolean;
         schemaName?: WyvernSchemaName;
     }, retries?: number): Promise<boolean>;
     /**
