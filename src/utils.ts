@@ -67,6 +67,7 @@ const SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE: {[key in WyvernSchemaName]: AssetContr
   [WyvernSchemaName.ERC1155]: AssetContractType.SemiFungible,
   [WyvernSchemaName.ERC20]: AssetContractType.Fungible,
   [WyvernSchemaName.LegacyEnjin]: AssetContractType.SemiFungible,
+  [WyvernSchemaName.ENSShortNameAuction]: AssetContractType.NonFungible,
 }
 
 // OTHER
@@ -652,8 +653,7 @@ export function getWyvernAsset(
 /**
  * Get the Wyvern representation of an NFT asset
  * @param schema The WyvernSchema needed to access this asset
- * @param tokenId The token's id
- * @param tokenAddress The address of the token's contract
+ * @param asset The asset
  */
 export function getWyvernNFTAsset(
     schema: Schema<WyvernNFTAsset>, asset: Asset

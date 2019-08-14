@@ -2200,6 +2200,7 @@ export class OpenSeaPort {
         case WyvernSchemaName.ERC721:
         case WyvernSchemaName.ERC1155:
         case WyvernSchemaName.LegacyEnjin:
+        case WyvernSchemaName.ENSShortNameAuction:
           // Handle NFTs
           const wyNFTAsset = wyAsset as WyvernNFTAsset
           return this.approveNonFungibleToken({
