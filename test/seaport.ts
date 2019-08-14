@@ -16,7 +16,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT, ENJIN_LEGACY_ADDRESS } from '../src/utils'
 import * as ordersJSONFixture from './fixtures/orders.json'
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, RANDOM_ADDRESS, AGE_OF_RUST_TOKEN_ID } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, RANDOM_ADDRESS, AGE_OF_RUST_TOKEN_ID, SANDBOX_RINKEBY_ID, SANDBOX_RINKEBY_ADDRESS } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 const englishSellOrderJSON = ordersJSON[0] as OrderJSON
@@ -946,15 +946,27 @@ suite('seaport', () => {
     assert.isNotTrue(isTransferrable)
   })
 
-  test('ERC-1155 asset owned by fromAddress is transferrable', async () => {
+  test('Enjin mainnet asset owned by fromAddress is transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
       asset: {
         tokenId: CATS_IN_MECHS_ID,
         tokenAddress: ENJIN_ADDRESS
       },
-      quantity: 1,
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
+      schemaName: WyvernSchemaName.ERC1155
+    })
+    assert.isTrue(isTransferrable)
+  })
+
+  test('Rinkeby ERC-1155 asset owned by fromAddress is transferrable', async () => {
+    const isTransferrable = await rinkebyClient.isAssetTransferrable({
+      asset: {
+        tokenAddress: SANDBOX_RINKEBY_ADDRESS,
+        tokenId: SANDBOX_RINKEBY_ID
+      },
+      fromAddress: "0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20",
+      toAddress: ALEX_ADDRESS,
       schemaName: WyvernSchemaName.ERC1155
     })
     assert.isTrue(isTransferrable)

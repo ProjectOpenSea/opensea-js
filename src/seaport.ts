@@ -1029,12 +1029,13 @@ export class OpenSeaPort {
       from = proxyAddress
     }
 
-    try {
+    const data = encodeTransferCall(abi, fromAddress, toAddress)
 
+    try {
       const gas = await estimateGas(this.web3, {
         from,
         to: abi.target,
-        data: encodeTransferCall(abi, fromAddress, toAddress)
+        data
       })
       return gas > 0
 
@@ -1120,14 +1121,13 @@ export class OpenSeaPort {
     ): Promise<string> {
 
     const schema = this._getSchema(schemaName)
-    const nftVersion = asset.version || TokenStandardVersion.ERC721v3
     const wyAsset = getWyvernAsset(schema, asset, new BigNumber(quantity))
     const isCryptoKitties = wyAsset.address in [CK_ADDRESS, CK_RINKEBY_ADDRESS]
     // Since CK is common, infer isOldNFT from it in case user
     // didn't pass in `version`
-    const isOldNFT = isCryptoKitties || [
+    const isOldNFT = isCryptoKitties || !!asset.version && [
       TokenStandardVersion.ERC721v1, TokenStandardVersion.ERC721v2
-    ].includes(nftVersion)
+    ].includes(asset.version)
 
     const abi = isOldNFT
       ? annotateERC721TransferABI(wyAsset as WyvernNFTAsset)
@@ -1136,10 +1136,11 @@ export class OpenSeaPort {
     this._dispatch(EventType.TransferOne, { accountAddress: fromAddress, toAddress, asset: wyAsset })
 
     const gasPrice = await this._computeGasPrice()
+    const data = encodeTransferCall(abi, fromAddress, toAddress)
     const txHash = await sendRawTransaction(this.web3, {
       from: fromAddress,
       to: abi.target,
-      data: encodeTransferCall(abi, fromAddress, toAddress),
+      data,
       gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress: fromAddress })
