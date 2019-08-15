@@ -2,7 +2,12 @@ import { OpenSeaPort } from './seaport'
 import { OpenSeaAPI } from './api'
 import { Network, EventData, EventType } from './types'
 import { orderToJSON, orderFromJSON } from './utils'
-import { encodeCall } from 'wyvern-schemas'
+export {
+  encodeCall,
+  encodeSell, encodeAtomicizedBuy, encodeAtomicizedSell,
+  encodeDefaultCall, encodeReplacementPattern,
+  AbiType
+} from 'wyvern-schemas'
 
 /**
  * Example setup:
@@ -25,7 +30,5 @@ export {
   // Types to help initialize SDK and listen to events.
   // Can also be imported using e.g.
   //   import { EventType } from 'opensea-js/lib/types'
-  EventData, EventType, Network,
-  // To help with encoding arbitrary calls
-  encodeCall
+  EventData, EventType, Network
 }

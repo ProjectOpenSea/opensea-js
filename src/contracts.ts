@@ -2,15 +2,23 @@ import { PartialReadonlyContractAbi } from './types'
 import { AbiType, MethodAbi, EventAbi } from 'web3'
 
 export const getMethod = (abi: PartialReadonlyContractAbi, name: string): MethodAbi => {
+  const methodAbi = abi.find(x => x.type == AbiType.Function && x.name == name)
+  if (!methodAbi) {
+    throw new Error(`ABI ${name} not found`)
+  }
   // Have to cast since there's a bug in
   // web3 types on the 'type' field
-  return abi.filter(x => x.type == AbiType.Function && x.name == name)[0] as MethodAbi
+  return methodAbi as MethodAbi
 }
 
 export const event = (abi: PartialReadonlyContractAbi, name: string): EventAbi => {
+  const eventAbi = abi.find(x => x.type == AbiType.Event && x.name == name)
+  if (!eventAbi) {
+    throw new Error(`ABI ${name} not found`)
+  }
   // Have to cast since there's a bug in
   // web3 types on the 'type' field
-  return abi.filter(x => x.type == AbiType.Event && x.name == name)[0] as EventAbi
+  return eventAbi as EventAbi
 }
 
 export const DECENTRALAND_AUCTION_CONFIG = {
