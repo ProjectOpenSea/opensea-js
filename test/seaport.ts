@@ -455,6 +455,8 @@ suite('seaport', () => {
     })
 
     testFeesMakerOrder(buyOrder, asset.assetContract)
+    assert.equal(sellOrder.taker, NULL_ADDRESS)
+    assert.equal(buyOrder.taker, sellOrder.maker)
     assert.equal(buyOrder.makerRelayerFee.toNumber(), sellOrder.makerRelayerFee.toNumber())
     assert.equal(buyOrder.takerRelayerFee.toNumber(), sellOrder.takerRelayerFee.toNumber())
     assert.equal(buyOrder.makerProtocolFee.toNumber(), sellOrder.makerProtocolFee.toNumber())
@@ -464,9 +466,9 @@ suite('seaport', () => {
     await client._sellOrderValidationAndApprovals({ order: sellOrder, accountAddress: takerAddress })
   })
 
-  test("Creates ENS name buy order", async () => {
-    const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
-    const buyOrder = await client._makeBuyOrder({
+  test.skip("Creates ENS name buy order", async () => {
+    const paymentTokenAddress = wethAddress
+    const buyOrder = await rinkebyClient._makeBuyOrder({
       asset: {
         tokenId: ENS_HELLO_TOKEN_ID,
         tokenAddress: ENS_RINKEBY_TOKEN_ADDRESS,
@@ -771,6 +773,7 @@ suite('seaport', () => {
       schemaName: WyvernSchemaName.ERC1155
     })
 
+    assert.equal(order.taker, NULL_ADDRESS)
     assert.equal(order.paymentToken, paymentToken)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
@@ -840,6 +843,7 @@ suite('seaport', () => {
       schemaName: WyvernSchemaName.ERC721
     })
 
+    assert.equal(order.taker, NULL_ADDRESS)
     assert.equal(order.paymentToken, paymentToken.address)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
@@ -1427,8 +1431,8 @@ function testFeesMakerOrder(order: Order | UnhashedOrder, assetContract?: OpenSe
   } else {
     assert.equal(order.feeRecipient, OPENSEA_FEE_RECIPIENT)
   }
-  if (order.taker != NULL_ADDRESS) {
-    // Private order
+  if (order.taker != NULL_ADDRESS && order.side == OrderSide.Sell) {
+    // Private sell order
     assert.equal(order.makerReferrerFee.toNumber(), 0)
     assert.equal(order.takerRelayerFee.toNumber(), 0)
     assert.equal(order.makerRelayerFee.toNumber(), 0)
