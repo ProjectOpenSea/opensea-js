@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "0.6.0-rc5",
+  "version": "0.6.0-rc6",
   "description": "JavaScript SDK for the OpenSea marketplace. Let users buy or sell crypto collectibles and other cryptogoods, all on your own site!",
   "files": [
     "lib",
