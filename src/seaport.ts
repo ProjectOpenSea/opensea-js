@@ -1583,9 +1583,11 @@ export class OpenSeaPort {
 
     let makerRelayerFee
     let takerRelayerFee
+    let taker
 
     if (sellOrder) {
-      // Use the sell order's fees to ensure compatiblity
+      // Use the sell order's fees to ensure compatiblity and force the order
+      // to only be acceptable by the sell order maker.
       // Swap maker/taker depending on whether it's an English auction (taker)
       // TODO add extraBountyBasisPoints when making bidder bounties
       makerRelayerFee = sellOrder.waitingForBestCounterOrder
@@ -1594,11 +1596,13 @@ export class OpenSeaPort {
       takerRelayerFee = sellOrder.waitingForBestCounterOrder
         ? makeBigNumber(sellOrder.takerRelayerFee)
         : makeBigNumber(sellOrder.makerRelayerFee)
+      taker = sellOrder.maker
     } else {
       const { totalBuyerFeeBPS,
               totalSellerFeeBPS } = await this.computeFees({ assets: [asset], extraBountyBasisPoints, side: OrderSide.Buy })
       makerRelayerFee = makeBigNumber(totalBuyerFeeBPS)
       takerRelayerFee = makeBigNumber(totalSellerFeeBPS)
+      taker = NULL_ADDRESS
     }
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
@@ -1609,7 +1613,7 @@ export class OpenSeaPort {
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
-      taker: NULL_ADDRESS,
+      taker,
       makerRelayerFee,
       takerRelayerFee,
       makerProtocolFee: makeBigNumber(0),

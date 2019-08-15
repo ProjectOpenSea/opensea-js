@@ -14,7 +14,7 @@ import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT } from '../src/utils'
-import ordersJSONFixture = require('./fixtures/orders.json')
+import * as ordersJSONFixture from './fixtures/orders.json'
 import { BigNumber } from 'bignumber.js'
 import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE } from './constants'
 
@@ -269,6 +269,7 @@ suite('seaport', () => {
       schemaName: WyvernSchemaName.ERC721
     })
 
+    assert.equal(order.taker, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     // Make sure there's gap time to expire it
@@ -371,6 +372,8 @@ suite('seaport', () => {
     })
 
     testFeesMakerOrder(buyOrder, asset.assetContract)
+    assert.equal(sellOrder.taker, NULL_ADDRESS)
+    assert.equal(buyOrder.taker, sellOrder.maker)
     assert.equal(buyOrder.makerRelayerFee.toNumber(), sellOrder.makerRelayerFee.toNumber())
     assert.equal(buyOrder.takerRelayerFee.toNumber(), sellOrder.takerRelayerFee.toNumber())
     assert.equal(buyOrder.makerProtocolFee.toNumber(), sellOrder.makerProtocolFee.toNumber())
@@ -666,6 +669,7 @@ suite('seaport', () => {
       schemaName: WyvernSchemaName.ERC721
     })
 
+    assert.equal(order.taker, NULL_ADDRESS)
     assert.equal(order.paymentToken, paymentToken.address)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
@@ -1167,8 +1171,8 @@ function testFeesMakerOrder(order: Order | UnhashedOrder, assetContract?: OpenSe
   } else {
     assert.equal(order.feeRecipient, OPENSEA_FEE_RECIPIENT)
   }
-  if (order.taker != NULL_ADDRESS) {
-    // Private order
+  if (order.taker != NULL_ADDRESS && order.side == OrderSide.Sell) {
+    // Private sell order
     assert.equal(order.makerReferrerFee.toNumber(), 0)
     assert.equal(order.takerRelayerFee.toNumber(), 0)
     assert.equal(order.makerRelayerFee.toNumber(), 0)
