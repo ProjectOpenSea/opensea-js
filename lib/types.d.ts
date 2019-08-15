@@ -35,7 +35,11 @@ export declare enum EventType {
     CreateOrder = "CreateOrder",
     OrderDenied = "OrderDenied",
     TransferAll = "TransferAll",
-    TransferOne = "TransferOne"
+    TransferOne = "TransferOne",
+    WrapAssets = "WrapAssets",
+    UnwrapAssets = "UnwrapAssets",
+    LiquidateAssets = "LiquidateAssets",
+    PurchaseAssets = "PurchaseAssets"
 }
 /**
  * Data that gets sent with each EventType

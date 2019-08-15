@@ -14,6 +14,9 @@ export declare class OpenSeaPort {
     private _wyvernProtocol;
     private _wyvernProtocolReadOnly;
     private _emitter;
+    private _wrappedNFTFactoryAddress;
+    private _wrappedNFTLiquidationProxyAddress;
+    private _uniswapFactoryAddress;
     /**
      * Your very own seaport.
      * Create a new instance of OpenSeaJS.
@@ -43,6 +46,72 @@ export declare class OpenSeaPort {
      * @param event Optional EventType to remove listeners for
      */
     removeAllListeners(event?: EventType): void;
+    /**
+     * Wraps an arbirary group of NFTs into their corresponding WrappedNFT ERC20 tokens.
+     * Emits the `WrapAssets` event when the transaction is prompted.
+     * @param param0 __namedParameters Object
+     * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
+     * @param accountAddress Address of the user's wallet
+     */
+    wrapAssets({ assets, accountAddress }: {
+        assets: Asset[];
+        accountAddress: string;
+    }): Promise<void>;
+    /**
+     * Unwraps an arbirary group of NFTs from their corresponding WrappedNFT ERC20 tokens back into ERC721 tokens.
+     * Emits the `UnwrapAssets` event when the transaction is prompted.
+     * @param param0 __namedParameters Object
+     * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
+     * @param destinationAddresses Addresses that each resulting ERC721 token will be sent to. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
+     * @param accountAddress Address of the user's wallet
+     */
+    unwrapAssets({ assets, destinationAddresses, accountAddress }: {
+        assets: Asset[];
+        destinationAddresses: string[];
+        accountAddress: string;
+    }): Promise<void>;
+    /**
+     * Liquidates an arbirary group of NFTs by atomically wrapping them into their
+     * corresponding WrappedNFT ERC20 tokens, and then immediately selling those
+     * ERC20 tokens on their corresponding Uniswap exchange.
+     * Emits the `LiquidateAssets` event when the transaction is prompted.
+     * @param param0 __namedParameters Object
+     * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
+     * @param accountAddress Address of the user's wallet
+     * @param uniswapSlippageAllowedInBasisPoints The amount of slippage that a user will tolerate in their Uniswap trade; if Uniswap cannot fulfill the order without more slippage, the whole function will revert.
+     */
+    liquidateAssets({ assets, accountAddress, uniswapSlippageAllowedInBasisPoints }: {
+        assets: Asset[];
+        accountAddress: string;
+        uniswapSlippageAllowedInBasisPoints: number;
+    }): Promise<void>;
+    /**
+     * Purchases a bundle of WrappedNFT tokens from Uniswap and then unwraps them into ERC721 tokens.
+     * Emits the `PurchaseAssets` event when the transaction is prompted.
+     * @param param0 __namedParameters Object
+     * @param numTokensToBuy The number of WrappedNFT tokens to purchase and unwrap
+     * @param amount The estimated cost in wei for tokens (probably some ratio above the minimum amount to avoid the transaction failing due to frontrunning, minimum amount is found by calling UniswapExchange(uniswapAddress).getEthToTokenOutputPrice(numTokensToBuy.mul(10**18));
+     * @param contractAddress Address of the corresponding NFT core contract for these NFTs.
+     * @param accountAddress Address of the user's wallet
+     */
+    purchaseAssets({ numTokensToBuy, amount, contractAddress, accountAddress }: {
+        numTokensToBuy: number;
+        amount: BigNumber;
+        contractAddress: string;
+        accountAddress: string;
+    }): Promise<void>;
+    /**
+     * Gets the estimated cost or payout of either buying or selling NFTs to Uniswap using either purchaseAssts() or liquidateAssets()
+     * @param param0 __namedParameters Object
+     * @param numTokens The number of WrappedNFT tokens to either purchase or sell
+     * @param isBuying A bool for whether the user is buying or selling
+     * @param contractAddress Address of the corresponding NFT core contract for these NFTs.
+     */
+    getQuoteFromUniswap({ numTokens, isBuying, contractAddress }: {
+        numTokens: number;
+        isBuying: boolean;
+        contractAddress: string;
+    }): Promise<number>;
     /**
      * Wrap ETH into W-ETH.
      * W-ETH is needed for placing buy orders (making offers).
