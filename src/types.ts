@@ -407,6 +407,7 @@ export interface UnhashedOrder extends WyvernOrder {
   side: OrderSide
   saleKind: SaleKind
   howToCall: HowToCall
+  quantity: BigNumber
 
   // OpenSea-specific
   makerReferrerFee: BigNumber

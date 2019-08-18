@@ -281,6 +281,7 @@ export const orderFromJSON = (order: any): Order => {
     cancelledOrFinalized: order.cancelled || order.finalized,
     markedInvalid: order.marked_invalid,
     metadata: order.metadata,
+    quantity: new BigNumber(order.quantity),
     exchange: order.exchange,
     makerAccount: order.maker,
     takerAccount: order.maker,

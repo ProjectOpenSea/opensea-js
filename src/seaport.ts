@@ -569,7 +569,7 @@ export class OpenSeaPort {
 
   /**
    * Create a sell order to auction an asset.
-   * Will throw a 'You do not own this asset' error if the maker doesn't have the asset.
+   * Will throw a 'You do not own enough of this asset' error if the maker doesn't have the asset or not enough of it to sell the specific `quantity`.
    * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
    * @param param0 __namedParameters Object
    * @param tokenId DEPRECATED: Token ID. Use `asset` instead.
@@ -2423,7 +2423,7 @@ export class OpenSeaPort {
         isOwner = true
       }
       if (!isOwner) {
-        throw new Error('You do not own this asset.')
+        throw new Error('You do not own enough of this asset.')
       }
       switch (schemaName) {
         case WyvernSchemaName.ERC721:
