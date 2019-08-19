@@ -912,7 +912,7 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   }
 }
 
-async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string, counterOrderListingTime?: number) {
+export async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string, counterOrderListingTime?: number) {
   const order = {
     ...unhashedOrder,
     hash: getOrderHash(unhashedOrder)

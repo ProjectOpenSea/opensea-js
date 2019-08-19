@@ -4,7 +4,7 @@ import * as WyvernSchemas from 'wyvern-schemas'
 import { Schema } from 'wyvern-schemas/dist/types'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
-import { CanonicalWETH, ERC20, ERC721, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy, UniswapFactory, UniswapExchange, getMethod } from './contracts'
+import { CanonicalWETH, ERC20, ERC721, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy, UniswapFactory, UniswapExchange, StaticCheckTxOrigin, StaticCheckCheezeWizards, StaticCheckDecentralandEstates, CheezeWizardsBasicTournament, DecentralandEstates, getMethod } from './contracts'
 import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, OpenSeaFungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, WyvernNFTAsset, WyvernFTAsset, TokenStandardVersion } from './types'
 import {
   confirmTransaction,
@@ -44,6 +44,16 @@ import {
   UNISWAP_FACTORY_ADDRESS_MAINNET,
   UNISWAP_FACTORY_ADDRESS_RINKEBY,
   DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS,
+  CHEEZE_WIZARDS_GUILD_ADDRESS,
+  CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS,
+  CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS,
+  CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS,
+  DECENTRALAND_ESTATE_ADDRESS,
+  STATIC_CALL_TX_ORIGIN_ADDRESS,
+  STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS,
+  STATIC_CALL_CHEEZE_WIZARDS_ADDRESS,
+  STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
+  STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -504,7 +514,7 @@ export class OpenSeaPort {
    * @param asset The asset to trade
    * @param accountAddress Address of the maker's wallet
    * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
-   * @param quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1.
+   * @param quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
    * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
    * @param sellOrder Optional sell order (like an English auction) to ensure fee compatibility
@@ -578,7 +588,7 @@ export class OpenSeaPort {
    * @param accountAddress Address of the maker's wallet
    * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-   * @param quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1.
+   * @param quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
@@ -1217,6 +1227,7 @@ export class OpenSeaPort {
    * @param asset The asset to trade
    * @param fromAddress The account address that currently owns the asset
    * @param toAddress The account address that will be acquiring the asset
+   * @param quantity The amount of the asset to transfer, if it's fungible (optional). In units (not base units), e.g. not wei.
    * @param useProxy Use the `fromAddress`'s proxy contract only if the `fromAddress` has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
    * @param schemaName The Wyvern schema name corresponding to the asset type
    * @param retries How many times to retry if false
@@ -1241,7 +1252,8 @@ export class OpenSeaPort {
     }
 
     const schema = this._getSchema(schemaName)
-    const wyAsset = getWyvernAsset(schema, asset, new BigNumber(quantity))
+    const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
+    const wyAsset = getWyvernAsset(schema, asset, quantityBN)
     const abi = schema.functions.transfer(wyAsset)
 
     let from = fromAddress
@@ -1330,7 +1342,7 @@ export class OpenSeaPort {
    * @param fromAddress The owner's wallet address
    * @param toAddress The recipient's wallet address
    * @param asset The fungible or non-fungible asset to transfer
-   * @param quantity The amount of the asset to transfer, if it's fungible (optional). In base units, e.g. wei.
+   * @param quantity The amount of the asset to transfer, if it's fungible (optional). In units (not base units), e.g. not wei.
    * @param schemaName The Wyvern schema name corresponding to the asset type.
    * Defaults to "ERC721" (non-fungible) assets, but can be ERC1155, ERC20, and others.
    * @returns Transaction hash
@@ -1346,7 +1358,8 @@ export class OpenSeaPort {
     ): Promise<string> {
 
     const schema = this._getSchema(schemaName)
-    const wyAsset = getWyvernAsset(schema, asset, new BigNumber(quantity))
+    const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
+    const wyAsset = getWyvernAsset(schema, asset, quantityBN)
     const isCryptoKitties = wyAsset.address in [CK_ADDRESS, CK_RINKEBY_ADDRESS]
     // Since CK is common, infer isOldNFT from it in case user
     // didn't pass in `version`
@@ -1500,22 +1513,20 @@ export class OpenSeaPort {
   /**
    * Compute the fees for an order
    * @param param0 __namedParameters
-   * @param assets Array of addresses and ids that will be in the order
+   * @param asset Addresses and id of asset (null if a bundle, unless all assets are from the same contract, then the first asset)
    * @param assetContract Optional prefetched asset contract (including fees) to use instead of assets
    * @param side The side of the order (buy or sell)
    * @param isPrivate Whether the order is private or not (known taker)
    * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
    */
   public async computeFees(
-      { assets, assetContract, side, isPrivate = false, extraBountyBasisPoints = 0 }:
-      { assets?: Asset[];
+      { asset, assetContract, side, isPrivate = false, extraBountyBasisPoints = 0 }:
+      { asset: OpenSeaAsset | null;
         assetContract?: OpenSeaAssetContract;
         side: OrderSide;
         isPrivate?: boolean;
         extraBountyBasisPoints?: number }
     ): Promise<OpenSeaFees> {
-
-    let asset: OpenSeaAsset | null = null
 
     let totalBuyerFeeBPS = DEFAULT_BUYER_FEE_BASIS_POINTS
     let totalSellerFeeBPS = DEFAULT_SELLER_FEE_BASIS_POINTS
@@ -1527,11 +1538,7 @@ export class OpenSeaPort {
     let transferFeeTokenAddress = null
     let maxTotalBountyBPS = DEFAULT_MAX_BOUNTY
 
-    // If all assets are for the same contract and it's a non-private sale, use its fees
-    const firstAsset = assets && assets[0]
-    if (firstAsset && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
-      const { tokenAddress, tokenId } = firstAsset
-      asset = await this.api.getAsset(tokenAddress, tokenId)
+    if (asset != null) {
       assetContract = asset.assetContract
     }
 
@@ -1839,6 +1846,8 @@ export class OpenSeaPort {
     let takerRelayerFee
     let taker
 
+    const openSeaAsset: OpenSeaAsset = await this.api.getAsset(asset.tokenAddress, asset.tokenId)
+
     if (sellOrder) {
       // Use the sell order's fees to ensure compatiblity and force the order
       // to only be acceptable by the sell order maker.
@@ -1853,7 +1862,7 @@ export class OpenSeaPort {
       taker = sellOrder.maker
     } else {
       const { totalBuyerFeeBPS,
-              totalSellerFeeBPS } = await this.computeFees({ assets: [asset], extraBountyBasisPoints, side: OrderSide.Buy })
+              totalSellerFeeBPS } = await this.computeFees({ asset: openSeaAsset, extraBountyBasisPoints, side: OrderSide.Buy })
       makerRelayerFee = makeBigNumber(totalBuyerFeeBPS)
       takerRelayerFee = makeBigNumber(totalSellerFeeBPS)
       taker = NULL_ADDRESS
@@ -1863,6 +1872,8 @@ export class OpenSeaPort {
 
     const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
+
+    const staticCallTargetAndExtraData = await this._getStaticCallTargetAndExtraData({asset: openSeaAsset, useTxnOriginStaticCall: false})
 
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
@@ -1883,8 +1894,8 @@ export class OpenSeaPort {
       howToCall: HowToCall.Call,
       calldata,
       replacementPattern,
-      staticTarget: NULL_ADDRESS,
-      staticExtradata: '0x',
+      staticTarget: staticCallTargetAndExtraData.staticTarget,
+      staticExtradata: staticCallTargetAndExtraData.staticExtradata,
       paymentToken: paymentTokenAddress,
       basePrice,
       extra,
@@ -1916,11 +1927,14 @@ export class OpenSeaPort {
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema(schemaName)
     const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
-    const wyAsset = getWyvernAsset(schema, asset, new BigNumber(quantity))
+    const wyAsset = getWyvernAsset(schema, asset, quantityBN)
     const isPrivate = buyerAddress != NULL_ADDRESS
+
+    const openSeaAsset = await this.api.getAsset(asset.tokenAddress, asset.tokenId)
+
     const { totalSellerFeeBPS,
             totalBuyerFeeBPS,
-            sellerBountyBPS } = await this.computeFees({ assets: [asset], side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+            sellerBountyBPS } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeSell(schema, wyAsset, accountAddress)
 
@@ -1944,6 +1958,8 @@ export class OpenSeaPort {
       ? makeBigNumber(totalSellerFeeBPS)
       : makeBigNumber(totalBuyerFeeBPS)
 
+    const staticCallTargetAndExtraData = await this._getStaticCallTargetAndExtraData({asset: openSeaAsset, useTxnOriginStaticCall: waitForHighestBid})
+
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
@@ -1963,8 +1979,8 @@ export class OpenSeaPort {
       howToCall: HowToCall.Call,
       calldata,
       replacementPattern,
-      staticTarget: NULL_ADDRESS,
-      staticExtradata: '0x',
+      staticTarget: staticCallTargetAndExtraData.staticTarget,
+      staticExtradata: staticCallTargetAndExtraData.staticExtradata,
       paymentToken: paymentTokenAddress,
       basePrice,
       extra,
@@ -1976,6 +1992,61 @@ export class OpenSeaPort {
         schema: schema.name as WyvernSchemaName,
       }
     }
+  }
+
+  public async _getStaticCallTargetAndExtraData(
+      { asset, useTxnOriginStaticCall }:
+      { asset: OpenSeaAsset;
+        useTxnOriginStaticCall: boolean; }
+    ): Promise<any> {
+        const isCheezeWizards = String(asset.tokenAddress).toLowerCase() === String(CHEEZE_WIZARDS_GUILD_ADDRESS).toLowerCase() || String(asset.tokenAddress).toLowerCase() === String(CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS).toLowerCase()
+        const isDecentralandEstate = String(asset.tokenAddress).toLowerCase() === String(DECENTRALAND_ESTATE_ADDRESS).toLowerCase()
+        const isMainnet = this._networkName === Network.Main
+
+        if (isMainnet) {
+            // While testing, we will use dummy values for mainnet. We will remove this if-statement once we have pushed the PR once and tested on Rinkeby
+            return {
+                staticTarget: NULL_ADDRESS,
+                staticExtradata: '0x',
+            }
+        } else {
+            if (isCheezeWizards) {
+                const cheezeWizardsBasicTournamentAddress = (isMainnet) ? CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS : CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS
+                const cheezeWizardsBasicTournamentABI = this.web3.eth.contract(CheezeWizardsBasicTournament as any[])
+                const cheezeWizardsBasicTournmentInstance = await cheezeWizardsBasicTournamentABI.at(cheezeWizardsBasicTournamentAddress)
+                const wizardFingerprint = await rawCall(this.web3, {
+                  to: cheezeWizardsBasicTournmentInstance.address,
+                  data: cheezeWizardsBasicTournmentInstance.wizardFingerprint.getData(asset.tokenId)
+                })
+                return {
+                    staticTarget: (isMainnet) ? STATIC_CALL_CHEEZE_WIZARDS_ADDRESS : STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
+                    staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckCheezeWizards, 'succeedIfCurrentWizardFingerprintMatchesProvidedWizardFingerprint'), [asset.tokenId, wizardFingerprint, useTxnOriginStaticCall]),
+                }
+            // We stated that we will only use Decentraland estates static calls on mainnet, since Decentraland uses Ropstein
+            } else if (isDecentralandEstate && (isMainnet)) {
+                const decentralandEstateAddress = DECENTRALAND_ESTATE_ADDRESS
+                const decentralandEstateABI = this.web3.eth.contract(DecentralandEstates as any[])
+                const decentralandEstateInstance = await decentralandEstateABI.at(decentralandEstateAddress)
+                const estateFingerprint = await rawCall(this.web3, {
+                  to: decentralandEstateInstance.address,
+                  data: decentralandEstateInstance.getFingerprint.getData(asset.tokenId)
+                })
+                return {
+                    staticTarget: STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS,
+                    staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckDecentralandEstates, 'succeedIfCurrentEstateFingerprintMatchesProvidedEstateFingerprint'), [asset.tokenId, estateFingerprint, useTxnOriginStaticCall]),
+                }
+            } else if (useTxnOriginStaticCall) {
+                return {
+                    staticTarget: (isMainnet) ? STATIC_CALL_TX_ORIGIN_ADDRESS : STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS,
+                    staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesHardcodedAddress'), []),
+                }
+            } else {
+                return {
+                    staticTarget: NULL_ADDRESS,
+                    staticExtradata: '0x',
+                }
+            }
+        }
   }
 
   public async _makeBundleBuyOrder(
@@ -2008,8 +2079,14 @@ export class OpenSeaPort {
         ? makeBigNumber(sellOrder.takerRelayerFee)
         : makeBigNumber(sellOrder.makerRelayerFee)
     } else {
+      // If all assets are for the same contract and it's a non-private sale, use its fees
+      let asset: OpenSeaAsset | null = null
+      if (assets && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
+        const { tokenAddress, tokenId } = assets[0]
+        asset = await this.api.getAsset(tokenAddress, tokenId)
+      }
       const { totalBuyerFeeBPS,
-              totalSellerFeeBPS } = await this.computeFees({ assets, extraBountyBasisPoints, side: OrderSide.Buy })
+              totalSellerFeeBPS } = await this.computeFees({ asset, extraBountyBasisPoints, side: OrderSide.Buy })
       makerRelayerFee = makeBigNumber(totalBuyerFeeBPS)
       takerRelayerFee = makeBigNumber(totalSellerFeeBPS)
     }
@@ -2082,10 +2159,17 @@ export class OpenSeaPort {
     bundle.external_link = bundleExternalLink
 
     const isPrivate = buyerAddress != NULL_ADDRESS
+
+    // If all assets are for the same contract and it's a non-private sale, use its fees
+    let asset: OpenSeaAsset | null = null
+    if (assets && _.uniqBy(assets, a => a.tokenAddress).length == 1) {
+      const { tokenAddress, tokenId } = assets[0]
+      asset = await this.api.getAsset(tokenAddress, tokenId)
+    }
     const {
       totalSellerFeeBPS,
       totalBuyerFeeBPS,
-      sellerBountyBPS } = await this.computeFees({ assets, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+      sellerBountyBPS } = await this.computeFees({ asset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedSell(schema, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
     if (!calldata || !replacementPattern) {
