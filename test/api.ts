@@ -11,7 +11,8 @@ import {
 import { ORDERBOOK_VERSION } from '../src/api'
 import { Order, OrderSide, OrderJSON } from '../src/types'
 import { orderToJSON } from '../src'
-import { mainApi, rinkebyApi, apiToTest, ALEX_ADDRESS, CK_RINKEBY_TOKEN_ID, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE } from './constants'
+import { mainApi, rinkebyApi, apiToTest, ALEX_ADDRESS, CK_RINKEBY_TOKEN_ID, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE, MAINNET_API_KEY, CK_ADDRESS } from './constants'
+import { getOrderHash } from '../src/utils';
 
 suite('api', () => {
 
@@ -31,6 +32,40 @@ suite('api', () => {
     }
     assert.include(bundle.assets.map(a => a.assetContract.name), "CryptoKittiesRinkeby")
     assert.isNotEmpty(bundle.sellOrders)
+  })
+
+  test('Includes API key in token request', async () => {
+    const oldLogger = apiToTest.logger
+
+    const logPromise = new Promise((resolve, reject) => {
+      apiToTest.logger = log => {
+        try {
+          assert.include(log, `"X-API-KEY":"${MAINNET_API_KEY}"`)
+          resolve()
+        } catch (e) {
+          reject(e)
+        } finally {
+          apiToTest.logger = oldLogger
+        }
+      }
+      apiToTest.getPaymentTokens({ symbol: "MANA" })
+    })
+
+    await logPromise
+  })
+
+  test('An API asset\'s order has correct hash', async () => {
+    const asset = await mainApi.getAsset(CK_ADDRESS, 1)
+    assert.isNotNull(asset.orders)
+    if (!asset.orders) {
+      return
+    }
+    const order = asset.orders[0]
+    assert.isNotNull(order)
+    if (!order) {
+      return
+    }
+    assert.equal(order.hash, getOrderHash(order))
   })
 
   // Skip these tests, since many are redundant with other tests

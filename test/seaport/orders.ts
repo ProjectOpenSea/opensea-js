@@ -7,16 +7,15 @@ import { before } from 'mocha'
 import {
   suite,
   test,
-  skip,
 } from 'mocha-typescript'
 
-import { OpenSeaPort } from '../src/index'
+import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName, WyvernNFTAsset, WyvernFTAsset } from '../src/types'
-import { orderFromJSON, getOrderHash, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT, ENJIN_LEGACY_ADDRESS } from '../src/utils'
-import * as ordersJSONFixture from './fixtures/orders.json'
+import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName } from '../../src/types'
+import { orderFromJSON, getOrderHash, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_ADDRESS, INVERSE_BASIS_POINT } from '../../src/utils'
+import * as ordersJSONFixture from '../fixtures/orders.json'
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, RANDOM_ADDRESS, AGE_OF_RUST_TOKEN_ID, SANDBOX_RINKEBY_ID, SANDBOX_RINKEBY_ADDRESS, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, AGE_OF_RUST_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER } from '../constants'
 
 const ordersJSON = ordersJSONFixture as any
 const englishSellOrderJSON = ordersJSON[0] as OrderJSON
@@ -44,47 +43,11 @@ const assetsForBulkTransfer = assetsForBundleOrder
 let wethAddress: string
 let manaAddress: string
 
-suite('seaport', () => {
+suite('seaport: orders', () => {
 
   before(async () => {
     wethAddress = (await client.api.getPaymentTokens({ symbol: 'WETH'})).tokens[0].address
     manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0].address
-  })
-
-  test('Instance has public methods', () => {
-    assert.equal(typeof client.getCurrentPrice, 'function')
-    assert.equal(typeof client.wrapEth, 'function')
-  })
-
-  test('Instance exposes API methods', () => {
-    assert.equal(typeof client.api.getOrder, 'function')
-    assert.equal(typeof client.api.getOrders, 'function')
-    assert.equal(typeof client.api.postOrder, 'function')
-  })
-
-  test('Instance exposes some underscored methods', () => {
-    assert.equal(typeof client._initializeProxy, 'function')
-    assert.equal(typeof client._getProxy, 'function')
-  })
-
-  test('Includes API key in token request', async () => {
-    const oldLogger = client.api.logger
-
-    const logPromise = new Promise((resolve, reject) => {
-      client.api.logger = log => {
-        try {
-          assert.include(log, `"X-API-KEY":"${MAINNET_API_KEY}"`)
-          resolve()
-        } catch (e) {
-          reject(e)
-        } finally {
-          client.api.logger = oldLogger
-        }
-      }
-      client.api.getPaymentTokens({ symbol: "MANA" })
-    })
-
-    await logPromise
   })
 
   ordersJSON.map((orderJSON: OrderJSON, index: number) => {
@@ -102,94 +65,6 @@ suite('seaport', () => {
       const order = orderFromJSON(orderJSON)
       assert.equal(order.hash, getOrderHash(order))
     })
-  })
-
-  test("On-chain ownership throws for invalid assets", async () => {
-    const accountAddress = ALEX_ADDRESS
-    const schemaName = WyvernSchemaName.ERC721
-    const wyAssetRinkeby: WyvernNFTAsset = {
-      id: CK_RINKEBY_TOKEN_ID.toString(),
-      address: CK_RINKEBY_ADDRESS
-    }
-    try {
-      // Use mainnet client with rinkeby asset
-      const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetRinkeby, schemaName })
-      assert.fail()
-    } catch (error) {
-      assert.include(error.message, 'Unable to get current owner')
-    }
-  })
-
-  test("On-chain ownership correctly pulled for ERC721s", async () => {
-    const accountAddress = ALEX_ADDRESS
-    const schemaName = WyvernSchemaName.ERC721
-
-    // Ownership
-    const wyAsset: WyvernNFTAsset = {
-      id: MYTHEREUM_TOKEN_ID.toString(),
-      address: MYTHEREUM_ADDRESS
-    }
-    const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset, schemaName })
-    assert.isTrue(isOwner)
-
-    // Non-ownership
-    const isOwner2 = await client._ownsAssetOnChain({ accountAddress: ALEX_ADDRESS_2, wyAsset, schemaName })
-    assert.isFalse(isOwner2)
-  })
-
-  test("On-chain ownership correctly pulled for ERC20s", async () => {
-    const accountAddress = ALEX_ADDRESS
-    const schemaName = WyvernSchemaName.ERC20
-
-    // Ownership
-    const wyAsset: WyvernFTAsset = {
-      address: ENJIN_COIN_ADDRESS,
-      quantity: "1"
-    }
-    const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset, schemaName })
-    assert.isTrue(isOwner)
-
-    // Not enough ownership
-    const isOwner2 = await client._ownsAssetOnChain({ accountAddress, wyAsset: { ...wyAsset, quantity: MAX_UINT_256.toString() }, schemaName })
-    assert.isFalse(isOwner2)
-
-    // Non-ownership
-    const isOwner3 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset, schemaName })
-    assert.isFalse(isOwner3)
-  })
-
-  test("On-chain ownership correctly pulled for ERC1155s", async () => {
-    const accountAddress = ALEX_ADDRESS
-    const schemaName = WyvernSchemaName.ERC1155
-
-    // Ownership of NFT
-    const wyAssetNFT: WyvernNFTAsset = {
-      id: CATS_IN_MECHS_ID,
-      address: ENJIN_ADDRESS
-    }
-    const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetNFT, schemaName })
-    assert.isTrue(isOwner)
-
-    // Non-ownership
-    const isOwner2 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset: wyAssetNFT, schemaName })
-    assert.isFalse(isOwner2)
-
-    // Ownership of FT
-    const wyAssetFT: WyvernFTAsset = {
-      id: AGE_OF_RUST_TOKEN_ID,
-      address: ENJIN_ADDRESS,
-      quantity: "1"
-    }
-    const isOwner3 = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetFT, schemaName })
-    assert.isTrue(isOwner3)
-
-    // Not enough ownership
-    const isOwner5 = await client._ownsAssetOnChain({ accountAddress, wyAsset: { ...wyAssetFT, quantity: MAX_UINT_256.toString() }, schemaName })
-    assert.isFalse(isOwner5)
-
-    // Non-ownership
-    const isOwner4 = await client._ownsAssetOnChain({ accountAddress: RANDOM_ADDRESS, wyAsset: wyAssetFT, schemaName })
-    assert.isFalse(isOwner4)
   })
 
   test("Correctly errors for invalid price parameters", async () => {
@@ -620,29 +495,6 @@ suite('seaport', () => {
     }
   })
 
-  test("Computes per-transfer fees correctly, Enjin and CK", async () => {
-
-    const asset = await client.api.getAsset(ENJIN_ADDRESS, CATS_IN_MECHS_ID)
-
-    const zeroTransferFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID)
-
-    const sellerFees = await client.computeFees({
-      assets: [asset],
-      side: OrderSide.Sell
-    })
-
-    const sellerZeroFees = await client.computeFees({
-      assets: [zeroTransferFeeAsset],
-      side: OrderSide.Sell
-    })
-
-    assert.equal(sellerZeroFees.transferFee.toString(), "0")
-    assert.isNull(sellerZeroFees.transferFeeTokenAddress)
-
-    assert.equal(sellerFees.transferFee.toString(), "1000000000000000000")
-    assert.equal(sellerFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS)
-  })
-
   test("Matches a private sell order, doesn't for wrong taker", async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
@@ -968,121 +820,6 @@ suite('seaport', () => {
     assert.isNotEmpty(all)
   })
 
-  test('ERC-721v3 asset locked in contract is not transferrable', async () => {
-    const isTransferrable = await client.isAssetTransferrable({
-      asset: {
-        tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
-        tokenAddress: GODS_UNCHAINED_ADDRESS,
-      },
-      fromAddress: ALEX_ADDRESS,
-      toAddress: ALEX_ADDRESS_2
-    })
-    assert.isNotTrue(isTransferrable)
-  })
-
-  test('ERC-721 v3 asset not owned by fromAddress is not transferrable', async () => {
-    const isTransferrable = await client.isAssetTransferrable({
-      asset: {
-        tokenId: "1",
-        tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
-      },
-      fromAddress: ALEX_ADDRESS,
-      toAddress: ALEX_ADDRESS_2
-    })
-    assert.isNotTrue(isTransferrable)
-  })
-
-  test('ERC-721 v3 asset owned by fromAddress is transferrable', async () => {
-    const isTransferrable = await client.isAssetTransferrable({
-      asset: {
-        tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
-        tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
-      },
-      fromAddress: ALEX_ADDRESS,
-      toAddress: ALEX_ADDRESS_2
-    })
-    assert.isTrue(isTransferrable)
-  })
-
-  test('ERC-721 v1 asset owned by fromAddress is transferrable', async () => {
-    const isTransferrable = await client.isAssetTransferrable({
-      asset: {
-        tokenId: CK_TOKEN_ID.toString(),
-        tokenAddress: CK_ADDRESS,
-      },
-      fromAddress: ALEX_ADDRESS,
-      toAddress: ALEX_ADDRESS_2,
-      useProxy: true
-    })
-    assert.isTrue(isTransferrable)
-  })
-
-  test('ERC-20 asset not owned by fromAddress is not transferrable', async () => {
-    const isTransferrable = await client.isAssetTransferrable({
-      asset: {
-        tokenId: null,
-        tokenAddress: wethAddress,
-      },
-      fromAddress: RANDOM_ADDRESS,
-      toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC20
-    })
-    assert.isNotTrue(isTransferrable)
-  })
-
-  test('ERC-20 asset owned by fromAddress is transferrable', async () => {
-    const isTransferrable = await client.isAssetTransferrable({
-      asset: {
-        tokenId: null,
-        tokenAddress: wethAddress
-      },
-      quantity: Math.pow(10, 18) * 0.001,
-      fromAddress: ALEX_ADDRESS,
-      toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC20
-    })
-    assert.isTrue(isTransferrable)
-  })
-
-  test('ERC-1155 asset locked in contract is not transferrable', async () => {
-    const isTransferrable2 = await client.isAssetTransferrable({
-      asset: {
-        tokenId: ENJIN_LEGACY_ADDRESS.toString(),
-        tokenAddress: CATS_IN_MECHS_ID,
-      },
-      fromAddress: ALEX_ADDRESS,
-      toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC1155
-    })
-    assert.isNotTrue(isTransferrable2)
-  })
-
-  test('ERC-1155 asset not owned by fromAddress is not transferrable', async () => {
-    const isTransferrable = await client.isAssetTransferrable({
-      asset: {
-        tokenId: CATS_IN_MECHS_ID,
-        tokenAddress: ENJIN_ADDRESS,
-      },
-      fromAddress: DEVIN_ADDRESS,
-      toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC1155
-    })
-    assert.isNotTrue(isTransferrable)
-  })
-
-  test('Rinkeby ERC-1155 asset owned by fromAddress is transferrable', async () => {
-    const isTransferrable = await rinkebyClient.isAssetTransferrable({
-      asset: {
-        tokenAddress: SANDBOX_RINKEBY_ADDRESS,
-        tokenId: SANDBOX_RINKEBY_ID
-      },
-      fromAddress: "0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20",
-      toAddress: ALEX_ADDRESS,
-      schemaName: WyvernSchemaName.ERC1155
-    })
-    assert.isTrue(isTransferrable)
-  })
-
   test('Matches a new bundle sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
@@ -1142,20 +879,6 @@ suite('seaport', () => {
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
-  })
-
-  test('An API asset\'s order has correct hash', async () => {
-    const asset = await client.api.getAsset(CK_ADDRESS, 1)
-    assert.isNotNull(asset.orders)
-    if (!asset.orders) {
-      return
-    }
-    const order = asset.orders[0]
-    assert.isNotNull(order)
-    if (!order) {
-      return
-    }
-    assert.equal(order.hash, getOrderHash(order))
   })
 
   test('orderToJSON computes correct current price for Dutch auctions', async () => {
@@ -1233,31 +956,6 @@ suite('seaport', () => {
       const orderHash = getOrderHash(matchingOrder)
       assert.equal(orderHash, matchingOrderHash)
     })
-  })
-
-  test('Uses a gas price above the mean', async () => {
-    const gasPrice = await client._computeGasPrice()
-    const meanGasPrice = await getCurrentGasPrice(client.web3)
-    assert.isAbove(meanGasPrice.toNumber(), 0)
-    assert.isAbove(gasPrice.toNumber(), meanGasPrice.toNumber())
-  })
-
-  test('Fetches proxy for an account', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const proxy = await client._getProxy(accountAddress)
-    assert.isNotNull(proxy)
-  })
-
-  test('Fetches positive token balance for an account', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const balance = await client.getTokenBalance({ accountAddress })
-    assert.isAbove(balance.toNumber(), 0)
-  })
-
-  test('Accounts have maximum token balance approved', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const approved = await client._getApprovedTokenCount({ accountAddress })
-    assert.equal(approved.toString(), MAX_UINT_256.toString())
   })
 
   test('Matches first buy order in book', async () => {
