@@ -1999,54 +1999,59 @@ export class OpenSeaPort {
       { asset: OpenSeaAsset;
         useTxnOriginStaticCall: boolean; }
     ): Promise<any> {
-        const isCheezeWizards = String(asset.tokenAddress).toLowerCase() === String(CHEEZE_WIZARDS_GUILD_ADDRESS).toLowerCase() || String(asset.tokenAddress).toLowerCase() === String(CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS).toLowerCase()
-        const isDecentralandEstate = String(asset.tokenAddress).toLowerCase() === String(DECENTRALAND_ESTATE_ADDRESS).toLowerCase()
-        const isMainnet = this._networkName === Network.Main
+    const isCheezeWizards = asset.tokenAddress.toLowerCase() === CHEEZE_WIZARDS_GUILD_ADDRESS.toLowerCase() ||
+      asset.tokenAddress.toLowerCase() === CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS.toLowerCase()
+    const isDecentralandEstate = asset.tokenAddress.toLowerCase() === DECENTRALAND_ESTATE_ADDRESS.toLowerCase()
+    const isMainnet = this._networkName === Network.Main
 
-        if (isMainnet) {
-            // While testing, we will use dummy values for mainnet. We will remove this if-statement once we have pushed the PR once and tested on Rinkeby
-            return {
-                staticTarget: NULL_ADDRESS,
-                staticExtradata: '0x',
-            }
-        } else {
-            if (isCheezeWizards) {
-                const cheezeWizardsBasicTournamentAddress = (isMainnet) ? CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS : CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS
-                const cheezeWizardsBasicTournamentABI = this.web3.eth.contract(CheezeWizardsBasicTournament as any[])
-                const cheezeWizardsBasicTournmentInstance = await cheezeWizardsBasicTournamentABI.at(cheezeWizardsBasicTournamentAddress)
-                const wizardFingerprint = await rawCall(this.web3, {
-                  to: cheezeWizardsBasicTournmentInstance.address,
-                  data: cheezeWizardsBasicTournmentInstance.wizardFingerprint.getData(asset.tokenId)
-                })
-                return {
-                    staticTarget: (isMainnet) ? STATIC_CALL_CHEEZE_WIZARDS_ADDRESS : STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
-                    staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckCheezeWizards, 'succeedIfCurrentWizardFingerprintMatchesProvidedWizardFingerprint'), [asset.tokenId, wizardFingerprint, useTxnOriginStaticCall]),
-                }
-            // We stated that we will only use Decentraland estates static calls on mainnet, since Decentraland uses Ropstein
-            } else if (isDecentralandEstate && (isMainnet)) {
-                const decentralandEstateAddress = DECENTRALAND_ESTATE_ADDRESS
-                const decentralandEstateABI = this.web3.eth.contract(DecentralandEstates as any[])
-                const decentralandEstateInstance = await decentralandEstateABI.at(decentralandEstateAddress)
-                const estateFingerprint = await rawCall(this.web3, {
-                  to: decentralandEstateInstance.address,
-                  data: decentralandEstateInstance.getFingerprint.getData(asset.tokenId)
-                })
-                return {
-                    staticTarget: STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS,
-                    staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckDecentralandEstates, 'succeedIfCurrentEstateFingerprintMatchesProvidedEstateFingerprint'), [asset.tokenId, estateFingerprint, useTxnOriginStaticCall]),
-                }
-            } else if (useTxnOriginStaticCall) {
-                return {
-                    staticTarget: (isMainnet) ? STATIC_CALL_TX_ORIGIN_ADDRESS : STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS,
-                    staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesHardcodedAddress'), []),
-                }
-            } else {
-                return {
-                    staticTarget: NULL_ADDRESS,
-                    staticExtradata: '0x',
-                }
-            }
+    if (isMainnet) {
+      // While testing, we will use dummy values for mainnet. We will remove this if-statement once we have pushed the PR once and tested on Rinkeby
+      return {
+        staticTarget: NULL_ADDRESS,
+        staticExtradata: '0x',
+      }
+    } else {
+      if (isCheezeWizards) {
+        const cheezeWizardsBasicTournamentAddress = isMainnet ? CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS : CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS
+        const cheezeWizardsBasicTournamentABI = this.web3.eth.contract(CheezeWizardsBasicTournament as any[])
+        const cheezeWizardsBasicTournmentInstance = await cheezeWizardsBasicTournamentABI.at(cheezeWizardsBasicTournamentAddress)
+        const wizardFingerprint = await rawCall(this.web3, {
+          to: cheezeWizardsBasicTournmentInstance.address,
+          data: cheezeWizardsBasicTournmentInstance.wizardFingerprint.getData(asset.tokenId)
+        })
+        return {
+          staticTarget: isMainnet
+            ? STATIC_CALL_CHEEZE_WIZARDS_ADDRESS
+            : STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
+          staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckCheezeWizards, 'succeedIfCurrentWizardFingerprintMatchesProvidedWizardFingerprint'), [asset.tokenId, wizardFingerprint, useTxnOriginStaticCall]),
         }
+      // We stated that we will only use Decentraland estates static calls on mainnet, since Decentraland uses Ropstein
+      } else if (isDecentralandEstate && isMainnet) {
+        const decentralandEstateAddress = DECENTRALAND_ESTATE_ADDRESS
+        const decentralandEstateABI = this.web3.eth.contract(DecentralandEstates as any[])
+        const decentralandEstateInstance = await decentralandEstateABI.at(decentralandEstateAddress)
+        const estateFingerprint = await rawCall(this.web3, {
+          to: decentralandEstateInstance.address,
+          data: decentralandEstateInstance.getFingerprint.getData(asset.tokenId)
+        })
+        return {
+          staticTarget: STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS,
+          staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckDecentralandEstates, 'succeedIfCurrentEstateFingerprintMatchesProvidedEstateFingerprint'), [asset.tokenId, estateFingerprint, useTxnOriginStaticCall]),
+        }
+      } else if (useTxnOriginStaticCall) {
+        return {
+          staticTarget: isMainnet
+            ? STATIC_CALL_TX_ORIGIN_ADDRESS
+            : STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS,
+          staticExtradata: WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesHardcodedAddress'), []),
+        }
+      } else {
+        return {
+          staticTarget: NULL_ADDRESS,
+          staticExtradata: '0x',
+        }
+      }
+    }
   }
 
   public async _makeBundleBuyOrder(

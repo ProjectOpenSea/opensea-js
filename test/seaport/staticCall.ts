@@ -12,12 +12,12 @@ import {
 
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, WyvernSchemaName } from '../../src/types'
-import { orderFromJSON, getOrderHash, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_ADDRESS, INVERSE_BASIS_POINT } from '../../src/utils'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, AGE_OF_RUST_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER } from '../constants'
+import { Network, WyvernSchemaName } from '../../src/types'
+import { NULL_ADDRESS, STATIC_CALL_TX_ORIGIN_ADDRESS } from '../../src/utils'
+import { ALEX_ADDRESS, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, MAINNET_API_KEY, RINKEBY_API_KEY } from '../constants'
 import { testFeesMakerOrder } from './fees'
-import { getMethod } from '../../src/contracts'
-import { testMatchingNewOrder } from './orders';
+import { getMethod, StaticCheckTxOrigin } from '../../src/contracts'
+import { testMatchingNewOrder } from './orders'
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 const rinkebyProvider = new Web3.providers.HttpProvider('https://rinkeby.infura.io')
@@ -32,7 +32,7 @@ const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
   apiKey: RINKEBY_API_KEY
 }, line => console.info(`RINKEBY: ${line}`))
 
-suite('seaport: orders', () => {
+suite.only('seaport: static calls', () => {
 
   test("Mainnet StaticCall Tx.Origin", async () => {
     const accountAddress = ALEX_ADDRESS
@@ -48,6 +48,7 @@ suite('seaport: orders', () => {
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
       accountAddress,
+      quantity: 1,
       startAmount: amountInToken,
       extraBountyBasisPoints: bountyPercent * 100,
       buyerAddress: NULL_ADDRESS,
@@ -95,6 +96,7 @@ suite('seaport: orders', () => {
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
       accountAddress,
+      quantity: 1,
       startAmount: amountInToken,
       extraBountyBasisPoints: bountyPercent * 100,
       buyerAddress: NULL_ADDRESS,
@@ -104,7 +106,7 @@ suite('seaport: orders', () => {
       schemaName: WyvernSchemaName.ERC721
     })
 
-     assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
@@ -139,6 +141,7 @@ suite('seaport: orders', () => {
     const order = await rinkebyClient._makeSellOrder({
       asset: { tokenAddress, tokenId },
       accountAddress,
+      quantity: 1,
       startAmount: amountInToken,
       extraBountyBasisPoints: bountyPercent * 100,
       buyerAddress: NULL_ADDRESS,

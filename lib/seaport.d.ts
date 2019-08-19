@@ -1,7 +1,7 @@
 import * as Web3 from 'web3';
 import { Schema } from 'wyvern-schemas/dist/types';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types';
+import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -171,7 +171,7 @@ export declare class OpenSeaPort {
      * @param asset The asset to trade
      * @param accountAddress Address of the maker's wallet
      * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
-     * @param quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1.
+     * @param quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
      * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
      * @param sellOrder Optional sell order (like an English auction) to ensure fee compatibility
@@ -200,7 +200,7 @@ export declare class OpenSeaPort {
      * @param accountAddress Address of the maker's wallet
      * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-     * @param quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1.
+     * @param quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
      * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
@@ -395,6 +395,7 @@ export declare class OpenSeaPort {
      * @param asset The asset to trade
      * @param fromAddress The account address that currently owns the asset
      * @param toAddress The account address that will be acquiring the asset
+     * @param quantity The amount of the asset to transfer, if it's fungible (optional). In units (not base units), e.g. not wei.
      * @param useProxy Use the `fromAddress`'s proxy contract only if the `fromAddress` has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
      * @param schemaName The Wyvern schema name corresponding to the asset type
      * @param retries How many times to retry if false
@@ -435,7 +436,7 @@ export declare class OpenSeaPort {
      * @param fromAddress The owner's wallet address
      * @param toAddress The recipient's wallet address
      * @param asset The fungible or non-fungible asset to transfer
-     * @param quantity The amount of the asset to transfer, if it's fungible (optional). In base units, e.g. wei.
+     * @param quantity The amount of the asset to transfer, if it's fungible (optional). In units (not base units), e.g. not wei.
      * @param schemaName The Wyvern schema name corresponding to the asset type.
      * Defaults to "ERC721" (non-fungible) assets, but can be ERC1155, ERC20, and others.
      * @returns Transaction hash
@@ -497,14 +498,14 @@ export declare class OpenSeaPort {
     /**
      * Compute the fees for an order
      * @param param0 __namedParameters
-     * @param assets Array of addresses and ids that will be in the order
+     * @param asset Addresses and id of asset (null if a bundle, unless all assets are from the same contract, then the first asset)
      * @param assetContract Optional prefetched asset contract (including fees) to use instead of assets
      * @param side The side of the order (buy or sell)
      * @param isPrivate Whether the order is private or not (known taker)
      * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
      */
-    computeFees({ assets, assetContract, side, isPrivate, extraBountyBasisPoints }: {
-        assets?: Asset[];
+    computeFees({ asset, assetContract, side, isPrivate, extraBountyBasisPoints }: {
+        asset: OpenSeaAsset | null;
         assetContract?: OpenSeaAssetContract;
         side: OrderSide;
         isPrivate?: boolean;
@@ -607,6 +608,10 @@ export declare class OpenSeaPort {
         buyerAddress: string;
         schemaName: WyvernSchemaName;
     }): Promise<UnhashedOrder>;
+    _getStaticCallTargetAndExtraData({ asset, useTxnOriginStaticCall }: {
+        asset: OpenSeaAsset;
+        useTxnOriginStaticCall: boolean;
+    }): Promise<any>;
     _makeBundleBuyOrder({ assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName }: {
         assets: Asset[];
         accountAddress: string;
