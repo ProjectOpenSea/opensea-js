@@ -2,12 +2,9 @@ import {
   assert,
 } from 'chai'
 
-import { before } from 'mocha'
-
 import {
   suite,
   test,
-  skip,
 } from 'mocha-typescript'
 
 import { OpenSeaPort } from '../../src/index'

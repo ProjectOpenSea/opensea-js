@@ -10,8 +10,8 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderSide, OpenSeaAssetContract, UnhashedOrder, Order } from '../../src/types'
-import { DEFAULT_SELLER_FEE_BASIS_POINTS,  DEFAULT_BUYER_FEE_BASIS_POINTS, getOrderHash, NULL_ADDRESS, OPENSEA_FEE_RECIPIENT, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_MAX_BOUNTY } from '../../src/utils'
-import { MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, CK_TOKEN_ID, MAINNET_API_KEY, ALEX_ADDRESS } from '../constants'
+import { DEFAULT_SELLER_FEE_BASIS_POINTS,  DEFAULT_BUYER_FEE_BASIS_POINTS, getOrderHash, NULL_ADDRESS, OPENSEA_FEE_RECIPIENT, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_MAX_BOUNTY, ENJIN_ADDRESS, ENJIN_COIN_ADDRESS } from '../../src/utils'
+import { MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, CK_TOKEN_ID, MAINNET_API_KEY, ALEX_ADDRESS, CATS_IN_MECHS_ID } from '../constants'
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
@@ -181,6 +181,29 @@ suite('seaport: fees', () => {
       const orderHash = getOrderHash(matchingOrder)
       assert.equal(orderHash, matchingOrderHash)
     })
+  })
+
+  test("Computes per-transfer fees correctly, Enjin and CK", async () => {
+
+    const asset = await client.api.getAsset(ENJIN_ADDRESS, CATS_IN_MECHS_ID)
+
+    const zeroTransferFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID)
+
+    const sellerFees = await client.computeFees({
+      assets: [asset],
+      side: OrderSide.Sell
+    })
+
+    const sellerZeroFees = await client.computeFees({
+      assets: [zeroTransferFeeAsset],
+      side: OrderSide.Sell
+    })
+
+    assert.equal(sellerZeroFees.transferFee.toString(), "0")
+    assert.isNull(sellerZeroFees.transferFeeTokenAddress)
+
+    assert.equal(sellerFees.transferFee.toString(), "1000000000000000000")
+    assert.equal(sellerFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS)
   })
 })
 

@@ -7,15 +7,13 @@ import { before } from 'mocha'
 import {
   suite,
   test,
-  skip,
 } from 'mocha-typescript'
 
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName, WyvernNFTAsset, WyvernFTAsset } from '../../src/types'
-import { orderFromJSON, getOrderHash, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT, ENJIN_LEGACY_ADDRESS } from '../../src/utils'
-import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, RANDOM_ADDRESS, AGE_OF_RUST_TOKEN_ID, SANDBOX_RINKEBY_ID, SANDBOX_RINKEBY_ADDRESS, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER } from '../constants'
+import { Network, WyvernSchemaName, WyvernNFTAsset, WyvernFTAsset } from '../../src/types'
+import { MAX_UINT_256, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, ENJIN_LEGACY_ADDRESS } from '../../src/utils'
+import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, RANDOM_ADDRESS, AGE_OF_RUST_TOKEN_ID, SANDBOX_RINKEBY_ID, SANDBOX_RINKEBY_ADDRESS } from '../constants'
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 const rinkebyProvider = new Web3.providers.HttpProvider('https://rinkeby.infura.io')
@@ -29,13 +27,6 @@ const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
   networkName: Network.Rinkeby,
   apiKey: RINKEBY_API_KEY
 }, line => console.info(`RINKEBY: ${line}`))
-
-const assetsForBundleOrder = [
-  { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
-  { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
-]
-
-const assetsForBulkTransfer = assetsForBundleOrder
 
 let wethAddress: string
 let manaAddress: string
@@ -248,28 +239,5 @@ suite('seaport: owners and transfers', () => {
       schemaName: WyvernSchemaName.ERC1155
     })
     assert.isTrue(isTransferrable)
-  })
-
-  test("Computes per-transfer fees correctly, Enjin and CK", async () => {
-
-    const asset = await client.api.getAsset(ENJIN_ADDRESS, CATS_IN_MECHS_ID)
-
-    const zeroTransferFeeAsset = await client.api.getAsset(CK_ADDRESS, CK_TOKEN_ID)
-
-    const sellerFees = await client.computeFees({
-      assets: [asset],
-      side: OrderSide.Sell
-    })
-
-    const sellerZeroFees = await client.computeFees({
-      assets: [zeroTransferFeeAsset],
-      side: OrderSide.Sell
-    })
-
-    assert.equal(sellerZeroFees.transferFee.toString(), "0")
-    assert.isNull(sellerZeroFees.transferFeeTokenAddress)
-
-    assert.equal(sellerFees.transferFee.toString(), "1000000000000000000")
-    assert.equal(sellerFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS)
   })
 })
