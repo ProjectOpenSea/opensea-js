@@ -57,7 +57,7 @@ suite('seaport: orders', () => {
       assert.instanceOf(order.basePrice, BigNumber)
       assert.typeOf(order.hash, "string")
       assert.typeOf(order.maker, "string")
-      // client._buyOrderValidationAndApprovals({order, accountAddress: order.maker})
+      assert.equal(+order.quantity, 1)
     })
   })
 
@@ -296,6 +296,7 @@ suite('seaport: orders', () => {
     testFeesMakerOrder(buy, buy.asset.assetContract)
 
     const sell = orderFromJSON(englishSellOrderJSON)
+    assert.equal(+sell.quantity, 1)
     assert.equal(sell.feeRecipient, NULL_ADDRESS)
     assert.equal(sell.paymentToken, paymentTokenAddress)
 

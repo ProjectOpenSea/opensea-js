@@ -281,7 +281,7 @@ export const orderFromJSON = (order: any): Order => {
     cancelledOrFinalized: order.cancelled || order.finalized,
     markedInvalid: order.marked_invalid,
     metadata: order.metadata,
-    quantity: new BigNumber(order.quantity),
+    quantity: new BigNumber(order.quantity || 1),
     exchange: order.exchange,
     makerAccount: order.maker,
     takerAccount: order.maker,
@@ -356,6 +356,7 @@ export const orderToJSON = (order: Order): OrderJSON => {
     staticTarget: order.staticTarget.toLowerCase(),
     staticExtradata: order.staticExtradata,
     paymentToken: order.paymentToken.toLowerCase(),
+    quantity: order.quantity.toString(),
     basePrice: order.basePrice.toString(),
     extra: order.extra.toString(),
     createdTime: order.createdTime

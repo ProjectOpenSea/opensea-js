@@ -470,6 +470,8 @@ export interface OrderJSON extends Partial<ECSignature> {
   staticTarget: string
   staticExtradata: string
   paymentToken: string
+
+  quantity: string
   basePrice: string
   extra: string
 
