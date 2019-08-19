@@ -8,7 +8,7 @@
   ],
   "main": "lib/index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/*.ts --require ts-node/register --timeout 15000",
+    "test": "./node_modules/.bin/mocha test/**/*.ts --require ts-node/register --timeout 15000",
     "lint": "tslint --project . 'src/**/*.ts' --fix",
     "build": "npm run lint && tsc",
     "docs": "npm run docsHtml",

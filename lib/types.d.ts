@@ -176,6 +176,7 @@ export interface Asset {
     tokenAddress: string;
     version?: TokenStandardVersion;
     name?: string;
+    decimals?: number;
 }
 /**
  * Annotated asset contract with OpenSea metadata
@@ -288,6 +289,7 @@ export interface UnhashedOrder extends WyvernOrder {
     side: OrderSide;
     saleKind: SaleKind;
     howToCall: HowToCall;
+    quantity: BigNumber;
     makerReferrerFee: BigNumber;
     waitingForBestCounterOrder: boolean;
     metadata: {

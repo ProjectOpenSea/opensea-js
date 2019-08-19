@@ -1832,7 +1832,8 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema(schemaName)
-    const wyAsset = getWyvernAsset(schema, asset, new BigNumber(quantity))
+    const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
+    const wyAsset = getWyvernAsset(schema, asset, quantityBN)
 
     let makerRelayerFee
     let takerRelayerFee
@@ -1867,6 +1868,7 @@ export class OpenSeaPort {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker,
+      quantity: quantityBN,
       makerRelayerFee,
       takerRelayerFee,
       makerProtocolFee: makeBigNumber(0),
@@ -1913,6 +1915,7 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const schema = this._getSchema(schemaName)
+    const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
     const wyAsset = getWyvernAsset(schema, asset, new BigNumber(quantity))
     const isPrivate = buyerAddress != NULL_ADDRESS
     const { totalSellerFeeBPS,
@@ -1925,7 +1928,7 @@ export class OpenSeaPort {
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
-    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
+    const { basePrice, extra,  } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
     const feeRecipient = waitForHighestBid
@@ -1945,6 +1948,7 @@ export class OpenSeaPort {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: buyerAddress,
+      quantity: quantityBN,
       makerRelayerFee,
       takerRelayerFee,
       makerProtocolFee: makeBigNumber(0),
@@ -2022,6 +2026,7 @@ export class OpenSeaPort {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: NULL_ADDRESS,
+      quantity: makeBigNumber(1),
       makerRelayerFee,
       takerRelayerFee,
       makerProtocolFee: makeBigNumber(0),
@@ -2102,6 +2107,7 @@ export class OpenSeaPort {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: buyerAddress,
+      quantity: makeBigNumber(1),
       makerRelayerFee: makeBigNumber(totalSellerFeeBPS),
       takerRelayerFee: makeBigNumber(totalBuyerFeeBPS),
       makerProtocolFee: makeBigNumber(0),
@@ -2176,6 +2182,7 @@ export class OpenSeaPort {
       exchange: order.exchange,
       maker: accountAddress,
       taker: order.maker,
+      quantity: order.quantity,
       makerRelayerFee: order.makerRelayerFee,
       takerRelayerFee: order.takerRelayerFee,
       makerProtocolFee: order.makerProtocolFee,

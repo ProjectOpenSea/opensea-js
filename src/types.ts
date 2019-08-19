@@ -229,6 +229,8 @@ export interface Asset {
   version?: TokenStandardVersion,
   // Optional for ENS names
   name?: string,
+  // Optional for fungible items
+  decimals?: number
 }
 
 /**

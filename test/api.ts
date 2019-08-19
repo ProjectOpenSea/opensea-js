@@ -11,8 +11,8 @@ import {
 import { ORDERBOOK_VERSION } from '../src/api'
 import { Order, OrderSide, OrderJSON } from '../src/types'
 import { orderToJSON } from '../src'
-import { mainApi, rinkebyApi, apiToTest, ALEX_ADDRESS, CK_RINKEBY_TOKEN_ID, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE, MAINNET_API_KEY, CK_ADDRESS } from './constants'
-import { getOrderHash } from '../src/utils';
+import { mainApi, rinkebyApi, apiToTest, ALEX_ADDRESS, CK_RINKEBY_TOKEN_ID, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE, RINKEBY_API_KEY, CK_ADDRESS } from './constants'
+import { getOrderHash } from '../src/utils'
 
 suite('api', () => {
 
@@ -35,20 +35,20 @@ suite('api', () => {
   })
 
   test('Includes API key in token request', async () => {
-    const oldLogger = apiToTest.logger
+    const oldLogger = rinkebyApi.logger
 
     const logPromise = new Promise((resolve, reject) => {
-      apiToTest.logger = log => {
+      rinkebyApi.logger = log => {
         try {
-          assert.include(log, `"X-API-KEY":"${MAINNET_API_KEY}"`)
+          assert.include(log, `"X-API-KEY":"${RINKEBY_API_KEY}"`)
           resolve()
         } catch (e) {
           reject(e)
         } finally {
-          apiToTest.logger = oldLogger
+          rinkebyApi.logger = oldLogger
         }
       }
-      apiToTest.getPaymentTokens({ symbol: "MANA" })
+      rinkebyApi.getPaymentTokens({ symbol: "WETH" })
     })
 
     await logPromise
