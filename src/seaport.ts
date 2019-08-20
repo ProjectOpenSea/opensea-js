@@ -1234,7 +1234,7 @@ export class OpenSeaPort {
    */
   public async isAssetTransferrable(
     { tokenId, tokenAddress, asset, fromAddress, toAddress,
-      quantity = 1, useProxy = false, schemaName = WyvernSchemaName.ERC721 }:
+      quantity, useProxy = false, schemaName = WyvernSchemaName.ERC721 }:
     { tokenId?: string;
       tokenAddress?: string;
       asset: Asset;
@@ -1252,7 +1252,9 @@ export class OpenSeaPort {
     }
 
     const schema = this._getSchema(schemaName)
-    const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
+    const quantityBN = quantity
+      ? WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
+      : makeBigNumber(1)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
     const abi = schema.functions.transfer(wyAsset)
 
