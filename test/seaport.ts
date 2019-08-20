@@ -595,7 +595,7 @@ suite('seaport', () => {
     assert.fail()
   })
 
-  test("Mainnet StaticCall Tx.Origin", async () => {
+  test.only("Mainnet StaticCall Tx.Origin", async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 2
@@ -630,14 +630,6 @@ suite('seaport', () => {
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
-    // Make sure no one else can take it
-    try {
-      await testMatchingNewOrder(order, DEVIN_ADDRESS)
-    } catch (e) {
-      // It works!
-      return
-    }
-    assert.fail()
   })
 
   test("Mainnet StaticCall Decentraland", async () => {
@@ -674,14 +666,6 @@ suite('seaport', () => {
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
-    // Make sure no one else can take it
-    try {
-      await testMatchingNewOrder(order, DEVIN_ADDRESS)
-    } catch (e) {
-      // It works!
-      return
-    }
-    assert.fail()
   })
 
   test("Testnet StaticCall CheezeWizards", async () => {
@@ -718,14 +702,6 @@ suite('seaport', () => {
     await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
-    // Make sure no one else can take it
-    try {
-      await testMatchingNewOrder(order, DEVIN_ADDRESS)
-    } catch (e) {
-      // It works!
-      return
-    }
-    assert.fail()
   })
 
   test('Matches a new bountied sell order for an ERC-20 token (MANA)', async () => {
