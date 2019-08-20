@@ -13,8 +13,8 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, WyvernSchemaName } from '../../src/types'
-import { NULL_ADDRESS, STATIC_CALL_TX_ORIGIN_ADDRESS } from '../../src/utils'
-import { ALEX_ADDRESS, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, MAINNET_API_KEY, RINKEBY_API_KEY } from '../constants'
+import { NULL_ADDRESS, STATIC_CALL_TX_ORIGIN_ADDRESS, CK_RINKEBY_ADDRESS, STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS } from '../../src/utils'
+import { ALEX_ADDRESS, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_TOKEN_ID } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { getMethod, StaticCheckTxOrigin } from '../../src/contracts'
 import { testMatchingNewOrder } from './orders'
@@ -32,20 +32,20 @@ const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
   apiKey: RINKEBY_API_KEY
 }, line => console.info(`RINKEBY: ${line}`))
 
-suite.only('seaport: static calls', () => {
+suite('seaport: static calls', () => {
 
-  test("Mainnet StaticCall Tx.Origin", async () => {
+  test.skip("Rinkeby StaticCall Tx.Origin", async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 2
     const bountyPercent = 0
 
-    const tokenId = MYTHEREUM_TOKEN_ID.toString()
-    const tokenAddress = MYTHEREUM_ADDRESS
+    const tokenId = CK_RINKEBY_TOKEN_ID.toString()
+    const tokenAddress = CK_RINKEBY_ADDRESS
 
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    const asset = await rinkebyClient.api.getAsset(tokenAddress, tokenId)
 
-    const order = await client._makeSellOrder({
+    const order = await rinkebyClient._makeSellOrder({
       asset: { tokenAddress, tokenId },
       accountAddress,
       quantity: 1,
@@ -58,16 +58,13 @@ suite.only('seaport: static calls', () => {
       schemaName: WyvernSchemaName.ERC721
     })
 
-    order.staticTarget = STATIC_CALL_TX_ORIGIN_ADDRESS
-    order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'), [takerAddress])
+    order.staticTarget = STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS
+    order.staticExtradata = WyvernSchemas.encodeCall(
+      getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'),
+      [takerAddress]
+    )
 
-    assert.equal(order.paymentToken, NULL_ADDRESS)
-    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
-    assert.equal(order.extra.toNumber(), 0)
-    assert.equal(order.expirationTime.toNumber(), 0)
-    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
-
-    await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
     // Make sure no one else can take it
@@ -80,16 +77,17 @@ suite.only('seaport: static calls', () => {
     assert.fail()
   })
 
-  test("Mainnet StaticCall Decentraland", async () => {
-    // Mainnet Decentraland
-    const accountAddress = '0xf293dfe0ac79c2536b9426957ac8898d6c743717' // Mainnet Decentraland Estate owner
+  test.skip("Mainnet StaticCall Decentraland", async () => {
+    // Mainnet Decentraland Estate owner
+    const accountAddress = '0xf293dfe0ac79c2536b9426957ac8898d6c743717'
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 2
     const bountyPercent = 0
 
-     // Mainnet Decentraland
-    const tokenId = '2898' // Mainnet DecentralandEstate TokenID
-    const tokenAddress = '0x959e104e1a4db6317fa58f8295f586e1a978c297' // Mainnet DecentralandEstates Contract
+    // Mainnet DecentralandEstate TokenID
+    const tokenId = '2898'
+     // Mainnet DecentralandEstates Contract
+    const tokenAddress = '0x959e104e1a4db6317fa58f8295f586e1a978c297'
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
 
@@ -125,7 +123,7 @@ suite.only('seaport: static calls', () => {
     assert.fail()
   })
 
-  test("Testnet StaticCall CheezeWizards", async () => {
+  test.skip("Testnet StaticCall CheezeWizards", async () => {
     // Testnet Cheezewizards
     const accountAddress = ALEX_ADDRESS // Testnet CheezeWizards token owner
     const takerAddress = ALEX_ADDRESS_2

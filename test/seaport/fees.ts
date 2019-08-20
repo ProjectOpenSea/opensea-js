@@ -20,7 +20,7 @@ const client = new OpenSeaPort(provider, {
   apiKey: MAINNET_API_KEY
 }, line => console.info(`MAINNET: ${line}`))
 
-suite.only('seaport: fees', () => {
+suite('seaport: fees', () => {
   test("Computes fees correctly for non-zero-fee asset", async () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
