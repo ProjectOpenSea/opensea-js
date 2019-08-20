@@ -611,7 +611,10 @@ export declare class OpenSeaPort {
     _getStaticCallTargetAndExtraData({ asset, useTxnOriginStaticCall }: {
         asset: OpenSeaAsset;
         useTxnOriginStaticCall: boolean;
-    }): Promise<any>;
+    }): Promise<{
+        staticTarget: string;
+        staticExtradata: string;
+    }>;
     _makeBundleBuyOrder({ assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName }: {
         assets: Asset[];
         accountAddress: string;

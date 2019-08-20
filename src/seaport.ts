@@ -2000,7 +2000,10 @@ export class OpenSeaPort {
       { asset, useTxnOriginStaticCall }:
       { asset: OpenSeaAsset;
         useTxnOriginStaticCall: boolean; }
-    ): Promise<any> {
+    ): Promise<{
+      staticTarget: string;
+      staticExtradata: string;
+    }> {
     const isCheezeWizards = asset.tokenAddress.toLowerCase() === CHEEZE_WIZARDS_GUILD_ADDRESS.toLowerCase() ||
       asset.tokenAddress.toLowerCase() === CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS.toLowerCase()
     const isDecentralandEstate = asset.tokenAddress.toLowerCase() === DECENTRALAND_ESTATE_ADDRESS.toLowerCase()
@@ -2903,7 +2906,7 @@ export class OpenSeaPort {
     this._emitter.emit(event, data)
   }
 
-  private async _confirmTransaction(transactionHash: string, event: EventType, description: string, testForSuccess?: () => Promise<boolean>): Promise<any> {
+  private async _confirmTransaction(transactionHash: string, event: EventType, description: string, testForSuccess?: () => Promise<boolean>): Promise<void> {
 
     const transactionEventData = { transactionHash, event }
     this.logger(`Transaction started: ${description}`)
@@ -2937,13 +2940,13 @@ export class OpenSeaPort {
     }
   }
 
-  private async _pollCallbackForConfirmation(event: EventType, description: string, testForSuccess: () => Promise<boolean>): Promise<any> {
+  private async _pollCallbackForConfirmation(event: EventType, description: string, testForSuccess: () => Promise<boolean>): Promise<void> {
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
 
       const initialRetries = 60
 
-      const testResolve: (r: number) => Promise<any> = async retries => {
+      const testResolve: (r: number) => Promise<void> = async retries => {
 
         const wasSuccessful = await testForSuccess()
         if (wasSuccessful) {
