@@ -1,6 +1,6 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
-import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetBundle, FungibleToken, OrderQuery, OpenSeaAssetQuery, OpenSeaAssetBundleQuery, FungibleTokenQuery} from './types'
+import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaFungibleToken, OrderQuery, OpenSeaAssetQuery, OpenSeaAssetBundleQuery, OpenSeaFungibleTokenQuery} from './types'
 import { orderFromJSON, assetFromJSON, assetBundleFromJSON, tokenFromJSON, delay } from './utils'
 
 export const ORDERBOOK_VERSION: number = 1
@@ -105,26 +105,31 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Get an order from the orderbook, returning `null` if none are found.
+   * Get an order from the orderbook, throwing if none is found.
    * @param query Query to use for getting orders. A subset of parameters
    *  on the `OrderJSON` type is supported
    */
-  public async getOrder(query: OrderQuery): Promise<Order | null> {
+  public async getOrder(query: OrderQuery): Promise<Order> {
 
     const response = await this.get(
-      `${ORDERBOOK_PATH}/orders`,
-      query
+      `${ORDERBOOK_PATH}/orders`, {
+        limit: 1,
+        ...query
+      }
     )
 
+    let orderJSON
     if (ORDERBOOK_VERSION == 0) {
       const json: OrderJSON[] = await response.json()
-      const orderJSON = json[0]
-      return orderJSON ? orderFromJSON(orderJSON) : null
+      orderJSON = json[0]
     } else {
       const json: OrderbookResponse = await response.json()
-      const orderJSON = json.orders[0]
-      return orderJSON ? orderFromJSON(orderJSON) : null
+      orderJSON = json.orders[0]
     }
+    if (!orderJSON) {
+      throw new Error(`Not found: no matching order found`)
+    }
+    return orderFromJSON(orderJSON)
   }
 
   /**
@@ -165,20 +170,20 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Fetch an asset from the API, return null if it isn't found
+   * Fetch an asset from the API, throwing if none is found
    * @param tokenAddress Address of the asset's contract
-   * @param tokenId The asset's token ID
+   * @param tokenId The asset's token ID, or null if ERC-20
    * @param retries Number of times to retry if the service is unavailable for any reason
    */
   public async getAsset(
       tokenAddress: string,
-      tokenId: string | number,
+      tokenId: string | number | null,
       retries = 1
-    ): Promise<OpenSeaAsset | null> {
+    ): Promise<OpenSeaAsset> {
 
     let response
     try {
-      response = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId}`)
+      response = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId || 0}`)
     } catch (error) {
       _throwOrContinue(error, retries)
       await delay(1000)
@@ -186,7 +191,7 @@ export class OpenSeaAPI {
     }
 
     const json: any = await response.json()
-    return json ? assetFromJSON(json) : null
+    return assetFromJSON(json)
   }
 
   /**
@@ -217,14 +222,14 @@ export class OpenSeaAPI {
    * Fetch list of fungible tokens from the API matching paramters
    * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
    * @param page Page number, defaults to 1. Can be overridden by
-   * `limit` and `offset` attributes from FungibleTokenQuery
+   * `limit` and `offset` attributes from OpenSeaFungibleTokenQuery
    * @param retries Number of times to retry if the service is unavailable for any reason
    */
-  public async getTokens(
-      query: FungibleTokenQuery = {},
+  public async getPaymentTokens(
+      query: OpenSeaFungibleTokenQuery = {},
       page = 1,
       retries = 1
-    ): Promise<{tokens: FungibleToken[]}> {
+    ): Promise<{tokens: OpenSeaFungibleToken[]}> {
 
     let response
     try {
@@ -236,7 +241,7 @@ export class OpenSeaAPI {
     } catch (error) {
       _throwOrContinue(error, retries)
       await delay(1000)
-      return this.getTokens(query, page, retries - 1)
+      return this.getPaymentTokens(query, page, retries - 1)
     }
 
     const json: any = await response.json()

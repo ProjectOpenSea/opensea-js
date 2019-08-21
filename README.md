@@ -5,35 +5,37 @@
 [![https://badges.frapsoft.com/os/mit/mit.svg?v=102](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://opensource.org/licenses/MIT)
 <!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
 
-A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 items. You don't have to deploy your own smart contracts or backend orderbooks.
+A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don't have to deploy your own smart contracts or backend orderbooks.
 
 Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](https://www.npmjs.com/package/opensea-js)
 
-- [Synopsis](#Synopsis)
-- [Installation](#Installation)
-- [Getting Started](#Getting-Started)
-  - [Making Offers](#Making-Offers)
-    - [Bidding on Multiple Assets](#Bidding-on-Multiple-Assets)
-  - [Making Auctions](#Making-Auctions)
-  - [Running Crowdsales](#Running-Crowdsales)
-  - [Fetching Orders](#Fetching-Orders)
-  - [Buying Items](#Buying-Items)
-  - [Accepting Offers](#Accepting-Offers)
-  - [Transferring Items or Coins (Gifting)](#Transferring-Items-or-Coins-Gifting)
-- [Affiliate Program](#Affiliate-Program)
-  - [Referring Listings](#Referring-Listings)
-  - [Custom Referral Bounties](#Custom-Referral-Bounties)
-- [Advanced](#Advanced)
-  - [Bulk Transfers](#Bulk-Transfers)
-  - [Creating Bundles](#Creating-Bundles)
-  - [Using ERC-20 Tokens Instead of Ether](#Using-ERC-20-Tokens-Instead-of-Ether)
-  - [Private Auctions](#Private-Auctions)
-  - [Airdrops and Email Whitelisting](#Airdrops-and-Email-Whitelisting)
-  - [Sharing Sale Fees with OpenSea](#Sharing-Sale-Fees-with-OpenSea)
-  - [Listening to Events](#Listening-to-Events)
-- [Learning More](#Learning-More)
-  - [Example Code](#Example-Code)
-- [Development Information](#Development-Information)
+- [Synopsis](#synopsis)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+  - [Making Offers](#making-offers)
+    - [Bidding on Multiple Assets](#bidding-on-multiple-assets)
+  - [Making Auctions](#making-auctions)
+  - [Running Crowdsales](#running-crowdsales)
+  - [Fetching Orders](#fetching-orders)
+  - [Buying Items](#buying-items)
+  - [Accepting Offers](#accepting-offers)
+  - [Transferring Items or Coins (Gifting)](#transferring-items-or-coins-gifting)
+- [Affiliate Program](#affiliate-program)
+  - [Referring Listings](#referring-listings)
+  - [Custom Referral Bounties](#custom-referral-bounties)
+- [Advanced](#advanced)
+  - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
+  - [Bulk Transfers](#bulk-transfers)
+  - [Creating Bundles](#creating-bundles)
+  - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
+  - [Private Auctions](#private-auctions)
+  - [Airdrops and Email Whitelisting](#airdrops-and-email-whitelisting)
+  - [Sharing Sale Fees with OpenSea](#sharing-sale-fees-with-opensea)
+  - [Listening to Events](#listening-to-events)
+- [Learning More](#learning-more)
+  - [Example Code](#example-code)
+- [Migrating to version 0.6](#migrating-to-version-06)
+- [Development Information](#development-information)
 
 ## Synopsis
 
@@ -279,16 +281,19 @@ const transactionHash = await seaport.transfer({
 })
 ```
 
-To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in a `FungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` to indicate how many:
+To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` in base units (e.g. wei) to indicate how many.
+
+Example for transfering 2 DAI ($2) to another address:
 
 ```JavaScript
-
+const paymentToken = (await seaport.api.getPaymentTokens({ symbol: 'DAI'}))[0]
+const quantity = new BigNumber(Math.pow(10, paymentToken.decimals)).times(2)
 const transactionHash = await seaport.transfer({
-  asset: { tokenAddress },
+  asset: { tokenAddress: paymentToken.address },
   fromAddress, // Must own the tokens
   toAddress,
   schemaName: "ERC20"
-  quantity: 2.6
+  quantity
 })
 ```
 
@@ -340,7 +345,22 @@ Developers can request to increase the OpenSea fee to allow for higher bounties 
 
 ## Advanced
 
-Interested in making bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+Interested in purchasing for users server-side or with a bot, making bundling items together, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+
+### Purchasing Items for Other Users
+
+You can buy and transfer an item to someone else in one step! Just pass the `recipientAddress` parameter:
+
+```JavaScript
+const order = await seaport.api.getOrder({ side: OrderSide.Sell, ... })
+await this.props.seaport.fulfillOrder({
+  order,
+  accountAddress, // The address of your wallet, which will sign the transaction
+  recipientAddress // The address of the recipient, i.e. the wallet you're purchasing on behalf of
+})
+```
+
+If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the *buyer* and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is a buy order ( `OrderSide.Buy`), the taker is the *seller* but the bid amount be sent to the `recipientAddress`.
 
 ### Bulk Transfers
 
@@ -384,8 +404,6 @@ Wait what, you can use other currencies than ETH?
 
 ### Using ERC-20 Tokens Instead of Ether
 
-**New in version 0.3:** now you can make auctions and offers in whatever ERC-20 token you want! Just specify the token's contract address as the `paymentTokenAddress` when creating the order.
-
 Here's an example of listing the Genesis CryptoKitty for $100! No more needing to worry about the exchange rate:
 
 ```JavaScript
@@ -402,10 +420,10 @@ const auction = await seaport.createSellOrder({
 })
 ```
 
-You can use `getFungibleTokens` to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:
+You can use `getPaymentTokens` to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:
 
 ```JavaScript
-const token = await seaport.getFungibleTokens({ symbol: 'MANA'})[0]
+const token = await seaport.api.getPaymentTokens({ symbol: 'MANA'})[0]
 
 const order = await seaport.api.getOrders({
   side: OrderSide.Sell,
@@ -413,10 +431,11 @@ const order = await seaport.api.getOrders({
 })
 ```
 
-**Fun note:** all ERC-20 tokens are allowed! This means you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea for the near future:
+**Fun note:** soon, all ERC-20 tokens will be allowed! This will mean you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea:
 
 * MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942 
 * DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
+* And tons more! See the "Currencies" list in the sidebar on https://opensea.io/assets for a full list, or contact us to add yours: [Discord](https://discord.gg/ga8EJbv)
 
 ### Private Auctions
 
@@ -554,6 +573,20 @@ If you need extra help, support is free! Contact the OpenSea devs. They're avail
 Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
 
 You can view a live demo [here](https://ships-log.herokuapp.com/)! Also check out the [Mythereum marketplace](https://mythereum.io/marketplace), which is entirely powered by OpenSea.js.
+
+## Migrating to version 0.6
+
+Version 0.6 introduces some major new features, including trading fungible and semi-fungible assets (including ERC-20 and ERC-1155 assets). These have been architected to maximize backwards compatibility, but there were a few breaking changes:
+
+- The `Asset` type now has `version` instead of `nftVersion` as a property
+- Similarly, the `NFTVersion` type has been renamed `TokenStandardVersion`
+- `computeFees` now takes in a single, annotated OpenSeaAsset as a parameter instead of a list of assets
+- In `isAssetTransferrable`, `didOwnerApprove` was renamed to `useProxy`
+
+Non-breaking changes with deprecation notices:
+
+- `getFungibleTokens` has been deprecated. Use `api.getPaymentTokens`
+- Methods now show a deprecation warning when used with `tokenId` or `tokenAddress` as arguments, instead of using `asset` or `assets` (of type `Asset`/`Asset[]`)
 
 ## Development Information
 

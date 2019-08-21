@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { Network, HowToCall, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
-import { FungibleToken } from 'wyvern-schemas';
-export { Network, HowToCall, ECSignature, FungibleToken };
+import { Token } from 'wyvern-schemas/dist/types';
+export { Network, HowToCall, ECSignature };
 /**
  * Events emitted by the SDK. There are five types:
  * 1. Transaction events, which tell you when a new transaction was
@@ -35,7 +35,11 @@ export declare enum EventType {
     CreateOrder = "CreateOrder",
     OrderDenied = "OrderDenied",
     TransferAll = "TransferAll",
-    TransferOne = "TransferOne"
+    TransferOne = "TransferOne",
+    WrapAssets = "WrapAssets",
+    UnwrapAssets = "UnwrapAssets",
+    LiquidateAssets = "LiquidateAssets",
+    PurchaseAssets = "PurchaseAssets"
 }
 /**
  * Data that gets sent with each EventType
@@ -94,11 +98,22 @@ export declare enum SaleKind {
     FixedPrice = 0,
     DutchAuction = 1
 }
+/**
+ * Types of asset contracts
+ * Given by the asset_contract_type in the OpenSea API
+ */
+export declare enum AssetContractType {
+    Fungible = "fungible",
+    SemiFungible = "semi-fungible",
+    NonFungible = "non-fungible",
+    Unknown = "unknown"
+}
 export declare enum WyvernSchemaName {
     ERC20 = "ERC20",
     ERC721 = "ERC721",
     ERC1155 = "ERC1155",
-    Enjin = "Enjin"
+    LegacyEnjin = "Enjin",
+    ENSShortNameAuction = "ENSShortNameAuction"
 }
 /**
  * The NFT version that this contract uses.
@@ -109,9 +124,12 @@ export declare enum WyvernSchemaName {
  *      `takeOwnership` instead
  * 3.0: The current OpenZeppelin standard:
  *      https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC721/ERC721.sol
+ * Special cases:
+ * locked: When the transfer function has been locked by the dev
  */
-export declare enum NFTVersion {
+export declare enum TokenStandardVersion {
     Unsupported = "unsupported",
+    Locked = "locked",
     Enjin = "1155-1.0",
     ERC721v1 = "1.0",
     ERC721v2 = "2.0",
@@ -122,26 +140,16 @@ export declare enum WyvernAssetLocation {
     Proxy = "proxy",
     Other = "other"
 }
-export interface WyvernAsset {
-}
-export interface WyvernNFTAsset extends WyvernAsset {
+export interface WyvernNFTAsset {
     id: string;
     address: string;
 }
-export interface WyvernFTAsset extends WyvernAsset {
+export interface WyvernFTAsset {
+    id?: string;
     address: string;
+    quantity: string;
 }
-export interface WyvernERC1155Asset extends WyvernNFTAsset {
-}
-export interface WyvernERC721Asset extends WyvernNFTAsset {
-}
-export interface WyvernERC20Asset extends WyvernFTAsset {
-}
-export interface WyvernENSNameAsset extends WyvernAsset {
-    nodeHash: string;
-    nameHash?: string;
-    name?: string;
-}
+export declare type WyvernAsset = WyvernNFTAsset | WyvernFTAsset;
 export interface WyvernBundle {
     assets: WyvernNFTAsset[];
     name?: string;
@@ -161,19 +169,23 @@ export interface OpenSeaAccount {
     };
 }
 /**
- * Simple OpenSea asset spec
+ * Simple, unannotated non-fungible asset spec
  */
 export interface Asset {
-    tokenId: string;
+    tokenId: string | null;
     tokenAddress: string;
-    nftVersion?: NFTVersion;
+    version?: TokenStandardVersion;
+    name?: string;
+    decimals?: number;
 }
 /**
- * OpenSea asset contract
+ * Annotated asset contract with OpenSea metadata
  */
 export interface OpenSeaAssetContract {
     name: string;
     address: string;
+    type: AssetContractType;
+    schemaName: WyvernSchemaName;
     sellerFeeBasisPoints: number;
     buyerFeeBasisPoints: number;
     openseaSellerFeeBasisPoints: number;
@@ -189,7 +201,7 @@ export interface OpenSeaAssetContract {
     wikiLink?: string;
 }
 /**
- * The OpenSea asset fetched by the API
+ * Annotated asset spec with OpenSea metadata
  */
 export interface OpenSeaAsset extends Asset {
     assetContract: OpenSeaAssetContract;
@@ -211,8 +223,16 @@ export interface OpenSeaAsset extends Asset {
     lastSale: object | null;
     backgroundColor: string | null;
     transferFee: BigNumber | string | null;
-    transferFeePaymentToken: FungibleToken | null;
+    transferFeePaymentToken: OpenSeaFungibleToken | null;
 }
+/**
+ * Full annotated Fungible Token spec with OpenSea metadata
+ */
+export interface OpenSeaFungibleToken extends Token {
+    imageUrl?: string;
+    ethPrice?: string;
+}
+export declare type FungibleToken = OpenSeaFungibleToken;
 /**
  * Bundles of assets, grouped together into one OpenSea order
  * URLs for bundles are auto-generated from the name
@@ -269,10 +289,11 @@ export interface UnhashedOrder extends WyvernOrder {
     side: OrderSide;
     saleKind: SaleKind;
     howToCall: HowToCall;
+    quantity: BigNumber;
     makerReferrerFee: BigNumber;
     waitingForBestCounterOrder: boolean;
     metadata: {
-        asset?: WyvernNFTAsset;
+        asset?: WyvernAsset;
         bundle?: WyvernBundle;
         schema: WyvernSchemaName;
     };
@@ -290,7 +311,7 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
     currentBounty?: BigNumber;
     makerAccount?: OpenSeaAccount;
     takerAccount?: OpenSeaAccount;
-    paymentTokenContract?: FungibleToken;
+    paymentTokenContract?: OpenSeaFungibleToken;
     feeRecipientAccount?: OpenSeaAccount;
     cancelledOrFinalized?: boolean;
     markedInvalid?: boolean;
@@ -322,6 +343,7 @@ export interface OrderJSON extends Partial<ECSignature> {
     staticTarget: string;
     staticExtradata: string;
     paymentToken: string;
+    quantity: string;
     basePrice: string;
     extra: string;
     createdTime?: number | string;
@@ -370,13 +392,14 @@ export interface OpenSeaAssetQuery {
     offset?: number;
 }
 /**
- * Query interface for Fungible Tokens
+ * Query interface for Fungible Assets
  */
-export interface FungibleTokenQuery extends Partial<FungibleToken> {
+export interface OpenSeaFungibleTokenQuery extends Partial<OpenSeaFungibleToken> {
     limit?: number;
     offset?: number;
     symbol?: string;
 }
+export declare type FungibleTokenQuery = OpenSeaFungibleTokenQuery;
 export interface OrderbookResponse {
     orders: OrderJSON[];
     count: number;

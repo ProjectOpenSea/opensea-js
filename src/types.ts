@@ -8,15 +8,12 @@ import {
   Order as WyvernOrder
 } from 'wyvern-js/lib/types'
 
-import {
-  FungibleToken
-} from 'wyvern-schemas'
+import { Token } from 'wyvern-schemas/dist/types'
 
 export {
   Network,
   HowToCall,
-  ECSignature,
-  FungibleToken
+  ECSignature
 }
 
 /**
@@ -60,6 +57,12 @@ export enum EventType {
   // When transferring one or more assets
   TransferAll = "TransferAll",
   TransferOne = "TransferOne",
+
+  // When wrapping or unwrapping NFTs
+  WrapAssets = "WrapAssets",
+  UnwrapAssets = "UnwrapAssets",
+  LiquidateAssets = "LiquidateAssets",
+  PurchaseAssets = "PurchaseAssets",
 }
 
 /**
@@ -127,12 +130,25 @@ export enum SaleKind {
   DutchAuction = 1,
 }
 
+/**
+ * Types of asset contracts
+ * Given by the asset_contract_type in the OpenSea API
+ */
+export enum AssetContractType {
+  Fungible = 'fungible',
+  SemiFungible = 'semi-fungible',
+  NonFungible = 'non-fungible',
+  Unknown = 'unknown',
+}
+
 // Wyvern Schemas (see https://github.com/ProjectOpenSea/wyvern-schemas)
 export enum WyvernSchemaName {
   ERC20 = 'ERC20',
   ERC721 = 'ERC721',
   ERC1155 = 'ERC1155',
-  Enjin = 'Enjin',
+  LegacyEnjin = 'Enjin',
+  ENSShortNameAuction = 'ENSShortNameAuction',
+  // CryptoPunks = 'CryptoPunks'
 }
 
 /**
@@ -144,9 +160,12 @@ export enum WyvernSchemaName {
  *      `takeOwnership` instead
  * 3.0: The current OpenZeppelin standard:
  *      https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC721/ERC721.sol
+ * Special cases:
+ * locked: When the transfer function has been locked by the dev
  */
-export enum NFTVersion {
+export enum TokenStandardVersion {
   Unsupported = 'unsupported',
+  Locked = 'locked',
   Enjin = '1155-1.0',
   ERC721v1 = '1.0',
   ERC721v2 = '2.0',
@@ -159,25 +178,16 @@ export enum WyvernAssetLocation {
   Other = 'other'
 }
 
-export interface WyvernAsset {}
-
-export interface WyvernNFTAsset extends WyvernAsset {
+export interface WyvernNFTAsset {
   id: string
   address: string
 }
-export interface WyvernFTAsset extends WyvernAsset {
+export interface WyvernFTAsset {
+  id?: string
   address: string
+  quantity: string
 }
-
-export interface WyvernERC1155Asset extends WyvernNFTAsset {}
-export interface WyvernERC721Asset extends WyvernNFTAsset {}
-export interface WyvernERC20Asset extends WyvernFTAsset {}
-
-export interface WyvernENSNameAsset extends WyvernAsset {
-  nodeHash: string
-  nameHash?: string
-  name?: string
-}
+export type WyvernAsset = WyvernNFTAsset | WyvernFTAsset
 
 // Abstractions over Wyvern assets for bundles
 export interface WyvernBundle {
@@ -208,25 +218,33 @@ export interface OpenSeaAccount {
 }
 
 /**
- * Simple OpenSea asset spec
+ * Simple, unannotated non-fungible asset spec
  */
 export interface Asset {
-  // The asset's token ID
-  tokenId: string
+  // The asset's token ID, or null if ERC-20
+  tokenId: string | null,
   // The asset's contract address
   tokenAddress: string,
-  // The NFT version of this asset
-  nftVersion?: NFTVersion
+  // The token standard version of this asset
+  version?: TokenStandardVersion,
+  // Optional for ENS names
+  name?: string,
+  // Optional for fungible items
+  decimals?: number
 }
 
 /**
- * OpenSea asset contract
+ * Annotated asset contract with OpenSea metadata
  */
 export interface OpenSeaAssetContract {
   // Name of the asset's contract
   name: string
   // Address of this contract
   address: string
+  // Type of token (fungible/NFT)
+  type: AssetContractType
+  // Wyvern Schema Name for this contract
+  schemaName: WyvernSchemaName
 
   // Total fee levied on sellers by this contract, in basis points
   sellerFeeBasisPoints: number
@@ -258,7 +276,7 @@ export interface OpenSeaAssetContract {
 }
 
 /**
- * The OpenSea asset fetched by the API
+ * Annotated asset spec with OpenSea metadata
  */
 export interface OpenSeaAsset extends Asset {
   assetContract: OpenSeaAssetContract
@@ -301,8 +319,19 @@ export interface OpenSeaAsset extends Asset {
   // The per-transfer fee, in base units, for this asset in its transfer method
   transferFee: BigNumber | string | null,
   // The transfer fee token for this asset in its transfer method
-  transferFeePaymentToken: FungibleToken | null
+  transferFeePaymentToken: OpenSeaFungibleToken | null
 }
+
+/**
+ * Full annotated Fungible Token spec with OpenSea metadata
+ */
+export interface OpenSeaFungibleToken extends Token {
+  imageUrl?: string
+  ethPrice?: string
+}
+
+// Backwards compat
+export type FungibleToken = OpenSeaFungibleToken
 
 /**
  * Bundles of assets, grouped together into one OpenSea order
@@ -380,13 +409,14 @@ export interface UnhashedOrder extends WyvernOrder {
   side: OrderSide
   saleKind: SaleKind
   howToCall: HowToCall
+  quantity: BigNumber
 
   // OpenSea-specific
   makerReferrerFee: BigNumber
   waitingForBestCounterOrder: boolean
 
   metadata: {
-    asset?: WyvernNFTAsset
+    asset?: WyvernAsset
     bundle?: WyvernBundle
     schema: WyvernSchemaName
   }
@@ -407,7 +437,7 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
   currentBounty?: BigNumber
   makerAccount?: OpenSeaAccount
   takerAccount?: OpenSeaAccount
-  paymentTokenContract?: FungibleToken
+  paymentTokenContract?: OpenSeaFungibleToken
   feeRecipientAccount?: OpenSeaAccount
   cancelledOrFinalized?: boolean
   markedInvalid?: boolean
@@ -440,6 +470,8 @@ export interface OrderJSON extends Partial<ECSignature> {
   staticTarget: string
   staticExtradata: string
   paymentToken: string
+
+  quantity: string
   basePrice: string
   extra: string
 
@@ -498,14 +530,17 @@ export interface OpenSeaAssetQuery {
 }
 
 /**
- * Query interface for Fungible Tokens
+ * Query interface for Fungible Assets
  */
-export interface FungibleTokenQuery extends Partial<FungibleToken> {
+export interface OpenSeaFungibleTokenQuery extends Partial<OpenSeaFungibleToken> {
   limit?: number
   offset?: number
   // Typescript bug requires this duplication
   symbol?: string
 }
+
+// Backwards compat
+export type FungibleTokenQuery = OpenSeaFungibleTokenQuery
 
 export interface OrderbookResponse {
   orders: OrderJSON[]

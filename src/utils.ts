@@ -4,12 +4,13 @@ import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import * as WyvernSchemas from 'wyvern-schemas'
+import { Schema, AnnotatedFunctionABI, FunctionInputKind, StateMutability } from 'wyvern-schemas/dist/types'
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
-import { AnnotatedFunctionABI, FunctionInputKind, HowToCall, StateMutability, AbiType } from 'wyvern-js/lib/types'
+import { HowToCall } from 'wyvern-js/lib/types'
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernNFTAsset, OpenSeaAssetContract, WyvernFTAsset, OpenSeaFungibleToken, AssetContractType, WyvernSchemaName } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -22,9 +23,27 @@ export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256
 export const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"
 export const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9"
 export const ENJIN_COIN_ADDRESS = '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c'
-export const ENJIN_ADDRESS = '0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab'
+export const ENJIN_ADDRESS = '0xfaaFDc07907ff5120a76b34b731b278c38d6043C'
+export const ENJIN_LEGACY_ADDRESS = '0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab'
 export const CK_ADDRESS = '0x06012c8cf97bead5deae237070f9587f8e7a266d'
 export const CK_RINKEBY_ADDRESS = '0x16baf0de678e52367adc69fd067e5edd1d33e3bf'
+export const WRAPPED_NFT_FACTORY_ADDRESS_MAINNET = '0x861d83016128d40f234852c1d25d59b1aadaf7ff'
+export const WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY = '0x94c71c87244b862cfd64d36af468309e4804ec09'
+export const WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET = '0x393c3c6e6B46ADFF50B363c84a8CA5429B6385A9'
+export const WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY = '0xaa775Eb452353aB17f7cf182915667c2598D43d3'
+export const UNISWAP_FACTORY_ADDRESS_MAINNET = '0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95'
+export const UNISWAP_FACTORY_ADDRESS_RINKEBY = '0xf5D915570BC477f9B8D6C0E980aA81757A3AaC36'
+export const DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS = 1000
+export const CHEEZE_WIZARDS_GUILD_ADDRESS = WyvernProtocol.NULL_ADDRESS // TODO: Update this address once Dapper has deployed their mainnet contracts
+export const CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS = '0x095731b672b76b00A0b5cb9D8258CD3F6E976cB2'
+export const CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS = WyvernProtocol.NULL_ADDRESS // TODO: Update this address once Dapper has deployed their mainnet contracts
+export const CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS = '0x8852f5F7d1BB867AAf8fdBB0851Aa431d1df5ca1'
+export const DECENTRALAND_ESTATE_ADDRESS = '0x959e104e1a4db6317fa58f8295f586e1a978c297'
+export const STATIC_CALL_TX_ORIGIN_ADDRESS = '0xbff6ade67e3717101dd8d0a7f3de1bf6623a2ba8'
+export const STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS = '0xe291abab95677bc652a44f973a8e06d48464e11c'
+export const STATIC_CALL_CHEEZE_WIZARDS_ADDRESS = WyvernProtocol.NULL_ADDRESS // TODO: Deploy this address once Dapper has deployed their mainnet contracts
+export const STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS = '0x8a640bdf8886dd6ca1fad9f22382b50deeacde08'
+export const STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS = '0x93c3cd7ba04556d2e3d7b8106ce0f83e24a87a7e'
 export const DEFAULT_BUYER_FEE_BASIS_POINTS = 0
 export const DEFAULT_SELLER_FEE_BASIS_POINTS = 250
 export const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100
@@ -37,7 +56,7 @@ export const DEFAULT_GAS_INCREASE_FACTOR = 1.1
 
 const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 const proxyAssertABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxyAssert', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
-export const annotateERC721TransferABI = (asset: WyvernERC721Asset): AnnotatedFunctionABI => ({
+export const annotateERC721TransferABI = (asset: WyvernNFTAsset): AnnotatedFunctionABI => ({
   "constant": false,
   "inputs": [
     {
@@ -57,8 +76,16 @@ export const annotateERC721TransferABI = (asset: WyvernERC721Asset): AnnotatedFu
   "outputs": [],
   "payable": false,
   "stateMutability": StateMutability.Nonpayable,
-  "type": AbiType.Function
+  "type": Web3.AbiType.Function
 })
+
+const SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE: {[key in WyvernSchemaName]: AssetContractType} = {
+  [WyvernSchemaName.ERC721]: AssetContractType.NonFungible,
+  [WyvernSchemaName.ERC1155]: AssetContractType.SemiFungible,
+  [WyvernSchemaName.ERC20]: AssetContractType.Fungible,
+  [WyvernSchemaName.LegacyEnjin]: AssetContractType.SemiFungible,
+  [WyvernSchemaName.ENSShortNameAuction]: AssetContractType.NonFungible,
+}
 
 // OTHER
 
@@ -107,6 +134,8 @@ export async function promisifyCall<T>(
     // Probably method not found, and web3 is a Parity node
     if (onError) {
       onError(error)
+    } else {
+      console.error(error)
     }
     return undefined
   }
@@ -221,6 +250,8 @@ export const assetContractFromJSON = (asset_contract: any): OpenSeaAssetContract
   return {
     name: asset_contract.name,
     description: asset_contract.description,
+    type: asset_contract.asset_contract_type,
+    schemaName: asset_contract.schema_name,
     address: asset_contract.address,
     tokenSymbol: asset_contract.symbol,
     buyerFeeBasisPoints: asset_contract.buyer_fee_basis_points,
@@ -237,9 +268,9 @@ export const assetContractFromJSON = (asset_contract: any): OpenSeaAssetContract
   }
 }
 
-export const tokenFromJSON = (token: any): WyvernSchemas.FungibleToken => {
+export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
 
-  const fromJSON: WyvernSchemas.FungibleToken = {
+  const fromJSON: OpenSeaFungibleToken = {
     name: token.name,
     symbol: token.symbol,
     decimals: token.decimals,
@@ -260,6 +291,7 @@ export const orderFromJSON = (order: any): Order => {
     cancelledOrFinalized: order.cancelled || order.finalized,
     markedInvalid: order.marked_invalid,
     metadata: order.metadata,
+    quantity: new BigNumber(order.quantity || 1),
     exchange: order.exchange,
     makerAccount: order.maker,
     takerAccount: order.maker,
@@ -300,11 +332,10 @@ export const orderFromJSON = (order: any): Order => {
 
     paymentTokenContract: order.payment_token_contract ? tokenFromJSON(order.payment_token_contract) : undefined,
     asset: order.asset ? assetFromJSON(order.asset) : undefined,
-    assetBundle: order.asset_bundle ? assetBundleFromJSON(order.asset_bundle) : undefined
+    assetBundle: order.asset_bundle ? assetBundleFromJSON(order.asset_bundle) : undefined,
   }
 
-  // Use most recent price calc, to account for latency
-  // TODO is this necessary?
+  // Use client-side price calc, to account for buyer fee (not added by server) and latency
   fromJSON.currentPrice = estimateCurrentPrice(fromJSON)
 
   return fromJSON
@@ -335,6 +366,7 @@ export const orderToJSON = (order: Order): OrderJSON => {
     staticTarget: order.staticTarget.toLowerCase(),
     staticExtradata: order.staticExtradata,
     paymentToken: order.paymentToken.toLowerCase(),
+    quantity: order.quantity.toString(),
     basePrice: order.basePrice.toString(),
     extra: order.extra.toString(),
     createdTime: order.createdTime
@@ -353,84 +385,6 @@ export const orderToJSON = (order: Order): OrderJSON => {
     hash: order.hash
   }
   return asJSON
-}
-
-// Taken from Wyvern demo exchange
-// TODO implement countOf. Redo this whole function!
-export const findAsset = async (
-    web3: Web3,
-    {account, proxy, wyAsset, schema}:
-    {account: string; proxy: string; wyAsset: any; schema: any},
-    retries = 1
-  ): Promise<WyvernAssetLocation | undefined> => {
-  let owner
-  const proxyCount = undefined
-  const myCount = undefined
-  const ownerOf = schema.functions.ownerOf
-  const countOf = schema.functions.countOf
-
-  if (ownerOf) {
-    const abi = ownerOf(wyAsset)
-    const contract = web3.eth.contract([abi]).at(abi.target)
-    if (abi.inputs.filter((x: any) => x.value === undefined).length === 0) {
-      const inputs = abi.inputs.map((i: any) => i.value.toString())
-      owner = await promisify<string>(c => contract[abi.name].call(...inputs, c))
-      owner = owner.toLowerCase()
-    } else {
-      return undefined
-    }
-  } else if (countOf) {
-    // ERC20 or ERC1155 (non-Enjin)
-    // TODO
-    return undefined
-    // const abi = countOf(wyAsset)
-    // const inputs = abi.inputs.filter((x: any) => x.value !== undefined).map((x: any) => x.value)
-    // // console.warn(proxy, [account, ...inputs], abi.inputs)
-    // const contract = web3.eth.contract([abi]).at(abi.target)
-    // if (proxy) {
-    //   proxyCount = await promisify<BigNumber>(c => contract[abi.name].call([...inputs, proxy], c))
-    //   proxyCount = proxyCount.toNumber()
-    // } else {
-    //   proxyCount = 0
-    // }
-    // myCount = await promisify<BigNumber>(c => contract[abi.name].call([...inputs, account], c))
-    // myCount = myCount.toNumber()
-  } else {
-    // Missing ownership call - skip check to allow listings
-    // by default
-    return undefined
-  }
-
-  if (owner !== undefined) {
-    if (proxy && owner.toLowerCase() === proxy.toLowerCase()) {
-      return WyvernAssetLocation.Proxy
-    } else if (owner.toLowerCase() === account.toLowerCase()) {
-      return WyvernAssetLocation.Account
-    } else {
-      return _handleOtherOwner(owner)
-    }
-  } else if (myCount !== undefined && proxyCount !== undefined) {
-    /* This is a bit Ethercraft-specific. */
-    if (proxyCount >= 1000000000000000000) {
-      return WyvernAssetLocation.Proxy
-    } else if (myCount >= 1000000000000000000) {
-      return WyvernAssetLocation.Account
-    } else {
-      return WyvernAssetLocation.Other
-    }
-  }
-  return _handleOtherOwner(owner)
-
-  async function _handleOtherOwner(o?: string) {
-    if (o && o != '0x') {
-      return WyvernAssetLocation.Other
-    }
-    if (retries <= 0) {
-      return undefined
-    }
-    await delay(500)
-    return findAsset(web3, {account, proxy, wyAsset, schema}, retries - 1)
-  }
 }
 
 /**
@@ -495,7 +449,7 @@ export async function sendRawTransaction(
   }
 
   try {
-    const txHashRes = await promisify(c => web3.eth.sendTransaction({
+    const txHashRes = await promisify<string>(c => web3.eth.sendTransaction({
       from,
       to,
       value,
@@ -503,8 +457,7 @@ export async function sendRawTransaction(
       gas,
       gasPrice
     }, c))
-    const txHash = txHashRes.toString()
-    return txHash
+    return txHashRes.toString()
 
   } catch (error) {
 
@@ -700,37 +653,61 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
 }
 
 /**
+ * Wrapper function for getting generic Wyvern assets from OpenSea assets
+ * @param schema Wyvern schema for the asset
+ * @param asset The fungible or nonfungible asset to format
+ */
+export function getWyvernAsset(
+    schema: Schema<WyvernAsset>,
+    asset: Asset,
+    quantity = new BigNumber(1)
+  ) {
+  if (SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE[schema.name as WyvernSchemaName] == AssetContractType.NonFungible) {
+    return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset)
+  } else {
+    return getWyvernFTAsset(schema as Schema<WyvernFTAsset>, asset, quantity)
+  }
+}
+
+/**
  * Get the Wyvern representation of an NFT asset
  * @param schema The WyvernSchema needed to access this asset
- * @param tokenId The token's id
- * @param tokenAddress The address of the token's contract
+ * @param asset The asset
  */
 export function getWyvernNFTAsset(
-    schema: WyvernSchemas.Schema<WyvernNFTAsset>, tokenId: string, tokenAddress: string
+    schema: Schema<WyvernNFTAsset>, asset: Asset
   ): WyvernNFTAsset {
 
   return schema.assetFromFields({
-    'ID': tokenId.toString(),
-    'Address': tokenAddress.toLowerCase(),
+    'ID': asset.tokenId != null
+      ? asset.tokenId.toString()
+      : undefined,
+    'Address': asset.tokenAddress.toLowerCase(),
+    'Name': asset.name,
   })
 }
 
 /**
- * Get the Wyvern representation of an ENS name as an asset
+ * Get the Wyvern representation of a fungible asset
  * @param schema The WyvernSchema needed to access this asset
- * @param name The ENS name, ending in .eth
+ * @param asset The asset to trade
+ * @param quantity The number of items to trade
  */
-export function getWyvernENSNameAsset(
-    schema: WyvernSchemas.Schema<WyvernENSNameAsset>, name: string
-  ): WyvernENSNameAsset {
+export function getWyvernFTAsset(
+    schema: Schema<WyvernFTAsset>,
+    asset: Asset,
+    quantity: BigNumber
+  ): WyvernFTAsset {
 
-  if (!schema.unifyFields) {
-    throw new Error("Incorrect schema type for this asset")
-  }
+  const tokenId = asset.tokenId != null
+    ? asset.tokenId
+    : undefined
 
-  return schema.assetFromFields(schema.unifyFields({
-    'Name': name,
-  }))
+  return schema.assetFromFields({
+    'ID': tokenId,
+    'Quantity': quantity.toString(),
+    'Address': asset.tokenAddress.toLowerCase(),
+  })
 }
 
 /**
@@ -743,7 +720,7 @@ export function getWyvernBundle(
     schema: any, assets: Asset[]
   ): WyvernBundle {
 
-  const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress))
+  const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
 
   const sortedWyAssets = _.sortBy(wyAssets, [(a: WyvernNFTAsset) => a.address, (a: WyvernNFTAsset) => a.id])
 
@@ -844,7 +821,7 @@ export async function delay(ms: number) {
  * @param to Destination address
  * @param atomicizer Wyvern Atomicizer instance
  */
-export function encodeAtomicizedTransfer(schema: WyvernSchemas.Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
+export function encodeAtomicizedTransfer(schema: Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
 
   const transactions = assets.map((asset: any) => {
     const transfer = schema.functions.transfer(asset)
@@ -889,7 +866,7 @@ export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: stri
         return input.value
     }
   })
-  return WyvernSchemas.encodeCall(transferAbi, parameters)
+  return WyvernSchemas.encodeCall(transferAbi as Web3.MethodAbi, parameters)
 }
 
 /**
@@ -920,4 +897,12 @@ export function validateAndFormatWalletAddress(web3: Web3, address: string): str
     throw new Error('Wallet cannot be the null address')
   }
   return address.toLowerCase()
+}
+
+/**
+ * Notify developer when a pattern will be deprecated
+ * @param msg message to log to console
+ */
+export function onDeprecated(msg: string) {
+  console.warn(`DEPRECATION NOTICE: ${msg}`)
 }

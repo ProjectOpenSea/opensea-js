@@ -2,6 +2,12 @@ import { OpenSeaPort } from './seaport'
 import { OpenSeaAPI } from './api'
 import { Network, EventData, EventType } from './types'
 import { orderToJSON, orderFromJSON } from './utils'
+export {
+  encodeCall,
+  encodeSell, encodeAtomicizedBuy, encodeAtomicizedSell,
+  encodeDefaultCall, encodeReplacementPattern,
+  AbiType
+} from 'wyvern-schemas'
 
 /**
  * Example setup:
