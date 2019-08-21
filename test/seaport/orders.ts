@@ -254,6 +254,7 @@ suite('seaport: orders', () => {
       schemaName: WyvernSchemaName.ERC721
     })
 
+    assert.equal(order.taker, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     // Make sure there's gap time to expire it
