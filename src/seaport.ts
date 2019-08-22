@@ -1362,7 +1362,7 @@ export class OpenSeaPort {
     const schema = this._getSchema(schemaName)
     const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
-    const isCryptoKitties = wyAsset.address in [CK_ADDRESS, CK_RINKEBY_ADDRESS]
+    const isCryptoKitties = [CK_ADDRESS, CK_RINKEBY_ADDRESS].includes(wyAsset.address)
     // Since CK is common, infer isOldNFT from it in case user
     // didn't pass in `version`
     const isOldNFT = isCryptoKitties || !!asset.version && [
