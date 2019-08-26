@@ -879,7 +879,7 @@ suite('seaport: orders', () => {
   })
 })
 
-async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch = false, referrerAddress?: string) {
+export async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch = false, referrerAddress?: string, testMatchingClient = client) {
   const recipientAddress = ALEX_ADDRESS_2 // Test a separate recipient
   // TODO test mode for matching order to use 0x11111 in calldata
   const matchingOrder = client._makeMatchingOrder({
@@ -913,7 +913,7 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   }
 }
 
-export async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string, counterOrderListingTime?: number) {
+export async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string, counterOrderListingTime?: number, testMatchingClient = client) {
   const order = {
     ...unhashedOrder,
     hash: getOrderHash(unhashedOrder)
