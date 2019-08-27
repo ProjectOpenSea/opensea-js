@@ -12,12 +12,16 @@ import {
 
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, WyvernSchemaName } from '../../src/types'
-import { NULL_ADDRESS, STATIC_CALL_TX_ORIGIN_ADDRESS, CK_RINKEBY_ADDRESS, STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS } from '../../src/utils'
+import { OrderJSON, Network, UnhashedOrder, WyvernSchemaName } from '../../src/types'
+import { orderFromJSON, getOrderHash, orderToJSON, NULL_ADDRESS, STATIC_CALL_TX_ORIGIN_ADDRESS, CK_RINKEBY_ADDRESS, STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS } from '../../src/utils'
 import { ALEX_ADDRESS, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_TOKEN_ID } from '../constants'
 import { testFeesMakerOrder } from './fees'
+import ordersJSONFixture = require('../fixtures/orders.json')
 import { getMethod, StaticCheckTxOrigin } from '../../src/contracts'
-import { testMatchingNewOrder } from './orders'
+import { testMatchingOrder, testMatchingNewOrder } from './orders'
+
+const ordersJSON = ordersJSONFixture as any
+const englishSellOrderJSON = ordersJSON[0] as OrderJSON
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 const rinkebyProvider = new Web3.providers.HttpProvider('https://rinkeby.infura.io')
@@ -34,49 +38,30 @@ const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
 
 suite('seaport: static calls', () => {
 
-  test.skip("Rinkeby StaticCall Tx.Origin", async () => {
-    const accountAddress = ALEX_ADDRESS
-    const takerAddress = ALEX_ADDRESS_2
-    const amountInToken = 2
-    const bountyPercent = 0
+    test.only("Rinkeby StaticCall Tx.Origin", async () => {
+      const accountAddress = ALEX_ADDRESS
+      const takerAddress = ALEX_ADDRESS_2
+      const amountInToken = 2
 
-    const tokenId = CK_RINKEBY_TOKEN_ID.toString()
-    const tokenAddress = CK_RINKEBY_ADDRESS
+      const order = orderFromJSON(englishSellOrderJSON)
 
-    const asset = await rinkebyClient.api.getAsset(tokenAddress, tokenId)
+      order.staticTarget = STATIC_CALL_TX_ORIGIN_ADDRESS
+      order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'), [takerAddress])
+      //order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesHardcodedAddress'), [])
 
-    const order = await rinkebyClient._makeSellOrder({
-      asset: { tokenAddress, tokenId },
-      accountAddress,
-      quantity: 1,
-      startAmount: amountInToken,
-      extraBountyBasisPoints: bountyPercent * 100,
-      buyerAddress: NULL_ADDRESS,
-      expirationTime: 0,
-      paymentTokenAddress: NULL_ADDRESS,
-      waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC721
+      await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
+      // Make sure match is valid
+      await testMatchingOrder(order, takerAddress, true, undefined, rinkebyClient);
+
+      try {
+        await testMatchingOrder(order, DEVIN_ADDRESS, true, undefined, rinkebyClient)
+      } catch (e) {
+        // It works!
+        return
+      }
+      assert.fail()
     })
-
-    order.staticTarget = STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS
-    order.staticExtradata = WyvernSchemas.encodeCall(
-      getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'),
-      [takerAddress]
-    )
-
-    await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
-    // Make sure match is valid
-    await testMatchingNewOrder(order, takerAddress)
-    // Make sure no one else can take it
-    try {
-      await testMatchingNewOrder(order, DEVIN_ADDRESS)
-    } catch (e) {
-      // It works!
-      return
-    }
-    assert.fail()
-  })
-
+  /*
   test.skip("Mainnet StaticCall Decentraland", async () => {
     // Mainnet Decentraland Estate owner
     const accountAddress = '0xf293dfe0ac79c2536b9426957ac8898d6c743717'
@@ -157,14 +142,19 @@ suite('seaport: static calls', () => {
 
     await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
-    await testMatchingNewOrder(order, takerAddress)
+    await testMatchingOrder(order, takerAddress)
     // Make sure no one else can take it
+
+    // Screw with CheezeWizard fingerprint
+
     try {
-      await testMatchingNewOrder(order, DEVIN_ADDRESS)
+
+      await testMatchingOrder(order, DEVIN_ADDRESS)
     } catch (e) {
       // It works!
       return
     }
     assert.fail()
   })
+  */
 })
