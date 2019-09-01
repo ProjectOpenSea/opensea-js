@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "JavaScript SDK for the OpenSea marketplace. Let users buy or sell crypto collectibles and other cryptogoods, all on your own site!",
   "files": [
     "lib",
@@ -49,7 +49,7 @@
     "web3": "^0.20.6",
     "webpack": "^3.10.0",
     "wyvern-js": "github:ProjectOpenSea/wyvern-js#semver:^3.2.0",
-    "wyvern-schemas": "github:ProjectOpenSea/wyvern-schemas#semver:^0.10.5"
+    "wyvern-schemas": "github:ProjectOpenSea/wyvern-schemas#semver:^0.10.6"
   },
   "devDependencies": {
     "@types/chai": "^4.1.3",
