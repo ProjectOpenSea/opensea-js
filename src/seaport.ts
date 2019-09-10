@@ -63,6 +63,7 @@ export class OpenSeaPort {
 
   // Web3 instance to use
   public web3: Web3
+  public web3ReadOnly: Web3
   // Logger function to use when debugging
   public logger: (arg: string) => void
   // API instance on this seaport
@@ -91,15 +92,18 @@ export class OpenSeaPort {
    */
   constructor(provider: Web3.Provider, apiConfig: OpenSeaAPIConfig = {}, logger?: (arg: string) => void) {
 
+    // API config
     apiConfig.networkName = apiConfig.networkName || Network.Main
     apiConfig.gasPrice = apiConfig.gasPrice || makeBigNumber(300000)
-
-    // API config
     this.api = new OpenSeaAPI(apiConfig)
+
+    this._networkName = apiConfig.networkName
+
+    const readonlyProvider = new Web3.providers.HttpProvider(this._networkName == Network.Main ? MAINNET_PROVIDER_URL : RINKEBY_PROVIDER_URL)
 
     // Web3 Config
     this.web3 = new Web3(provider)
-    this._networkName = apiConfig.networkName
+    this.web3ReadOnly = new Web3(readonlyProvider)
 
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider, {
@@ -108,7 +112,6 @@ export class OpenSeaPort {
     })
 
     // WyvernJS config for readonly (optimization for infura calls)
-    const readonlyProvider = new Web3.providers.HttpProvider(this._networkName == Network.Main ? MAINNET_PROVIDER_URL : RINKEBY_PROVIDER_URL)
     this._wyvernProtocolReadOnly = new WyvernProtocol(readonlyProvider, {
       network: this._networkName,
       gasPrice: apiConfig.gasPrice,
@@ -344,15 +347,15 @@ export class OpenSeaPort {
     ) {
 
     // Get UniswapExchange for WrappedNFTContract for contractAddress
-    const wrappedNFTFactoryContract = this.web3.eth.contract(WrappedNFTFactory as any[])
+    const wrappedNFTFactoryContract = this.web3ReadOnly.eth.contract(WrappedNFTFactory as any[])
     const wrappedNFTFactory = await wrappedNFTFactoryContract.at(this._wrappedNFTFactoryAddress)
     const wrappedNFTAddress = await wrappedNFTFactory.nftContractToWrapperContract(contractAddress)
-    const wrappedNFTContract = this.web3.eth.contract(WrappedNFT as any[])
+    const wrappedNFTContract = this.web3ReadOnly.eth.contract(WrappedNFT as any[])
     const wrappedNFT = await wrappedNFTContract.at(wrappedNFTAddress)
-    const uniswapFactoryContract = this.web3.eth.contract(UniswapFactory as any[])
+    const uniswapFactoryContract = this.web3ReadOnly.eth.contract(UniswapFactory as any[])
     const uniswapFactory = await uniswapFactoryContract.at(this._uniswapFactoryAddress)
     const uniswapExchangeAddress = await uniswapFactory.getExchange(wrappedNFTAddress)
-    const uniswapExchangeContract = this.web3.eth.contract(UniswapExchange as any[])
+    const uniswapExchangeContract = this.web3ReadOnly.eth.contract(UniswapExchange as any[])
     const uniswapExchange = await uniswapExchangeContract.at(uniswapExchangeAddress)
 
     // Convert desired WNFT to wei
@@ -981,7 +984,7 @@ export class OpenSeaPort {
     const approvalAllCheck = async () => {
       // NOTE:
       // Use this long way of calling so we can check for method existence on a bool-returning method.
-      const isApprovedForAllRaw = await rawCall(this.web3, {
+      const isApprovedForAllRaw = await rawCall(this.web3ReadOnly, {
         from: accountAddress,
         to: erc721.address,
         data: erc721.isApprovedForAll.getData(accountAddress, proxyAddress)
@@ -1408,7 +1411,7 @@ export class OpenSeaPort {
         schemaName?: WyvernSchemaName; }
     ): Promise<string> {
 
-    toAddress = validateAndFormatWalletAddress(this.web3, toAddress)
+    toAddress = validateAndFormatWalletAddress(this.web3ReadOnly, toAddress)
 
     const schema = this._getSchema(schemaName)
     const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
@@ -1503,7 +1506,7 @@ export class OpenSeaPort {
     if (!tokenAddress) {
       tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     }
-    const amount = await rawCall(this.web3, {
+    const amount = await rawCall(this.web3ReadOnly, {
       from: accountAddress,
       to: tokenAddress,
       data: WyvernSchemas.encodeCall(getMethod(tokenAbi, 'balanceOf'), [accountAddress]),
@@ -1567,7 +1570,7 @@ export class OpenSeaPort {
 
       try {
         // web3 call to update it
-        const result = await getTransferFeeSettings(this.web3, { asset })
+        const result = await getTransferFeeSettings(this.web3ReadOnly, { asset })
         transferFee = result.transferFee != null ? result.transferFee : transferFee
         transferFeeTokenAddress = result.transferFeeTokenAddress || transferFeeTokenAddress
       } catch (error) {
@@ -1817,7 +1820,7 @@ export class OpenSeaPort {
       tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     }
     const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
-    const approved = await rawCall(this.web3, {
+    const approved = await rawCall(this.web3ReadOnly, {
       from: accountAddress,
       to: tokenAddress,
       data: WyvernSchemas.encodeCall(getMethod(ERC20, 'allowance'),
@@ -1839,7 +1842,7 @@ export class OpenSeaPort {
         schemaName: WyvernSchemaName; }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
+    accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
     const schema = this._getSchema(schemaName)
     const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
@@ -1926,7 +1929,7 @@ export class OpenSeaPort {
         schemaName: WyvernSchemaName }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
+    accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
     const schema = this._getSchema(schemaName)
     const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
@@ -2019,9 +2022,9 @@ export class OpenSeaPort {
 
     if (isCheezeWizards) {
       const cheezeWizardsBasicTournamentAddress = isMainnet ? CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS : CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS
-      const cheezeWizardsBasicTournamentABI = this.web3.eth.contract(CheezeWizardsBasicTournament as any[])
+      const cheezeWizardsBasicTournamentABI = this.web3ReadOnly.eth.contract(CheezeWizardsBasicTournament as any[])
       const cheezeWizardsBasicTournmentInstance = await cheezeWizardsBasicTournamentABI.at(cheezeWizardsBasicTournamentAddress)
-      const wizardFingerprint = await rawCall(this.web3, {
+      const wizardFingerprint = await rawCall(this.web3ReadOnly, {
         to: cheezeWizardsBasicTournmentInstance.address,
         data: cheezeWizardsBasicTournmentInstance.wizardFingerprint.getData(asset.tokenId)
       })
@@ -2034,9 +2037,9 @@ export class OpenSeaPort {
     // We stated that we will only use Decentraland estates static calls on mainnet, since Decentraland uses Ropsten
     } else if (isDecentralandEstate && isMainnet) {
       const decentralandEstateAddress = DECENTRALAND_ESTATE_ADDRESS
-      const decentralandEstateABI = this.web3.eth.contract(DecentralandEstates as any[])
+      const decentralandEstateABI = this.web3ReadOnly.eth.contract(DecentralandEstates as any[])
       const decentralandEstateInstance = await decentralandEstateABI.at(decentralandEstateAddress)
-      const estateFingerprint = await rawCall(this.web3, {
+      const estateFingerprint = await rawCall(this.web3ReadOnly, {
         to: decentralandEstateInstance.address,
         data: decentralandEstateInstance.getFingerprint.getData(asset.tokenId)
       })
@@ -2071,7 +2074,7 @@ export class OpenSeaPort {
         schemaName: WyvernSchemaName; }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
+    accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
     const schema = this._getSchema(schemaName)
     const bundle = getWyvernBundle(schema, assets)
 
@@ -2160,7 +2163,7 @@ export class OpenSeaPort {
         schemaName: WyvernSchemaName; }
     ): Promise<UnhashedOrder> {
 
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
+    accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
     const schema = this._getSchema(schemaName)
 
     const bundle = getWyvernBundle(schema, assets)
@@ -2238,8 +2241,8 @@ export class OpenSeaPort {
         recipientAddress: string; }
     ): UnsignedOrder {
 
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
-    recipientAddress = validateAndFormatWalletAddress(this.web3, recipientAddress)
+    accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
+    recipientAddress = validateAndFormatWalletAddress(this.web3ReadOnly, recipientAddress)
     const schema = this._getSchema(order.metadata.schema)
 
     const computeOrderParams = () => {
@@ -2633,7 +2636,7 @@ export class OpenSeaPort {
         ? wyAsset.quantity
         : 1)
       const abi = schema.functions.countOf(wyAsset)
-      const contract = this.web3.eth.contract([abi]).at(abi.target)
+      const contract = this.web3ReadOnly.eth.contract([abi]).at(abi.target)
       const inputValues = abi.inputs.filter(x => x.value !== undefined).map(x => x.value)
       let count = await promisifyCall<BigNumber>(c => contract[abi.name].call(accountAddress, ...inputValues, c))
       if (count === undefined) {
@@ -2649,7 +2652,7 @@ export class OpenSeaPort {
     } else if (schema.functions.ownerOf) {
       // ERC721 asset
       const abi = schema.functions.ownerOf(wyAsset)
-      const contract = this.web3.eth.contract([abi]).at(abi.target)
+      const contract = this.web3ReadOnly.eth.contract([abi]).at(abi.target)
       if (abi.inputs.filter(x => x.value === undefined)[0]) {
         throw new Error("Missing an argument for finding the owner of this asset")
       }
@@ -2753,11 +2756,11 @@ export class OpenSeaPort {
     // Note: WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
     // will fail if too many decimal places, so special-case ether
     const basePrice = isEther
-      ? makeBigNumber(this.web3.toWei(startAmount, 'ether')).round()
+      ? makeBigNumber(this.web3ReadOnly.toWei(startAmount, 'ether')).round()
       : WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
 
     const extra = isEther
-      ? makeBigNumber(this.web3.toWei(priceDiff, 'ether')).round()
+      ? makeBigNumber(this.web3ReadOnly.toWei(priceDiff, 'ether')).round()
       : WyvernProtocol.toBaseUnitAmount(makeBigNumber(priceDiff), token.decimals)
 
     return { basePrice, extra }

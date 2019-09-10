@@ -38,7 +38,7 @@ const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
 
 suite('seaport: static calls', () => {
 
-    test.only("Rinkeby StaticCall Tx.Origin", async () => {
+    test.skip("Rinkeby StaticCall Tx.Origin", async () => {
       const accountAddress = ALEX_ADDRESS
       const takerAddress = ALEX_ADDRESS_2
       const amountInToken = 2
