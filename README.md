@@ -14,6 +14,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
 - [Getting Started](#getting-started)
   - [Making Offers](#making-offers)
     - [Bidding on Multiple Assets](#bidding-on-multiple-assets)
+    - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
   - [Making Auctions](#making-auctions)
   - [Running Crowdsales](#running-crowdsales)
   - [Fetching Orders](#fetching-orders)
@@ -97,11 +98,14 @@ const { tokenId, tokenAddress } = YOUR_ASSET
 const accountAddress = "0x1234..."
 
 const offer = await seaport.createBuyOrder({
-  tokenId,
-  tokenAddress,
+  asset: {
+    tokenId,
+    tokenAddress,
+  },
   accountAddress,
   // Value of the offer, in units of the payment token (or wrapped ETH if none is specified):
   startAmount: 1.2,
+  schemaName // WyvernSchemaName. If omitted, defaults to 'ERC721'
   // Read below for other options
 })
 ```
@@ -126,6 +130,38 @@ const offer = await seaport.createBundleBuyOrder({
 
 When you bid on multiple assets, an email will be sent to the owner if a bundle exists on OpenSea that contains the assets. In the future, OpenSea will send emails to multiple owners if the assets aren't all owned by the same wallet.
 
+#### Bidding on ENS Short Name Auctions
+
+The Ethereum Name Service (ENS) is auctioning short (3-6 character) names that can be used for labeling wallet addresses and more. Learn more on the [ENS FAQ](https://opensea.io/ens).
+
+To bid, you must use the ENS Short Name schema:
+
+```JavaScript
+const {
+  tokenId,
+  // Token address should be `0xfac7bea255a6990f749363002136af6556b31e04` on mainnet
+  tokenAddress,
+  // Name must have `.eth` at the end and correspond with the tokenId
+  name
+} = ENS_ASSET // You can get an ENS asset from `seaport.api.getAsset(...)`
+// The bidder's wallet address:
+const accountAddress = "0x1234..."
+
+const offer = await seaport.createBuyOrder({
+  asset: {
+    tokenId,
+    tokenAddress,
+    name
+  },
+  accountAddress,
+  // Value of the offer, in wrapped ETH
+  startAmount: 1.2,
+  // Only works for the short-name auction, not ENS names
+  // that have been sold once already
+  schemaName: "ENSShortNameAuction"
+})
+```
+
 ### Making Auctions
 
 To sell an asset, call `createSellOrder`. You can do a fixed-price sale, where `startAmount` is equal to `endAmount`, or a declining [Dutch auction](https://en.wikipedia.org/wiki/Dutch_auction), where `endAmount` is lower and the price declines until `expirationTime` is hit:
@@ -136,8 +172,10 @@ To sell an asset, call `createSellOrder`. You can do a fixed-price sale, where `
 const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
 
 const auction = await seaport.createSellOrder({
-  tokenId,
-  tokenAddress,
+  asset: {
+    tokenId,
+    tokenAddress,
+  },
   accountAddress,
   startAmount: 3,
   // If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order:
