@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>FungibleTokenQuery | opensea-js</title>
+	<title>AssetContractType | opensea-js</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,10 +56,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="fungibletokenquery.html">FungibleTokenQuery</a>
+					<a href="assetcontracttype.html">AssetContractType</a>
 				</li>
 			</ul>
-			<h1>Interface FungibleTokenQuery</h1>
+			<h1>Enumeration AssetContractType</h1>
 		</div>
 	</div>
 </header>
@@ -69,67 +69,66 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Query interface for Fungible Tokens</p>
+						<p>Types of asset contracts
+						Given by the asset_contract_type in the OpenSea API</p>
 					</div>
 				</div>
-			</section>
-			<section class="tsd-panel tsd-hierarchy">
-				<h3>Hierarchy</h3>
-				<ul class="tsd-hierarchy">
-					<li>
-						<span class="tsd-signature-type">object</span>
-						<ul class="tsd-hierarchy">
-							<li>
-								<span class="target">FungibleTokenQuery</span>
-							</li>
-						</ul>
-					</li>
-				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
+							<h3>Enumeration members</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fungibletokenquery.html#limit" class="tsd-kind-icon">limit</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fungibletokenquery.html#offset" class="tsd-kind-icon">offset</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fungibletokenquery.html#symbol" class="tsd-kind-icon">symbol</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="assetcontracttype.html#fungible" class="tsd-kind-icon">Fungible</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="assetcontracttype.html#nonfungible" class="tsd-kind-icon">Non<wbr>Fungible</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="assetcontracttype.html#semifungible" class="tsd-kind-icon">Semi<wbr>Fungible</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="assetcontracttype.html#unknown" class="tsd-kind-icon">Unknown</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="limit" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> limit</h3>
-					<div class="tsd-signature tsd-kind-icon">limit<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
+				<h2>Enumeration members</h2>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="fungible" class="tsd-anchor"></a>
+					<h3>Fungible</h3>
+					<div class="tsd-signature tsd-kind-icon">Fungible<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> =&nbsp;&quot;fungible&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b725e8c/src/types.ts#L504">types.ts:504</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L138">types.ts:138</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="offset" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> offset</h3>
-					<div class="tsd-signature tsd-kind-icon">offset<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="nonfungible" class="tsd-anchor"></a>
+					<h3>Non<wbr>Fungible</h3>
+					<div class="tsd-signature tsd-kind-icon">Non<wbr>Fungible<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> =&nbsp;&quot;non-fungible&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b725e8c/src/types.ts#L505">types.ts:505</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L140">types.ts:140</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="symbol" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> symbol</h3>
-					<div class="tsd-signature tsd-kind-icon">symbol<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="semifungible" class="tsd-anchor"></a>
+					<h3>Semi<wbr>Fungible</h3>
+					<div class="tsd-signature tsd-kind-icon">Semi<wbr>Fungible<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> =&nbsp;&quot;semi-fungible&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b725e8c/src/types.ts#L507">types.ts:507</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L139">types.ts:139</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="unknown" class="tsd-anchor"></a>
+					<h3>Unknown</h3>
+					<div class="tsd-signature tsd-kind-icon">Unknown<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> =&nbsp;&quot;unknown&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L141">types.ts:141</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -147,17 +146,20 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-interface">
-						<a href="fungibletokenquery.html" class="tsd-kind-icon">Fungible<wbr>Token<wbr>Query</a>
+					<li class="current tsd-kind-enum">
+						<a href="assetcontracttype.html" class="tsd-kind-icon">Asset<wbr>Contract<wbr>Type</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="fungibletokenquery.html#limit" class="tsd-kind-icon">limit</a>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="assetcontracttype.html#fungible" class="tsd-kind-icon">Fungible</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="fungibletokenquery.html#offset" class="tsd-kind-icon">offset</a>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="assetcontracttype.html#nonfungible" class="tsd-kind-icon">Non<wbr>Fungible</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="fungibletokenquery.html#symbol" class="tsd-kind-icon">symbol</a>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="assetcontracttype.html#semifungible" class="tsd-kind-icon">Semi<wbr>Fungible</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="assetcontracttype.html#unknown" class="tsd-kind-icon">Unknown</a>
 							</li>
 						</ul>
 					</li>

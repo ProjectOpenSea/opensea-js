@@ -68,7 +68,7 @@
 				<h1 id="opensea-js-omit-in-toc-">OpenSea.js <!-- omit in toc --></h1>
 				<p><a href="https://opensource.org/licenses/MIT"><img src="https://badges.frapsoft.com/os/mit/mit.svg?v=102" alt="https://badges.frapsoft.com/os/mit/mit.svg?v=102"></a>
 				<!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) --></p>
-				<p>A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 items. You don&#39;t have to deploy your own smart contracts or backend orderbooks.</p>
+				<p>A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don&#39;t have to deploy your own smart contracts or backend orderbooks.</p>
 				<p>Published on <a href="https://github.com/ProjectOpenSea/opensea-js">GitHub</a> and <a href="https://www.npmjs.com/package/opensea-js">npm</a></p>
 				<ul>
 					<li><a href="#synopsis">Synopsis</a></li>
@@ -76,6 +76,7 @@
 					<li><a href="#getting-started">Getting Started</a><ul>
 							<li><a href="#making-offers">Making Offers</a><ul>
 									<li><a href="#bidding-on-multiple-assets">Bidding on Multiple Assets</a></li>
+									<li><a href="#bidding-on-ens-short-name-auctions">Bidding on ENS Short Name Auctions</a></li>
 								</ul>
 							</li>
 							<li><a href="#making-auctions">Making Auctions</a></li>
@@ -92,10 +93,12 @@
 						</ul>
 					</li>
 					<li><a href="#advanced">Advanced</a><ul>
+							<li><a href="#purchasing-items-for-other-users">Purchasing Items for Other Users</a></li>
 							<li><a href="#bulk-transfers">Bulk Transfers</a></li>
 							<li><a href="#creating-bundles">Creating Bundles</a></li>
 							<li><a href="#using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</a></li>
 							<li><a href="#private-auctions">Private Auctions</a></li>
+							<li><a href="#airdrops-and-email-whitelisting">Airdrops and Email Whitelisting</a></li>
 							<li><a href="#sharing-sale-fees-with-opensea">Sharing Sale Fees with OpenSea</a></li>
 							<li><a href="#listening-to-events">Listening to Events</a></li>
 						</ul>
@@ -104,6 +107,7 @@
 							<li><a href="#example-code">Example Code</a></li>
 						</ul>
 					</li>
+					<li><a href="#migrating-to-version-06">Migrating to version 0.6</a></li>
 					<li><a href="#development-information">Development Information</a></li>
 				</ul>
 				<h2 id="synopsis">Synopsis</h2>
@@ -144,11 +148,14 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 <span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x1234..."</span>
 
 <span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({
-  tokenId,
-  tokenAddress,
+  <span class="hljs-attr">asset</span>: {
+    tokenId,
+    tokenAddress,
+  },
   accountAddress,
   <span class="hljs-comment">// Value of the offer, in units of the payment token (or wrapped ETH if none is specified):</span>
   startAmount: <span class="hljs-number">1.2</span>,
+  schemaName <span class="hljs-comment">// WyvernSchemaName. If omitted, defaults to 'ERC721'</span>
   <span class="hljs-comment">// Read below for other options</span>
 })
 </code></pre>
@@ -166,6 +173,33 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 })
 </code></pre>
 				<p>When you bid on multiple assets, an email will be sent to the owner if a bundle exists on OpenSea that contains the assets. In the future, OpenSea will send emails to multiple owners if the assets aren&#39;t all owned by the same wallet.</p>
+				<h4 id="bidding-on-ens-short-name-auctions">Bidding on ENS Short Name Auctions</h4>
+				<p>The Ethereum Name Service (ENS) is auctioning short (3-6 character) names that can be used for labeling wallet addresses and more. Learn more on the <a href="https://opensea.io/ens">ENS FAQ</a>.</p>
+				<p>To bid, you must use the ENS Short Name schema:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> {
+  tokenId,
+  <span class="hljs-comment">// Token address should be `0xfac7bea255a6990f749363002136af6556b31e04` on mainnet</span>
+  tokenAddress,
+  <span class="hljs-comment">// Name must have `.eth` at the end and correspond with the tokenId</span>
+  name
+} = ENS_ASSET <span class="hljs-comment">// You can get an ENS asset from `seaport.api.getAsset(...)`</span>
+<span class="hljs-comment">// The bidder's wallet address:</span>
+<span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x1234..."</span>
+
+<span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({
+  <span class="hljs-attr">asset</span>: {
+    tokenId,
+    tokenAddress,
+    name
+  },
+  accountAddress,
+  <span class="hljs-comment">// Value of the offer, in wrapped ETH</span>
+  startAmount: <span class="hljs-number">1.2</span>,
+  <span class="hljs-comment">// Only works for the short-name auction, not ENS names</span>
+  <span class="hljs-comment">// that have been sold once already</span>
+  schemaName: <span class="hljs-string">"ENSShortNameAuction"</span>
+})
+</code></pre>
 				<h3 id="making-auctions">Making Auctions</h3>
 				<p>To sell an asset, call <code>createSellOrder</code>. You can do a fixed-price sale, where <code>startAmount</code> is equal to <code>endAmount</code>, or a declining <a href="https://en.wikipedia.org/wiki/Dutch_auction">Dutch auction</a>, where <code>endAmount</code> is lower and the price declines until <code>expirationTime</code> is hit:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire this auction one day from now.</span>
@@ -173,8 +207,10 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 <span class="hljs-keyword">const</span> expirationTime = (<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
 
 <span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({
-  tokenId,
-  tokenAddress,
+  <span class="hljs-attr">asset</span>: {
+    tokenId,
+    tokenAddress,
+  },
   accountAddress,
   <span class="hljs-attr">startAmount</span>: <span class="hljs-number">3</span>,
   <span class="hljs-comment">// If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order:</span>
@@ -279,14 +315,16 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   <span class="hljs-attr">schemaName</span>: <span class="hljs-string">"ERC1155"</span>
 })
 </code></pre>
-				<p>To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in a <code>FungibleToken</code> as the <code>asset</code>, set <code>schemaName</code> to &quot;ERC20&quot;, and include <code>quantity</code> to indicate how many:</p>
-				<pre><code class="lang-JavaScript">
+				<p>To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an <code>OpenSeaFungibleToken</code> as the <code>asset</code>, set <code>schemaName</code> to &quot;ERC20&quot;, and include <code>quantity</code> in base units (e.g. wei) to indicate how many.</p>
+				<p>Example for transfering 2 DAI ($2) to another address:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> paymentToken = (<span class="hljs-keyword">await</span> seaport.api.getPaymentTokens({ <span class="hljs-attr">symbol</span>: <span class="hljs-string">'DAI'</span>}))[<span class="hljs-number">0</span>]
+<span class="hljs-keyword">const</span> quantity = <span class="hljs-keyword">new</span> BigNumber(<span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, paymentToken.decimals)).times(<span class="hljs-number">2</span>)
 <span class="hljs-keyword">const</span> transactionHash = <span class="hljs-keyword">await</span> seaport.transfer({
-  <span class="hljs-attr">asset</span>: { tokenAddress },
+  <span class="hljs-attr">asset</span>: { <span class="hljs-attr">tokenAddress</span>: paymentToken.address },
   fromAddress, <span class="hljs-comment">// Must own the tokens</span>
   toAddress,
   <span class="hljs-attr">schemaName</span>: <span class="hljs-string">"ERC20"</span>
-  quantity: <span class="hljs-number">2.6</span>
+  quantity
 })
 </code></pre>
 				<p>For more information, check out the documentation for WyvernSchemas on <a href="https://projectopensea.github.io/opensea-js/">https://projectopensea.github.io/opensea-js/</a>.</p>
@@ -320,7 +358,17 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 				<p><strong>NOTE:</strong> The final bounty in the example above will be 10% from the seller plus 1% from OpenSea, or 11 ETH in total!</p>
 				<p>Developers can request to increase the OpenSea fee to allow for higher bounties - by default, it&#39;s capped at 2.5%. If you have any questions, contact us at <a href="mailto:contact@opensea.io">contact@opensea.io</a> (or in <a href="https://discord.gg/ga8EJbv">Discord</a>), or join the program at <a href="https://opensea.io/account#referrals">https://opensea.io/account#referrals</a>.</p>
 				<h2 id="advanced">Advanced</h2>
-				<p>Interested in making bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.</p>
+				<p>Interested in purchasing for users server-side or with a bot, making bundling items together, or making bids in different ERC-20 tokens? OpenSea.js can help with that.</p>
+				<h3 id="purchasing-items-for-other-users">Purchasing Items for Other Users</h3>
+				<p>You can buy and transfer an item to someone else in one step! Just pass the <code>recipientAddress</code> parameter:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrder({ <span class="hljs-attr">side</span>: OrderSide.Sell, ... })
+<span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({
+  order,
+  accountAddress, <span class="hljs-comment">// The address of your wallet, which will sign the transaction</span>
+  recipientAddress <span class="hljs-comment">// The address of the recipient, i.e. the wallet you're purchasing on behalf of</span>
+})
+</code></pre>
+				<p>If the order is a sell order (<code>order.side === OrderSide.Sell</code>), the taker is the <em>buyer</em> and this will prompt the buyer to pay for the item(s) but send them to the <code>recipientAddress</code>. If the order is a buy order ( <code>OrderSide.Buy</code>), the taker is the <em>seller</em> but the bid amount be sent to the <code>recipientAddress</code>.</p>
 				<h3 id="bulk-transfers">Bulk Transfers</h3>
 				<p>A handy feature in OpenSea.js is the ability to transfer multiple items at once in a single transaction. This works by grouping together as many <code>transferFrom</code> calls as the Ethereum gas limit allows, which is usually under 30 items, for most item contracts.</p>
 				<p>To make a bulk transfer, it&#39;s just one call:</p>
@@ -348,7 +396,6 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 				<p>The parameter <code>paymentTokenAddress</code> is the address of the ERC-20 token to accept in return. If it&#39;s <code>undefined</code> or <code>null</code>, the amount is assumed to be in Ether.</p>
 				<p>Wait what, you can use other currencies than ETH?</p>
 				<h3 id="using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</h3>
-				<p><strong>New in version 0.3:</strong> now you can make auctions and offers in whatever ERC-20 token you want! Just specify the token&#39;s contract address as the <code>paymentTokenAddress</code> when creating the order.</p>
 				<p>Here&#39;s an example of listing the Genesis CryptoKitty for $100! No more needing to worry about the exchange rate:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Token address for the DAI stablecoin, which is pegged to $1 USD</span>
 <span class="hljs-keyword">const</span> paymentTokenAddress = <span class="hljs-string">"0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359"</span>
@@ -362,21 +409,22 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   paymentTokenAddress
 })
 </code></pre>
-				<p>You can use <code>getFungibleTokens</code> to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> seaport.getFungibleTokens({ <span class="hljs-attr">symbol</span>: <span class="hljs-string">'MANA'</span>})[<span class="hljs-number">0</span>]
+				<p>You can use <code>getPaymentTokens</code> to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> seaport.api.getPaymentTokens({ <span class="hljs-attr">symbol</span>: <span class="hljs-string">'MANA'</span>})[<span class="hljs-number">0</span>]
 
 <span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrders({
   <span class="hljs-attr">side</span>: OrderSide.Sell,
   <span class="hljs-attr">payment_token_address</span>: token.address
 })
 </code></pre>
-				<p><strong>Fun note:</strong> all ERC-20 tokens are allowed! This means you can create crazy offers on crypto collectibles <strong>using your own ERC-20 token</strong>. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea for the near future:</p>
+				<p><strong>Fun note:</strong> soon, all ERC-20 tokens will be allowed! This will mean you can create crazy offers on crypto collectibles <strong>using your own ERC-20 token</strong>. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea:</p>
 				<ul>
 					<li>MANA, Decentraland&#39;s currency: <a href="https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942">https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942</a> </li>
 					<li>DAI, Maker&#39;s stablecoin, pegged to $1 USD: <a href="https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359">https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359</a></li>
+					<li>And tons more! See the &quot;Currencies&quot; list in the sidebar on <a href="https://opensea.io/assets">https://opensea.io/assets</a> for a full list, or contact us to add yours: <a href="https://discord.gg/ga8EJbv">Discord</a></li>
 				</ul>
 				<h3 id="private-auctions">Private Auctions</h3>
-				<p>Now you can make auctions and listings that can only be fulfilled by an address of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on OpenSea, <strong>without having to trust that the counterparty will abide by your terms!</strong></p>
+				<p>Now you can make auctions and listings that can only be fulfilled by an address or email of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on OpenSea, <strong>without having to trust that the counterparty will abide by your terms!</strong></p>
 				<p>Here&#39;s an example of listing a Decentraland parcel for 10 ETH with a specific buyer address allowed to take it. No more needing to worry about whether they&#39;ll give you enough back!</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Address allowed to buy from you</span>
 <span class="hljs-keyword">const</span> buyerAddress = <span class="hljs-string">"0x123..."</span>
@@ -387,6 +435,19 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   accountAddress: OWNERS_WALLET_ADDRESS,
   <span class="hljs-attr">startAmount</span>: <span class="hljs-number">10</span>,
   buyerAddress
+})
+</code></pre>
+				<h3 id="airdrops-and-email-whitelisting">Airdrops and Email Whitelisting</h3>
+				<p>These work similarly to <a href="#private-auctions">Private Auctions</a>. Just create a private sell order targeted to a specific email. The buyer will have to verify that email to fulfill the order. For example,</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Email allowed to buy from you</span>
+<span class="hljs-keyword">const</span> buyerEmail = <span class="hljs-string">"captain@byer.com"</span>
+
+<span class="hljs-keyword">const</span> listing = <span class="hljs-keyword">await</span> seaport.createSellOrder({
+  <span class="hljs-attr">tokenAddress</span>: <span class="hljs-string">"0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d"</span>, <span class="hljs-comment">// Decentraland</span>
+  tokenId: <span class="hljs-string">"115792089237316195423570985008687907832853042650384256231655107562007036952461"</span>, <span class="hljs-comment">// Token ID</span>
+  accountAddress: OWNERS_WALLET_ADDRESS,
+  <span class="hljs-attr">startAmount</span>: <span class="hljs-number">10</span>,
+  buyerEmail
 })
 </code></pre>
 				<h3 id="sharing-sale-fees-with-opensea">Sharing Sale Fees with OpenSea</h3>
@@ -473,11 +534,27 @@ handleSeaportEvents() {
 				<h3 id="example-code">Example Code</h3>
 				<p>Check out the <a href="https://github.com/ProjectOpenSea/ships-log">Ship&#39;s Log</a>, built with the SDK, which shows the recent orders in the OpenSea orderbook.</p>
 				<p>You can view a live demo <a href="https://ships-log.herokuapp.com/">here</a>! Also check out the <a href="https://mythereum.io/marketplace">Mythereum marketplace</a>, which is entirely powered by OpenSea.js.</p>
+				<h2 id="migrating-to-version-0-6">Migrating to version 0.6</h2>
+				<p>Version 0.6 introduces some major new features, including trading fungible and semi-fungible assets (including ERC-20 and ERC-1155 assets). These have been architected to maximize backwards compatibility, but there were a few breaking changes:</p>
+				<ul>
+					<li>The <code>Asset</code> type now has <code>version</code> instead of <code>nftVersion</code> as a property</li>
+					<li>Similarly, the <code>NFTVersion</code> type has been renamed <code>TokenStandardVersion</code></li>
+					<li><code>computeFees</code> now takes in a single, annotated OpenSeaAsset as a parameter instead of a list of assets</li>
+					<li>In <code>isAssetTransferrable</code>, <code>didOwnerApprove</code> was renamed to <code>useProxy</code></li>
+				</ul>
+				<p>Non-breaking changes with deprecation notices:</p>
+				<ul>
+					<li><code>getFungibleTokens</code> has been deprecated. Use <code>api.getPaymentTokens</code></li>
+					<li>Methods now show a deprecation warning when used with <code>tokenId</code> or <code>tokenAddress</code> as arguments, instead of using <code>asset</code> or <code>assets</code> (of type <code>Asset</code>/<code>Asset[]</code>)</li>
+				</ul>
 				<h2 id="development-information">Development Information</h2>
 				<p><strong>Setup</strong></p>
 				<p><a href="https://nodejs.org/en/">Node &gt;= v8.11.2</a> required.</p>
 				<p>Before any development, install the required NPM dependencies:</p>
 				<pre><code class="lang-bash">npm install
+</code></pre>
+				<p>And install TypeScript if you haven&#39;t already:</p>
+				<pre><code class="lang-bash">npm install -g tslint typescript
 </code></pre>
 				<p><strong>Build</strong></p>
 				<p>Then, lint and build the library into the <code>lib</code> directory:</p>
@@ -512,19 +589,22 @@ handleSeaportEvents() {
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-enum">
+						<a href="enums/assetcontracttype.html" class="tsd-kind-icon">Asset<wbr>Contract<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-enum">
 						<a href="enums/eventtype.html" class="tsd-kind-icon">Event<wbr>Type</a>
 					</li>
 					<li class=" tsd-kind-enum">
 						<a href="enums/feemethod.html" class="tsd-kind-icon">Fee<wbr>Method</a>
 					</li>
 					<li class=" tsd-kind-enum">
-						<a href="enums/nftversion.html" class="tsd-kind-icon">NFTVersion</a>
-					</li>
-					<li class=" tsd-kind-enum">
 						<a href="enums/orderside.html" class="tsd-kind-icon">Order<wbr>Side</a>
 					</li>
 					<li class=" tsd-kind-enum">
 						<a href="enums/salekind.html" class="tsd-kind-icon">Sale<wbr>Kind</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/tokenstandardversion.html" class="tsd-kind-icon">Token<wbr>Standard<wbr>Version</a>
 					</li>
 					<li class=" tsd-kind-enum">
 						<a href="enums/wyvernassetlocation.html" class="tsd-kind-icon">Wyvern<wbr>Asset<wbr>Location</a>
@@ -543,9 +623,6 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/eventdata.html" class="tsd-kind-icon">Event<wbr>Data</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/fungibletokenquery.html" class="tsd-kind-icon">Fungible<wbr>Token<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/openseaapiconfig.html" class="tsd-kind-icon">Open<wbr>SeaAPIConfig</a>
@@ -575,6 +652,12 @@ handleSeaportEvents() {
 						<a href="interfaces/openseafees.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Fees</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="interfaces/openseafungibletoken.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Fungible<wbr>Token</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/openseafungibletokenquery.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Fungible<wbr>Token<wbr>Query</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="interfaces/order.html" class="tsd-kind-icon">Order</a>
 					</li>
 					<li class=" tsd-kind-interface">
@@ -596,28 +679,19 @@ handleSeaportEvents() {
 						<a href="interfaces/unsignedorder.html" class="tsd-kind-icon">Unsigned<wbr>Order</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/wyvernasset.html" class="tsd-kind-icon">Wyvern<wbr>Asset</a>
-					</li>
-					<li class=" tsd-kind-interface">
 						<a href="interfaces/wyvernbundle.html" class="tsd-kind-icon">Wyvern<wbr>Bundle</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/wyvernensnameasset.html" class="tsd-kind-icon">WyvernENSName<wbr>Asset</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/wyvernerc1155asset.html" class="tsd-kind-icon">WyvernERC1155<wbr>Asset</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/wyvernerc20asset.html" class="tsd-kind-icon">WyvernERC20<wbr>Asset</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/wyvernerc721asset.html" class="tsd-kind-icon">WyvernERC721<wbr>Asset</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/wyvernftasset.html" class="tsd-kind-icon">WyvernFTAsset</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/wyvernnftasset.html" class="tsd-kind-icon">WyvernNFTAsset</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#fungibletoken" class="tsd-kind-icon">Fungible<wbr>Token</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#fungibletokenquery" class="tsd-kind-icon">Fungible<wbr>Token<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#partialreadonlycontractabi" class="tsd-kind-icon">Partial<wbr>Readonly<wbr>Contract<wbr>Abi</a>
@@ -630,6 +704,9 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#web3rpccallback" class="tsd-kind-icon">Web3RPCCallback</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#wyvernasset" class="tsd-kind-icon">Wyvern<wbr>Asset</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#wyvernatomicmatchparameters" class="tsd-kind-icon">Wyvern<wbr>Atomic<wbr>Match<wbr>Parameters</a>
@@ -647,6 +724,18 @@ handleSeaportEvents() {
 						<a href="globals.html#api_version" class="tsd-kind-icon">API_<wbr>VERSION</a>
 					</li>
 					<li class=" tsd-kind-variable">
+						<a href="globals.html#cheeze_wizards_basic_tournament_address" class="tsd-kind-icon">CHEEZE_<wbr>WIZARDS_<wbr>BASIC_<wbr>TOURNAMENT_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#cheeze_wizards_basic_tournament_rinkeby_address" class="tsd-kind-icon">CHEEZE_<wbr>WIZARDS_<wbr>BASIC_<wbr>TOURNAMENT_<wbr>RINKEBY_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#cheeze_wizards_guild_address" class="tsd-kind-icon">CHEEZE_<wbr>WIZARDS_<wbr>GUILD_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#cheeze_wizards_guild_rinkeby_address" class="tsd-kind-icon">CHEEZE_<wbr>WIZARDS_<wbr>GUILD_<wbr>RINKEBY_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
 						<a href="globals.html#ck_address" class="tsd-kind-icon">CK_<wbr>ADDRESS</a>
 					</li>
 					<li class=" tsd-kind-variable">
@@ -654,6 +743,15 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#canonicalweth" class="tsd-kind-icon">CanonicalWETH</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#cheezewizardsbasictournament" class="tsd-kind-icon">Cheeze<wbr>Wizards<wbr>Basic<wbr>Tournament</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#cheezewizardsguild" class="tsd-kind-icon">Cheeze<wbr>Wizards<wbr>Guild</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#decentraland_estate_address" class="tsd-kind-icon">DECENTRALAND_<wbr>ESTATE_<wbr>ADDRESS</a>
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#default_buyer_fee_basis_points" class="tsd-kind-icon">DEFAULT_<wbr>BUYER_<wbr>FEE_<wbr>BASIS_<wbr>POINTS</a>
@@ -668,13 +766,22 @@ handleSeaportEvents() {
 						<a href="globals.html#default_seller_fee_basis_points" class="tsd-kind-icon">DEFAULT_<wbr>SELLER_<wbr>FEE_<wbr>BASIS_<wbr>POINTS</a>
 					</li>
 					<li class=" tsd-kind-variable">
+						<a href="globals.html#default_wrapped_nft_liquidation_uniswap_slippage_in_basis_points" class="tsd-kind-icon">DEFAULT_<wbr>WRAPPED_<wbr>NFT_<wbr>LIQUIDATION_<wbr>UNISWAP_<wbr>SLIPPAGE_<wbr>IN_<wbr>BASIS_<wbr>POINTS</a>
+					</li>
+					<li class=" tsd-kind-variable">
 						<a href="globals.html#dep_infura_key" class="tsd-kind-icon">DEP_<wbr>INFURA_<wbr>KEY</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#decentralandestates" class="tsd-kind-icon">Decentraland<wbr>Estates</a>
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#enjin_address" class="tsd-kind-icon">ENJIN_<wbr>ADDRESS</a>
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#enjin_coin_address" class="tsd-kind-icon">ENJIN_<wbr>COIN_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#enjin_legacy_address" class="tsd-kind-icon">ENJIN_<wbr>LEGACY_<wbr>ADDRESS</a>
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#erc1155" class="tsd-kind-icon">ERC1155</a>
@@ -734,16 +841,76 @@ handleSeaportEvents() {
 						<a href="globals.html#site_host_rinkeby" class="tsd-kind-icon">SITE_<wbr>HOST_<wbr>RINKEBY</a>
 					</li>
 					<li class=" tsd-kind-variable">
+						<a href="globals.html#static_call_cheeze_wizards_address" class="tsd-kind-icon">STATIC_<wbr>CALL_<wbr>CHEEZE_<wbr>WIZARDS_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#static_call_cheeze_wizards_rinkeby_address" class="tsd-kind-icon">STATIC_<wbr>CALL_<wbr>CHEEZE_<wbr>WIZARDS_<wbr>RINKEBY_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#static_call_decentraland_estates_address" class="tsd-kind-icon">STATIC_<wbr>CALL_<wbr>DECENTRALAND_<wbr>ESTATES_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#static_call_tx_origin_address" class="tsd-kind-icon">STATIC_<wbr>CALL_<wbr>TX_<wbr>ORIGIN_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#static_call_tx_origin_rinkeby_address" class="tsd-kind-icon">STATIC_<wbr>CALL_<wbr>TX_<wbr>ORIGIN_<wbr>RINKEBY_<wbr>ADDRESS</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#staticcheckcheezewizards" class="tsd-kind-icon">Static<wbr>Check<wbr>Cheeze<wbr>Wizards</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#staticcheckdecentralandestates" class="tsd-kind-icon">Static<wbr>Check<wbr>Decentraland<wbr>Estates</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#staticchecktxorigin" class="tsd-kind-icon">Static<wbr>Check<wbr>TxOrigin</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#uniswap_factory_address_mainnet" class="tsd-kind-icon">UNISWAP_<wbr>FACTORY_<wbr>ADDRESS_<wbr>MAINNET</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#uniswap_factory_address_rinkeby" class="tsd-kind-icon">UNISWAP_<wbr>FACTORY_<wbr>ADDRESS_<wbr>RINKEBY</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#uniswapexchange" class="tsd-kind-icon">Uniswap<wbr>Exchange</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#uniswapfactory" class="tsd-kind-icon">Uniswap<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#wrapped_nft_factory_address_mainnet" class="tsd-kind-icon">WRAPPED_<wbr>NFT_<wbr>FACTORY_<wbr>ADDRESS_<wbr>MAINNET</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#wrapped_nft_factory_address_rinkeby" class="tsd-kind-icon">WRAPPED_<wbr>NFT_<wbr>FACTORY_<wbr>ADDRESS_<wbr>RINKEBY</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#wrapped_nft_liquidation_proxy_address_mainnet" class="tsd-kind-icon">WRAPPED_<wbr>NFT_<wbr>LIQUIDATION_<wbr>PROXY_<wbr>ADDRESS_<wbr>MAINNET</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#wrapped_nft_liquidation_proxy_address_rinkeby" class="tsd-kind-icon">WRAPPED_<wbr>NFT_<wbr>LIQUIDATION_<wbr>PROXY_<wbr>ADDRESS_<wbr>RINKEBY</a>
+					</li>
+					<li class=" tsd-kind-variable">
 						<a href="globals.html#wyvern_exchange_address_mainnet" class="tsd-kind-icon">WYVERN_<wbr>EXCHANGE_<wbr>ADDRESS_<wbr>MAINNET</a>
 					</li>
 					<li class=" tsd-kind-variable">
 						<a href="globals.html#wyvern_exchange_address_rinkeby" class="tsd-kind-icon">WYVERN_<wbr>EXCHANGE_<wbr>ADDRESS_<wbr>RINKEBY</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#wrappednft" class="tsd-kind-icon">WrappedNFT</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#wrappednftfactory" class="tsd-kind-icon">WrappedNFTFactory</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#wrappednftliquidationproxy" class="tsd-kind-icon">WrappedNFTLiquidation<wbr>Proxy</a>
 					</li>
 					<li class=" tsd-kind-variable tsd-is-not-exported">
 						<a href="globals.html#txcallbacks" class="tsd-kind-icon">tx<wbr>Callbacks</a>
 					</li>
 					<li class=" tsd-kind-function tsd-is-not-exported">
 						<a href="globals.html#_throworcontinue" class="tsd-kind-icon">_throw<wbr>OrContinue</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#annotateerc721transferabi" class="tsd-kind-icon">annotateERC721<wbr>TransferABI</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#assetbundlefromjson" class="tsd-kind-icon">asset<wbr>Bundle<wbr>FromJSON</a>
@@ -785,9 +952,6 @@ handleSeaportEvents() {
 						<a href="globals.html#event" class="tsd-kind-icon">event</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="globals.html#findasset" class="tsd-kind-icon">find<wbr>Asset</a>
-					</li>
-					<li class=" tsd-kind-function">
 						<a href="globals.html#getcurrentgasprice" class="tsd-kind-icon">get<wbr>Current<wbr>Gas<wbr>Price</a>
 					</li>
 					<li class=" tsd-kind-function">
@@ -800,16 +964,22 @@ handleSeaportEvents() {
 						<a href="globals.html#gettransferfeesettings" class="tsd-kind-icon">get<wbr>Transfer<wbr>Fee<wbr>Settings</a>
 					</li>
 					<li class=" tsd-kind-function">
+						<a href="globals.html#getwyvernasset" class="tsd-kind-icon">get<wbr>Wyvern<wbr>Asset</a>
+					</li>
+					<li class=" tsd-kind-function">
 						<a href="globals.html#getwyvernbundle" class="tsd-kind-icon">get<wbr>Wyvern<wbr>Bundle</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="globals.html#getwyvernensnameasset" class="tsd-kind-icon">get<wbr>WyvernENSName<wbr>Asset</a>
+						<a href="globals.html#getwyvernftasset" class="tsd-kind-icon">get<wbr>WyvernFTAsset</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#getwyvernnftasset" class="tsd-kind-icon">get<wbr>WyvernNFTAsset</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#makebignumber" class="tsd-kind-icon">make<wbr>Big<wbr>Number</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#ondeprecated" class="tsd-kind-icon">on<wbr>Deprecated</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#orderfromjson" class="tsd-kind-icon">order<wbr>FromJSON</a>
@@ -847,8 +1017,8 @@ handleSeaportEvents() {
 					<li class=" tsd-kind-object-literal">
 						<a href="globals.html#decentraland_auction_config" class="tsd-kind-icon">DECENTRALAND_<wbr>AUCTION_<wbr>CONFIG</a>
 					</li>
-					<li class=" tsd-kind-object-literal">
-						<a href="globals.html#erc721_v1_transfer_annotated_abi" class="tsd-kind-icon">ERC721_<wbr><wbr>V1_<wbr>TRANSFER_<wbr>ANNOTATED_<wbr>ABI</a>
+					<li class=" tsd-kind-object-literal tsd-is-not-exported">
+						<a href="globals.html#schema_name_to_asset_contract_type" class="tsd-kind-icon">SCHEMA_<wbr>NAME_<wbr>TO_<wbr>ASSET_<wbr>CONTRACT_<wbr>TYPE</a>
 					</li>
 					<li class=" tsd-kind-object-literal tsd-is-not-exported">
 						<a href="globals.html#proxyabi" class="tsd-kind-icon">proxyABI</a>

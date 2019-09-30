@@ -147,8 +147,8 @@ export declare class OpenSeaPort {
      * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
      * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
-     * @param sellOrder Optional sell order (like an English auction) to ensure fee compatibility
-     * @param schemaName The Wyvern schema name corresponding to the asset type
+     * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
+     * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
      */
     createBundleBuyOrder({ tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, schemaName }: {
         tokenIds?: string[];
@@ -174,8 +174,8 @@ export declare class OpenSeaPort {
      * @param quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
      * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
-     * @param sellOrder Optional sell order (like an English auction) to ensure fee compatibility
-     * @param schemaName The Wyvern schema name corresponding to the asset type
+     * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
+     * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
      */
     createBuyOrder({ tokenId, tokenAddress, asset, accountAddress, startAmount, quantity, expirationTime, paymentTokenAddress, sellOrder, schemaName }: {
         tokenId?: string;
