@@ -38,29 +38,29 @@ const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
 
 suite('seaport: static calls', () => {
 
-    test.only("Rinkeby StaticCall Tx.Origin", async () => {
-      const accountAddress = ALEX_ADDRESS
-      const takerAddress = ALEX_ADDRESS_2
-      const amountInToken = 2
+  test("Rinkeby StaticCall Tx.Origin", async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
+    const amountInToken = 2
 
-      const order = orderFromJSON(englishSellOrderJSON)
+    const order = orderFromJSON(englishSellOrderJSON)
 
-      order.staticTarget = STATIC_CALL_TX_ORIGIN_ADDRESS
-      order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'), [takerAddress])
-      //order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesHardcodedAddress'), [])
+    order.staticTarget = STATIC_CALL_TX_ORIGIN_ADDRESS
+    order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'), [takerAddress])
+    //order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesHardcodedAddress'), [])
 
-      await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
-      // Make sure match is valid
-      await testMatchingOrder(order, takerAddress, true, undefined, rinkebyClient);
+    await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingOrder(order, takerAddress, true, undefined, rinkebyClient);
 
-      try {
-        await testMatchingOrder(order, DEVIN_ADDRESS, true, undefined, rinkebyClient)
-      } catch (e) {
-        // It works!
-        return
-      }
-      assert.fail()
-    })
+    try {
+      await testMatchingOrder(order, DEVIN_ADDRESS, true, undefined, rinkebyClient)
+    } catch (e) {
+      // It works!
+      return
+    }
+    assert.fail()
+  })
   /*
   test.skip("Mainnet StaticCall Decentraland", async () => {
     // Mainnet Decentraland Estate owner
