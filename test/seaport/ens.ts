@@ -63,7 +63,6 @@ suite.only('seaport: ENS names', () => {
 
   test("Short names should all exist and have some open auctions", async () => {
     const now =  new Date().getTime() / 1000
-    console.warn(`Current time is ${now}`)
     for (const tokenId of tokenIdsForNames) {
       const asset = await rinkebyClient.api.getAsset(ENS_ADDRESS, tokenId)
       if (!asset.sellOrders || !asset.sellOrders.length) {
@@ -80,6 +79,8 @@ suite.only('seaport: ENS names', () => {
       return
     }
     startAmount = +auction.currentPrice.dividedBy(1e18)
+    console.warn(`Current time is ${now}`)
+    console.warn(`Bid amount is ${startAmount}`)
   })
 
   test("Auctions should accept new bids via the SDK", async () => {
@@ -119,7 +120,7 @@ suite.only('seaport: ENS names', () => {
     }
   })
 
-  test("Auctions should NOT get bids with wrong target", async () => {
+  test("Auctions should NOT allow bids with wrong target", async () => {
     const auction = auctions[0]
     const asset = auction.asset as OpenSeaAsset
     try {
@@ -133,8 +134,84 @@ suite.only('seaport: ENS names', () => {
         extraBountyBasisPoints: 0,
         schemaName: WyvernSchemaName.ENSShortNameAuction
       })
+      order.target = ENS_ADDRESS
       const orderWithSignature = await rinkebyClient._hashAndSignOrder(order)
       await rinkebyClient.api.postOrder(orderToJSON(orderWithSignature))
+      assert.fail()
+    } catch (error) {
+      // pass
+    }
+  })
+
+  test("Auctions should NOT allow bids with wrong calldata", async () => {
+    const auction = auctions[0]
+    const asset = auction.asset as OpenSeaAsset
+    try {
+      const order = await rinkebyClient._makeBuyOrder({
+        asset,
+        quantity: 1,
+        accountAddress,
+        startAmount,
+        expirationTime: 0,
+        paymentTokenAddress: wethAddress,
+        extraBountyBasisPoints: 0,
+        schemaName: WyvernSchemaName.ENSShortNameAuction
+      })
+      order.calldata += "0"
+      const orderWithSignature = await rinkebyClient._hashAndSignOrder(order)
+      await rinkebyClient.api.postOrder(orderToJSON(orderWithSignature))
+      assert.fail()
+    } catch (error) {
+      // pass
+    }
+  })
+
+  test("Auctions should NOT allow bids with wrong payment token", async () => {
+    const auction = auctions[0]
+    const asset = auction.asset as OpenSeaAsset
+    try {
+      await rinkebyClient.createBuyOrder({
+        asset: {
+          tokenId: asset.tokenId,
+          tokenAddress: asset.tokenAddress
+        },
+        accountAddress,
+        startAmount,
+        paymentTokenAddress: manaAddress
+      })
+      assert.fail()
+    } catch (error) {
+      // pass
+    }
+  })
+
+  test("Auctions should NOT allow bids with invalid prices", async () => {
+    const auction = auctions[0]
+    const asset = auction.asset as OpenSeaAsset
+    try {
+      await rinkebyClient.createBuyOrder({
+        asset: {
+          tokenId: asset.tokenId,
+          tokenAddress: asset.tokenAddress
+        },
+        accountAddress,
+        startAmount: 0.01
+      })
+      assert.fail()
+    } catch (error) {
+      // pass
+    }
+
+    // Deny slightly-higher bids
+    try {
+      await rinkebyClient.createBuyOrder({
+        asset: {
+          tokenId: asset.tokenId,
+          tokenAddress: asset.tokenAddress
+        },
+        accountAddress,
+        startAmount: startAmount + 0.0001
+      })
       assert.fail()
     } catch (error) {
       // pass
