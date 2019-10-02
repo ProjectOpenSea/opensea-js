@@ -488,22 +488,7 @@ export class OpenSeaPort {
     // token is approved and sufficiently available
     await this._buyOrderValidationAndApprovals({ order, accountAddress })
 
-    const hashedOrder = {
-      ...order,
-      hash: getOrderHash(order)
-    }
-    let signature
-    try {
-      signature = await this._authorizeOrder(hashedOrder)
-    } catch (error) {
-      console.error(error)
-      throw new Error("You declined to authorize your offer")
-    }
-
-    const orderWithSignature = {
-      ...hashedOrder,
-      ...signature
-    }
+    const orderWithSignature = await this._hashAndSignOrder(order)
     return this.validateAndPostOrder(orderWithSignature)
   }
 
@@ -564,22 +549,7 @@ export class OpenSeaPort {
     // token is approved and sufficiently available
     await this._buyOrderValidationAndApprovals({ order, accountAddress })
 
-    const hashedOrder = {
-      ...order,
-      hash: getOrderHash(order)
-    }
-    let signature
-    try {
-      signature = await this._authorizeOrder(hashedOrder)
-    } catch (error) {
-      console.error(error)
-      throw new Error("You declined to authorize your offer")
-    }
-
-    const orderWithSignature = {
-      ...hashedOrder,
-      ...signature
-    }
+    const orderWithSignature = await this._hashAndSignOrder(order)
     return this.validateAndPostOrder(orderWithSignature)
   }
 
@@ -646,23 +616,7 @@ export class OpenSeaPort {
       await this._createEmailWhitelistEntry({ order, buyerEmail })
     }
 
-    const hashedOrder = {
-      ...order,
-      hash: getOrderHash(order)
-    }
-    let signature
-    try {
-      signature = await this._authorizeOrder(hashedOrder)
-    } catch (error) {
-      console.error(error)
-      throw new Error("You declined to authorize your auction")
-    }
-
-    const orderWithSignature = {
-      ...hashedOrder,
-      ...signature
-    }
-
+    const orderWithSignature = await this._hashAndSignOrder(order)
     return this.validateAndPostOrder(orderWithSignature)
   }
 
@@ -750,21 +704,12 @@ export class OpenSeaPort {
         await this._createEmailWhitelistEntry({ order, buyerEmail })
       }
 
-      const hashedOrder = {
-        ...order,
-        hash: getOrderHash(order)
-      }
-      let signature
+      let orderWithSignature
       try {
-        signature = await this._authorizeOrder(hashedOrder)
+        orderWithSignature = await this._hashAndSignOrder(order)
       } catch (error) {
         console.error(error)
         throw new Error("You declined to authorize your auction, or your web3 provider can't sign using personal_sign. Try 'web3-provider-engine' and make sure a mnemonic is set. Just a reminder: there's no gas needed anymore to mint tokens!")
-      }
-
-      const orderWithSignature = {
-        ...hashedOrder,
-        ...signature
       }
 
       return this.validateAndPostOrder(orderWithSignature)
@@ -856,23 +801,7 @@ export class OpenSeaPort {
 
     await this._sellOrderValidationAndApprovals({ order, accountAddress })
 
-    const hashedOrder = {
-      ...order,
-      hash: getOrderHash(order)
-    }
-    let signature
-    try {
-      signature = await this._authorizeOrder(hashedOrder)
-    } catch (error) {
-      console.error(error)
-      throw new Error("You declined to authorize your auction")
-    }
-
-    const orderWithSignature = {
-      ...hashedOrder,
-      ...signature
-    }
-
+    const orderWithSignature = await this._hashAndSignOrder(order)
     return this.validateAndPostOrder(orderWithSignature)
   }
 
@@ -1647,6 +1576,31 @@ export class OpenSeaPort {
     // Validation is called server-side
     const confirmedOrder = await this.api.postOrder(orderToJSON(order))
     return confirmedOrder
+  }
+
+  /**
+   * Hash and sign an order using the provider's private key
+   * Approves the order on-chain if the provider can't sign
+   * @param order Unhashed order
+   */
+  public async _hashAndSignOrder(order: UnhashedOrder): Promise<Order> {
+    const hashedOrder = {
+      ...order,
+      hash: getOrderHash(order)
+    }
+    let signature
+    try {
+      signature = await this._authorizeOrder(hashedOrder)
+    } catch (error) {
+      console.error(error)
+      throw new Error("You declined to authorize your order")
+    }
+
+    const orderWithSignature = {
+      ...hashedOrder,
+      ...signature
+    }
+    return orderWithSignature
   }
 
   /**
