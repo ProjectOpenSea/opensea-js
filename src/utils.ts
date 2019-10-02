@@ -397,10 +397,16 @@ export const orderToJSON = (order: Order): OrderJSON => {
 export async function personalSignAsync(web3: Web3, message: string, signerAddress: string
   ): Promise<ECSignature | null> {
 
+  if ((web3.currentProvider as any).isDapper) {
+    // Optimize Dapper - don't try signature
+    return null
+  }
+
   const signature = await promisify<Web3.JSONRPCResponsePayload>(c => web3.currentProvider.sendAsync({
-      method: 'personal_sign', // 'eth_signTypedData',
+      method: 'personal_sign',
       params: [message, signerAddress],
       from: signerAddress,
+      id: new Date().getTime()
     } as any, c)
   )
 
@@ -409,7 +415,12 @@ export async function personalSignAsync(web3: Web3, message: string, signerAddre
     return null
   }
 
-  return parseSignatureHex(signature.result)
+  try {
+    return parseSignatureHex(signature.result)
+  } catch (error) {
+    // Dapper wallet signature isn't parseable
+    return null
+  }
 }
 
 /**

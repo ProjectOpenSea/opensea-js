@@ -2887,12 +2887,13 @@ export class OpenSeaPort {
       const signature = await personalSignAsync(this.web3, message, signerAddress)
       if (signature) {
         return signature
+      } else {
+        // The web3 provider is probably a smart contract wallet
+        // Fallback to on-chain approval
+        await this._approveOrder(order)
+        // and return an empty signature
+        return {}
       }
-      // The web3 provider is probably a smart contract wallet
-      // Fallback to on-chain approval
-      await this._approveOrder(order)
-      // Return an empty signature
-      return {}
     } catch (error) {
       this._dispatch(EventType.OrderDenied, { order, accountAddress: signerAddress })
       throw error
