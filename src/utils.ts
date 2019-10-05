@@ -550,7 +550,10 @@ export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
  */
 export async function getTransferFeeSettings(
     web3: Web3,
-    { asset }: { asset: Asset }
+    { asset, accountAddress }: {
+      asset: Asset;
+      accountAddress?: string;
+    }
   ) {
   let transferFee: BigNumber | undefined
   let transferFeeTokenAddress: string | undefined
@@ -559,7 +562,11 @@ export async function getTransferFeeSettings(
     // Enjin asset
     const feeContract = web3.eth.contract(ERC1155 as any).at(asset.tokenAddress)
 
-    const params = await promisifyCall<any[]>(c => feeContract.transferSettings(asset.tokenId, c))
+    const params = await promisifyCall<any[]>(c => feeContract.transferSettings(
+        asset.tokenId,
+        { from: accountAddress },
+      c)
+    )
     if (params) {
       transferFee = makeBigNumber(params[3])
       if (params[2] == 0) {

@@ -1524,14 +1524,16 @@ export class OpenSeaPort {
    * @param asset Addresses and id of asset (null if a bundle, unless all assets are from the same contract, then the first asset)
    * @param assetContract Optional prefetched asset contract (including fees) to use instead of assets
    * @param side The side of the order (buy or sell)
+   * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
    * @param isPrivate Whether the order is private or not (known taker)
    * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
    */
   public async computeFees(
-      { asset, assetContract, side, isPrivate = false, extraBountyBasisPoints = 0 }:
+      { asset, assetContract, side, accountAddress, isPrivate = false, extraBountyBasisPoints = 0 }:
       { asset: OpenSeaAsset | null;
         assetContract?: OpenSeaAssetContract;
         side: OrderSide;
+        accountAddress?: string;
         isPrivate?: boolean;
         extraBountyBasisPoints?: number }
     ): Promise<OpenSeaFees> {
@@ -1573,7 +1575,7 @@ export class OpenSeaPort {
 
       try {
         // web3 call to update it
-        const result = await getTransferFeeSettings(this.web3, { asset })
+        const result = await getTransferFeeSettings(this.web3, { asset, accountAddress })
         transferFee = result.transferFee != null ? result.transferFee : transferFee
         transferFeeTokenAddress = result.transferFeeTokenAddress || transferFeeTokenAddress
       } catch (error) {

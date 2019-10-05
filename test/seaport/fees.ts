@@ -11,7 +11,14 @@ import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderSide, OpenSeaAssetContract, UnhashedOrder, Order } from '../../src/types'
 import { DEFAULT_SELLER_FEE_BASIS_POINTS,  DEFAULT_BUYER_FEE_BASIS_POINTS, getOrderHash, NULL_ADDRESS, OPENSEA_FEE_RECIPIENT, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_MAX_BOUNTY, ENJIN_ADDRESS, ENJIN_COIN_ADDRESS } from '../../src/utils'
-import { MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, CK_TOKEN_ID, MAINNET_API_KEY, ALEX_ADDRESS, CATS_IN_MECHS_ID } from '../constants'
+import {
+  MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS,
+  CK_ADDRESS, CK_TOKEN_ID,
+  MAINNET_API_KEY, ALEX_ADDRESS,
+  CATS_IN_MECHS_ID,
+  SPIRIT_CLASH_TOKEN_ID,
+  SPIRIT_CLASH_OWNER
+ } from '../constants'
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
@@ -207,6 +214,21 @@ suite('seaport: fees', () => {
 
     assert.equal(sellerFees.transferFee.toString(), "1000000000000000000")
     assert.equal(sellerFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS)
+  })
+
+  // TODO the transfer fee isn't showing as whitelisted by Enjin's method
+  test.skip("Computes whitelisted Enjin per-transfer fees correctly", async () => {
+
+    const whitelistedAsset = await client.api.getAsset(ENJIN_ADDRESS, SPIRIT_CLASH_TOKEN_ID)
+
+    const sellerZeroFees = await client.computeFees({
+      asset: whitelistedAsset,
+      side: OrderSide.Sell,
+      accountAddress: SPIRIT_CLASH_OWNER
+    })
+
+    assert.equal(sellerZeroFees.transferFee.toString(), "0")
+    assert.equal(sellerZeroFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS)
   })
 })
 

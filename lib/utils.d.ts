@@ -122,8 +122,9 @@ export declare function getCurrentGasPrice(web3: Web3): Promise<BigNumber>;
  * @param web3 Web3 instance
  * @param asset The asset to check for transfer fees
  */
-export declare function getTransferFeeSettings(web3: Web3, { asset }: {
+export declare function getTransferFeeSettings(web3: Web3, { asset, accountAddress }: {
     asset: Asset;
+    accountAddress?: string;
 }): Promise<{
     transferFee: BigNumber | undefined;
     transferFeeTokenAddress: string | undefined;
