@@ -447,11 +447,11 @@ export class OpenSeaPort {
    * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
    * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
-   * @param sellOrder Optional sell order (like an English auction) to ensure fee compatibility
-   * @param schemaName The Wyvern schema name corresponding to the asset type
+   * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
+   * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
    */
   public async createBundleBuyOrder(
-      { tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName = WyvernSchemaName.ERC721 }:
+      { tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName }:
       { tokenIds?: string[];
         tokenAddresses?: string[];
         assets: Asset[];
@@ -471,6 +471,9 @@ export class OpenSeaPort {
     }
 
     paymentTokenAddress = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
+    schemaName = schemaName ||
+      (sellOrder && sellOrder.metadata.schema) ||
+      WyvernSchemaName.ERC721
 
     const order = await this._makeBundleBuyOrder({
       assets,
@@ -520,11 +523,11 @@ export class OpenSeaPort {
    * @param quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
    * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
-   * @param sellOrder Optional sell order (like an English auction) to ensure fee compatibility
-   * @param schemaName The Wyvern schema name corresponding to the asset type
+   * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
+   * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
    */
   public async createBuyOrder(
-      { tokenId, tokenAddress, asset, accountAddress, startAmount, quantity = 1, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName = WyvernSchemaName.ERC721 }:
+      { tokenId, tokenAddress, asset, accountAddress, startAmount, quantity = 1, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName }:
       { tokenId?: string;
         tokenAddress?: string;
         asset: Asset;
@@ -543,6 +546,9 @@ export class OpenSeaPort {
     }
 
     paymentTokenAddress = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
+    schemaName = schemaName ||
+      (sellOrder && sellOrder.metadata.schema) ||
+      WyvernSchemaName.ERC721
 
     const order = await this._makeBuyOrder({
       asset,
@@ -2897,12 +2903,13 @@ export class OpenSeaPort {
       const signature = await personalSignAsync(this.web3, message, signerAddress)
       if (signature) {
         return signature
+      } else {
+        // The web3 provider is probably a smart contract wallet
+        // Fallback to on-chain approval
+        await this._approveOrder(order)
+        // and return an empty signature
+        return {}
       }
-      // The web3 provider is probably a smart contract wallet
-      // Fallback to on-chain approval
-      await this._approveOrder(order)
-      // Return an empty signature
-      return {}
     } catch (error) {
       this._dispatch(EventType.OrderDenied, { order, accountAddress: signerAddress })
       throw error

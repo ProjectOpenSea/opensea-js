@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>WyvernAsset | opensea-js</title>
+	<title>OpenSeaFungibleToken | opensea-js</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,34 +56,120 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="wyvernasset.html">WyvernAsset</a>
+					<a href="openseafungibletoken.html">OpenSeaFungibleToken</a>
 				</li>
 			</ul>
-			<h1>Interface WyvernAsset</h1>
+			<h1>Interface OpenSeaFungibleToken</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Full annotated Fungible Token spec with OpenSea metadata</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">WyvernAsset</span>
+						<span class="tsd-signature-type">Token</span>
 						<ul class="tsd-hierarchy">
 							<li>
-								<a href="wyvernnftasset.html" class="tsd-signature-type">WyvernNFTAsset</a>
-							</li>
-							<li>
-								<a href="wyvernftasset.html" class="tsd-signature-type">WyvernFTAsset</a>
-							</li>
-							<li>
-								<a href="wyvernensnameasset.html" class="tsd-signature-type">WyvernENSNameAsset</a>
+								<span class="target">OpenSeaFungibleToken</span>
 							</li>
 						</ul>
 					</li>
 				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="openseafungibletoken.html#address" class="tsd-kind-icon">address</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="openseafungibletoken.html#decimals" class="tsd-kind-icon">decimals</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseafungibletoken.html#ethprice" class="tsd-kind-icon">eth<wbr>Price</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="openseafungibletoken.html#imageurl" class="tsd-kind-icon">image<wbr>Url</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="openseafungibletoken.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="openseafungibletoken.html#symbol" class="tsd-kind-icon">symbol</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="address" class="tsd-anchor"></a>
+					<h3>address</h3>
+					<div class="tsd-signature tsd-kind-icon">address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from Token.address</p>
+						<ul>
+							<li>Defined in /Users/alex/Sites/Projects/Ozone/OpenSea/WORK_opensea-js/node_modules/wyvern-schemas/dist/types.d.ts:15</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="decimals" class="tsd-anchor"></a>
+					<h3>decimals</h3>
+					<div class="tsd-signature tsd-kind-icon">decimals<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from Token.decimals</p>
+						<ul>
+							<li>Defined in /Users/alex/Sites/Projects/Ozone/OpenSea/WORK_opensea-js/node_modules/wyvern-schemas/dist/types.d.ts:14</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="ethprice" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> eth<wbr>Price</h3>
+					<div class="tsd-signature tsd-kind-icon">eth<wbr>Price<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L330">types.ts:330</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="imageurl" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> image<wbr>Url</h3>
+					<div class="tsd-signature tsd-kind-icon">image<wbr>Url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L329">types.ts:329</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="name" class="tsd-anchor"></a>
+					<h3>name</h3>
+					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from Token.name</p>
+						<ul>
+							<li>Defined in /Users/alex/Sites/Projects/Ozone/OpenSea/WORK_opensea-js/node_modules/wyvern-schemas/dist/types.d.ts:12</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="symbol" class="tsd-anchor"></a>
+					<h3>symbol</h3>
+					<div class="tsd-signature tsd-kind-icon">symbol<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from Token.symbol</p>
+						<ul>
+							<li>Defined in /Users/alex/Sites/Projects/Ozone/OpenSea/WORK_opensea-js/node_modules/wyvern-schemas/dist/types.d.ts:13</li>
+						</ul>
+					</aside>
+				</section>
 			</section>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -99,7 +185,27 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="wyvernasset.html" class="tsd-kind-icon">Wyvern<wbr>Asset</a>
+						<a href="openseafungibletoken.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Fungible<wbr>Token</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="openseafungibletoken.html#address" class="tsd-kind-icon">address</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="openseafungibletoken.html#decimals" class="tsd-kind-icon">decimals</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="openseafungibletoken.html#ethprice" class="tsd-kind-icon">eth<wbr>Price</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="openseafungibletoken.html#imageurl" class="tsd-kind-icon">image<wbr>Url</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="openseafungibletoken.html#name" class="tsd-kind-icon">name</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="openseafungibletoken.html#symbol" class="tsd-kind-icon">symbol</a>
+							</li>
+						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">

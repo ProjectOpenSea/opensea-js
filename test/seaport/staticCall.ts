@@ -77,7 +77,7 @@ suite('seaport: static calls', () => {
     const amountInToken = 2
     const bountyPercent = 0
 
-    // Mainnet Decentraland
+     // Mainnet Decentraland
     const tokenId = '2898' // Mainnet DecentralandEstate TokenID
     const tokenAddress = '0x959e104e1a4db6317fa58f8295f586e1a978c297' // Mainnet DecentralandEstates Contract
 

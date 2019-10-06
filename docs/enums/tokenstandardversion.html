@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>WyvernERC721Asset | opensea-js</title>
+	<title>TokenStandardVersion | opensea-js</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,64 +56,109 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="wyvernerc721asset.html">WyvernERC721Asset</a>
+					<a href="tokenstandardversion.html">TokenStandardVersion</a>
 				</li>
 			</ul>
-			<h1>Interface WyvernERC721Asset</h1>
+			<h1>Enumeration TokenStandardVersion</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-hierarchy">
-				<h3>Hierarchy</h3>
-				<ul class="tsd-hierarchy">
-					<li>
-						<a href="wyvernnftasset.html" class="tsd-signature-type">WyvernNFTAsset</a>
-						<ul class="tsd-hierarchy">
-							<li>
-								<span class="target">WyvernERC721Asset</span>
-							</li>
-						</ul>
-					</li>
-				</ul>
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>The NFT version that this contract uses.
+							ERC721 versions are:
+							1.0: CryptoKitties and early 721s, which lack approve-all and
+							have problems calling <code>transferFrom</code> from the owner&#39;s account.
+							2.0: CryptoSaga and others that lack <code>transferFrom</code> and have
+							<code>takeOwnership</code> instead
+							3.0: The current OpenZeppelin standard:
+							<a href="https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC721/ERC721.sol">https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC721/ERC721.sol</a>
+							Special cases:
+						locked: When the transfer function has been locked by the dev</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
-						<section class="tsd-index-section tsd-is-inherited">
-							<h3>Properties</h3>
+						<section class="tsd-index-section ">
+							<h3>Enumeration members</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="wyvernerc721asset.html#address" class="tsd-kind-icon">address</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="wyvernerc721asset.html#id" class="tsd-kind-icon">id</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="tokenstandardversion.html#erc721v1" class="tsd-kind-icon">ERC721v1</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="tokenstandardversion.html#erc721v2" class="tsd-kind-icon">ERC721v2</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="tokenstandardversion.html#erc721v3" class="tsd-kind-icon">ERC721v3</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="tokenstandardversion.html#enjin" class="tsd-kind-icon">Enjin</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="tokenstandardversion.html#locked" class="tsd-kind-icon">Locked</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="tokenstandardversion.html#unsupported" class="tsd-kind-icon">Unsupported</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
-			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="address" class="tsd-anchor"></a>
-					<h3>address</h3>
-					<div class="tsd-signature tsd-kind-icon">address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Enumeration members</h2>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="erc721v1" class="tsd-anchor"></a>
+					<h3>ERC721v1</h3>
+					<div class="tsd-signature tsd-kind-icon">ERC721v1<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> =&nbsp;&quot;1.0&quot;</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="wyvernnftasset.html">WyvernNFTAsset</a>.<a href="wyvernnftasset.html#address">address</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b725e8c/src/types.ts#L166">types.ts:166</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L170">types.ts:170</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="id" class="tsd-anchor"></a>
-					<h3>id</h3>
-					<div class="tsd-signature tsd-kind-icon">id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="erc721v2" class="tsd-anchor"></a>
+					<h3>ERC721v2</h3>
+					<div class="tsd-signature tsd-kind-icon">ERC721v2<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> =&nbsp;&quot;2.0&quot;</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="wyvernnftasset.html">WyvernNFTAsset</a>.<a href="wyvernnftasset.html#id">id</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b725e8c/src/types.ts#L165">types.ts:165</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L171">types.ts:171</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="erc721v3" class="tsd-anchor"></a>
+					<h3>ERC721v3</h3>
+					<div class="tsd-signature tsd-kind-icon">ERC721v3<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> =&nbsp;&quot;3.0&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L172">types.ts:172</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="enjin" class="tsd-anchor"></a>
+					<h3>Enjin</h3>
+					<div class="tsd-signature tsd-kind-icon">Enjin<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> =&nbsp;&quot;1155-1.0&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L169">types.ts:169</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="locked" class="tsd-anchor"></a>
+					<h3>Locked</h3>
+					<div class="tsd-signature tsd-kind-icon">Locked<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> =&nbsp;&quot;locked&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L168">types.ts:168</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="unsupported" class="tsd-anchor"></a>
+					<h3>Unsupported</h3>
+					<div class="tsd-signature tsd-kind-icon">Unsupported<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> =&nbsp;&quot;unsupported&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/e57a6c8/src/types.ts#L167">types.ts:167</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -131,14 +176,26 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-interface">
-						<a href="wyvernerc721asset.html" class="tsd-kind-icon">WyvernERC721<wbr>Asset</a>
+					<li class="current tsd-kind-enum">
+						<a href="tokenstandardversion.html" class="tsd-kind-icon">Token<wbr>Standard<wbr>Version</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="wyvernerc721asset.html#address" class="tsd-kind-icon">address</a>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="tokenstandardversion.html#erc721v1" class="tsd-kind-icon">ERC721v1</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="wyvernerc721asset.html#id" class="tsd-kind-icon">id</a>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="tokenstandardversion.html#erc721v2" class="tsd-kind-icon">ERC721v2</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="tokenstandardversion.html#erc721v3" class="tsd-kind-icon">ERC721v3</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="tokenstandardversion.html#enjin" class="tsd-kind-icon">Enjin</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="tokenstandardversion.html#locked" class="tsd-kind-icon">Locked</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="tokenstandardversion.html#unsupported" class="tsd-kind-icon">Unsupported</a>
 							</li>
 						</ul>
 					</li>
