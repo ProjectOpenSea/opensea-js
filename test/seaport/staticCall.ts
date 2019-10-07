@@ -30,7 +30,7 @@ const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
   apiKey: RINKEBY_API_KEY
 }, line => console.info(`RINKEBY: ${line}`))
 
-suite.only('seaport: static calls', () => {
+suite('seaport: static calls', () => {
 
   test("Mainnet staticCall tx.origin can be applied to arbitrary order", async () => {
     const accountAddress = ALEX_ADDRESS

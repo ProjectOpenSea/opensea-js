@@ -2920,7 +2920,7 @@ export class OpenSeaPort {
     const schema = WyvernSchemas.schemas[this._networkName].filter(s => s.name == schemaName)[0]
 
     if (!schema) {
-      throw new Error('Trading for this asset is not yet supported. Please contact us or check back later!')
+      throw new Error(`Trading for this asset (${schemaName}) is not yet supported. Please contact us or check back later!`)
     }
     return schema
   }
