@@ -40,6 +40,7 @@ const ENS_ADDRESS = "0x53ceb15b76023fbec5bb39450214926f6aa77d2e"
 const NAMES = [ "123.eth", "1234.eth", "12345.eth", "123456.eth" ] // "111st.eth"
 
 let wethAddress: string
+let manaAddress: string
 let accountAddress: string
 const tokenIdsForNames: string[] = []
 const auctions: Order[] = []
@@ -54,6 +55,7 @@ suite.only('seaport: ENS names', () => {
     }
     accountAddress = ADDRESS
     wethAddress = (await rinkebyClient.api.getPaymentTokens({ symbol: 'WETH'})).tokens[0].address
+    manaAddress = (await rinkebyClient.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0].address
     for (const name of NAMES) {
       const res = await rinkebyClient.api.get(`/api/v1/misc/ens_short_name_asset/${name}/`)
       const data = await res.json()
