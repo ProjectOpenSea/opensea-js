@@ -126,7 +126,7 @@ suite.only('seaport: ENS names', () => {
       })
       assert.fail()
     } catch (error) {
-      // pass
+      console.error(error)
     }
   })
 
@@ -149,7 +149,7 @@ suite.only('seaport: ENS names', () => {
       await rinkebyClient.api.postOrder(orderToJSON(orderWithSignature))
       assert.fail()
     } catch (error) {
-      // pass
+      console.error(error)
     }
   })
 
@@ -172,7 +172,7 @@ suite.only('seaport: ENS names', () => {
       await rinkebyClient.api.postOrder(orderToJSON(orderWithSignature))
       assert.fail()
     } catch (error) {
-      // pass
+      console.error(error)
     }
   })
 
@@ -191,11 +191,11 @@ suite.only('seaport: ENS names', () => {
       })
       assert.fail()
     } catch (error) {
-      // pass
+      console.error(error)
     }
   })
 
-  test("Auctions should NOT allow bids with invalid prices", async () => {
+  test("Auctions should NOT allow bids with below min-bid prices", async () => {
     const auction = auctions[0]
     const asset = auction.asset as OpenSeaAsset
     try {
@@ -209,10 +209,13 @@ suite.only('seaport: ENS names', () => {
       })
       assert.fail()
     } catch (error) {
-      // pass
+      console.error(error)
     }
+  })
 
-    // Deny slightly-higher bids
+  test("Auctions should NOT allow bids with below min-increment prices", async () => {
+    const auction = auctions[0]
+    const asset = auction.asset as OpenSeaAsset
     try {
       await rinkebyClient.createBuyOrder({
         asset: {
@@ -224,7 +227,7 @@ suite.only('seaport: ENS names', () => {
       })
       assert.fail()
     } catch (error) {
-      // pass
+      console.error(error)
     }
   })
 })
