@@ -144,8 +144,6 @@ const {
   // Name must have `.eth` at the end and correspond with the tokenId
   name
 } = ENS_ASSET // You can get an ENS asset from `seaport.api.getAsset(...)`
-// The bidder's wallet address:
-const accountAddress = "0x1234..."
 
 const offer = await seaport.createBuyOrder({
   asset: {
@@ -153,11 +151,12 @@ const offer = await seaport.createBuyOrder({
     tokenAddress,
     name
   },
-  accountAddress,
-  // Value of the offer, in wrapped ETH
+  // Your wallet address (the bidder's address):
+  accountAddress: "0x1234..."
+  // Value of the offer, in wrapped ETH:
   startAmount: 1.2,
-  // Only works for the short-name auction, not ENS names
-  // that have been sold once already
+  // Only needed for the short-name auction, not ENS names
+  // that have been sold once already:
   schemaName: "ENSShortNameAuction"
 })
 ```

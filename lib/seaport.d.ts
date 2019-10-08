@@ -6,6 +6,7 @@ import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
     web3: Web3;
+    web3ReadOnly: Web3;
     logger: (arg: string) => void;
     readonly api: OpenSeaAPI;
     gasPriceAddition: BigNumber;
