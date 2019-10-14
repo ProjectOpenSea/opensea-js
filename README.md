@@ -23,6 +23,8 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Transferring Items or Coins (Gifting)](#transferring-items-or-coins-gifting)
 - [Affiliate Program](#affiliate-program)
   - [Referring Listings](#referring-listings)
+  - [Referring Offers](#referring-offers)
+  - [Custom Affiliate Programs](#custom-affiliate-programs)
   - [Custom Referral Bounties](#custom-referral-bounties)
 - [Advanced](#advanced)
   - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
@@ -338,22 +340,47 @@ For more information, check out the documentation for WyvernSchemas on https://p
 
 ## Affiliate Program
 
-New in version 0.4, OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It's the crypto-equivalent of bounty hunting 💰
+OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It's the crypto-equivalent of bounty hunting, and best of all, it's **fully paid for by OpenSea** so you can keep all of your winnings 💰
 
-You can use this to **win at least 1%** of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.
+If you want to be an affiliate, you can use this to **win at least 1%** of the sale price of any listing, both for assets and bundles.
 
 ### Referring Listings
 
-You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders! Whenever someone refers a sale or the acceptance of an offer, you can add a `referrerAddress` to give their wallet credit:
+You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders... **and OpenSea will pay for it!** Whenever someone refers a sale or the acceptance of an offer, you can add a `referrerAddress` to give their wallet credit:
 
 ```JavaScript
 const referrerAddress = "0x..." // The referrer's wallet address
 await this.props.seaport.fulfillOrder({ order, accountAddress, referrerAddress })
 ```
 
-This works for buying assets and bundles, along with accepting bids.
+This works for buying assets and bundles, along with accepting bids that had no referrer attached to them (see below).
 
-OpenSea will send the referrer an email congradulating them, along with **1%** of the item's sale price.
+As long as the referrer hasn't referred the buyer before, OpenSea will send the referrer an email congradulating them, along with **1%** of the item's sale price. If you'd like to be able to refer the same user for multiple purchases, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)).
+
+### Referring Offers
+
+Now you can also refer offers on assets! When the seller accepts the offer, the referrer will get credit:
+
+```JavaScript
+const referrerAddress = "0x..." // The referrer's wallet address
+await this.props.seaport.createBuyOrder({
+  asset: {
+    tokenId,
+    tokenAddress,
+  },
+  accountAddress, // Address of the bidder
+  startAmount: 1.2,
+  referrerAddress // Address of the referrer
+})
+```
+
+The same thing works for `createBundleBuyOrder`.
+
+### Custom Affiliate Programs
+
+You can use `createBuyOrder({ referrerAddress })` to create your own affiliate programs as well.
+
+When buyers place offers or bids on an asset, the referrers will automatically be recorded on OpenSea.io. Then, you can use the [Orderbook API](https://docs.opensea.io/reference#retrieving-orders) to inspect the `metadata` for orders and manually pay out referrers if you want to. The referrer will be labeled as `referrerAddress` in the `metadata` field.
 
 ### Custom Referral Bounties
 

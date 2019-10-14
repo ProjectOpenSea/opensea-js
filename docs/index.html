@@ -89,6 +89,8 @@
 					</li>
 					<li><a href="#affiliate-program">Affiliate Program</a><ul>
 							<li><a href="#referring-listings">Referring Listings</a></li>
+							<li><a href="#referring-offers">Referring Offers</a></li>
+							<li><a href="#custom-affiliate-programs">Custom Affiliate Programs</a></li>
 							<li><a href="#custom-referral-bounties">Custom Referral Bounties</a></li>
 						</ul>
 					</li>
@@ -183,8 +185,6 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   <span class="hljs-comment">// Name must have `.eth` at the end and correspond with the tokenId</span>
   name
 } = ENS_ASSET <span class="hljs-comment">// You can get an ENS asset from `seaport.api.getAsset(...)`</span>
-<span class="hljs-comment">// The bidder's wallet address:</span>
-<span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x1234..."</span>
 
 <span class="hljs-keyword">const</span> offer = <span class="hljs-keyword">await</span> seaport.createBuyOrder({
   <span class="hljs-attr">asset</span>: {
@@ -192,11 +192,12 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
     tokenAddress,
     name
   },
-  accountAddress,
-  <span class="hljs-comment">// Value of the offer, in wrapped ETH</span>
+  <span class="hljs-comment">// Your wallet address (the bidder's address):</span>
+  accountAddress: <span class="hljs-string">"0x1234..."</span>
+  <span class="hljs-comment">// Value of the offer, in wrapped ETH:</span>
   startAmount: <span class="hljs-number">1.2</span>,
-  <span class="hljs-comment">// Only works for the short-name auction, not ENS names</span>
-  <span class="hljs-comment">// that have been sold once already</span>
+  <span class="hljs-comment">// Only needed for the short-name auction, not ENS names</span>
+  <span class="hljs-comment">// that have been sold once already:</span>
   schemaName: <span class="hljs-string">"ENSShortNameAuction"</span>
 })
 </code></pre>
@@ -329,15 +330,32 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 </code></pre>
 				<p>For more information, check out the documentation for WyvernSchemas on <a href="https://projectopensea.github.io/opensea-js/">https://projectopensea.github.io/opensea-js/</a>.</p>
 				<h2 id="affiliate-program">Affiliate Program</h2>
-				<p>New in version 0.4, OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It&#39;s the crypto-equivalent of bounty hunting 💰</p>
-				<p>You can use this to <strong>win at least 1%</strong> of the sale price of any listing, both for assets and bundles. You can also allow users to win bounties by referring your items for sale.</p>
+				<p>OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It&#39;s the crypto-equivalent of bounty hunting, and best of all, it&#39;s <strong>fully paid for by OpenSea</strong> so you can keep all of your winnings 💰</p>
+				<p>If you want to be an affiliate, you can use this to <strong>win at least 1%</strong> of the sale price of any listing, both for assets and bundles.</p>
 				<h3 id="referring-listings">Referring Listings</h3>
-				<p>You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders! Whenever someone refers a sale or the acceptance of an offer, you can add a <code>referrerAddress</code> to give their wallet credit:</p>
+				<p>You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders... <strong>and OpenSea will pay for it!</strong> Whenever someone refers a sale or the acceptance of an offer, you can add a <code>referrerAddress</code> to give their wallet credit:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> referrerAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The referrer's wallet address</span>
 <span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress, referrerAddress })
 </code></pre>
-				<p>This works for buying assets and bundles, along with accepting bids.</p>
-				<p>OpenSea will send the referrer an email congradulating them, along with <strong>1%</strong> of the item&#39;s sale price.</p>
+				<p>This works for buying assets and bundles, along with accepting bids that had no referrer attached to them (see below).</p>
+				<p>As long as the referrer hasn&#39;t referred the buyer before, OpenSea will send the referrer an email congradulating them, along with <strong>1%</strong> of the item&#39;s sale price. If you&#39;d like to be able to refer the same user for multiple purchases, contact us at <a href="mailto:contact@opensea.io">contact@opensea.io</a> (or in <a href="https://discord.gg/ga8EJbv">Discord</a>).</p>
+				<h3 id="referring-offers">Referring Offers</h3>
+				<p>Now you can also refer offers on assets! When the seller accepts the offer, the referrer will get credit:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> referrerAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The referrer's wallet address</span>
+<span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.createBuyOrder({
+  <span class="hljs-attr">asset</span>: {
+    tokenId,
+    tokenAddress,
+  },
+  accountAddress, <span class="hljs-comment">// Address of the bidder</span>
+  startAmount: <span class="hljs-number">1.2</span>,
+  referrerAddress <span class="hljs-comment">// Address of the referrer</span>
+})
+</code></pre>
+				<p>The same thing works for <code>createBundleBuyOrder</code>.</p>
+				<h3 id="custom-affiliate-programs">Custom Affiliate Programs</h3>
+				<p>You can use <code>createBuyOrder({ referrerAddress })</code> to create your own affiliate programs as well.</p>
+				<p>When buyers place offers or bids on an asset, the referrers will automatically be recorded on OpenSea.io. Then, you can use the <a href="https://docs.opensea.io/reference#retrieving-orders">Orderbook API</a> to inspect the <code>metadata</code> for orders and manually pay out referrers if you want to. The referrer will be labeled as <code>referrerAddress</code> in the <code>metadata</code> field.</p>
 				<h3 id="custom-referral-bounties">Custom Referral Bounties</h3>
 				<p>Sellers can customize the bounties they add to their items when listing them for sale. By default, OpenSea will pay referrers 1% and sellers pay them nothing, but sellers can increase this up to the full OpenSea fee (currently 2.5% for most assets) for both assets and bundles:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Price the Genesis CryptoKitty at 100 ETH</span>

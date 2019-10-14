@@ -419,6 +419,7 @@ export interface UnhashedOrder extends WyvernOrder {
     asset?: WyvernAsset
     bundle?: WyvernBundle
     schema: WyvernSchemaName
+    referrerAddress?: string
   }
 }
 

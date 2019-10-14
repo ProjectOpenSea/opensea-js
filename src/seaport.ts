@@ -449,9 +449,10 @@ export class OpenSeaPort {
    * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
    * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
    * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
+   * @param referrerAddress The optional address that referred the order
    */
   public async createBundleBuyOrder(
-      { tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName }:
+      { tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName, referrerAddress }:
       { tokenIds?: string[];
         tokenAddresses?: string[];
         assets: Asset[];
@@ -460,7 +461,8 @@ export class OpenSeaPort {
         expirationTime?: number;
         paymentTokenAddress?: string;
         sellOrder?: Order;
-        schemaName?: WyvernSchemaName; }
+        schemaName?: WyvernSchemaName;
+        referrerAddress?: string; }
     ): Promise<Order> {
 
     if (!assets && tokenIds && tokenAddresses) {
@@ -483,7 +485,8 @@ export class OpenSeaPort {
       paymentTokenAddress,
       extraBountyBasisPoints: 0,
       sellOrder,
-      schemaName
+      schemaName,
+      referrerAddress
     })
 
     // NOTE not in Wyvern exchange code:
@@ -525,9 +528,10 @@ export class OpenSeaPort {
    * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
    * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
    * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
+   * @param referrerAddress The optional address that referred the order
    */
   public async createBuyOrder(
-      { tokenId, tokenAddress, asset, accountAddress, startAmount, quantity = 1, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName }:
+      { tokenId, tokenAddress, asset, accountAddress, startAmount, quantity = 1, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName, referrerAddress }:
       { tokenId?: string;
         tokenAddress?: string;
         asset: Asset;
@@ -537,7 +541,8 @@ export class OpenSeaPort {
         expirationTime?: number;
         paymentTokenAddress?: string;
         sellOrder?: Order;
-        schemaName?: WyvernSchemaName; }
+        schemaName?: WyvernSchemaName;
+        referrerAddress?: string; }
     ): Promise<Order> {
 
     if (!asset && tokenAddress && tokenId) {
@@ -559,7 +564,8 @@ export class OpenSeaPort {
       paymentTokenAddress,
       extraBountyBasisPoints: 0,
       sellOrder,
-      schemaName
+      schemaName,
+      referrerAddress
     })
 
     // NOTE not in Wyvern exchange code:
@@ -1838,7 +1844,7 @@ export class OpenSeaPort {
   }
 
   public async _makeBuyOrder(
-      { asset, quantity, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, schemaName }:
+      { asset, quantity, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, schemaName, referrerAddress }:
       { asset: Asset;
         quantity: number;
         accountAddress: string;
@@ -1847,7 +1853,8 @@ export class OpenSeaPort {
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         sellOrder?: UnhashedOrder;
-        schemaName: WyvernSchemaName; }
+        schemaName: WyvernSchemaName;
+        referrerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
     accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
@@ -1918,6 +1925,7 @@ export class OpenSeaPort {
       metadata: {
         asset: wyAsset,
         schema: schema.name as WyvernSchemaName,
+        referrerAddress
       }
     }
   }
@@ -2084,7 +2092,7 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleBuyOrder(
-      { assets, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, schemaName }:
+      { assets, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, schemaName, referrerAddress }:
       { assets: Asset[];
         accountAddress: string;
         startAmount: number;
@@ -2092,7 +2100,8 @@ export class OpenSeaPort {
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         sellOrder?: UnhashedOrder;
-        schemaName: WyvernSchemaName; }
+        schemaName: WyvernSchemaName;
+        referrerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
     accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
@@ -2163,6 +2172,7 @@ export class OpenSeaPort {
       metadata: {
         bundle,
         schema: schema.name as WyvernSchemaName,
+        referrerAddress
       }
     }
   }
@@ -2787,12 +2797,12 @@ export class OpenSeaPort {
     return { basePrice, extra }
   }
 
-  private _getMetadata(order: Order, referrerAddress ?: string) {
-    // TODO order.referrer
-    if (!referrerAddress || !isValidAddress(referrerAddress)) {
-      return undefined
+  private _getMetadata(order: Order, referrerAddress?: string) {
+    const referrer = referrerAddress || order.metadata.referrerAddress
+    if (referrer && isValidAddress(referrer)) {
+      return referrer
     }
-    return referrerAddress
+    return undefined
   }
 
   private async _atomicMatch(

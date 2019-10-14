@@ -150,8 +150,9 @@ export declare class OpenSeaPort {
      * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
      * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
      * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
+     * @param referrerAddress The optional address that referred the order
      */
-    createBundleBuyOrder({ tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, schemaName }: {
+    createBundleBuyOrder({ tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, schemaName, referrerAddress }: {
         tokenIds?: string[];
         tokenAddresses?: string[];
         assets: Asset[];
@@ -161,6 +162,7 @@ export declare class OpenSeaPort {
         paymentTokenAddress?: string;
         sellOrder?: Order;
         schemaName?: WyvernSchemaName;
+        referrerAddress?: string;
     }): Promise<Order>;
     /**
      * Create a buy order to make an offer on an asset.
@@ -177,8 +179,9 @@ export declare class OpenSeaPort {
      * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
      * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
      * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
+     * @param referrerAddress The optional address that referred the order
      */
-    createBuyOrder({ tokenId, tokenAddress, asset, accountAddress, startAmount, quantity, expirationTime, paymentTokenAddress, sellOrder, schemaName }: {
+    createBuyOrder({ tokenId, tokenAddress, asset, accountAddress, startAmount, quantity, expirationTime, paymentTokenAddress, sellOrder, schemaName, referrerAddress }: {
         tokenId?: string;
         tokenAddress?: string;
         asset: Asset;
@@ -189,6 +192,7 @@ export declare class OpenSeaPort {
         paymentTokenAddress?: string;
         sellOrder?: Order;
         schemaName?: WyvernSchemaName;
+        referrerAddress?: string;
     }): Promise<Order>;
     /**
      * Create a sell order to auction an asset.
@@ -587,7 +591,7 @@ export declare class OpenSeaPort {
         accountAddress: string;
         tokenAddress?: string;
     }): Promise<BigNumber>;
-    _makeBuyOrder({ asset, quantity, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName }: {
+    _makeBuyOrder({ asset, quantity, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName, referrerAddress }: {
         asset: Asset;
         quantity: number;
         accountAddress: string;
@@ -597,6 +601,7 @@ export declare class OpenSeaPort {
         extraBountyBasisPoints: number;
         sellOrder?: UnhashedOrder;
         schemaName: WyvernSchemaName;
+        referrerAddress?: string;
     }): Promise<UnhashedOrder>;
     _makeSellOrder({ asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }: {
         asset: Asset;
@@ -618,7 +623,7 @@ export declare class OpenSeaPort {
         staticTarget: string;
         staticExtradata: string;
     }>;
-    _makeBundleBuyOrder({ assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName }: {
+    _makeBundleBuyOrder({ assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName, referrerAddress }: {
         assets: Asset[];
         accountAddress: string;
         startAmount: number;
@@ -627,6 +632,7 @@ export declare class OpenSeaPort {
         extraBountyBasisPoints: number;
         sellOrder?: UnhashedOrder;
         schemaName: WyvernSchemaName;
+        referrerAddress?: string;
     }): Promise<UnhashedOrder>;
     _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }: {
         bundleName: string;
