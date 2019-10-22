@@ -242,6 +242,7 @@ export declare class OpenSeaPort {
      * @param accountAddress Address of the factory owner's wallet
      * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+     * @param quantity The number of assets to sell at one time (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
      * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
@@ -249,14 +250,16 @@ export declare class OpenSeaPort {
      * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
      * @param buyerEmail Optional email of the user that's allowed to purchase each item. If specified, a user will have to verify this email before being able to take each order.
      * @param numberOfOrders Number of times to repeat creating the same order for each asset. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
+     * @returns The number of orders created in total
      */
-    createFactorySellOrders({ assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders, schemaName }: {
+    createFactorySellOrders({ assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders, schemaName }: {
         assetId?: string;
         assetIds?: string[];
         factoryAddress: string;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
+        quantity?: number;
         expirationTime?: number;
         waitForHighestBid?: boolean;
         paymentTokenAddress?: string;
@@ -265,7 +268,7 @@ export declare class OpenSeaPort {
         buyerEmail?: string;
         numberOfOrders?: number;
         schemaName?: WyvernSchemaName;
-    }): Promise<Order[]>;
+    }): Promise<number>;
     /**
      * Create a sell order to auction a bundle of assets.
      * Will throw a 'You do not own this asset' error if the maker doesn't have one of the assets.
