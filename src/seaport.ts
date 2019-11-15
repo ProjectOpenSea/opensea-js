@@ -1890,7 +1890,7 @@ export class OpenSeaPort {
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
 
-    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
+    const { basePrice, extra, paymentToken } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
 
     const { staticTarget, staticExtradata } = await this._getStaticCallTargetAndExtraData({asset: openSeaAsset, useTxnOriginStaticCall: false})
@@ -1916,7 +1916,7 @@ export class OpenSeaPort {
       replacementPattern,
       staticTarget,
       staticExtradata,
-      paymentToken: paymentTokenAddress,
+      paymentToken,
       basePrice,
       extra,
       listingTime: times.listingTime,
@@ -1963,7 +1963,7 @@ export class OpenSeaPort {
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
-    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
+    const { basePrice, extra, paymentToken } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
     const feeRecipient = waitForHighestBid
@@ -2002,7 +2002,7 @@ export class OpenSeaPort {
       replacementPattern,
       staticTarget,
       staticExtradata,
-      paymentToken: paymentTokenAddress,
+      paymentToken,
       basePrice,
       extra,
       listingTime: times.listingTime,
@@ -2139,7 +2139,7 @@ export class OpenSeaPort {
       throw new Error("Failed to encode")
     }
 
-    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
+    const { basePrice, extra, paymentToken } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
 
     return {
@@ -2163,7 +2163,7 @@ export class OpenSeaPort {
       replacementPattern,
       staticTarget: NULL_ADDRESS,
       staticExtradata: '0x',
-      paymentToken: paymentTokenAddress,
+      paymentToken,
       basePrice,
       extra,
       listingTime: times.listingTime,
@@ -2220,7 +2220,7 @@ export class OpenSeaPort {
       throw new Error("Failed to encode")
     }
 
-    const { basePrice, extra } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
+    const { basePrice, extra, paymentToken } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
 
     const orderSaleKind = endAmount != null && endAmount !== startAmount
@@ -2252,7 +2252,7 @@ export class OpenSeaPort {
       replacementPattern,
       staticTarget: NULL_ADDRESS,
       staticExtradata: '0x',
-      paymentToken: paymentTokenAddress,
+      paymentToken,
       basePrice,
       extra,
       listingTime: times.listingTime,
@@ -2763,8 +2763,9 @@ export class OpenSeaPort {
     const priceDiff = endAmount != null
       ? startAmount - endAmount
       : 0
+    const paymentToken = tokenAddress.toLowerCase()
     const isEther = tokenAddress == NULL_ADDRESS
-    const { tokens } = await this.api.getPaymentTokens({ address: tokenAddress })
+    const { tokens } = await this.api.getPaymentTokens({ address: paymentToken })
     const token = tokens[0]
 
     // Validation
@@ -2772,7 +2773,7 @@ export class OpenSeaPort {
       throw new Error(`Starting price must be a number >= 0`)
     }
     if (!isEther && !token) {
-      throw new Error(`No ERC-20 token found for '${tokenAddress}'`)
+      throw new Error(`No ERC-20 token found for '${paymentToken}'`)
     }
     if (isEther && waitingForBestCounterOrder) {
       throw new Error(`English auctions must use wrapped ETH or an ERC-20 token.`)
@@ -2794,7 +2795,7 @@ export class OpenSeaPort {
       ? makeBigNumber(this.web3ReadOnly.toWei(priceDiff, 'ether')).round()
       : WyvernProtocol.toBaseUnitAmount(makeBigNumber(priceDiff), token.decimals)
 
-    return { basePrice, extra }
+    return { basePrice, extra, paymentToken }
   }
 
   private _getMetadata(order: Order, referrerAddress?: string) {
@@ -2868,7 +2869,7 @@ export class OpenSeaPort {
       const gasEstimate = await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
       txnData.gas = this._correctGasAmount(gasEstimate)
     } catch (error) {
-      console.error(error)
+      console.error(`Failed atomic match with args: `, args, error)
       throw new Error(`Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${error.message.substr(0, MAX_ERROR_LENGTH)}..."`)
     }
 
