@@ -786,9 +786,6 @@ export class OpenSeaPort {
     const batches  = _.chunk(range, SELL_ORDER_BATCH_SIZE)
     let numOrdersCreated = 0
 
-    // 2 orders, 10 assets
-    // range = [0, 1, 2, 3, 4, ... 19]
-
     for (const subRange of batches) {
       // subRange = e.g. [5, 6, 7, 8, 9]
       // batches of assets = e.g. [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, ... 10]

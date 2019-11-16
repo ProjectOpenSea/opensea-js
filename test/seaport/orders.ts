@@ -533,7 +533,7 @@ suite('seaport: orders', () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const paymentToken = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0]
-    const amountInToken = 4000
+    const amountInToken = 5000
     const bountyPercent = 1
 
     const tokenId = MYTHEREUM_TOKEN_ID.toString()

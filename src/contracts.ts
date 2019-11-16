@@ -1,8 +1,8 @@
 import { PartialReadonlyContractAbi } from './types'
-import { AbiType, MethodAbi, EventAbi } from 'web3'
+import { MethodAbi, EventAbi } from 'web3'
 
 export const getMethod = (abi: PartialReadonlyContractAbi, name: string): MethodAbi => {
-  const methodAbi = abi.find(x => x.type == AbiType.Function && x.name == name)
+  const methodAbi = abi.find(x => x.type == 'function' && x.name == name)
   if (!methodAbi) {
     throw new Error(`ABI ${name} not found`)
   }
@@ -12,7 +12,7 @@ export const getMethod = (abi: PartialReadonlyContractAbi, name: string): Method
 }
 
 export const event = (abi: PartialReadonlyContractAbi, name: string): EventAbi => {
-  const eventAbi = abi.find(x => x.type == AbiType.Event && x.name == name)
+  const eventAbi = abi.find(x => x.type == 'event' && x.name == name)
   if (!eventAbi) {
     throw new Error(`ABI ${name} not found`)
   }
