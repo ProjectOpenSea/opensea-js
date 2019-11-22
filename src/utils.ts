@@ -4,7 +4,7 @@ import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import * as WyvernSchemas from 'wyvern-schemas'
-import { Schema, AnnotatedFunctionABI, FunctionInputKind, StateMutability } from 'wyvern-schemas/dist/types'
+import { Schema, AnnotatedFunctionABI, FunctionInputKind, StateMutability, FunctionOutputKind } from 'wyvern-schemas/dist/types'
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
 import { HowToCall } from 'wyvern-js/lib/types'
 import { ERC1155 } from './contracts'
@@ -74,6 +74,35 @@ export const annotateERC721TransferABI = (asset: WyvernNFTAsset): AnnotatedFunct
   "target": asset.address,
   "name": "transfer",
   "outputs": [],
+  "payable": false,
+  "stateMutability": StateMutability.Nonpayable,
+  "type": Web3.AbiType.Function
+})
+
+export const annotateERC20TransferABI = (asset: WyvernFTAsset): AnnotatedFunctionABI => ({
+  "constant": false,
+  "inputs": [
+    {
+      "name": "_to",
+      "type": "address",
+      "kind": FunctionInputKind.Replaceable
+    },
+    {
+      "name": "_amount",
+      "type": "uint256",
+      "kind": FunctionInputKind.Count,
+      "value": asset.quantity
+    }
+  ],
+  "target": asset.address,
+  "name": "transfer",
+  "outputs": [
+    {
+      "name": "success",
+      "type": "bool",
+      "kind": FunctionOutputKind.Other
+    }
+  ],
   "payable": false,
   "stateMutability": StateMutability.Nonpayable,
   "type": Web3.AbiType.Function

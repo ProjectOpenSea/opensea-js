@@ -33,6 +33,7 @@ import {
   rawCall,
   promisifyCall,
   annotateERC721TransferABI,
+  annotateERC20TransferABI,
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
   getWyvernAsset,
@@ -1281,7 +1282,9 @@ export class OpenSeaPort {
       ? WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
       : makeBigNumber(1)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
-    const abi = schema.functions.transfer(wyAsset)
+    const abi = schemaName === WyvernSchemaName.ERC20
+      ? annotateERC20TransferABI(wyAsset as WyvernFTAsset)
+      : schema.functions.transfer(wyAsset)
 
     let from = fromAddress
     if (useProxy) {
@@ -1394,9 +1397,11 @@ export class OpenSeaPort {
       TokenStandardVersion.ERC721v1, TokenStandardVersion.ERC721v2
     ].includes(asset.version)
 
-    const abi = isOldNFT
-      ? annotateERC721TransferABI(wyAsset as WyvernNFTAsset)
-      : schema.functions.transfer(wyAsset)
+    const abi = schemaName === WyvernSchemaName.ERC20
+      ? annotateERC20TransferABI(wyAsset as WyvernFTAsset)
+      : isOldNFT
+        ? annotateERC721TransferABI(wyAsset as WyvernNFTAsset)
+        : schema.functions.transfer(wyAsset)
 
     this._dispatch(EventType.TransferOne, { accountAddress: fromAddress, toAddress, asset: wyAsset })
 
