@@ -349,7 +349,7 @@ export declare class OpenSeaPort {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
-        proxyAddress: string | null;
+        proxyAddress?: string;
         tokenAbi?: PartialReadonlyContractAbi;
         skipApproveAllIfTokenAddressIn?: string[];
         schemaName?: WyvernSchemaName;
@@ -361,12 +361,14 @@ export declare class OpenSeaPort {
      * @param param0 __namedParamters Object
      * @param accountAddress The user's wallet address
      * @param tokenAddress The contract address of the token being approved
+     * @param proxyAddress The user's proxy address. If unspecified, uses the Wyvern token transfer proxy address.
      * @param minimumAmount The minimum amount needed to skip a transaction. Defaults to the max-integer.
      * @returns Transaction hash if a new transaction occurred, otherwise null
      */
-    approveFungibleToken({ accountAddress, tokenAddress, minimumAmount }: {
+    approveFungibleToken({ accountAddress, tokenAddress, proxyAddress, minimumAmount }: {
         accountAddress: string;
         tokenAddress: string;
+        proxyAddress?: string;
         minimumAmount?: BigNumber;
     }): Promise<string | null>;
     /**
@@ -589,10 +591,12 @@ export declare class OpenSeaPort {
      * @param param0 __namedParamters Object
      * @param accountAddress Address for the user's wallet
      * @param tokenAddress Address for the token's contract
+     * @param proxyAddress User's proxy address. If undefined, uses the token transfer proxy address
      */
-    _getApprovedTokenCount({ accountAddress, tokenAddress }: {
+    _getApprovedTokenCount({ accountAddress, tokenAddress, proxyAddress }: {
         accountAddress: string;
         tokenAddress?: string;
+        proxyAddress?: string;
     }): Promise<BigNumber>;
     _makeBuyOrder({ asset, quantity, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName, referrerAddress }: {
         asset: Asset;
@@ -694,7 +698,7 @@ export declare class OpenSeaPort {
         schema: Schema<any>;
         wyAssets: WyvernAsset[];
         accountAddress: string;
-        proxyAddress?: string | null;
+        proxyAddress?: string;
     }): Promise<(string | null)[]>;
     _buyOrderValidationAndApprovals({ order, counterOrder, accountAddress }: {
         order: UnhashedOrder;

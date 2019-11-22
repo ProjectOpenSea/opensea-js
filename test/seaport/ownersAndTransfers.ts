@@ -168,8 +168,8 @@ suite('seaport: owners and transfers', () => {
         tokenId: CK_TOKEN_ID.toString(),
         tokenAddress: CK_ADDRESS,
       },
-      fromAddress: ALEX_ADDRESS,
-      toAddress: ALEX_ADDRESS_2,
+      fromAddress: ALEX_ADDRESS_2,
+      toAddress: ALEX_ADDRESS,
       useProxy: true
     })
     assert.isTrue(isTransferrable)

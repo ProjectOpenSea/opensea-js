@@ -969,11 +969,15 @@ export class OpenSeaPort {
    * @returns Transaction hash if a new transaction was created, otherwise null
    */
   public async approveNonFungibleToken(
-      { tokenId, tokenAddress, accountAddress, proxyAddress = null, tokenAbi = ERC721, skipApproveAllIfTokenAddressIn = [], schemaName = WyvernSchemaName.ERC721 }:
+      { tokenId, tokenAddress, accountAddress,
+        proxyAddress,
+        tokenAbi = ERC721,
+        skipApproveAllIfTokenAddressIn = [],
+        schemaName = WyvernSchemaName.ERC721 }:
       { tokenId: string;
         tokenAddress: string;
         accountAddress: string;
-        proxyAddress: string | null;
+        proxyAddress?: string;
         tokenAbi?: PartialReadonlyContractAbi;
         skipApproveAllIfTokenAddressIn?: string[];
         schemaName?: WyvernSchemaName; }
@@ -984,7 +988,7 @@ export class OpenSeaPort {
     const erc721 = await tokenContract.at(tokenAddress)
 
     if (!proxyAddress) {
-      proxyAddress = await this._getProxy(accountAddress)
+      proxyAddress = await this._getProxy(accountAddress) || undefined
       if (!proxyAddress) {
         throw new Error('Uninitialized account')
       }
@@ -1120,27 +1124,36 @@ export class OpenSeaPort {
    * @param param0 __namedParamters Object
    * @param accountAddress The user's wallet address
    * @param tokenAddress The contract address of the token being approved
+   * @param proxyAddress The user's proxy address. If unspecified, uses the Wyvern token transfer proxy address.
    * @param minimumAmount The minimum amount needed to skip a transaction. Defaults to the max-integer.
    * @returns Transaction hash if a new transaction occurred, otherwise null
    */
   public async approveFungibleToken(
-      { accountAddress, tokenAddress, minimumAmount = WyvernProtocol.MAX_UINT_256 }:
+      { accountAddress,
+        tokenAddress,
+        proxyAddress,
+        minimumAmount = WyvernProtocol.MAX_UINT_256 }:
       { accountAddress: string;
         tokenAddress: string;
+        proxyAddress?: string;
         minimumAmount?: BigNumber }
     ): Promise<string | null> {
-    const approvedAmount = await this._getApprovedTokenCount({ accountAddress, tokenAddress })
+    proxyAddress = proxyAddress || WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
+    const approvedAmount = await this._getApprovedTokenCount({
+      accountAddress,
+      tokenAddress,
+      proxyAddress
+    })
     if (approvedAmount.toNumber() >= minimumAmount.toNumber()) {
       this.logger('Already approved enough currency for trading')
       return null
     }
     this.logger(`Not enough token approved for trade: ${approvedAmount}`)
 
-    const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
-
     this._dispatch(EventType.ApproveCurrency, {
       accountAddress,
-      contractAddress: tokenAddress
+      contractAddress: tokenAddress,
+      proxyAddress
     })
 
     const gasPrice = await this._computeGasPrice()
@@ -1148,7 +1161,7 @@ export class OpenSeaPort {
       from: accountAddress,
       to: tokenAddress,
       data: WyvernSchemas.encodeCall(getMethod(ERC20, 'approve'),
-        [contractAddress, WyvernProtocol.MAX_UINT_256.toString()]),
+        [proxyAddress, WyvernProtocol.MAX_UINT_256.toString()]),
       gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress })
@@ -1821,21 +1834,24 @@ export class OpenSeaPort {
    * @param param0 __namedParamters Object
    * @param accountAddress Address for the user's wallet
    * @param tokenAddress Address for the token's contract
+   * @param proxyAddress User's proxy address. If undefined, uses the token transfer proxy address
    */
   public async _getApprovedTokenCount(
-      { accountAddress, tokenAddress }:
+      { accountAddress, tokenAddress, proxyAddress }:
       { accountAddress: string;
-        tokenAddress?: string}
+        tokenAddress?: string;
+        proxyAddress?: string;
+      }
     ) {
     if (!tokenAddress) {
       tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     }
-    const contractAddress = WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
+    const addressToApprove = proxyAddress || WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
     const approved = await rawCall(this.web3ReadOnly, {
       from: accountAddress,
       to: tokenAddress,
       data: WyvernSchemas.encodeCall(getMethod(ERC20, 'allowance'),
-        [accountAddress, contractAddress]),
+        [accountAddress, addressToApprove]),
     })
     return makeBigNumber(approved)
   }
@@ -2525,16 +2541,16 @@ export class OpenSeaPort {
   }
 
   public async _approveAll(
-      { schema, wyAssets, accountAddress, proxyAddress = null }:
+      { schema, wyAssets, accountAddress, proxyAddress }:
       { schema: Schema<any>;
         wyAssets: WyvernAsset[];
         accountAddress: string;
-        proxyAddress?: string | null }
+        proxyAddress?: string }
     ) {
 
     const schemaName = schema.name as WyvernSchemaName
 
-    proxyAddress = proxyAddress || await this._getProxy(accountAddress)
+    proxyAddress = proxyAddress || await this._getProxy(accountAddress) || undefined
     if (!proxyAddress) {
       proxyAddress = await this._initializeProxy(accountAddress)
     }
@@ -2575,7 +2591,8 @@ export class OpenSeaPort {
           const wyFTAsset = wyAsset as WyvernFTAsset
           return this.approveFungibleToken({
             tokenAddress: wyFTAsset.address,
-            accountAddress
+            accountAddress,
+            proxyAddress
           })
         // For other assets, including contracts:
         // Send them to the user's proxy

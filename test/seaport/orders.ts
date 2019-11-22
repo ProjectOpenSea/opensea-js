@@ -43,11 +43,13 @@ const assetsForBulkTransfer = assetsForBundleOrder
 
 let wethAddress: string
 let manaAddress: string
+let daiAddress: string
 
 suite('seaport: orders', () => {
 
   before(async () => {
     wethAddress = (await client.api.getPaymentTokens({ symbol: 'WETH'})).tokens[0].address
+    daiAddress = (await client.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0].address
     manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0].address
   })
 
@@ -430,13 +432,13 @@ suite('seaport: orders', () => {
     assert.fail()
   })
 
-  test('Matches a new dutch sell order of a small amount of ERC-20 item for ETH', async () => {
+  test('Matches a new dutch sell order of a small amount of ERC-20 item (DAI) for ETH', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInEth = 0.012
 
     const tokenId = null
-    const tokenAddress = wethAddress
+    const tokenAddress = daiAddress
     const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
 
     const order = await client._makeSellOrder({
@@ -567,7 +569,7 @@ suite('seaport: orders', () => {
 
   test('Matches a buy order with an ERC-20 token (DAI)', async () => {
     const accountAddress = ALEX_ADDRESS
-    const takerAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
     const paymentToken = (await client.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0]
     const amountInToken = 3
 

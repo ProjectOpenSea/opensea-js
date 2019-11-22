@@ -166,9 +166,8 @@ suite('seaport: fees', () => {
   })
 
   test('First page of orders have valid hashes and fees', async () => {
-    const { orders, count } = await client.api.getOrders()
+    const { orders } = await client.api.getOrders()
     assert.isNotEmpty(orders)
-    assert.isAbove(count, orders.length)
 
     orders.forEach(order => {
       if (order.asset) {
