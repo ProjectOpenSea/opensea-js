@@ -1911,7 +1911,7 @@ export class OpenSeaPort {
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
 
-    const { staticTarget, staticExtradata } = await this._getStaticCallTargetAndExtraData({asset: openSeaAsset, useTxnOriginStaticCall: false})
+    const { staticTarget, staticExtradata } = await this._getStaticCallTargetAndExtraData({ asset: openSeaAsset, useTxnOriginStaticCall: false })
 
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
@@ -2128,6 +2128,7 @@ export class OpenSeaPort {
 
     let makerRelayerFee
     let takerRelayerFee
+    let taker
 
     if (sellOrder) {
       // Use the sell order's fees to ensure compatiblity
@@ -2139,6 +2140,7 @@ export class OpenSeaPort {
       takerRelayerFee = sellOrder.waitingForBestCounterOrder
         ? makeBigNumber(sellOrder.takerRelayerFee)
         : makeBigNumber(sellOrder.makerRelayerFee)
+      taker = sellOrder.maker
     } else {
       // If all assets are for the same contract and it's a non-private sale, use its fees
       let asset: OpenSeaAsset | null = null
@@ -2150,6 +2152,7 @@ export class OpenSeaPort {
               totalSellerFeeBPS } = await this.computeFees({ asset, extraBountyBasisPoints, side: OrderSide.Buy })
       makerRelayerFee = makeBigNumber(totalBuyerFeeBPS)
       takerRelayerFee = makeBigNumber(totalSellerFeeBPS)
+      taker = NULL_ADDRESS
     }
 
     const { calldata, replacementPattern } = WyvernSchemas.encodeAtomicizedBuy(schema, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
@@ -2163,7 +2166,7 @@ export class OpenSeaPort {
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
-      taker: NULL_ADDRESS,
+      taker,
       quantity: makeBigNumber(1),
       makerRelayerFee,
       takerRelayerFee,
