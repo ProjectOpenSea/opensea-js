@@ -386,14 +386,13 @@ export declare class OpenSeaPort {
      * @param accountAddress The account address that will be fulfilling the order
      * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
      * @param referrerAddress The optional address that referred the order
-     * @param retries How many times to retry if false
      */
     isOrderFulfillable({ order, accountAddress, recipientAddress, referrerAddress }: {
         order: Order;
         accountAddress: string;
         recipientAddress?: string;
         referrerAddress?: string;
-    }, retries?: number): Promise<boolean>;
+    }): Promise<boolean>;
     /**
      * Returns whether an asset is transferrable.
      * An asset may not be transferrable if its transfer function
@@ -541,19 +540,20 @@ export declare class OpenSeaPort {
      */
     _correctGasAmount(estimation: number): number;
     /**
-     * Estimate the gas needed to match two orders
+     * Estimate the gas needed to match two orders. Returns undefined if tx errors
      * @param param0 __namedParamaters Object
      * @param buy The buy order to match
      * @param sell The sell order to match
      * @param accountAddress The taker's wallet address
      * @param metadata Metadata bytes32 to send with the match
+     * @param retries Number of times to retry if false
      */
     _estimateGasForMatch({ buy, sell, accountAddress, metadata }: {
         buy: Order;
         sell: Order;
         accountAddress: string;
         metadata?: string;
-    }): Promise<number>;
+    }, retries?: number): Promise<number | undefined>;
     /**
      * Estimate the gas needed to transfer assets in bulk
      * Used for tests
@@ -741,6 +741,11 @@ export declare class OpenSeaPort {
     private _authorizeOrder;
     private _getSchema;
     private _dispatch;
+    /**
+     * Get the clients to use for a read call
+     * @param retries current retry value
+     */
+    private _getClientsForRead;
     private _confirmTransaction;
     private _pollCallbackForConfirmation;
 }

@@ -315,7 +315,7 @@ suite('seaport: orders', () => {
     await rinkebyClient._sellOrderValidationAndApprovals({ order: sell, accountAddress: takerAddress })
 
     const gas = await rinkebyClient._estimateGasForMatch({ buy, sell, accountAddress: matcherAddress })
-    assert.isAbove(gas, 0)
+    assert.isAbove(gas || 0, 0)
     console.info(`Match gas cost: ${gas}`)
   })
 
@@ -881,9 +881,9 @@ suite('seaport: orders', () => {
   })
 })
 
-export async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch = false, referrerAddress?: string, testMatchingClient = client) {
-  const recipientAddress = ALEX_ADDRESS_2 // Test a separate recipient
-  // TODO test mode for matching order to use 0x11111 in calldata
+export async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch = false, referrerAddress?: string) {
+  // Test a separate recipient for sell orders
+  const recipientAddress = order.side === OrderSide.Sell ?  ALEX_ADDRESS_2 : accountAddress
   const matchingOrder = client._makeMatchingOrder({
     order,
     accountAddress,
@@ -915,7 +915,7 @@ export async function testMatchingOrder(order: Order, accountAddress: string, te
   }
 }
 
-export async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string, counterOrderListingTime?: number, testMatchingClient = client) {
+export async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress: string, counterOrderListingTime?: number) {
   const order = {
     ...unhashedOrder,
     hash: getOrderHash(unhashedOrder)

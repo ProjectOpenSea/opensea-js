@@ -1202,15 +1202,13 @@ export class OpenSeaPort {
    * @param accountAddress The account address that will be fulfilling the order
    * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
    * @param referrerAddress The optional address that referred the order
-   * @param retries How many times to retry if false
    */
   public async isOrderFulfillable(
       { order, accountAddress, recipientAddress, referrerAddress }:
       { order: Order;
         accountAddress: string;
         recipientAddress?: string;
-        referrerAddress?: string },
-      retries = 1
+        referrerAddress?: string }
     ): Promise<boolean> {
 
     const matchingOrder = this._makeMatchingOrder({
@@ -1221,25 +1219,12 @@ export class OpenSeaPort {
 
     const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
-    try {
-      // TODO check calldataCanMatch too?
-      // const isValid = await this._validateMatch({ buy, sell, accountAddress })
-      const metadata = this._getMetadata(order, referrerAddress)
-      const gas = await this._estimateGasForMatch({ buy, sell, accountAddress, metadata })
+    const metadata = this._getMetadata(order, referrerAddress)
+    const gas = await this._estimateGasForMatch({ buy, sell, accountAddress, metadata })
 
-      this.logger(`Gas estimate for ${order.side == OrderSide.Sell ? "sell" : "buy"} order: ${gas}`)
+    this.logger(`Gas estimate for ${order.side == OrderSide.Sell ? "sell" : "buy"} order: ${gas}`)
 
-      return gas > 0
-
-    } catch (error) {
-
-      if (retries <= 0) {
-        console.error(error)
-        return false
-      }
-      await delay(500)
-      return this.isOrderFulfillable({ order, accountAddress, referrerAddress }, retries - 1)
-    }
+    return gas != null && gas > 0
   }
 
   /**
@@ -1299,7 +1284,7 @@ export class OpenSeaPort {
     const data = encodeTransferCall(abi, fromAddress, toAddress)
 
     try {
-      const gas = await estimateGas(this.web3, {
+      const gas = await estimateGas(this._getClientsForRead(retries).web3, {
         from,
         to: abi.target,
         data
@@ -1695,49 +1680,61 @@ export class OpenSeaPort {
   }
 
   /**
-   * Estimate the gas needed to match two orders
+   * Estimate the gas needed to match two orders. Returns undefined if tx errors
    * @param param0 __namedParamaters Object
    * @param buy The buy order to match
    * @param sell The sell order to match
    * @param accountAddress The taker's wallet address
    * @param metadata Metadata bytes32 to send with the match
+   * @param retries Number of times to retry if false
    */
   public async _estimateGasForMatch(
       { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH }:
       { buy: Order;
         sell: Order;
         accountAddress: string;
-        metadata?: string }
-    ): Promise<number> {
+        metadata?: string },
+      retries = 1
+    ): Promise<number | undefined> {
 
     let value
     if (buy.maker.toLowerCase() == accountAddress.toLowerCase() && buy.paymentToken == NULL_ADDRESS) {
       value = await this._getRequiredAmountForTakingSellOrder(sell)
     }
 
-    return this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
-        [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
-        [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
-        [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
-        buy.calldata,
-        sell.calldata,
-        buy.replacementPattern,
-        sell.replacementPattern,
-        buy.staticExtradata,
-        sell.staticExtradata,
-        [
-          buy.v || 0,
-          sell.v || 0
-        ],
-        [
-          buy.r || NULL_BLOCK_HASH,
-          buy.s || NULL_BLOCK_HASH,
-          sell.r || NULL_BLOCK_HASH,
-          sell.s || NULL_BLOCK_HASH,
-          metadata
-        ],
-          // Typescript error in estimate gas method, so use any
-          { from: accountAddress, value } as any)
+    try {
+      return this._getClientsForRead(retries).wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
+          [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
+          [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
+          [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
+          buy.calldata,
+          sell.calldata,
+          buy.replacementPattern,
+          sell.replacementPattern,
+          buy.staticExtradata,
+          sell.staticExtradata,
+          [
+            buy.v || 0,
+            sell.v || 0
+          ],
+          [
+            buy.r || NULL_BLOCK_HASH,
+            buy.s || NULL_BLOCK_HASH,
+            sell.r || NULL_BLOCK_HASH,
+            sell.s || NULL_BLOCK_HASH,
+            metadata
+          ],
+            // Typescript error in estimate gas method, so use any
+            { from: accountAddress, value } as any)
+    } catch (error) {
+
+      if (retries <= 0) {
+        console.error(error)
+        return undefined
+      }
+      await delay(200)
+      return this._estimateGasForMatch({ buy, sell, accountAddress, metadata }, retries - 1)
+    }
   }
 
   /**
@@ -2389,7 +2386,7 @@ export class OpenSeaPort {
         this.logger(`Buy order is valid: ${buyValid}`)
 
         if (!buyValid) {
-          throw new Error('Invalid buy order. Please restart your wallet/browser and try again!')
+          throw new Error('Invalid buy order. It may have recently been removed. Please try again later!')
         }
       }
 
@@ -2398,11 +2395,11 @@ export class OpenSeaPort {
         this.logger(`Sell order is valid: ${sellValid}`)
 
         if (!sellValid) {
-          throw new Error('Invalid sell order. Please restart your wallet/browser and try again!')
+          throw new Error('Invalid sell order. It may have recently been removed. Please try again later!')
         }
       }
 
-      const ordersCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.ordersCanMatch_.callAsync(
+      const ordersCanMatch = await this._getClientsForRead(retries).wyvernProtocol.wyvernExchange.ordersCanMatch_.callAsync(
         [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
         [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
         [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
@@ -2417,14 +2414,14 @@ export class OpenSeaPort {
       this.logger(`Orders matching: ${ordersCanMatch}`)
 
       if (!ordersCanMatch) {
-        throw new Error('Unable to match offer with auction. Please refresh or restart your wallet and try again!')
+        throw new Error('Unable to match offer with auction. Please try again later!')
       }
 
       const orderCalldataCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
       this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
 
       if (!orderCalldataCanMatch) {
-        throw new Error('Unable to match offer details with auction. Please refresh or restart your wallet and try again!')
+        throw new Error('Unable to match offer details with auction. Please try again later!')
       }
       return true
 
@@ -2689,7 +2686,7 @@ export class OpenSeaPort {
         ? wyAsset.quantity
         : 1)
       const abi = schema.functions.countOf(wyAsset)
-      const contract = this.web3ReadOnly.eth.contract([abi]).at(abi.target)
+      const contract = this._getClientsForRead(retries).web3.eth.contract([abi]).at(abi.target)
       const inputValues = abi.inputs.filter(x => x.value !== undefined).map(x => x.value)
       let count = await promisifyCall<BigNumber>(c => contract[abi.name].call(accountAddress, ...inputValues, c))
       if (count === undefined) {
@@ -2705,7 +2702,7 @@ export class OpenSeaPort {
     } else if (schema.functions.ownerOf) {
       // ERC721 asset
       const abi = schema.functions.ownerOf(wyAsset)
-      const contract = this.web3ReadOnly.eth.contract([abi]).at(abi.target)
+      const contract = this._getClientsForRead(retries).web3.eth.contract([abi]).at(abi.target)
       if (abi.inputs.filter(x => x.value === undefined)[0]) {
         throw new Error("Missing an argument for finding the owner of this asset")
       }
@@ -2962,6 +2959,28 @@ export class OpenSeaPort {
 
   private _dispatch(event: EventType, data: EventData) {
     this._emitter.emit(event, data)
+  }
+
+  /**
+   * Get the clients to use for a read call
+   * @param retries current retry value
+   */
+  private _getClientsForRead(
+      retries = 1
+    ): { web3: Web3, wyvernProtocol: WyvernProtocol } {
+    if (retries > 0) {
+      // Use injected provider by default
+      return {
+        'web3': this.web3,
+        'wyvernProtocol': this._wyvernProtocol
+      }
+    } else {
+      // Use provided provider as fallback
+      return {
+        'web3': this.web3ReadOnly,
+        'wyvernProtocol': this._wyvernProtocolReadOnly
+      }
+    }
   }
 
   private async _confirmTransaction(transactionHash: string, event: EventType, description: string, testForSuccess?: () => Promise<boolean>): Promise<void> {
