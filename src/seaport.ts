@@ -1298,7 +1298,7 @@ export class OpenSeaPort {
         return false
       }
       await delay(500)
-      return this.isAssetTransferrable({ asset, fromAddress, toAddress, quantity, useProxy, schemaName }, retries - 1)
+      return await this.isAssetTransferrable({ asset, fromAddress, toAddress, quantity, useProxy, schemaName }, retries - 1)
     }
   }
 
@@ -1703,7 +1703,7 @@ export class OpenSeaPort {
     }
 
     try {
-      return this._getClientsForRead(retries).wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
+      return await this._getClientsForRead(retries).wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
           [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
           [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
           [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
@@ -1733,7 +1733,7 @@ export class OpenSeaPort {
         return undefined
       }
       await delay(200)
-      return this._estimateGasForMatch({ buy, sell, accountAddress, metadata }, retries - 1)
+      return await this._estimateGasForMatch({ buy, sell, accountAddress, metadata }, retries - 1)
     }
   }
 
@@ -1789,7 +1789,7 @@ export class OpenSeaPort {
     if (!proxyAddress || proxyAddress == NULL_ADDRESS) {
       if (retries > 0) {
         await delay(1000)
-        return this._getProxy(accountAddress, retries - 1)
+        return await this._getProxy(accountAddress, retries - 1)
       }
       proxyAddress = null
     }
@@ -2431,7 +2431,7 @@ export class OpenSeaPort {
         throw error
       }
       await delay(500)
-      return this._validateMatch({ buy, sell, accountAddress, shouldValidateBuy, shouldValidateSell }, retries - 1)
+      return await this._validateMatch({ buy, sell, accountAddress, shouldValidateBuy, shouldValidateSell }, retries - 1)
     }
   }
 
@@ -2585,7 +2585,7 @@ export class OpenSeaPort {
         case WyvernSchemaName.ENSShortNameAuction:
           // Handle NFTs
           const wyNFTAsset = wyAsset as WyvernNFTAsset
-          return this.approveNonFungibleToken({
+          return await this.approveNonFungibleToken({
             tokenId: wyNFTAsset.id.toString(),
             tokenAddress: wyNFTAsset.address,
             accountAddress,
@@ -2594,7 +2594,7 @@ export class OpenSeaPort {
           })
         case WyvernSchemaName.ERC20:
           const wyFTAsset = wyAsset as WyvernFTAsset
-          return this.approveFungibleToken({
+          return await this.approveFungibleToken({
             tokenAddress: wyFTAsset.address,
             accountAddress,
             proxyAddress
@@ -2717,7 +2717,7 @@ export class OpenSeaPort {
       }
       await delay(500)
       // Recursively check owner again
-      return this._ownsAssetOnChain({accountAddress, proxyAddress, wyAsset, schemaName}, retries - 1)
+      return await this._ownsAssetOnChain({accountAddress, proxyAddress, wyAsset, schemaName}, retries - 1)
     } else {
       // Missing ownership call - skip check to allow listings
       // by default
@@ -2999,7 +2999,7 @@ export class OpenSeaPort {
         return
       }
 
-      return this._pollCallbackForConfirmation(event, description, testForSuccess)
+      return await this._pollCallbackForConfirmation(event, description, testForSuccess)
     }
 
     // Normal wallet

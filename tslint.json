@@ -38,7 +38,7 @@
         "no-non-null-assertion": true,
         "no-parameter-reassignment": false,
         "no-redundant-jsdoc": true,
-        "no-return-await": true,
+        "no-return-await": false,
         "no-string-throw": true,
         "no-string-literal": false,
         "no-submodule-imports": false,
