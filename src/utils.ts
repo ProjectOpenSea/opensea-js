@@ -759,7 +759,7 @@ export function getWyvernFTAsset(
 
 /**
  * Get the Wyvern representation of a group of NFT assets
- * Sort order is enforced here
+ * Sort order is enforced here. Throws if there's a duplicate.
  * @param schema The WyvernSchema needed to access these assets
  * @param assets Assets to bundle
  */
@@ -768,8 +768,14 @@ export function getWyvernBundle(
   ): WyvernBundle {
 
   const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
+  const sorters = [(a: WyvernNFTAsset) => a.address, (a: WyvernNFTAsset) => a.id]
+  const uniqueAssets = _.uniqBy(wyAssets, a => `${sorters[0](a)}-${sorters[1](a)}`)
 
-  const sortedWyAssets = _.sortBy(wyAssets, [(a: WyvernNFTAsset) => a.address, (a: WyvernNFTAsset) => a.id])
+  if (uniqueAssets.length != wyAssets.length) {
+    throw new Error("Bundle can't contain duplicate assets")
+  }
+
+  const sortedWyAssets = _.sortBy(wyAssets, sorters)
 
   return {
     assets: sortedWyAssets

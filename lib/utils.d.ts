@@ -159,7 +159,7 @@ export declare function getWyvernNFTAsset(schema: Schema<WyvernNFTAsset>, asset:
 export declare function getWyvernFTAsset(schema: Schema<WyvernFTAsset>, asset: Asset, quantity: BigNumber): WyvernFTAsset;
 /**
  * Get the Wyvern representation of a group of NFT assets
- * Sort order is enforced here
+ * Sort order is enforced here. Throws if there's a duplicate.
  * @param schema The WyvernSchema needed to access these assets
  * @param assets Assets to bundle
  */

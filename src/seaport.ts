@@ -970,7 +970,9 @@ export class OpenSeaPort {
    * @returns Transaction hash if a new transaction was created, otherwise null
    */
   public async approveNonFungibleToken(
-      { tokenId, tokenAddress, accountAddress,
+      { tokenId,
+        tokenAddress,
+        accountAddress,
         proxyAddress,
         tokenAbi = ERC721,
         skipApproveAllIfTokenAddressIn = [],
@@ -2386,7 +2388,7 @@ export class OpenSeaPort {
         this.logger(`Buy order is valid: ${buyValid}`)
 
         if (!buyValid) {
-          throw new Error('Invalid buy order. It may have recently been removed. Please try again later!')
+          throw new Error('Invalid buy order. It may have recently been removed. Please refresh the page and try again!')
         }
       }
 
@@ -2395,7 +2397,7 @@ export class OpenSeaPort {
         this.logger(`Sell order is valid: ${sellValid}`)
 
         if (!sellValid) {
-          throw new Error('Invalid sell order. It may have recently been removed. Please try again later!')
+          throw new Error('Invalid sell order. It may have recently been removed. Please refresh the page and try again!')
         }
       }
 
@@ -2727,7 +2729,7 @@ export class OpenSeaPort {
 
   /**
    * Get the listing and expiration time paramters for a new order
-   * @param expirationTimestamp Timestamp to expire the order, or 0 for non-expiring
+   * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
    * @param waitingForBestCounterOrder Whether this order should be hidden until the best match is found
    */
   private _getTimeParameters(
@@ -2742,6 +2744,9 @@ export class OpenSeaPort {
     }
     if (waitingForBestCounterOrder && expirationTimestamp == 0) {
       throw new Error('English auctions must have an expiration time.')
+    }
+    if (parseInt(expirationTimestamp.toString()) != expirationTimestamp) {
+      throw new Error(`Expiration timestamp must be a whole number of seconds`)
     }
 
     let listingTimestamp

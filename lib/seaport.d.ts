@@ -720,7 +720,7 @@ export declare class OpenSeaPort {
     }, retries?: number): Promise<boolean>;
     /**
      * Get the listing and expiration time paramters for a new order
-     * @param expirationTimestamp Timestamp to expire the order, or 0 for non-expiring
+     * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
      * @param waitingForBestCounterOrder Whether this order should be hidden until the best match is found
      */
     private _getTimeParameters;
