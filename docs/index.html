@@ -171,7 +171,7 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   accountAddress,
   <span class="hljs-attr">startAmount</span>: <span class="hljs-number">2.4</span>,
   <span class="hljs-comment">// Optional expiration time for the order, in Unix time (seconds):</span>
-  expirationTime: (<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>) <span class="hljs-comment">// One day from now</span>
+  expirationTime: <span class="hljs-built_in">Math</span>.round(<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>) <span class="hljs-comment">// One day from now</span>
 })
 </code></pre>
 				<p>When you bid on multiple assets, an email will be sent to the owner if a bundle exists on OpenSea that contains the assets. In the future, OpenSea will send emails to multiple owners if the assets aren&#39;t all owned by the same wallet.</p>
@@ -205,7 +205,7 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 				<p>To sell an asset, call <code>createSellOrder</code>. You can do a fixed-price sale, where <code>startAmount</code> is equal to <code>endAmount</code>, or a declining <a href="https://en.wikipedia.org/wiki/Dutch_auction">Dutch auction</a>, where <code>endAmount</code> is lower and the price declines until <code>expirationTime</code> is hit:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire this auction one day from now.</span>
 <span class="hljs-comment">// Note that we convert from the JavaScript timestamp (milliseconds):</span>
-<span class="hljs-keyword">const</span> expirationTime = (<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
+<span class="hljs-keyword">const</span> expirationTime = <span class="hljs-built_in">Math</span>.round(<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
 
 <span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({
   <span class="hljs-attr">asset</span>: {
@@ -226,7 +226,7 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 				<p>To create a presale or crowdsale and create batches of sell orders for a single asset factory, first follow the <a href="https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial">tutorial</a> for creating your crowdsale contract.</p>
 				<p>Then call <code>createFactorySellOrders</code> with your factory contract address and asset option identifier, and set <code>numberOfOrders</code> to the number of assets you&#39;d like to let users buy and mint:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire these auctions one day from now</span>
-<span class="hljs-keyword">const</span> expirationTime = (<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
+<span class="hljs-keyword">const</span> expirationTime = <span class="hljs-built_in">Math</span>.round(<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
 
 <span class="hljs-keyword">const</span> sellOrders = <span class="hljs-keyword">await</span> seaport.createFactorySellOrders({
   <span class="hljs-attr">assetId</span>: ASSET_OPTION_ID,
@@ -977,6 +977,9 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#getmethod" class="tsd-kind-icon">get<wbr>Method</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#getnoncompliantapprovaladdress" class="tsd-kind-icon">get<wbr>Non<wbr>Compliant<wbr>Approval<wbr>Address</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#getorderhash" class="tsd-kind-icon">get<wbr>Order<wbr>Hash</a>
