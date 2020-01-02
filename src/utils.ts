@@ -974,8 +974,6 @@ export async function getNonCompliantApprovalAddress(erc721Contract: Web3.Contra
     promisifyCall<string>(c => erc721Contract.kittyIndexToApproved.call(tokenId, c), onError),
     // Etherbots check
     promisifyCall<string>(c => erc721Contract.partIndexToApproved.call(tokenId, c), onError),
-    // ETHEREMON check
-    promisifyCall<string>(c => erc721Contract.allowed.call(accountAddress, tokenId, c), onError)
   ])
 
   return _.compact(results)[0]
