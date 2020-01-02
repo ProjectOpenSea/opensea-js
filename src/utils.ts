@@ -966,13 +966,16 @@ export function onDeprecated(msg: string) {
  */
 export async function getNonCompliantApprovalAddress(erc721Contract: Web3.ContractInstance, tokenId: string, accountAddress: string): Promise<string> {
 
+  // Throw errors if we don't have the ABI yet
+  const onError = (e: Error) => { throw e }
+
   const results = await Promise.all([
     // CRYPTOKITTIES check
-    promisifyCall<string>(c => erc721Contract.kittyIndexToApproved.call(tokenId, c)),
+    promisifyCall<string>(c => erc721Contract.kittyIndexToApproved.call(tokenId, c), onError),
     // Etherbots check
-    promisifyCall<string>(c => erc721Contract.partIndexToApproved.call(tokenId, c)),
+    promisifyCall<string>(c => erc721Contract.partIndexToApproved.call(tokenId, c), onError),
     // ETHEREMON check
-    promisifyCall<string>(c => erc721Contract.allowed.call(accountAddress, tokenId, c))
+    promisifyCall<string>(c => erc721Contract.allowed.call(accountAddress, tokenId, c), onError)
   ])
 
   return _.compact(results)[0]

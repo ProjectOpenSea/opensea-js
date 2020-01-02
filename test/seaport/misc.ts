@@ -10,8 +10,9 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network } from '../../src/types'
-import { MAX_UINT_256, getCurrentGasPrice } from '../../src/utils'
-import { ALEX_ADDRESS, MAINNET_API_KEY} from '../constants'
+import { MAX_UINT_256, getCurrentGasPrice, getNonCompliantApprovalAddress, CK_ADDRESS } from '../../src/utils'
+import { ALEX_ADDRESS, MAINNET_API_KEY, CK_TOKEN_ID, ALEX_ADDRESS_2} from '../constants'
+import { ERC721 } from '../../src/contracts'
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
@@ -61,6 +62,16 @@ suite('seaport: misc', () => {
     const accountAddress = ALEX_ADDRESS
     const approved = await client._getApprovedTokenCount({ accountAddress })
     assert.equal(approved.toString(), MAX_UINT_256.toString())
+  })
+
+  test('Single-approval tokens are approved for tester address', async () => {
+    const accountAddress = ALEX_ADDRESS_2
+    const proxyAddress = await client._getProxy(accountAddress)
+    const tokenId = CK_TOKEN_ID.toString()
+    const tokenAddress = CK_ADDRESS
+    const erc721 = await client.web3.eth.contract(ERC721 as any).at(tokenAddress)
+    const approvedAddress = await getNonCompliantApprovalAddress(erc721, tokenId, accountAddress)
+    assert.equal(approvedAddress, proxyAddress)
   })
 
 })
