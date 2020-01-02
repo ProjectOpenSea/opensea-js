@@ -225,4 +225,4 @@ export declare function onDeprecated(msg: string): void;
  * Get special-case approval addresses for an erc721 contract
  * @param erc721Contract contract to check
  */
-export declare function getNonCompliantApprovalAddress(erc721Contract: Web3.ContractInstance, tokenId: string, accountAddress: string): Promise<string>;
+export declare function getNonCompliantApprovalAddress(erc721Contract: Web3.ContractInstance, tokenId: string, accountAddress: string): Promise<string | undefined>;

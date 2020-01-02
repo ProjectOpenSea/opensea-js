@@ -964,7 +964,7 @@ export function onDeprecated(msg: string) {
  * Get special-case approval addresses for an erc721 contract
  * @param erc721Contract contract to check
  */
-export async function getNonCompliantApprovalAddress(erc721Contract: Web3.ContractInstance, tokenId: string, accountAddress: string): Promise<string> {
+export async function getNonCompliantApprovalAddress(erc721Contract: Web3.ContractInstance, tokenId: string, accountAddress: string): Promise<string | undefined> {
 
   // Throw errors if we don't have the ABI yet
   const onError = (e: Error) => { throw e }
