@@ -666,7 +666,7 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
   let { basePrice, listingTime, expirationTime, extra } = order
   const { side, takerRelayerFee, makerRelayerFee, saleKind, feeRecipient } = order
 
-  const now = new BigNumber(Date.now() / 1000).minus(secondsToBacktrack)
+  const now = new BigNumber(Math.round(Date.now() / 1000)).minus(secondsToBacktrack)
   basePrice = new BigNumber(basePrice)
   listingTime = new BigNumber(listingTime)
   expirationTime = new BigNumber(expirationTime)
@@ -958,4 +958,22 @@ export function validateAndFormatWalletAddress(web3: Web3, address: string): str
  */
 export function onDeprecated(msg: string) {
   console.warn(`DEPRECATION NOTICE: ${msg}`)
+}
+
+/**
+ * Get special-case approval addresses for an erc721 contract
+ * @param erc721Contract contract to check
+ */
+export async function getNonCompliantApprovalAddress(erc721Contract: Web3.ContractInstance, tokenId: string, accountAddress: string): Promise<string> {
+
+  const results = await Promise.all([
+    // CRYPTOKITTIES check
+    promisifyCall<string>(c => erc721Contract.kittyIndexToApproved.call(tokenId, c)),
+    // Etherbots check
+    promisifyCall<string>(c => erc721Contract.partIndexToApproved.call(tokenId, c)),
+    // ETHEREMON check
+    promisifyCall<string>(c => erc721Contract.allowed.call(accountAddress, tokenId, c))
+  ])
+
+  return _.compact(results)[0]
 }

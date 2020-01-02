@@ -95,7 +95,7 @@ suite('seaport: orders', () => {
 
   test("Correctly errors for invalid price parameters", async () => {
     const accountAddress = ALEX_ADDRESS
-    const expirationTime = (Date.now() / 1000 + 60) // one minute from now
+    const expirationTime = Math.round(Date.now() / 1000 + 60) // one minute from now
     const paymentTokenAddress = manaAddress
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
@@ -235,7 +235,7 @@ suite('seaport: orders', () => {
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 1.2
     const paymentTokenAddress = wethAddress
-    const expirationTime = (Date.now() / 1000 + 60) // one minute from now
+    const expirationTime = Math.round(Date.now() / 1000 + 60) // one minute from now
     const bountyPercent = 1.1
 
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
@@ -278,7 +278,7 @@ suite('seaport: orders', () => {
     const makerAddress = ALEX_ADDRESS_2
     const takerAddress = ALEX_ADDRESS
     const matcherAddress = DEVIN_ADDRESS
-    const now = Date.now() / 1000
+    const now = Math.round(Date.now() / 1000)
     // Get bid from server
     const paymentTokenAddress = wethAddress
     const { orders } = await rinkebyClient.api.getOrders({
@@ -324,7 +324,7 @@ suite('seaport: orders', () => {
     const takerAddress = ALEX_ADDRESS
     const paymentTokenAddress = wethAddress
     const amountInToken = 0.01
-    const expirationTime = (Date.now() / 1000 + 60 * 60 * 24) // one day from now
+    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24) // one day from now
     const extraBountyBasisPoints = 1.1 * 100
 
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
@@ -381,7 +381,7 @@ suite('seaport: orders', () => {
       accountAddress: ENS_RINKEBY_SHORT_NAME_OWNER,
       paymentTokenAddress,
       startAmount: 0.01,
-      expirationTime: (Date.now() / 1000 + 60 * 60 * 24),  // one day from now
+      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24),  // one day from now
       extraBountyBasisPoints: 0,
       schemaName: WyvernSchemaName.ENSShortNameAuction
     })
@@ -439,7 +439,7 @@ suite('seaport: orders', () => {
 
     const tokenId = null
     const tokenAddress = daiAddress
-    const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
+    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24)
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -747,7 +747,7 @@ suite('seaport: orders', () => {
   test('Matches Dutch bundle order for different approve-all assets', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const expirationTime = (Date.now() / 1000 + 60 * 60 * 24) // one day from now
+    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24) // one day from now
     const amountInEth = 1
 
     const order = await client._makeBundleSellOrder({

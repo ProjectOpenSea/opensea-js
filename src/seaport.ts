@@ -55,6 +55,7 @@ import {
   STATIC_CALL_CHEEZE_WIZARDS_ADDRESS,
   STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
   STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS,
+  getNonCompliantApprovalAddress,
 } from './utils'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -1064,26 +1065,14 @@ export class OpenSeaPort {
       }
       this.logger(`Approve response: ${approvedAddr}`)
 
-      // SPECIAL CASING
-
+      // SPECIAL CASING non-compliant contracts
       if (!approvedAddr) {
-        // CRYPTOKITTIES check
-        approvedAddr = await promisifyCall<string>(c => erc721.kittyIndexToApproved.call(tokenId, c))
+        approvedAddr = await getNonCompliantApprovalAddress(erc721, tokenId, accountAddress)
         if (approvedAddr == proxyAddress) {
-          this.logger('Already approved proxy for this kitty')
+          this.logger('Already approved proxy for this item')
           return true
         }
-        this.logger(`CryptoKitties approve response: ${approvedAddr}`)
-      }
-
-      if (!approvedAddr) {
-        // ETHEREMON check
-        approvedAddr = await promisifyCall<string>(c => erc721.allowed.call(accountAddress, tokenId, c))
-        if (approvedAddr == proxyAddress) {
-          this.logger('Already allowed proxy for this Etheremon')
-          return true
-        }
-        this.logger(`"allowed" response: ${approvedAddr}`)
+        this.logger(`Special-case approve response: ${approvedAddr}`)
       }
       return false
     }
@@ -2738,7 +2727,7 @@ export class OpenSeaPort {
     ) {
 
     // Validation
-    const minExpirationTimestamp = Date.now() / 1000 + MIN_EXPIRATION_SECONDS
+    const minExpirationTimestamp = Math.round(Date.now() / 1000 + MIN_EXPIRATION_SECONDS)
     if (expirationTimestamp != 0 && expirationTimestamp < minExpirationTimestamp) {
       throw new Error(`Expiration time must be at least ${MIN_EXPIRATION_SECONDS} seconds from now, or zero (non-expiring).`)
     }

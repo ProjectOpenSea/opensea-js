@@ -126,7 +126,7 @@ const offer = await seaport.createBundleBuyOrder({
   accountAddress,
   startAmount: 2.4,
   // Optional expiration time for the order, in Unix time (seconds):
-  expirationTime: (Date.now() / 1000 + 60 * 60 * 24) // One day from now
+  expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day from now
 })
 ```
 
@@ -170,7 +170,7 @@ To sell an asset, call `createSellOrder`. You can do a fixed-price sale, where `
 ```JavaScript
 // Expire this auction one day from now.
 // Note that we convert from the JavaScript timestamp (milliseconds):
-const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
+const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24)
 
 const auction = await seaport.createSellOrder({
   asset: {
@@ -199,7 +199,7 @@ Then call `createFactorySellOrders` with your factory contract address and asset
 
 ```JavaScript
 // Expire these auctions one day from now
-const expirationTime = (Date.now() / 1000 + 60 * 60 * 24)
+const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24)
 
 const sellOrders = await seaport.createFactorySellOrders({
   assetId: ASSET_OPTION_ID,
