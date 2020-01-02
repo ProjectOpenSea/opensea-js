@@ -12,7 +12,7 @@ import {
   personalSignAsync,
   sendRawTransaction, estimateCurrentPrice, INVERSE_BASIS_POINT, getOrderHash,
   getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
-  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
+  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS,
   DEFAULT_GAS_INCREASE_FACTOR,
   MIN_EXPIRATION_SECONDS,
   OPENSEA_FEE_RECIPIENT,
@@ -57,6 +57,11 @@ import {
   STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS,
   getNonCompliantApprovalAddress,
 } from './utils'
+import {
+  debugOrdersCanMatch,
+  debugOrderCalldataCanMatch,
+  MAX_ERROR_LENGTH,
+} from './debugging'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
 import { isValidAddress } from 'ethereumjs-util'
@@ -2405,21 +2410,21 @@ export class OpenSeaPort {
       this.logger(`Orders matching: ${ordersCanMatch}`)
 
       if (!ordersCanMatch) {
-        throw new Error('Unable to match offer with auction. Please try again later!')
+        await debugOrdersCanMatch(buy, sell)
       }
 
       const orderCalldataCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
       this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
 
       if (!orderCalldataCanMatch) {
-        throw new Error('Unable to match offer details with auction. Please try again later!')
+        await debugOrderCalldataCanMatch(buy, sell)
       }
       return true
 
     } catch (error) {
 
       if (retries <= 0) {
-        throw error
+        throw new Error(`Error matching this listing: ${error.message}. Please contact the maker or try again later!`)
       }
       await delay(500)
       return await this._validateMatch({ buy, sell, accountAddress, shouldValidateBuy, shouldValidateSell }, retries - 1)

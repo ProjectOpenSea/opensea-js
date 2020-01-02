@@ -40,7 +40,6 @@ export declare const DEFAULT_BUYER_FEE_BASIS_POINTS = 0;
 export declare const DEFAULT_SELLER_FEE_BASIS_POINTS = 250;
 export declare const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100;
 export declare const DEFAULT_MAX_BOUNTY = 250;
-export declare const MAX_ERROR_LENGTH = 120;
 export declare const MIN_EXPIRATION_SECONDS = 10;
 export declare const ORDER_MATCHING_LATENCY_SECONDS: number;
 export declare const SELL_ORDER_BATCH_SIZE = 3;
