@@ -39,6 +39,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Example Code](#example-code)
 - [Migrating to version 0.6](#migrating-to-version-06)
 - [Development Information](#development-information)
+- [Diagnosing Common Issues](#diagnosing-common-issues)
 
 ## Synopsis
 
@@ -705,3 +706,17 @@ npm run docs
 **Contributing**
 
 Contributions welcome! Please use GitHub issues for suggestions/concerns - if you prefer to express your intentions in code, feel free to submit a pull request.
+
+## Diagnosing Common Issues
+
+* Is the `expirationTime` in future?  If no, change it to a time in the future.
+
+* Is the `expirationTime` a fractional second?  If yes, round the listing time to the nearest second.
+
+* Are the input addresses all strings? If no, convert them to strings.
+
+* Are the input addresses checksummed or lowercased?  You might need to use the checksummed version of the address.
+
+* Is your computer's internal clock accurate? If no, try enabling automatic clock adjustment locally or following [this tutorial](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html) to update an Amazon EC2 instance.
+
+* Are you attempting to purchase a token that's unpurchasable on [OpenSea](https://opensea.io/)?  If yes, contact us [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel and we'll help to diagnose the issue.
