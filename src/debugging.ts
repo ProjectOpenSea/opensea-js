@@ -1,5 +1,6 @@
 import { Order } from "./types"
 import { NULL_ADDRESS } from "./utils"
+import { WyvernProtocol } from "wyvern-js"
 
 export const MAX_ERROR_LENGTH = 120
 
@@ -30,7 +31,28 @@ const SaleKindInterface = {
  * @param buy Buy order for debugging
  * @param sell Sell order for debugging
  */
-export async function debugOrdersCanMatch(buy: Order, sell: Order) {
+export async function requireOrdersCanMatch(
+    client: WyvernProtocol,
+    {buy, sell, accountAddress}:
+    { buy: Order, sell: Order, accountAddress: string }
+  ) {
+  const result = await client.wyvernExchange.ordersCanMatch_.callAsync(
+    [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
+    [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
+    [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
+    buy.calldata,
+    sell.calldata,
+    buy.replacementPattern,
+    sell.replacementPattern,
+    buy.staticExtradata,
+    sell.staticExtradata,
+    { from: accountAddress },
+  )
+
+  if (result) {
+    return
+  }
+
   if (!(+buy.side == +SaleKindInterface.Side.Buy && +sell.side == +SaleKindInterface.Side.Sell)) {
     throw new Error('Must be opposite-side')
   }
@@ -80,6 +102,14 @@ export async function debugOrdersCanMatch(buy: Order, sell: Order) {
  * @param buy Buy order for debugging
  * @param sell Sell Order for debugging
  */
-export async function debugOrderCalldataCanMatch(buy: Order, sell: Order) {
+export async function requireOrderCalldataCanMatch(
+    client: WyvernProtocol,
+    { buy, sell }:
+    { buy: Order, sell: Order }
+  ) {
+  const result = client.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
+  if (result) {
+    return
+  }
   throw new Error('Unable to match offer data with auction data.')
 }

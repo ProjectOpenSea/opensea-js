@@ -58,9 +58,9 @@ import {
   getNonCompliantApprovalAddress,
 } from './utils'
 import {
-  debugOrdersCanMatch,
-  debugOrderCalldataCanMatch,
+  requireOrdersCanMatch,
   MAX_ERROR_LENGTH,
+  requireOrderCalldataCanMatch,
 } from './debugging'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
@@ -2395,30 +2395,12 @@ export class OpenSeaPort {
         }
       }
 
-      const ordersCanMatch = await this._getClientsForRead(retries).wyvernProtocol.wyvernExchange.ordersCanMatch_.callAsync(
-        [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
-        [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
-        [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
-        buy.calldata,
-        sell.calldata,
-        buy.replacementPattern,
-        sell.replacementPattern,
-        buy.staticExtradata,
-        sell.staticExtradata,
-        { from: accountAddress },
-      )
-      this.logger(`Orders matching: ${ordersCanMatch}`)
+      const canMatch = await requireOrdersCanMatch(this._getClientsForRead(retries).wyvernProtocol, { buy, sell, accountAddress })
+      this.logger(`Orders matching: ${canMatch}`)
 
-      if (!ordersCanMatch) {
-        await debugOrdersCanMatch(buy, sell)
-      }
+      const calldataCanMatch = await requireOrderCalldataCanMatch(this._getClientsForRead(retries).wyvernProtocol, { buy, sell })
+      this.logger(`Order calldata matching: ${calldataCanMatch}`)
 
-      const orderCalldataCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
-      this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
-
-      if (!orderCalldataCanMatch) {
-        await debugOrderCalldataCanMatch(buy, sell)
-      }
       return true
 
     } catch (error) {

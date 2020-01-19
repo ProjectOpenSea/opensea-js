@@ -200,11 +200,48 @@ export interface OpenSeaAssetContract {
     externalLink?: string;
     wikiLink?: string;
 }
+interface NumericalTraitStats {
+    min: number;
+    max: number;
+}
+interface StringTraitStats {
+    [key: string]: number;
+}
+/**
+ * Annotated collection with OpenSea metadata
+ */
+export interface OpenSeaCollection {
+    name: string;
+    slug: string;
+    editors: string[];
+    hidden: boolean;
+    featured: boolean;
+    createdDate: Date;
+    openseaSellerFeeBasisPoints: number;
+    openseaBuyerFeeBasisPoints: number;
+    devSellerFeeBasisPoints: number;
+    devBuyerFeeBasisPoints: number;
+    description: string;
+    imageUrl: string;
+    largeImageUrl: string;
+    featuredImageUrl: string;
+    stats: object;
+    displayData: object;
+    paymentTokens: OpenSeaFungibleToken[];
+    payoutAddress?: string;
+    traitStats: OpenSeaTraitStats;
+    externalLink?: string;
+    wikiLink?: string;
+}
+export interface OpenSeaTraitStats {
+    [traitName: string]: NumericalTraitStats | StringTraitStats;
+}
 /**
  * Annotated asset spec with OpenSea metadata
  */
 export interface OpenSeaAsset extends Asset {
     assetContract: OpenSeaAssetContract;
+    collection: OpenSeaCollection;
     name: string;
     description: string;
     owner: OpenSeaAccount;

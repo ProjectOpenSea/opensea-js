@@ -3,7 +3,7 @@ import * as Web3 from 'web3';
 import { Schema, AnnotatedFunctionABI } from 'wyvern-schemas/dist/types';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { HowToCall } from 'wyvern-js/lib/types';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernNFTAsset, OpenSeaAssetContract, WyvernFTAsset, OpenSeaFungibleToken } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernNFTAsset, OpenSeaAssetContract, WyvernFTAsset, OpenSeaFungibleToken, OpenSeaCollection } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
@@ -60,6 +60,7 @@ export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise
 export declare const assetFromJSON: (asset: any) => OpenSeaAsset;
 export declare const assetBundleFromJSON: (asset_bundle: any) => OpenSeaAssetBundle;
 export declare const assetContractFromJSON: (asset_contract: any) => OpenSeaAssetContract;
+export declare const collectionFromJSON: (collection: any) => OpenSeaCollection;
 export declare const tokenFromJSON: (token: any) => OpenSeaFungibleToken;
 export declare const orderFromJSON: (order: any) => Order;
 /**
