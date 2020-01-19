@@ -13,7 +13,7 @@ import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, WyvernSchemaName, WyvernNFTAsset, WyvernFTAsset } from '../../src/types'
 import { MAX_UINT_256, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, ENJIN_LEGACY_ADDRESS } from '../../src/utils'
-import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, RANDOM_ADDRESS, AGE_OF_RUST_TOKEN_ID, SANDBOX_RINKEBY_ID, SANDBOX_RINKEBY_ADDRESS } from '../constants'
+import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, RANDOM_ADDRESS, DISSOLUTION_TOKEN_ID, SANDBOX_RINKEBY_ID, SANDBOX_RINKEBY_ADDRESS } from '../constants'
 
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 const rinkebyProvider = new Web3.providers.HttpProvider('https://rinkeby.infura.io')
@@ -77,7 +77,7 @@ suite('seaport: owners and transfers', () => {
 
     // Ownership
     const wyAsset: WyvernFTAsset = {
-      address: ENJIN_COIN_ADDRESS,
+      address: manaAddress,
       quantity: "1"
     }
     const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset, schemaName })
@@ -110,7 +110,7 @@ suite('seaport: owners and transfers', () => {
 
     // Ownership of FT
     const wyAssetFT: WyvernFTAsset = {
-      id: AGE_OF_RUST_TOKEN_ID,
+      id: DISSOLUTION_TOKEN_ID,
       address: ENJIN_ADDRESS,
       quantity: "1"
     }

@@ -66,18 +66,14 @@ export class OpenSeaAPI {
    * @param retries Number of times to retry if the service is unavailable for any reason
    */
   public async postOrder(order: OrderJSON, retries = 2): Promise<Order> {
-    let response
+    let json
     try {
-      response = await this.post(
-        `${ORDERBOOK_PATH}/orders/post`,
-        order
-      )
+      json = await this.post(`${ORDERBOOK_PATH}/orders/post`, order) as OrderJSON
     } catch (error) {
       _throwOrContinue(error, retries)
       await delay(3000)
       return this.postOrder(order, retries - 1)
     }
-    const json: OrderJSON = await response.json()
     return orderFromJSON(json)
   }
 
@@ -96,11 +92,10 @@ export class OpenSeaAPI {
       email: string
     ): Promise<boolean> {
 
-    const response = await this.post(`${API_PATH}/asset/${tokenAddress}/${tokenId}/whitelist/`, {
+    const json = await this.post(`${API_PATH}/asset/${tokenAddress}/${tokenId}/whitelist/`, {
       email
     })
 
-    const json: any = await response.json()
     return !!json.success
   }
 
@@ -111,7 +106,7 @@ export class OpenSeaAPI {
    */
   public async getOrder(query: OrderQuery): Promise<Order> {
 
-    const response = await this.get(
+    const result = await this.get(
       `${ORDERBOOK_PATH}/orders`, {
         limit: 1,
         ...query
@@ -120,10 +115,10 @@ export class OpenSeaAPI {
 
     let orderJSON
     if (ORDERBOOK_VERSION == 0) {
-      const json: OrderJSON[] = await response.json()
+      const json = result as OrderJSON[]
       orderJSON = json[0]
     } else {
-      const json: OrderbookResponse = await response.json()
+      const json = result as OrderbookResponse
       orderJSON = json.orders[0]
     }
     if (!orderJSON) {
@@ -145,7 +140,7 @@ export class OpenSeaAPI {
       page = 1
     ): Promise<{orders: Order[]; count: number}> {
 
-    const response = await this.get(
+    const result = await this.get(
       `${ORDERBOOK_PATH}/orders`,
       {
         limit: this.pageSize,
@@ -155,13 +150,13 @@ export class OpenSeaAPI {
     )
 
     if (ORDERBOOK_VERSION == 0) {
-      const json: OrderJSON[] = await response.json()
+      const json = result as OrderJSON[]
       return {
         orders: json.map(j => orderFromJSON(j)),
         count: json.length
       }
     } else {
-      const json: OrderbookResponse = await response.json()
+      const json = result as OrderbookResponse
       return {
         orders: json.orders.map(j => orderFromJSON(j)),
         count: json.count
@@ -181,16 +176,15 @@ export class OpenSeaAPI {
       retries = 1
     ): Promise<OpenSeaAsset> {
 
-    let response
+    let json
     try {
-      response = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId || 0}`)
+      json = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId || 0}`)
     } catch (error) {
       _throwOrContinue(error, retries)
       await delay(1000)
       return this.getAsset(tokenAddress, tokenId, retries - 1)
     }
 
-    const json: any = await response.json()
     return assetFromJSON(json)
   }
 
@@ -205,13 +199,12 @@ export class OpenSeaAPI {
       page = 1
     ): Promise<{assets: OpenSeaAsset[]; estimatedCount: number}> {
 
-    const response = await this.get(`${API_PATH}/assets/`, {
+    const json = await this.get(`${API_PATH}/assets/`, {
       limit: this.pageSize,
       offset: (page - 1) * this.pageSize,
       ...query
     })
 
-    const json: any = await response.json()
     return {
       assets: json.assets.map((j: any) => assetFromJSON(j)),
       estimatedCount: json.estimated_count
@@ -231,9 +224,9 @@ export class OpenSeaAPI {
       retries = 1
     ): Promise<{tokens: OpenSeaFungibleToken[]}> {
 
-    let response
+    let json
     try {
-      response = await this.get(`${API_PATH}/tokens/`, {
+      json = await this.get(`${API_PATH}/tokens/`, {
         ...query,
         limit: this.pageSize,
         offset: (page - 1) * this.pageSize
@@ -244,7 +237,6 @@ export class OpenSeaAPI {
       return this.getPaymentTokens(query, page, retries - 1)
     }
 
-    const json: any = await response.json()
     return {
       tokens: json.map((t: any) => tokenFromJSON(t))
     }
@@ -257,9 +249,8 @@ export class OpenSeaAPI {
    */
   public async getBundle(slug: string): Promise<OpenSeaAssetBundle | null> {
 
-    const response = await this.get(`${API_PATH}/bundle/${slug}/`)
+    const json = await this.get(`${API_PATH}/bundle/${slug}/`)
 
-    const json: any = await response.json()
     return json ? assetBundleFromJSON(json) : null
   }
 
@@ -274,13 +265,12 @@ export class OpenSeaAPI {
       page = 1
     ): Promise<{bundles: OpenSeaAssetBundle[]; estimatedCount: number}> {
 
-    const response = await this.get(`${API_PATH}/bundles/`, {
+    const json = await this.get(`${API_PATH}/bundles/`, {
       ...query,
       limit: this.pageSize,
       offset: (page - 1) * this.pageSize
     })
 
-    const json: any = await response.json()
     return {
       bundles: json.bundles.map((j: any) => assetBundleFromJSON(j)),
       estimatedCount: json.estimated_count
@@ -292,12 +282,13 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param query Data to send. Will be stringified using QueryString
    */
-  public async get(apiPath: string, query: object = {}) {
+  public async get(apiPath: string, query: object = {}): Promise<any> {
 
     const qs = QueryString.stringify(query)
     const url = `${apiPath}?${qs}`
 
-    return this._fetch(url)
+    const response = await this._fetch(url)
+    return response.json()
   }
 
   /**
@@ -307,7 +298,7 @@ export class OpenSeaAPI {
    * @param opts RequestInit opts, similar to Fetch API. If it contains
    *  a body, it won't be stringified.
    */
-  public async post(apiPath: string, body?: object, opts: RequestInit = {}) {
+  public async post(apiPath: string, body?: object, opts: RequestInit = {}): Promise<any> {
 
     const fetchOpts = {
       method: 'POST',
@@ -319,7 +310,8 @@ export class OpenSeaAPI {
       ...opts
     }
 
-    return this._fetch(apiPath, fetchOpts)
+    const response = await this._fetch(apiPath, fetchOpts)
+    return response.json()
   }
 
   /**

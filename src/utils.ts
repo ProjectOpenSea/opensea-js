@@ -10,7 +10,7 @@ import { HowToCall } from 'wyvern-js/lib/types'
 import { ERC1155 } from './contracts'
 
 import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernNFTAsset, OpenSeaAssetContract, WyvernFTAsset, OpenSeaFungibleToken, AssetContractType, WyvernSchemaName } from './types'
+import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernNFTAsset, OpenSeaAssetContract, WyvernFTAsset, OpenSeaFungibleToken, AssetContractType, WyvernSchemaName, OpenSeaCollection, OpenSeaTraitStats } from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -48,7 +48,6 @@ export const DEFAULT_BUYER_FEE_BASIS_POINTS = 0
 export const DEFAULT_SELLER_FEE_BASIS_POINTS = 250
 export const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100
 export const DEFAULT_MAX_BOUNTY = DEFAULT_SELLER_FEE_BASIS_POINTS
-export const MAX_ERROR_LENGTH = 120
 export const MIN_EXPIRATION_SECONDS = 10
 export const ORDER_MATCHING_LATENCY_SECONDS = 60 * 60 * 24 * 7
 export const SELL_ORDER_BATCH_SIZE = 3
@@ -218,6 +217,7 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     description: asset.description,
     owner: asset.owner,
     assetContract: assetContractFromJSON(asset.asset_contract),
+    collection: collectionFromJSON(asset.collection),
     orders: asset.orders ? asset.orders.map(orderFromJSON) : null,
     sellOrders: asset.sell_orders ? asset.sell_orders.map(orderFromJSON) : null,
     buyOrders: asset.buy_orders ? asset.buy_orders.map(orderFromJSON) : null,
@@ -290,10 +290,36 @@ export const assetContractFromJSON = (asset_contract: any): OpenSeaAssetContract
     devBuyerFeeBasisPoints: asset_contract.dev_buyer_fee_basis_points,
     devSellerFeeBasisPoints: asset_contract.dev_seller_fee_basis_points,
     imageUrl: asset_contract.image_url,
-    stats: asset_contract.stats,
-    traits: asset_contract.traits,
     externalLink: asset_contract.external_link,
     wikiLink: asset_contract.wiki_link,
+  }
+}
+
+export const collectionFromJSON = (collection: any): OpenSeaCollection => {
+  const createdDate = new Date(`${collection.created_date}Z`)
+
+  return {
+    createdDate,
+    name: collection.name,
+    description: collection.description,
+    slug: collection.slug,
+    editors: collection.editors,
+    hidden: collection.hidden,
+    featured: collection.featured,
+    featuredImageUrl: collection.featured_image_url,
+    displayData: collection.display_data,
+    paymentTokens: (collection.payment_tokens || []).map(tokenFromJSON),
+    openseaBuyerFeeBasisPoints: collection.opensea_buyer_fee_basis_points,
+    openseaSellerFeeBasisPoints: collection.opensea_seller_fee_basis_points,
+    devBuyerFeeBasisPoints: collection.dev_buyer_fee_basis_points,
+    devSellerFeeBasisPoints: collection.dev_seller_fee_basis_points,
+    payoutAddress: collection.payout_address,
+    imageUrl: collection.image_url,
+    largeImageUrl: collection.large_image_url,
+    stats: collection.stats,
+    traitStats: collection.traits as OpenSeaTraitStats,
+    externalLink: collection.external_url,
+    wikiLink: collection.wiki_url,
   }
 }
 
@@ -964,7 +990,7 @@ export function onDeprecated(msg: string) {
  * Get special-case approval addresses for an erc721 contract
  * @param erc721Contract contract to check
  */
-export async function getNonCompliantApprovalAddress(erc721Contract: Web3.ContractInstance, tokenId: string, accountAddress: string): Promise<string> {
+export async function getNonCompliantApprovalAddress(erc721Contract: Web3.ContractInstance, tokenId: string, accountAddress: string): Promise<string | undefined> {
 
   // Throw errors if we don't have the ABI yet
   const onError = (e: Error) => { throw e }

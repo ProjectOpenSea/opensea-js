@@ -114,7 +114,7 @@ export declare class OpenSeaAPI {
      * @param apiPath Path to URL endpoint under API
      * @param query Data to send. Will be stringified using QueryString
      */
-    get(apiPath: string, query?: object): Promise<Response>;
+    get(apiPath: string, query?: object): Promise<any>;
     /**
      * POST JSON data to API, sending auth token in headers
      * @param apiPath Path to URL endpoint under API
@@ -122,7 +122,7 @@ export declare class OpenSeaAPI {
      * @param opts RequestInit opts, similar to Fetch API. If it contains
      *  a body, it won't be stringified.
      */
-    post(apiPath: string, body?: object, opts?: RequestInit): Promise<Response>;
+    post(apiPath: string, body?: object, opts?: RequestInit): Promise<any>;
     /**
      * PUT JSON data to API, sending auth token in headers
      * @param apiPath Path to URL endpoint under API
@@ -130,7 +130,7 @@ export declare class OpenSeaAPI {
      * @param opts RequestInit opts, similar to Fetch API. If it contains
      *  a body, it won't be stringified.
      */
-    put(apiPath: string, body: object, opts?: RequestInit): Promise<Response>;
+    put(apiPath: string, body: object, opts?: RequestInit): Promise<any>;
     /**
      * Get from an API Endpoint, sending auth token in headers
      * @param apiPath Path to URL endpoint under API

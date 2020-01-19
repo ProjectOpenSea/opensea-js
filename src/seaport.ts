@@ -12,7 +12,7 @@ import {
   personalSignAsync,
   sendRawTransaction, estimateCurrentPrice, INVERSE_BASIS_POINT, getOrderHash,
   getCurrentGasPrice, delay, assignOrdersToSides, estimateGas, NULL_ADDRESS,
-  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS, MAX_ERROR_LENGTH,
+  DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_SELLER_FEE_BASIS_POINTS,
   DEFAULT_GAS_INCREASE_FACTOR,
   MIN_EXPIRATION_SECONDS,
   OPENSEA_FEE_RECIPIENT,
@@ -57,6 +57,11 @@ import {
   STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS,
   getNonCompliantApprovalAddress,
 } from './utils'
+import {
+  requireOrdersCanMatch,
+  MAX_ERROR_LENGTH,
+  requireOrderCalldataCanMatch,
+} from './debugging'
 import { BigNumber } from 'bignumber.js'
 import { EventEmitter, EventSubscription } from 'fbemitter'
 import { isValidAddress } from 'ethereumjs-util'
@@ -2390,36 +2395,18 @@ export class OpenSeaPort {
         }
       }
 
-      const ordersCanMatch = await this._getClientsForRead(retries).wyvernProtocol.wyvernExchange.ordersCanMatch_.callAsync(
-        [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target, buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
-        [buy.makerRelayerFee, buy.takerRelayerFee, buy.makerProtocolFee, buy.takerProtocolFee, buy.basePrice, buy.extra, buy.listingTime, buy.expirationTime, buy.salt, sell.makerRelayerFee, sell.takerRelayerFee, sell.makerProtocolFee, sell.takerProtocolFee, sell.basePrice, sell.extra, sell.listingTime, sell.expirationTime, sell.salt],
-        [buy.feeMethod, buy.side, buy.saleKind, buy.howToCall, sell.feeMethod, sell.side, sell.saleKind, sell.howToCall],
-        buy.calldata,
-        sell.calldata,
-        buy.replacementPattern,
-        sell.replacementPattern,
-        buy.staticExtradata,
-        sell.staticExtradata,
-        { from: accountAddress },
-      )
-      this.logger(`Orders matching: ${ordersCanMatch}`)
+      const canMatch = await requireOrdersCanMatch(this._getClientsForRead(retries).wyvernProtocol, { buy, sell, accountAddress })
+      this.logger(`Orders matching: ${canMatch}`)
 
-      if (!ordersCanMatch) {
-        throw new Error('Unable to match offer with auction. Please try again later!')
-      }
+      const calldataCanMatch = await requireOrderCalldataCanMatch(this._getClientsForRead(retries).wyvernProtocol, { buy, sell })
+      this.logger(`Order calldata matching: ${calldataCanMatch}`)
 
-      const orderCalldataCanMatch = await this._wyvernProtocolReadOnly.wyvernExchange.orderCalldataCanMatch.callAsync(buy.calldata, buy.replacementPattern, sell.calldata, sell.replacementPattern)
-      this.logger(`Order calldata matching: ${orderCalldataCanMatch}`)
-
-      if (!orderCalldataCanMatch) {
-        throw new Error('Unable to match offer details with auction. Please try again later!')
-      }
       return true
 
     } catch (error) {
 
       if (retries <= 0) {
-        throw error
+        throw new Error(`Error matching this listing: ${error.message}. Please contact the maker or try again later!`)
       }
       await delay(500)
       return await this._validateMatch({ buy, sell, accountAddress, shouldValidateBuy, shouldValidateSell }, retries - 1)
