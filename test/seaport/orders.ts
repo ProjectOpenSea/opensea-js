@@ -270,7 +270,7 @@ suite('seaport: orders', () => {
       await testMatchingNewOrder(order, takerAddress, expirationTime + 100)
       assert.fail()
     } catch (error) {
-      assert.include(error.message, "Unable to match offer with auction.")
+      assert.include(error.message, "Buy-side order is set in the future or expired")
     }
   })
 
