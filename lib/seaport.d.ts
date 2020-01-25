@@ -732,7 +732,6 @@ export declare class OpenSeaPort {
      * @param expirationTime When the auction expires, or 0 if never.
      * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
      * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
-     * @param waitingForBestCounterOrder If true, this is an English auction order that should increase in price with every counter order until `expirationTime`.
      */
     private _getPriceParameters;
     private _getMetadata;

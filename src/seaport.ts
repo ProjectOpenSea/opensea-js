@@ -1901,7 +1901,7 @@ export class OpenSeaPort {
 
     const { target, calldata, replacementPattern } = WyvernSchemas.encodeBuy(schema, wyAsset, accountAddress)
 
-    const { basePrice, extra, paymentToken } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
+    const { basePrice, extra, paymentToken } = await this._getPriceParameters(OrderSide.Buy, paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
 
     const { staticTarget, staticExtradata } = await this._getStaticCallTargetAndExtraData({ asset: openSeaAsset, useTxnOriginStaticCall: false })
@@ -1974,7 +1974,7 @@ export class OpenSeaPort {
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
-    const { basePrice, extra, paymentToken } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
+    const { basePrice, extra, paymentToken } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
     const feeRecipient = waitForHighestBid
@@ -2153,7 +2153,7 @@ export class OpenSeaPort {
       throw new Error("Failed to encode")
     }
 
-    const { basePrice, extra, paymentToken } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount)
+    const { basePrice, extra, paymentToken } = await this._getPriceParameters(OrderSide.Buy, paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
 
     return {
@@ -2234,7 +2234,7 @@ export class OpenSeaPort {
       throw new Error("Failed to encode")
     }
 
-    const { basePrice, extra, paymentToken } = await this._getPriceParameters(paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
+    const { basePrice, extra, paymentToken } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
 
     const orderSaleKind = endAmount != null && endAmount !== startAmount
@@ -2750,9 +2750,9 @@ export class OpenSeaPort {
    * @param expirationTime When the auction expires, or 0 if never.
    * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
    * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
-   * @param waitingForBestCounterOrder If true, this is an English auction order that should increase in price with every counter order until `expirationTime`.
    */
   private async _getPriceParameters(
+      orderSide: OrderSide,
       tokenAddress: string,
       expirationTime: number,
       startAmount: number,
@@ -2777,6 +2777,9 @@ export class OpenSeaPort {
     }
     if (isEther && waitingForBestCounterOrder) {
       throw new Error(`English auctions must use wrapped ETH or an ERC-20 token.`)
+    }
+    if (isEther && orderSide === OrderSide.Buy) {
+      throw new Error(`Offers must use wrapped ETH or an ERC-20 token.`)
     }
     if (priceDiff < 0) {
       throw new Error('End price must be less than or equal to the start price.')

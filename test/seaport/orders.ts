@@ -15,7 +15,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_ADDRESS, INVERSE_BASIS_POINT } from '../../src/utils'
 import * as ordersJSONFixture from '../fixtures/orders.json'
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, AGE_OF_RUST_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER } from '../constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, AGE_OF_RUST_TOKEN_ID, DISSOLUTION_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER } from '../constants'
 import { testFeesMakerOrder } from './fees'
 
 const ordersJSON = ordersJSONFixture as any
@@ -93,7 +93,7 @@ suite('seaport: orders', () => {
     assert.equal(order.quantity.toNumber(), quantity * Math.pow(10, decimals))
   })
 
-  test("Correctly errors for invalid price parameters", async () => {
+  test("Correctly errors for invalid sell order price parameters", async () => {
     const accountAddress = ALEX_ADDRESS
     const expirationTime = Math.round(Date.now() / 1000 + 60) // one minute from now
     const paymentTokenAddress = manaAddress
@@ -173,6 +173,29 @@ suite('seaport: orders', () => {
       assert.fail()
     } catch (error) {
       assert.include(error.message, 'Expiration time must be set if order will change in price')
+    }
+  })
+
+  test("Correctly errors for invalid buy order price parameters", async () => {
+    const accountAddress = ALEX_ADDRESS_2
+    const expirationTime = Math.round(Date.now() / 1000 + 60) // one minute from now
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    try {
+      await client._makeBuyOrder({
+        asset: { tokenAddress, tokenId },
+        quantity: 1,
+        accountAddress,
+        startAmount: 2,
+        extraBountyBasisPoints: 0,
+        expirationTime,
+        paymentTokenAddress: NULL_ADDRESS,
+        schemaName: WyvernSchemaName.ERC721
+      })
+      assert.fail()
+    } catch (error) {
+      assert.include(error.message, 'Offers must use wrapped ETH or an ERC-20 token')
     }
   })
 
@@ -503,7 +526,7 @@ suite('seaport: orders', () => {
     const paymentToken = wethAddress
     const amountInToken = 0.01
 
-    const tokenId = AGE_OF_RUST_TOKEN_ID
+    const tokenId = DISSOLUTION_TOKEN_ID
     const tokenAddress = ENJIN_ADDRESS
 
     const asset = await client.api.getAsset(tokenAddress, tokenId)
