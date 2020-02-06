@@ -1,16 +1,47 @@
 import BigNumber from 'bignumber.js'
-import { WyvernProtocol } from 'wyvern-js'
+import {WyvernProtocol} from 'wyvern-js'
 import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import * as WyvernSchemas from 'wyvern-schemas'
-import { Schema, AnnotatedFunctionABI, FunctionInputKind, StateMutability, FunctionOutputKind } from 'wyvern-schemas/dist/types'
-import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
-import { HowToCall } from 'wyvern-js/lib/types'
-import { ERC1155 } from './contracts'
+import {
+  AnnotatedFunctionABI,
+  FunctionInputKind,
+  FunctionOutputKind,
+  Schema,
+  StateMutability
+} from 'wyvern-schemas/dist/types'
+import {WyvernAtomicizerContract} from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
+import {HowToCall} from 'wyvern-js/lib/types'
+import {ERC1155} from './contracts'
 
-import { OpenSeaPort } from '../src'
-import { ECSignature, Order, OrderSide, SaleKind, Web3Callback, TxnCallback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernNFTAsset, OpenSeaAssetContract, WyvernFTAsset, OpenSeaFungibleToken, AssetContractType, WyvernSchemaName, OpenSeaCollection, OpenSeaTraitStats } from './types'
+import {OpenSeaPort} from '../src'
+import {
+  Asset,
+  AssetContractType,
+  ECSignature,
+  OpenSeaAccount,
+  OpenSeaAsset,
+  OpenSeaAssetBundle,
+  OpenSeaAssetContract,
+  OpenSeaCollection,
+  OpenSeaFungibleToken,
+  OpenSeaTraitStats,
+  Order,
+  OrderJSON,
+  OrderSide,
+  SaleKind,
+  Transaction,
+  TxnCallback,
+  UnhashedOrder,
+  UnsignedOrder,
+  Web3Callback,
+  WyvernAsset,
+  WyvernBundle,
+  WyvernFTAsset,
+  WyvernNFTAsset,
+  WyvernSchemaName
+} from './types'
 
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -235,7 +266,12 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     openseaLink: asset.permalink,
     traits: asset.traits,
     numSales: asset.num_sales,
-    lastSale: asset.last_sale,
+    lastSale: {
+      eventType: asset.last_sale.event_type,
+      auctionType: asset.last_sale.auction_type,
+      totalPrice: asset.last_sale.total_price,
+      transaction: transactionFromJSON(asset.last_sale.transaction)
+    },
     backgroundColor: asset.background_color ? `#${asset.background_color}` : null,
 
     transferFee: asset.transfer_fee
@@ -253,6 +289,31 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     fromJSON.buyOrders = fromJSON.orders.filter(o => o.side == OrderSide.Buy)
   }
   return fromJSON
+}
+
+export const transactionFromJSON = (transaction: any): Transaction => {
+  return {
+    id: transaction.id,
+    fromAccount: accountFromJSON(transaction.from_account),
+    toAccount: accountFromJSON(transaction.to_account),
+    createdDate: transaction.created_date,
+    modifiedDate: transaction.modified_date,
+    transactionHash: transaction.transaction_hash,
+    transactionIndex: transaction.transaction_index,
+    blockNumber: transaction.block_number,
+    blockHash: transaction.block_hash,
+    timestamp: transaction.timestamp,
+  }
+}
+
+export const accountFromJSON = (account: any): OpenSeaAccount => {
+  return {
+    address: account.address,
+    config: account.config,
+    discordId: account.discord_id,
+    profileImgUrl: account.profile_img_url,
+    user: account.user
+  }
 }
 
 export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
