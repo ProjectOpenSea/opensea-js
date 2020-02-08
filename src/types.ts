@@ -389,22 +389,53 @@ export interface OpenSeaAsset extends Asset {
   transferFeePaymentToken: OpenSeaFungibleToken | null
 }
 
+/**
+ * Defines a LastSale type which contains details about last sale of the token
+ */
 export interface LastSale {
+
+  // The type of event
   eventType: string
+
+  // The auction type
   auctionType: string
+
+  // The total price of the sale in the payment
   totalPrice: string
+
+  // The transaction associated with the token sale
   transaction?: Transaction
 }
 
+/**
+ * Defines a Transaction type.
+ */
 export interface Transaction {
+  // The details about the account that sent the transaction
   fromAccount: OpenSeaAccount
+
+  // The details about the account that received the transaction
   toAccount: OpenSeaAccount
+
+  // Date when the transaction was created
   createdDate: Date
+
+  // Date when the transaction was modified
   modifiedDate: Date
+
+  // The transaction hash
   transactionHash: string
+
+  // The index of the transaction within the block
   transactionIndex: string
+
+  // The number of the block in which this transaction resides
   blockNumber: string
+
+  // The hash of the block in which this transaction resides
   blockHash: string
+
+  // The timestamp of the transaction
   timestamp: Date
 }
 
