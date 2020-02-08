@@ -393,20 +393,19 @@ export interface LastSale {
   eventType: string
   auctionType: string
   totalPrice: string
-  transaction: Transaction
+  transaction?: Transaction
 }
 
 export interface Transaction {
-  id: number
   fromAccount: OpenSeaAccount
   toAccount: OpenSeaAccount
-  createdDate: string
-  modifiedDate: string
+  createdDate: Date
+  modifiedDate: Date
   transactionHash: string
   transactionIndex: string
   blockNumber: string
   blockHash: string
-  timestamp: string
+  timestamp: Date
 }
 
 /**

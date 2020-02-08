@@ -293,16 +293,15 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
 
 export const transactionFromJSON = (transaction: any): Transaction => {
   return {
-    id: transaction.id,
     fromAccount: accountFromJSON(transaction.from_account),
     toAccount: accountFromJSON(transaction.to_account),
-    createdDate: transaction.created_date,
-    modifiedDate: transaction.modified_date,
+    createdDate: new Date(`${transaction.created_date}Z`),
+    modifiedDate: new Date(`${transaction.modified_date}Z`),
     transactionHash: transaction.transaction_hash,
     transactionIndex: transaction.transaction_index,
     blockNumber: transaction.block_number,
     blockHash: transaction.block_hash,
-    timestamp: transaction.timestamp,
+    timestamp: new Date(`${transaction.timestamp}Z`),
   }
 }
 
@@ -392,7 +391,8 @@ export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
     decimals: token.decimals,
     address: token.address,
     imageUrl: token.image_url,
-    ethPrice: token.eth_price
+    ethPrice: token.eth_price,
+    usdPrice: token.usd_price,
   }
 
   return fromJSON
