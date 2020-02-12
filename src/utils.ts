@@ -268,6 +268,7 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     numSales: asset.num_sales,
     lastSale: {
       eventType: asset.last_sale.event_type,
+      eventTimestamp: asset.last_sale.event_timestamp,
       auctionType: asset.last_sale.auction_type,
       totalPrice: asset.last_sale.total_price,
       transaction: transactionFromJSON(asset.last_sale.transaction)

@@ -397,6 +397,9 @@ export interface LastSale {
   // The type of event
   eventType: string
 
+  // The timestamp of the transaction (if on-chain) or when the off-chain occurred
+  eventTimestamp: Date
+
   // The auction type
   auctionType: string
 
