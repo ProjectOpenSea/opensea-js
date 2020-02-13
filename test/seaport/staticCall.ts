@@ -11,14 +11,14 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, WyvernSchemaName } from '../../src/types'
-import { NULL_ADDRESS, STATIC_CALL_TX_ORIGIN_ADDRESS } from '../../src/utils'
+import { NULL_ADDRESS, STATIC_CALL_TX_ORIGIN_ADDRESS, MAINNET_PROVIDER_URL, RINKEBY_PROVIDER_URL } from '../../src/utils'
 import { ALEX_ADDRESS, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, ALEX_ADDRESS_2, MAINNET_API_KEY, RINKEBY_API_KEY } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { getMethod, StaticCheckTxOrigin } from '../../src/contracts'
 import { testMatchingNewOrder } from './orders'
 
-const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
-const rinkebyProvider = new Web3.providers.HttpProvider('https://rinkeby.infura.io')
+const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
+const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL)
 
 const client = new OpenSeaPort(provider, {
   networkName: Network.Main,

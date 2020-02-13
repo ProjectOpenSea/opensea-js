@@ -266,13 +266,13 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     openseaLink: asset.permalink,
     traits: asset.traits,
     numSales: asset.num_sales,
-    lastSale: {
+    lastSale: asset.last_sale ? {
       eventType: asset.last_sale.event_type,
       eventTimestamp: asset.last_sale.event_timestamp,
       auctionType: asset.last_sale.auction_type,
       totalPrice: asset.last_sale.total_price,
       transaction: transactionFromJSON(asset.last_sale.transaction)
-    },
+    } : null,
     backgroundColor: asset.background_color ? `#${asset.background_color}` : null,
 
     transferFee: asset.transfer_fee
@@ -1061,7 +1061,7 @@ export async function getNonCompliantApprovalAddress(erc721Contract: Web3.Contra
     // CRYPTOKITTIES check
     promisifyCall<string>(c => erc721Contract.kittyIndexToApproved.call(tokenId, c), onError),
     // Etherbots check
-    promisifyCall<string>(c => erc721Contract.partIndexToApproved.call(tokenId, c), onError),
+    // promisifyCall<string>(c => erc721Contract.partIndexToApproved.call(tokenId, c), onError),
   ])
 
   return _.compact(results)[0]
