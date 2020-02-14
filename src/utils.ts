@@ -201,7 +201,7 @@ export const confirmTransaction = async (web3: Web3, txHash: string) => {
       if (didSucceed) {
         resolve("Transaction complete!")
       } else {
-        reject(new Error(`Transaction failed :( You might have already completed this action. See more on the mainnet at etherscan.io/txn/${txHash}`))
+        reject(new Error(`Transaction failed :( You might have already completed this action. See more on the mainnet at etherscan.io/tx/${txHash}`))
       }
     })
   })
