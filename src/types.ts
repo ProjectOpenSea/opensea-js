@@ -380,7 +380,7 @@ export interface OpenSeaAsset extends Asset {
   // Number of times this token has been traded (sold)
   numSales: number
   // Data about the last time this token was sold
-  lastSale: LastSale | null
+  lastSale: AssetEvent | null
   // The suggested background color for the image url
   backgroundColor: string | null,
   // The per-transfer fee, in base units, for this asset in its transfer method
@@ -390,24 +390,53 @@ export interface OpenSeaAsset extends Asset {
 }
 
 /**
- * Defines a LastSale type which contains details about last sale of the token
+ * Defines a AssetEvent type which contains details about an event that occurred
  */
-export interface LastSale {
+export interface AssetEvent {
 
   // The type of event
-  eventType: string
+  eventType: AssetEventType
 
   // The timestamp of the transaction (if on-chain) or when the off-chain occurred
   eventTimestamp: Date
 
   // The auction type
-  auctionType: string
+  auctionType: AuctionType
 
   // The total price of the sale in the payment
   totalPrice: string
 
   // The transaction associated with the token sale
-  transaction?: Transaction
+  transaction?: Transaction | null
+
+  // Details about the token used in the payment for this asset
+  paymentToken?: OpenSeaFungibleToken | null
+}
+
+/**
+ * Defines set of possible auctions types
+ */
+export enum AuctionType {
+  Dutch = 'dutch',
+  English = 'english',
+  MinPrice = 'min_price',
+}
+
+/**
+ * Defines the possible types of asset events that can take place
+ */
+export enum AssetEventType {
+  AuctionCreated = 'created',
+  AuctionSuccessful = 'successful',
+  AuctionCancelled = 'cancelled',
+  OfferEntered = 'offer_entered',
+  BidEntered = 'bid_entered',
+  BidWithdraw = 'bid_withdraw',
+  AssetTransfer = 'transfer',
+  AssetApprove = 'approve',
+  CompositionCreated = 'composition_created',
+  Custom = 'custom',
+  Payout = 'payout',
 }
 
 /**

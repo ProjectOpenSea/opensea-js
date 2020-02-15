@@ -1,6 +1,6 @@
 import { Order } from "./types"
-import { NULL_ADDRESS } from "./utils"
 import { WyvernProtocol } from "wyvern-js"
+import {NULL_ADDRESS} from './constants'
 
 export const MAX_ERROR_LENGTH = 120
 

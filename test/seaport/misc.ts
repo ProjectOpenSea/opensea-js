@@ -10,9 +10,14 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network } from '../../src/types'
-import { MAX_UINT_256, getCurrentGasPrice, getNonCompliantApprovalAddress, CK_ADDRESS, MAINNET_PROVIDER_URL } from '../../src/utils'
+import { getCurrentGasPrice, getNonCompliantApprovalAddress} from '../../src/utils'
 import { ALEX_ADDRESS, MAINNET_API_KEY, CK_TOKEN_ID, ALEX_ADDRESS_2} from '../constants'
 import { ERC721 } from '../../src/contracts'
+import {
+  CK_ADDRESS,
+  MAINNET_PROVIDER_URL,
+  MAX_UINT_256
+} from '../../src/constants'
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
 

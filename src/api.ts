@@ -1,17 +1,35 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
-import { Network, OpenSeaAPIConfig, OrderJSON, Order, OrderbookResponse, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaFungibleToken, OrderQuery, OpenSeaAssetQuery, OpenSeaAssetBundleQuery, OpenSeaFungibleTokenQuery} from './types'
-import { orderFromJSON, assetFromJSON, assetBundleFromJSON, tokenFromJSON, delay } from './utils'
-
-export const ORDERBOOK_VERSION: number = 1
-export const API_VERSION: number = 1
-export const API_BASE_MAINNET = 'https://api.opensea.io'
-export const API_BASE_RINKEBY = 'https://rinkeby-api.opensea.io'
-export const SITE_HOST_MAINNET = 'https://opensea.io'
-export const SITE_HOST_RINKEBY = 'https://rinkeby.opensea.io'
-
-const ORDERBOOK_PATH = `/wyvern/v${ORDERBOOK_VERSION}`
-const API_PATH = `/api/v${ORDERBOOK_VERSION}`
+import {
+  Network,
+  OpenSeaAPIConfig,
+  OpenSeaAsset,
+  OpenSeaAssetBundle,
+  OpenSeaAssetBundleQuery,
+  OpenSeaAssetQuery,
+  OpenSeaFungibleToken,
+  OpenSeaFungibleTokenQuery,
+  Order,
+  OrderbookResponse,
+  OrderJSON,
+  OrderQuery
+} from './types'
+import {
+  assetBundleFromJSON,
+  assetFromJSON,
+  delay,
+  orderFromJSON,
+  tokenFromJSON
+} from './utils'
+import {
+  API_BASE_MAINNET,
+  API_BASE_RINKEBY,
+  API_PATH,
+  ORDERBOOK_PATH,
+  ORDERBOOK_VERSION,
+  SITE_HOST_MAINNET,
+  SITE_HOST_RINKEBY
+} from './constants'
 
 export class OpenSeaAPI {
 
