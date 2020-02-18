@@ -407,10 +407,10 @@ export interface AssetEvent {
   totalPrice: string
 
   // The transaction associated with the token sale
-  transaction?: Transaction | null
+  transaction: Transaction | null
 
   // Details about the token used in the payment for this asset
-  paymentToken?: OpenSeaFungibleToken | null
+  paymentToken: OpenSeaFungibleToken | null
 }
 
 /**
