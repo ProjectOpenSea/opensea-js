@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import {WyvernProtocol} from 'wyvern-js'
+import { WyvernProtocol } from 'wyvern-js'
 import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
@@ -11,11 +11,11 @@ import {
   Schema,
   StateMutability
 } from 'wyvern-schemas/dist/types'
-import {WyvernAtomicizerContract} from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
-import {HowToCall} from 'wyvern-js/lib/types'
-import {ERC1155} from './contracts'
+import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
+import { HowToCall } from 'wyvern-js/lib/types'
+import { ERC1155 } from './contracts'
 
-import {OpenSeaPort} from '../src'
+import { OpenSeaPort } from '../src'
 import {
   Asset,
   AssetContractType,
@@ -1028,9 +1028,9 @@ export async function getNonCompliantApprovalAddress(erc721Contract: Web3.Contra
 
   const results = await Promise.all([
     // CRYPTOKITTIES check
-    promisifyCall<string>(c => erc721Contract.kittyIndexToApproved.call(tokenId, c), undefined),
+    promisifyCall<string>(c => erc721Contract.kittyIndexToApproved.call(tokenId, c)),
     // Etherbots check
-    promisifyCall<string>(c => erc721Contract.partIndexToApproved.call(tokenId, c), undefined),
+    promisifyCall<string>(c => erc721Contract.partIndexToApproved.call(tokenId, c)),
   ])
 
   return _.compact(results)[0]

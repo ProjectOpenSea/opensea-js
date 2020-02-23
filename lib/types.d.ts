@@ -271,8 +271,8 @@ export interface AssetEvent {
     eventTimestamp: Date;
     auctionType: AuctionType;
     totalPrice: string;
-    transaction?: Transaction | null;
-    paymentToken?: OpenSeaFungibleToken | null;
+    transaction: Transaction | null;
+    paymentToken: OpenSeaFungibleToken | null;
 }
 /**
  * Defines set of possible auctions types

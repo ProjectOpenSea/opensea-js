@@ -1,4 +1,4 @@
-import {WyvernProtocol} from 'wyvern-js'
+import { WyvernProtocol } from 'wyvern-js'
 
 export const DEFAULT_GAS_INCREASE_FACTOR = 1.1
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
