@@ -215,10 +215,12 @@ export interface OpenSeaAccount {
   profileImgUrl: string
 
   // More information explicitly set by this account's owner on OpenSea
-  user: null | {
-    // Username for this account
-    username: string
-  }
+  user: null | OpenSeaUser
+}
+
+export interface OpenSeaUser {
+  // Username for this user
+  username: string
 }
 
 /**
