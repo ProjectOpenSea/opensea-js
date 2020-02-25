@@ -163,7 +163,8 @@ export declare type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<
 export interface OpenSeaAccount {
     address: string;
     config: string;
-    profile_img_url: string;
+    discordId: string;
+    profileImgUrl: string;
     user: null | {
         username: string;
     };
@@ -257,10 +258,59 @@ export interface OpenSeaAsset extends Asset {
     externalLink: string;
     traits: object[];
     numSales: number;
-    lastSale: object | null;
+    lastSale: AssetEvent | null;
     backgroundColor: string | null;
     transferFee: BigNumber | string | null;
     transferFeePaymentToken: OpenSeaFungibleToken | null;
+}
+/**
+ * Defines a AssetEvent type which contains details about an event that occurred
+ */
+export interface AssetEvent {
+    eventType: AssetEventType;
+    eventTimestamp: Date;
+    auctionType: AuctionType;
+    totalPrice: string;
+    transaction: Transaction | null;
+    paymentToken: OpenSeaFungibleToken | null;
+}
+/**
+ * Defines set of possible auctions types
+ */
+export declare enum AuctionType {
+    Dutch = "dutch",
+    English = "english",
+    MinPrice = "min_price"
+}
+/**
+ * Defines the possible types of asset events that can take place
+ */
+export declare enum AssetEventType {
+    AuctionCreated = "created",
+    AuctionSuccessful = "successful",
+    AuctionCancelled = "cancelled",
+    OfferEntered = "offer_entered",
+    BidEntered = "bid_entered",
+    BidWithdraw = "bid_withdraw",
+    AssetTransfer = "transfer",
+    AssetApprove = "approve",
+    CompositionCreated = "composition_created",
+    Custom = "custom",
+    Payout = "payout"
+}
+/**
+ * Defines a Transaction type.
+ */
+export interface Transaction {
+    fromAccount: OpenSeaAccount;
+    toAccount: OpenSeaAccount;
+    createdDate: Date;
+    modifiedDate: Date;
+    transactionHash: string;
+    transactionIndex: string;
+    blockNumber: string;
+    blockHash: string;
+    timestamp: Date;
 }
 /**
  * Full annotated Fungible Token spec with OpenSea metadata
@@ -268,6 +318,7 @@ export interface OpenSeaAsset extends Asset {
 export interface OpenSeaFungibleToken extends Token {
     imageUrl?: string;
     ethPrice?: string;
+    usdPrice?: string;
 }
 export declare type FungibleToken = OpenSeaFungibleToken;
 /**

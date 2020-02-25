@@ -78,6 +78,7 @@
         "whitespace": [
             true,
             "check-branch",
+            "check-module",
             "check-decl",
             "check-operator",
             "check-separator",

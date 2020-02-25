@@ -10,7 +10,7 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderSide, OpenSeaAssetContract, UnhashedOrder, Order } from '../../src/types'
-import { DEFAULT_SELLER_FEE_BASIS_POINTS,  DEFAULT_BUYER_FEE_BASIS_POINTS, getOrderHash, NULL_ADDRESS, OPENSEA_FEE_RECIPIENT, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_MAX_BOUNTY, ENJIN_ADDRESS, ENJIN_COIN_ADDRESS } from '../../src/utils'
+import { getOrderHash} from '../../src/utils'
 import {
   MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS,
   CK_ADDRESS, CK_TOKEN_ID,
@@ -19,8 +19,16 @@ import {
   SPIRIT_CLASH_TOKEN_ID,
   SPIRIT_CLASH_OWNER
  } from '../constants'
+import {
+  DEFAULT_BUYER_FEE_BASIS_POINTS,
+  DEFAULT_MAX_BOUNTY,
+  DEFAULT_SELLER_FEE_BASIS_POINTS,
+  ENJIN_ADDRESS,
+  ENJIN_COIN_ADDRESS, MAINNET_PROVIDER_URL, NULL_ADDRESS, OPENSEA_FEE_RECIPIENT,
+  OPENSEA_SELLER_BOUNTY_BASIS_POINTS
+} from '../../src/constants'
 
-const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
+const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
 
 const client = new OpenSeaPort(provider, {
   networkName: Network.Main,

@@ -8,11 +8,11 @@ import {
   skip,
 } from 'mocha-typescript'
 
-import { ORDERBOOK_VERSION } from '../src/api'
 import { Order, OrderSide, OrderJSON } from '../src/types'
 import { orderToJSON } from '../src'
 import { mainApi, rinkebyApi, apiToTest, ALEX_ADDRESS, CK_RINKEBY_TOKEN_ID, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE, RINKEBY_API_KEY, CK_ADDRESS } from './constants'
 import { getOrderHash } from '../src/utils'
+import {ORDERBOOK_VERSION} from '../src/constants'
 
 suite('api', () => {
 

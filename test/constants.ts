@@ -1,6 +1,6 @@
 import { OpenSeaAPI } from '../src/api'
 import { Network } from '../src/types'
-import { CK_RINKEBY_ADDRESS, CK_ADDRESS } from '../src/utils'
+import {CK_ADDRESS, CK_RINKEBY_ADDRESS} from '../src/constants'
 
 export const MAINNET_API_KEY = "testKeyMainnet"
 export const RINKEBY_API_KEY = "testKeyRinkeby"
