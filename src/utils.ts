@@ -284,7 +284,7 @@ export const accountFromJSON = (account: any): OpenSeaAccount => {
     config: account.config,
     discordId: account.discord_id,
     profileImgUrl: account.profile_img_url,
-    user: userFromJSON(account)
+    user: account.user ? userFromJSON(account.user) : null
   }
 }
 
