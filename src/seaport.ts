@@ -465,7 +465,7 @@ export class OpenSeaPort {
    * @param referrerAddress The optional address that referred the order
    */
   public async createBundleBuyOrder(
-      {  assets, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName, referrerAddress }:
+      {  assets, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, referrerAddress }:
       { assets: Asset[];
         quantities?: number[];
         accountAddress: string;
@@ -473,15 +473,11 @@ export class OpenSeaPort {
         expirationTime?: number;
         paymentTokenAddress?: string;
         sellOrder?: Order;
-        schemaName?: WyvernSchemaName;
         referrerAddress?: string; }
     ): Promise<Order> {
 
     quantities = quantities || assets.map(a => 1)
     paymentTokenAddress = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
-    schemaName = schemaName ||
-      (sellOrder && sellOrder.metadata.schema) ||
-      WyvernSchemaName.ERC721
 
     const order = await this._makeBundleBuyOrder({
       assets,
@@ -492,7 +488,6 @@ export class OpenSeaPort {
       paymentTokenAddress,
       extraBountyBasisPoints: 0,
       sellOrder,
-      schemaName,
       referrerAddress
     })
 
@@ -819,7 +814,7 @@ export class OpenSeaPort {
    * @param schemaName The Wyvern schema name corresponding to the asset type
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, quantities, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, schemaName = WyvernSchemaName.ERC721 }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, quantities, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -832,8 +827,7 @@ export class OpenSeaPort {
         waitForHighestBid?: boolean;
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
-        buyerAddress?: string;
-        schemaName?: WyvernSchemaName; }
+        buyerAddress?: string; }
     ): Promise<Order> {
 
     quantities = quantities || assets.map(a => 1)
@@ -852,7 +846,6 @@ export class OpenSeaPort {
       paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
       extraBountyBasisPoints,
       buyerAddress: buyerAddress || NULL_ADDRESS,
-      schemaName
     })
 
     await this._sellOrderValidationAndApprovals({ order, accountAddress })
@@ -1229,22 +1222,21 @@ export class OpenSeaPort {
    */
   public async isAssetTransferrable(
     { asset, fromAddress, toAddress,
-      quantity, useProxy = false, schemaName = WyvernSchemaName.ERC721 }:
+      quantity, useProxy = false }:
     { asset: Asset;
       fromAddress: string;
       toAddress: string;
       quantity?: number | BigNumber;
-      useProxy?: boolean;
-      schemaName?: WyvernSchemaName; },
+      useProxy?: boolean; },
     retries = 1
   ): Promise<boolean> {
 
-    const schema = this._getSchema(schemaName)
+    const schema = this._getSchema(asset.schemaName)
     const quantityBN = quantity
       ? WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
       : makeBigNumber(1)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
-    const abi = schemaName === WyvernSchemaName.ERC20
+    const abi = asset.schemaName === WyvernSchemaName.ERC20
       ? annotateERC20TransferABI(wyAsset as WyvernFTAsset)
       : schema.functions.transfer(wyAsset)
 
@@ -1275,57 +1267,8 @@ export class OpenSeaPort {
         return false
       }
       await delay(500)
-      return await this.isAssetTransferrable({ asset, fromAddress, toAddress, quantity, useProxy, schemaName }, retries - 1)
+      return await this.isAssetTransferrable({ asset, fromAddress, toAddress, quantity, useProxy }, retries - 1)
     }
-  }
-
-  /**
-   * DEPRECATED: use `transfer` instead, which works for
-   * more types of assets (including fungibles and old
-   * non-fungibles).
-   * Transfer an NFT asset to another address
-   * @param param0 __namedParamaters Object
-   * @param asset The asset to transfer
-   * @param fromAddress The owner's wallet address
-   * @param toAddress The recipient's wallet address
-   * @param isWyvernAsset Whether the passed asset is a generic WyvernAsset, for backwards compatibility
-   * @param schemaName The Wyvern schema name corresponding to the asset type
-   * @returns Transaction hash
-   */
-  public async transferOne(
-      { asset, fromAddress, toAddress, isWyvernAsset = false, schemaName = WyvernSchemaName.ERC721 }:
-      { asset: Asset | WyvernAsset;
-        fromAddress: string;
-        toAddress: string;
-        isWyvernAsset?: boolean;
-        schemaName?: WyvernSchemaName; }
-    ): Promise<string> {
-
-    const schema = this._getSchema(schemaName)
-    let wyAsset
-    if (isWyvernAsset) {
-      wyAsset = asset as WyvernAsset
-    } else {
-      const openseaAsset = asset as Asset
-      wyAsset = getWyvernAsset(schema, openseaAsset)
-    }
-
-    const abi = schema.functions.transfer(wyAsset)
-
-    this._dispatch(EventType.TransferOne, { accountAddress: fromAddress, toAddress, asset: wyAsset })
-
-    const gasPrice = await this._computeGasPrice()
-    const txHash = await sendRawTransaction(this.web3, {
-      from: fromAddress,
-      to: abi.target,
-      data: encodeTransferCall(abi, fromAddress, toAddress),
-      gasPrice
-    }, error => {
-      this._dispatch(EventType.TransactionDenied, { error, accountAddress: fromAddress })
-    })
-
-    await this._confirmTransaction(txHash, EventType.TransferOne, `Transferring asset`)
-    return txHash
   }
 
   /**
@@ -2084,7 +2027,7 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleBuyOrder(
-      { assets, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, schemaName, referrerAddress }:
+      { assets, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, referrerAddress }:
       { assets: Asset[];
         quantities: number[];
         accountAddress: string;
@@ -2093,14 +2036,13 @@ export class OpenSeaPort {
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         sellOrder?: UnhashedOrder;
-        schemaName: WyvernSchemaName;
         referrerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
     accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
-    const schema = this._getSchema(schemaName)
     const quantityBNs = quantities.map((quantity, i) => WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), assets[i].decimals || 0))
-    const bundle = getWyvernBundle(schema, assets, quantityBNs)
+    const schemas = assets.map(a => this._getSchema(a.schemaName))
+    const bundle = getWyvernBundle(assets, schemas, quantityBNs)
 
     let makerRelayerFee
     let takerRelayerFee
@@ -2131,7 +2073,7 @@ export class OpenSeaPort {
       taker = NULL_ADDRESS
     }
 
-    const { calldata, replacementPattern } = encodeAtomicizedBuy(schema, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const { calldata, replacementPattern } = encodeAtomicizedBuy(schemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
     if (!calldata || !replacementPattern) {
       throw new Error("Failed to encode")
     }
@@ -2168,14 +2110,15 @@ export class OpenSeaPort {
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle,
-        schema: schema.name as WyvernSchemaName,
-        referrerAddress
+        referrerAddress,
+        // TODO deprecate
+        schema: schemas[0].name as WyvernSchemaName
       }
     }
   }
 
   public async _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -2188,14 +2131,12 @@ export class OpenSeaPort {
         waitForHighestBid: boolean;
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
-        buyerAddress: string;
-        schemaName: WyvernSchemaName; }
+        buyerAddress: string; }
     ): Promise<UnhashedOrder> {
 
     accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
-    const schema = this._getSchema(schemaName)
     const quantityBNs = quantities.map((quantity, i) => WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), assets[i].decimals || 0))
-    const bundle = getWyvernBundle(schema, assets, quantityBNs)
+    const bundle = getWyvernBundle(assets, assets.map(a => this._getSchema(a.schemaName)), quantityBNs)
     bundle.name = bundleName
     bundle.description = bundleDescription
     bundle.external_link = bundleExternalLink
@@ -2213,7 +2154,8 @@ export class OpenSeaPort {
       totalBuyerFeeBPS,
       sellerBountyBPS } = await this.computeFees({ asset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
-    const { calldata, replacementPattern } = encodeAtomicizedSell(schema, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const schemas = bundle.schemas.map(name => this._getSchema(name))
+    const { calldata, replacementPattern } = encodeAtomicizedSell(schemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
     if (!calldata || !replacementPattern) {
       throw new Error("Failed to encode")
     }
@@ -2258,8 +2200,9 @@ export class OpenSeaPort {
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle,
-        schema: schema.name as WyvernSchemaName,
-      },
+        // TODO deprecate
+        schema: schemas[0].name as WyvernSchemaName
+      }
     }
   }
 
@@ -2272,18 +2215,23 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
     recipientAddress = validateAndFormatWalletAddress(this.web3ReadOnly, recipientAddress)
-    const schema = this._getSchema(order.metadata.schema)
 
     const computeOrderParams = () => {
-      if (order.metadata.asset) {
+      if ('asset' in order.metadata) {
+        const schema = this._getSchema(order.metadata.schema)
         return order.side == OrderSide.Buy
           ? encodeSell(schema, order.metadata.asset, recipientAddress)
           : encodeBuy(schema, order.metadata.asset, recipientAddress)
-      } else if (order.metadata.bundle) {
+      } else if ('bundle' in order.metadata) {
         // We're matching a bundle order
+        const bundle = order.metadata.bundle
+        const schemas = bundle.schemas
+          ? bundle.schemas.map(schemaName => this._getSchema(schemaName))
+          // Backwards compat:
+          : bundle.assets.map((asset, i) => this._getSchema(order.metadata.schema))
         const atomicized = order.side == OrderSide.Buy
-          ? encodeAtomicizedSell(schema, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
-          : encodeAtomicizedBuy(schema, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
+          ? encodeAtomicizedSell(schemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
+          : encodeAtomicizedBuy(schemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
         return {
           target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
           calldata: atomicized.calldata,
@@ -2403,7 +2351,9 @@ export class OpenSeaPort {
       { order: UnhashedOrder;
         buyerEmail: string }
     ) {
-    const asset = order.metadata.asset
+    const asset = 'asset' in order.metadata
+      ? order.metadata.asset
+      : undefined
     if (!asset || !asset.id) {
       throw new Error("Whitelisting only available for non-fungible assets.")
     }
@@ -2418,7 +2368,7 @@ export class OpenSeaPort {
     ) {
 
     const schema = this._getSchema(order.metadata.schema)
-    const wyAssets = order.metadata.bundle
+    const wyAssets = 'bundle' in order.metadata
       ? order.metadata.bundle.assets
       : order.metadata.asset
         ? [order.metadata.asset]
@@ -2916,7 +2866,7 @@ export class OpenSeaPort {
     }
   }
 
-  private _getSchema(schemaName: WyvernSchemaName): Schema<any> {
+  private _getSchema(schemaName = WyvernSchemaName.ERC721): Schema<any> {
     const schema = WyvernSchemas.schemas[this._networkName].filter(s => s.name == schemaName)[0]
 
     if (!schema) {

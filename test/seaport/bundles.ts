@@ -11,13 +11,14 @@ import {
 
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, WyvernSchemaName } from '../../src/types'
-import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY } from '../constants'
+import { Network, WyvernSchemaName, Asset } from '../../src/types'
+import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, SPIRIT_CLASH_TOKEN_ID, BENZENE_ADDRESS } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { testMatchingNewOrder } from './orders' 
 import {
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
+  ENJIN_ADDRESS,
 } from '../../src/constants'
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
@@ -27,9 +28,18 @@ const client = new OpenSeaPort(provider, {
   apiKey: MAINNET_API_KEY
 }, line => console.info(`MAINNET: ${line}`))
 
-const assetsForBundleOrder = [
+const assetsForBundleOrder: Asset[] = [
   { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
   { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
+]
+
+const fungibleAssetsForBundleOrder: Asset[] = [
+  { tokenAddress: BENZENE_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20 }
+]
+
+const semiFungibleAssetsForBundleOrder: Asset[] = [
+  { tokenId: DISSOLUTION_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
+  { tokenId: SPIRIT_CLASH_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
 ]
 
 let wethAddress: string
@@ -54,8 +64,7 @@ suite('seaport: bundles', () => {
       startAmount: amountInEth,
       extraBountyBasisPoints: 0,
       expirationTime: 0,
-      paymentTokenAddress: wethAddress,
-      schemaName: WyvernSchemaName.ERC721
+      paymentTokenAddress: wethAddress
     })
 
     assert.equal(order.paymentToken, wethAddress)
@@ -81,8 +90,7 @@ suite('seaport: bundles', () => {
       startAmount: amountInToken,
       extraBountyBasisPoints: 0,
       expirationTime: 0,
-      paymentTokenAddress: manaAddress,
-      schemaName: WyvernSchemaName.ERC721
+      paymentTokenAddress: manaAddress
     })
 
     const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
@@ -115,8 +123,7 @@ suite('seaport: bundles', () => {
       expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
-      buyerAddress: NULL_ADDRESS,
-      schemaName: WyvernSchemaName.ERC721
+      buyerAddress: NULL_ADDRESS
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
@@ -147,8 +154,7 @@ suite('seaport: bundles', () => {
       expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
-      buyerAddress: NULL_ADDRESS,
-      schemaName: WyvernSchemaName.ERC721
+      buyerAddress: NULL_ADDRESS
     })
 
     const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
@@ -181,8 +187,7 @@ suite('seaport: bundles', () => {
       extraBountyBasisPoints: 0,
       expirationTime: 0,
       waitForHighestBid: false,
-      buyerAddress: NULL_ADDRESS,
-      schemaName: WyvernSchemaName.ERC721
+      buyerAddress: NULL_ADDRESS
     })
 
     assert.equal(order.paymentToken, token.address)
@@ -213,14 +218,43 @@ suite('seaport: bundles', () => {
       extraBountyBasisPoints: 0,
       waitForHighestBid: false,
       buyerAddress: NULL_ADDRESS,
-      paymentTokenAddress: NULL_ADDRESS,
-      schemaName: WyvernSchemaName.ERC721
+      paymentTokenAddress: NULL_ADDRESS
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.expirationTime.toNumber(), expirationTime)
+
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test.only('Matches bundle order for misordered assets with different schemas', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 1
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with different schemas of assets",
+      assets: [
+        ...assetsForBundleOrder,
+        ...fungibleAssetsForBundleOrder,
+        ...semiFungibleAssetsForBundleOrder],
+      quantities: [1, 1, 12, 2, 1],
+      accountAddress,
+      startAmount: amountInEth,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      waitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS,
+      paymentTokenAddress: NULL_ADDRESS
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid

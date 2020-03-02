@@ -782,13 +782,13 @@ export function getWyvernAsset(
 /**
  * Get the Wyvern representation of a group of assets
  * Sort order is enforced here. Throws if there's a duplicate.
- * @param schema The WyvernSchema needed to access these assets
  * @param assets Assets to bundle
+ * @param schemas The WyvernSchemas needed to access each asset, respectively
  * @param quantities The quantity of each asset to bundle, respectively
  */
 export function getWyvernBundle(
-    schema: any,
     assets: Asset[],
+    schemas: Array<Schema<WyvernAsset>>,
     quantities: BigNumber[]
   ): WyvernBundle {
 
@@ -796,18 +796,33 @@ export function getWyvernBundle(
     throw new Error("Bundle must have a quantity for every asset")
   }
 
-  const wyAssets = assets.map((asset, i) => getWyvernAsset(schema, asset, quantities[i]))
-  const sorters = [(a: WyvernAsset) => a.address, (a: WyvernAsset) => a.id || 0]
-  const uniqueAssets = _.uniqBy(wyAssets, a => `${sorters[0](a)}-${sorters[1](a)}`)
-
-  if (uniqueAssets.length != wyAssets.length) {
-    throw new Error("Bundle can't contain duplicate assets")
+  if (assets.length != schemas.length) {
+    throw new Error("Bundle must have a schema for every asset")
   }
 
-  const sortedWyAssets = _.sortBy(wyAssets, sorters)
+  const wyAssets = assets.map((asset, i) => getWyvernAsset(schemas[i], asset, quantities[i]))
+
+  const sorters = [
+    (assetAndSchema: { asset: WyvernAsset, schema: WyvernSchemaName }) => assetAndSchema.asset.address,
+    (assetAndSchema: { asset: WyvernAsset, schema: WyvernSchemaName }) => assetAndSchema.asset.id || 0
+  ]
+  
+  const wyAssetsAndSchemas = wyAssets.map((asset, i) => ({
+    asset,
+    schema: schemas[i].name as WyvernSchemaName
+  }))
+
+  const uniqueAssets = _.uniqBy(wyAssetsAndSchemas, group => `${sorters[0](group)}-${sorters[1](group)}`)
+
+  if (uniqueAssets.length != wyAssetsAndSchemas.length) {
+    throw new Error("Bundle can't contain duplicate assets")
+  }
+  
+  const sortedWyAssetsAndSchemas = _.sortBy(wyAssetsAndSchemas, sorters)
 
   return {
-    assets: sortedWyAssets
+    assets: sortedWyAssetsAndSchemas.map(group => group.asset),
+    schemas: sortedWyAssetsAndSchemas.map(group => group.schema),
   }
 }
 

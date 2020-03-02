@@ -168,8 +168,6 @@ export declare class OpenSeaPort {
      * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
      * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
      * @param param0 __namedParameters Object
-     * @param tokenId DEPRECATED: Token ID. Use `asset` instead.
-     * @param tokenAddress DEPRECATED: Address of the token's contract. Use `asset` instead.
      * @param asset The asset to trade
      * @param accountAddress Address of the maker's wallet
      * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
@@ -180,9 +178,7 @@ export declare class OpenSeaPort {
      * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
      * @param referrerAddress The optional address that referred the order
      */
-    createBuyOrder({ tokenId, tokenAddress, asset, accountAddress, startAmount, quantity, expirationTime, paymentTokenAddress, sellOrder, schemaName, referrerAddress }: {
-        tokenId?: string;
-        tokenAddress?: string;
+    createBuyOrder({ asset, accountAddress, startAmount, quantity, expirationTime, paymentTokenAddress, sellOrder, schemaName, referrerAddress }: {
         asset: Asset;
         accountAddress: string;
         startAmount: number;
@@ -213,9 +209,7 @@ export declare class OpenSeaPort {
      * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
      * @param schemaName The Wyvern schema name corresponding to the asset type
      */
-    createSellOrder({ tokenId, tokenAddress, asset, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, schemaName }: {
-        tokenId?: string;
-        tokenAddress?: string;
+    createSellOrder({ asset, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, schemaName }: {
         asset: Asset;
         accountAddress: string;
         startAmount: number;
@@ -409,9 +403,7 @@ export declare class OpenSeaPort {
      * @param schemaName The Wyvern schema name corresponding to the asset type
      * @param retries How many times to retry if false
      */
-    isAssetTransferrable({ tokenId, tokenAddress, asset, fromAddress, toAddress, quantity, useProxy, schemaName }: {
-        tokenId?: string;
-        tokenAddress?: string;
+    isAssetTransferrable({ asset, fromAddress, toAddress, quantity, useProxy, schemaName }: {
         asset: Asset;
         fromAddress: string;
         toAddress: string;

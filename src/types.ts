@@ -8,7 +8,7 @@ import {
   Order as WyvernOrder
 } from 'wyvern-js/lib/types'
 
-import { Token } from 'wyvern-schemas/dist/types'
+import { Token, Schema } from 'wyvern-schemas/dist/types'
 
 export {
   Network,
@@ -192,6 +192,7 @@ export type WyvernAsset = WyvernNFTAsset | WyvernFTAsset
 // Abstractions over Wyvern assets for bundles
 export interface WyvernBundle {
   assets: WyvernAsset[]
+  schemas: WyvernSchemaName[]
   name?: string
   description?: string
   external_link?: string
@@ -229,6 +230,8 @@ export interface Asset {
   tokenId: string | null,
   // The asset's contract address
   tokenAddress: string,
+  // The Wyvern schema name (e.g. "ERC721") for this asset
+  schemaName?: WyvernSchemaName,
   // The token standard version of this asset
   version?: TokenStandardVersion,
   // Optional for ENS names
@@ -554,6 +557,20 @@ export interface OpenSeaFees {
   sellerBountyBPS: number
 }
 
+export interface ExchangeMetadataForAsset {
+  asset: WyvernAsset
+  schema: WyvernSchemaName
+  referrerAddress?: string
+}
+
+export interface ExchangeMetadataForBundle {
+  bundle: WyvernBundle
+  schema?: WyvernSchemaName // DEPRECATED: use bundle.schemas
+  referrerAddress?: string
+}
+
+export type ExchangeMetadata = ExchangeMetadataForAsset | ExchangeMetadataForBundle
+
 export interface UnhashedOrder extends WyvernOrder {
   feeMethod: FeeMethod
   side: OrderSide
@@ -565,12 +582,7 @@ export interface UnhashedOrder extends WyvernOrder {
   makerReferrerFee: BigNumber
   waitingForBestCounterOrder: boolean
 
-  metadata: {
-    asset?: WyvernAsset
-    bundle?: WyvernBundle
-    schema: WyvernSchemaName
-    referrerAddress?: string
-  }
+  metadata: ExchangeMetadata
 }
 
 export interface UnsignedOrder extends UnhashedOrder {
@@ -633,11 +645,7 @@ export interface OrderJSON extends Partial<ECSignature> {
 
   salt: string
 
-  metadata: {
-    asset?: WyvernAsset
-    bundle?: WyvernBundle
-    schema: WyvernSchemaName
-  }
+  metadata: ExchangeMetadata
 
   hash: string
 }

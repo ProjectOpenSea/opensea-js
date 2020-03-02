@@ -31,7 +31,7 @@ const failWith = (msg: string): any => {
 
 export const encodeReplacementPattern = WyvernProtocol.encodeReplacementPattern
 
-export type SellEncoder<T> = (schema: Schema<T>, asset: T, address: string) => CallSpec
+export type SellEncoder = (schema: Schema<WyvernAsset>, asset: WyvernAsset, address: string) => CallSpec
 
 export const encodeCall = (abi: AnnotatedFunctionABI, parameters: any[]): string => {
   const inputTypes = abi.inputs.map(i => i.type)
@@ -41,7 +41,7 @@ export const encodeCall = (abi: AnnotatedFunctionABI, parameters: any[]): string
   ]).toString('hex')
 }
 
-export const encodeSell: SellEncoder<any> = (schema, asset, address) => {
+export const encodeSell: SellEncoder = (schema, asset, address) => {
   const transfer = schema.functions.transfer(asset)
   return {
     target: transfer.target,
@@ -50,10 +50,11 @@ export const encodeSell: SellEncoder<any> = (schema, asset, address) => {
   }
 }
 
-export type AtomicizedSellEncoder<T> = (schema: Schema<T>, assets: T[], address: string, atomicizer: WyvernAtomicizerContract) => Partial<CallSpec>
+export type AtomicizedSellEncoder = (schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string, atomicizer: WyvernAtomicizerContract) => Partial<CallSpec>
 
-export const encodeAtomicizedSell: AtomicizedSellEncoder<any> = (schema, assets, address, atomicizer) => {
-  const transactions = assets.map(asset => {
+export const encodeAtomicizedSell: AtomicizedSellEncoder = (schemas, assets, address, atomicizer) => {
+  const transactions = assets.map((asset, i) => {
+    const schema = schemas[i]
     const { target, calldata } = encodeSell(schema, asset, address)
     return {
       calldata,
@@ -78,10 +79,11 @@ export const encodeAtomicizedSell: AtomicizedSellEncoder<any> = (schema, assets,
   }
 }
 
-export type AtomicizedBuyEncoder<T> = (schema: Schema<T>, assets: T[], address: string, atomicizer: WyvernAtomicizerContract) => Partial<CallSpec>
+export type AtomicizedBuyEncoder = (schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string, atomicizer: WyvernAtomicizerContract) => Partial<CallSpec>
 
-export const encodeAtomicizedBuy: AtomicizedBuyEncoder<any> = (schema, assets, address, atomicizer) => {
-  const transactions = assets.map(asset => {
+export const encodeAtomicizedBuy: AtomicizedBuyEncoder = (schemas, assets, address, atomicizer) => {
+  const transactions = assets.map((asset, i) => {
+    const schema = schemas[i]
     const { target, calldata } = encodeBuy(schema, asset, address)
     return {
       calldata,
