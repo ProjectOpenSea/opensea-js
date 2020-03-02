@@ -163,7 +163,6 @@ export declare type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<
 export interface OpenSeaAccount {
     address: string;
     config: string;
-    discordId: string;
     profileImgUrl: string;
     user: null | {
         username: string;
