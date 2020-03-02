@@ -165,9 +165,10 @@ export interface OpenSeaAccount {
     config: string;
     discordId: string;
     profileImgUrl: string;
-    user: null | {
-        username: string;
-    };
+    user: OpenSeaUser | null;
+}
+export interface OpenSeaUser {
+    username: string;
 }
 /**
  * Simple, unannotated non-fungible asset spec

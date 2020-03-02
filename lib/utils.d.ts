@@ -3,7 +3,7 @@ import * as Web3 from 'web3';
 import { AnnotatedFunctionABI, Schema } from 'wyvern-schemas/dist/types';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { HowToCall } from 'wyvern-js/lib/types';
-import { Asset, AssetEvent, ECSignature, OpenSeaAccount, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaAssetContract, OpenSeaCollection, OpenSeaFungibleToken, Order, OrderJSON, Transaction, UnhashedOrder, UnsignedOrder, Web3Callback, WyvernAsset, WyvernBundle, WyvernFTAsset, WyvernNFTAsset } from './types';
+import { Asset, AssetEvent, ECSignature, OpenSeaAccount, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaAssetContract, OpenSeaCollection, OpenSeaFungibleToken, OpenSeaUser, Order, OrderJSON, Transaction, UnhashedOrder, UnsignedOrder, Web3Callback, WyvernAsset, WyvernBundle, WyvernFTAsset, WyvernNFTAsset } from './types';
 export declare const annotateERC721TransferABI: (asset: WyvernNFTAsset) => AnnotatedFunctionABI;
 export declare const annotateERC20TransferABI: (asset: WyvernFTAsset) => AnnotatedFunctionABI;
 /**
@@ -21,6 +21,7 @@ export declare const assetFromJSON: (asset: any) => OpenSeaAsset;
 export declare const assetEventFromJSON: (assetEvent: any) => AssetEvent;
 export declare const transactionFromJSON: (transaction: any) => Transaction;
 export declare const accountFromJSON: (account: any) => OpenSeaAccount;
+export declare const userFromJSON: (user: any) => OpenSeaUser;
 export declare const assetBundleFromJSON: (asset_bundle: any) => OpenSeaAssetBundle;
 export declare const assetContractFromJSON: (asset_contract: any) => OpenSeaAssetContract;
 export declare const collectionFromJSON: (collection: any) => OpenSeaCollection;
