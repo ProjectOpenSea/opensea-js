@@ -15,14 +15,13 @@ import {
   encodeProxyCall,
   validateAndFormatWalletAddress,
   getWyvernBundle,
-  getWyvernNFTAsset,
+  getWyvernAsset,
   encodeTransferCall,
   getTransferFeeSettings,
   rawCall,
   promisifyCall,
   annotateERC721TransferABI,
   annotateERC20TransferABI,
-  getWyvernAsset,
   onDeprecated,
   getNonCompliantApprovalAddress,
 } from './utils'
@@ -180,7 +179,7 @@ export class OpenSeaPort {
     ) {
 
     const schema = this._getSchema(WyvernSchemaName.ERC721)
-    const wyAssets = assets.map(a => getWyvernNFTAsset(schema, a))
+    const wyAssets = assets.map(a => getWyvernAsset(schema, a))
 
     // Separate assets out into two arrays of tokenIds and tokenAddresses
     const tokenIds = wyAssets.map(a => a.id)
@@ -227,7 +226,7 @@ export class OpenSeaPort {
     }
 
     const schema = this._getSchema(WyvernSchemaName.ERC721)
-    const wyAssets = assets.map(a => getWyvernNFTAsset(schema, a))
+    const wyAssets = assets.map(a => getWyvernAsset(schema, a))
 
     // Separate assets out into two arrays of tokenIds and tokenAddresses
     const tokenIds = wyAssets.map(a => a.id)
@@ -275,7 +274,7 @@ export class OpenSeaPort {
     const uniswapSlippage = uniswapSlippageAllowedInBasisPoints === 0 ? DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS : uniswapSlippageAllowedInBasisPoints
 
     const schema = this._getSchema(WyvernSchemaName.ERC721)
-    const wyAssets = assets.map(a => getWyvernNFTAsset(schema, a))
+    const wyAssets = assets.map(a => getWyvernAsset(schema, a))
 
     // Separate assets out into two arrays of tokenIds and tokenAddresses
     const tokenIds = wyAssets.map(a => a.id)
@@ -458,10 +457,9 @@ export class OpenSeaPort {
    * @param referrerAddress The optional address that referred the order
    */
   public async createBundleBuyOrder(
-      { tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName, referrerAddress }:
-      { tokenIds?: string[];
-        tokenAddresses?: string[];
-        assets: Asset[];
+      {  assets, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, schemaName, referrerAddress }:
+      { assets: Asset[];
+        quantities?: number[];
         accountAddress: string;
         startAmount: number;
         expirationTime?: number;
@@ -471,13 +469,7 @@ export class OpenSeaPort {
         referrerAddress?: string; }
     ): Promise<Order> {
 
-    if (!assets && tokenIds && tokenAddresses) {
-      onDeprecated("Use `assets` instead of the `tokenIDs` and `tokenAddresses` list")
-      assets = _.zipWith(tokenIds, tokenAddresses, (tokenId, tokenAddress) => {
-        return { tokenAddress, tokenId }
-      })
-    }
-
+    quantities = quantities || assets.map(a => 1)
     paymentTokenAddress = paymentTokenAddress || WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
     schemaName = schemaName ||
       (sellOrder && sellOrder.metadata.schema) ||
@@ -485,6 +477,7 @@ export class OpenSeaPort {
 
     const order = await this._makeBundleBuyOrder({
       assets,
+      quantities,
       accountAddress,
       startAmount,
       expirationTime,
@@ -834,11 +827,12 @@ export class OpenSeaPort {
    * @param schemaName The Wyvern schema name corresponding to the asset type
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, schemaName = WyvernSchemaName.ERC721 }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, quantities, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, schemaName = WyvernSchemaName.ERC721 }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
+        quantities?: number[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -850,11 +844,14 @@ export class OpenSeaPort {
         schemaName?: WyvernSchemaName; }
     ): Promise<Order> {
 
+    quantities = quantities || assets.map(a => 1)
+
     const order = await this._makeBundleSellOrder({
       bundleName,
       bundleDescription,
       bundleExternalLink,
       assets,
+      quantities,
       accountAddress,
       startAmount,
       endAmount,
@@ -1092,7 +1089,7 @@ export class OpenSeaPort {
       this._dispatch(EventType.ApproveAsset, {
         accountAddress,
         proxyAddress,
-        asset: getWyvernNFTAsset(schema, { tokenId, tokenAddress })
+        asset: getWyvernAsset(schema, { tokenId, tokenAddress })
       })
 
       const gasPrice = await this._computeGasPrice()
@@ -1325,7 +1322,7 @@ export class OpenSeaPort {
       wyAsset = asset as WyvernAsset
     } else {
       const openseaAsset = asset as Asset
-      wyAsset = getWyvernNFTAsset(schema, openseaAsset)
+      wyAsset = getWyvernAsset(schema, openseaAsset)
     }
 
     const abi = schema.functions.transfer(wyAsset)
@@ -1421,7 +1418,7 @@ export class OpenSeaPort {
     toAddress = validateAndFormatWalletAddress(this.web3ReadOnly, toAddress)
 
     const schema = this._getSchema(schemaName)
-    const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
+    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset))
 
     const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
 
@@ -1750,7 +1747,7 @@ export class OpenSeaPort {
     ): Promise<number> {
 
     const schema = this._getSchema(schemaName)
-    const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
+    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset))
 
     const proxyAddress = await this._getProxy(fromAddress)
     if (!proxyAddress) {
@@ -2102,8 +2099,9 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleBuyOrder(
-      { assets, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, schemaName, referrerAddress }:
+      { assets, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, schemaName, referrerAddress }:
       { assets: Asset[];
+        quantities: number[];
         accountAddress: string;
         startAmount: number;
         expirationTime: number;
@@ -2116,7 +2114,8 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
     const schema = this._getSchema(schemaName)
-    const bundle = getWyvernBundle(schema, assets)
+    const quantityBNs = quantities.map((quantity, i) => WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), assets[i].decimals || 0))
+    const bundle = getWyvernBundle(schema, assets, quantityBNs)
 
     let makerRelayerFee
     let takerRelayerFee
@@ -2191,11 +2190,12 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
+        quantities: number[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -2209,8 +2209,8 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
     const schema = this._getSchema(schemaName)
-
-    const bundle = getWyvernBundle(schema, assets)
+    const quantityBNs = quantities.map((quantity, i) => WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), assets[i].decimals || 0))
+    const bundle = getWyvernBundle(schema, assets, quantityBNs)
     bundle.name = bundleName
     bundle.description = bundleDescription
     bundle.external_link = bundleExternalLink

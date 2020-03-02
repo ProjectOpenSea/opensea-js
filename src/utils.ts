@@ -760,75 +760,48 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
 }
 
 /**
- * Wrapper function for getting generic Wyvern assets from OpenSea assets
- * @param schema Wyvern schema for the asset
- * @param asset The fungible or nonfungible asset to format
- */
-export function getWyvernAsset(
-    schema: Schema<WyvernAsset>,
-    asset: Asset,
-    quantity = new BigNumber(1)
-  ) {
-  if (SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE[schema.name as WyvernSchemaName] == AssetContractType.NonFungible) {
-    return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset)
-  } else {
-    return getWyvernFTAsset(schema as Schema<WyvernFTAsset>, asset, quantity)
-  }
-}
-
-/**
- * Get the Wyvern representation of an NFT asset
- * @param schema The WyvernSchema needed to access this asset
- * @param asset The asset
- */
-export function getWyvernNFTAsset(
-    schema: Schema<WyvernNFTAsset>, asset: Asset
-  ): WyvernNFTAsset {
-
-  return schema.assetFromFields({
-    'ID': asset.tokenId != null
-      ? asset.tokenId.toString()
-      : undefined,
-    'Address': asset.tokenAddress.toLowerCase(),
-    'Name': asset.name,
-  })
-}
-
-/**
  * Get the Wyvern representation of a fungible asset
  * @param schema The WyvernSchema needed to access this asset
  * @param asset The asset to trade
  * @param quantity The number of items to trade
  */
-export function getWyvernFTAsset(
-    schema: Schema<WyvernFTAsset>,
+export function getWyvernAsset(
+    schema: Schema<WyvernAsset>,
     asset: Asset,
-    quantity: BigNumber
-  ): WyvernFTAsset {
+    quantity = new BigNumber(1)
+  ): WyvernAsset {
 
   const tokenId = asset.tokenId != null
-    ? asset.tokenId
+    ? asset.tokenId.toString()
     : undefined
 
   return schema.assetFromFields({
     'ID': tokenId,
     'Quantity': quantity.toString(),
     'Address': asset.tokenAddress.toLowerCase(),
+    'Name': asset.name
   })
 }
 
 /**
- * Get the Wyvern representation of a group of NFT assets
+ * Get the Wyvern representation of a group of assets
  * Sort order is enforced here. Throws if there's a duplicate.
  * @param schema The WyvernSchema needed to access these assets
  * @param assets Assets to bundle
+ * @param quantities The quantity of each asset to bundle, respectively
  */
 export function getWyvernBundle(
-    schema: any, assets: Asset[]
+    schema: any,
+    assets: Asset[],
+    quantities: BigNumber[]
   ): WyvernBundle {
 
-  const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
-  const sorters = [(a: WyvernNFTAsset) => a.address, (a: WyvernNFTAsset) => a.id]
+  if (assets.length != quantities.length) {
+    throw new Error("Bundle must have a quantity for every asset")
+  }
+
+  const wyAssets = assets.map((asset, i) => getWyvernAsset(schema, asset, quantities[i]))
+  const sorters = [(a: WyvernAsset) => a.address, (a: WyvernAsset) => a.id || 0]
   const uniqueAssets = _.uniqBy(wyAssets, a => `${sorters[0](a)}-${sorters[1](a)}`)
 
   if (uniqueAssets.length != wyAssets.length) {
