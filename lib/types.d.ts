@@ -151,7 +151,7 @@ export interface WyvernFTAsset {
 }
 export declare type WyvernAsset = WyvernNFTAsset | WyvernFTAsset;
 export interface WyvernBundle {
-    assets: WyvernNFTAsset[];
+    assets: WyvernAsset[];
     name?: string;
     description?: string;
     external_link?: string;

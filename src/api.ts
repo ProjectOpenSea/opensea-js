@@ -20,7 +20,7 @@ import {
   delay,
   orderFromJSON,
   tokenFromJSON
-} from './utils'
+} from './utils/utils'
 import {
   API_BASE_MAINNET,
   API_BASE_RINKEBY,

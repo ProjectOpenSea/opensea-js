@@ -20,6 +20,7 @@ import {
   RINKEBY_PROVIDER_URL,
   STATIC_CALL_TX_ORIGIN_ADDRESS
 } from '../../src/constants'
+import { encodeCall } from '../../src/utils/schema'
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
 const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL)
@@ -58,7 +59,7 @@ suite('seaport: static calls', () => {
     })
 
     order.staticTarget = STATIC_CALL_TX_ORIGIN_ADDRESS
-    order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'), [takerAddress])
+    order.staticExtradata = encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'), [takerAddress])
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
 

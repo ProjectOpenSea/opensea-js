@@ -10,7 +10,7 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, OrderSide, OpenSeaAssetContract, UnhashedOrder, Order } from '../../src/types'
-import { getOrderHash} from '../../src/utils'
+import { getOrderHash} from '../../src/utils/utils'
 import {
   MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS,
   CK_ADDRESS, CK_TOKEN_ID,

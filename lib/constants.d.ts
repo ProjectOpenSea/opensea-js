@@ -6,7 +6,7 @@ export declare const DEP_INFURA_KEY = "e8695bce67944848aa95459fac052f8e";
 export declare const MAINNET_PROVIDER_URL = "https://eth-mainnet.alchemyapi.io/jsonrpc/y5dLONzfAJh-oCY02DCP3UWCT2pSEXMo";
 export declare const RINKEBY_PROVIDER_URL = "https://eth-rinkeby.alchemyapi.io/jsonrpc/-yDg7wmgGw5LdsP4p4kyxRYuDzCkXtoI";
 export declare const INVERSE_BASIS_POINT = 10000;
-export declare const MAX_UINT_256: import("../../../../../../../../Users/nanook/code/src/github.com/ProjectOpenSea/opensea-js/node_modules/bignumber.js").BigNumber;
+export declare const MAX_UINT_256: import("../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/bignumber.js").BigNumber;
 export declare const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b";
 export declare const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9";
 export declare const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";

@@ -152,10 +152,9 @@ export declare class OpenSeaPort {
      * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
      * @param referrerAddress The optional address that referred the order
      */
-    createBundleBuyOrder({ tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, schemaName, referrerAddress }: {
-        tokenIds?: string[];
-        tokenAddresses?: string[];
+    createBundleBuyOrder({ assets, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, schemaName, referrerAddress }: {
         assets: Asset[];
+        quantities?: number[];
         accountAddress: string;
         startAmount: number;
         expirationTime?: number;
@@ -288,11 +287,12 @@ export declare class OpenSeaPort {
      * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
      * @param schemaName The Wyvern schema name corresponding to the asset type
      */
-    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }: {
+    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
+        quantities?: number[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -630,8 +630,9 @@ export declare class OpenSeaPort {
         staticTarget: string;
         staticExtradata: string;
     }>;
-    _makeBundleBuyOrder({ assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName, referrerAddress }: {
+    _makeBundleBuyOrder({ assets, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName, referrerAddress }: {
         assets: Asset[];
+        quantities: number[];
         accountAddress: string;
         startAmount: number;
         expirationTime: number;
@@ -641,11 +642,12 @@ export declare class OpenSeaPort {
         schemaName: WyvernSchemaName;
         referrerAddress?: string;
     }): Promise<UnhashedOrder>;
-    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }: {
+    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
+        quantities: number[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;

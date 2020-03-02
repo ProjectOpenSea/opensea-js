@@ -2,6 +2,8 @@ import {
   assert,
 } from 'chai'
 
+import { before } from 'mocha'
+
 import {
   suite,
   test,
@@ -9,32 +11,21 @@ import {
 
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, WyvernSchemaName } from '../../src/types'
-import * as ordersJSONFixture from '../fixtures/orders.json'
-import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, RINKEBY_API_KEY } from '../constants'
+import { Network, WyvernSchemaName } from '../../src/types'
+import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { testMatchingNewOrder } from './orders' 
 import {
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
-  RINKEBY_PROVIDER_URL
 } from '../../src/constants'
 
-const ordersJSON = ordersJSONFixture as any
-const englishSellOrderJSON = ordersJSON[0] as OrderJSON
-
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
-const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL)
 
 const client = new OpenSeaPort(provider, {
   networkName: Network.Main,
   apiKey: MAINNET_API_KEY
 }, line => console.info(`MAINNET: ${line}`))
-
-const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
-  networkName: Network.Rinkeby,
-  apiKey: RINKEBY_API_KEY
-}, line => console.info(`RINKEBY: ${line}`))
 
 const assetsForBundleOrder = [
   { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },

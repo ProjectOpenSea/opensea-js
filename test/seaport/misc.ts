@@ -10,7 +10,7 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network } from '../../src/types'
-import { getCurrentGasPrice, getNonCompliantApprovalAddress} from '../../src/utils'
+import { getCurrentGasPrice, getNonCompliantApprovalAddress} from '../../src/utils/utils'
 import { ALEX_ADDRESS, MAINNET_API_KEY, CK_TOKEN_ID, ALEX_ADDRESS_2} from '../constants'
 import { ERC721 } from '../../src/contracts'
 import {
