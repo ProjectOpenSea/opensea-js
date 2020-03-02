@@ -165,7 +165,7 @@ export interface OpenSeaAccount {
     config: string;
     discordId: string;
     profileImgUrl: string;
-    user: null | OpenSeaUser;
+    user: OpenSeaUser | null;
 }
 export interface OpenSeaUser {
     username: string;
