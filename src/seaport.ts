@@ -557,7 +557,6 @@ export class OpenSeaPort {
       paymentTokenAddress,
       extraBountyBasisPoints: 0,
       sellOrder,
-      schemaName,
       referrerAddress
     })
 
@@ -603,10 +602,9 @@ export class OpenSeaPort {
    * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
-   * @param schemaName The Wyvern schema name corresponding to the asset type
    */
   public async createSellOrder(
-      { asset, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, schemaName = WyvernSchemaName.ERC721 }:
+      { asset, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail }:
       { asset: Asset;
         accountAddress: string;
         startAmount: number;
@@ -631,8 +629,7 @@ export class OpenSeaPort {
       waitForHighestBid,
       paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
       extraBountyBasisPoints,
-      buyerAddress: buyerAddress || NULL_ADDRESS,
-      schemaName
+      buyerAddress: buyerAddress || NULL_ADDRESS
     })
 
     await this._sellOrderValidationAndApprovals({ order, accountAddress })
@@ -684,7 +681,7 @@ export class OpenSeaPort {
    * @returns The number of orders created in total
    */
   public async createFactorySellOrders(
-      { assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, numberOfOrders = 1, schemaName = WyvernSchemaName.ERC721 }:
+      { assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, numberOfOrders = 1 }:
       { assetId?: string;
         assetIds?: string[];
         factoryAddress: string;
@@ -698,8 +695,7 @@ export class OpenSeaPort {
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
         buyerEmail?: string;
-        numberOfOrders?: number;
-        schemaName?: WyvernSchemaName }
+        numberOfOrders?: number; }
     ): Promise<number> {
 
     if (numberOfOrders < 1) {
@@ -724,8 +720,7 @@ export class OpenSeaPort {
       waitForHighestBid,
       paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
       extraBountyBasisPoints,
-      buyerAddress: buyerAddress || NULL_ADDRESS,
-      schemaName
+      buyerAddress: buyerAddress || NULL_ADDRESS
     })
     await this._sellOrderValidationAndApprovals({ order: dummyOrder, accountAddress })
 
@@ -740,8 +735,7 @@ export class OpenSeaPort {
         waitForHighestBid,
         paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
         extraBountyBasisPoints,
-        buyerAddress: buyerAddress || NULL_ADDRESS,
-        schemaName
+        buyerAddress: buyerAddress || NULL_ADDRESS
       })
 
       if (buyerEmail) {
@@ -962,14 +956,14 @@ export class OpenSeaPort {
         accountAddress,
         proxyAddress,
         tokenAbi = ERC721,
-        skipApproveAllIfTokenAddressIn = [],
+        skipApproveAllIfTokenAddressIn = new Set(),
         schemaName = WyvernSchemaName.ERC721 }:
       { tokenId: string;
         tokenAddress: string;
         accountAddress: string;
         proxyAddress?: string;
         tokenAbi?: PartialReadonlyContractAbi;
-        skipApproveAllIfTokenAddressIn?: string[];
+        skipApproveAllIfTokenAddressIn?: Set<string>;
         schemaName?: WyvernSchemaName; }
     ): Promise<string | null> {
 
@@ -1006,11 +1000,11 @@ export class OpenSeaPort {
       // Supports ApproveAll
       //  not approved for all yet
 
-      if (skipApproveAllIfTokenAddressIn.includes(tokenAddress)) {
+      if (skipApproveAllIfTokenAddressIn.has(tokenAddress)) {
         this.logger('Already approving proxy for all tokens in another transaction')
         return null
       }
-      skipApproveAllIfTokenAddressIn.push(tokenAddress)
+      skipApproveAllIfTokenAddressIn.add(tokenAddress)
 
       try {
         this._dispatch(EventType.ApproveAllAssets, {
@@ -1126,7 +1120,7 @@ export class OpenSeaPort {
       this.logger('Already approved enough currency for trading')
       return null
     }
-    this.logger(`Not enough token approved for trade: ${approvedAmount}`)
+    this.logger(`Not enough token approved for trade: ${approvedAmount} approved to transfer ${tokenAddress}`)
 
     this._dispatch(EventType.ApproveCurrency, {
       accountAddress,
@@ -1278,21 +1272,18 @@ export class OpenSeaPort {
    * @param toAddress The recipient's wallet address
    * @param asset The fungible or non-fungible asset to transfer
    * @param quantity The amount of the asset to transfer, if it's fungible (optional). In units (not base units), e.g. not wei.
-   * @param schemaName The Wyvern schema name corresponding to the asset type.
-   * Defaults to "ERC721" (non-fungible) assets, but can be ERC1155, ERC20, and others.
    * @returns Transaction hash
    */
   public async transfer(
       { fromAddress, toAddress, asset,
-        quantity = 1, schemaName = WyvernSchemaName.ERC721 }:
+        quantity = 1 }:
       { fromAddress: string;
         toAddress: string;
         asset: Asset;
-        quantity?: number | BigNumber;
-        schemaName?: WyvernSchemaName; }
+        quantity?: number | BigNumber; }
     ): Promise<string> {
 
-    const schema = this._getSchema(schemaName)
+    const schema = this._getSchema(asset.schemaName)
     const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
     const isCryptoKitties = [CK_ADDRESS, CK_RINKEBY_ADDRESS].includes(wyAsset.address)
@@ -1302,7 +1293,7 @@ export class OpenSeaPort {
       TokenStandardVersion.ERC721v1, TokenStandardVersion.ERC721v2
     ].includes(asset.version)
 
-    const abi = schemaName === WyvernSchemaName.ERC20
+    const abi = asset.schemaName === WyvernSchemaName.ERC20
       ? annotateERC20TransferABI(wyAsset as WyvernFTAsset)
       : isOldNFT
         ? annotateERC721TransferABI(wyAsset as WyvernNFTAsset)
@@ -1332,7 +1323,7 @@ export class OpenSeaPort {
    * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
    * @param fromAddress The owner's wallet address
    * @param toAddress The recipient's wallet address
-   * @param schemaName The Wyvern schema name corresponding to the asset type
+   * @param schemaName The Wyvern schema name corresponding to the asset type, if not in each Asset definition
    * @returns Transaction hash
    */
   public async transferAll(
@@ -1345,17 +1336,17 @@ export class OpenSeaPort {
 
     toAddress = validateAndFormatWalletAddress(this.web3ReadOnly, toAddress)
 
-    const schema = this._getSchema(schemaName)
-    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset))
+    const schemaNames = assets.map(asset => asset.schemaName || schemaName)
+    const wyAssets = assets.map(asset => getWyvernAsset(this._getSchema(asset.schemaName), asset))
 
-    const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const { calldata } = encodeAtomicizedTransfer(schemaNames.map(name => this._getSchema(name)), wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
 
     let proxyAddress = await this._getProxy(fromAddress)
     if (!proxyAddress) {
       proxyAddress = await this._initializeProxy(fromAddress)
     }
 
-    await this._approveAll({schema, wyAssets, accountAddress: fromAddress, proxyAddress})
+    await this._approveAll({ schemaNames, wyAssets, accountAddress: fromAddress, proxyAddress })
 
     this._dispatch(EventType.TransferAll, { accountAddress: fromAddress, toAddress, assets: wyAssets })
 
@@ -1664,7 +1655,7 @@ export class OpenSeaPort {
    * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
    * @param fromAddress The owner's wallet address
    * @param toAddress The recipient's wallet address
-   * @param schemaName The Wyvern schema name corresponding to the asset type
+   * @param schemaName The Wyvern schema name corresponding to the asset type, if not in each asset
    */
   public async _estimateGasForTransfer(
       { assets, fromAddress, toAddress, schemaName = WyvernSchemaName.ERC721 }:
@@ -1674,17 +1665,17 @@ export class OpenSeaPort {
         schemaName?: WyvernSchemaName; }
     ): Promise<number> {
 
-    const schema = this._getSchema(schemaName)
-    const wyAssets = assets.map(asset => getWyvernAsset(schema, asset))
+    const schemaNames = assets.map(asset => asset.schemaName || schemaName)
+    const wyAssets = assets.map(asset => getWyvernAsset(this._getSchema(asset.schemaName), asset))
 
     const proxyAddress = await this._getProxy(fromAddress)
     if (!proxyAddress) {
       throw new Error('Uninitialized proxy address')
     }
 
-    await this._approveAll({schema, wyAssets, accountAddress: fromAddress, proxyAddress})
+    await this._approveAll({schemaNames, wyAssets, accountAddress: fromAddress, proxyAddress})
 
-    const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const { calldata } = encodeAtomicizedTransfer(schemaNames.map(name => this._getSchema(name)), wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
 
     return estimateGas(this.web3, {
       from: fromAddress,
@@ -1779,7 +1770,7 @@ export class OpenSeaPort {
   }
 
   public async _makeBuyOrder(
-      { asset, quantity, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, schemaName, referrerAddress }:
+      { asset, quantity, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, referrerAddress }:
       { asset: Asset;
         quantity: number;
         accountAddress: string;
@@ -1788,12 +1779,11 @@ export class OpenSeaPort {
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         sellOrder?: UnhashedOrder;
-        schemaName: WyvernSchemaName;
         referrerAddress?: string; }
     ): Promise<UnhashedOrder> {
 
     accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
-    const schema = this._getSchema(schemaName)
+    const schema = this._getSchema(asset.schemaName)
     const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
 
@@ -1866,7 +1856,7 @@ export class OpenSeaPort {
   }
 
   public async _makeSellOrder(
-      { asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }:
+      { asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
       { asset: Asset;
         quantity: number;
         accountAddress: string;
@@ -1876,12 +1866,11 @@ export class OpenSeaPort {
         expirationTime: number;
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
-        buyerAddress: string;
-        schemaName: WyvernSchemaName }
+        buyerAddress: string; }
     ): Promise<UnhashedOrder> {
 
     accountAddress = validateAndFormatWalletAddress(this.web3ReadOnly, accountAddress)
-    const schema = this._getSchema(schemaName)
+    const schema = this._getSchema(asset.schemaName)
     const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
     const isPrivate = buyerAddress != NULL_ADDRESS
@@ -2367,15 +2356,19 @@ export class OpenSeaPort {
         accountAddress: string }
     ) {
 
-    const schema = this._getSchema(order.metadata.schema)
     const wyAssets = 'bundle' in order.metadata
       ? order.metadata.bundle.assets
       : order.metadata.asset
         ? [order.metadata.asset]
         : []
+    const schemaNames = 'bundle' in order.metadata && 'schemas' in order.metadata.bundle
+      ? order.metadata.bundle.schemas
+      : order.metadata.schema
+        ? [order.metadata.schema]
+        : []
     const tokenAddress = order.paymentToken
 
-    await this._approveAll({schema, wyAssets, accountAddress})
+    await this._approveAll({schemaNames, wyAssets, accountAddress})
 
     // For fulfilling bids,
     // need to approve access to fungible token because of the way fees are paid
@@ -2458,22 +2451,21 @@ export class OpenSeaPort {
   }
 
   public async _approveAll(
-      { schema, wyAssets, accountAddress, proxyAddress }:
-      { schema: Schema<any>;
+      { schemaNames, wyAssets, accountAddress, proxyAddress }:
+      { schemaNames: WyvernSchemaName[];
         wyAssets: WyvernAsset[];
         accountAddress: string;
         proxyAddress?: string }
     ) {
 
-    const schemaName = schema.name as WyvernSchemaName
-
     proxyAddress = proxyAddress || await this._getProxy(accountAddress) || undefined
     if (!proxyAddress) {
       proxyAddress = await this._initializeProxy(accountAddress)
     }
-    const contractsWithApproveAll: string[] = []
+    const contractsWithApproveAll: Set<string> = new Set()
 
-    return Promise.all(wyAssets.map(async wyAsset => {
+    return Promise.all(wyAssets.map(async (wyAsset, i) => {
+      const schemaName = schemaNames[i]
       // Verify that the taker owns the asset
       let isOwner
       try {
@@ -2488,14 +2480,17 @@ export class OpenSeaPort {
         isOwner = true
       }
       if (!isOwner) {
-        throw new Error('You do not own enough of this asset.')
+        const minAmount = 'quantity' in wyAsset
+          ? wyAsset.quantity
+          : 1
+        throw new Error(`You don't own enough: ${minAmount} copy of ${wyAsset.address} id # ${wyAsset.id || 'any'}`)
       }
       switch (schemaName) {
         case WyvernSchemaName.ERC721:
         case WyvernSchemaName.ERC1155:
         case WyvernSchemaName.LegacyEnjin:
         case WyvernSchemaName.ENSShortNameAuction:
-          // Handle NFTs
+          // Handle NFTs and SFTs
           const wyNFTAsset = wyAsset as WyvernNFTAsset
           return await this.approveNonFungibleToken({
             tokenId: wyNFTAsset.id.toString(),
@@ -2505,7 +2500,12 @@ export class OpenSeaPort {
             skipApproveAllIfTokenAddressIn: contractsWithApproveAll
           })
         case WyvernSchemaName.ERC20:
+          // Handle FTs
           const wyFTAsset = wyAsset as WyvernFTAsset
+          if (contractsWithApproveAll.has(wyFTAsset.address)) {
+            return true
+          }
+          contractsWithApproveAll.add(wyFTAsset.address)
           return await this.approveFungibleToken({
             tokenAddress: wyFTAsset.address,
             accountAddress,
@@ -2593,6 +2593,7 @@ export class OpenSeaPort {
 
     if (schema.functions.countOf) {
       // ERC20 or ERC1155 (non-Enjin)
+
       /* If ethercraft, minAmount = 1000000000000000000) */
       const minAmount = new BigNumber('quantity' in wyAsset
         ? wyAsset.quantity
@@ -2613,6 +2614,7 @@ export class OpenSeaPort {
 
     } else if (schema.functions.ownerOf) {
       // ERC721 asset
+
       const abi = schema.functions.ownerOf(wyAsset)
       const contract = this._getClientsForRead(retries).web3.eth.contract([abi as Web3.FunctionAbi]).at(abi.target)
       if (abi.inputs.filter(x => x.value === undefined)[0]) {
@@ -2630,6 +2632,7 @@ export class OpenSeaPort {
       await delay(500)
       // Recursively check owner again
       return await this._ownsAssetOnChain({accountAddress, proxyAddress, wyAsset, schemaName}, retries - 1)
+
     } else {
       // Missing ownership call - skip check to allow listings
       // by default

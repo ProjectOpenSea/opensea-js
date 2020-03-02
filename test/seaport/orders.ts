@@ -15,7 +15,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, estimateCurrentPrice, assignOrdersToSides, makeBigNumber} from '../../src/utils/utils'
 import * as ordersJSONFixture from '../fixtures/orders.json'
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, AGE_OF_RUST_TOKEN_ID, DISSOLUTION_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER } from '../constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, DISSOLUTION_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import {
   ENJIN_ADDRESS,
@@ -80,13 +80,13 @@ suite('seaport: orders', () => {
 
   test("Correctly sets decimals on fungible order", async () => {
     const accountAddress = ALEX_ADDRESS
-    const tokenId = AGE_OF_RUST_TOKEN_ID.toString()
+    const tokenId = DISSOLUTION_TOKEN_ID.toString()
     const tokenAddress = ENJIN_ADDRESS
     const quantity = 1
     const decimals = 2
 
     const order = await client._makeSellOrder({
-      asset: { tokenAddress, tokenId, decimals },
+      asset: { tokenAddress, tokenId, decimals, schemaName: WyvernSchemaName.ERC1155 },
       quantity,
       accountAddress,
       startAmount: 2,
@@ -95,7 +95,6 @@ suite('seaport: orders', () => {
       expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC1155
     })
 
     assert.equal(order.quantity.toNumber(), quantity * Math.pow(10, decimals))
@@ -119,7 +118,6 @@ suite('seaport: orders', () => {
         expirationTime: 0,
         paymentTokenAddress,
         waitForHighestBid: true,
-        schemaName: WyvernSchemaName.ERC721
       })
       assert.fail()
     } catch (error) {
@@ -138,7 +136,6 @@ suite('seaport: orders', () => {
         expirationTime,
         paymentTokenAddress: NULL_ADDRESS,
         waitForHighestBid: true,
-        schemaName: WyvernSchemaName.ERC721
       })
       assert.fail()
     } catch (error) {
@@ -157,7 +154,6 @@ suite('seaport: orders', () => {
         expirationTime,
         paymentTokenAddress: NULL_ADDRESS,
         waitForHighestBid: false,
-        schemaName: WyvernSchemaName.ERC721
       })
       assert.fail()
     } catch (error) {
@@ -176,7 +172,6 @@ suite('seaport: orders', () => {
         expirationTime: 0,
         paymentTokenAddress: NULL_ADDRESS,
         waitForHighestBid: false,
-        schemaName: WyvernSchemaName.ERC721
       })
       assert.fail()
     } catch (error) {
@@ -198,8 +193,7 @@ suite('seaport: orders', () => {
         startAmount: 2,
         extraBountyBasisPoints: 0,
         expirationTime,
-        paymentTokenAddress: NULL_ADDRESS,
-        schemaName: WyvernSchemaName.ERC721
+        paymentTokenAddress: NULL_ADDRESS
       })
       assert.fail()
     } catch (error) {
@@ -230,7 +224,6 @@ suite('seaport: orders', () => {
       buyerAddress: NULL_ADDRESS,
       expirationTime,
       waitForHighestBid: true,
-      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.taker, NULL_ADDRESS)
@@ -319,11 +312,10 @@ suite('seaport: orders', () => {
       extraBountyBasisPoints,
       buyerAddress: NULL_ADDRESS,
       waitForHighestBid: true,
-      schemaName: WyvernSchemaName.ERC721
     })
 
     const buyOrder = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId },
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
       quantity: 1,
       accountAddress,
       paymentTokenAddress,
@@ -331,7 +323,6 @@ suite('seaport: orders', () => {
       expirationTime: 0,
       extraBountyBasisPoints: 0,
       sellOrder,
-      schemaName: WyvernSchemaName.ERC721
     })
 
     testFeesMakerOrder(buyOrder, asset.assetContract)
@@ -353,6 +344,7 @@ suite('seaport: orders', () => {
         tokenId: ENS_HELLO_TOKEN_ID,
         tokenAddress: ENS_RINKEBY_TOKEN_ADDRESS,
         name: ENS_HELLO_NAME,
+        schemaName: WyvernSchemaName.ENSShortNameAuction,
       },
       quantity: 1,
       accountAddress: ENS_RINKEBY_SHORT_NAME_OWNER,
@@ -360,7 +352,6 @@ suite('seaport: orders', () => {
       startAmount: 0.01,
       expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24),  // one day from now
       extraBountyBasisPoints: 0,
-      schemaName: WyvernSchemaName.ENSShortNameAuction
     })
     // TODO (joshuawu): Fill this test out after backend supports ENS short names.
     // assert.equal(buyOrder, {})
@@ -387,7 +378,6 @@ suite('seaport: orders', () => {
       expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
@@ -419,7 +409,7 @@ suite('seaport: orders', () => {
     const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24)
 
     const order = await client._makeSellOrder({
-      asset: { tokenAddress, tokenId },
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC20 },
       quantity: Math.pow(10, 18) * 0.01,
       accountAddress,
       startAmount: amountInEth,
@@ -429,7 +419,6 @@ suite('seaport: orders', () => {
       buyerAddress: NULL_ADDRESS,
       expirationTime, // one day from now,
       waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC20
     })
 
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
@@ -452,7 +441,7 @@ suite('seaport: orders', () => {
     const asset = await client.api.getAsset(tokenAddress, tokenId)
 
     const order = await client._makeSellOrder({
-      asset: { tokenAddress, tokenId },
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC1155 },
       quantity: 1,
       accountAddress,
       startAmount: amountInEth,
@@ -461,7 +450,6 @@ suite('seaport: orders', () => {
       buyerAddress: NULL_ADDRESS,
       expirationTime: 0,
       waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC1155
     })
 
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
@@ -486,14 +474,13 @@ suite('seaport: orders', () => {
     const asset = await client.api.getAsset(tokenAddress, tokenId)
 
     const order = await client._makeBuyOrder({
-      asset: { tokenAddress, tokenId },
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC1155 },
       quantity: 1,
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken,
       expirationTime: 0,
       extraBountyBasisPoints: 0,
-      schemaName: WyvernSchemaName.ERC1155
     })
 
     assert.equal(order.taker, NULL_ADDRESS)
@@ -530,7 +517,6 @@ suite('seaport: orders', () => {
       buyerAddress: NULL_ADDRESS, // Check that null doesn't trigger private orders
       expirationTime: 0,
       waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.paymentToken, paymentToken.address)
@@ -563,7 +549,6 @@ suite('seaport: orders', () => {
       paymentTokenAddress: paymentToken.address,
       expirationTime: 0,
       extraBountyBasisPoints: 0,
-      schemaName: WyvernSchemaName.ERC721
     })
 
     assert.equal(order.taker, NULL_ADDRESS)
@@ -833,7 +818,6 @@ export async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, account
       fromAddress: sell.maker,
       toAddress: buy.maker,
       useProxy: asset.tokenAddress == CK_ADDRESS,
-      schemaName: order.metadata.schema
     })
     assert.isTrue(isTransferrable)
   }))
@@ -843,18 +827,25 @@ function getAssetsAndQuantities(
     order: Order | UnsignedOrder | UnhashedOrder
   ): Array<{ asset: Asset, quantity: BigNumber }> {
 
-  const wyAssets = order.metadata.bundle
+  const wyAssets = 'bundle' in order.metadata
     ? order.metadata.bundle.assets
     : order.metadata.asset
       ? [ order.metadata.asset ]
       : []
+  const schemaNames = 'bundle' in order.metadata
+    ? order.metadata.bundle.schemas
+    : order.metadata.schema
+      ? [order.metadata.schema]
+      : []
 
   assert.isNotEmpty(wyAssets)
+  assert.equal(wyAssets.length, schemaNames.length)
 
-  return wyAssets.map(wyAsset => {
+  return wyAssets.map((wyAsset, i) => {
     const asset: Asset = {
       tokenId: 'id' in wyAsset && wyAsset.id != null ? wyAsset.id : null,
-      tokenAddress: wyAsset.address
+      tokenAddress: wyAsset.address,
+      schemaName: schemaNames[i]
     }
     if ('quantity' in wyAsset) {
       return { asset, quantity: new BigNumber(wyAsset.quantity) }

@@ -224,7 +224,7 @@ suite('seaport: fees', () => {
   })
 
   // TODO the transfer fee isn't showing as whitelisted by Enjin's method
-  test.skip("Computes whitelisted Enjin per-transfer fees correctly", async () => {
+  test("Computes whitelisted Enjin per-transfer fees correctly", async () => {
 
     const whitelistedAsset = await client.api.getAsset(ENJIN_ADDRESS, SPIRIT_CLASH_TOKEN_ID)
 

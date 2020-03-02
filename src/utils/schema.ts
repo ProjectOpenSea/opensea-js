@@ -170,9 +170,10 @@ export const encodeDefaultCall: DefaultCallEncoder = (abi, address) => {
  * @param to Destination address
  * @param atomicizer Wyvern Atomicizer instance
  */
-export function encodeAtomicizedTransfer(schema: Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
+export function encodeAtomicizedTransfer(schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
 
-  const transactions = assets.map((asset: any) => {
+  const transactions = assets.map((asset: WyvernAsset, i) => {
+    const schema = schemas[i]
     const transfer = schema.functions.transfer(asset)
     const calldata = encodeTransferCall(transfer, from, to)
     return {

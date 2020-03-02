@@ -10,7 +10,7 @@ import {
 
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, WyvernSchemaName } from '../../src/types'
+import { Network } from '../../src/types'
 import { ALEX_ADDRESS, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, ALEX_ADDRESS_2, MAINNET_API_KEY, RINKEBY_API_KEY } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { getMethod, StaticCheckTxOrigin } from '../../src/contracts'
@@ -54,8 +54,7 @@ suite('seaport: static calls', () => {
       expirationTime: 0,
       quantity: 1,
       paymentTokenAddress: NULL_ADDRESS,
-      waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC721
+      waitForHighestBid: false
     })
 
     order.staticTarget = STATIC_CALL_TX_ORIGIN_ADDRESS
@@ -88,8 +87,7 @@ suite('seaport: static calls', () => {
       expirationTime: 0,
       quantity: 1,
       paymentTokenAddress: NULL_ADDRESS,
-      waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC721
+      waitForHighestBid: false
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
@@ -124,8 +122,7 @@ suite('seaport: static calls', () => {
       expirationTime: 0,
       quantity: 1,
       paymentTokenAddress: NULL_ADDRESS,
-      waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC721
+      waitForHighestBid: false
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)

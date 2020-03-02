@@ -184,10 +184,10 @@ suite('seaport: owners and transfers', () => {
       asset: {
         tokenId: null,
         tokenAddress: wethAddress,
+        schemaName: WyvernSchemaName.ERC20
       },
       fromAddress: RANDOM_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC20
     })
     assert.isNotTrue(isTransferrable)
   })
@@ -196,12 +196,12 @@ suite('seaport: owners and transfers', () => {
     const isTransferrable = await client.isAssetTransferrable({
       asset: {
         tokenId: null,
-        tokenAddress: wethAddress
+        tokenAddress: wethAddress,
+        schemaName: WyvernSchemaName.ERC20
       },
       quantity: Math.pow(10, 18) * 0.001,
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC20
     })
     assert.isTrue(isTransferrable)
   })
@@ -211,10 +211,10 @@ suite('seaport: owners and transfers', () => {
       asset: {
         tokenId: ENJIN_LEGACY_ADDRESS.toString(),
         tokenAddress: CATS_IN_MECHS_ID,
+        schemaName: WyvernSchemaName.ERC1155
       },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC1155
     })
     assert.isNotTrue(isTransferrable2)
   })
@@ -224,10 +224,10 @@ suite('seaport: owners and transfers', () => {
       asset: {
         tokenId: CATS_IN_MECHS_ID,
         tokenAddress: ENJIN_ADDRESS,
+        schemaName: WyvernSchemaName.ERC1155
       },
       fromAddress: DEVIN_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC1155
     })
     assert.isNotTrue(isTransferrable)
   })
@@ -236,11 +236,11 @@ suite('seaport: owners and transfers', () => {
     const isTransferrable = await rinkebyClient.isAssetTransferrable({
       asset: {
         tokenAddress: SANDBOX_RINKEBY_ADDRESS,
-        tokenId: SANDBOX_RINKEBY_ID
+        tokenId: SANDBOX_RINKEBY_ID,
+        schemaName: WyvernSchemaName.ERC1155
       },
       fromAddress: "0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20",
       toAddress: ALEX_ADDRESS,
-      schemaName: WyvernSchemaName.ERC1155
     })
     assert.isTrue(isTransferrable)
   })

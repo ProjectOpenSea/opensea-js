@@ -12,7 +12,7 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, WyvernSchemaName, Asset } from '../../src/types'
-import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, SPIRIT_CLASH_TOKEN_ID, BENZENE_ADDRESS } from '../constants'
+import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, AGE_OF_RUST_TOKEN_ID } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { testMatchingNewOrder } from './orders' 
 import {
@@ -34,12 +34,13 @@ const assetsForBundleOrder: Asset[] = [
 ]
 
 const fungibleAssetsForBundleOrder: Asset[] = [
-  { tokenAddress: BENZENE_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20 }
+  { tokenAddress: GODS_UNCHAINED_CHEST_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20 }
 ]
 
 const semiFungibleAssetsForBundleOrder: Asset[] = [
   { tokenId: DISSOLUTION_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
-  { tokenId: SPIRIT_CLASH_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
+  { tokenId: AGE_OF_RUST_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
+  { tokenId: CRYPTOVOXELS_WEARABLE_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
 ]
 
 let wethAddress: string
@@ -231,6 +232,60 @@ suite('seaport: bundles', () => {
     await testMatchingNewOrder(order, takerAddress)
   })
 
+  test.only('Can bundle multiple fungible tokens together', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 1
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with fungible assets",
+      assets: fungibleAssetsForBundleOrder,
+      quantities: [2],
+      accountAddress,
+      startAmount: amountInEth,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      waitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS,
+      paymentTokenAddress: NULL_ADDRESS
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
+  test.only('Can bundle multiple SFTs together', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 1
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with SFT assets",
+      assets: semiFungibleAssetsForBundleOrder,
+      quantities: [2, 1, 1],
+      accountAddress,
+      startAmount: amountInEth,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      waitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS,
+      paymentTokenAddress: NULL_ADDRESS
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
   test.only('Matches bundle order for misordered assets with different schemas', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
@@ -240,10 +295,10 @@ suite('seaport: bundles', () => {
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with different schemas of assets",
       assets: [
-        ...assetsForBundleOrder,
-        ...fungibleAssetsForBundleOrder,
-        ...semiFungibleAssetsForBundleOrder],
-      quantities: [1, 1, 12, 2, 1],
+        assetsForBundleOrder[0],
+        fungibleAssetsForBundleOrder[0],
+        semiFungibleAssetsForBundleOrder[0]],
+      quantities: [1, 2, 2],
       accountAddress,
       startAmount: amountInEth,
       expirationTime: 0,
