@@ -27,7 +27,7 @@ import {
   OpenSeaAssetContract,
   OpenSeaCollection,
   OpenSeaFungibleToken,
-  OpenSeaTraitStats,
+  OpenSeaTraitStats, OpenSeaUser,
   Order,
   OrderJSON,
   OrderSide,
@@ -283,7 +283,13 @@ export const accountFromJSON = (account: any): OpenSeaAccount => {
     address: account.address,
     config: account.config,
     profileImgUrl: account.profile_img_url,
-    user: account.user
+    user: account.user ? userFromJSON(account.user) : null
+  }
+}
+
+export const userFromJSON = (user: any): OpenSeaUser => {
+  return {
+    username: user.username
   }
 }
 
