@@ -109,11 +109,11 @@ export declare function getWyvernAsset(schema: Schema<WyvernAsset>, asset: Asset
 /**
  * Get the Wyvern representation of a group of assets
  * Sort order is enforced here. Throws if there's a duplicate.
- * @param schema The WyvernSchema needed to access these assets
  * @param assets Assets to bundle
+ * @param schemas The WyvernSchemas needed to access each asset, respectively
  * @param quantities The quantity of each asset to bundle, respectively
  */
-export declare function getWyvernBundle(schema: any, assets: Asset[], quantities: BigNumber[]): WyvernBundle;
+export declare function getWyvernBundle(assets: Asset[], schemas: Array<Schema<WyvernAsset>>, quantities: BigNumber[]): WyvernBundle;
 /**
  * Get the non-prefixed hash for the order
  * (Fixes a Wyvern typescript issue and casing issue)

@@ -1,6 +1,6 @@
-import { HowToCall } from 'wyvern-js/lib/types';
+import { HowToCall, ReplacementEncoder } from 'wyvern-js/lib/types';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
-import { AnnotatedFunctionABI, FunctionInputKind, Schema } from 'wyvern-schemas/dist/types';
+import { AnnotatedFunctionABI, Schema } from 'wyvern-schemas/dist/types';
 export { AbiType } from 'wyvern-schemas';
 import { WyvernAsset } from '../types';
 export interface LimitedCallSpec {
@@ -12,19 +12,18 @@ export interface CallSpec {
     calldata: string;
     replacementPattern: string;
 }
-export declare const encodeReplacementPattern: import("../../../../../../../../../Users/alex/Sites/Projects/Ozone/OpenSea/opensea-js/node_modules/wyvern-js/lib/types").ReplacementEncoder;
-export declare type SellEncoder<T> = (schema: Schema<T>, asset: T, address: string) => CallSpec;
+export declare const encodeReplacementPattern: ReplacementEncoder;
+export declare type SellEncoder = (schema: Schema<WyvernAsset>, asset: WyvernAsset, address: string) => CallSpec;
 export declare const encodeCall: (abi: AnnotatedFunctionABI, parameters: any[]) => string;
-export declare const encodeSell: SellEncoder<any>;
-export declare type AtomicizedSellEncoder<T> = (schema: Schema<T>, assets: T[], address: string, atomicizer: WyvernAtomicizerContract) => Partial<CallSpec>;
-export declare const encodeAtomicizedSell: AtomicizedSellEncoder<any>;
-export declare type AtomicizedBuyEncoder<T> = (schema: Schema<T>, assets: T[], address: string, atomicizer: WyvernAtomicizerContract) => Partial<CallSpec>;
-export declare const encodeAtomicizedBuy: AtomicizedBuyEncoder<any>;
+export declare const encodeSell: SellEncoder;
+export declare type AtomicizedSellEncoder = (schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string, atomicizer: WyvernAtomicizerContract) => Partial<CallSpec>;
+export declare const encodeAtomicizedSell: AtomicizedSellEncoder;
+export declare type AtomicizedBuyEncoder = (schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string, atomicizer: WyvernAtomicizerContract) => Partial<CallSpec>;
+export declare const encodeAtomicizedBuy: AtomicizedBuyEncoder;
 export declare type BuyEncoder<T> = (schema: Schema<T>, asset: T, address: string) => CallSpec;
 export declare const encodeBuy: BuyEncoder<any>;
 export declare type DefaultCallEncoder = (abi: AnnotatedFunctionABI, address: string) => string;
 export declare const encodeDefaultCall: DefaultCallEncoder;
-export declare type ReplacementEncoder = (abi: AnnotatedFunctionABI, kind?: FunctionInputKind) => string;
 /**
  * Encode the atomicized transfer of many assets
  * @param schema Wyvern Schema for the assets

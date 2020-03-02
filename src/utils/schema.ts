@@ -1,8 +1,7 @@
 import { BigNumber } from 'bignumber.js'
 import * as ethABI from 'ethereumjs-abi'
-import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js'
-import { HowToCall } from 'wyvern-js/lib/types'
+import { HowToCall, ReplacementEncoder } from 'wyvern-js/lib/types'
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
 
 import {
@@ -29,7 +28,7 @@ const failWith = (msg: string): any => {
   throw new Error(msg)
 }
 
-export const encodeReplacementPattern = WyvernProtocol.encodeReplacementPattern
+export const encodeReplacementPattern: ReplacementEncoder = WyvernProtocol.encodeReplacementPattern
 
 export type SellEncoder = (schema: Schema<WyvernAsset>, asset: WyvernAsset, address: string) => CallSpec
 
@@ -162,8 +161,6 @@ export const encodeDefaultCall: DefaultCallEncoder = (abi, address) => {
   })
   return encodeCall(abi, parameters)
 }
-
-export type ReplacementEncoder = (abi: AnnotatedFunctionABI, kind?: FunctionInputKind) => string
 
 /**
  * Encode the atomicized transfer of many assets

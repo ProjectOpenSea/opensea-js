@@ -152,6 +152,7 @@ export interface WyvernFTAsset {
 export declare type WyvernAsset = WyvernNFTAsset | WyvernFTAsset;
 export interface WyvernBundle {
     assets: WyvernAsset[];
+    schemas: WyvernSchemaName[];
     name?: string;
     description?: string;
     external_link?: string;
@@ -175,6 +176,7 @@ export interface OpenSeaAccount {
 export interface Asset {
     tokenId: string | null;
     tokenAddress: string;
+    schemaName?: WyvernSchemaName;
     version?: TokenStandardVersion;
     name?: string;
     decimals?: number;
@@ -372,6 +374,17 @@ export interface OpenSeaFees {
     transferFeeTokenAddress: string | null;
     sellerBountyBPS: number;
 }
+export interface ExchangeMetadataForAsset {
+    asset: WyvernAsset;
+    schema: WyvernSchemaName;
+    referrerAddress?: string;
+}
+export interface ExchangeMetadataForBundle {
+    bundle: WyvernBundle;
+    schema?: WyvernSchemaName;
+    referrerAddress?: string;
+}
+export declare type ExchangeMetadata = ExchangeMetadataForAsset | ExchangeMetadataForBundle;
 export interface UnhashedOrder extends WyvernOrder {
     feeMethod: FeeMethod;
     side: OrderSide;
@@ -380,12 +393,7 @@ export interface UnhashedOrder extends WyvernOrder {
     quantity: BigNumber;
     makerReferrerFee: BigNumber;
     waitingForBestCounterOrder: boolean;
-    metadata: {
-        asset?: WyvernAsset;
-        bundle?: WyvernBundle;
-        schema: WyvernSchemaName;
-        referrerAddress?: string;
-    };
+    metadata: ExchangeMetadata;
 }
 export interface UnsignedOrder extends UnhashedOrder {
     hash: string;
@@ -439,11 +447,7 @@ export interface OrderJSON extends Partial<ECSignature> {
     listingTime: number | string;
     expirationTime: number | string;
     salt: string;
-    metadata: {
-        asset?: WyvernAsset;
-        bundle?: WyvernBundle;
-        schema: WyvernSchemaName;
-    };
+    metadata: ExchangeMetadata;
     hash: string;
 }
 /**

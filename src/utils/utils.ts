@@ -806,7 +806,7 @@ export function getWyvernBundle(
     (assetAndSchema: { asset: WyvernAsset, schema: WyvernSchemaName }) => assetAndSchema.asset.address,
     (assetAndSchema: { asset: WyvernAsset, schema: WyvernSchemaName }) => assetAndSchema.asset.id || 0
   ]
-  
+
   const wyAssetsAndSchemas = wyAssets.map((asset, i) => ({
     asset,
     schema: schemas[i].name as WyvernSchemaName
@@ -817,7 +817,7 @@ export function getWyvernBundle(
   if (uniqueAssets.length != wyAssetsAndSchemas.length) {
     throw new Error("Bundle can't contain duplicate assets")
   }
-  
+
   const sortedWyAssetsAndSchemas = _.sortBy(wyAssetsAndSchemas, sorters)
 
   return {
