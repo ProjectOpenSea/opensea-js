@@ -12,7 +12,7 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, WyvernSchemaName, Asset } from '../../src/types'
-import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, AGE_OF_RUST_TOKEN_ID } from '../constants'
+import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, AGE_OF_RUST_TOKEN_ID, ALEX_ADDRESS_2 } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { testMatchingNewOrder } from './orders' 
 import {
@@ -253,6 +253,7 @@ suite('seaport: bundles', () => {
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    testFeesMakerOrder(order, undefined)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
@@ -280,15 +281,16 @@ suite('seaport: bundles', () => {
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    testFeesMakerOrder(order, undefined)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
 
-  test.only('Matches bundle order for misordered assets with different schemas', async () => {
+  test.only('Matches bundle sell order for misordered assets with different schemas', async () => {
     const accountAddress = ALEX_ADDRESS
-    const takerAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS_2
     const amountInEth = 1
 
     const order = await client._makeBundleSellOrder({
@@ -310,8 +312,38 @@ suite('seaport: bundles', () => {
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    testFeesMakerOrder(order, undefined)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+  
+  test.only('Matches bundle buy order for misordered assets with different schemas', async () => {
+    const accountAddress = ALEX_ADDRESS_2
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 0.01
+
+    const order = await client._makeBundleBuyOrder({
+      assets: [
+        assetsForBundleOrder[0],
+        fungibleAssetsForBundleOrder[0],
+        semiFungibleAssetsForBundleOrder[0]],
+      quantities: [1, 2, 2],
+      accountAddress,
+      startAmount: amountInEth,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      paymentTokenAddress: wethAddress
+    })
+
+    assert.equal(order.paymentToken, wethAddress)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testFeesMakerOrder(order, undefined)
+
+    await client._buyOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })

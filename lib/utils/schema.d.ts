@@ -32,7 +32,7 @@ export declare const encodeDefaultCall: DefaultCallEncoder;
  * @param to Destination address
  * @param atomicizer Wyvern Atomicizer instance
  */
-export declare function encodeAtomicizedTransfer(schema: Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract): {
+export declare function encodeAtomicizedTransfer(schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract): {
     calldata: string;
 };
 /**
