@@ -11,8 +11,8 @@ import {
 
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, WyvernSchemaName, Asset } from '../../src/types'
-import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, AGE_OF_RUST_TOKEN_ID, ALEX_ADDRESS_2 } from '../constants'
+import { Network, WyvernSchemaName, Asset, UnhashedOrder } from '../../src/types'
+import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, AGE_OF_RUST_TOKEN_ID, ALEX_ADDRESS_2, BENZENE_ADDRESS } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { testMatchingNewOrder } from './orders' 
 import {
@@ -34,7 +34,8 @@ const assetsForBundleOrder: Asset[] = [
 ]
 
 const fungibleAssetsForBundleOrder: Asset[] = [
-  { tokenAddress: GODS_UNCHAINED_CHEST_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20 }
+  { tokenAddress: GODS_UNCHAINED_CHEST_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20 },
+  { tokenAddress: BENZENE_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20 },
 ]
 
 const semiFungibleAssetsForBundleOrder: Asset[] = [
@@ -72,6 +73,7 @@ suite('seaport: bundles', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
+    testBundleMetadata(order, WyvernSchemaName.ERC721)
     testFeesMakerOrder(order, undefined)
 
     await client._buyOrderValidationAndApprovals({ order, accountAddress })
@@ -100,6 +102,7 @@ suite('seaport: bundles', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
+    testBundleMetadata(order, WyvernSchemaName.ERC721)
     testFeesMakerOrder(order, asset.assetContract)
 
     await client._buyOrderValidationAndApprovals({ order, accountAddress })
@@ -131,6 +134,7 @@ suite('seaport: bundles', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
+    testBundleMetadata(order, WyvernSchemaName.ERC721)
     testFeesMakerOrder(order, undefined, bountyPercent * 100)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
@@ -164,6 +168,7 @@ suite('seaport: bundles', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
+    testBundleMetadata(order, WyvernSchemaName.ERC721)
     testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
@@ -194,6 +199,7 @@ suite('seaport: bundles', () => {
     assert.equal(order.paymentToken, token.address)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, token.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
+    testBundleMetadata(order, WyvernSchemaName.ERC721)
     assert.equal(order.expirationTime.toNumber(), 0)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
@@ -226,13 +232,14 @@ suite('seaport: bundles', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.expirationTime.toNumber(), expirationTime)
+    testBundleMetadata(order, WyvernSchemaName.ERC721)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
 
-  test.only('Can bundle multiple fungible tokens together', async () => {
+  test('Can bundle multiple fungible tokens together', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
     const amountInEth = 1
@@ -241,7 +248,7 @@ suite('seaport: bundles', () => {
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with fungible assets",
       assets: fungibleAssetsForBundleOrder,
-      quantities: [2],
+      quantities: [2, 12],
       accountAddress,
       startAmount: amountInEth,
       expirationTime: 0,
@@ -253,6 +260,7 @@ suite('seaport: bundles', () => {
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    testBundleMetadata(order, WyvernSchemaName.ERC20)
     testFeesMakerOrder(order, undefined)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
@@ -260,7 +268,7 @@ suite('seaport: bundles', () => {
     await testMatchingNewOrder(order, takerAddress)
   })
 
-  test.only('Can bundle multiple SFTs together', async () => {
+  test('Can bundle multiple SFTs together', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
     const amountInEth = 1
@@ -281,6 +289,7 @@ suite('seaport: bundles', () => {
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    testBundleMetadata(order, WyvernSchemaName.ERC1155)
     testFeesMakerOrder(order, undefined)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
@@ -288,7 +297,7 @@ suite('seaport: bundles', () => {
     await testMatchingNewOrder(order, takerAddress)
   })
 
-  test.only('Matches bundle sell order for misordered assets with different schemas', async () => {
+  test('Matches bundle sell order for misordered assets with different schemas', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInEth = 1
@@ -319,7 +328,7 @@ suite('seaport: bundles', () => {
     await testMatchingNewOrder(order, takerAddress)
   })
   
-  test.only('Matches bundle buy order for misordered assets with different schemas', async () => {
+  test('Matches bundle buy order for misordered assets with different schemas', async () => {
     const accountAddress = ALEX_ADDRESS_2
     const takerAddress = ALEX_ADDRESS
     const amountInEth = 0.01
@@ -349,3 +358,13 @@ suite('seaport: bundles', () => {
   })
 
 })
+
+function testBundleMetadata(order: UnhashedOrder, schemaName: WyvernSchemaName) {
+  assert.containsAllKeys(order.metadata, ['bundle'])
+  if (!('bundle' in order.metadata)) {
+    return
+  }
+  assert.isNotEmpty(order.metadata.bundle.assets)
+  const expectedSchemas = order.metadata.bundle.assets.map(a => schemaName)
+  assert.deepEqual(order.metadata.bundle.schemas, expectedSchemas)
+}
