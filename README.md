@@ -12,6 +12,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
 - [Synopsis](#synopsis)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
+  - [Fetching Assets](#fetching-assets)
   - [Making Offers](#making-offers)
     - [Bidding on Multiple Assets](#bidding-on-multiple-assets)
     - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
@@ -90,9 +91,43 @@ const seaport = new OpenSeaPort(provider, {
 
 In a browser with web3 or an extension like [MetaMask](https://metamask.io/) or [Dapper](http://www.meetdapper.com/), you can use `window.ethereum` (or `window.web3.currentProvider` for legacy mobile web3 browsers) to access the native provider. In a Node.js script, you can follow [this example](https://github.com/ProjectOpenSea/opensea-creatures/blob/master/scripts/sell.js) to use a custom mnemonic.
 
+### Fetching Assets
+
+Assets are items on OpenSea. They can be non-fungible (conforming to standards like ERC721), semi-fungible (like ERC1155 assets), and even fungible (ERC20).
+
+Assets are represented by the `Asset` type, defined in TypeScript:
+
+```TypeScript
+/**
+ * Simple, unannotated non-fungible asset spec
+ */
+export interface Asset {
+  // The asset's token ID, or null if ERC-20
+  tokenId: string | null,
+  // The asset's contract address
+  tokenAddress: string,
+  // The Wyvern schema name (defaults to "ERC721") for this asset
+  schemaName?: WyvernSchemaName,
+  // Optional for ENS names
+  name?: string,
+  // Optional for fungible items
+  decimals?: number
+}
+```
+
+The `Asset` type is the minimal type you need for most marketplace actions. `WyvernSchemaName` is optional. If omitted, most actions will assume you're referring to a non-fungible, ERC721 asset. Other options include 'ERC20' and 'ERC1155'. You can import `import { WyvernSchemaName } from "opensea-js/lib/types"` to get the full range of schemas supported.
+
+You can fetch an asset using the `OpenSeaAPI`, which will return an `OpenSeaAsset` for you (`OpenSeaAsset` extends `Asset`):
+
+```TypeScript
+const asset: OpenSeaAsset = seaport.api.getAsset(tokenAddress: string, tokenId: string | number | null)
+```
+
+Note that fungible ERC20 assets have `null` as their token id.
+
 ### Making Offers
 
-Then, you can do this to make an offer on an asset:
+Once you have your asset, you can do this to make an offer on it:
 
 ```JavaScript
 // Token ID and smart contract address for a non-fungible token:
@@ -104,12 +139,11 @@ const offer = await seaport.createBuyOrder({
   asset: {
     tokenId,
     tokenAddress,
+    schemaName // WyvernSchemaName. If omitted, defaults to 'ERC721'. Other options include 'ERC20' and 'ERC1155'
   },
   accountAddress,
   // Value of the offer, in units of the payment token (or wrapped ETH if none is specified):
   startAmount: 1.2,
-  schemaName // WyvernSchemaName. If omitted, defaults to 'ERC721'
-  // Read below for other options
 })
 ```
 
@@ -122,8 +156,7 @@ You can also make an offer on a bundle of assets. This could also be used for cr
 ```JavaScript
 const assets = YOUR_ASSETS
 const offer = await seaport.createBundleBuyOrder({
-  tokenIds: assets.map(a => a.tokenId),
-  tokenAddresses: assets.map(a => a.tokenAddress),
+  assets,
   accountAddress,
   startAmount: 2.4,
   // Optional expiration time for the order, in Unix time (seconds):
@@ -152,15 +185,15 @@ const offer = await seaport.createBuyOrder({
   asset: {
     tokenId,
     tokenAddress,
-    name
+    name,
+    // Only needed for the short-name auction, not ENS names
+    // that have been sold once already:
+    schemaName: "ENSShortNameAuction"
   },
   // Your wallet address (the bidder's address):
   accountAddress: "0x1234..."
   // Value of the offer, in wrapped ETH:
   startAmount: 1.2,
-  // Only needed for the short-name auction, not ENS names
-  // that have been sold once already:
-  schemaName: "ENSShortNameAuction"
 })
 ```
 
@@ -313,11 +346,14 @@ For fungible ERC-1155 assets, you can set `schemaName` to "ERC1155" and pass a `
 ```JavaScript
 
 const transactionHash = await seaport.transfer({
-  asset: { tokenId, tokenAddress },
+  asset: {
+    tokenId,
+    tokenAddress,
+    schemaName: "ERC1155"
+  },
   fromAddress, // Must own the asset
   toAddress,
   quantity: 2,
-  schemaName: "ERC1155"
 })
 ```
 
@@ -329,10 +365,12 @@ Example for transfering 2 DAI ($2) to another address:
 const paymentToken = (await seaport.api.getPaymentTokens({ symbol: 'DAI'}))[0]
 const quantity = new BigNumber(Math.pow(10, paymentToken.decimals)).times(2)
 const transactionHash = await seaport.transfer({
-  asset: { tokenAddress: paymentToken.address },
+  asset: {
+    tokenAddress: paymentToken.address,
+    schemaName: "ERC20"
+  },
   fromAddress, // Must own the tokens
   toAddress,
-  schemaName: "ERC20"
   quantity
 })
 ```

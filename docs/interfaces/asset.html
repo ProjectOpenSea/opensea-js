@@ -66,13 +66,6 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>Simple, unannotated non-fungible asset spec</p>
-					</div>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -95,6 +88,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="asset.html#decimals" class="tsd-kind-icon">decimals</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="asset.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="asset.html#schemaname" class="tsd-kind-icon">schema<wbr>Name</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="asset.html#tokenaddress" class="tsd-kind-icon">token<wbr>Address</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="asset.html#tokenid" class="tsd-kind-icon">token<wbr>Id</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="asset.html#version" class="tsd-kind-icon">version</a></li>
@@ -111,7 +105,7 @@
 					<div class="tsd-signature tsd-kind-icon">decimals<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/43d6f00/src/types.ts#L233">types.ts:233</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b6d4a15/src/types.ts#L240">types.ts:240</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -121,7 +115,17 @@
 					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/43d6f00/src/types.ts#L231">types.ts:231</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b6d4a15/src/types.ts#L238">types.ts:238</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="schemaname" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> schema<wbr>Name</h3>
+					<div class="tsd-signature tsd-kind-icon">schema<wbr>Name<span class="tsd-signature-symbol">:</span> <a href="../enums/wyvernschemaname.html" class="tsd-signature-type">WyvernSchemaName</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b6d4a15/src/types.ts#L234">types.ts:234</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -131,7 +135,7 @@
 					<div class="tsd-signature tsd-kind-icon">token<wbr>Address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/43d6f00/src/types.ts#L227">types.ts:227</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b6d4a15/src/types.ts#L232">types.ts:232</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -141,7 +145,7 @@
 					<div class="tsd-signature tsd-kind-icon">token<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/43d6f00/src/types.ts#L225">types.ts:225</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b6d4a15/src/types.ts#L230">types.ts:230</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -151,7 +155,7 @@
 					<div class="tsd-signature tsd-kind-icon">version<span class="tsd-signature-symbol">:</span> <a href="../enums/tokenstandardversion.html" class="tsd-signature-type">TokenStandardVersion</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/43d6f00/src/types.ts#L229">types.ts:229</a></li>
+							<li>Defined in <a href="https://github.com/ProjectOpenSea/opensea-js/blob/b6d4a15/src/types.ts#L236">types.ts:236</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -177,6 +181,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="asset.html#name" class="tsd-kind-icon">name</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="asset.html#schemaname" class="tsd-kind-icon">schema<wbr>Name</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="asset.html#tokenaddress" class="tsd-kind-icon">token<wbr>Address</a>
