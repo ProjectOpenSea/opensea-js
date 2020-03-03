@@ -379,7 +379,7 @@ export const orderFromJSON = (order: any): Order => {
     quantity: new BigNumber(order.quantity || 1),
     exchange: order.exchange,
     makerAccount: order.maker,
-    takerAccount: order.maker,
+    takerAccount: order.taker,
     // Use string address to conform to Wyvern Order schema
     maker: order.maker.address,
     taker: order.taker.address,
