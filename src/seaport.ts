@@ -1111,15 +1111,18 @@ export class OpenSeaPort {
         minimumAmount?: BigNumber }
     ): Promise<string | null> {
     proxyAddress = proxyAddress || WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
+
     const approvedAmount = await this._getApprovedTokenCount({
       accountAddress,
       tokenAddress,
       proxyAddress
     })
+
     if (approvedAmount.toNumber() >= minimumAmount.toNumber()) {
       this.logger('Already approved enough currency for trading')
       return null
     }
+
     this.logger(`Not enough token approved for trade: ${approvedAmount} approved to transfer ${tokenAddress}`)
 
     this._dispatch(EventType.ApproveCurrency, {
@@ -1139,7 +1142,14 @@ export class OpenSeaPort {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
 
-    await this._confirmTransaction(txHash, EventType.ApproveCurrency, "Approving currency for trading")
+    await this._confirmTransaction(txHash, EventType.ApproveCurrency, "Approving currency for trading", async () => {
+      const newlyApprovedAmount = await this._getApprovedTokenCount({
+        accountAddress,
+        tokenAddress,
+        proxyAddress
+      })
+      return newlyApprovedAmount.toNumber() >= minimumAmount.toNumber()
+    })
     return txHash
   }
 
