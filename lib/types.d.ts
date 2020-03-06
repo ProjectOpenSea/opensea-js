@@ -171,7 +171,7 @@ export interface OpenSeaAccount {
     };
 }
 /**
- * Simple, unannotated non-fungible asset spec
+ * Simple, unannotated asset spec
  */
 export interface Asset {
     tokenId: string | null;
@@ -184,17 +184,13 @@ export interface Asset {
 /**
  * Annotated asset contract with OpenSea metadata
  */
-export interface OpenSeaAssetContract {
+export declare type OpenSeaAssetContract = OpenSeaFees & {
     name: string;
     address: string;
     type: AssetContractType;
     schemaName: WyvernSchemaName;
     sellerFeeBasisPoints: number;
     buyerFeeBasisPoints: number;
-    openseaSellerFeeBasisPoints: number;
-    openseaBuyerFeeBasisPoints: number;
-    devSellerFeeBasisPoints: number;
-    devBuyerFeeBasisPoints: number;
     description: string;
     tokenSymbol: string;
     imageUrl: string;
@@ -202,7 +198,7 @@ export interface OpenSeaAssetContract {
     traits?: object[];
     externalLink?: string;
     wikiLink?: string;
-}
+};
 interface NumericalTraitStats {
     min: number;
     max: number;
@@ -213,17 +209,13 @@ interface StringTraitStats {
 /**
  * Annotated collection with OpenSea metadata
  */
-export interface OpenSeaCollection {
+export declare type OpenSeaCollection = OpenSeaFees & {
     name: string;
     slug: string;
     editors: string[];
     hidden: boolean;
     featured: boolean;
     createdDate: Date;
-    openseaSellerFeeBasisPoints: number;
-    openseaBuyerFeeBasisPoints: number;
-    devSellerFeeBasisPoints: number;
-    devBuyerFeeBasisPoints: number;
     description: string;
     imageUrl: string;
     largeImageUrl: string;
@@ -235,7 +227,7 @@ export interface OpenSeaCollection {
     traitStats: OpenSeaTraitStats;
     externalLink?: string;
     wikiLink?: string;
-}
+};
 export interface OpenSeaTraitStats {
     [traitName: string]: NumericalTraitStats | StringTraitStats;
 }
@@ -359,21 +351,23 @@ export interface OpenSeaAssetBundleQuery extends Partial<OpenSeaAssetBundleJSON>
 }
 /**
  * The basis point values of each type of fee
- * added to each order.
- * The first pair of values are the total of
- * the second two pairs
  */
 export interface OpenSeaFees {
-    totalBuyerFeeBPS: number;
-    totalSellerFeeBPS: number;
-    devSellerFeeBPS: number;
-    devBuyerFeeBPS: number;
-    openseaSellerFeeBPS: number;
-    openseaBuyerFeeBPS: number;
+    openseaSellerFeeBasisPoints: number;
+    openseaBuyerFeeBasisPoints: number;
+    devSellerFeeBasisPoints: number;
+    devBuyerFeeBasisPoints: number;
+}
+/**
+ * Fully computed fees including bounties and transfer fees
+ */
+export declare type ComputedFees = OpenSeaFees & {
+    totalBuyerFeeBasisPoints: number;
+    totalSellerFeeBasisPoints: number;
     transferFee: BigNumber;
     transferFeeTokenAddress: string | null;
     sellerBountyBPS: number;
-}
+};
 export interface ExchangeMetadataForAsset {
     asset: WyvernAsset;
     schema: WyvernSchemaName;

@@ -11,8 +11,8 @@ import {
 
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, WyvernSchemaName, Asset, UnhashedOrder } from '../../src/types'
-import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, AGE_OF_RUST_TOKEN_ID, ALEX_ADDRESS_2, BENZENE_ADDRESS } from '../constants'
+import { Network, WyvernSchemaName, UnhashedOrder } from '../../src/types'
+import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, AGE_OF_RUST_TOKEN_ID, ALEX_ADDRESS_2, BENZENE_ADDRESS, CRYPTOVOXELS_WEARABLE_2_ID } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { testMatchingNewOrder } from './orders' 
 import {
@@ -28,20 +28,25 @@ const client = new OpenSeaPort(provider, {
   apiKey: MAINNET_API_KEY
 }, line => console.info(`MAINNET: ${line}`))
 
-const assetsForBundleOrder: Asset[] = [
+const assetsForBundleOrder = [
   { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
   { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
 ]
 
-const fungibleAssetsForBundleOrder: Asset[] = [
+const fungibleAssetsForBundleOrder = [
   { tokenAddress: GODS_UNCHAINED_CHEST_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20 },
   { tokenAddress: BENZENE_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20 },
 ]
 
-const semiFungibleAssetsForBundleOrder: Asset[] = [
+const heterogenousSemiFungibleAssetsForBundleOrder = [
   { tokenId: DISSOLUTION_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
   { tokenId: AGE_OF_RUST_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
   { tokenId: CRYPTOVOXELS_WEARABLE_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
+]
+
+const homogenousSemiFungibleAssetsForBundleOrder = [
+  { tokenId: CRYPTOVOXELS_WEARABLE_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
+  { tokenId: CRYPTOVOXELS_WEARABLE_2_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
 ]
 
 let wethAddress: string
@@ -85,9 +90,10 @@ suite('seaport: bundles', () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
     const amountInToken = 10
+    const assets = [{ tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS }]
 
     const order = await client._makeBundleBuyOrder({
-      assets: [{ tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS }],
+      assets,
       quantities: [1],
       accountAddress,
       startAmount: amountInToken,
@@ -96,14 +102,14 @@ suite('seaport: bundles', () => {
       paymentTokenAddress: manaAddress
     })
 
-    const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
+    const asset = await client.api.getAsset(assets[0])
 
     assert.equal(order.paymentToken, manaAddress)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
     testBundleMetadata(order, WyvernSchemaName.ERC721)
-    testFeesMakerOrder(order, asset.assetContract)
+    testFeesMakerOrder(order, asset.collection)
 
     await client._buyOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
@@ -148,10 +154,12 @@ suite('seaport: bundles', () => {
     const amountInEth = 1
     const bountyPercent = 0.8
 
+    const assets = [{ tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS }]
+
     const order = await client._makeBundleSellOrder({
       bundleName: "Test Homogenous Bundle",
       bundleDescription: "This is a test with one type of asset",
-      assets: [{ tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS }],
+      assets,
       quantities: [1],
       accountAddress,
       startAmount: amountInEth,
@@ -162,14 +170,14 @@ suite('seaport: bundles', () => {
       buyerAddress: NULL_ADDRESS
     })
 
-    const asset = await client.api.getAsset(MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID.toString())
+    const asset = await client.api.getAsset(assets[0])
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
     testBundleMetadata(order, WyvernSchemaName.ERC721)
-    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
+    testFeesMakerOrder(order, asset.collection, bountyPercent * 100)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
@@ -276,7 +284,7 @@ suite('seaport: bundles', () => {
     const order = await client._makeBundleSellOrder({
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with SFT assets",
-      assets: semiFungibleAssetsForBundleOrder,
+      assets: heterogenousSemiFungibleAssetsForBundleOrder,
       quantities: [2, 1, 1],
       accountAddress,
       startAmount: amountInEth,
@@ -297,6 +305,37 @@ suite('seaport: bundles', () => {
     await testMatchingNewOrder(order, takerAddress)
   })
 
+  test('Can bundle multiple homogenous semifungibles', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 1
+    const asset = await client.api.getAsset(homogenousSemiFungibleAssetsForBundleOrder[0])
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with homogenous SFT assets",
+      assets: homogenousSemiFungibleAssetsForBundleOrder,
+      collection: asset.collection,
+      quantities: [1, 2],
+      accountAddress,
+      startAmount: amountInEth,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      waitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS,
+      paymentTokenAddress: NULL_ADDRESS
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    testBundleMetadata(order, WyvernSchemaName.ERC1155)
+    testFeesMakerOrder(order, asset.collection)
+
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
   test('Matches bundle sell order for misordered assets with different schemas', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
@@ -308,7 +347,7 @@ suite('seaport: bundles', () => {
       assets: [
         assetsForBundleOrder[0],
         fungibleAssetsForBundleOrder[0],
-        semiFungibleAssetsForBundleOrder[0]],
+        heterogenousSemiFungibleAssetsForBundleOrder[0]],
       quantities: [1, 2, 2],
       accountAddress,
       startAmount: amountInEth,
@@ -337,7 +376,7 @@ suite('seaport: bundles', () => {
       assets: [
         assetsForBundleOrder[0],
         fungibleAssetsForBundleOrder[0],
-        semiFungibleAssetsForBundleOrder[0]],
+        heterogenousSemiFungibleAssetsForBundleOrder[0]],
       quantities: [1, 2, 2],
       accountAddress,
       startAmount: amountInEth,

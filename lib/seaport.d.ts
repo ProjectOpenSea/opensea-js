@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types';
+import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, OpenSeaCollection, OpenSeaFees } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -140,9 +140,8 @@ export declare class OpenSeaPort {
      * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
      * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
      * @param param0 __namedParameters Object
-     * @param tokenIds DEPRECATED: Token IDs of the assets. Use `assets` instead.
-     * @param tokenAddresses DEPRECATED: Addresses of the tokens' contracts. Use `assets` instead.
      * @param assets Array of Asset objects to bid on
+     * @param collection Optional collection for computing fees, required only if all assets belong to the same collection
      * @param accountAddress Address of the maker's wallet
      * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
@@ -151,8 +150,9 @@ export declare class OpenSeaPort {
      * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
      * @param referrerAddress The optional address that referred the order
      */
-    createBundleBuyOrder({ assets, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, referrerAddress }: {
+    createBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, referrerAddress }: {
         assets: Asset[];
+        collection?: OpenSeaCollection;
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -267,6 +267,7 @@ export declare class OpenSeaPort {
      * @param bundleDescription Optional description of the bundle. Markdown is allowed.
      * @param bundleExternalLink Optional link to a page that adds context to the bundle.
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
+     * @param collection Optional collection for computing fees, required only if all assets belong to the same collection
      * @param accountAddress The address of the maker of the bundle and the owner of all the assets.
      * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction.
      * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`.
@@ -277,11 +278,12 @@ export declare class OpenSeaPort {
      * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
      * @param schemaName The Wyvern schema name corresponding to the asset type
      */
-    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
+    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
+        collection?: OpenSeaFees;
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -470,21 +472,21 @@ export declare class OpenSeaPort {
     /**
      * Compute the fees for an order
      * @param param0 __namedParameters
-     * @param asset Addresses and id of asset (null if a bundle, unless all assets are from the same contract, then the first asset)
-     * @param assetContract Optional prefetched asset contract (including fees) to use instead of assets
+     * @param asset Optional asset to use to find fees for
+     * @param fees Optional prefetched fees to use instead of assets
      * @param side The side of the order (buy or sell)
      * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
      * @param isPrivate Whether the order is private or not (known taker)
      * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
      */
-    computeFees({ asset, assetContract, side, accountAddress, isPrivate, extraBountyBasisPoints }: {
-        asset: OpenSeaAsset | null;
-        assetContract?: OpenSeaAssetContract;
+    computeFees({ asset, fees, side, accountAddress, isPrivate, extraBountyBasisPoints }: {
+        asset?: OpenSeaAsset;
+        fees?: OpenSeaFees;
         side: OrderSide;
         accountAddress?: string;
         isPrivate?: boolean;
         extraBountyBasisPoints?: number;
-    }): Promise<OpenSeaFees>;
+    }): Promise<ComputedFees>;
     /**
      * Validate and post an order to the OpenSea orderbook.
      * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
@@ -591,8 +593,9 @@ export declare class OpenSeaPort {
         staticTarget: string;
         staticExtradata: string;
     }>;
-    _makeBundleBuyOrder({ assets, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, referrerAddress }: {
+    _makeBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, referrerAddress }: {
         assets: Asset[];
+        collection?: OpenSeaCollection;
         quantities: number[];
         accountAddress: string;
         startAmount: number;
@@ -602,11 +605,12 @@ export declare class OpenSeaPort {
         sellOrder?: UnhashedOrder;
         referrerAddress?: string;
     }): Promise<UnhashedOrder>;
-    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
+    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
+        collection?: OpenSeaFees;
         quantities: number[];
         accountAddress: string;
         startAmount: number;
@@ -660,7 +664,7 @@ export declare class OpenSeaPort {
         wyAssets: WyvernAsset[];
         accountAddress: string;
         proxyAddress?: string;
-    }): Promise<(string | true | null)[]>;
+    }): Promise<(string | null)[]>;
     _buyOrderValidationAndApprovals({ order, counterOrder, accountAddress }: {
         order: UnhashedOrder;
         counterOrder?: Order;
@@ -695,6 +699,7 @@ export declare class OpenSeaPort {
      * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
      */
     private _getPriceParameters;
+    private _getFeeParameters;
     private _getMetadata;
     private _atomicMatch;
     private _getRequiredAmountForTakingSellOrder;

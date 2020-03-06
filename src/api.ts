@@ -188,10 +188,13 @@ export class OpenSeaAPI {
    * @param tokenId The asset's token ID, or null if ERC-20
    * @param retries Number of times to retry if the service is unavailable for any reason
    */
-  public async getAsset(
+  public async getAsset({
+      tokenAddress, tokenId
+    }: {
       tokenAddress: string,
       tokenId: string | number | null,
-      retries = 1
+    },
+                        retries = 1
     ): Promise<OpenSeaAsset> {
 
     let json
@@ -200,7 +203,7 @@ export class OpenSeaAPI {
     } catch (error) {
       _throwOrContinue(error, retries)
       await delay(1000)
-      return this.getAsset(tokenAddress, tokenId, retries - 1)
+      return this.getAsset({ tokenAddress, tokenId }, retries - 1)
     }
 
     return assetFromJSON(json)
@@ -262,10 +265,11 @@ export class OpenSeaAPI {
 
   /**
    * Fetch an bundle from the API, return null if it isn't found
-   * @param tokenAddress Address of the bundle's contract
-   * @param tokenId The bundle's token ID
+   * @param slug The bundle's identifier
    */
-  public async getBundle(slug: string): Promise<OpenSeaAssetBundle | null> {
+  public async getBundle({ slug }: {
+      slug: string
+    }): Promise<OpenSeaAssetBundle | null> {
 
     const json = await this.get(`${API_PATH}/bundle/${slug}/`)
 

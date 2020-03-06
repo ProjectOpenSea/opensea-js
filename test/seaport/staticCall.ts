@@ -76,7 +76,7 @@ suite('seaport: static calls', () => {
     const tokenId = '2898' // Mainnet DecentralandEstate TokenID
     const tokenAddress = '0x959e104e1a4db6317fa58f8295f586e1a978c297' // Mainnet DecentralandEstates Contract
 
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -94,7 +94,7 @@ suite('seaport: static calls', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFeesMakerOrder(order, asset.assetContract, 0)
+    testFeesMakerOrder(order, asset.collection, 0)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
@@ -111,7 +111,7 @@ suite('seaport: static calls', () => {
     const tokenId = '3' // Testnet CheezeWizards TokenID
     const tokenAddress = '0x095731b672b76b00A0b5cb9D8258CD3F6E976cB2' // Testnet CheezeWizards Guild address
 
-    const asset = await rinkebyClient.api.getAsset(tokenAddress, tokenId)
+    const asset = await rinkebyClient.api.getAsset({ tokenAddress, tokenId })
 
     const order = await rinkebyClient._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -129,7 +129,7 @@ suite('seaport: static calls', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFeesMakerOrder(order, asset.assetContract, 0)
+    testFeesMakerOrder(order, asset.collection, 0)
 
     await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid

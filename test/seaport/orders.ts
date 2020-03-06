@@ -212,7 +212,7 @@ suite('seaport: orders', () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
 
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -266,7 +266,7 @@ suite('seaport: orders', () => {
     }
     // Make sure it's listed in the past
     assert.isBelow(buy.listingTime.toNumber(), now)
-    testFeesMakerOrder(buy, buy.asset.assetContract)
+    testFeesMakerOrder(buy, buy.asset.collection)
 
     const sell = orderFromJSON(englishSellOrderJSON)
     assert.equal(+sell.quantity, 1)
@@ -300,7 +300,7 @@ suite('seaport: orders', () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
 
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
 
     const sellOrder = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -325,7 +325,7 @@ suite('seaport: orders', () => {
       sellOrder,
     })
 
-    testFeesMakerOrder(buyOrder, asset.assetContract)
+    testFeesMakerOrder(buyOrder, asset.collection)
     assert.equal(sellOrder.taker, NULL_ADDRESS)
     assert.equal(buyOrder.taker, sellOrder.maker)
     assert.equal(buyOrder.makerRelayerFee.toNumber(), sellOrder.makerRelayerFee.toNumber())
@@ -366,7 +366,7 @@ suite('seaport: orders', () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
 
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -384,7 +384,7 @@ suite('seaport: orders', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
+    testFeesMakerOrder(order, asset.collection, bountyPercent * 100)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
@@ -438,7 +438,7 @@ suite('seaport: orders', () => {
     const tokenId = CATS_IN_MECHS_ID
     const tokenAddress = ENJIN_ADDRESS
 
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC1155 },
@@ -455,7 +455,7 @@ suite('seaport: orders', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFeesMakerOrder(order, asset.assetContract)
+    testFeesMakerOrder(order, asset.collection)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
@@ -471,7 +471,7 @@ suite('seaport: orders', () => {
     const tokenId = DISSOLUTION_TOKEN_ID
     const tokenAddress = ENJIN_ADDRESS
 
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
 
     const order = await client._makeBuyOrder({
       asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC1155 },
@@ -488,7 +488,7 @@ suite('seaport: orders', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFeesMakerOrder(order, asset.assetContract)
+    testFeesMakerOrder(order, asset.collection)
 
     await client._buyOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
@@ -505,7 +505,7 @@ suite('seaport: orders', () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
 
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -523,7 +523,7 @@ suite('seaport: orders', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFeesMakerOrder(order, asset.assetContract, bountyPercent * 100)
+    testFeesMakerOrder(order, asset.collection, bountyPercent * 100)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
@@ -539,7 +539,7 @@ suite('seaport: orders', () => {
     const tokenId = CK_TOKEN_ID.toString()
     const tokenAddress = CK_ADDRESS
 
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
 
     const order = await client._makeBuyOrder({
       asset: { tokenAddress, tokenId },
@@ -556,7 +556,7 @@ suite('seaport: orders', () => {
     assert.equal(order.basePrice.toNumber(), Math.pow(10, paymentToken.decimals) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFeesMakerOrder(order, asset.assetContract)
+    testFeesMakerOrder(order, asset.collection)
 
     await client._buyOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid

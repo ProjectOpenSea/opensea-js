@@ -38,6 +38,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Listening to Events](#listening-to-events)
 - [Learning More](#learning-more)
   - [Example Code](#example-code)
+- [Migrating to version 1.0](#migrating-to-version-10)
 - [Migrating to version 0.6](#migrating-to-version-06)
 - [Development Information](#development-information)
 - [Diagnosing Common Issues](#diagnosing-common-issues)
@@ -120,7 +121,10 @@ The `Asset` type is the minimal type you need for most marketplace actions. `Wyv
 You can fetch an asset using the `OpenSeaAPI`, which will return an `OpenSeaAsset` for you (`OpenSeaAsset` extends `Asset`):
 
 ```TypeScript
-const asset: OpenSeaAsset = seaport.api.getAsset(tokenAddress: string, tokenId: string | number | null)
+const asset: OpenSeaAsset = seaport.api.getAsset({
+  tokenAddress, // string
+  tokenId, // string | number | null
+})
 ```
 
 Note that fungible ERC20 assets have `null` as their token id.
@@ -676,6 +680,20 @@ If you need extra help, support is free! Contact the OpenSea devs. They're avail
 Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
 
 You can view a live demo [here](https://ships-log.herokuapp.com/)! Also check out the [Mythereum marketplace](https://mythereum.io/marketplace), which is entirely powered by OpenSea.js.
+
+## Migrating to version 1.0
+
+Version 1.0 introduces bundling for semi-fungible and fungible assets, serialized asset collections, a smaller bundle size, and more, along with many bug fixes.
+
+- `computeFees` now takes in either the `fees` from a collection or a single asset, and returns a new and more consistent type, `ComputedFees`
+- `schemaName` has been moved out of main method calls and into the `Asset` type
+- `OpenSeaAPI::getAsset()` now accepts named arguments, consistent with other methods
+- `profile_img_url` in the `OpenSeaAccount` type has been renamed to `profileImgUrl`
+
+Removed deprecations:
+
+- `transferOne`, replaced by `transfer`
+- `tokenId` and `tokenAddress` parameters for most SDK methods, replaced by creating an `Asset` type and passing that in
 
 ## Migrating to version 0.6
 

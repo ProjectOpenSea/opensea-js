@@ -8,7 +8,7 @@ import {
   Order as WyvernOrder
 } from 'wyvern-js/lib/types'
 
-import { Token, Schema } from 'wyvern-schemas/dist/types'
+import { Token } from 'wyvern-schemas/dist/types'
 
 export {
   Network,
@@ -223,7 +223,7 @@ export interface OpenSeaAccount {
 }
 
 /**
- * Simple, unannotated non-fungible asset spec
+ * Simple, unannotated asset spec
  */
 export interface Asset {
   // The asset's token ID, or null if ERC-20
@@ -243,7 +243,7 @@ export interface Asset {
 /**
  * Annotated asset contract with OpenSea metadata
  */
-export interface OpenSeaAssetContract {
+export type OpenSeaAssetContract = OpenSeaFees & {
   // Name of the asset's contract
   name: string
   // Address of this contract
@@ -257,14 +257,6 @@ export interface OpenSeaAssetContract {
   sellerFeeBasisPoints: number
   // Total fee levied on buyers by this contract, in basis points
   buyerFeeBasisPoints: number
-  // Fee for OpenSea levied on sellers
-  openseaSellerFeeBasisPoints: number
-  // Fee for OpenSea levied on buyers
-  openseaBuyerFeeBasisPoints: number
-  // Fee for the asset contract owner levied on sellers
-  devSellerFeeBasisPoints: number
-  // Fee for the asset contract owner levied on buyers
-  devBuyerFeeBasisPoints: number
 
   // Description of the contract
   description: string
@@ -294,7 +286,7 @@ interface StringTraitStats {
 /**
  * Annotated collection with OpenSea metadata
  */
-export interface OpenSeaCollection {
+export type OpenSeaCollection = OpenSeaFees & {
   // Name of the collection
   name: string
   // Slug, used in URL
@@ -307,14 +299,6 @@ export interface OpenSeaCollection {
   featured: boolean
   // Date collection was created
   createdDate: Date,
-  // Fee for OpenSea levied on sellers
-  openseaSellerFeeBasisPoints: number
-  // Fee for OpenSea levied on buyers
-  openseaBuyerFeeBasisPoints: number
-  // Fee for the collection owner levied on sellers
-  devSellerFeeBasisPoints: number
-  // Fee for the collection owner levied on buyers
-  devBuyerFeeBasisPoints: number
 
   // Description of the collection
   description: string
@@ -531,22 +515,25 @@ export interface OpenSeaAssetBundleQuery extends Partial<OpenSeaAssetBundleJSON>
 
 /**
  * The basis point values of each type of fee
- * added to each order.
- * The first pair of values are the total of
- * the second two pairs
  */
 export interface OpenSeaFees {
+  // Fee for OpenSea levied on sellers
+  openseaSellerFeeBasisPoints: number
+  // Fee for OpenSea levied on buyers
+  openseaBuyerFeeBasisPoints: number
+  // Fee for the collection owner levied on sellers
+  devSellerFeeBasisPoints: number
+  // Fee for the collection owner levied on buyers
+  devBuyerFeeBasisPoints: number
+}
+
+/**
+ * Fully computed fees including bounties and transfer fees
+ */
+export type ComputedFees = OpenSeaFees & {
   // Total fees. dev + opensea
-  totalBuyerFeeBPS: number
-  totalSellerFeeBPS: number
-
-  // Fees that go to the asset contract's developer
-  devSellerFeeBPS: number
-  devBuyerFeeBPS: number
-
-  // Fees that go to OpenSea
-  openseaSellerFeeBPS: number
-  openseaBuyerFeeBPS: number
+  totalBuyerFeeBasisPoints: number
+  totalSellerFeeBasisPoints: number
 
   // Fees that the item's creator takes on every transfer
   transferFee: BigNumber
