@@ -699,7 +699,8 @@ export declare class OpenSeaPort {
      * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
      */
     private _getPriceParameters;
-    private _getFeeParameters;
+    private _getBuyFeeParameters;
+    private _getSellFeeParameters;
     private _getMetadata;
     private _atomicMatch;
     private _getRequiredAmountForTakingSellOrder;
