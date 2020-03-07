@@ -54,7 +54,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint && npm run build && git add ."
+      "pre-commit": "npm run lint && npm run build",
+      "post-commit": "git add lib/*"
     }
   },
   "devDependencies": {
