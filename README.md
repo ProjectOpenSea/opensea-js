@@ -689,6 +689,7 @@ Version 1.0 introduces bundling for semi-fungible and fungible assets, serialize
 - `schemaName` has been moved out of main method calls and into the `Asset` type
 - `OpenSeaAPI::getAsset()` now accepts named arguments, consistent with other methods
 - `profile_img_url` in the `OpenSeaAccount` type has been renamed to `profileImgUrl`
+- `approveNonFungibleToken` has been renamed to `approveSemiOrNonFungibleToken`, though it always worked for semi-fungible tokens like ERC-1155
 
 Removed deprecations:
 

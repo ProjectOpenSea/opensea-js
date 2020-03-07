@@ -951,7 +951,7 @@ export class OpenSeaPort {
    * @param schemaName The Wyvern schema name corresponding to the asset type
    * @returns Transaction hash if a new transaction was created, otherwise null
    */
-  public async approveNonFungibleToken(
+  public async approveSemiOrNonFungibleToken(
       { tokenId,
         tokenAddress,
         accountAddress,
@@ -970,7 +970,7 @@ export class OpenSeaPort {
 
     const schema = this._getSchema(schemaName)
     const tokenContract = this.web3.eth.contract(tokenAbi as any[])
-    const erc721 = await tokenContract.at(tokenAddress)
+    const contract = await tokenContract.at(tokenAddress)
 
     if (!proxyAddress) {
       proxyAddress = await this._getProxy(accountAddress) || undefined
@@ -984,8 +984,8 @@ export class OpenSeaPort {
       // Use this long way of calling so we can check for method existence on a bool-returning method.
       const isApprovedForAllRaw = await rawCall(this.web3ReadOnly, {
         from: accountAddress,
-        to: erc721.address,
-        data: erc721.isApprovedForAll.getData(accountAddress, proxyAddress)
+        to: contract.address,
+        data: contract.isApprovedForAll.getData(accountAddress, proxyAddress)
       })
       return parseInt(isApprovedForAllRaw)
     }
@@ -1017,8 +1017,8 @@ export class OpenSeaPort {
         const gasPrice = await this._computeGasPrice()
         const txHash = await sendRawTransaction(this.web3, {
           from: accountAddress,
-          to: erc721.address,
-          data: erc721.setApprovalForAll.getData(proxyAddress, true),
+          to: contract.address,
+          data: contract.setApprovalForAll.getData(proxyAddress, true),
           gasPrice
         }, error => {
           this._dispatch(EventType.TransactionDenied, { error, accountAddress })
@@ -1039,7 +1039,7 @@ export class OpenSeaPort {
 
     const approvalOneCheck = async () => {
       // Note: approvedAddr will be '0x' if not supported
-      let approvedAddr = await promisifyCall<string>(c => erc721.getApproved.call(tokenId, c))
+      let approvedAddr = await promisifyCall<string>(c => contract.getApproved.call(tokenId, c))
       if (approvedAddr == proxyAddress) {
         this.logger('Already approved proxy for this token')
         return true
@@ -1048,7 +1048,7 @@ export class OpenSeaPort {
 
       // SPECIAL CASING non-compliant contracts
       if (!approvedAddr) {
-        approvedAddr = await getNonCompliantApprovalAddress(erc721, tokenId, accountAddress)
+        approvedAddr = await getNonCompliantApprovalAddress(contract, tokenId, accountAddress)
         if (approvedAddr == proxyAddress) {
           this.logger('Already approved proxy for this item')
           return true
@@ -1075,8 +1075,8 @@ export class OpenSeaPort {
       const gasPrice = await this._computeGasPrice()
       const txHash = await sendRawTransaction(this.web3, {
         from: accountAddress,
-        to: erc721.address,
-        data: erc721.approve.getData(proxyAddress, tokenId),
+        to: contract.address,
+        data: contract.approve.getData(proxyAddress, tokenId),
         gasPrice
       }, error => {
         this._dispatch(EventType.TransactionDenied, { error, accountAddress })
@@ -2478,7 +2478,7 @@ export class OpenSeaPort {
         case WyvernSchemaName.ENSShortNameAuction:
           // Handle NFTs and SFTs
           const wyNFTAsset = wyAsset as WyvernNFTAsset
-          return await this.approveNonFungibleToken({
+          return await this.approveSemiOrNonFungibleToken({
             tokenId: wyNFTAsset.id.toString(),
             tokenAddress: wyNFTAsset.address,
             accountAddress,

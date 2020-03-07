@@ -334,7 +334,7 @@ export declare class OpenSeaPort {
      * @param schemaName The Wyvern schema name corresponding to the asset type
      * @returns Transaction hash if a new transaction was created, otherwise null
      */
-    approveNonFungibleToken({ tokenId, tokenAddress, accountAddress, proxyAddress, tokenAbi, skipApproveAllIfTokenAddressIn, schemaName }: {
+    approveSemiOrNonFungibleToken({ tokenId, tokenAddress, accountAddress, proxyAddress, tokenAbi, skipApproveAllIfTokenAddressIn, schemaName }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
