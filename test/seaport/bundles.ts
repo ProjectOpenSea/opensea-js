@@ -12,7 +12,7 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, WyvernSchemaName, UnhashedOrder } from '../../src/types'
-import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, AGE_OF_RUST_TOKEN_ID, ALEX_ADDRESS_2, BENZENE_ADDRESS, CRYPTOVOXELS_WEARABLE_2_ID } from '../constants'
+import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, AGE_OF_RUST_TOKEN_ID, ALEX_ADDRESS_2, BENZENE_ADDRESS, CRYPTOVOXELS_WEARABLE_2_ID, WETH_ADDRESS } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { testMatchingNewOrder } from './orders' 
 import {
@@ -49,13 +49,11 @@ const homogenousSemiFungibleAssetsForBundleOrder = [
   { tokenId: CRYPTOVOXELS_WEARABLE_2_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
 ]
 
-let wethAddress: string
 let manaAddress: string
 
 suite('seaport: bundles', () => {
 
   before(async () => {
-    wethAddress = (await client.api.getPaymentTokens({ symbol: 'WETH'})).tokens[0].address
     manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0].address
   })
 
@@ -71,10 +69,10 @@ suite('seaport: bundles', () => {
       startAmount: amountInEth,
       extraBountyBasisPoints: 0,
       expirationTime: 0,
-      paymentTokenAddress: wethAddress
+      paymentTokenAddress: WETH_ADDRESS
     })
 
-    assert.equal(order.paymentToken, wethAddress)
+    assert.equal(order.paymentToken, WETH_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
@@ -382,10 +380,10 @@ suite('seaport: bundles', () => {
       startAmount: amountInEth,
       expirationTime: 0,
       extraBountyBasisPoints: 0,
-      paymentTokenAddress: wethAddress
+      paymentTokenAddress: WETH_ADDRESS
     })
 
-    assert.equal(order.paymentToken, wethAddress)
+    assert.equal(order.paymentToken, WETH_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)

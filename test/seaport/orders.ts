@@ -15,7 +15,7 @@ import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, Unsigned
 import { orderFromJSON, getOrderHash, estimateCurrentPrice, assignOrdersToSides, makeBigNumber} from '../../src/utils/utils'
 import * as ordersJSONFixture from '../fixtures/orders.json'
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, DISSOLUTION_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER } from '../constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, DISSOLUTION_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER, WETH_ADDRESS } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import {
   ENJIN_ADDRESS,
@@ -49,14 +49,12 @@ const assetsForBundleOrder = [
 
 const assetsForBulkTransfer = assetsForBundleOrder
 
-let wethAddress: string
 let manaAddress: string
 let daiAddress: string
 
 suite('seaport: orders', () => {
 
   before(async () => {
-    wethAddress = (await client.api.getPaymentTokens({ symbol: 'WETH'})).tokens[0].address
     daiAddress = (await client.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0].address
     manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0].address
   })
@@ -205,7 +203,7 @@ suite('seaport: orders', () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 1.2
-    const paymentTokenAddress = wethAddress
+    const paymentTokenAddress = WETH_ADDRESS
     const expirationTime = Math.round(Date.now() / 1000 + 60) // one minute from now
     const bountyPercent = 1.1
 
@@ -250,7 +248,7 @@ suite('seaport: orders', () => {
     const matcherAddress = DEVIN_ADDRESS
     const now = Math.round(Date.now() / 1000)
     // Get bid from server
-    const paymentTokenAddress = wethAddress
+    const paymentTokenAddress = WETH_ADDRESS
     const { orders } = await rinkebyClient.api.getOrders({
       side: OrderSide.Buy,
       asset_contract_address: CK_RINKEBY_ADDRESS,
@@ -292,7 +290,7 @@ suite('seaport: orders', () => {
   test('Ensures buy order compatibility with an English sell order', async () => {
     const accountAddress = ALEX_ADDRESS_2
     const takerAddress = ALEX_ADDRESS
-    const paymentTokenAddress = wethAddress
+    const paymentTokenAddress = WETH_ADDRESS
     const amountInToken = 0.01
     const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24) // one day from now
     const extraBountyBasisPoints = 1.1 * 100
@@ -338,7 +336,7 @@ suite('seaport: orders', () => {
   })
 
   test.skip("Creates ENS name buy order", async () => {
-    const paymentTokenAddress = wethAddress
+    const paymentTokenAddress = WETH_ADDRESS
     const buyOrder = await rinkebyClient._makeBuyOrder({
       asset: {
         tokenId: ENS_HELLO_TOKEN_ID,
@@ -465,7 +463,7 @@ suite('seaport: orders', () => {
   test('Matches a buy order of an 1155 item for W-ETH', async () => {
     const accountAddress = ALEX_ADDRESS_2
     const takerAddress = ALEX_ADDRESS
-    const paymentToken = wethAddress
+    const paymentToken = WETH_ADDRESS
     const amountInToken = 0.01
 
     const tokenId = DISSOLUTION_TOKEN_ID

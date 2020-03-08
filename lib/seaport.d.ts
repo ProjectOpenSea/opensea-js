@@ -454,18 +454,30 @@ export declare class OpenSeaPort {
         name?: string;
     }): Promise<OpenSeaFungibleToken[]>;
     /**
-     * Get the balance of a fungible token.
+     * Get an account's balance of any Asset.
      * @param param0 __namedParameters Object
-     * @param accountAddress User's account address
-     * @param tokenAddress Optional address of the token's contract.
-     *  Defaults to W-ETH
-     * @param tokenAbi ABI for the token's contract. Defaults to ERC20
+     * @param accountAddress Account address to check
+     * @param asset The Asset to check balance for
+     * @param retries How many times to retry if balance is 0
      */
-    getTokenBalance({ accountAddress, tokenAddress, tokenAbi }: {
+    getAssetBalance({ accountAddress, asset }: {
         accountAddress: string;
-        tokenAddress?: string;
-        tokenAbi?: PartialReadonlyContractAbi;
-    }): Promise<BigNumber>;
+        asset: Asset;
+    }, retries?: number): Promise<BigNumber>;
+    /**
+     * Get the balance of a fungible token.
+     * Convenience method for getAssetBalance for fungibles
+     * @param param0 __namedParameters Object
+     * @param accountAddress Account address to check
+     * @param tokenAddress The address of the token to check balance for
+     * @param schemaName Optional schema name for the fungible token
+     * @param retries Number of times to retry if balance is undefined
+     */
+    getTokenBalance({ accountAddress, tokenAddress, schemaName }: {
+        accountAddress: string;
+        tokenAddress: string;
+        schemaName?: WyvernSchemaName;
+    }, retries?: number): Promise<BigNumber>;
     /**
      * Compute the fees for an order
      * @param param0 __namedParameters
@@ -668,10 +680,10 @@ export declare class OpenSeaPort {
         accountAddress: string;
     }): Promise<void>;
     /**
-     * Check if an account owns an asset on-chain
+     * Check if an account, or its proxy, owns an asset on-chain
      * @param accountAddress Account address for the wallet
      * @param proxyAddress Proxy address for the account
-     * @param wyAsset Asset to check. If fungible, the `quantity` attribute will be the minimum amount to own
+     * @param wyAsset asset to check. If fungible, the `quantity` attribute will be the minimum amount to own
      * @param schemaName WyvernSchemaName for the asset
      */
     _ownsAssetOnChain({ accountAddress, proxyAddress, wyAsset, schemaName }: {
@@ -679,7 +691,7 @@ export declare class OpenSeaPort {
         proxyAddress?: string | null;
         wyAsset: WyvernAsset;
         schemaName: WyvernSchemaName;
-    }, retries?: number): Promise<boolean>;
+    }): Promise<boolean>;
     /**
      * Get the listing and expiration time paramters for a new order
      * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring

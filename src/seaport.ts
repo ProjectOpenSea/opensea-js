@@ -1423,29 +1423,87 @@ export class OpenSeaPort {
   }
 
   /**
-   * Get the balance of a fungible token.
+   * Get an account's balance of any Asset.
    * @param param0 __namedParameters Object
-   * @param accountAddress User's account address
-   * @param tokenAddress Optional address of the token's contract.
-   *  Defaults to W-ETH
-   * @param tokenAbi ABI for the token's contract. Defaults to ERC20
+   * @param accountAddress Account address to check
+   * @param asset The Asset to check balance for
+   * @param retries How many times to retry if balance is 0
+   */
+  public async getAssetBalance(
+      { accountAddress, asset }:
+      { accountAddress: string;
+        asset: Asset; },
+      retries = 1
+    ): Promise<BigNumber> {
+    const schema = this._getSchema(asset.schemaName)
+    const wyAsset = getWyvernAsset(schema, asset)
+
+    if (schema.functions.countOf) {
+      // ERC20 or ERC1155 (non-Enjin)
+
+      const abi = schema.functions.countOf(wyAsset)
+      const contract = this._getClientsForRead(retries).web3.eth.contract([abi as Web3.FunctionAbi]).at(abi.target)
+      const inputValues = abi.inputs.filter(x => x.value !== undefined).map(x => x.value)
+      const count = await promisifyCall<BigNumber>(c => contract[abi.name].call(accountAddress, ...inputValues, c))
+
+      if (count !== undefined) {
+        return count
+      }
+
+    } else if (schema.functions.ownerOf) {
+      // ERC721 asset
+
+      const abi = schema.functions.ownerOf(wyAsset)
+      const contract = this._getClientsForRead(retries).web3.eth.contract([abi as Web3.FunctionAbi]).at(abi.target)
+      if (abi.inputs.filter(x => x.value === undefined)[0]) {
+        throw new Error("Missing an argument for finding the owner of this asset")
+      }
+      const inputValues = abi.inputs.map(i => i.value.toString())
+      const owner = await promisifyCall<string>(c => contract[abi.name].call(...inputValues, c))
+      if (owner) {
+        return owner.toLowerCase() == accountAddress.toLowerCase()
+          ? new BigNumber(1)
+          : new BigNumber(0)
+      }
+
+    } else {
+      // Missing ownership call - skip check to allow listings
+      // by default
+      throw new Error('Missing ownership schema for this asset type')
+    }
+
+    if (retries <= 0) {
+      throw new Error('Unable to get current owner from smart contract')
+    } else {
+      await delay(500)
+      // Recursively check owner again
+      return await this.getAssetBalance({accountAddress, asset}, retries - 1)
+    }
+  }
+
+  /**
+   * Get the balance of a fungible token.
+   * Convenience method for getAssetBalance for fungibles
+   * @param param0 __namedParameters Object
+   * @param accountAddress Account address to check
+   * @param tokenAddress The address of the token to check balance for
+   * @param schemaName Optional schema name for the fungible token
+   * @param retries Number of times to retry if balance is undefined
    */
   public async getTokenBalance(
-      { accountAddress, tokenAddress, tokenAbi = ERC20 }:
+      { accountAddress, tokenAddress, schemaName = WyvernSchemaName.ERC20 }:
       { accountAddress: string;
-        tokenAddress?: string;
-        tokenAbi?: PartialReadonlyContractAbi }
+        tokenAddress: string;
+        schemaName?: WyvernSchemaName },
+      retries = 1
     ) {
-    if (!tokenAddress) {
-      tokenAddress = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
-    }
-    const amount = await rawCall(this.web3ReadOnly, {
-      from: accountAddress,
-      to: tokenAddress,
-      data: encodeCall(getMethod(tokenAbi, 'balanceOf'), [accountAddress]),
-    })
 
-    return makeBigNumber(amount.toString())
+    const asset: Asset = {
+      tokenId: null,
+      tokenAddress,
+      schemaName
+    }
+    return this.getAssetBalance({ accountAddress, asset }, retries)
   }
 
   /**
@@ -2523,7 +2581,6 @@ export class OpenSeaPort {
     const tokenAddress = order.paymentToken
 
     if (tokenAddress != NULL_ADDRESS) {
-
       const balance = await this.getTokenBalance({ accountAddress, tokenAddress })
 
       /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
@@ -2564,68 +2621,41 @@ export class OpenSeaPort {
   }
 
   /**
-   * Check if an account owns an asset on-chain
+   * Check if an account, or its proxy, owns an asset on-chain
    * @param accountAddress Account address for the wallet
    * @param proxyAddress Proxy address for the account
-   * @param wyAsset Asset to check. If fungible, the `quantity` attribute will be the minimum amount to own
+   * @param wyAsset asset to check. If fungible, the `quantity` attribute will be the minimum amount to own
    * @param schemaName WyvernSchemaName for the asset
    */
   public async _ownsAssetOnChain(
       { accountAddress, proxyAddress, wyAsset, schemaName }:
-      { accountAddress: string; proxyAddress?: string | null; wyAsset: WyvernAsset; schemaName: WyvernSchemaName },
-      retries = 1
+      { accountAddress: string; proxyAddress?: string | null; wyAsset: WyvernAsset; schemaName: WyvernSchemaName }
     ): Promise<boolean> {
 
-    const schema = this._getSchema(schemaName)
-    proxyAddress = proxyAddress || await this._getProxy(accountAddress)
-
-    if (schema.functions.countOf) {
-      // ERC20 or ERC1155 (non-Enjin)
-
-      /* If ethercraft, minAmount = 1000000000000000000) */
-      const minAmount = new BigNumber('quantity' in wyAsset
-        ? wyAsset.quantity
-        : 1)
-      const abi = schema.functions.countOf(wyAsset)
-      const contract = this._getClientsForRead(retries).web3.eth.contract([abi as Web3.FunctionAbi]).at(abi.target)
-      const inputValues = abi.inputs.filter(x => x.value !== undefined).map(x => x.value)
-      let count = await promisifyCall<BigNumber>(c => contract[abi.name].call(accountAddress, ...inputValues, c))
-      if (count === undefined) {
-        throw new Error("Incorrect schema for this asset")
-      }
-
-      if (count.lessThan(minAmount) && proxyAddress) {
-        const proxyCount = await promisifyCall<BigNumber>(c => contract[abi.name].call(proxyAddress, ...inputValues, c))
-        count = count.add(proxyCount || 0)
-      }
-      return count.greaterThanOrEqualTo(minAmount)
-
-    } else if (schema.functions.ownerOf) {
-      // ERC721 asset
-
-      const abi = schema.functions.ownerOf(wyAsset)
-      const contract = this._getClientsForRead(retries).web3.eth.contract([abi as Web3.FunctionAbi]).at(abi.target)
-      if (abi.inputs.filter(x => x.value === undefined)[0]) {
-        throw new Error("Missing an argument for finding the owner of this asset")
-      }
-      const inputValues = abi.inputs.map(i => i.value.toString())
-      const owner = await promisifyCall<string>(c => contract[abi.name].call(...inputValues, c))
-      if (owner) {
-        return owner.toLowerCase() == accountAddress.toLowerCase() || (!!proxyAddress &&
-              owner.toLowerCase() == proxyAddress.toLowerCase())
-      }
-      if (retries <= 0) {
-        throw new Error('Unable to get current owner from smart contract')
-      }
-      await delay(500)
-      // Recursively check owner again
-      return await this._ownsAssetOnChain({accountAddress, proxyAddress, wyAsset, schemaName}, retries - 1)
-
-    } else {
-      // Missing ownership call - skip check to allow listings
-      // by default
-      throw new Error('Missing ownership schema for this asset type')
+    const asset: Asset = {
+      tokenId: wyAsset.id || null,
+      tokenAddress: wyAsset.address,
+      schemaName
     }
+
+    const minAmount = new BigNumber('quantity' in wyAsset
+      ? wyAsset.quantity
+      : 1)
+
+    const accountBalance = await this.getAssetBalance({ accountAddress, asset })
+    if (accountBalance.greaterThanOrEqualTo(minAmount)) {
+      return true
+    }
+
+    proxyAddress = proxyAddress || await this._getProxy(accountAddress)
+    if (proxyAddress) {
+      const proxyBalance = await this.getAssetBalance({ accountAddress: proxyAddress, asset })
+      if (proxyBalance.greaterThanOrEqualTo(minAmount)) {
+        return true
+      }
+    }
+
+    return false
   }
 
   /**
