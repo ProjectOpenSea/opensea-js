@@ -665,11 +665,12 @@ suite('seaport: orders', () => {
     if (!order) {
       return
     }
-    assert.isNotNull(order.asset)
-    if (!order.asset) {
+    const assetOrBundle = order.asset || order.assetBundle
+    assert.isNotNull(assetOrBundle)
+    if (!assetOrBundle) {
       return
     }
-    const takerAddress = order.asset.owner.address
+    const takerAddress = order.maker
     // Taker might not have all approval permissions so only test match
     await testMatchingOrder(order, takerAddress, false)
   })
