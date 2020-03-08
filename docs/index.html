@@ -74,7 +74,10 @@
 					<li><a href="#synopsis">Synopsis</a></li>
 					<li><a href="#installation">Installation</a></li>
 					<li><a href="#getting-started">Getting Started</a><ul>
-							<li><a href="#fetching-assets">Fetching Assets</a></li>
+							<li><a href="#fetching-assets">Fetching Assets</a><ul>
+									<li><a href="#checking-balances-and-ownerships">Checking Balances and Ownerships</a></li>
+								</ul>
+							</li>
 							<li><a href="#making-offers">Making Offers</a><ul>
 									<li><a href="#bidding-on-multiple-assets">Bidding on Multiple Assets</a></li>
 									<li><a href="#bidding-on-ens-short-name-auctions">Bidding on ENS Short Name Auctions</a></li>
@@ -110,6 +113,7 @@
 							<li><a href="#example-code">Example Code</a></li>
 						</ul>
 					</li>
+					<li><a href="#migrating-to-version-10">Migrating to version 1.0</a></li>
 					<li><a href="#migrating-to-version-06">Migrating to version 0.6</a></li>
 					<li><a href="#development-information">Development Information</a></li>
 					<li><a href="#diagnosing-common-issues">Diagnosing Common Issues</a></li>
@@ -165,9 +169,34 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 </code></pre>
 				<p>The <code>Asset</code> type is the minimal type you need for most marketplace actions. <code>WyvernSchemaName</code> is optional. If omitted, most actions will assume you&#39;re referring to a non-fungible, ERC721 asset. Other options include &#39;ERC20&#39; and &#39;ERC1155&#39;. You can import <code>import { WyvernSchemaName } from &quot;opensea-js/lib/types&quot;</code> to get the full range of schemas supported.</p>
 				<p>You can fetch an asset using the <code>OpenSeaAPI</code>, which will return an <code>OpenSeaAsset</code> for you (<code>OpenSeaAsset</code> extends <code>Asset</code>):</p>
-				<pre><code class="lang-TypeScript"><span class="hljs-keyword">const</span> asset: OpenSeaAsset = seaport.api.getAsset(tokenAddress: <span class="hljs-built_in">string</span>, tokenId: <span class="hljs-built_in">string</span> | <span class="hljs-built_in">number</span> | <span class="hljs-literal">null</span>)
+				<pre><code class="lang-TypeScript"><span class="hljs-keyword">const</span> asset: OpenSeaAsset = seaport.api.getAsset({
+  tokenAddress, <span class="hljs-comment">// string</span>
+  tokenId, <span class="hljs-comment">// string | number | null</span>
+})
 </code></pre>
 				<p>Note that fungible ERC20 assets have <code>null</code> as their token id.</p>
+				<h4 id="checking-balances-and-ownerships">Checking Balances and Ownerships</h4>
+				<p>The nice thing about the <code>Asset</code> type is that it unifies logic between fungibles, non-fungibles, and semi-fungibles.</p>
+				<p>Once you have an <code>Asset</code>, you can see how many any account owns, regardless of whether it&#39;s an ERC-20 token or a non-fungible good:</p>
+				<pre><code class="lang-JavaScript">
+<span class="hljs-keyword">const</span> asset = {
+  <span class="hljs-attr">tokenAddress</span>: <span class="hljs-string">"0x06012c8cf97bead5deae237070f9587f8e7a266d"</span>, <span class="hljs-comment">// CryptoKitties</span>
+  <span class="hljs-attr">tokenId</span>: <span class="hljs-string">"1"</span>, <span class="hljs-comment">// Token ID</span>
+}
+
+<span class="hljs-keyword">const</span> balance = seaport.api.getAssetBalance({
+  accountAddress, <span class="hljs-comment">// string</span>
+  asset, <span class="hljs-comment">// Asset</span>
+})
+
+<span class="hljs-keyword">const</span> ownsKitty = balance.greaterThan(<span class="hljs-number">0</span>)
+</code></pre>
+				<p>You can use this same method for fungible ERC-20 tokens like wrapped ETH (WETH). As a convenience, you can use this fungible wrapper for checking fungible balances:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> balanceOfWETH = seaport.api.getTokenBalance({
+  accountAddress, <span class="hljs-comment">// string</span>
+  <span class="hljs-attr">tokenAddress</span>: <span class="hljs-string">"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"</span>
+})
+</code></pre>
 				<h3 id="making-offers">Making Offers</h3>
 				<p>Once you have your asset, you can do this to make an offer on it:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Token ID and smart contract address for a non-fungible token:</span>
@@ -581,6 +610,21 @@ handleSeaportEvents() {
 				<h3 id="example-code">Example Code</h3>
 				<p>Check out the <a href="https://github.com/ProjectOpenSea/ships-log">Ship&#39;s Log</a>, built with the SDK, which shows the recent orders in the OpenSea orderbook.</p>
 				<p>You can view a live demo <a href="https://ships-log.herokuapp.com/">here</a>! Also check out the <a href="https://mythereum.io/marketplace">Mythereum marketplace</a>, which is entirely powered by OpenSea.js.</p>
+				<h2 id="migrating-to-version-1-0">Migrating to version 1.0</h2>
+				<p>Version 1.0 introduces bundling for semi-fungible and fungible assets, serialized asset collections, a smaller bundle size, and more, along with many bug fixes.</p>
+				<ul>
+					<li><code>OpenSeaPort::computeFees()</code> now takes in either the <code>fees</code> from a collection or a single asset, and returns a new and more consistent type, <code>ComputedFees</code></li>
+					<li><code>schemaName</code> has been moved out of main method calls and into the <code>Asset</code> type</li>
+					<li><code>OpenSeaAPI::getAsset()</code> now accepts named arguments, consistent with other methods</li>
+					<li><code>OpenSeaPort::getTokenBalance()</code> no longer defaults to the WETH address if no <code>tokenAddress</code> is set. And it accepts a <code>schemaName</code> parameter instead of an ABI</li>
+					<li><code>profile_img_url</code> in the <code>OpenSeaAccount</code> type has been renamed to <code>profileImgUrl</code></li>
+					<li><code>OpenSeaPort::approveNonFungibleToken()</code> has been renamed to <code>approveSemiOrNonFungibleToken()</code>, though it always worked for semi-fungible tokens like ERC-1155</li>
+				</ul>
+				<p>Removed deprecations:</p>
+				<ul>
+					<li><code>OpenSeaPort::transferOne()</code>, replaced by <code>OpenSeaPort::transfer()</code></li>
+					<li><code>tokenId</code> and <code>tokenAddress</code> parameters for most SDK methods, replaced by creating an <code>Asset</code> type and passing that in</li>
+				</ul>
 				<h2 id="migrating-to-version-0-6">Migrating to version 0.6</h2>
 				<p>Version 0.6 introduces some major new features, including trading fungible and semi-fungible assets (including ERC-20 and ERC-1155 assets). These have been architected to maximize backwards compatibility, but there were a few breaking changes:</p>
 				<ul>
@@ -728,13 +772,7 @@ handleSeaportEvents() {
 						<a href="interfaces/openseaassetbundlequery.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Asset<wbr>Bundle<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/openseaassetcontract.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Asset<wbr>Contract</a>
-					</li>
-					<li class=" tsd-kind-interface">
 						<a href="interfaces/openseaassetquery.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Asset<wbr>Query</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/openseacollection.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Collection</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/openseafees.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Fees</a>
@@ -794,6 +832,9 @@ handleSeaportEvents() {
 						<a href="globals.html#buyencoder" class="tsd-kind-icon">Buy<wbr>Encoder</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#computedfees" class="tsd-kind-icon">Computed<wbr>Fees</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#defaultcallencoder" class="tsd-kind-icon">Default<wbr>Call<wbr>Encoder</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
@@ -804,6 +845,12 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#fungibletokenquery" class="tsd-kind-icon">Fungible<wbr>Token<wbr>Query</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#openseaassetcontract" class="tsd-kind-icon">Open<wbr>Sea<wbr>Asset<wbr>Contract</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#openseacollection" class="tsd-kind-icon">Open<wbr>Sea<wbr>Collection</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#partialreadonlycontractabi" class="tsd-kind-icon">Partial<wbr>Readonly<wbr>Contract<wbr>Abi</a>

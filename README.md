@@ -13,6 +13,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
 - [Installation](#installation)
 - [Getting Started](#getting-started)
   - [Fetching Assets](#fetching-assets)
+    - [Checking Balances and Ownerships](#checking-balances-and-ownerships)
   - [Making Offers](#making-offers)
     - [Bidding on Multiple Assets](#bidding-on-multiple-assets)
     - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
@@ -128,6 +129,36 @@ const asset: OpenSeaAsset = seaport.api.getAsset({
 ```
 
 Note that fungible ERC20 assets have `null` as their token id.
+
+#### Checking Balances and Ownerships
+
+The nice thing about the `Asset` type is that it unifies logic between fungibles, non-fungibles, and semi-fungibles.
+
+Once you have an `Asset`, you can see how many any account owns, regardless of whether it's an ERC-20 token or a non-fungible good:
+
+```JavaScript
+
+const asset = {
+  tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
+  tokenId: "1", // Token ID
+}
+
+const balance = seaport.api.getAssetBalance({
+  accountAddress, // string
+  asset, // Asset
+})
+
+const ownsKitty = balance.greaterThan(0)
+```
+
+You can use this same method for fungible ERC-20 tokens like wrapped ETH (WETH). As a convenience, you can use this fungible wrapper for checking fungible balances:
+
+```JavaScript
+const balanceOfWETH = seaport.api.getTokenBalance({
+  accountAddress, // string
+  tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+})
+```
 
 ### Making Offers
 
@@ -685,15 +716,16 @@ You can view a live demo [here](https://ships-log.herokuapp.com/)! Also check ou
 
 Version 1.0 introduces bundling for semi-fungible and fungible assets, serialized asset collections, a smaller bundle size, and more, along with many bug fixes.
 
-- `computeFees` now takes in either the `fees` from a collection or a single asset, and returns a new and more consistent type, `ComputedFees`
+- `OpenSeaPort::computeFees()` now takes in either the `fees` from a collection or a single asset, and returns a new and more consistent type, `ComputedFees`
 - `schemaName` has been moved out of main method calls and into the `Asset` type
 - `OpenSeaAPI::getAsset()` now accepts named arguments, consistent with other methods
+- `OpenSeaPort::getTokenBalance()` no longer defaults to the WETH address if no `tokenAddress` is set. And it accepts a `schemaName` parameter instead of an ABI
 - `profile_img_url` in the `OpenSeaAccount` type has been renamed to `profileImgUrl`
-- `approveNonFungibleToken` has been renamed to `approveSemiOrNonFungibleToken`, though it always worked for semi-fungible tokens like ERC-1155
+- `OpenSeaPort::approveNonFungibleToken()` has been renamed to `approveSemiOrNonFungibleToken()`, though it always worked for semi-fungible tokens like ERC-1155
 
 Removed deprecations:
 
-- `transferOne`, replaced by `transfer`
+- `OpenSeaPort::transferOne()`, replaced by `OpenSeaPort::transfer()`
 - `tokenId` and `tokenAddress` parameters for most SDK methods, replaced by creating an `Asset` type and passing that in
 
 ## Migrating to version 0.6
