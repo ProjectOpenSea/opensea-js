@@ -2527,7 +2527,10 @@ export class OpenSeaPort {
         const minAmount = 'quantity' in wyAsset
           ? wyAsset.quantity
           : 1
-        throw new Error(`You don't own enough: ${minAmount} copy of ${wyAsset.address} id # ${wyAsset.id || 'any'}`)
+        console.error(`Failed on-chain ownership check: ${accountAddress} on ${schemaName}:`, wyAsset)
+        throw new Error(`You don't own enough to do that (${minAmount} base units of ${wyAsset.address}${
+            wyAsset.id ? (" token " + wyAsset.id) : ''
+          })`)
       }
       switch (schemaName) {
         case WyvernSchemaName.ERC721:
