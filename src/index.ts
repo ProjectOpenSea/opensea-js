@@ -1,12 +1,12 @@
 import { OpenSeaPort } from './seaport'
 import { OpenSeaAPI } from './api'
 import { Network, EventData, EventType } from './types'
-import { orderToJSON, orderFromJSON } from './utils/utils'
+export { orderToJSON, orderFromJSON, WyvernProtocol } from './utils/utils'
 export {
   encodeCall,
   encodeSell, encodeAtomicizedBuy, encodeAtomicizedSell,
   encodeDefaultCall, encodeReplacementPattern,
-  AbiType
+  AbiType,
 } from './utils/schema'
 
 /**
@@ -26,7 +26,6 @@ export {
   // So the API could be used separately:
   OpenSeaAPI,
   // Useful for serializing and deserializing orders:
-  orderToJSON, orderFromJSON,
   // Types to help initialize SDK and listen to events.
   // Can also be imported using e.g.
   //   import { EventType } from 'opensea-js/lib/types'

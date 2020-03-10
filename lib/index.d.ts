@@ -1,8 +1,8 @@
 import { OpenSeaPort } from './seaport';
 import { OpenSeaAPI } from './api';
 import { Network, EventData, EventType } from './types';
-import { orderToJSON, orderFromJSON } from './utils/utils';
-export { encodeCall, encodeSell, encodeAtomicizedBuy, encodeAtomicizedSell, encodeDefaultCall, encodeReplacementPattern, AbiType } from './utils/schema';
+export { orderToJSON, orderFromJSON, WyvernProtocol } from './utils/utils';
+export { encodeCall, encodeSell, encodeAtomicizedBuy, encodeAtomicizedSell, encodeDefaultCall, encodeReplacementPattern, AbiType, } from './utils/schema';
 /**
  * Example setup:
  *
@@ -13,4 +13,4 @@ export { encodeCall, encodeSell, encodeAtomicizedBuy, encodeAtomicizedSell, enco
  *   networkName: Network.Main
  * })
  */
-export { OpenSeaPort, OpenSeaAPI, orderToJSON, orderFromJSON, EventData, EventType, Network };
+export { OpenSeaPort, OpenSeaAPI, EventData, EventType, Network };

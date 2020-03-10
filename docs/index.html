@@ -114,7 +114,6 @@
 						</ul>
 					</li>
 					<li><a href="#migrating-to-version-10">Migrating to version 1.0</a></li>
-					<li><a href="#migrating-to-version-06">Migrating to version 0.6</a></li>
 					<li><a href="#development-information">Development Information</a></li>
 					<li><a href="#diagnosing-common-issues">Diagnosing Common Issues</a></li>
 				</ul>
@@ -611,33 +610,7 @@ handleSeaportEvents() {
 				<p>Check out the <a href="https://github.com/ProjectOpenSea/ships-log">Ship&#39;s Log</a>, built with the SDK, which shows the recent orders in the OpenSea orderbook.</p>
 				<p>You can view a live demo <a href="https://ships-log.herokuapp.com/">here</a>! Also check out the <a href="https://mythereum.io/marketplace">Mythereum marketplace</a>, which is entirely powered by OpenSea.js.</p>
 				<h2 id="migrating-to-version-1-0">Migrating to version 1.0</h2>
-				<p>Version 1.0 introduces bundling for semi-fungible and fungible assets, serialized asset collections, a smaller bundle size, and more, along with many bug fixes.</p>
-				<ul>
-					<li><code>OpenSeaPort::computeFees()</code> now takes in either the <code>fees</code> from a collection or a single asset, and returns a new and more consistent type, <code>ComputedFees</code></li>
-					<li><code>schemaName</code> has been moved out of main method calls and into the <code>Asset</code> type</li>
-					<li><code>OpenSeaAPI::getAsset()</code> now accepts named arguments, consistent with other methods</li>
-					<li><code>OpenSeaPort::getTokenBalance()</code> no longer defaults to the WETH address if no <code>tokenAddress</code> is set. And it accepts a <code>schemaName</code> parameter instead of an ABI</li>
-					<li><code>profile_img_url</code> in the <code>OpenSeaAccount</code> type has been renamed to <code>profileImgUrl</code></li>
-					<li><code>OpenSeaPort::approveNonFungibleToken()</code> has been renamed to <code>approveSemiOrNonFungibleToken()</code>, though it always worked for semi-fungible tokens like ERC-1155</li>
-				</ul>
-				<p>Removed deprecations:</p>
-				<ul>
-					<li><code>OpenSeaPort::transferOne()</code>, replaced by <code>OpenSeaPort::transfer()</code></li>
-					<li><code>tokenId</code> and <code>tokenAddress</code> parameters for most SDK methods, replaced by creating an <code>Asset</code> type and passing that in</li>
-				</ul>
-				<h2 id="migrating-to-version-0-6">Migrating to version 0.6</h2>
-				<p>Version 0.6 introduces some major new features, including trading fungible and semi-fungible assets (including ERC-20 and ERC-1155 assets). These have been architected to maximize backwards compatibility, but there were a few breaking changes:</p>
-				<ul>
-					<li>The <code>Asset</code> type now has <code>version</code> instead of <code>nftVersion</code> as a property</li>
-					<li>Similarly, the <code>NFTVersion</code> type has been renamed <code>TokenStandardVersion</code></li>
-					<li><code>computeFees</code> now takes in a single, annotated OpenSeaAsset as a parameter instead of a list of assets</li>
-					<li>In <code>isAssetTransferrable</code>, <code>didOwnerApprove</code> was renamed to <code>useProxy</code></li>
-				</ul>
-				<p>Non-breaking changes with deprecation notices:</p>
-				<ul>
-					<li><code>getFungibleTokens</code> has been deprecated. Use <code>api.getPaymentTokens</code></li>
-					<li>Methods now show a deprecation warning when used with <code>tokenId</code> or <code>tokenAddress</code> as arguments, instead of using <code>asset</code> or <code>assets</code> (of type <code>Asset</code>/<code>Asset[]</code>)</li>
-				</ul>
+				<p>See the <a href="CHANGELOG.md">Changelog</a>.</p>
 				<h2 id="development-information">Development Information</h2>
 				<p><strong>Setup</strong></p>
 				<p><a href="https://nodejs.org/en/">Node &gt;= v8.11.2</a> required.</p>
@@ -785,6 +758,9 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/openseatraitstats.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>Trait<wbr>Stats</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/openseauser.html" class="tsd-kind-icon">Open<wbr>Sea<wbr>User</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/order.html" class="tsd-kind-icon">Order</a>
@@ -1214,6 +1190,9 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#transactionfromjson" class="tsd-kind-icon">transaction<wbr>FromJSON</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#userfromjson" class="tsd-kind-icon">user<wbr>FromJSON</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#validateandformatwalletaddress" class="tsd-kind-icon">validate<wbr>And<wbr>Format<wbr>Wallet<wbr>Address</a>

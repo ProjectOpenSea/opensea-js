@@ -49,6 +49,10 @@ import {
 } from '../constants'
 import { proxyABI } from '../abi/Proxy'
 
+export {
+  WyvernProtocol
+}
+
 export const annotateERC721TransferABI = (asset: WyvernNFTAsset): AnnotatedFunctionABI => ({
   "constant": false,
   "inputs": [

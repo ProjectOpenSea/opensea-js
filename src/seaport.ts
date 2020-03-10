@@ -466,7 +466,7 @@ export class OpenSeaPort {
   public async createBundleBuyOrder(
       {  assets, collection, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, referrerAddress }:
       { assets: Asset[];
-        collection?: OpenSeaCollection;
+        collection?: OpenSeaFees;
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -2073,7 +2073,7 @@ export class OpenSeaPort {
   public async _makeBundleBuyOrder(
       { assets, collection, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, referrerAddress }:
       { assets: Asset[];
-        collection?: OpenSeaCollection;
+        collection?: OpenSeaFees;
         quantities: number[];
         accountAddress: string;
         startAmount: number;

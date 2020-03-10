@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, OpenSeaCollection, OpenSeaFees } from './types';
+import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, OpenSeaFees } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -152,7 +152,7 @@ export declare class OpenSeaPort {
      */
     createBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, referrerAddress }: {
         assets: Asset[];
-        collection?: OpenSeaCollection;
+        collection?: OpenSeaFees;
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -604,7 +604,7 @@ export declare class OpenSeaPort {
     }>;
     _makeBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, referrerAddress }: {
         assets: Asset[];
-        collection?: OpenSeaCollection;
+        collection?: OpenSeaFees;
         quantities: number[];
         accountAddress: string;
         startAmount: number;
