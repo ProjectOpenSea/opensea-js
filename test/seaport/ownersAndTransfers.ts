@@ -12,7 +12,7 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, WyvernSchemaName, WyvernNFTAsset, WyvernFTAsset } from '../../src/types'
-import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, RANDOM_ADDRESS, DISSOLUTION_TOKEN_ID, SANDBOX_RINKEBY_ID, SANDBOX_RINKEBY_ADDRESS } from '../constants'
+import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, RANDOM_ADDRESS, DISSOLUTION_TOKEN_ID, SANDBOX_RINKEBY_ID, SANDBOX_RINKEBY_ADDRESS, AGE_OF_RUST_TOKEN_ID, WETH_ADDRESS } from '../constants'
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
@@ -32,13 +32,11 @@ const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
   apiKey: RINKEBY_API_KEY
 }, line => console.info(`RINKEBY: ${line}`))
 
-let wethAddress: string
 let manaAddress: string
 
 suite('seaport: owners and transfers', () => {
 
   before(async () => {
-    wethAddress = (await client.api.getPaymentTokens({ symbol: 'WETH'})).tokens[0].address
     manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0].address
   })
 
@@ -102,7 +100,7 @@ suite('seaport: owners and transfers', () => {
 
     // Ownership of NFT
     const wyAssetNFT: WyvernNFTAsset = {
-      id: CATS_IN_MECHS_ID,
+      id: AGE_OF_RUST_TOKEN_ID,
       address: ENJIN_ADDRESS
     }
     const isOwner = await client._ownsAssetOnChain({ accountAddress, wyAsset: wyAssetNFT, schemaName })
@@ -183,11 +181,11 @@ suite('seaport: owners and transfers', () => {
     const isTransferrable = await client.isAssetTransferrable({
       asset: {
         tokenId: null,
-        tokenAddress: wethAddress,
+        tokenAddress: WETH_ADDRESS,
+        schemaName: WyvernSchemaName.ERC20
       },
       fromAddress: RANDOM_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC20
     })
     assert.isNotTrue(isTransferrable)
   })
@@ -196,12 +194,12 @@ suite('seaport: owners and transfers', () => {
     const isTransferrable = await client.isAssetTransferrable({
       asset: {
         tokenId: null,
-        tokenAddress: wethAddress
+        tokenAddress: WETH_ADDRESS,
+        schemaName: WyvernSchemaName.ERC20
       },
       quantity: Math.pow(10, 18) * 0.001,
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC20
     })
     assert.isTrue(isTransferrable)
   })
@@ -211,10 +209,10 @@ suite('seaport: owners and transfers', () => {
       asset: {
         tokenId: ENJIN_LEGACY_ADDRESS.toString(),
         tokenAddress: CATS_IN_MECHS_ID,
+        schemaName: WyvernSchemaName.ERC1155
       },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC1155
     })
     assert.isNotTrue(isTransferrable2)
   })
@@ -224,10 +222,10 @@ suite('seaport: owners and transfers', () => {
       asset: {
         tokenId: CATS_IN_MECHS_ID,
         tokenAddress: ENJIN_ADDRESS,
+        schemaName: WyvernSchemaName.ERC1155
       },
       fromAddress: DEVIN_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
-      schemaName: WyvernSchemaName.ERC1155
     })
     assert.isNotTrue(isTransferrable)
   })
@@ -236,11 +234,11 @@ suite('seaport: owners and transfers', () => {
     const isTransferrable = await rinkebyClient.isAssetTransferrable({
       asset: {
         tokenAddress: SANDBOX_RINKEBY_ADDRESS,
-        tokenId: SANDBOX_RINKEBY_ID
+        tokenId: SANDBOX_RINKEBY_ID,
+        schemaName: WyvernSchemaName.ERC1155
       },
       fromAddress: "0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20",
       toAddress: ALEX_ADDRESS,
-      schemaName: WyvernSchemaName.ERC1155
     })
     assert.isTrue(isTransferrable)
   })

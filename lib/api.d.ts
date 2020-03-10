@@ -66,7 +66,10 @@ export declare class OpenSeaAPI {
      * @param tokenId The asset's token ID, or null if ERC-20
      * @param retries Number of times to retry if the service is unavailable for any reason
      */
-    getAsset(tokenAddress: string, tokenId: string | number | null, retries?: number): Promise<OpenSeaAsset>;
+    getAsset({ tokenAddress, tokenId }: {
+        tokenAddress: string;
+        tokenId: string | number | null;
+    }, retries?: number): Promise<OpenSeaAsset>;
     /**
      * Fetch list of assets from the API, returning the page of assets and the count of total assets
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
@@ -89,10 +92,11 @@ export declare class OpenSeaAPI {
     }>;
     /**
      * Fetch an bundle from the API, return null if it isn't found
-     * @param tokenAddress Address of the bundle's contract
-     * @param tokenId The bundle's token ID
+     * @param slug The bundle's identifier
      */
-    getBundle(slug: string): Promise<OpenSeaAssetBundle | null>;
+    getBundle({ slug }: {
+        slug: string;
+    }): Promise<OpenSeaAssetBundle | null>;
     /**
      * Fetch list of bundles from the API, returning the page of bundles and the count of total bundles
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetBundleJSON` type is supported

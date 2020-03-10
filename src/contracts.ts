@@ -1,14 +1,15 @@
 import { PartialReadonlyContractAbi } from './types'
-import { MethodAbi, EventAbi } from 'web3'
+import { EventAbi } from 'web3'
+import { AnnotatedFunctionABI } from 'wyvern-js/lib/types'
 
-export const getMethod = (abi: PartialReadonlyContractAbi, name: string): MethodAbi => {
+export const getMethod = (abi: PartialReadonlyContractAbi, name: string): AnnotatedFunctionABI => {
   const methodAbi = abi.find(x => x.type == 'function' && x.name == name)
   if (!methodAbi) {
     throw new Error(`ABI ${name} not found`)
   }
   // Have to cast since there's a bug in
   // web3 types on the 'type' field
-  return methodAbi as MethodAbi
+  return methodAbi as AnnotatedFunctionABI
 }
 
 export const event = (abi: PartialReadonlyContractAbi, name: string): EventAbi => {

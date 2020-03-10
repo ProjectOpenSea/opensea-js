@@ -1,7 +1,6 @@
 import * as Web3 from 'web3';
-import { Schema } from 'wyvern-schemas/dist/types';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract } from './types';
+import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, OpenSeaCollection, OpenSeaFees } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -141,27 +140,25 @@ export declare class OpenSeaPort {
      * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
      * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
      * @param param0 __namedParameters Object
-     * @param tokenIds DEPRECATED: Token IDs of the assets. Use `assets` instead.
-     * @param tokenAddresses DEPRECATED: Addresses of the tokens' contracts. Use `assets` instead.
      * @param assets Array of Asset objects to bid on
+     * @param collection Optional collection for computing fees, required only if all assets belong to the same collection
+     * @param quantities The quantity of each asset to sell. Defaults to 1 for each.
      * @param accountAddress Address of the maker's wallet
      * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
      * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
      * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
-     * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
      * @param referrerAddress The optional address that referred the order
      */
-    createBundleBuyOrder({ tokenIds, tokenAddresses, assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, schemaName, referrerAddress }: {
-        tokenIds?: string[];
-        tokenAddresses?: string[];
+    createBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, referrerAddress }: {
         assets: Asset[];
+        collection?: OpenSeaCollection;
+        quantities?: number[];
         accountAddress: string;
         startAmount: number;
         expirationTime?: number;
         paymentTokenAddress?: string;
         sellOrder?: Order;
-        schemaName?: WyvernSchemaName;
         referrerAddress?: string;
     }): Promise<Order>;
     /**
@@ -169,8 +166,6 @@ export declare class OpenSeaPort {
      * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
      * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
      * @param param0 __namedParameters Object
-     * @param tokenId DEPRECATED: Token ID. Use `asset` instead.
-     * @param tokenAddress DEPRECATED: Address of the token's contract. Use `asset` instead.
      * @param asset The asset to trade
      * @param accountAddress Address of the maker's wallet
      * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
@@ -178,12 +173,9 @@ export declare class OpenSeaPort {
      * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
      * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
      * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
-     * @param schemaName The Wyvern schema name corresponding to the asset type. Defaults to "ERC721"
      * @param referrerAddress The optional address that referred the order
      */
-    createBuyOrder({ tokenId, tokenAddress, asset, accountAddress, startAmount, quantity, expirationTime, paymentTokenAddress, sellOrder, schemaName, referrerAddress }: {
-        tokenId?: string;
-        tokenAddress?: string;
+    createBuyOrder({ asset, accountAddress, startAmount, quantity, expirationTime, paymentTokenAddress, sellOrder, referrerAddress }: {
         asset: Asset;
         accountAddress: string;
         startAmount: number;
@@ -191,7 +183,6 @@ export declare class OpenSeaPort {
         expirationTime?: number;
         paymentTokenAddress?: string;
         sellOrder?: Order;
-        schemaName?: WyvernSchemaName;
         referrerAddress?: string;
     }): Promise<Order>;
     /**
@@ -212,11 +203,8 @@ export declare class OpenSeaPort {
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
      * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
      * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
-     * @param schemaName The Wyvern schema name corresponding to the asset type
      */
-    createSellOrder({ tokenId, tokenAddress, asset, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, schemaName }: {
-        tokenId?: string;
-        tokenAddress?: string;
+    createSellOrder({ asset, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail }: {
         asset: Asset;
         accountAddress: string;
         startAmount: number;
@@ -252,7 +240,7 @@ export declare class OpenSeaPort {
      * @param numberOfOrders Number of times to repeat creating the same order for each asset. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
      * @returns The number of orders created in total
      */
-    createFactorySellOrders({ assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders, schemaName }: {
+    createFactorySellOrders({ assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders }: {
         assetId?: string;
         assetIds?: string[];
         factoryAddress: string;
@@ -267,7 +255,6 @@ export declare class OpenSeaPort {
         buyerAddress?: string;
         buyerEmail?: string;
         numberOfOrders?: number;
-        schemaName?: WyvernSchemaName;
     }): Promise<number>;
     /**
      * Create a sell order to auction a bundle of assets.
@@ -278,6 +265,8 @@ export declare class OpenSeaPort {
      * @param bundleDescription Optional description of the bundle. Markdown is allowed.
      * @param bundleExternalLink Optional link to a page that adds context to the bundle.
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
+     * @param collection Optional collection for computing fees, required only if all assets belong to the same collection
+     * @param quantities The quantity of each asset to sell. Defaults to 1 for each.
      * @param accountAddress The address of the maker of the bundle and the owner of all the assets.
      * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction.
      * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`.
@@ -286,13 +275,14 @@ export declare class OpenSeaPort {
      * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
      * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
-     * @param schemaName The Wyvern schema name corresponding to the asset type
      */
-    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }: {
+    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
+        collection?: OpenSeaFees;
+        quantities?: number[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -301,7 +291,6 @@ export declare class OpenSeaPort {
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
-        schemaName?: WyvernSchemaName;
     }): Promise<Order>;
     /**
      * Fullfill or "take" an order for an asset, either a buy or sell order
@@ -345,13 +334,13 @@ export declare class OpenSeaPort {
      * @param schemaName The Wyvern schema name corresponding to the asset type
      * @returns Transaction hash if a new transaction was created, otherwise null
      */
-    approveNonFungibleToken({ tokenId, tokenAddress, accountAddress, proxyAddress, tokenAbi, skipApproveAllIfTokenAddressIn, schemaName }: {
+    approveSemiOrNonFungibleToken({ tokenId, tokenAddress, accountAddress, proxyAddress, tokenAbi, skipApproveAllIfTokenAddressIn, schemaName }: {
         tokenId: string;
         tokenAddress: string;
         accountAddress: string;
         proxyAddress?: string;
         tokenAbi?: PartialReadonlyContractAbi;
-        skipApproveAllIfTokenAddressIn?: string[];
+        skipApproveAllIfTokenAddressIn?: Set<string>;
         schemaName?: WyvernSchemaName;
     }): Promise<string | null>;
     /**
@@ -406,39 +395,15 @@ export declare class OpenSeaPort {
      * @param toAddress The account address that will be acquiring the asset
      * @param quantity The amount of the asset to transfer, if it's fungible (optional). In units (not base units), e.g. not wei.
      * @param useProxy Use the `fromAddress`'s proxy contract only if the `fromAddress` has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
-     * @param schemaName The Wyvern schema name corresponding to the asset type
      * @param retries How many times to retry if false
      */
-    isAssetTransferrable({ tokenId, tokenAddress, asset, fromAddress, toAddress, quantity, useProxy, schemaName }: {
-        tokenId?: string;
-        tokenAddress?: string;
+    isAssetTransferrable({ asset, fromAddress, toAddress, quantity, useProxy }: {
         asset: Asset;
         fromAddress: string;
         toAddress: string;
         quantity?: number | BigNumber;
         useProxy?: boolean;
-        schemaName?: WyvernSchemaName;
     }, retries?: number): Promise<boolean>;
-    /**
-     * DEPRECATED: use `transfer` instead, which works for
-     * more types of assets (including fungibles and old
-     * non-fungibles).
-     * Transfer an NFT asset to another address
-     * @param param0 __namedParamaters Object
-     * @param asset The asset to transfer
-     * @param fromAddress The owner's wallet address
-     * @param toAddress The recipient's wallet address
-     * @param isWyvernAsset Whether the passed asset is a generic WyvernAsset, for backwards compatibility
-     * @param schemaName The Wyvern schema name corresponding to the asset type
-     * @returns Transaction hash
-     */
-    transferOne({ asset, fromAddress, toAddress, isWyvernAsset, schemaName }: {
-        asset: Asset | WyvernAsset;
-        fromAddress: string;
-        toAddress: string;
-        isWyvernAsset?: boolean;
-        schemaName?: WyvernSchemaName;
-    }): Promise<string>;
     /**
      * Transfer a fungible or non-fungible asset to another address
      * @param param0 __namedParamaters Object
@@ -446,16 +411,13 @@ export declare class OpenSeaPort {
      * @param toAddress The recipient's wallet address
      * @param asset The fungible or non-fungible asset to transfer
      * @param quantity The amount of the asset to transfer, if it's fungible (optional). In units (not base units), e.g. not wei.
-     * @param schemaName The Wyvern schema name corresponding to the asset type.
-     * Defaults to "ERC721" (non-fungible) assets, but can be ERC1155, ERC20, and others.
      * @returns Transaction hash
      */
-    transfer({ fromAddress, toAddress, asset, quantity, schemaName }: {
+    transfer({ fromAddress, toAddress, asset, quantity }: {
         fromAddress: string;
         toAddress: string;
         asset: Asset;
         quantity?: number | BigNumber;
-        schemaName?: WyvernSchemaName;
     }): Promise<string>;
     /**
      * Transfer one or more assets to another address.
@@ -464,7 +426,7 @@ export declare class OpenSeaPort {
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
      * @param fromAddress The owner's wallet address
      * @param toAddress The recipient's wallet address
-     * @param schemaName The Wyvern schema name corresponding to the asset type
+     * @param schemaName The Wyvern schema name corresponding to the asset type, if not in each Asset definition
      * @returns Transaction hash
      */
     transferAll({ assets, fromAddress, toAddress, schemaName }: {
@@ -492,36 +454,48 @@ export declare class OpenSeaPort {
         name?: string;
     }): Promise<OpenSeaFungibleToken[]>;
     /**
-     * Get the balance of a fungible token.
+     * Get an account's balance of any Asset.
      * @param param0 __namedParameters Object
-     * @param accountAddress User's account address
-     * @param tokenAddress Optional address of the token's contract.
-     *  Defaults to W-ETH
-     * @param tokenAbi ABI for the token's contract. Defaults to ERC20
+     * @param accountAddress Account address to check
+     * @param asset The Asset to check balance for
+     * @param retries How many times to retry if balance is 0
      */
-    getTokenBalance({ accountAddress, tokenAddress, tokenAbi }: {
+    getAssetBalance({ accountAddress, asset }: {
         accountAddress: string;
-        tokenAddress?: string;
-        tokenAbi?: PartialReadonlyContractAbi;
-    }): Promise<BigNumber>;
+        asset: Asset;
+    }, retries?: number): Promise<BigNumber>;
+    /**
+     * Get the balance of a fungible token.
+     * Convenience method for getAssetBalance for fungibles
+     * @param param0 __namedParameters Object
+     * @param accountAddress Account address to check
+     * @param tokenAddress The address of the token to check balance for
+     * @param schemaName Optional schema name for the fungible token
+     * @param retries Number of times to retry if balance is undefined
+     */
+    getTokenBalance({ accountAddress, tokenAddress, schemaName }: {
+        accountAddress: string;
+        tokenAddress: string;
+        schemaName?: WyvernSchemaName;
+    }, retries?: number): Promise<BigNumber>;
     /**
      * Compute the fees for an order
      * @param param0 __namedParameters
-     * @param asset Addresses and id of asset (null if a bundle, unless all assets are from the same contract, then the first asset)
-     * @param assetContract Optional prefetched asset contract (including fees) to use instead of assets
+     * @param asset Optional asset to use to find fees for
+     * @param fees Optional prefetched fees to use instead of assets
      * @param side The side of the order (buy or sell)
      * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
      * @param isPrivate Whether the order is private or not (known taker)
      * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
      */
-    computeFees({ asset, assetContract, side, accountAddress, isPrivate, extraBountyBasisPoints }: {
-        asset: OpenSeaAsset | null;
-        assetContract?: OpenSeaAssetContract;
+    computeFees({ asset, fees, side, accountAddress, isPrivate, extraBountyBasisPoints }: {
+        asset?: OpenSeaAsset;
+        fees?: OpenSeaFees;
         side: OrderSide;
         accountAddress?: string;
         isPrivate?: boolean;
         extraBountyBasisPoints?: number;
-    }): Promise<OpenSeaFees>;
+    }): Promise<ComputedFees>;
     /**
      * Validate and post an order to the OpenSea orderbook.
      * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
@@ -561,7 +535,7 @@ export declare class OpenSeaPort {
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
      * @param fromAddress The owner's wallet address
      * @param toAddress The recipient's wallet address
-     * @param schemaName The Wyvern schema name corresponding to the asset type
+     * @param schemaName The Wyvern schema name corresponding to the asset type, if not in each asset
      */
     _estimateGasForTransfer({ assets, fromAddress, toAddress, schemaName }: {
         assets: Asset[];
@@ -598,7 +572,7 @@ export declare class OpenSeaPort {
         tokenAddress?: string;
         proxyAddress?: string;
     }): Promise<BigNumber>;
-    _makeBuyOrder({ asset, quantity, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName, referrerAddress }: {
+    _makeBuyOrder({ asset, quantity, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, referrerAddress }: {
         asset: Asset;
         quantity: number;
         accountAddress: string;
@@ -607,10 +581,9 @@ export declare class OpenSeaPort {
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         sellOrder?: UnhashedOrder;
-        schemaName: WyvernSchemaName;
         referrerAddress?: string;
     }): Promise<UnhashedOrder>;
-    _makeSellOrder({ asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }: {
+    _makeSellOrder({ asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         asset: Asset;
         quantity: number;
         accountAddress: string;
@@ -621,7 +594,6 @@ export declare class OpenSeaPort {
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         buyerAddress: string;
-        schemaName: WyvernSchemaName;
     }): Promise<UnhashedOrder>;
     _getStaticCallTargetAndExtraData({ asset, useTxnOriginStaticCall }: {
         asset: OpenSeaAsset;
@@ -630,22 +602,25 @@ export declare class OpenSeaPort {
         staticTarget: string;
         staticExtradata: string;
     }>;
-    _makeBundleBuyOrder({ assets, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, schemaName, referrerAddress }: {
+    _makeBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, referrerAddress }: {
         assets: Asset[];
+        collection?: OpenSeaCollection;
+        quantities: number[];
         accountAddress: string;
         startAmount: number;
         expirationTime: number;
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         sellOrder?: UnhashedOrder;
-        schemaName: WyvernSchemaName;
         referrerAddress?: string;
     }): Promise<UnhashedOrder>;
-    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, schemaName }: {
+    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
+        collection?: OpenSeaFees;
+        quantities: number[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -654,7 +629,6 @@ export declare class OpenSeaPort {
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         buyerAddress: string;
-        schemaName: WyvernSchemaName;
     }): Promise<UnhashedOrder>;
     _makeMatchingOrder({ order, accountAddress, recipientAddress }: {
         order: UnsignedOrder;
@@ -694,8 +668,8 @@ export declare class OpenSeaPort {
      */
     _approveOrder(order: UnsignedOrder): Promise<string>;
     _validateOrder(order: Order): Promise<boolean>;
-    _approveAll({ schema, wyAssets, accountAddress, proxyAddress }: {
-        schema: Schema<any>;
+    _approveAll({ schemaNames, wyAssets, accountAddress, proxyAddress }: {
+        schemaNames: WyvernSchemaName[];
         wyAssets: WyvernAsset[];
         accountAddress: string;
         proxyAddress?: string;
@@ -706,10 +680,10 @@ export declare class OpenSeaPort {
         accountAddress: string;
     }): Promise<void>;
     /**
-     * Check if an account owns an asset on-chain
+     * Check if an account, or its proxy, owns an asset on-chain
      * @param accountAddress Account address for the wallet
      * @param proxyAddress Proxy address for the account
-     * @param wyAsset Asset to check. If fungible, the `quantity` attribute will be the minimum amount to own
+     * @param wyAsset asset to check. If fungible, the `quantity` attribute will be the minimum amount to own
      * @param schemaName WyvernSchemaName for the asset
      */
     _ownsAssetOnChain({ accountAddress, proxyAddress, wyAsset, schemaName }: {
@@ -717,7 +691,7 @@ export declare class OpenSeaPort {
         proxyAddress?: string | null;
         wyAsset: WyvernAsset;
         schemaName: WyvernSchemaName;
-    }, retries?: number): Promise<boolean>;
+    }): Promise<boolean>;
     /**
      * Get the listing and expiration time paramters for a new order
      * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
@@ -734,6 +708,8 @@ export declare class OpenSeaPort {
      * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
      */
     private _getPriceParameters;
+    private _getBuyFeeParameters;
+    private _getSellFeeParameters;
     private _getMetadata;
     private _atomicMatch;
     private _getRequiredAmountForTakingSellOrder;

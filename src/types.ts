@@ -191,7 +191,8 @@ export type WyvernAsset = WyvernNFTAsset | WyvernFTAsset
 
 // Abstractions over Wyvern assets for bundles
 export interface WyvernBundle {
-  assets: WyvernNFTAsset[]
+  assets: WyvernAsset[]
+  schemas: WyvernSchemaName[]
   name?: string
   description?: string
   external_link?: string
@@ -221,13 +222,15 @@ export interface OpenSeaUser {
 }
 
 /**
- * Simple, unannotated non-fungible asset spec
+ * Simple, unannotated asset spec
  */
 export interface Asset {
   // The asset's token ID, or null if ERC-20
   tokenId: string | null,
   // The asset's contract address
   tokenAddress: string,
+  // The Wyvern schema name (e.g. "ERC721") for this asset
+  schemaName?: WyvernSchemaName,
   // The token standard version of this asset
   version?: TokenStandardVersion,
   // Optional for ENS names
@@ -239,7 +242,7 @@ export interface Asset {
 /**
  * Annotated asset contract with OpenSea metadata
  */
-export interface OpenSeaAssetContract {
+export type OpenSeaAssetContract = OpenSeaFees & {
   // Name of the asset's contract
   name: string
   // Address of this contract
@@ -253,14 +256,6 @@ export interface OpenSeaAssetContract {
   sellerFeeBasisPoints: number
   // Total fee levied on buyers by this contract, in basis points
   buyerFeeBasisPoints: number
-  // Fee for OpenSea levied on sellers
-  openseaSellerFeeBasisPoints: number
-  // Fee for OpenSea levied on buyers
-  openseaBuyerFeeBasisPoints: number
-  // Fee for the asset contract owner levied on sellers
-  devSellerFeeBasisPoints: number
-  // Fee for the asset contract owner levied on buyers
-  devBuyerFeeBasisPoints: number
 
   // Description of the contract
   description: string
@@ -290,7 +285,7 @@ interface StringTraitStats {
 /**
  * Annotated collection with OpenSea metadata
  */
-export interface OpenSeaCollection {
+export type OpenSeaCollection = OpenSeaFees & {
   // Name of the collection
   name: string
   // Slug, used in URL
@@ -303,14 +298,6 @@ export interface OpenSeaCollection {
   featured: boolean
   // Date collection was created
   createdDate: Date,
-  // Fee for OpenSea levied on sellers
-  openseaSellerFeeBasisPoints: number
-  // Fee for OpenSea levied on buyers
-  openseaBuyerFeeBasisPoints: number
-  // Fee for the collection owner levied on sellers
-  devSellerFeeBasisPoints: number
-  // Fee for the collection owner levied on buyers
-  devBuyerFeeBasisPoints: number
 
   // Description of the collection
   description: string
@@ -527,22 +514,25 @@ export interface OpenSeaAssetBundleQuery extends Partial<OpenSeaAssetBundleJSON>
 
 /**
  * The basis point values of each type of fee
- * added to each order.
- * The first pair of values are the total of
- * the second two pairs
  */
 export interface OpenSeaFees {
+  // Fee for OpenSea levied on sellers
+  openseaSellerFeeBasisPoints: number
+  // Fee for OpenSea levied on buyers
+  openseaBuyerFeeBasisPoints: number
+  // Fee for the collection owner levied on sellers
+  devSellerFeeBasisPoints: number
+  // Fee for the collection owner levied on buyers
+  devBuyerFeeBasisPoints: number
+}
+
+/**
+ * Fully computed fees including bounties and transfer fees
+ */
+export type ComputedFees = OpenSeaFees & {
   // Total fees. dev + opensea
-  totalBuyerFeeBPS: number
-  totalSellerFeeBPS: number
-
-  // Fees that go to the asset contract's developer
-  devSellerFeeBPS: number
-  devBuyerFeeBPS: number
-
-  // Fees that go to OpenSea
-  openseaSellerFeeBPS: number
-  openseaBuyerFeeBPS: number
+  totalBuyerFeeBasisPoints: number
+  totalSellerFeeBasisPoints: number
 
   // Fees that the item's creator takes on every transfer
   transferFee: BigNumber
@@ -552,6 +542,20 @@ export interface OpenSeaFees {
   // Comes out of OpenSea fees
   sellerBountyBPS: number
 }
+
+export interface ExchangeMetadataForAsset {
+  asset: WyvernAsset
+  schema: WyvernSchemaName
+  referrerAddress?: string
+}
+
+export interface ExchangeMetadataForBundle {
+  bundle: WyvernBundle
+  schema?: WyvernSchemaName // DEPRECATED: use bundle.schemas
+  referrerAddress?: string
+}
+
+export type ExchangeMetadata = ExchangeMetadataForAsset | ExchangeMetadataForBundle
 
 export interface UnhashedOrder extends WyvernOrder {
   feeMethod: FeeMethod
@@ -564,12 +568,7 @@ export interface UnhashedOrder extends WyvernOrder {
   makerReferrerFee: BigNumber
   waitingForBestCounterOrder: boolean
 
-  metadata: {
-    asset?: WyvernAsset
-    bundle?: WyvernBundle
-    schema: WyvernSchemaName
-    referrerAddress?: string
-  }
+  metadata: ExchangeMetadata
 }
 
 export interface UnsignedOrder extends UnhashedOrder {
@@ -632,11 +631,7 @@ export interface OrderJSON extends Partial<ECSignature> {
 
   salt: string
 
-  metadata: {
-    asset?: WyvernAsset
-    bundle?: WyvernBundle
-    schema: WyvernSchemaName
-  }
+  metadata: ExchangeMetadata
 
   hash: string
 }

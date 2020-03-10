@@ -9,9 +9,9 @@ import {
 
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network } from '../../src/types'
-import { getCurrentGasPrice, getNonCompliantApprovalAddress} from '../../src/utils'
-import { ALEX_ADDRESS, MAINNET_API_KEY, CK_TOKEN_ID, ALEX_ADDRESS_2} from '../constants'
+import { Network, Asset, WyvernSchemaName } from '../../src/types'
+import { getCurrentGasPrice, getNonCompliantApprovalAddress} from '../../src/utils/utils'
+import { ALEX_ADDRESS, MAINNET_API_KEY, CK_TOKEN_ID, ALEX_ADDRESS_2, WETH_ADDRESS} from '../constants'
 import { ERC721 } from '../../src/contracts'
 import {
   CK_ADDRESS,
@@ -59,7 +59,7 @@ suite('seaport: misc', () => {
 
   test('Fetches positive token balance for an account', async () => {
     const accountAddress = ALEX_ADDRESS
-    const balance = await client.getTokenBalance({ accountAddress })
+    const balance = await client.getTokenBalance({ accountAddress, tokenAddress: WETH_ADDRESS })
     assert.isAbove(balance.toNumber(), 0)
   })
 

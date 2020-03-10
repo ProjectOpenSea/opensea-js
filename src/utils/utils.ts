@@ -3,7 +3,6 @@ import { WyvernProtocol } from 'wyvern-js'
 import * as ethUtil from 'ethereumjs-util'
 import * as _ from 'lodash'
 import * as Web3 from 'web3'
-import * as WyvernSchemas from 'wyvern-schemas'
 import {
   AnnotatedFunctionABI,
   FunctionInputKind,
@@ -11,11 +10,9 @@ import {
   Schema,
   StateMutability
 } from 'wyvern-schemas/dist/types'
-import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer'
-import { HowToCall } from 'wyvern-js/lib/types'
-import { ERC1155 } from './contracts'
+import { ERC1155 } from '../contracts'
 
-import { OpenSeaPort } from '../src'
+import { OpenSeaPort } from '..'
 import {
   Asset,
   AssetContractType,
@@ -42,17 +39,16 @@ import {
   WyvernFTAsset,
   WyvernNFTAsset,
   WyvernSchemaName
-} from './types'
+} from '../types'
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
   NULL_ADDRESS,
   NULL_BLOCK_HASH
-} from './constants'
+} from '../constants'
+import { proxyABI } from '../abi/Proxy'
 
-const proxyABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxy', 'outputs': [{'name': 'success', 'type': 'bool'}], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
-const proxyAssertABI: any = {'constant': false, 'inputs': [{'name': 'dest', 'type': 'address'}, {'name': 'howToCall', 'type': 'uint8'}, {'name': 'calldata', 'type': 'bytes'}], 'name': 'proxyAssert', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}
 export const annotateERC721TransferABI = (asset: WyvernNFTAsset): AnnotatedFunctionABI => ({
   "constant": false,
   "inputs": [
@@ -321,12 +317,12 @@ export const assetContractFromJSON = (asset_contract: any): OpenSeaAssetContract
     schemaName: asset_contract.schema_name,
     address: asset_contract.address,
     tokenSymbol: asset_contract.symbol,
-    buyerFeeBasisPoints: asset_contract.buyer_fee_basis_points,
-    sellerFeeBasisPoints: asset_contract.seller_fee_basis_points,
-    openseaBuyerFeeBasisPoints: asset_contract.opensea_buyer_fee_basis_points,
-    openseaSellerFeeBasisPoints: asset_contract.opensea_seller_fee_basis_points,
-    devBuyerFeeBasisPoints: asset_contract.dev_buyer_fee_basis_points,
-    devSellerFeeBasisPoints: asset_contract.dev_seller_fee_basis_points,
+    buyerFeeBasisPoints: +asset_contract.buyer_fee_basis_points,
+    sellerFeeBasisPoints: +asset_contract.seller_fee_basis_points,
+    openseaBuyerFeeBasisPoints: +asset_contract.opensea_buyer_fee_basis_points,
+    openseaSellerFeeBasisPoints: +asset_contract.opensea_seller_fee_basis_points,
+    devBuyerFeeBasisPoints: +asset_contract.dev_buyer_fee_basis_points,
+    devSellerFeeBasisPoints: +asset_contract.dev_seller_fee_basis_points,
     imageUrl: asset_contract.image_url,
     externalLink: asset_contract.external_link,
     wikiLink: asset_contract.wiki_link,
@@ -347,10 +343,10 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     featuredImageUrl: collection.featured_image_url,
     displayData: collection.display_data,
     paymentTokens: (collection.payment_tokens || []).map(tokenFromJSON),
-    openseaBuyerFeeBasisPoints: collection.opensea_buyer_fee_basis_points,
-    openseaSellerFeeBasisPoints: collection.opensea_seller_fee_basis_points,
-    devBuyerFeeBasisPoints: collection.dev_buyer_fee_basis_points,
-    devSellerFeeBasisPoints: collection.dev_seller_fee_basis_points,
+    openseaBuyerFeeBasisPoints: +collection.opensea_buyer_fee_basis_points,
+    openseaSellerFeeBasisPoints: +collection.opensea_seller_fee_basis_points,
+    devBuyerFeeBasisPoints: +collection.dev_buyer_fee_basis_points,
+    devSellerFeeBasisPoints: +collection.dev_seller_fee_basis_points,
     payoutAddress: collection.payout_address,
     imageUrl: collection.image_url,
     largeImageUrl: collection.large_image_url,
@@ -388,7 +384,7 @@ export const orderFromJSON = (order: any): Order => {
     quantity: new BigNumber(order.quantity || 1),
     exchange: order.exchange,
     makerAccount: order.maker,
-    takerAccount: order.maker,
+    takerAccount: order.taker,
     // Use string address to conform to Wyvern Order schema
     maker: order.maker.address,
     taker: order.taker.address,
@@ -765,85 +761,73 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
 }
 
 /**
- * Wrapper function for getting generic Wyvern assets from OpenSea assets
- * @param schema Wyvern schema for the asset
- * @param asset The fungible or nonfungible asset to format
- */
-export function getWyvernAsset(
-    schema: Schema<WyvernAsset>,
-    asset: Asset,
-    quantity = new BigNumber(1)
-  ) {
-  if (SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE[schema.name as WyvernSchemaName] == AssetContractType.NonFungible) {
-    return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset)
-  } else {
-    return getWyvernFTAsset(schema as Schema<WyvernFTAsset>, asset, quantity)
-  }
-}
-
-/**
- * Get the Wyvern representation of an NFT asset
- * @param schema The WyvernSchema needed to access this asset
- * @param asset The asset
- */
-export function getWyvernNFTAsset(
-    schema: Schema<WyvernNFTAsset>, asset: Asset
-  ): WyvernNFTAsset {
-
-  return schema.assetFromFields({
-    'ID': asset.tokenId != null
-      ? asset.tokenId.toString()
-      : undefined,
-    'Address': asset.tokenAddress.toLowerCase(),
-    'Name': asset.name,
-  })
-}
-
-/**
  * Get the Wyvern representation of a fungible asset
  * @param schema The WyvernSchema needed to access this asset
  * @param asset The asset to trade
  * @param quantity The number of items to trade
  */
-export function getWyvernFTAsset(
-    schema: Schema<WyvernFTAsset>,
+export function getWyvernAsset(
+    schema: Schema<WyvernAsset>,
     asset: Asset,
-    quantity: BigNumber
-  ): WyvernFTAsset {
+    quantity = new BigNumber(1)
+  ): WyvernAsset {
 
   const tokenId = asset.tokenId != null
-    ? asset.tokenId
+    ? asset.tokenId.toString()
     : undefined
 
   return schema.assetFromFields({
     'ID': tokenId,
     'Quantity': quantity.toString(),
     'Address': asset.tokenAddress.toLowerCase(),
+    'Name': asset.name
   })
 }
 
 /**
- * Get the Wyvern representation of a group of NFT assets
+ * Get the Wyvern representation of a group of assets
  * Sort order is enforced here. Throws if there's a duplicate.
- * @param schema The WyvernSchema needed to access these assets
  * @param assets Assets to bundle
+ * @param schemas The WyvernSchemas needed to access each asset, respectively
+ * @param quantities The quantity of each asset to bundle, respectively
  */
 export function getWyvernBundle(
-    schema: any, assets: Asset[]
+    assets: Asset[],
+    schemas: Array<Schema<WyvernAsset>>,
+    quantities: BigNumber[]
   ): WyvernBundle {
 
-  const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
-  const sorters = [(a: WyvernNFTAsset) => a.address, (a: WyvernNFTAsset) => a.id]
-  const uniqueAssets = _.uniqBy(wyAssets, a => `${sorters[0](a)}-${sorters[1](a)}`)
+  if (assets.length != quantities.length) {
+    throw new Error("Bundle must have a quantity for every asset")
+  }
 
-  if (uniqueAssets.length != wyAssets.length) {
+  if (assets.length != schemas.length) {
+    throw new Error("Bundle must have a schema for every asset")
+  }
+
+  const wyAssets = assets.map((asset, i) => getWyvernAsset(schemas[i], asset, quantities[i]))
+
+  const sorters = [
+    (assetAndSchema: { asset: WyvernAsset, schema: WyvernSchemaName }) => assetAndSchema.asset.address,
+    (assetAndSchema: { asset: WyvernAsset, schema: WyvernSchemaName }) => assetAndSchema.asset.id || 0
+  ]
+
+  const wyAssetsAndSchemas = wyAssets.map((asset, i) => ({
+    asset,
+    schema: schemas[i].name as WyvernSchemaName
+  }))
+
+  const uniqueAssets = _.uniqBy(wyAssetsAndSchemas, group => `${sorters[0](group)}-${sorters[1](group)}`)
+
+  if (uniqueAssets.length != wyAssetsAndSchemas.length) {
     throw new Error("Bundle can't contain duplicate assets")
   }
 
-  const sortedWyAssets = _.sortBy(wyAssets, sorters)
+  const sortedWyAssetsAndSchemas = _.sortBy(wyAssetsAndSchemas, sorters)
 
   return {
-    assets: sortedWyAssets
+    assets: sortedWyAssetsAndSchemas.map(group => group.asset),
+    schemas: sortedWyAssetsAndSchemas.map(group => group.schema),
   }
 }
 
@@ -929,74 +913,6 @@ async function canSettleOrder(client: OpenSeaPort, order: Order, matchingOrder: 
  */
 export async function delay(ms: number) {
   return new Promise(res => setTimeout(res, ms))
-}
-
-/**
- * Encode the atomicized transfer of many assets
- * @param schema Wyvern Schema for the assets
- * @param assets List of assets to transfer
- * @param from Current address owning the assets
- * @param to Destination address
- * @param atomicizer Wyvern Atomicizer instance
- */
-export function encodeAtomicizedTransfer(schema: Schema<any>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract) {
-
-  const transactions = assets.map((asset: any) => {
-    const transfer = schema.functions.transfer(asset)
-    const calldata = encodeTransferCall(transfer, from, to)
-    return {
-      calldata,
-      address: transfer.target,
-      value: new BigNumber(0),
-    }
-  })
-
-  const atomicizedCalldata = atomicizer.atomicize.getABIEncodedTransactionData(
-    transactions.map((t: any) => t.address),
-    transactions.map((t: any) => t.value),
-    transactions.map((t: any) => new BigNumber((t.calldata.length - 2) / 2)), // subtract 2 for '0x', divide by 2 for hex
-    transactions.map((t: any) => t.calldata).reduce((x: string, current: string) => x + current.slice(2), '0x'), // cut off the '0x'
-  )
-
-  return {
-    calldata: atomicizedCalldata,
-  }
-}
-
-/**
- * Encode a transfer call for a Wyvern schema function
- * @param transferAbi Annotated Wyvern ABI
- * @param from From address
- * @param to To address
- */
-export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string) {
-  const parameters = transferAbi.inputs.map(input => {
-    switch (input.kind) {
-      case FunctionInputKind.Replaceable:
-        return to
-      case FunctionInputKind.Owner:
-        return from
-      case FunctionInputKind.Asset:
-      default:
-        if (input.value == null) {
-          throw new Error(`Unsupported function input kind: ${input.kind}`)
-        }
-        return input.value
-    }
-  })
-  return WyvernSchemas.encodeCall(transferAbi as Web3.MethodAbi, parameters)
-}
-
-/**
- * Encode a call to a user's proxy contract
- * @param address The address for the proxy to call
- * @param howToCall How to call the addres
- * @param calldata The data to use in the call
- * @param shouldAssert Whether to assert success in the proxy call
- */
-export function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert = true) {
-  const abi = shouldAssert ? proxyAssertABI : proxyABI
-  return WyvernSchemas.encodeCall(abi, [address, howToCall, Buffer.from(calldata.slice(2), 'hex')])
 }
 
 /**

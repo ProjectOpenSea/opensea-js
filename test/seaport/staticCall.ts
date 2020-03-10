@@ -10,7 +10,7 @@ import {
 
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, WyvernSchemaName } from '../../src/types'
+import { Network } from '../../src/types'
 import { ALEX_ADDRESS, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, ALEX_ADDRESS_2, MAINNET_API_KEY, RINKEBY_API_KEY } from '../constants'
 import { testFeesMakerOrder } from './fees'
 import { getMethod, StaticCheckTxOrigin } from '../../src/contracts'
@@ -20,6 +20,7 @@ import {
   RINKEBY_PROVIDER_URL,
   STATIC_CALL_TX_ORIGIN_ADDRESS
 } from '../../src/constants'
+import { encodeCall } from '../../src/utils/schema'
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
 const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL)
@@ -53,12 +54,11 @@ suite('seaport: static calls', () => {
       expirationTime: 0,
       quantity: 1,
       paymentTokenAddress: NULL_ADDRESS,
-      waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC721
+      waitForHighestBid: false
     })
 
     order.staticTarget = STATIC_CALL_TX_ORIGIN_ADDRESS
-    order.staticExtradata = WyvernSchemas.encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'), [takerAddress])
+    order.staticExtradata = encodeCall(getMethod(StaticCheckTxOrigin, 'succeedIfTxOriginMatchesSpecifiedAddress'), [takerAddress])
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
 
@@ -76,7 +76,7 @@ suite('seaport: static calls', () => {
     const tokenId = '2898' // Mainnet DecentralandEstate TokenID
     const tokenAddress = '0x959e104e1a4db6317fa58f8295f586e1a978c297' // Mainnet DecentralandEstates Contract
 
-    const asset = await client.api.getAsset(tokenAddress, tokenId)
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -87,15 +87,14 @@ suite('seaport: static calls', () => {
       expirationTime: 0,
       quantity: 1,
       paymentTokenAddress: NULL_ADDRESS,
-      waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC721
+      waitForHighestBid: false
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFeesMakerOrder(order, asset.assetContract, 0)
+    testFeesMakerOrder(order, asset.collection, 0)
 
     await client._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
@@ -112,7 +111,7 @@ suite('seaport: static calls', () => {
     const tokenId = '3' // Testnet CheezeWizards TokenID
     const tokenAddress = '0x095731b672b76b00A0b5cb9D8258CD3F6E976cB2' // Testnet CheezeWizards Guild address
 
-    const asset = await rinkebyClient.api.getAsset(tokenAddress, tokenId)
+    const asset = await rinkebyClient.api.getAsset({ tokenAddress, tokenId })
 
     const order = await rinkebyClient._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -123,15 +122,14 @@ suite('seaport: static calls', () => {
       expirationTime: 0,
       quantity: 1,
       paymentTokenAddress: NULL_ADDRESS,
-      waitForHighestBid: false,
-      schemaName: WyvernSchemaName.ERC721
+      waitForHighestBid: false
     })
 
     assert.equal(order.paymentToken, NULL_ADDRESS)
     assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInToken)
     assert.equal(order.extra.toNumber(), 0)
     assert.equal(order.expirationTime.toNumber(), 0)
-    testFeesMakerOrder(order, asset.assetContract, 0)
+    testFeesMakerOrder(order, asset.collection, 0)
 
     await rinkebyClient._sellOrderValidationAndApprovals({ order, accountAddress })
     // Make sure match is valid
