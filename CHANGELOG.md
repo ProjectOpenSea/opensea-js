@@ -12,6 +12,7 @@ Version 1.0 introduces bundling for semi-fungible and fungible assets, serialize
 
 **Breaking type changes**
 - `profile_img_url` in the `OpenSeaAccount` type has been renamed to `profileImgUrl`
+- `OpenSeaPort::computeFees()` now returns a new type, `ComputedFees`, which expands "BPS" to "BasisPoints" for each of its member keys
 
 **Breaking interface changes**
 - `OpenSeaPort::computeFees()` now takes in either the `fees` from a collection or a single asset, and returns a new and more consistent type, `ComputedFees`

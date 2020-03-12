@@ -366,7 +366,7 @@ export declare type ComputedFees = OpenSeaFees & {
     totalSellerFeeBasisPoints: number;
     transferFee: BigNumber;
     transferFeeTokenAddress: string | null;
-    sellerBountyBPS: number;
+    sellerBountyBasisPoints: number;
 };
 export interface ExchangeMetadataForAsset {
     asset: WyvernAsset;

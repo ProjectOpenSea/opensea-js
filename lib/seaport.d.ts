@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, OpenSeaFees } from './types';
+import { FeeMethod, OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, OpenSeaFees } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -692,6 +692,24 @@ export declare class OpenSeaPort {
         wyAsset: WyvernAsset;
         schemaName: WyvernSchemaName;
     }): Promise<boolean>;
+    _getBuyFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, sellOrder?: UnhashedOrder): {
+        makerRelayerFee: BigNumber;
+        takerRelayerFee: BigNumber;
+        makerProtocolFee: BigNumber;
+        takerProtocolFee: BigNumber;
+        makerReferrerFee: BigNumber;
+        feeRecipient: string;
+        feeMethod: FeeMethod;
+    };
+    _getSellFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, waitForHighestBid: boolean, sellerBountyBasisPoints?: number): {
+        makerRelayerFee: BigNumber;
+        takerRelayerFee: BigNumber;
+        makerProtocolFee: BigNumber;
+        takerProtocolFee: BigNumber;
+        makerReferrerFee: BigNumber;
+        feeRecipient: string;
+        feeMethod: FeeMethod;
+    };
     /**
      * Get the listing and expiration time paramters for a new order
      * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
@@ -708,8 +726,6 @@ export declare class OpenSeaPort {
      * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
      */
     private _getPriceParameters;
-    private _getBuyFeeParameters;
-    private _getSellFeeParameters;
     private _getMetadata;
     private _atomicMatch;
     private _getRequiredAmountForTakingSellOrder;

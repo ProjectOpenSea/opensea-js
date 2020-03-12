@@ -1569,13 +1569,13 @@ export class OpenSeaPort {
     }
 
     // Compute bounty
-    let sellerBountyBPS = side == OrderSide.Sell
+    let sellerBountyBasisPoints = side == OrderSide.Sell
       ? extraBountyBasisPoints
       : 0
 
     // Check that bounty is in range of the opensea fee
-    const bountyTooLarge = sellerBountyBPS + OPENSEA_SELLER_BOUNTY_BASIS_POINTS > maxTotalBountyBPS
-    if (sellerBountyBPS > 0 && bountyTooLarge) {
+    const bountyTooLarge = sellerBountyBasisPoints + OPENSEA_SELLER_BOUNTY_BASIS_POINTS > maxTotalBountyBPS
+    if (sellerBountyBasisPoints > 0 && bountyTooLarge) {
       let errorMessage = `Total bounty exceeds the maximum for this asset type (${maxTotalBountyBPS / 100}%).`
       if (maxTotalBountyBPS >= OPENSEA_SELLER_BOUNTY_BASIS_POINTS) {
         errorMessage += ` Remember that OpenSea will add ${OPENSEA_SELLER_BOUNTY_BASIS_POINTS / 100}% for referrers with OpenSea accounts!`
@@ -1589,7 +1589,7 @@ export class OpenSeaPort {
       openseaSellerFeeBasisPoints = 0
       devBuyerFeeBasisPoints = 0
       devSellerFeeBasisPoints = 0
-      sellerBountyBPS = 0
+      sellerBountyBasisPoints = 0
     }
 
     return {
@@ -1599,7 +1599,7 @@ export class OpenSeaPort {
       openseaSellerFeeBasisPoints,
       devBuyerFeeBasisPoints,
       devSellerFeeBasisPoints,
-      sellerBountyBPS,
+      sellerBountyBasisPoints,
       transferFee,
       transferFeeTokenAddress,
     }
@@ -1937,7 +1937,7 @@ export class OpenSeaPort {
 
     const { totalSellerFeeBasisPoints,
             totalBuyerFeeBasisPoints,
-            sellerBountyBPS } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+            sellerBountyBasisPoints } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const { target, calldata, replacementPattern } = encodeSell(schema, wyAsset, accountAddress)
 
@@ -1956,7 +1956,7 @@ export class OpenSeaPort {
       makerReferrerFee,
       feeRecipient,
       feeMethod
-    } = this._getSellFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, waitForHighestBid, sellerBountyBPS)
+    } = this._getSellFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, waitForHighestBid, sellerBountyBasisPoints)
 
     const { staticTarget, staticExtradata } = await this._getStaticCallTargetAndExtraData({ asset: openSeaAsset, useTxnOriginStaticCall: waitForHighestBid })
 
@@ -2180,7 +2180,7 @@ export class OpenSeaPort {
     const {
       totalSellerFeeBasisPoints,
       totalBuyerFeeBasisPoints,
-      sellerBountyBPS } = await this.computeFees({ fees: collection, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+      sellerBountyBasisPoints } = await this.computeFees({ fees: collection, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const schemas = bundle.schemas.map(name => this._getSchema(name))
     const { calldata, replacementPattern } = encodeAtomicizedSell(schemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
@@ -2202,7 +2202,7 @@ export class OpenSeaPort {
       takerProtocolFee,
       makerReferrerFee,
       feeRecipient
-    } = this._getSellFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, waitForHighestBid, sellerBountyBPS)
+    } = this._getSellFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, waitForHighestBid, sellerBountyBasisPoints)
 
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
@@ -2661,6 +2661,63 @@ export class OpenSeaPort {
     return false
   }
 
+  public _getBuyFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, sellOrder?: UnhashedOrder) {
+    let makerRelayerFee
+    let takerRelayerFee
+
+    if (sellOrder) {
+      // Use the sell order's fees to ensure compatiblity and force the order
+      // to only be acceptable by the sell order maker.
+      // Swap maker/taker depending on whether it's an English auction (taker)
+      // TODO add extraBountyBasisPoints when making bidder bounties
+      makerRelayerFee = sellOrder.waitingForBestCounterOrder
+        ? makeBigNumber(sellOrder.makerRelayerFee)
+        : makeBigNumber(sellOrder.takerRelayerFee)
+      takerRelayerFee = sellOrder.waitingForBestCounterOrder
+        ? makeBigNumber(sellOrder.takerRelayerFee)
+        : makeBigNumber(sellOrder.makerRelayerFee)
+    } else {
+      makerRelayerFee = makeBigNumber(totalBuyerFeeBasisPoints)
+      takerRelayerFee = makeBigNumber(totalSellerFeeBasisPoints)
+    }
+
+    return {
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee: makeBigNumber(0),
+      takerProtocolFee: makeBigNumber(0),
+      makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
+      feeRecipient: OPENSEA_FEE_RECIPIENT,
+      feeMethod: FeeMethod.SplitFee
+    }
+  }
+
+  public _getSellFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, waitForHighestBid: boolean, sellerBountyBasisPoints = 0) {
+    // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
+    const feeRecipient = waitForHighestBid
+      ? NULL_ADDRESS
+      : OPENSEA_FEE_RECIPIENT
+
+    // Swap maker/taker fees when it's an English auction,
+    // since these sell orders are takers not makers
+    const makerRelayerFee = waitForHighestBid
+      ? makeBigNumber(totalBuyerFeeBasisPoints)
+      : makeBigNumber(totalSellerFeeBasisPoints)
+    const takerRelayerFee = waitForHighestBid
+      ? makeBigNumber(totalSellerFeeBasisPoints)
+      : makeBigNumber(totalBuyerFeeBasisPoints)
+
+    return {
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee: makeBigNumber(0),
+      takerProtocolFee: makeBigNumber(0),
+      makerReferrerFee: makeBigNumber(sellerBountyBasisPoints),
+      feeRecipient,
+      feeMethod: FeeMethod.SplitFee
+    }
+  }
+
   /**
    * Get the listing and expiration time paramters for a new order
    * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
@@ -2757,63 +2814,6 @@ export class OpenSeaPort {
       : WyvernProtocol.toBaseUnitAmount(makeBigNumber(priceDiff), token.decimals)
 
     return { basePrice, extra, paymentToken }
-  }
-
-  private _getBuyFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, sellOrder?: UnhashedOrder) {
-    let makerRelayerFee
-    let takerRelayerFee
-
-    if (sellOrder) {
-      // Use the sell order's fees to ensure compatiblity and force the order
-      // to only be acceptable by the sell order maker.
-      // Swap maker/taker depending on whether it's an English auction (taker)
-      // TODO add extraBountyBasisPoints when making bidder bounties
-      makerRelayerFee = sellOrder.waitingForBestCounterOrder
-        ? makeBigNumber(sellOrder.makerRelayerFee)
-        : makeBigNumber(sellOrder.takerRelayerFee)
-      takerRelayerFee = sellOrder.waitingForBestCounterOrder
-        ? makeBigNumber(sellOrder.takerRelayerFee)
-        : makeBigNumber(sellOrder.makerRelayerFee)
-    } else {
-      makerRelayerFee = makeBigNumber(totalBuyerFeeBasisPoints)
-      takerRelayerFee = makeBigNumber(totalSellerFeeBasisPoints)
-    }
-
-    return {
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee: makeBigNumber(0),
-      takerProtocolFee: makeBigNumber(0),
-      makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
-      feeRecipient: OPENSEA_FEE_RECIPIENT,
-      feeMethod: FeeMethod.SplitFee
-    }
-  }
-
-  private _getSellFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, waitForHighestBid: boolean, sellerBountyBPS = 0) {
-    // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
-    const feeRecipient = waitForHighestBid
-      ? NULL_ADDRESS
-      : OPENSEA_FEE_RECIPIENT
-
-    // Swap maker/taker fees when it's an English auction,
-    // since these sell orders are takers not makers
-    const makerRelayerFee = waitForHighestBid
-      ? makeBigNumber(totalBuyerFeeBasisPoints)
-      : makeBigNumber(totalSellerFeeBasisPoints)
-    const takerRelayerFee = waitForHighestBid
-      ? makeBigNumber(totalSellerFeeBasisPoints)
-      : makeBigNumber(totalBuyerFeeBasisPoints)
-
-    return {
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee: makeBigNumber(0),
-      takerProtocolFee: makeBigNumber(0),
-      makerReferrerFee: makeBigNumber(sellerBountyBPS),
-      feeRecipient,
-      feeMethod: FeeMethod.SplitFee
-    }
   }
 
   private _getMetadata(order: Order, referrerAddress?: string) {

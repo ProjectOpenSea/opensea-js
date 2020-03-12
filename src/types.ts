@@ -540,7 +540,7 @@ export type ComputedFees = OpenSeaFees & {
 
   // Fees that go to whoever refers the order to the taker.
   // Comes out of OpenSea fees
-  sellerBountyBPS: number
+  sellerBountyBasisPoints: number
 }
 
 export interface ExchangeMetadataForAsset {
