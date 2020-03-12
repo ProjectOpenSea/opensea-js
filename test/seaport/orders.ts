@@ -637,7 +637,9 @@ suite('seaport: orders', () => {
     const { orders } = await client.api.getOrders({
       sale_kind: SaleKind.FixedPrice,
       asset_contract_address: CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE,
-      bundled: false
+      bundled: false,
+      side: OrderSide.Sell,
+      is_english: false
     })
     assert.isNotEmpty(orders)
     orders.map(order => {
@@ -646,14 +648,29 @@ suite('seaport: orders', () => {
       if (!order.currentPrice || !order.asset) {
         return
       }
-      const buyerFeeBPS = order.waitingForBestCounterOrder
-        ? order.makerRelayerFee
-        : order.takerRelayerFee
-      const multiple = order.side == OrderSide.Sell
-        ? +buyerFeeBPS / INVERSE_BASIS_POINT + 1
-        : 1
+      const buyerFeeBPS = order.takerRelayerFee
+      const multiple = +buyerFeeBPS / INVERSE_BASIS_POINT + 1
       assert.equal(
         order.basePrice.times(multiple).toNumber(),
+        estimateCurrentPrice(order).toNumber()
+      )
+    })
+  })
+
+  test('orderToJSON current price does not include buyer fee for English auctions', async () => {
+    const { orders } = await client.api.getOrders({
+      side: OrderSide.Sell,
+      is_english: true
+    })
+    assert.isNotEmpty(orders)
+    orders.map(order => {
+      assert.isNotNull(order.currentPrice)
+      assert.isNotNull(order.asset)
+      if (!order.currentPrice || !order.asset) {
+        return
+      }
+      assert.equal(
+        order.basePrice.toNumber(),
         estimateCurrentPrice(order).toNumber()
       )
     })

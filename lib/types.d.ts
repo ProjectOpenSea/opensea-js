@@ -455,7 +455,8 @@ export interface OrderQuery extends Partial<OrderJSON> {
     sale_kind?: SaleKind;
     asset_contract_address?: string;
     payment_token_address?: string;
-    only_english?: boolean;
+    is_english?: boolean;
+    is_expired?: boolean;
     bundled?: boolean;
     include_invalid?: boolean;
     token_id?: number | string;
