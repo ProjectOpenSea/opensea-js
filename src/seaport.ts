@@ -1536,10 +1536,10 @@ export class OpenSeaPort {
     }
 
     if (fees) {
-      openseaBuyerFeeBasisPoints = fees.openseaBuyerFeeBasisPoints
-      openseaSellerFeeBasisPoints = fees.openseaSellerFeeBasisPoints
-      devBuyerFeeBasisPoints = fees.devBuyerFeeBasisPoints
-      devSellerFeeBasisPoints = fees.devSellerFeeBasisPoints
+      openseaBuyerFeeBasisPoints = +fees.openseaBuyerFeeBasisPoints
+      openseaSellerFeeBasisPoints = +fees.openseaSellerFeeBasisPoints
+      devBuyerFeeBasisPoints = +fees.devBuyerFeeBasisPoints
+      devSellerFeeBasisPoints = +fees.devSellerFeeBasisPoints
 
       maxTotalBountyBPS = openseaSellerFeeBasisPoints
     }
@@ -2658,6 +2658,9 @@ export class OpenSeaPort {
   }
 
   public _getBuyFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, sellOrder?: UnhashedOrder) {
+
+    this._validateFees(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints)
+
     let makerRelayerFee
     let takerRelayerFee
 
@@ -2689,6 +2692,8 @@ export class OpenSeaPort {
   }
 
   public _getSellFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, waitForHighestBid: boolean, sellerBountyBasisPoints = 0) {
+
+    this._validateFees(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints)
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
     const feeRecipient = waitForHighestBid
       ? NULL_ADDRESS
@@ -2711,6 +2716,25 @@ export class OpenSeaPort {
       makerReferrerFee: makeBigNumber(sellerBountyBasisPoints),
       feeRecipient,
       feeMethod: FeeMethod.SplitFee
+    }
+  }
+
+  /**
+   * Validate fee parameters
+   * @param totalBuyerFeeBasisPoints Total buyer fees
+   * @param totalSellerFeeBasisPoints Total seller fees
+   */
+  private _validateFees(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number) {
+    const maxFeePercent = INVERSE_BASIS_POINT / 100
+
+    if (totalBuyerFeeBasisPoints > INVERSE_BASIS_POINT
+        || totalSellerFeeBasisPoints > INVERSE_BASIS_POINT) {
+      throw new Error(`Invalid buyer/seller fees: must be less than ${maxFeePercent}%`)
+    }
+
+    if (totalBuyerFeeBasisPoints < 0
+        || totalSellerFeeBasisPoints < 0) {
+      throw new Error(`Invalid buyer/seller fees: must be at least 0%`)
     }
   }
 

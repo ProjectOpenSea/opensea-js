@@ -707,6 +707,12 @@ export declare class OpenSeaPort {
         feeMethod: FeeMethod;
     };
     /**
+     * Validate fee parameters
+     * @param totalBuyerFeeBasisPoints Total buyer fees
+     * @param totalSellerFeeBasisPoints Total seller fees
+     */
+    private _validateFees;
+    /**
      * Get the listing and expiration time paramters for a new order
      * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
      * @param waitingForBestCounterOrder Whether this order should be hidden until the best match is found
