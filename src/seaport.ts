@@ -661,9 +661,7 @@ export class OpenSeaPort {
    * Items will mint to users' wallets only when they buy them. See https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial for more info.
    * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
    * @param param0 __namedParameters Object
-   * @param assetId Identifier for the asset, if you just want to post orders for one asset.
-   * @param assetIds Identifiers for the assets, if you want to post orders for many assets at once.
-   * @param factoryAddress Address of the factory contract
+   * @param assets Which assets you want to post orders for. Use the tokenAddress of your factory contract
    * @param accountAddress Address of the factory owner's wallet
    * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
@@ -678,10 +676,8 @@ export class OpenSeaPort {
    * @returns The number of orders created in total
    */
   public async createFactorySellOrders(
-      { assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, numberOfOrders = 1 }:
-      { assetId?: string;
-        assetIds?: string[];
-        factoryAddress: string;
+      { assets, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, numberOfOrders = 1 }:
+      { assets: Asset[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -699,12 +695,13 @@ export class OpenSeaPort {
       throw new Error('Need to make at least one sell order')
     }
 
-    const factoryIds = assetIds || (assetId ? [ assetId ] : [])
-    if (!factoryIds.length) {
-      throw new Error('Need either one assetId or an array of assetIds')
+    if (!assets || !assets.length) {
+      throw new Error('Need at least one asset to create orders for')
     }
 
-    const assets: Asset[] = factoryIds.map(tokenId => ({ tokenAddress: factoryAddress, tokenId }))
+    if (_.uniqBy(assets, a => a.tokenAddress).length !== 1) {
+      throw new Error('All assets must be on the same factory contract address')
+    }
 
     // Validate just a single dummy order but don't post it
     const dummyOrder = await this._makeSellOrder({
@@ -779,7 +776,7 @@ export class OpenSeaPort {
       numOrdersCreated += batchOrdersCreated.length
 
       // Don't overwhelm router
-      await delay(1000)
+      await delay(500)
     }
 
     return numOrdersCreated

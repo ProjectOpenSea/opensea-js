@@ -224,9 +224,7 @@ export declare class OpenSeaPort {
      * Items will mint to users' wallets only when they buy them. See https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial for more info.
      * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
      * @param param0 __namedParameters Object
-     * @param assetId Identifier for the asset, if you just want to post orders for one asset.
-     * @param assetIds Identifiers for the assets, if you want to post orders for many assets at once.
-     * @param factoryAddress Address of the factory contract
+     * @param assets Which assets you want to post orders for. Use the tokenAddress of your factory contract
      * @param accountAddress Address of the factory owner's wallet
      * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
@@ -240,10 +238,8 @@ export declare class OpenSeaPort {
      * @param numberOfOrders Number of times to repeat creating the same order for each asset. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
      * @returns The number of orders created in total
      */
-    createFactorySellOrders({ assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders }: {
-        assetId?: string;
-        assetIds?: string[];
-        factoryAddress: string;
+    createFactorySellOrders({ assets, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders }: {
+        assets: Asset[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
