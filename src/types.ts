@@ -551,7 +551,6 @@ export interface ExchangeMetadataForAsset {
 
 export interface ExchangeMetadataForBundle {
   bundle: WyvernBundle
-  schema?: WyvernSchemaName // DEPRECATED: use bundle.schemas
   referrerAddress?: string
 }
 

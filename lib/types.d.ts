@@ -375,7 +375,6 @@ export interface ExchangeMetadataForAsset {
 }
 export interface ExchangeMetadataForBundle {
     bundle: WyvernBundle;
-    schema?: WyvernSchemaName;
     referrerAddress?: string;
 }
 export declare type ExchangeMetadata = ExchangeMetadataForAsset | ExchangeMetadataForBundle;

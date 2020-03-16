@@ -2140,9 +2140,7 @@ export class OpenSeaPort {
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle,
-        referrerAddress,
-        // TODO deprecate
-        schema: schemas[0].name as WyvernSchemaName
+        referrerAddress
       }
     }
   }
@@ -2229,9 +2227,7 @@ export class OpenSeaPort {
       expirationTime: times.expirationTime,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
-        bundle,
-        // TODO deprecate
-        schema: schemas[0].name as WyvernSchemaName
+        bundle
       }
     }
   }
@@ -2258,7 +2254,10 @@ export class OpenSeaPort {
         const schemas = bundle.schemas
           ? bundle.schemas.map(schemaName => this._getSchema(schemaName))
           // Backwards compat:
-          : bundle.assets.map((asset, i) => this._getSchema(order.metadata.schema))
+          : bundle.assets.map(() => this._getSchema(
+              'schema' in order.metadata
+              ? order.metadata.schema
+              : undefined))
         const atomicized = order.side == OrderSide.Buy
           ? encodeAtomicizedSell(schemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
           : encodeAtomicizedBuy(schemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
@@ -2404,7 +2403,7 @@ export class OpenSeaPort {
         : []
     const schemaNames = 'bundle' in order.metadata && 'schemas' in order.metadata.bundle
       ? order.metadata.bundle.schemas
-      : order.metadata.schema
+      : 'schema' in order.metadata
         ? [order.metadata.schema]
         : []
     const tokenAddress = order.paymentToken

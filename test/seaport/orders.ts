@@ -848,9 +848,9 @@ function getAssetsAndQuantities(
     : order.metadata.asset
       ? [ order.metadata.asset ]
       : []
-  const schemaNames = 'bundle' in order.metadata
+  const schemaNames = 'bundle' in order.metadata && 'schemas' in order.metadata.bundle
     ? order.metadata.bundle.schemas
-    : order.metadata.schema
+    : 'schema' in order.metadata
       ? [order.metadata.schema]
       : []
 
