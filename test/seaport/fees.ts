@@ -74,7 +74,7 @@ suite('seaport: fees', () => {
     assert.equal(buyerFees.sellerBountyBasisPoints, 0)
 
     const sellerFees = await client.computeFees({
-      fees: asset.collection, // alternate fee param
+      asset,
       extraBountyBasisPoints,
       side: OrderSide.Sell
     })
@@ -132,7 +132,7 @@ suite('seaport: fees', () => {
     const bountyPercent = 0
 
     const buyerFees = await client.computeFees({
-      fees: asset.collection,
+      asset,
       extraBountyBasisPoints: bountyPercent * 100,
       side: OrderSide.Buy
     })
@@ -145,7 +145,7 @@ suite('seaport: fees', () => {
     assert.equal(buyerFees.sellerBountyBasisPoints, 0)
 
     const sellerFees = await client.computeFees({
-      fees: asset.collection,
+      asset,
       extraBountyBasisPoints: bountyPercent * 100,
       side: OrderSide.Sell
     })

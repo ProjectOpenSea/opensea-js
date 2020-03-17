@@ -184,7 +184,7 @@ export interface Asset {
 /**
  * Annotated asset contract with OpenSea metadata
  */
-export declare type OpenSeaAssetContract = OpenSeaFees & {
+export interface OpenSeaAssetContract extends OpenSeaFees {
     name: string;
     address: string;
     type: AssetContractType;
@@ -198,7 +198,7 @@ export declare type OpenSeaAssetContract = OpenSeaFees & {
     traits?: object[];
     externalLink?: string;
     wikiLink?: string;
-};
+}
 interface NumericalTraitStats {
     min: number;
     max: number;
@@ -209,7 +209,7 @@ interface StringTraitStats {
 /**
  * Annotated collection with OpenSea metadata
  */
-export declare type OpenSeaCollection = OpenSeaFees & {
+export interface OpenSeaCollection extends OpenSeaFees {
     name: string;
     slug: string;
     editors: string[];
@@ -227,7 +227,7 @@ export declare type OpenSeaCollection = OpenSeaFees & {
     traitStats: OpenSeaTraitStats;
     externalLink?: string;
     wikiLink?: string;
-};
+}
 export interface OpenSeaTraitStats {
     [traitName: string]: NumericalTraitStats | StringTraitStats;
 }
@@ -361,13 +361,13 @@ export interface OpenSeaFees {
 /**
  * Fully computed fees including bounties and transfer fees
  */
-export declare type ComputedFees = OpenSeaFees & {
+export interface ComputedFees extends OpenSeaFees {
     totalBuyerFeeBasisPoints: number;
     totalSellerFeeBasisPoints: number;
     transferFee: BigNumber;
     transferFeeTokenAddress: string | null;
     sellerBountyBasisPoints: number;
-};
+}
 export interface ExchangeMetadataForAsset {
     asset: WyvernAsset;
     schema: WyvernSchemaName;

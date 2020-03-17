@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { FeeMethod, OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, OpenSeaFees } from './types';
+import { FeeMethod, OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -152,7 +152,9 @@ export declare class OpenSeaPort {
      */
     createBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, referrerAddress }: {
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: {
+            slug: string;
+        };
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -277,7 +279,9 @@ export declare class OpenSeaPort {
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: {
+            slug: string;
+        };
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -477,16 +481,14 @@ export declare class OpenSeaPort {
     /**
      * Compute the fees for an order
      * @param param0 __namedParameters
-     * @param asset Optional asset to use to find fees for
-     * @param fees Optional prefetched fees to use instead of assets
+     * @param asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
      * @param side The side of the order (buy or sell)
      * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
      * @param isPrivate Whether the order is private or not (known taker)
      * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
      */
-    computeFees({ asset, fees, side, accountAddress, isPrivate, extraBountyBasisPoints }: {
+    computeFees({ asset, side, accountAddress, isPrivate, extraBountyBasisPoints }: {
         asset?: OpenSeaAsset;
-        fees?: OpenSeaFees;
         side: OrderSide;
         accountAddress?: string;
         isPrivate?: boolean;
@@ -600,7 +602,9 @@ export declare class OpenSeaPort {
     }>;
     _makeBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, referrerAddress }: {
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: {
+            slug: string;
+        };
         quantities: number[];
         accountAddress: string;
         startAmount: number;
@@ -615,7 +619,9 @@ export declare class OpenSeaPort {
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: {
+            slug: string;
+        };
         quantities: number[];
         accountAddress: string;
         startAmount: number;

@@ -242,7 +242,7 @@ export interface Asset {
 /**
  * Annotated asset contract with OpenSea metadata
  */
-export type OpenSeaAssetContract = OpenSeaFees & {
+export interface OpenSeaAssetContract extends OpenSeaFees {
   // Name of the asset's contract
   name: string
   // Address of this contract
@@ -285,7 +285,7 @@ interface StringTraitStats {
 /**
  * Annotated collection with OpenSea metadata
  */
-export type OpenSeaCollection = OpenSeaFees & {
+export interface OpenSeaCollection extends OpenSeaFees {
   // Name of the collection
   name: string
   // Slug, used in URL
@@ -529,7 +529,7 @@ export interface OpenSeaFees {
 /**
  * Fully computed fees including bounties and transfer fees
  */
-export type ComputedFees = OpenSeaFees & {
+export interface ComputedFees extends OpenSeaFees {
   // Total fees. dev + opensea
   totalBuyerFeeBasisPoints: number
   totalSellerFeeBasisPoints: number

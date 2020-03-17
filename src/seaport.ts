@@ -5,7 +5,7 @@ import { Schema } from 'wyvern-schemas/dist/types'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy, UniswapFactory, UniswapExchange, StaticCheckTxOrigin, StaticCheckCheezeWizards, StaticCheckDecentralandEstates, CheezeWizardsBasicTournament, DecentralandEstates, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, WyvernNFTAsset, WyvernFTAsset, TokenStandardVersion, OpenSeaCollection, OpenSeaFees } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, WyvernNFTAsset, WyvernFTAsset, TokenStandardVersion } from './types'
 import {
   confirmTransaction,
   makeBigNumber, orderToJSON,
@@ -466,7 +466,7 @@ export class OpenSeaPort {
   public async createBundleBuyOrder(
       {  assets, collection, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, referrerAddress }:
       { assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: { slug: string };
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -808,7 +808,7 @@ export class OpenSeaPort {
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: { slug: string };
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -1506,17 +1506,15 @@ export class OpenSeaPort {
   /**
    * Compute the fees for an order
    * @param param0 __namedParameters
-   * @param asset Optional asset to use to find fees for
-   * @param fees Optional prefetched fees to use instead of assets
+   * @param asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
    * @param side The side of the order (buy or sell)
    * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
    * @param isPrivate Whether the order is private or not (known taker)
    * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
    */
   public async computeFees(
-      { asset, fees, side, accountAddress, isPrivate = false, extraBountyBasisPoints = 0 }:
+      { asset, side, accountAddress, isPrivate = false, extraBountyBasisPoints = 0 }:
       { asset?: OpenSeaAsset;
-        fees?: OpenSeaFees;
         side: OrderSide;
         accountAddress?: string;
         isPrivate?: boolean;
@@ -1531,15 +1529,11 @@ export class OpenSeaPort {
     let transferFeeTokenAddress = null
     let maxTotalBountyBPS = DEFAULT_MAX_BOUNTY
 
-    if (asset != null) {
-      fees = asset.collection
-    }
-
-    if (fees) {
-      openseaBuyerFeeBasisPoints = +fees.openseaBuyerFeeBasisPoints
-      openseaSellerFeeBasisPoints = +fees.openseaSellerFeeBasisPoints
-      devBuyerFeeBasisPoints = +fees.devBuyerFeeBasisPoints
-      devSellerFeeBasisPoints = +fees.devSellerFeeBasisPoints
+    if (asset) {
+      openseaBuyerFeeBasisPoints = +asset.collection.openseaBuyerFeeBasisPoints
+      openseaSellerFeeBasisPoints = +asset.collection.openseaSellerFeeBasisPoints
+      devBuyerFeeBasisPoints = +asset.collection.devBuyerFeeBasisPoints
+      devSellerFeeBasisPoints = +asset.collection.devSellerFeeBasisPoints
 
       maxTotalBountyBPS = openseaSellerFeeBasisPoints
     }
@@ -2070,7 +2064,7 @@ export class OpenSeaPort {
   public async _makeBundleBuyOrder(
       { assets, collection, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, referrerAddress }:
       { assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: { slug: string };
         quantities: number[];
         accountAddress: string;
         startAmount: number;
@@ -2090,8 +2084,12 @@ export class OpenSeaPort {
       ? sellOrder.maker
       : NULL_ADDRESS
 
+    // If all assets are for the same collection, use its fees
+    const asset = collection
+      ? await this.api.getAsset(assets[0])
+      : undefined
     const { totalBuyerFeeBasisPoints,
-            totalSellerFeeBasisPoints } = await this.computeFees({ fees: collection, extraBountyBasisPoints, side: OrderSide.Buy })
+            totalSellerFeeBasisPoints } = await this.computeFees({ asset, extraBountyBasisPoints, side: OrderSide.Buy })
 
     const {
       makerRelayerFee,
@@ -2151,7 +2149,7 @@ export class OpenSeaPort {
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: { slug: string };
         quantities: number[];
         accountAddress: string;
         startAmount: number;
@@ -2172,10 +2170,14 @@ export class OpenSeaPort {
 
     const isPrivate = buyerAddress != NULL_ADDRESS
 
+    // If all assets are for the same collection, use its fees
+    const asset = collection
+      ? await this.api.getAsset(assets[0])
+      : undefined
     const {
       totalSellerFeeBasisPoints,
       totalBuyerFeeBasisPoints,
-      sellerBountyBasisPoints } = await this.computeFees({ fees: collection, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+      sellerBountyBasisPoints } = await this.computeFees({ asset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const schemas = bundle.schemas.map(name => this._getSchema(name))
     const { calldata, replacementPattern } = encodeAtomicizedSell(schemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
