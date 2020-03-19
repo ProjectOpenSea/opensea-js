@@ -1,6 +1,5 @@
 import { EventAbi } from 'web3';
-import { AnnotatedFunctionABI } from 'wyvern-js/lib/types';
-export declare const getMethod: (abi: Readonly<import("src/types").PartialAbiDefinition>[], name: string) => AnnotatedFunctionABI;
+export declare const getMethod: (abi: Readonly<import("src/types").PartialAbiDefinition>[], name: string) => any;
 export declare const event: (abi: Readonly<import("src/types").PartialAbiDefinition>[], name: string) => EventAbi;
 export declare const DECENTRALAND_AUCTION_CONFIG: {
     '1': string;

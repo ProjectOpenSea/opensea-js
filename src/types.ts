@@ -390,7 +390,7 @@ export interface AssetEvent {
   auctionType: AuctionType
 
   // The total price of the sale in the payment
-  totalPrice: string
+  totalPrice: BigNumber
 
   // The transaction associated with the token sale
   transaction: Transaction | null
@@ -462,8 +462,8 @@ export interface Transaction {
  */
 export interface OpenSeaFungibleToken extends Token {
   imageUrl?: string
-  ethPrice?: string
-  usdPrice?: string
+  ethPrice?: BigNumber
+  usdPrice?: BigNumber
 }
 
 // Backwards compat
@@ -621,7 +621,7 @@ export interface OrderJSON extends Partial<ECSignature> {
   paymentToken: string
 
   quantity: string
-  basePrice: string
+  basePrice: BigNumber
   extra: string
 
   // createdTime is undefined when order hasn't been posted yet

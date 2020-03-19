@@ -364,7 +364,7 @@ export declare class OpenSeaPort {
      * Gets the price for the order using the contract
      * @param order The order to calculate the price for
      */
-    getCurrentPrice(order: Order): Promise<BigNumber>;
+    getCurrentPrice(order: Order): Promise<any>;
     /**
      * Returns whether an order is fulfillable.
      * An order may not be fulfillable if a target item's transfer function
@@ -666,7 +666,7 @@ export declare class OpenSeaPort {
      * @param order Order to approve
      * @returns Transaction hash of the approval transaction
      */
-    _approveOrder(order: UnsignedOrder): Promise<string>;
+    _approveOrder(order: UnsignedOrder): Promise<any>;
     _validateOrder(order: Order): Promise<boolean>;
     _approveAll({ schemaNames, wyAssets, accountAddress, proxyAddress }: {
         schemaNames: WyvernSchemaName[];

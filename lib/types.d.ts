@@ -264,7 +264,7 @@ export interface AssetEvent {
     eventType: AssetEventType;
     eventTimestamp: Date;
     auctionType: AuctionType;
-    totalPrice: string;
+    totalPrice: BigNumber;
     transaction: Transaction | null;
     paymentToken: OpenSeaFungibleToken | null;
 }
@@ -311,8 +311,8 @@ export interface Transaction {
  */
 export interface OpenSeaFungibleToken extends Token {
     imageUrl?: string;
-    ethPrice?: string;
-    usdPrice?: string;
+    ethPrice?: BigNumber;
+    usdPrice?: BigNumber;
 }
 export declare type FungibleToken = OpenSeaFungibleToken;
 /**
@@ -435,7 +435,7 @@ export interface OrderJSON extends Partial<ECSignature> {
     staticExtradata: string;
     paymentToken: string;
     quantity: string;
-    basePrice: string;
+    basePrice: BigNumber;
     extra: string;
     createdTime?: number | string;
     listingTime: number | string;
