@@ -1237,9 +1237,7 @@ export class OpenSeaPort {
       ? WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
       : makeBigNumber(1)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
-    const abi = asset.schemaName === WyvernSchemaName.ERC20
-      ? annotateERC20TransferABI(wyAsset as WyvernFTAsset)
-      : schema.functions.transfer(wyAsset)
+    const abi = schema.functions.transfer(wyAsset)
 
     let from = fromAddress
     if (useProxy) {
