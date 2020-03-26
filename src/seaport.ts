@@ -869,6 +869,7 @@ export class OpenSeaPort {
    * @param accountAddress The taker's wallet address
    * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
    * @param referrerAddress The optional address that referred the order
+   * @returns Transaction hash for fulfilling the order
    */
   public async fulfillOrder(
       { order, accountAddress, recipientAddress, referrerAddress }:
@@ -876,7 +877,7 @@ export class OpenSeaPort {
         accountAddress: string;
         recipientAddress?: string;
         referrerAddress?: string; }
-    ) {
+    ): Promise<string> {
     const matchingOrder = this._makeMatchingOrder({
       order,
       accountAddress,
@@ -888,10 +889,11 @@ export class OpenSeaPort {
     const metadata = this._getMetadata(order, referrerAddress)
     const transactionHash = await this._atomicMatch({ buy, sell, accountAddress, metadata })
 
-    await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders, "Fulfilling order", async () => {
+    await this._confirmTransaction(transactionHash, EventType.MatchOrders, "Fulfilling order", async () => {
       const isOpen = await this._validateOrder(order)
       return !isOpen
     })
+    return transactionHash
   }
 
   /**

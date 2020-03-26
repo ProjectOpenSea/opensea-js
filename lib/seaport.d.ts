@@ -299,13 +299,14 @@ export declare class OpenSeaPort {
      * @param accountAddress The taker's wallet address
      * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
      * @param referrerAddress The optional address that referred the order
+     * @returns Transaction hash for fulfilling the order
      */
     fulfillOrder({ order, accountAddress, recipientAddress, referrerAddress }: {
         order: Order;
         accountAddress: string;
         recipientAddress?: string;
         referrerAddress?: string;
-    }): Promise<void>;
+    }): Promise<string>;
     /**
      * Cancel an order on-chain, preventing it from ever being fulfilled.
      * @param param0 __namedParameters Object
