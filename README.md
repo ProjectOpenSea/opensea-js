@@ -343,8 +343,10 @@ To buy an item , you need to **fulfill a sell order**. To do that, it's just one
 ```JavaScript
 const order = await seaport.api.getOrder({ side: OrderSide.Sell, ... })
 const accountAddress = "0x..." // The buyer's wallet address, also the taker
-await this.props.seaport.fulfillOrder({ order, accountAddress })
+const transactionHash = await this.props.seaport.fulfillOrder({ order, accountAddress })
 ```
+
+Note that the `fulfillOrder` promise resolves when the transaction has been confirmed and mined to the blockchain. To get the transaction hash before this happens, add an event listener (see [Listening to Events](#listening-to-events)) for the `TransactionCreated` event.
 
 If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the *buyer* and this will prompt the buyer to pay for the item(s).
 

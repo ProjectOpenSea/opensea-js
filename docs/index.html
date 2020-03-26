@@ -338,8 +338,9 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 				<p>To buy an item , you need to <strong>fulfill a sell order</strong>. To do that, it&#39;s just one call:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrder({ <span class="hljs-attr">side</span>: OrderSide.Sell, ... })
 <span class="hljs-keyword">const</span> accountAddress = <span class="hljs-string">"0x..."</span> <span class="hljs-comment">// The buyer's wallet address, also the taker</span>
-<span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress })
+<span class="hljs-keyword">const</span> transactionHash = <span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.props.seaport.fulfillOrder({ order, accountAddress })
 </code></pre>
+				<p>Note that the <code>fulfillOrder</code> promise resolves when the transaction has been confirmed and mined to the blockchain. To get the transaction hash before this happens, add an event listener (see <a href="#listening-to-events">Listening to Events</a>) for the <code>TransactionCreated</code> event.</p>
 				<p>If the order is a sell order (<code>order.side === OrderSide.Sell</code>), the taker is the <em>buyer</em> and this will prompt the buyer to pay for the item(s).</p>
 				<h3 id="accepting-offers">Accepting Offers</h3>
 				<p>Similar to fulfilling sell orders above, you need to fulfill a buy order on an item you own to receive the tokens in the offer.</p>
