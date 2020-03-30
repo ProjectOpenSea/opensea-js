@@ -11,6 +11,7 @@ export declare const MAX_UINT_256: BigNumber;
 export declare const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b";
 export declare const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9";
 export declare const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";
+export declare const MANA_ADDRESS = "0x0f5d2fb29fb7d3cfee444a200298f468908cc942";
 export declare const ENJIN_ADDRESS = "0xfaaFDc07907ff5120a76b34b731b278c38d6043C";
 export declare const ENJIN_LEGACY_ADDRESS = "0x8562c38485B1E8cCd82E44F89823dA76C98eb0Ab";
 export declare const CK_ADDRESS = "0x06012c8cf97bead5deae237070f9587f8e7a266d";

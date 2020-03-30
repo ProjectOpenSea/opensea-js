@@ -362,6 +362,22 @@ export declare class OpenSeaPort {
         minimumAmount?: BigNumber;
     }): Promise<string | null>;
     /**
+     * Un-approve a fungible token (e.g. W-ETH) for use in trades.
+     * Called internally, but exposed for dev flexibility.
+     * Useful for old ERC20s that require a 0 approval count before
+     * changing the count
+     * @param param0 __namedParamters Object
+     * @param accountAddress The user's wallet address
+     * @param tokenAddress The contract address of the token being approved
+     * @param proxyAddress The user's proxy address. If unspecified, uses the Wyvern token transfer proxy address.
+     * @returns Transaction hash
+     */
+    unapproveFungibleToken({ accountAddress, tokenAddress, proxyAddress }: {
+        accountAddress: string;
+        tokenAddress: string;
+        proxyAddress?: string;
+    }): Promise<string>;
+    /**
      * Gets the price for the order using the contract
      * @param order The order to calculate the price for
      */
