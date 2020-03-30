@@ -1,11 +1,11 @@
 import BigNumber from 'bignumber.js';
 import { WyvernProtocol } from 'wyvern-js';
 import * as Web3 from 'web3';
-import { Schema } from 'wyvern-schemas/dist/types';
+import { AnnotatedFunctionABI, Schema } from 'wyvern-schemas/dist/types';
 import { Asset, AssetEvent, ECSignature, OpenSeaAccount, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaAssetContract, OpenSeaCollection, OpenSeaFungibleToken, OpenSeaUser, Order, OrderJSON, Transaction, UnhashedOrder, UnsignedOrder, Web3Callback, WyvernAsset, WyvernBundle, WyvernFTAsset, WyvernNFTAsset } from '../types';
 export { WyvernProtocol };
-export declare const annotateERC721TransferABI: (asset: WyvernNFTAsset) => any;
-export declare const annotateERC20TransferABI: (asset: WyvernFTAsset) => any;
+export declare const annotateERC721TransferABI: (asset: WyvernNFTAsset) => AnnotatedFunctionABI;
+export declare const annotateERC20TransferABI: (asset: WyvernFTAsset) => AnnotatedFunctionABI;
 /**
  * Promisify a call a method on a contract,
  * handling Parity errors. Returns '0x' if error.
@@ -101,7 +101,7 @@ export declare function getTransferFeeSettings(web3: Web3, { asset, accountAddre
  *  to fix race conditions
  * @param shouldRoundUp Whether to round up fractional wei
  */
-export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: number, shouldRoundUp?: boolean): any;
+export declare function estimateCurrentPrice(order: Order, secondsToBacktrack?: number, shouldRoundUp?: boolean): BigNumber;
 /**
  * Get the Wyvern representation of a fungible asset
  * @param schema The WyvernSchema needed to access this asset
@@ -122,7 +122,7 @@ export declare function getWyvernBundle(assets: Asset[], schemas: Array<Schema<W
  * (Fixes a Wyvern typescript issue and casing issue)
  * @param order order to hash
  */
-export declare function getOrderHash(order: UnhashedOrder): any;
+export declare function getOrderHash(order: UnhashedOrder): string;
 /**
  * Assign an order and a new matching order to their buy/sell sides
  * @param order Original order

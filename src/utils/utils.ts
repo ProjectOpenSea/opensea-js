@@ -258,7 +258,7 @@ export const assetEventFromJSON = (assetEvent: any): AssetEvent => {
     eventType: assetEvent.event_type,
     eventTimestamp: assetEvent.event_timestamp,
     auctionType: assetEvent.auction_type,
-    totalPrice: assetEvent.total_price,
+    totalPrice: makeBigNumber(assetEvent.total_price),
     transaction: assetEvent.transaction ? transactionFromJSON(assetEvent.transaction) : null,
     paymentToken: assetEvent.payment_token ?  tokenFromJSON(assetEvent.payment_token) : null,
   }
@@ -369,8 +369,8 @@ export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
     decimals: token.decimals,
     address: token.address,
     imageUrl: token.image_url,
-    ethPrice: token.eth_price,
-    usdPrice: token.usd_price,
+    ethPrice: makeBigNumber(token.eth_price),
+    usdPrice: makeBigNumber(token.usd_price),
   }
 
   return fromJSON
@@ -461,7 +461,7 @@ export const orderToJSON = (order: Order): OrderJSON => {
     staticExtradata: order.staticExtradata,
     paymentToken: order.paymentToken.toLowerCase(),
     quantity: order.quantity.toString(),
-    basePrice: order.basePrice.toString(),
+    basePrice: makeBigNumber(order.basePrice),
     extra: order.extra.toString(),
     createdTime: order.createdTime
       ? order.createdTime.toString()

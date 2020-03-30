@@ -14,7 +14,7 @@ export interface CallSpec {
 }
 export declare const encodeReplacementPattern: ReplacementEncoder;
 export declare type SellEncoder = (schema: Schema<WyvernAsset>, asset: WyvernAsset, address: string) => CallSpec;
-export declare const encodeCall: (abi: any, parameters: any[]) => string;
+export declare const encodeCall: (abi: AnnotatedFunctionABI, parameters: any[]) => string;
 export declare const encodeSell: SellEncoder;
 export declare type AtomicizedSellEncoder = (schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string, atomicizer: WyvernAtomicizerContract) => Partial<CallSpec>;
 export declare const encodeAtomicizedSell: AtomicizedSellEncoder;
@@ -33,7 +33,7 @@ export declare const encodeDefaultCall: DefaultCallEncoder;
  * @param atomicizer Wyvern Atomicizer instance
  */
 export declare function encodeAtomicizedTransfer(schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], from: string, to: string, atomicizer: WyvernAtomicizerContract): {
-    calldata: any;
+    calldata: string;
 };
 /**
  * Encode a transfer call for a Wyvern schema function
