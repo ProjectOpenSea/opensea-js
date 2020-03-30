@@ -7,9 +7,11 @@ import {
   test,
 } from 'mocha-typescript'
 
+import { before } from 'mocha'
+
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderSide, UnhashedOrder, Order, OpenSeaCollection } from '../../src/types'
+import { Network, OrderSide, UnhashedOrder, Order, OpenSeaCollection, OpenSeaAsset, OpenSeaAssetBundle, FeeMethod } from '../../src/types'
 import { getOrderHash} from '../../src/utils/utils'
 import {
   MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS,
@@ -19,7 +21,8 @@ import {
   SPIRIT_CLASH_TOKEN_ID,
   SPIRIT_CLASH_OWNER,
   DECENTRALAND_ADDRESS,
-  DECENTRALAND_ID
+  DECENTRALAND_ID,
+  WETH_ADDRESS
  } from '../constants'
 import {
   DEFAULT_BUYER_FEE_BASIS_POINTS,
@@ -29,6 +32,7 @@ import {
   ENJIN_COIN_ADDRESS, MAINNET_PROVIDER_URL, NULL_ADDRESS, OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS
 } from '../../src/constants'
+import BigNumber from 'bignumber.js'
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
 
@@ -37,14 +41,20 @@ const client = new OpenSeaPort(provider, {
   apiKey: MAINNET_API_KEY
 }, line => console.info(`MAINNET: ${line}`))
 
+let asset: OpenSeaAsset
+const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24) // one day from now
+
 suite('seaport: fees', () => {
-  test("Computes fees correctly for non-zero-fee asset", async () => {
+  before(async () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
+    asset = await client.api.getAsset({ tokenAddress, tokenId })
+    assert.isNotNull(asset)
+  })
+
+  test("Computes fees correctly for non-zero-fee asset", async () => {
     const bountyPercent = 1.5
     const extraBountyBasisPoints = bountyPercent * 100
-
-    const asset = await client.api.getAsset({ tokenAddress, tokenId })
 
     const collection = asset.collection
     const buyerFeeBasisPoints = collection.openseaBuyerFeeBasisPoints + collection.devBuyerFeeBasisPoints
@@ -61,10 +71,10 @@ suite('seaport: fees', () => {
     assert.equal(buyerFees.devSellerFeeBasisPoints, collection.devSellerFeeBasisPoints)
     assert.equal(buyerFees.openseaBuyerFeeBasisPoints, collection.openseaBuyerFeeBasisPoints)
     assert.equal(buyerFees.openseaSellerFeeBasisPoints, collection.openseaSellerFeeBasisPoints)
-    assert.equal(buyerFees.sellerBountyBPS, 0)
+    assert.equal(buyerFees.sellerBountyBasisPoints, 0)
 
     const sellerFees = await client.computeFees({
-      fees: asset.collection, // alternate fee param
+      asset,
       extraBountyBasisPoints,
       side: OrderSide.Sell
     })
@@ -74,7 +84,7 @@ suite('seaport: fees', () => {
     assert.equal(sellerFees.devSellerFeeBasisPoints, collection.devSellerFeeBasisPoints)
     assert.equal(sellerFees.openseaBuyerFeeBasisPoints, collection.openseaBuyerFeeBasisPoints)
     assert.equal(sellerFees.openseaSellerFeeBasisPoints, collection.openseaSellerFeeBasisPoints)
-    assert.equal(sellerFees.sellerBountyBPS, extraBountyBasisPoints)
+    assert.equal(sellerFees.sellerBountyBasisPoints, extraBountyBasisPoints)
 
     const heterogenousBundleSellerFees = await client.computeFees({
       extraBountyBasisPoints,
@@ -86,7 +96,7 @@ suite('seaport: fees', () => {
     assert.equal(heterogenousBundleSellerFees.devSellerFeeBasisPoints, 0)
     assert.equal(heterogenousBundleSellerFees.openseaBuyerFeeBasisPoints, DEFAULT_BUYER_FEE_BASIS_POINTS)
     assert.equal(heterogenousBundleSellerFees.openseaSellerFeeBasisPoints, DEFAULT_SELLER_FEE_BASIS_POINTS)
-    assert.equal(heterogenousBundleSellerFees.sellerBountyBPS, extraBountyBasisPoints)
+    assert.equal(heterogenousBundleSellerFees.sellerBountyBasisPoints, extraBountyBasisPoints)
 
     const privateSellerFees = await client.computeFees({
       asset,
@@ -100,7 +110,7 @@ suite('seaport: fees', () => {
     assert.equal(privateSellerFees.devSellerFeeBasisPoints, 0)
     assert.equal(privateSellerFees.openseaBuyerFeeBasisPoints, 0)
     assert.equal(privateSellerFees.openseaSellerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.sellerBountyBPS, 0)
+    assert.equal(privateSellerFees.sellerBountyBasisPoints, 0)
 
     const privateBuyerFees = await client.computeFees({
       asset,
@@ -114,17 +124,15 @@ suite('seaport: fees', () => {
     assert.equal(privateBuyerFees.devSellerFeeBasisPoints, 0)
     assert.equal(privateBuyerFees.openseaBuyerFeeBasisPoints, 0)
     assert.equal(privateBuyerFees.openseaSellerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.sellerBountyBPS, 0)
+    assert.equal(privateBuyerFees.sellerBountyBasisPoints, 0)
   })
 
   test("Computes fees correctly for zero-fee asset", async () => {
     const asset = await client.api.getAsset({ tokenAddress: DECENTRALAND_ADDRESS, tokenId: DECENTRALAND_ID })
     const bountyPercent = 0
 
-    const collection = asset.collection
-
     const buyerFees = await client.computeFees({
-      fees: asset.collection,
+      asset,
       extraBountyBasisPoints: bountyPercent * 100,
       side: OrderSide.Buy
     })
@@ -134,10 +142,10 @@ suite('seaport: fees', () => {
     assert.equal(buyerFees.devSellerFeeBasisPoints, 0)
     assert.equal(buyerFees.openseaBuyerFeeBasisPoints, 0)
     assert.equal(buyerFees.openseaSellerFeeBasisPoints, 0)
-    assert.equal(buyerFees.sellerBountyBPS, 0)
+    assert.equal(buyerFees.sellerBountyBasisPoints, 0)
 
     const sellerFees = await client.computeFees({
-      fees: asset.collection,
+      asset,
       extraBountyBasisPoints: bountyPercent * 100,
       side: OrderSide.Sell
     })
@@ -147,16 +155,11 @@ suite('seaport: fees', () => {
     assert.equal(sellerFees.devSellerFeeBasisPoints, 0)
     assert.equal(sellerFees.openseaBuyerFeeBasisPoints, 0)
     assert.equal(sellerFees.openseaSellerFeeBasisPoints, 0)
-    assert.equal(sellerFees.sellerBountyBPS, bountyPercent * 100)
+    assert.equal(sellerFees.sellerBountyBasisPoints, bountyPercent * 100)
 
   })
 
   test("Errors for computing fees correctly", async () => {
-    const tokenId = MYTHEREUM_TOKEN_ID.toString()
-    const tokenAddress = MYTHEREUM_ADDRESS
-
-    const asset = await client.api.getAsset({ tokenAddress, tokenId })
-    assert.isNotNull(asset)
 
     try {
       await client.computeFees({
@@ -238,7 +241,120 @@ suite('seaport: fees', () => {
     assert.equal(sellerZeroFees.transferFee.toString(), "0")
     assert.equal(sellerZeroFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS)
   })
+
+  test("_getBuyFeeParameters works for assets", async () => {
+    const accountAddress = ALEX_ADDRESS
+    const extraBountyBasisPoints = 0
+    const sellOrder = await client._makeSellOrder({
+      asset,
+      quantity: 1,
+      accountAddress,
+      startAmount: 1,
+      paymentTokenAddress: NULL_ADDRESS,
+      extraBountyBasisPoints,
+      buyerAddress: NULL_ADDRESS,
+      expirationTime: 0,
+      waitForHighestBid: false,
+    })
+
+    const {
+      totalBuyerFeeBasisPoints,
+      totalSellerFeeBasisPoints
+    } = await client.computeFees({ asset, extraBountyBasisPoints, side: OrderSide.Buy })
+
+
+    const {
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee,
+      takerProtocolFee,
+      makerReferrerFee,
+      feeRecipient,
+      feeMethod
+    } = client._getBuyFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, sellOrder)
+
+    assert.isAbove(totalSellerFeeBasisPoints, 0)
+    
+    unitTestFeesBuyOrder({
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee,
+      takerProtocolFee,
+      makerReferrerFee,
+      feeRecipient,
+      feeMethod
+    })
+  })
+
+  test("_getBuyFeeParameters works for English auction assets", async () => {
+    const accountAddress = ALEX_ADDRESS
+    const extraBountyBasisPoints = 0
+    const sellOrder = await client._makeSellOrder({
+      asset,
+      quantity: 1,
+      accountAddress,
+      startAmount: 1,
+      paymentTokenAddress: WETH_ADDRESS,
+      extraBountyBasisPoints,
+      buyerAddress: NULL_ADDRESS,
+      expirationTime,
+      waitForHighestBid: true,
+    })
+
+    const {
+      totalBuyerFeeBasisPoints,
+      totalSellerFeeBasisPoints
+    } = await client.computeFees({ asset, extraBountyBasisPoints, side: OrderSide.Buy })
+
+    const {
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee,
+      takerProtocolFee,
+      makerReferrerFee,
+      feeRecipient,
+      feeMethod
+    } = client._getBuyFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, sellOrder)
+    
+    assert.isAbove(totalSellerFeeBasisPoints, 0)
+    
+    unitTestFeesBuyOrder({
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee,
+      takerProtocolFee,
+      makerReferrerFee,
+      feeRecipient,
+      feeMethod
+    })
+  })
 })
+
+function unitTestFeesBuyOrder({
+  makerRelayerFee,
+  takerRelayerFee,
+  makerProtocolFee,
+  takerProtocolFee,
+  makerReferrerFee,
+  feeRecipient,
+  feeMethod
+}: {
+  makerRelayerFee: BigNumber,
+  takerRelayerFee: BigNumber,
+  makerProtocolFee: BigNumber,
+  takerProtocolFee: BigNumber,
+  makerReferrerFee: BigNumber,
+  feeRecipient: string,
+  feeMethod: FeeMethod
+}) {
+  assert.equal(+makerRelayerFee, asset.collection.openseaBuyerFeeBasisPoints)
+  assert.equal(+takerRelayerFee, asset.collection.openseaSellerFeeBasisPoints)
+  assert.equal(+makerProtocolFee, 0)
+  assert.equal(+takerProtocolFee, 0)
+  assert.equal(+makerReferrerFee, 0)
+  assert.equal(feeRecipient, OPENSEA_FEE_RECIPIENT)
+  assert.equal(feeMethod, FeeMethod.SplitFee)
+}
 
 export function testFeesMakerOrder(order: Order | UnhashedOrder, collection?: OpenSeaCollection, makerBountyBPS?: number) {
   assert.equal(order.makerProtocolFee.toNumber(), 0)

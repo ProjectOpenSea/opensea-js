@@ -729,7 +729,7 @@ function parseSignatureHex(signature: string): ECSignature {
  */
 export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shouldRoundUp = true) {
   let { basePrice, listingTime, expirationTime, extra } = order
-  const { side, takerRelayerFee, makerRelayerFee, saleKind, feeRecipient } = order
+  const { side, takerRelayerFee, saleKind } = order
 
   const now = new BigNumber(Math.round(Date.now() / 1000)).minus(secondsToBacktrack)
   basePrice = new BigNumber(basePrice)
@@ -739,9 +739,9 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
 
   let exactPrice = basePrice
 
-  if (saleKind == SaleKind.FixedPrice) {
+  if (saleKind === SaleKind.FixedPrice) {
     // Do nothing, price is correct
-  } else if (saleKind == SaleKind.DutchAuction) {
+  } else if (saleKind === SaleKind.DutchAuction) {
     const diff = extra.times(now.minus(listingTime))
                   .dividedBy(expirationTime.minus(listingTime))
 
@@ -752,13 +752,10 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
       : basePrice.plus(diff)
   }
 
-  // Add buyer fee
-  if (side == OrderSide.Sell) {
+  // Add taker fee only for buyers
+  if (side === OrderSide.Sell && !order.waitingForBestCounterOrder) {
     // Buyer fee increases sale price
-    const buyerFeeBPS = order.waitingForBestCounterOrder
-      ? makerRelayerFee
-      : takerRelayerFee
-    exactPrice = exactPrice.times(+buyerFeeBPS / INVERSE_BASIS_POINT + 1)
+    exactPrice = exactPrice.times(+takerRelayerFee / INVERSE_BASIS_POINT + 1)
   }
 
   return shouldRoundUp ? exactPrice.ceil() : exactPrice

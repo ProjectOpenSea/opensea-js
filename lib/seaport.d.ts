@@ -1,6 +1,6 @@
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, OpenSeaFees } from './types';
+import { FeeMethod, OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 export declare class OpenSeaPort {
@@ -152,7 +152,9 @@ export declare class OpenSeaPort {
      */
     createBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, referrerAddress }: {
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: {
+            slug: string;
+        };
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -224,9 +226,7 @@ export declare class OpenSeaPort {
      * Items will mint to users' wallets only when they buy them. See https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial for more info.
      * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
      * @param param0 __namedParameters Object
-     * @param assetId Identifier for the asset, if you just want to post orders for one asset.
-     * @param assetIds Identifiers for the assets, if you want to post orders for many assets at once.
-     * @param factoryAddress Address of the factory contract
+     * @param assets Which assets you want to post orders for. Use the tokenAddress of your factory contract
      * @param accountAddress Address of the factory owner's wallet
      * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
@@ -240,10 +240,8 @@ export declare class OpenSeaPort {
      * @param numberOfOrders Number of times to repeat creating the same order for each asset. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
      * @returns The number of orders created in total
      */
-    createFactorySellOrders({ assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders }: {
-        assetId?: string;
-        assetIds?: string[];
-        factoryAddress: string;
+    createFactorySellOrders({ assets, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders }: {
+        assets: Asset[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -281,7 +279,9 @@ export declare class OpenSeaPort {
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: {
+            slug: string;
+        };
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -299,13 +299,14 @@ export declare class OpenSeaPort {
      * @param accountAddress The taker's wallet address
      * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
      * @param referrerAddress The optional address that referred the order
+     * @returns Transaction hash for fulfilling the order
      */
     fulfillOrder({ order, accountAddress, recipientAddress, referrerAddress }: {
         order: Order;
         accountAddress: string;
         recipientAddress?: string;
         referrerAddress?: string;
-    }): Promise<void>;
+    }): Promise<string>;
     /**
      * Cancel an order on-chain, preventing it from ever being fulfilled.
      * @param param0 __namedParameters Object
@@ -481,16 +482,14 @@ export declare class OpenSeaPort {
     /**
      * Compute the fees for an order
      * @param param0 __namedParameters
-     * @param asset Optional asset to use to find fees for
-     * @param fees Optional prefetched fees to use instead of assets
+     * @param asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
      * @param side The side of the order (buy or sell)
      * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
      * @param isPrivate Whether the order is private or not (known taker)
      * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
      */
-    computeFees({ asset, fees, side, accountAddress, isPrivate, extraBountyBasisPoints }: {
+    computeFees({ asset, side, accountAddress, isPrivate, extraBountyBasisPoints }: {
         asset?: OpenSeaAsset;
-        fees?: OpenSeaFees;
         side: OrderSide;
         accountAddress?: string;
         isPrivate?: boolean;
@@ -604,7 +603,9 @@ export declare class OpenSeaPort {
     }>;
     _makeBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, referrerAddress }: {
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: {
+            slug: string;
+        };
         quantities: number[];
         accountAddress: string;
         startAmount: number;
@@ -619,7 +620,9 @@ export declare class OpenSeaPort {
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: {
+            slug: string;
+        };
         quantities: number[];
         accountAddress: string;
         startAmount: number;
@@ -692,6 +695,30 @@ export declare class OpenSeaPort {
         wyAsset: WyvernAsset;
         schemaName: WyvernSchemaName;
     }): Promise<boolean>;
+    _getBuyFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, sellOrder?: UnhashedOrder): {
+        makerRelayerFee: BigNumber;
+        takerRelayerFee: BigNumber;
+        makerProtocolFee: BigNumber;
+        takerProtocolFee: BigNumber;
+        makerReferrerFee: BigNumber;
+        feeRecipient: string;
+        feeMethod: FeeMethod;
+    };
+    _getSellFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, waitForHighestBid: boolean, sellerBountyBasisPoints?: number): {
+        makerRelayerFee: BigNumber;
+        takerRelayerFee: BigNumber;
+        makerProtocolFee: BigNumber;
+        takerProtocolFee: BigNumber;
+        makerReferrerFee: BigNumber;
+        feeRecipient: string;
+        feeMethod: FeeMethod;
+    };
+    /**
+     * Validate fee parameters
+     * @param totalBuyerFeeBasisPoints Total buyer fees
+     * @param totalSellerFeeBasisPoints Total seller fees
+     */
+    private _validateFees;
     /**
      * Get the listing and expiration time paramters for a new order
      * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
@@ -708,8 +735,6 @@ export declare class OpenSeaPort {
      * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
      */
     private _getPriceParameters;
-    private _getBuyFeeParameters;
-    private _getSellFeeParameters;
     private _getMetadata;
     private _atomicMatch;
     private _getRequiredAmountForTakingSellOrder;

@@ -5,7 +5,7 @@ import { Schema } from 'wyvern-schemas/dist/types'
 import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
 import { CanonicalWETH, ERC20, ERC721, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy, UniswapFactory, UniswapExchange, StaticCheckTxOrigin, StaticCheckCheezeWizards, StaticCheckDecentralandEstates, CheezeWizardsBasicTournament, DecentralandEstates, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, WyvernNFTAsset, WyvernFTAsset, TokenStandardVersion, OpenSeaCollection, OpenSeaFees } from './types'
+import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, WyvernNFTAsset, WyvernFTAsset, TokenStandardVersion } from './types'
 import {
   confirmTransaction,
   makeBigNumber, orderToJSON,
@@ -466,7 +466,7 @@ export class OpenSeaPort {
   public async createBundleBuyOrder(
       {  assets, collection, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, sellOrder, referrerAddress }:
       { assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: { slug: string };
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -661,9 +661,7 @@ export class OpenSeaPort {
    * Items will mint to users' wallets only when they buy them. See https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial for more info.
    * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
    * @param param0 __namedParameters Object
-   * @param assetId Identifier for the asset, if you just want to post orders for one asset.
-   * @param assetIds Identifiers for the assets, if you want to post orders for many assets at once.
-   * @param factoryAddress Address of the factory contract
+   * @param assets Which assets you want to post orders for. Use the tokenAddress of your factory contract
    * @param accountAddress Address of the factory owner's wallet
    * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
@@ -678,10 +676,8 @@ export class OpenSeaPort {
    * @returns The number of orders created in total
    */
   public async createFactorySellOrders(
-      { assetId, assetIds, factoryAddress, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, numberOfOrders = 1 }:
-      { assetId?: string;
-        assetIds?: string[];
-        factoryAddress: string;
+      { assets, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, numberOfOrders = 1 }:
+      { assets: Asset[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
@@ -699,12 +695,13 @@ export class OpenSeaPort {
       throw new Error('Need to make at least one sell order')
     }
 
-    const factoryIds = assetIds || (assetId ? [ assetId ] : [])
-    if (!factoryIds.length) {
-      throw new Error('Need either one assetId or an array of assetIds')
+    if (!assets || !assets.length) {
+      throw new Error('Need at least one asset to create orders for')
     }
 
-    const assets: Asset[] = factoryIds.map(tokenId => ({ tokenAddress: factoryAddress, tokenId }))
+    if (_.uniqBy(assets, a => a.tokenAddress).length !== 1) {
+      throw new Error('All assets must be on the same factory contract address')
+    }
 
     // Validate just a single dummy order but don't post it
     const dummyOrder = await this._makeSellOrder({
@@ -779,7 +776,7 @@ export class OpenSeaPort {
       numOrdersCreated += batchOrdersCreated.length
 
       // Don't overwhelm router
-      await delay(1000)
+      await delay(500)
     }
 
     return numOrdersCreated
@@ -811,7 +808,7 @@ export class OpenSeaPort {
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: { slug: string };
         quantities?: number[];
         accountAddress: string;
         startAmount: number;
@@ -872,6 +869,7 @@ export class OpenSeaPort {
    * @param accountAddress The taker's wallet address
    * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
    * @param referrerAddress The optional address that referred the order
+   * @returns Transaction hash for fulfilling the order
    */
   public async fulfillOrder(
       { order, accountAddress, recipientAddress, referrerAddress }:
@@ -879,7 +877,7 @@ export class OpenSeaPort {
         accountAddress: string;
         recipientAddress?: string;
         referrerAddress?: string; }
-    ) {
+    ): Promise<string> {
     const matchingOrder = this._makeMatchingOrder({
       order,
       accountAddress,
@@ -891,10 +889,11 @@ export class OpenSeaPort {
     const metadata = this._getMetadata(order, referrerAddress)
     const transactionHash = await this._atomicMatch({ buy, sell, accountAddress, metadata })
 
-    await this._confirmTransaction(transactionHash.toString(), EventType.MatchOrders, "Fulfilling order", async () => {
+    await this._confirmTransaction(transactionHash, EventType.MatchOrders, "Fulfilling order", async () => {
       const isOpen = await this._validateOrder(order)
       return !isOpen
     })
+    return transactionHash
   }
 
   /**
@@ -1240,9 +1239,7 @@ export class OpenSeaPort {
       ? WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
       : makeBigNumber(1)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
-    const abi = asset.schemaName === WyvernSchemaName.ERC20
-      ? annotateERC20TransferABI(wyAsset as WyvernFTAsset)
-      : schema.functions.transfer(wyAsset)
+    const abi = schema.functions.transfer(wyAsset)
 
     let from = fromAddress
     if (useProxy) {
@@ -1509,17 +1506,15 @@ export class OpenSeaPort {
   /**
    * Compute the fees for an order
    * @param param0 __namedParameters
-   * @param asset Optional asset to use to find fees for
-   * @param fees Optional prefetched fees to use instead of assets
+   * @param asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
    * @param side The side of the order (buy or sell)
    * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
    * @param isPrivate Whether the order is private or not (known taker)
    * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
    */
   public async computeFees(
-      { asset, fees, side, accountAddress, isPrivate = false, extraBountyBasisPoints = 0 }:
+      { asset, side, accountAddress, isPrivate = false, extraBountyBasisPoints = 0 }:
       { asset?: OpenSeaAsset;
-        fees?: OpenSeaFees;
         side: OrderSide;
         accountAddress?: string;
         isPrivate?: boolean;
@@ -1534,15 +1529,11 @@ export class OpenSeaPort {
     let transferFeeTokenAddress = null
     let maxTotalBountyBPS = DEFAULT_MAX_BOUNTY
 
-    if (asset != null) {
-      fees = asset.collection
-    }
-
-    if (fees) {
-      openseaBuyerFeeBasisPoints = fees.openseaBuyerFeeBasisPoints
-      openseaSellerFeeBasisPoints = fees.openseaSellerFeeBasisPoints
-      devBuyerFeeBasisPoints = fees.devBuyerFeeBasisPoints
-      devSellerFeeBasisPoints = fees.devSellerFeeBasisPoints
+    if (asset) {
+      openseaBuyerFeeBasisPoints = +asset.collection.openseaBuyerFeeBasisPoints
+      openseaSellerFeeBasisPoints = +asset.collection.openseaSellerFeeBasisPoints
+      devBuyerFeeBasisPoints = +asset.collection.devBuyerFeeBasisPoints
+      devSellerFeeBasisPoints = +asset.collection.devSellerFeeBasisPoints
 
       maxTotalBountyBPS = openseaSellerFeeBasisPoints
     }
@@ -1569,13 +1560,13 @@ export class OpenSeaPort {
     }
 
     // Compute bounty
-    let sellerBountyBPS = side == OrderSide.Sell
+    let sellerBountyBasisPoints = side == OrderSide.Sell
       ? extraBountyBasisPoints
       : 0
 
     // Check that bounty is in range of the opensea fee
-    const bountyTooLarge = sellerBountyBPS + OPENSEA_SELLER_BOUNTY_BASIS_POINTS > maxTotalBountyBPS
-    if (sellerBountyBPS > 0 && bountyTooLarge) {
+    const bountyTooLarge = sellerBountyBasisPoints + OPENSEA_SELLER_BOUNTY_BASIS_POINTS > maxTotalBountyBPS
+    if (sellerBountyBasisPoints > 0 && bountyTooLarge) {
       let errorMessage = `Total bounty exceeds the maximum for this asset type (${maxTotalBountyBPS / 100}%).`
       if (maxTotalBountyBPS >= OPENSEA_SELLER_BOUNTY_BASIS_POINTS) {
         errorMessage += ` Remember that OpenSea will add ${OPENSEA_SELLER_BOUNTY_BASIS_POINTS / 100}% for referrers with OpenSea accounts!`
@@ -1589,7 +1580,7 @@ export class OpenSeaPort {
       openseaSellerFeeBasisPoints = 0
       devBuyerFeeBasisPoints = 0
       devSellerFeeBasisPoints = 0
-      sellerBountyBPS = 0
+      sellerBountyBasisPoints = 0
     }
 
     return {
@@ -1599,7 +1590,7 @@ export class OpenSeaPort {
       openseaSellerFeeBasisPoints,
       devBuyerFeeBasisPoints,
       devSellerFeeBasisPoints,
-      sellerBountyBPS,
+      sellerBountyBasisPoints,
       transferFee,
       transferFeeTokenAddress,
     }
@@ -1937,7 +1928,7 @@ export class OpenSeaPort {
 
     const { totalSellerFeeBasisPoints,
             totalBuyerFeeBasisPoints,
-            sellerBountyBPS } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+            sellerBountyBasisPoints } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const { target, calldata, replacementPattern } = encodeSell(schema, wyAsset, accountAddress)
 
@@ -1956,7 +1947,7 @@ export class OpenSeaPort {
       makerReferrerFee,
       feeRecipient,
       feeMethod
-    } = this._getSellFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, waitForHighestBid, sellerBountyBPS)
+    } = this._getSellFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, waitForHighestBid, sellerBountyBasisPoints)
 
     const { staticTarget, staticExtradata } = await this._getStaticCallTargetAndExtraData({ asset: openSeaAsset, useTxnOriginStaticCall: waitForHighestBid })
 
@@ -2073,7 +2064,7 @@ export class OpenSeaPort {
   public async _makeBundleBuyOrder(
       { assets, collection, quantities, accountAddress, startAmount, expirationTime = 0, paymentTokenAddress, extraBountyBasisPoints = 0, sellOrder, referrerAddress }:
       { assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: { slug: string };
         quantities: number[];
         accountAddress: string;
         startAmount: number;
@@ -2093,8 +2084,12 @@ export class OpenSeaPort {
       ? sellOrder.maker
       : NULL_ADDRESS
 
+    // If all assets are for the same collection, use its fees
+    const asset = collection
+      ? await this.api.getAsset(assets[0])
+      : undefined
     const { totalBuyerFeeBasisPoints,
-            totalSellerFeeBasisPoints } = await this.computeFees({ fees: collection, extraBountyBasisPoints, side: OrderSide.Buy })
+            totalSellerFeeBasisPoints } = await this.computeFees({ asset, extraBountyBasisPoints, side: OrderSide.Buy })
 
     const {
       makerRelayerFee,
@@ -2143,9 +2138,7 @@ export class OpenSeaPort {
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle,
-        referrerAddress,
-        // TODO deprecate
-        schema: schemas[0].name as WyvernSchemaName
+        referrerAddress
       }
     }
   }
@@ -2156,7 +2149,7 @@ export class OpenSeaPort {
         bundleDescription?: string;
         bundleExternalLink?: string;
         assets: Asset[];
-        collection?: OpenSeaFees;
+        collection?: { slug: string };
         quantities: number[];
         accountAddress: string;
         startAmount: number;
@@ -2177,10 +2170,14 @@ export class OpenSeaPort {
 
     const isPrivate = buyerAddress != NULL_ADDRESS
 
+    // If all assets are for the same collection, use its fees
+    const asset = collection
+      ? await this.api.getAsset(assets[0])
+      : undefined
     const {
       totalSellerFeeBasisPoints,
       totalBuyerFeeBasisPoints,
-      sellerBountyBPS } = await this.computeFees({ fees: collection, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+      sellerBountyBasisPoints } = await this.computeFees({ asset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
     const schemas = bundle.schemas.map(name => this._getSchema(name))
     const { calldata, replacementPattern } = encodeAtomicizedSell(schemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
@@ -2202,7 +2199,7 @@ export class OpenSeaPort {
       takerProtocolFee,
       makerReferrerFee,
       feeRecipient
-    } = this._getSellFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, waitForHighestBid, sellerBountyBPS)
+    } = this._getSellFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, waitForHighestBid, sellerBountyBasisPoints)
 
     return {
       exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
@@ -2232,9 +2229,7 @@ export class OpenSeaPort {
       expirationTime: times.expirationTime,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
-        bundle,
-        // TODO deprecate
-        schema: schemas[0].name as WyvernSchemaName
+        bundle
       }
     }
   }
@@ -2261,7 +2256,10 @@ export class OpenSeaPort {
         const schemas = bundle.schemas
           ? bundle.schemas.map(schemaName => this._getSchema(schemaName))
           // Backwards compat:
-          : bundle.assets.map((asset, i) => this._getSchema(order.metadata.schema))
+          : bundle.assets.map(() => this._getSchema(
+              'schema' in order.metadata
+              ? order.metadata.schema
+              : undefined))
         const atomicized = order.side == OrderSide.Buy
           ? encodeAtomicizedSell(schemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
           : encodeAtomicizedBuy(schemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
@@ -2407,7 +2405,7 @@ export class OpenSeaPort {
         : []
     const schemaNames = 'bundle' in order.metadata && 'schemas' in order.metadata.bundle
       ? order.metadata.bundle.schemas
-      : order.metadata.schema
+      : 'schema' in order.metadata
         ? [order.metadata.schema]
         : []
     const tokenAddress = order.paymentToken
@@ -2661,6 +2659,87 @@ export class OpenSeaPort {
     return false
   }
 
+  public _getBuyFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, sellOrder?: UnhashedOrder) {
+
+    this._validateFees(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints)
+
+    let makerRelayerFee
+    let takerRelayerFee
+
+    if (sellOrder) {
+      // Use the sell order's fees to ensure compatiblity and force the order
+      // to only be acceptable by the sell order maker.
+      // Swap maker/taker depending on whether it's an English auction (taker)
+      // TODO add extraBountyBasisPoints when making bidder bounties
+      makerRelayerFee = sellOrder.waitingForBestCounterOrder
+        ? makeBigNumber(sellOrder.makerRelayerFee)
+        : makeBigNumber(sellOrder.takerRelayerFee)
+      takerRelayerFee = sellOrder.waitingForBestCounterOrder
+        ? makeBigNumber(sellOrder.takerRelayerFee)
+        : makeBigNumber(sellOrder.makerRelayerFee)
+    } else {
+      makerRelayerFee = makeBigNumber(totalBuyerFeeBasisPoints)
+      takerRelayerFee = makeBigNumber(totalSellerFeeBasisPoints)
+    }
+
+    return {
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee: makeBigNumber(0),
+      takerProtocolFee: makeBigNumber(0),
+      makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
+      feeRecipient: OPENSEA_FEE_RECIPIENT,
+      feeMethod: FeeMethod.SplitFee
+    }
+  }
+
+  public _getSellFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, waitForHighestBid: boolean, sellerBountyBasisPoints = 0) {
+
+    this._validateFees(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints)
+    // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
+    const feeRecipient = waitForHighestBid
+      ? NULL_ADDRESS
+      : OPENSEA_FEE_RECIPIENT
+
+    // Swap maker/taker fees when it's an English auction,
+    // since these sell orders are takers not makers
+    const makerRelayerFee = waitForHighestBid
+      ? makeBigNumber(totalBuyerFeeBasisPoints)
+      : makeBigNumber(totalSellerFeeBasisPoints)
+    const takerRelayerFee = waitForHighestBid
+      ? makeBigNumber(totalSellerFeeBasisPoints)
+      : makeBigNumber(totalBuyerFeeBasisPoints)
+
+    return {
+      makerRelayerFee,
+      takerRelayerFee,
+      makerProtocolFee: makeBigNumber(0),
+      takerProtocolFee: makeBigNumber(0),
+      makerReferrerFee: makeBigNumber(sellerBountyBasisPoints),
+      feeRecipient,
+      feeMethod: FeeMethod.SplitFee
+    }
+  }
+
+  /**
+   * Validate fee parameters
+   * @param totalBuyerFeeBasisPoints Total buyer fees
+   * @param totalSellerFeeBasisPoints Total seller fees
+   */
+  private _validateFees(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number) {
+    const maxFeePercent = INVERSE_BASIS_POINT / 100
+
+    if (totalBuyerFeeBasisPoints > INVERSE_BASIS_POINT
+        || totalSellerFeeBasisPoints > INVERSE_BASIS_POINT) {
+      throw new Error(`Invalid buyer/seller fees: must be less than ${maxFeePercent}%`)
+    }
+
+    if (totalBuyerFeeBasisPoints < 0
+        || totalSellerFeeBasisPoints < 0) {
+      throw new Error(`Invalid buyer/seller fees: must be at least 0%`)
+    }
+  }
+
   /**
    * Get the listing and expiration time paramters for a new order
    * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
@@ -2757,63 +2836,6 @@ export class OpenSeaPort {
       : WyvernProtocol.toBaseUnitAmount(makeBigNumber(priceDiff), token.decimals)
 
     return { basePrice, extra, paymentToken }
-  }
-
-  private _getBuyFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, sellOrder?: UnhashedOrder) {
-    let makerRelayerFee
-    let takerRelayerFee
-
-    if (sellOrder) {
-      // Use the sell order's fees to ensure compatiblity and force the order
-      // to only be acceptable by the sell order maker.
-      // Swap maker/taker depending on whether it's an English auction (taker)
-      // TODO add extraBountyBasisPoints when making bidder bounties
-      makerRelayerFee = sellOrder.waitingForBestCounterOrder
-        ? makeBigNumber(sellOrder.makerRelayerFee)
-        : makeBigNumber(sellOrder.takerRelayerFee)
-      takerRelayerFee = sellOrder.waitingForBestCounterOrder
-        ? makeBigNumber(sellOrder.takerRelayerFee)
-        : makeBigNumber(sellOrder.makerRelayerFee)
-    } else {
-      makerRelayerFee = makeBigNumber(totalBuyerFeeBasisPoints)
-      takerRelayerFee = makeBigNumber(totalSellerFeeBasisPoints)
-    }
-
-    return {
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee: makeBigNumber(0),
-      takerProtocolFee: makeBigNumber(0),
-      makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
-      feeRecipient: OPENSEA_FEE_RECIPIENT,
-      feeMethod: FeeMethod.SplitFee
-    }
-  }
-
-  private _getSellFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, waitForHighestBid: boolean, sellerBountyBPS = 0) {
-    // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
-    const feeRecipient = waitForHighestBid
-      ? NULL_ADDRESS
-      : OPENSEA_FEE_RECIPIENT
-
-    // Swap maker/taker fees when it's an English auction,
-    // since these sell orders are takers not makers
-    const makerRelayerFee = waitForHighestBid
-      ? makeBigNumber(totalBuyerFeeBasisPoints)
-      : makeBigNumber(totalSellerFeeBasisPoints)
-    const takerRelayerFee = waitForHighestBid
-      ? makeBigNumber(totalSellerFeeBasisPoints)
-      : makeBigNumber(totalBuyerFeeBasisPoints)
-
-    return {
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee: makeBigNumber(0),
-      takerProtocolFee: makeBigNumber(0),
-      makerReferrerFee: makeBigNumber(sellerBountyBPS),
-      feeRecipient,
-      feeMethod: FeeMethod.SplitFee
-    }
   }
 
   private _getMetadata(order: Order, referrerAddress?: string) {

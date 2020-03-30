@@ -242,7 +242,7 @@ export interface Asset {
 /**
  * Annotated asset contract with OpenSea metadata
  */
-export type OpenSeaAssetContract = OpenSeaFees & {
+export interface OpenSeaAssetContract extends OpenSeaFees {
   // Name of the asset's contract
   name: string
   // Address of this contract
@@ -285,7 +285,7 @@ interface StringTraitStats {
 /**
  * Annotated collection with OpenSea metadata
  */
-export type OpenSeaCollection = OpenSeaFees & {
+export interface OpenSeaCollection extends OpenSeaFees {
   // Name of the collection
   name: string
   // Slug, used in URL
@@ -529,7 +529,7 @@ export interface OpenSeaFees {
 /**
  * Fully computed fees including bounties and transfer fees
  */
-export type ComputedFees = OpenSeaFees & {
+export interface ComputedFees extends OpenSeaFees {
   // Total fees. dev + opensea
   totalBuyerFeeBasisPoints: number
   totalSellerFeeBasisPoints: number
@@ -540,7 +540,7 @@ export type ComputedFees = OpenSeaFees & {
 
   // Fees that go to whoever refers the order to the taker.
   // Comes out of OpenSea fees
-  sellerBountyBPS: number
+  sellerBountyBasisPoints: number
 }
 
 export interface ExchangeMetadataForAsset {
@@ -551,7 +551,6 @@ export interface ExchangeMetadataForAsset {
 
 export interface ExchangeMetadataForBundle {
   bundle: WyvernBundle
-  schema?: WyvernSchemaName // DEPRECATED: use bundle.schemas
   referrerAddress?: string
 }
 
@@ -647,7 +646,8 @@ export interface OrderQuery extends Partial<OrderJSON> {
   sale_kind?: SaleKind,
   asset_contract_address?: string,
   payment_token_address?: string,
-  only_english?: boolean
+  is_english?: boolean
+  is_expired?: boolean
   bundled?: boolean
   include_invalid?: boolean
   token_id?: number | string
