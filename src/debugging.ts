@@ -93,8 +93,8 @@ export async function requireOrdersCanMatch(
         throw new Error(`Sell-side order is set in the future or expired`)
     }
 
-    // Handle default
-    throw new Error('Unable to match offer with auction')
+    // Handle default, which is likely now() being diff than local time
+    throw new Error('Error creating your order. Check that your system clock is set to the current date and time before you try again.')
 }
 
 /**
