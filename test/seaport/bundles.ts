@@ -29,24 +29,24 @@ const client = new OpenSeaPort(provider, {
 }, line => console.info(`MAINNET: ${line}`))
 
 const assetsForBundleOrder = [
-  { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
-  { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS },
+  { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS, quantity: 1 },
+  { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS, quantity: 1 },
 ]
 
 const fungibleAssetsForBundleOrder = [
-  { tokenAddress: GODS_UNCHAINED_CHEST_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20 },
-  { tokenAddress: BENZENE_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20 },
+  { tokenAddress: BENZENE_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20, quantity: 20 },
+  { tokenAddress: GODS_UNCHAINED_CHEST_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20, quantity: 1 },
 ]
 
 const heterogenousSemiFungibleAssetsForBundleOrder = [
-  { tokenId: DISSOLUTION_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
-  { tokenId: AGE_OF_RUST_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
-  { tokenId: CRYPTOVOXELS_WEARABLE_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
+  { tokenId: DISSOLUTION_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155, quantity: 2 },
+  { tokenId: AGE_OF_RUST_TOKEN_ID, tokenAddress: ENJIN_ADDRESS, schemaName: WyvernSchemaName.ERC1155, quantity: 1 },
+  { tokenId: CRYPTOVOXELS_WEARABLE_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155, quantity: 1 },
 ]
 
 const homogenousSemiFungibleAssetsForBundleOrder = [
-  { tokenId: CRYPTOVOXELS_WEARABLE_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
-  { tokenId: CRYPTOVOXELS_WEARABLE_2_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155 },
+  { tokenId: CRYPTOVOXELS_WEARABLE_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155, quantity: 1 },
+  { tokenId: CRYPTOVOXELS_WEARABLE_2_ID, tokenAddress: CRYPTOVOXELS_WEARABLE_ADDRESS, schemaName: WyvernSchemaName.ERC1155, quantity: 2 },
 ]
 
 let manaAddress: string
@@ -254,7 +254,7 @@ suite('seaport: bundles', () => {
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with fungible assets",
       assets: fungibleAssetsForBundleOrder,
-      quantities: [2, 12],
+      quantities: fungibleAssetsForBundleOrder.map(a => a.quantity),
       accountAddress,
       startAmount: amountInEth,
       expirationTime: 0,
@@ -283,7 +283,7 @@ suite('seaport: bundles', () => {
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with SFT assets",
       assets: heterogenousSemiFungibleAssetsForBundleOrder,
-      quantities: [2, 1, 1],
+      quantities: heterogenousSemiFungibleAssetsForBundleOrder.map(a => a.quantity),
       accountAddress,
       startAmount: amountInEth,
       expirationTime: 0,
@@ -314,7 +314,7 @@ suite('seaport: bundles', () => {
       bundleDescription: "This is a test with homogenous SFT assets",
       assets: homogenousSemiFungibleAssetsForBundleOrder,
       collection: asset.collection,
-      quantities: [1, 2],
+      quantities: homogenousSemiFungibleAssetsForBundleOrder.map(a => a.quantity),
       accountAddress,
       startAmount: amountInEth,
       expirationTime: 0,
@@ -338,15 +338,16 @@ suite('seaport: bundles', () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInEth = 1
+    const assets = [
+      assetsForBundleOrder[0],
+      fungibleAssetsForBundleOrder[0],
+      heterogenousSemiFungibleAssetsForBundleOrder[0]]
 
     const order = await client._makeBundleSellOrder({
       bundleName: "Test Bundle",
       bundleDescription: "This is a test with different schemas of assets",
-      assets: [
-        assetsForBundleOrder[0],
-        fungibleAssetsForBundleOrder[0],
-        heterogenousSemiFungibleAssetsForBundleOrder[0]],
-      quantities: [1, 2, 2],
+      assets,
+      quantities: assets.map(a => a.quantity),
       accountAddress,
       startAmount: amountInEth,
       expirationTime: 0,
@@ -369,13 +370,14 @@ suite('seaport: bundles', () => {
     const accountAddress = ALEX_ADDRESS_2
     const takerAddress = ALEX_ADDRESS
     const amountInEth = 0.01
+    const assets = [
+      assetsForBundleOrder[0],
+      fungibleAssetsForBundleOrder[0],
+      heterogenousSemiFungibleAssetsForBundleOrder[0]]
 
     const order = await client._makeBundleBuyOrder({
-      assets: [
-        assetsForBundleOrder[0],
-        fungibleAssetsForBundleOrder[0],
-        heterogenousSemiFungibleAssetsForBundleOrder[0]],
-      quantities: [1, 2, 2],
+      assets,
+      quantities: assets.map(a => a.quantity),
       accountAddress,
       startAmount: amountInEth,
       expirationTime: 0,

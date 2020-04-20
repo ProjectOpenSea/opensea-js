@@ -1319,6 +1319,7 @@ export class OpenSeaPort {
 
       if (retries <= 0) {
         console.error(error)
+        console.error(from, abi.target, data)
         return false
       }
       await delay(500)
@@ -2131,8 +2132,8 @@ export class OpenSeaPort {
 
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const quantityBNs = quantities.map((quantity, i) => WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), assets[i].decimals || 0))
-    const schemas = assets.map(a => this._getSchema(a.schemaName))
-    const bundle = getWyvernBundle(assets, schemas, quantityBNs)
+    const bundle = getWyvernBundle(assets, assets.map(a => this._getSchema(a.schemaName)), quantityBNs)
+    const orderedSchemas = bundle.schemas.map(name => this._getSchema(name))
 
     const taker = sellOrder
       ? sellOrder.maker
@@ -2155,7 +2156,7 @@ export class OpenSeaPort {
       feeMethod
     } = this._getBuyFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, sellOrder)
 
-    const { calldata, replacementPattern } = encodeAtomicizedBuy(schemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const { calldata, replacementPattern } = encodeAtomicizedBuy(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
     if (!calldata || !replacementPattern) {
       throw new Error("Failed to encode")
     }
@@ -2218,6 +2219,7 @@ export class OpenSeaPort {
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress)
     const quantityBNs = quantities.map((quantity, i) => WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), assets[i].decimals || 0))
     const bundle = getWyvernBundle(assets, assets.map(a => this._getSchema(a.schemaName)), quantityBNs)
+    const orderedSchemas = bundle.schemas.map(name => this._getSchema(name))
     bundle.name = bundleName
     bundle.description = bundleDescription
     bundle.external_link = bundleExternalLink
@@ -2233,8 +2235,7 @@ export class OpenSeaPort {
       totalBuyerFeeBasisPoints,
       sellerBountyBasisPoints } = await this.computeFees({ asset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
-    const schemas = bundle.schemas.map(name => this._getSchema(name))
-    const { calldata, replacementPattern } = encodeAtomicizedSell(schemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const { calldata, replacementPattern } = encodeAtomicizedSell(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
     if (!calldata || !replacementPattern) {
       throw new Error("Failed to encode")
     }
@@ -2307,7 +2308,7 @@ export class OpenSeaPort {
       } else if ('bundle' in order.metadata) {
         // We're matching a bundle order
         const bundle = order.metadata.bundle
-        const schemas = bundle.schemas
+        const orderedSchemas = bundle.schemas
           ? bundle.schemas.map(schemaName => this._getSchema(schemaName))
           // Backwards compat:
           : bundle.assets.map(() => this._getSchema(
@@ -2315,8 +2316,8 @@ export class OpenSeaPort {
               ? order.metadata.schema
               : undefined))
         const atomicized = order.side == OrderSide.Buy
-          ? encodeAtomicizedSell(schemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
-          : encodeAtomicizedBuy(schemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
+          ? encodeAtomicizedSell(orderedSchemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
+          : encodeAtomicizedBuy(orderedSchemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
         return {
           target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
           calldata: atomicized.calldata,

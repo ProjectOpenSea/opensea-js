@@ -86,7 +86,7 @@ export class OpenSeaAPI {
   public async postOrder(order: OrderJSON, retries = 2): Promise<Order> {
     let json
     try {
-      json = await this.post(`${ORDERBOOK_PATH}/orders/post`, order) as OrderJSON
+      json = await this.post(`${ORDERBOOK_PATH}/orders/post/`, order) as OrderJSON
     } catch (error) {
       _throwOrContinue(error, retries)
       await delay(3000)
@@ -125,7 +125,7 @@ export class OpenSeaAPI {
   public async getOrder(query: OrderQuery): Promise<Order> {
 
     const result = await this.get(
-      `${ORDERBOOK_PATH}/orders`, {
+      `${ORDERBOOK_PATH}/orders/`, {
         limit: 1,
         ...query
       }
@@ -159,7 +159,7 @@ export class OpenSeaAPI {
     ): Promise<{orders: Order[]; count: number}> {
 
     const result = await this.get(
-      `${ORDERBOOK_PATH}/orders`,
+      `${ORDERBOOK_PATH}/orders/`,
       {
         limit: this.pageSize,
         offset: (page - 1) * this.pageSize,
@@ -199,7 +199,7 @@ export class OpenSeaAPI {
 
     let json
     try {
-      json = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId || 0}`)
+      json = await this.get(`${API_PATH}/asset/${tokenAddress}/${tokenId || 0}/`)
     } catch (error) {
       _throwOrContinue(error, retries)
       await delay(1000)

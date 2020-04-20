@@ -828,14 +828,17 @@ export async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, account
 
   // Make sure assets are transferrable
   await Promise.all(getAssetsAndQuantities(order).map(async ({asset, quantity}) => {
+    const fromAddress = sell.maker
+    const toAddress =  buy.maker
+    const useProxy = asset.tokenAddress === CK_ADDRESS || asset.schemaName === WyvernSchemaName.ERC20
     const isTransferrable = await client.isAssetTransferrable({
       asset,
       quantity,
-      fromAddress: sell.maker,
-      toAddress: buy.maker,
-      useProxy: asset.tokenAddress == CK_ADDRESS,
+      fromAddress,
+      toAddress,
+      useProxy,
     })
-    assert.isTrue(isTransferrable)
+    assert.isTrue(isTransferrable, `Not transferrable: ${asset.tokenAddress} # ${asset.tokenId} schema ${asset.schemaName} quantity ${quantity} from ${fromAddress} to ${toAddress} using proxy: ${useProxy}`)
   }))
 }
 

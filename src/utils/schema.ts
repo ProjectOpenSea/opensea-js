@@ -127,7 +127,13 @@ export const encodeBuy: BuyEncoder<any> = (schema, asset, address) => {
       case FunctionInputKind.Owner:
         return WyvernProtocol.generateDefaultValue(input.type)
       default:
-        return input.value.toString()
+        try {
+          return input.value.toString()
+        } catch (e) {
+          console.error(schema)
+          console.error(asset)
+          throw e
+        }
     }
   })
   const calldata = encodeCall(transfer, parameters)
