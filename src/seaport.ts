@@ -1401,7 +1401,7 @@ export class OpenSeaPort {
     const schemaNames = assets.map(asset => asset.schemaName || schemaName)
     const wyAssets = assets.map(asset => getWyvernAsset(this._getSchema(asset.schemaName), asset))
 
-    const { calldata } = encodeAtomicizedTransfer(schemaNames.map(name => this._getSchema(name)), wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const { calldata, target } = encodeAtomicizedTransfer(schemaNames.map(name => this._getSchema(name)), wyAssets, fromAddress, toAddress, this._wyvernProtocol, this._networkName)
 
     let proxyAddress = await this._getProxy(fromAddress)
     if (!proxyAddress) {
@@ -1416,7 +1416,7 @@ export class OpenSeaPort {
     const txHash = await sendRawTransaction(this.web3, {
       from: fromAddress,
       to: proxyAddress,
-      data: encodeProxyCall(WyvernProtocol.getAtomicizerContractAddress(this._networkName), HowToCall.DelegateCall, calldata),
+      data: encodeProxyCall(target, HowToCall.DelegateCall, calldata),
       gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress: fromAddress })
@@ -1783,12 +1783,12 @@ export class OpenSeaPort {
 
     await this._approveAll({schemaNames, wyAssets, accountAddress: fromAddress, proxyAddress})
 
-    const { calldata } = encodeAtomicizedTransfer(schemaNames.map(name => this._getSchema(name)), wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
+    const { calldata, target } = encodeAtomicizedTransfer(schemaNames.map(name => this._getSchema(name)), wyAssets, fromAddress, toAddress, this._wyvernProtocol, this._networkName)
 
     return estimateGas(this.web3, {
       from: fromAddress,
       to: proxyAddress,
-      data: encodeProxyCall(WyvernProtocol.getAtomicizerContractAddress(this._networkName), HowToCall.DelegateCall, calldata)
+      data: encodeProxyCall(target, HowToCall.DelegateCall, calldata)
     })
   }
 
@@ -2156,10 +2156,7 @@ export class OpenSeaPort {
       feeMethod
     } = this._getBuyFeeParameters(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints, sellOrder)
 
-    const { calldata, replacementPattern } = encodeAtomicizedBuy(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
-    if (!calldata || !replacementPattern) {
-      throw new Error("Failed to encode")
-    }
+    const { calldata, replacementPattern } = encodeAtomicizedBuy(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol, this._networkName)
 
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(OrderSide.Buy, paymentTokenAddress, expirationTime, startAmount)
     const times = this._getTimeParameters(expirationTime)
@@ -2235,10 +2232,7 @@ export class OpenSeaPort {
       totalBuyerFeeBasisPoints,
       sellerBountyBasisPoints } = await this.computeFees({ asset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
 
-    const { calldata, replacementPattern } = encodeAtomicizedSell(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol.wyvernAtomicizer)
-    if (!calldata || !replacementPattern) {
-      throw new Error("Failed to encode")
-    }
+    const { calldata, replacementPattern } = encodeAtomicizedSell(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol, this._networkName)
 
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
@@ -2316,8 +2310,8 @@ export class OpenSeaPort {
               ? order.metadata.schema
               : undefined))
         const atomicized = order.side == OrderSide.Buy
-          ? encodeAtomicizedSell(orderedSchemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
-          : encodeAtomicizedBuy(orderedSchemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol.wyvernAtomicizer)
+          ? encodeAtomicizedSell(orderedSchemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol, this._networkName)
+          : encodeAtomicizedBuy(orderedSchemas, order.metadata.bundle.assets, recipientAddress, this._wyvernProtocol, this._networkName)
         return {
           target: WyvernProtocol.getAtomicizerContractAddress(this._networkName),
           calldata: atomicized.calldata,
@@ -2329,9 +2323,6 @@ export class OpenSeaPort {
     }
 
     const { target, calldata, replacementPattern } = computeOrderParams()
-    if (!calldata || !replacementPattern) {
-      throw new Error("Failed to encode")
-    }
     const times = this._getTimeParameters(0)
     // Compat for matching buy orders that have fee recipient still on them
     const feeRecipient = order.feeRecipient == NULL_ADDRESS
