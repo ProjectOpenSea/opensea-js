@@ -244,6 +244,6 @@ function encodeAtomicizedCalldata(atomicizer: WyvernAtomicizerContract, schemas:
     }
   } catch (error) {
     console.error({ schemas, assets, address, side })
-    throw new Error(`Failed to construct your offer: likely something strange about this type of item. OpenSea has been notified. Please contact us in Discord! Original error: ${error}`)
+    throw new Error(`Failed to construct your order: likely something strange about this type of item. OpenSea has been notified. Please contact us in Discord! Original error: ${error}`)
   }
 }
