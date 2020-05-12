@@ -121,7 +121,7 @@ The `Asset` type is the minimal type you need for most marketplace actions. `Wyv
 You can fetch an asset using the `OpenSeaAPI`, which will return an `OpenSeaAsset` for you (`OpenSeaAsset` extends `Asset`):
 
 ```TypeScript
-const asset: OpenSeaAsset = seaport.api.getAsset({
+const asset: OpenSeaAsset = await seaport.api.getAsset({
   tokenAddress, // string
   tokenId, // string | number | null
 })
@@ -142,7 +142,7 @@ const asset = {
   tokenId: "1", // Token ID
 }
 
-const balance = seaport.api.getAssetBalance({
+const balance = await seaport.getAssetBalance({
   accountAddress, // string
   asset, // Asset
 })
@@ -153,7 +153,7 @@ const ownsKitty = balance.greaterThan(0)
 You can use this same method for fungible ERC-20 tokens like wrapped ETH (WETH). As a convenience, you can use this fungible wrapper for checking fungible balances:
 
 ```JavaScript
-const balanceOfWETH = seaport.api.getTokenBalance({
+const balanceOfWETH = await seaport.getTokenBalance({
   accountAddress, // string
   tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 })

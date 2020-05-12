@@ -168,7 +168,7 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 </code></pre>
 				<p>The <code>Asset</code> type is the minimal type you need for most marketplace actions. <code>WyvernSchemaName</code> is optional. If omitted, most actions will assume you&#39;re referring to a non-fungible, ERC721 asset. Other options include &#39;ERC20&#39; and &#39;ERC1155&#39;. You can import <code>import { WyvernSchemaName } from &quot;opensea-js/lib/types&quot;</code> to get the full range of schemas supported.</p>
 				<p>You can fetch an asset using the <code>OpenSeaAPI</code>, which will return an <code>OpenSeaAsset</code> for you (<code>OpenSeaAsset</code> extends <code>Asset</code>):</p>
-				<pre><code class="lang-TypeScript"><span class="hljs-keyword">const</span> asset: OpenSeaAsset = seaport.api.getAsset({
+				<pre><code class="lang-TypeScript"><span class="hljs-keyword">const</span> asset: OpenSeaAsset = <span class="hljs-keyword">await</span> seaport.api.getAsset({
   tokenAddress, <span class="hljs-comment">// string</span>
   tokenId, <span class="hljs-comment">// string | number | null</span>
 })
@@ -183,7 +183,7 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   <span class="hljs-attr">tokenId</span>: <span class="hljs-string">"1"</span>, <span class="hljs-comment">// Token ID</span>
 }
 
-<span class="hljs-keyword">const</span> balance = seaport.api.getAssetBalance({
+<span class="hljs-keyword">const</span> balance = <span class="hljs-keyword">await</span> seaport.getAssetBalance({
   accountAddress, <span class="hljs-comment">// string</span>
   asset, <span class="hljs-comment">// Asset</span>
 })
@@ -191,7 +191,7 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 <span class="hljs-keyword">const</span> ownsKitty = balance.greaterThan(<span class="hljs-number">0</span>)
 </code></pre>
 				<p>You can use this same method for fungible ERC-20 tokens like wrapped ETH (WETH). As a convenience, you can use this fungible wrapper for checking fungible balances:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> balanceOfWETH = seaport.api.getTokenBalance({
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> balanceOfWETH = <span class="hljs-keyword">await</span> seaport.getTokenBalance({
   accountAddress, <span class="hljs-comment">// string</span>
   <span class="hljs-attr">tokenAddress</span>: <span class="hljs-string">"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"</span>
 })
@@ -814,11 +814,11 @@ handleSeaportEvents() {
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#atomicizedsellencoder" class="tsd-kind-icon">Atomicized<wbr>Sell<wbr>Encoder</a>
 					</li>
-					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
-						<a href="globals.html#buyencoder" class="tsd-kind-icon">Buy<wbr>Encoder</a>
-					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#defaultcallencoder" class="tsd-kind-icon">Default<wbr>Call<wbr>Encoder</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#encoder" class="tsd-kind-icon">Encoder</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#exchangemetadata" class="tsd-kind-icon">Exchange<wbr>Metadata</a>
@@ -831,9 +831,6 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#partialreadonlycontractabi" class="tsd-kind-icon">Partial<wbr>Readonly<wbr>Contract<wbr>Abi</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#sellencoder" class="tsd-kind-icon">Sell<wbr>Encoder</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#txncallback" class="tsd-kind-icon">Txn<wbr>Callback</a>
@@ -1093,6 +1090,9 @@ handleSeaportEvents() {
 					<li class=" tsd-kind-function">
 						<a href="globals.html#encodeatomicizedbuy" class="tsd-kind-icon">encode<wbr>Atomicized<wbr>Buy</a>
 					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="globals.html#encodeatomicizedcalldata" class="tsd-kind-icon">encode<wbr>Atomicized<wbr>Calldata</a>
+					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#encodeatomicizedsell" class="tsd-kind-icon">encode<wbr>Atomicized<wbr>Sell</a>
 					</li>
@@ -1125,9 +1125,6 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#event" class="tsd-kind-icon">event</a>
-					</li>
-					<li class=" tsd-kind-function tsd-is-not-exported">
-						<a href="globals.html#failwith" class="tsd-kind-icon">fail<wbr>With</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#getcurrentgasprice" class="tsd-kind-icon">get<wbr>Current<wbr>Gas<wbr>Price</a>
