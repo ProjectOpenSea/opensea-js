@@ -518,6 +518,17 @@ export async function personalSignAsync(web3: Web3, message: string, signerAddre
 }
 
 /**
+ * Checks whether a given address contains any code
+ * @param web3 Web3 instance
+ * @param address input address
+ */
+export async function isContractAddress(web3: Web3, address: string
+  ): Promise<boolean> {
+    const code = await promisify<string>(c => web3.eth.getCode(address, c))
+    return code !== '0x'
+}
+
+/**
  * Special fixes for making BigNumbers using web3 results
  * @param arg An arg or the result of a web3 call to turn into a BigNumber
  */

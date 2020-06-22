@@ -10,8 +10,8 @@ import {
 import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { Network, Asset, WyvernSchemaName } from '../../src/types'
-import { getCurrentGasPrice, getNonCompliantApprovalAddress} from '../../src/utils/utils'
-import { ALEX_ADDRESS, MAINNET_API_KEY, CK_TOKEN_ID, ALEX_ADDRESS_2, WETH_ADDRESS} from '../constants'
+import { getCurrentGasPrice, getNonCompliantApprovalAddress, isContractAddress} from '../../src/utils/utils'
+import { ALEX_ADDRESS, MAINNET_API_KEY, CK_TOKEN_ID, ALEX_ADDRESS_2, DAN_ADDRESS, DAN_DAPPER_ADDRESS, WETH_ADDRESS} from '../constants'
 import { ERC721 } from '../../src/contracts'
 import {
   CK_ADDRESS,
@@ -77,6 +77,15 @@ suite('seaport: misc', () => {
     const erc721 = await client.web3.eth.contract(ERC721 as any).at(tokenAddress)
     const approvedAddress = await getNonCompliantApprovalAddress(erc721, tokenId, accountAddress)
     // assert.equal(approvedAddress, proxyAddress)
+  })
+
+  test('Checks whether an address is a contract addrress', async () => {
+    const smartContractWalletAddress = DAN_DAPPER_ADDRESS
+    const acccountOneIsContractAddress = await isContractAddress(client.web3, smartContractWalletAddress)
+    const nonSmartContractWalletAddress = DAN_ADDRESS
+    const acccountTwoIsContractAddress = await isContractAddress(client.web3, nonSmartContractWalletAddress)
+    assert.equal(acccountOneIsContractAddress, true)
+    assert.equal(acccountTwoIsContractAddress, false)
   })
 
 })

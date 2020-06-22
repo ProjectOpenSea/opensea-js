@@ -22,6 +22,7 @@ import {
   annotateERC20TransferABI,
   onDeprecated,
   getNonCompliantApprovalAddress,
+  isContractAddress,
 } from './utils/utils'
 import {
   encodeAtomicizedTransfer,
@@ -2998,15 +2999,19 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.CreateOrder, { order, accountAddress: order.maker })
 
+    const makerIsSmartContract = await isContractAddress(this.web3, signerAddress)
+
     try {
       const signature = await personalSignAsync(this.web3, message, signerAddress)
       if (signature) {
         return signature
       } else {
-        // The web3 provider is probably a smart contract wallet
-        // Fallback to on-chain approval
-        await this._approveOrder(order)
-        // and return an empty signature
+        if (makerIsSmartContract) {
+          // The web3 provider is probably a smart contract wallet.
+          // Fallback to on-chain approval.
+          await this._approveOrder(order)
+        }
+        // And return an empty signature.
         return {}
       }
     } catch (error) {
