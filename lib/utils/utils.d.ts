@@ -41,6 +41,12 @@ export declare const orderToJSON: (order: Order) => OrderJSON;
  */
 export declare function personalSignAsync(web3: Web3, message: string, signerAddress: string): Promise<ECSignature | null>;
 /**
+ * Checks whether a given address contains any code
+ * @param web3 Web3 instance
+ * @param address input address
+ */
+export declare function isContractAddress(web3: Web3, address: string): Promise<boolean>;
+/**
  * Special fixes for making BigNumbers using web3 results
  * @param arg An arg or the result of a web3 call to turn into a BigNumber
  */
