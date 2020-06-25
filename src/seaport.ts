@@ -1828,9 +1828,9 @@ export class OpenSeaPort {
     this._dispatch(EventType.InitializeAccount, { accountAddress })
     this.logger(`Initializing proxy for account: ${accountAddress}`)
 
-    const txnData: any = { from: accountAddress }
-    const gasEstimate = await this._wyvernProtocolReadOnly.wyvernProxyRegistry.registerProxy.estimateGasAsync(txnData)
-
+    const gasPrice = await this._computeGasPrice()
+    const txnData: any = { from: accountAddress, gasPrice }
+    const gasEstimate = await this._wyvernProtocolReadOnly.wyvernProxyRegistry.registerProxy.estimateGasAsync({ from: accountAddress })
     const transactionHash = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
       ...txnData,
       gas: this._correctGasAmount(gasEstimate)
