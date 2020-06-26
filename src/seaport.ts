@@ -1829,10 +1829,11 @@ export class OpenSeaPort {
     this.logger(`Initializing proxy for account: ${accountAddress}`)
 
     const gasPrice = await this._computeGasPrice()
-    const txnData: any = { from: accountAddress, gasPrice }
-    const gasEstimate = await this._wyvernProtocolReadOnly.wyvernProxyRegistry.registerProxy.estimateGasAsync({ from: accountAddress })
+    const txnData: any = { from: accountAddress }
+    const gasEstimate = await this._wyvernProtocolReadOnly.wyvernProxyRegistry.registerProxy.estimateGasAsync(txnData)
     const transactionHash = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
       ...txnData,
+      gasPrice,
       gas: this._correctGasAmount(gasEstimate)
     })
 
@@ -2923,8 +2924,7 @@ export class OpenSeaPort {
     this._dispatch(EventType.MatchOrders, { buy, sell, accountAddress, matchMetadata: metadata })
 
     let txHash
-    const gasPrice = await this._computeGasPrice()
-    const txnData: any = { from: accountAddress, value, gasPrice }
+    const txnData: any = { from: accountAddress, value }
     const args: WyvernAtomicMatchParameters = [
       [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
       buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
@@ -2953,7 +2953,10 @@ export class OpenSeaPort {
     try {
       // Typescript splat doesn't typecheck
       const gasEstimate = await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
+
+      txnData.gasPrice = await this._computeGasPrice()
       txnData.gas = this._correctGasAmount(gasEstimate)
+
     } catch (error) {
       console.error(`Failed atomic match with args: `, args, error)
       throw new Error(`Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${error.message.substr(0, MAX_ERROR_LENGTH)}..."`)

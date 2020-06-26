@@ -1,5 +1,5 @@
 import { BigNumber } from 'bignumber.js';
-export declare const DEFAULT_GAS_INCREASE_FACTOR = 1.1;
+export declare const DEFAULT_GAS_INCREASE_FACTOR = 1.01;
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";

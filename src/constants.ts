@@ -1,7 +1,7 @@
 import { WyvernProtocol } from 'wyvern-js'
 import { BigNumber } from 'bignumber.js' // Typescript import issue
 
-export const DEFAULT_GAS_INCREASE_FACTOR = 1.1
+export const DEFAULT_GAS_INCREASE_FACTOR = 1.01
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS
 export const NULL_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 export const OPENSEA_FEE_RECIPIENT = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
