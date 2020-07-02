@@ -2995,7 +2995,7 @@ export class OpenSeaPort {
 
   private async _authorizeOrder(
       order: UnsignedOrder
-    ): Promise<Partial<ECSignature>> {
+    ): Promise<ECSignature | null> {
     const message = order.hash
     const signerAddress = order.maker
 
@@ -3004,17 +3004,13 @@ export class OpenSeaPort {
     const makerIsSmartContract = await isContractAddress(this.web3, signerAddress)
 
     try {
-      const signature = await personalSignAsync(this.web3, message, signerAddress)
-      if (signature) {
-        return signature
+      if (makerIsSmartContract) {
+        // The web3 provider is probably a smart contract wallet.
+        // Fallback to on-chain approval.
+        await this._approveOrder(order)
+        return null
       } else {
-        if (makerIsSmartContract) {
-          // The web3 provider is probably a smart contract wallet.
-          // Fallback to on-chain approval.
-          await this._approveOrder(order)
-        }
-        // And return an empty signature.
-        return {}
+        return await personalSignAsync(this.web3, message, signerAddress)
       }
     } catch (error) {
       this._dispatch(EventType.OrderDenied, { order, accountAddress: signerAddress })

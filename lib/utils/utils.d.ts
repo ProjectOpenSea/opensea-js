@@ -39,7 +39,7 @@ export declare const orderToJSON: (order: Order) => OrderJSON;
  * @param signerAddress web3 address signing the message
  * @returns A signature if provider can sign, otherwise null
  */
-export declare function personalSignAsync(web3: Web3, message: string, signerAddress: string): Promise<ECSignature | null>;
+export declare function personalSignAsync(web3: Web3, message: string, signerAddress: string): Promise<ECSignature>;
 /**
  * Checks whether a given address contains any code
  * @param web3 Web3 instance

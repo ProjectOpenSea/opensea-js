@@ -489,12 +489,7 @@ export const orderToJSON = (order: Order): OrderJSON => {
  * @returns A signature if provider can sign, otherwise null
  */
 export async function personalSignAsync(web3: Web3, message: string, signerAddress: string
-  ): Promise<ECSignature | null> {
-
-  if ((web3.currentProvider as any).isDapper) {
-    // Optimize Dapper - don't try signature
-    return null
-  }
+  ): Promise<ECSignature> {
 
   const signature = await promisify<Web3.JSONRPCResponsePayload>(c => web3.currentProvider.sendAsync({
       method: 'personal_sign',
@@ -506,15 +501,10 @@ export async function personalSignAsync(web3: Web3, message: string, signerAddre
 
   const error = (signature as any).error
   if (error) {
-    return null
+    throw new Error(error)
   }
 
-  try {
-    return parseSignatureHex(signature.result)
-  } catch (error) {
-    // Dapper wallet signature isn't parseable
-    return null
-  }
+  return parseSignatureHex(signature.result)
 }
 
 /**
