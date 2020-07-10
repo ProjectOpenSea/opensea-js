@@ -5,16 +5,12 @@ import {
   HowToCall,
   // Note: Wyvern SaleKind is wrong!
   ECSignature,
-  Order as WyvernOrder
+  Order as WyvernOrder,
 } from 'wyvern-js/lib/types'
 
 import { Token } from 'wyvern-schemas/dist/types'
 
-export {
-  Network,
-  HowToCall,
-  ECSignature
-}
+export { Network, HowToCall, ECSignature }
 
 /**
  * Events emitted by the SDK. There are five types:
@@ -33,37 +29,37 @@ export {
  */
 export enum EventType {
   // Transactions and signature requests
-  TransactionCreated = "TransactionCreated",
-  TransactionConfirmed = "TransactionConfirmed",
-  TransactionDenied = "TransactionDenied",
-  TransactionFailed = "TransactionFailed",
+  TransactionCreated = 'TransactionCreated',
+  TransactionConfirmed = 'TransactionConfirmed',
+  TransactionDenied = 'TransactionDenied',
+  TransactionFailed = 'TransactionFailed',
 
   // Pre-transaction events
-  InitializeAccount = "InitializeAccount",
-  WrapEth = "WrapEth",
-  UnwrapWeth = "UnwrapWeth",
-  ApproveCurrency = "ApproveCurrency",
-  ApproveAsset = "ApproveAsset",
-  ApproveAllAssets = "ApproveAllAssets",
-  UnapproveCurrency = "UnapproveCurrency",
+  InitializeAccount = 'InitializeAccount',
+  WrapEth = 'WrapEth',
+  UnwrapWeth = 'UnwrapWeth',
+  ApproveCurrency = 'ApproveCurrency',
+  ApproveAsset = 'ApproveAsset',
+  ApproveAllAssets = 'ApproveAllAssets',
+  UnapproveCurrency = 'UnapproveCurrency',
 
   // Basic actions: matching orders, creating orders, and cancelling orders
-  MatchOrders = "MatchOrders",
-  CancelOrder = "CancelOrder",
-  ApproveOrder = "ApproveOrder",
-  CreateOrder = "CreateOrder",
+  MatchOrders = 'MatchOrders',
+  CancelOrder = 'CancelOrder',
+  ApproveOrder = 'ApproveOrder',
+  CreateOrder = 'CreateOrder',
   // When the signature request for an order is denied
-  OrderDenied = "OrderDenied",
+  OrderDenied = 'OrderDenied',
 
   // When transferring one or more assets
-  TransferAll = "TransferAll",
-  TransferOne = "TransferOne",
+  TransferAll = 'TransferAll',
+  TransferOne = 'TransferOne',
 
   // When wrapping or unwrapping NFTs
-  WrapAssets = "WrapAssets",
-  UnwrapAssets = "UnwrapAssets",
-  LiquidateAssets = "LiquidateAssets",
-  PurchaseAssets = "PurchaseAssets",
+  WrapAssets = 'WrapAssets',
+  UnwrapAssets = 'UnwrapAssets',
+  LiquidateAssets = 'LiquidateAssets',
+  PurchaseAssets = 'PurchaseAssets',
 }
 
 /**
@@ -176,7 +172,7 @@ export enum TokenStandardVersion {
 export enum WyvernAssetLocation {
   Account = 'account',
   Proxy = 'proxy',
-  Other = 'other'
+  Other = 'other',
 }
 
 export interface WyvernNFTAsset {
@@ -199,7 +195,19 @@ export interface WyvernBundle {
   external_link?: string
 }
 
-export type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<(number | BigNumber)>, string, string, string, string, string, string, Array<(number | BigNumber)>, string[]]
+export type WyvernAtomicMatchParameters = [
+  string[],
+  BigNumber[],
+  Array<number | BigNumber>,
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
+  Array<number | BigNumber>,
+  string[]
+]
 
 /**
  * The OpenSea account object appended to orders, providing extra metadata, profile images and usernames
@@ -227,15 +235,15 @@ export interface OpenSeaUser {
  */
 export interface Asset {
   // The asset's token ID, or null if ERC-20
-  tokenId: string | null,
+  tokenId: string | null
   // The asset's contract address
-  tokenAddress: string,
+  tokenAddress: string
   // The Wyvern schema name (e.g. "ERC721") for this asset
-  schemaName?: WyvernSchemaName,
+  schemaName?: WyvernSchemaName
   // The token standard version of this asset
-  version?: TokenStandardVersion,
+  version?: TokenStandardVersion
   // Optional for ENS names
-  name?: string,
+  name?: string
   // Optional for fungible items
   decimals?: number
 }
@@ -275,12 +283,12 @@ export interface OpenSeaAssetContract extends OpenSeaFees {
 }
 
 interface NumericalTraitStats {
-  min: number,
+  min: number
   max: number
 }
 
 interface StringTraitStats {
-  [key: string]: number,
+  [key: string]: number
 }
 
 /**
@@ -298,7 +306,7 @@ export interface OpenSeaCollection extends OpenSeaFees {
   // Whether this collection is featured
   featured: boolean
   // Date collection was created
-  createdDate: Date,
+  createdDate: Date
 
   // Description of the collection
   description: string
@@ -311,13 +319,13 @@ export interface OpenSeaCollection extends OpenSeaFees {
   // Object with stats about the collection
   stats: object
   // Data about displaying cards
-  displayData: object,
+  displayData: object
   // Tokens allowed for this collection
   paymentTokens: OpenSeaFungibleToken[]
   // Address for dev fee payouts
-  payoutAddress?: string,
+  payoutAddress?: string
   // Array of trait types for the collection
-  traitStats: OpenSeaTraitStats,
+  traitStats: OpenSeaTraitStats
   // Link to the collection's main website
   externalLink?: string
   // Link to the collection's wiki, if available
@@ -363,15 +371,15 @@ export interface OpenSeaAsset extends Asset {
   // Link to token on dapp's site
   externalLink: string
   // Array of traits on this token
-  traits: object[],
+  traits: object[]
   // Number of times this token has been traded (sold)
   numSales: number
   // Data about the last time this token was sold
   lastSale: AssetEvent | null
   // The suggested background color for the image url
-  backgroundColor: string | null,
+  backgroundColor: string | null
   // The per-transfer fee, in base units, for this asset in its transfer method
-  transferFee: BigNumber | string | null,
+  transferFee: BigNumber | string | null
   // The transfer fee token for this asset in its transfer method
   transferFeePaymentToken: OpenSeaFungibleToken | null
 }
@@ -380,7 +388,6 @@ export interface OpenSeaAsset extends Asset {
  * Defines a AssetEvent type which contains details about an event that occurred
  */
 export interface AssetEvent {
-
   // The type of event
   eventType: AssetEventType
 
@@ -481,6 +488,10 @@ export interface OpenSeaAssetBundle {
   slug: string
   permalink: string
 
+  // Orders on the asset. Null if asset was fetched in a list
+  orders: Order[] | null
+  // Buy orders (offers) on the asset. Null if asset in a list and didn't prefetch buy orders
+  buyOrders: Order[] | null
   // Sell orders (auctions) on the bundle. Null if bundle in a list and didn't prefetch sell orders
   sellOrders: Order[] | null
 
@@ -502,8 +513,8 @@ export interface OpenSeaAssetBundleJSON {
 /**
  * Query interface for Bundles
  */
-export interface OpenSeaAssetBundleQuery extends Partial<OpenSeaAssetBundleJSON> {
-
+export interface OpenSeaAssetBundleQuery
+  extends Partial<OpenSeaAssetBundleJSON> {
   asset_contract_address?: string
   token_ids?: Array<number | string>
   on_sale?: boolean
@@ -555,7 +566,9 @@ export interface ExchangeMetadataForBundle {
   referrerAddress?: string
 }
 
-export type ExchangeMetadata = ExchangeMetadataForAsset | ExchangeMetadataForBundle
+export type ExchangeMetadata =
+  | ExchangeMetadataForAsset
+  | ExchangeMetadataForBundle
 
 export interface UnhashedOrder extends WyvernOrder {
   feeMethod: FeeMethod
@@ -643,10 +656,10 @@ export interface OrderJSON extends Partial<ECSignature> {
  * full docs.
  */
 export interface OrderQuery extends Partial<OrderJSON> {
-  owner?: string,
-  sale_kind?: SaleKind,
-  asset_contract_address?: string,
-  payment_token_address?: string,
+  owner?: string
+  sale_kind?: SaleKind
+  asset_contract_address?: string
+  payment_token_address?: string
   is_english?: boolean
   is_expired?: boolean
   bundled?: boolean
@@ -678,7 +691,8 @@ export interface OpenSeaAssetQuery {
 /**
  * Query interface for Fungible Assets
  */
-export interface OpenSeaFungibleTokenQuery extends Partial<OpenSeaFungibleToken> {
+export interface OpenSeaFungibleTokenQuery
+  extends Partial<OpenSeaFungibleToken> {
   limit?: number
   offset?: number
   // Typescript bug requires this duplication

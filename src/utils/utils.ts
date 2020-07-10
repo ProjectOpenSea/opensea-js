@@ -8,7 +8,7 @@ import {
   FunctionInputKind,
   FunctionOutputKind,
   Schema,
-  StateMutability
+  StateMutability,
 } from 'wyvern-schemas/dist/types'
 import { ERC1155 } from '../contracts'
 
@@ -24,7 +24,8 @@ import {
   OpenSeaAssetContract,
   OpenSeaCollection,
   OpenSeaFungibleToken,
-  OpenSeaTraitStats, OpenSeaUser,
+  OpenSeaTraitStats,
+  OpenSeaUser,
   Order,
   OrderJSON,
   OrderSide,
@@ -38,74 +39,78 @@ import {
   WyvernBundle,
   WyvernFTAsset,
   WyvernNFTAsset,
-  WyvernSchemaName
+  WyvernSchemaName,
 } from '../types'
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
   NULL_ADDRESS,
-  NULL_BLOCK_HASH
+  NULL_BLOCK_HASH,
 } from '../constants'
 import { proxyABI } from '../abi/Proxy'
 
-export {
-  WyvernProtocol
-}
+export { WyvernProtocol }
 
-export const annotateERC721TransferABI = (asset: WyvernNFTAsset): AnnotatedFunctionABI => ({
-  "constant": false,
-  "inputs": [
+export const annotateERC721TransferABI = (
+  asset: WyvernNFTAsset
+): AnnotatedFunctionABI => ({
+  constant: false,
+  inputs: [
     {
-      "name": "_to",
-      "type": "address",
-      "kind": FunctionInputKind.Replaceable
+      name: '_to',
+      type: 'address',
+      kind: FunctionInputKind.Replaceable,
     },
     {
-      "name": "_tokenId",
-      "type": "uint256",
-      "kind": FunctionInputKind.Asset,
-      "value": asset.id
-    }
+      name: '_tokenId',
+      type: 'uint256',
+      kind: FunctionInputKind.Asset,
+      value: asset.id,
+    },
   ],
-  "target": asset.address,
-  "name": "transfer",
-  "outputs": [],
-  "payable": false,
-  "stateMutability": StateMutability.Nonpayable,
-  "type": Web3.AbiType.Function
+  target: asset.address,
+  name: 'transfer',
+  outputs: [],
+  payable: false,
+  stateMutability: StateMutability.Nonpayable,
+  type: Web3.AbiType.Function,
 })
 
-export const annotateERC20TransferABI = (asset: WyvernFTAsset): AnnotatedFunctionABI => ({
-  "constant": false,
-  "inputs": [
+export const annotateERC20TransferABI = (
+  asset: WyvernFTAsset
+): AnnotatedFunctionABI => ({
+  constant: false,
+  inputs: [
     {
-      "name": "_to",
-      "type": "address",
-      "kind": FunctionInputKind.Replaceable
+      name: '_to',
+      type: 'address',
+      kind: FunctionInputKind.Replaceable,
     },
     {
-      "name": "_amount",
-      "type": "uint256",
-      "kind": FunctionInputKind.Count,
-      "value": asset.quantity
-    }
+      name: '_amount',
+      type: 'uint256',
+      kind: FunctionInputKind.Count,
+      value: asset.quantity,
+    },
   ],
-  "target": asset.address,
-  "name": "transfer",
-  "outputs": [
+  target: asset.address,
+  name: 'transfer',
+  outputs: [
     {
-      "name": "success",
-      "type": "bool",
-      "kind": FunctionOutputKind.Other
-    }
+      name: 'success',
+      type: 'bool',
+      kind: FunctionOutputKind.Other,
+    },
   ],
-  "payable": false,
-  "stateMutability": StateMutability.Nonpayable,
-  "type": Web3.AbiType.Function
+  payable: false,
+  stateMutability: StateMutability.Nonpayable,
+  type: Web3.AbiType.Function,
 })
 
-const SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE: {[key in WyvernSchemaName]: AssetContractType} = {
+const SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE: {
+  [key in WyvernSchemaName]: AssetContractType
+} = {
   [WyvernSchemaName.ERC721]: AssetContractType.NonFungible,
   [WyvernSchemaName.ERC1155]: AssetContractType.SemiFungible,
   [WyvernSchemaName.ERC20]: AssetContractType.Fungible,
@@ -115,19 +120,19 @@ const SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE: {[key in WyvernSchemaName]: AssetContr
 
 // OTHER
 
-const txCallbacks: {[key: string]: TxnCallback[]} = {}
+const txCallbacks: { [key: string]: TxnCallback[] } = {}
 
 /**
  * Promisify a callback-syntax web3 function
  * @param inner callback function that accepts a Web3 callback function and passes
  * it to the Web3 function
  */
-async function promisify<T>(
-    inner: (fn: Web3Callback<T>) => void
-  ) {
+async function promisify<T>(inner: (fn: Web3Callback<T>) => void) {
   return new Promise<T>((resolve, reject) =>
     inner((err, res) => {
-      if (err) { reject(err) }
+      if (err) {
+        reject(err)
+      }
       resolve(res)
     })
   )
@@ -143,19 +148,16 @@ async function promisify<T>(
  * @param onError callback when user denies transaction
  */
 export async function promisifyCall<T>(
-    callback: (fn: Web3Callback<T>) => void,
-    onError?: (error: Error) => void
-  ): Promise<T | undefined> {
-
+  callback: (fn: Web3Callback<T>) => void,
+  onError?: (error: Error) => void
+): Promise<T | undefined> {
   try {
-
     const result: any = await promisify<T>(callback)
     if (result == '0x') {
       // Geth compatibility
       return undefined
     }
     return result as T
-
   } catch (error) {
     // Probably method not found, and web3 is a Parity node
     if (onError) {
@@ -173,17 +175,21 @@ const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
   } else {
     txCallbacks[txHash] = [onFinalized]
     const poll = async () => {
-      const tx = await promisify<Web3.Transaction>(c => web3.eth.getTransaction(txHash, c))
+      const tx = await promisify<Web3.Transaction>((c) =>
+        web3.eth.getTransaction(txHash, c)
+      )
       if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
-        const receipt = await promisify<Web3.TransactionReceipt | null>(c => web3.eth.getTransactionReceipt(txHash, c))
+        const receipt = await promisify<Web3.TransactionReceipt | null>((c) =>
+          web3.eth.getTransactionReceipt(txHash, c)
+        )
         if (!receipt) {
           // Hack: assume success if no receipt
           console.warn('No receipt found for ', txHash)
         }
         const status = receipt
-          ? parseInt((receipt.status || "0").toString()) == 1
+          ? parseInt((receipt.status || '0').toString()) == 1
           : true
-        txCallbacks[txHash].map(f => f(status))
+        txCallbacks[txHash].map((f) => f(status))
         delete txCallbacks[txHash]
       } else {
         setTimeout(poll, 1000)
@@ -197,9 +203,13 @@ export const confirmTransaction = async (web3: Web3, txHash: string) => {
   return new Promise((resolve, reject) => {
     track(web3, txHash, (didSucceed: boolean) => {
       if (didSucceed) {
-        resolve("Transaction complete!")
+        resolve('Transaction complete!')
       } else {
-        reject(new Error(`Transaction failed :( You might have already completed this action. See more on the mainnet at etherscan.io/tx/${txHash}`))
+        reject(
+          new Error(
+            `Transaction failed :( You might have already completed this action. See more on the mainnet at etherscan.io/tx/${txHash}`
+          )
+        )
       }
     })
   })
@@ -217,14 +227,15 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     assetContract: assetContractFromJSON(asset.asset_contract),
     collection: collectionFromJSON(asset.collection),
     orders: asset.orders ? asset.orders.map(orderFromJSON) : null,
-    sellOrders: asset.sell_orders ? asset.sell_orders.map(orderFromJSON) : null,
-    buyOrders: asset.buy_orders ? asset.buy_orders.map(orderFromJSON) : null,
+    sellOrders: null,
+    buyOrders: null,
 
     isPresale: asset.is_presale,
     // Don't use previews if it's a special image
-    imageUrl: isAnimated || isSvg
-      ? asset.image_url
-      : (asset.image_preview_url || asset.image_url),
+    imageUrl:
+      isAnimated || isSvg
+        ? asset.image_url
+        : asset.image_preview_url || asset.image_url,
     imagePreviewUrl: asset.image_preview_url,
     imageUrlOriginal: asset.image_original_url,
     imageUrlThumbnail: asset.image_thumbnail_url,
@@ -234,23 +245,16 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     traits: asset.traits,
     numSales: asset.num_sales,
     lastSale: asset.last_sale ? assetEventFromJSON(asset.last_sale) : null,
-    backgroundColor: asset.background_color ? `#${asset.background_color}` : null,
-
-    transferFee: asset.transfer_fee
-      ? makeBigNumber(asset.transfer_fee)
+    backgroundColor: asset.background_color
+      ? `#${asset.background_color}`
       : null,
+
+    transferFee: asset.transfer_fee ? makeBigNumber(asset.transfer_fee) : null,
     transferFeePaymentToken: asset.transfer_fee_payment_token
       ? tokenFromJSON(asset.transfer_fee_payment_token)
       : null,
   }
-  // If orders were included, put them in sell/buy order groups
-  if (fromJSON.orders && !fromJSON.sellOrders) {
-    fromJSON.sellOrders = fromJSON.orders.filter(o => o.side == OrderSide.Sell)
-  }
-  if (fromJSON.orders && !fromJSON.buyOrders) {
-    fromJSON.buyOrders = fromJSON.orders.filter(o => o.side == OrderSide.Buy)
-  }
-  return fromJSON
+  return groupAndAggregateOrders(fromJSON, asset) as OpenSeaAsset
 }
 
 export const assetEventFromJSON = (assetEvent: any): AssetEvent => {
@@ -259,8 +263,12 @@ export const assetEventFromJSON = (assetEvent: any): AssetEvent => {
     eventTimestamp: assetEvent.event_timestamp,
     auctionType: assetEvent.auction_type,
     totalPrice: assetEvent.total_price,
-    transaction: assetEvent.transaction ? transactionFromJSON(assetEvent.transaction) : null,
-    paymentToken: assetEvent.payment_token ?  tokenFromJSON(assetEvent.payment_token) : null,
+    transaction: assetEvent.transaction
+      ? transactionFromJSON(assetEvent.transaction)
+      : null,
+    paymentToken: assetEvent.payment_token
+      ? tokenFromJSON(assetEvent.payment_token)
+      : null,
   }
 }
 
@@ -283,18 +291,17 @@ export const accountFromJSON = (account: any): OpenSeaAccount => {
     address: account.address,
     config: account.config,
     profileImgUrl: account.profile_img_url,
-    user: account.user ? userFromJSON(account.user) : null
+    user: account.user ? userFromJSON(account.user) : null,
   }
 }
 
 export const userFromJSON = (user: any): OpenSeaUser => {
   return {
-    username: user.username
+    username: user.username,
   }
 }
 
 export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
-
   const fromJSON: OpenSeaAssetBundle = {
     maker: asset_bundle.maker,
     assets: asset_bundle.assets.map(assetFromJSON),
@@ -306,14 +313,42 @@ export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
     description: asset_bundle.description,
     externalLink: asset_bundle.external_link,
     permalink: asset_bundle.permalink,
-
-    sellOrders: asset_bundle.sell_orders ? asset_bundle.sell_orders.map(orderFromJSON) : null
+    sellOrders: null,
+    buyOrders: null,
+    orders: asset_bundle.orders ? asset_bundle.orders.map(orderFromJSON) : null,
   }
 
-  return fromJSON
+  return groupAndAggregateOrders(fromJSON, asset_bundle) as OpenSeaAssetBundle
 }
 
-export const assetContractFromJSON = (asset_contract: any): OpenSeaAssetContract => {
+export const groupAndAggregateOrders = (
+  assetOrBundleFromJson: OpenSeaAssetBundle | OpenSeaAsset,
+  asset_or_bundle: any
+): OpenSeaAsset | OpenSeaAssetBundle => {
+  assetOrBundleFromJson.sellOrders = asset_or_bundle.sell_orders
+    ? asset_or_bundle.sell_orders.map(orderFromJSON)
+    : null
+  assetOrBundleFromJson.buyOrders = asset_or_bundle.buy_orders
+    ? asset_or_bundle.buy_orders.map(orderFromJSON)
+    : null
+
+  // If orders were included, put them in sell/buy order groups
+  if (assetOrBundleFromJson.orders && !assetOrBundleFromJson.sellOrders) {
+    assetOrBundleFromJson.sellOrders = assetOrBundleFromJson.orders.filter(
+      (o: Order) => o.side == OrderSide.Sell
+    )
+  }
+  if (assetOrBundleFromJson.orders && !assetOrBundleFromJson.buyOrders) {
+    assetOrBundleFromJson.buyOrders = assetOrBundleFromJson.orders.filter(
+      (o: Order) => o.side == OrderSide.Buy
+    )
+  }
+  return assetOrBundleFromJson
+}
+
+export const assetContractFromJSON = (
+  asset_contract: any
+): OpenSeaAssetContract => {
   return {
     name: asset_contract.name,
     description: asset_contract.description,
@@ -362,7 +397,6 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
 }
 
 export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
-
   const fromJSON: OpenSeaFungibleToken = {
     name: token.name,
     symbol: token.symbol,
@@ -377,7 +411,6 @@ export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
 }
 
 export const orderFromJSON = (order: any): Order => {
-
   const createdDate = new Date(`${order.created_date}Z`)
 
   const fromJSON: Order = {
@@ -424,9 +457,13 @@ export const orderFromJSON = (order: any): Order => {
     r: order.r,
     s: order.s,
 
-    paymentTokenContract: order.payment_token_contract ? tokenFromJSON(order.payment_token_contract) : undefined,
+    paymentTokenContract: order.payment_token_contract
+      ? tokenFromJSON(order.payment_token_contract)
+      : undefined,
     asset: order.asset ? assetFromJSON(order.asset) : undefined,
-    assetBundle: order.asset_bundle ? assetBundleFromJSON(order.asset_bundle) : undefined,
+    assetBundle: order.asset_bundle
+      ? assetBundleFromJSON(order.asset_bundle)
+      : undefined,
   }
 
   // Use client-side price calc, to account for buyer fee (not added by server) and latency
@@ -463,9 +500,7 @@ export const orderToJSON = (order: Order): OrderJSON => {
     quantity: order.quantity.toString(),
     basePrice: order.basePrice.toString(),
     extra: order.extra.toString(),
-    createdTime: order.createdTime
-      ? order.createdTime.toString()
-      : undefined,
+    createdTime: order.createdTime ? order.createdTime.toString() : undefined,
     listingTime: order.listingTime.toString(),
     expirationTime: order.expirationTime.toString(),
     salt: order.salt.toString(),
@@ -476,7 +511,7 @@ export const orderToJSON = (order: Order): OrderJSON => {
     r: order.r,
     s: order.s,
 
-    hash: order.hash
+    hash: order.hash,
   }
   return asJSON
 }
@@ -488,15 +523,21 @@ export const orderToJSON = (order: Order): OrderJSON => {
  * @param signerAddress web3 address signing the message
  * @returns A signature if provider can sign, otherwise null
  */
-export async function personalSignAsync(web3: Web3, message: string, signerAddress: string
-  ): Promise<ECSignature> {
-
-  const signature = await promisify<Web3.JSONRPCResponsePayload>(c => web3.currentProvider.sendAsync({
-      method: 'personal_sign',
-      params: [message, signerAddress],
-      from: signerAddress,
-      id: new Date().getTime()
-    } as any, c)
+export async function personalSignAsync(
+  web3: Web3,
+  message: string,
+  signerAddress: string
+): Promise<ECSignature> {
+  const signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
+    web3.currentProvider.sendAsync(
+      {
+        method: 'personal_sign',
+        params: [message, signerAddress],
+        from: signerAddress,
+        id: new Date().getTime(),
+      } as any,
+      c
+    )
   )
 
   const error = (signature as any).error
@@ -512,10 +553,12 @@ export async function personalSignAsync(web3: Web3, message: string, signerAddre
  * @param web3 Web3 instance
  * @param address input address
  */
-export async function isContractAddress(web3: Web3, address: string
-  ): Promise<boolean> {
-    const code = await promisify<string>(c => web3.eth.getCode(address, c))
-    return code !== '0x'
+export async function isContractAddress(
+  web3: Web3,
+  address: string
+): Promise<boolean> {
+  const code = await promisify<string>((c) => web3.eth.getCode(address, c))
+  return code !== '0x'
 }
 
 /**
@@ -544,29 +587,31 @@ export function makeBigNumber(arg: number | string | BigNumber): BigNumber {
  * @param onError callback when user denies transaction
  */
 export async function sendRawTransaction(
-    web3: Web3,
-    {from, to, data, gasPrice, value = 0, gas}: Web3.TxData,
-    onError: (error: Error) => void
-  ): Promise<string> {
-
+  web3: Web3,
+  { from, to, data, gasPrice, value = 0, gas }: Web3.TxData,
+  onError: (error: Error) => void
+): Promise<string> {
   if (gas == null) {
     // This gas cannot be increased due to an ethjs error
     gas = await estimateGas(web3, { from, to, data, value })
   }
 
   try {
-    const txHashRes = await promisify<string>(c => web3.eth.sendTransaction({
-      from,
-      to,
-      value,
-      data,
-      gas,
-      gasPrice
-    }, c))
+    const txHashRes = await promisify<string>((c) =>
+      web3.eth.sendTransaction(
+        {
+          from,
+          to,
+          value,
+          data,
+          gas,
+          gasPrice,
+        },
+        c
+      )
+    )
     return txHashRes.toString()
-
   } catch (error) {
-
     onError(error)
     throw error
   }
@@ -583,19 +628,22 @@ export async function sendRawTransaction(
  * @param onError callback when user denies transaction
  */
 export async function rawCall(
-    web3: Web3,
-    { from, to, data }: Web3.CallData,
-    onError?: (error: Error) => void
-  ): Promise<string> {
-
+  web3: Web3,
+  { from, to, data }: Web3.CallData,
+  onError?: (error: Error) => void
+): Promise<string> {
   try {
-    const result = await promisify<string>(c => web3.eth.call({
-      from,
-      to,
-      data
-    }, c))
+    const result = await promisify<string>((c) =>
+      web3.eth.call(
+        {
+          from,
+          to,
+          data,
+        },
+        c
+      )
+    )
     return result
-
   } catch (error) {
     // Probably method not found, and web3 is a Parity node
     if (onError) {
@@ -615,16 +663,20 @@ export async function rawCall(
  * @param value value in ETH to send with data
  */
 export async function estimateGas(
-    web3: Web3,
-    {from, to, data, value = 0 }: Web3.TxData
-  ): Promise<number> {
-
-  const amount = await promisify<number>(c => web3.eth.estimateGas({
-    from,
-    to,
-    value,
-    data,
-  }, c))
+  web3: Web3,
+  { from, to, data, value = 0 }: Web3.TxData
+): Promise<number> {
+  const amount = await promisify<number>((c) =>
+    web3.eth.estimateGas(
+      {
+        from,
+        to,
+        value,
+        data,
+      },
+      c
+    )
+  )
 
   return amount
 }
@@ -634,7 +686,7 @@ export async function estimateGas(
  * @param web3 Web3 instance
  */
 export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
-  const meanGas = await promisify<BigNumber>(c => web3.eth.getGasPrice(c))
+  const meanGas = await promisify<BigNumber>((c) => web3.eth.getGasPrice(c))
   return meanGas
 }
 
@@ -644,12 +696,15 @@ export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
  * @param asset The asset to check for transfer fees
  */
 export async function getTransferFeeSettings(
-    web3: Web3,
-    { asset, accountAddress }: {
-      asset: Asset;
-      accountAddress?: string;
-    }
-  ) {
+  web3: Web3,
+  {
+    asset,
+    accountAddress,
+  }: {
+    asset: Asset
+    accountAddress?: string
+  }
+) {
   let transferFee: BigNumber | undefined
   let transferFeeTokenAddress: string | undefined
 
@@ -657,10 +712,8 @@ export async function getTransferFeeSettings(
     // Enjin asset
     const feeContract = web3.eth.contract(ERC1155 as any).at(asset.tokenAddress)
 
-    const params = await promisifyCall<any[]>(c => feeContract.transferSettings(
-        asset.tokenId,
-        { from: accountAddress },
-      c)
+    const params = await promisifyCall<any[]>((c) =>
+      feeContract.transferSettings(asset.tokenId, { from: accountAddress }, c)
     )
     if (params) {
       transferFee = makeBigNumber(params[3])
@@ -713,9 +766,9 @@ function parseSignatureHex(signature: string): ECSignature {
   function _parseSignatureHexAsRSV(signatureHex: string) {
     const { v, r, s } = ethUtil.fromRpcSig(signatureHex)
     const ecSignature = {
-        v,
-        r: ethUtil.bufferToHex(r),
-        s: ethUtil.bufferToHex(s),
+      v,
+      r: ethUtil.bufferToHex(r),
+      s: ethUtil.bufferToHex(s),
     }
     return ecSignature
   }
@@ -728,11 +781,17 @@ function parseSignatureHex(signature: string): ECSignature {
  *  to fix race conditions
  * @param shouldRoundUp Whether to round up fractional wei
  */
-export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shouldRoundUp = true) {
+export function estimateCurrentPrice(
+  order: Order,
+  secondsToBacktrack = 30,
+  shouldRoundUp = true
+) {
   let { basePrice, listingTime, expirationTime, extra } = order
   const { side, takerRelayerFee, saleKind } = order
 
-  const now = new BigNumber(Math.round(Date.now() / 1000)).minus(secondsToBacktrack)
+  const now = new BigNumber(Math.round(Date.now() / 1000)).minus(
+    secondsToBacktrack
+  )
   basePrice = new BigNumber(basePrice)
   listingTime = new BigNumber(listingTime)
   expirationTime = new BigNumber(expirationTime)
@@ -743,14 +802,16 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
   if (saleKind === SaleKind.FixedPrice) {
     // Do nothing, price is correct
   } else if (saleKind === SaleKind.DutchAuction) {
-    const diff = extra.times(now.minus(listingTime))
-                  .dividedBy(expirationTime.minus(listingTime))
+    const diff = extra
+      .times(now.minus(listingTime))
+      .dividedBy(expirationTime.minus(listingTime))
 
-    exactPrice = side == OrderSide.Sell
-      /* Sell-side - start price: basePrice. End price: basePrice - extra. */
-      ? basePrice.minus(diff)
-      /* Buy-side - start price: basePrice. End price: basePrice + extra. */
-      : basePrice.plus(diff)
+    exactPrice =
+      side == OrderSide.Sell
+        ? /* Sell-side - start price: basePrice. End price: basePrice - extra. */
+          basePrice.minus(diff)
+        : /* Buy-side - start price: basePrice. End price: basePrice + extra. */
+          basePrice.plus(diff)
   }
 
   // Add taker fee only for buyers
@@ -769,20 +830,17 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30, shou
  * @param quantity The number of items to trade
  */
 export function getWyvernAsset(
-    schema: Schema<WyvernAsset>,
-    asset: Asset,
-    quantity = new BigNumber(1)
-  ): WyvernAsset {
-
-  const tokenId = asset.tokenId != null
-    ? asset.tokenId.toString()
-    : undefined
+  schema: Schema<WyvernAsset>,
+  asset: Asset,
+  quantity = new BigNumber(1)
+): WyvernAsset {
+  const tokenId = asset.tokenId != null ? asset.tokenId.toString() : undefined
 
   return schema.assetFromFields({
-    'ID': tokenId,
-    'Quantity': quantity.toString(),
-    'Address': asset.tokenAddress.toLowerCase(),
-    'Name': asset.name
+    ID: tokenId,
+    Quantity: quantity.toString(),
+    Address: asset.tokenAddress.toLowerCase(),
+    Name: asset.name,
   })
 }
 
@@ -794,32 +852,38 @@ export function getWyvernAsset(
  * @param quantities The quantity of each asset to bundle, respectively
  */
 export function getWyvernBundle(
-    assets: Asset[],
-    schemas: Array<Schema<WyvernAsset>>,
-    quantities: BigNumber[]
-  ): WyvernBundle {
-
+  assets: Asset[],
+  schemas: Array<Schema<WyvernAsset>>,
+  quantities: BigNumber[]
+): WyvernBundle {
   if (assets.length != quantities.length) {
-    throw new Error("Bundle must have a quantity for every asset")
+    throw new Error('Bundle must have a quantity for every asset')
   }
 
   if (assets.length != schemas.length) {
-    throw new Error("Bundle must have a schema for every asset")
+    throw new Error('Bundle must have a schema for every asset')
   }
 
-  const wyAssets = assets.map((asset, i) => getWyvernAsset(schemas[i], asset, quantities[i]))
+  const wyAssets = assets.map((asset, i) =>
+    getWyvernAsset(schemas[i], asset, quantities[i])
+  )
 
   const sorters = [
-    (assetAndSchema: { asset: WyvernAsset, schema: WyvernSchemaName }) => assetAndSchema.asset.address,
-    (assetAndSchema: { asset: WyvernAsset, schema: WyvernSchemaName }) => assetAndSchema.asset.id || 0
+    (assetAndSchema: { asset: WyvernAsset; schema: WyvernSchemaName }) =>
+      assetAndSchema.asset.address,
+    (assetAndSchema: { asset: WyvernAsset; schema: WyvernSchemaName }) =>
+      assetAndSchema.asset.id || 0,
   ]
 
   const wyAssetsAndSchemas = wyAssets.map((asset, i) => ({
     asset,
-    schema: schemas[i].name as WyvernSchemaName
+    schema: schemas[i].name as WyvernSchemaName,
   }))
 
-  const uniqueAssets = _.uniqBy(wyAssetsAndSchemas, group => `${sorters[0](group)}-${sorters[1](group)}`)
+  const uniqueAssets = _.uniqBy(
+    wyAssetsAndSchemas,
+    (group) => `${sorters[0](group)}-${sorters[1](group)}`
+  )
 
   if (uniqueAssets.length != wyAssetsAndSchemas.length) {
     throw new Error("Bundle can't contain duplicate assets")
@@ -828,8 +892,8 @@ export function getWyvernBundle(
   const sortedWyAssetsAndSchemas = _.sortBy(wyAssetsAndSchemas, sorters)
 
   return {
-    assets: sortedWyAssetsAndSchemas.map(group => group.asset),
-    schemas: sortedWyAssetsAndSchemas.map(group => group.schema),
+    assets: sortedWyAssetsAndSchemas.map((group) => group.asset),
+    schemas: sortedWyAssetsAndSchemas.map((group) => group.schema),
   }
 }
 
@@ -847,7 +911,7 @@ export function getOrderHash(order: UnhashedOrder) {
     side: order.side.toString(),
     saleKind: order.saleKind.toString(),
     howToCall: order.howToCall.toString(),
-    feeMethod: order.feeMethod.toString()
+    feeMethod: order.feeMethod.toString(),
   }
   return WyvernProtocol.getOrderHashHex(orderWithStringTypes as any)
 }
@@ -857,8 +921,10 @@ export function getOrderHash(order: UnhashedOrder) {
  * @param order Original order
  * @param matchingOrder The result of _makeMatchingOrder
  */
-export function assignOrdersToSides(order: Order, matchingOrder: UnsignedOrder ): { buy: Order; sell: Order } {
-
+export function assignOrdersToSides(
+  order: Order,
+  matchingOrder: UnsignedOrder
+): { buy: Order; sell: Order } {
   const isSellOrder = order.side == OrderSide.Sell
 
   let buy: Order
@@ -869,7 +935,7 @@ export function assignOrdersToSides(order: Order, matchingOrder: UnsignedOrder )
       ...matchingOrder,
       v: buy.v,
       r: buy.r,
-      s: buy.s
+      s: buy.s,
     }
   } else {
     sell = order
@@ -877,7 +943,7 @@ export function assignOrdersToSides(order: Order, matchingOrder: UnsignedOrder )
       ...matchingOrder,
       v: sell.v,
       r: sell.r,
-      s: sell.s
+      s: sell.s,
     }
   }
 
@@ -886,11 +952,17 @@ export function assignOrdersToSides(order: Order, matchingOrder: UnsignedOrder )
 
 // BROKEN
 // TODO fix this calldata for buy orders
-async function canSettleOrder(client: OpenSeaPort, order: Order, matchingOrder: Order): Promise<boolean> {
-
+async function canSettleOrder(
+  client: OpenSeaPort,
+  order: Order,
+  matchingOrder: Order
+): Promise<boolean> {
   // HACK that doesn't always work
   //  to change null address to 0x1111111... for replacing calldata
-  const calldata = order.calldata.slice(0, 98) + "1111111111111111111111111111111111111111" + order.calldata.slice(138)
+  const calldata =
+    order.calldata.slice(0, 98) +
+    '1111111111111111111111111111111111111111' +
+    order.calldata.slice(138)
 
   const seller = order.side == OrderSide.Buy ? matchingOrder.maker : order.maker
   const proxy = await client._getProxy(seller)
@@ -898,14 +970,15 @@ async function canSettleOrder(client: OpenSeaPort, order: Order, matchingOrder: 
     console.warn(`No proxy found for seller ${seller}`)
     return false
   }
-  const contract = (client.web3.eth.contract([proxyABI])).at(proxy)
-  return promisify<boolean>(c =>
+  const contract = client.web3.eth.contract([proxyABI]).at(proxy)
+  return promisify<boolean>((c) =>
     contract.proxy.call(
       order.target,
       order.howToCall,
       calldata,
-      {from: seller},
-    c)
+      { from: seller },
+      c
+    )
   )
 }
 
@@ -914,7 +987,7 @@ async function canSettleOrder(client: OpenSeaPort, order: Order, matchingOrder: 
  * @param ms milliseconds to wait
  */
 export async function delay(ms: number) {
-  return new Promise(res => setTimeout(res, ms))
+  return new Promise((res) => setTimeout(res, ms))
 }
 
 /**
@@ -922,7 +995,10 @@ export async function delay(ms: number) {
  * formatted for Wyvern and OpenSea
  * @param address input address
  */
-export function validateAndFormatWalletAddress(web3: Web3, address: string): string {
+export function validateAndFormatWalletAddress(
+  web3: Web3,
+  address: string
+): string {
   if (!address) {
     throw new Error('No wallet address found')
   }
@@ -947,13 +1023,20 @@ export function onDeprecated(msg: string) {
  * Get special-case approval addresses for an erc721 contract
  * @param erc721Contract contract to check
  */
-export async function getNonCompliantApprovalAddress(erc721Contract: Web3.ContractInstance, tokenId: string, accountAddress: string): Promise<string | undefined> {
-
+export async function getNonCompliantApprovalAddress(
+  erc721Contract: Web3.ContractInstance,
+  tokenId: string,
+  accountAddress: string
+): Promise<string | undefined> {
   const results = await Promise.all([
     // CRYPTOKITTIES check
-    promisifyCall<string>(c => erc721Contract.kittyIndexToApproved.call(tokenId, c)),
+    promisifyCall<string>((c) =>
+      erc721Contract.kittyIndexToApproved.call(tokenId, c)
+    ),
     // Etherbots check
-    promisifyCall<string>(c => erc721Contract.partIndexToApproved.call(tokenId, c)),
+    promisifyCall<string>((c) =>
+      erc721Contract.partIndexToApproved.call(tokenId, c)
+    ),
   ])
 
   return _.compact(results)[0]
