@@ -1,8 +1,8 @@
-import BigNumber from 'bignumber.js';
-import { WyvernProtocol } from 'wyvern-js';
-import * as Web3 from 'web3';
-import { AnnotatedFunctionABI, Schema } from 'wyvern-schemas/dist/types';
-import { Asset, AssetEvent, ECSignature, OpenSeaAccount, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaAssetContract, OpenSeaCollection, OpenSeaFungibleToken, OpenSeaUser, Order, OrderJSON, Transaction, UnhashedOrder, UnsignedOrder, Web3Callback, WyvernAsset, WyvernBundle, WyvernFTAsset, WyvernNFTAsset } from '../types';
+import BigNumber from "bignumber.js";
+import { WyvernProtocol } from "wyvern-js";
+import * as Web3 from "web3";
+import { AnnotatedFunctionABI, Schema } from "wyvern-schemas/dist/types";
+import { Asset, AssetEvent, ECSignature, OpenSeaAccount, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaAssetContract, OpenSeaCollection, OpenSeaFungibleToken, OpenSeaUser, Order, OrderJSON, Transaction, UnhashedOrder, UnsignedOrder, Web3Callback, WyvernAsset, WyvernBundle, WyvernFTAsset, WyvernNFTAsset } from "../types";
 export { WyvernProtocol };
 export declare const annotateERC721TransferABI: (asset: WyvernNFTAsset) => AnnotatedFunctionABI;
 export declare const annotateERC20TransferABI: (asset: WyvernFTAsset) => AnnotatedFunctionABI;
@@ -23,6 +23,7 @@ export declare const transactionFromJSON: (transaction: any) => Transaction;
 export declare const accountFromJSON: (account: any) => OpenSeaAccount;
 export declare const userFromJSON: (user: any) => OpenSeaUser;
 export declare const assetBundleFromJSON: (asset_bundle: any) => OpenSeaAssetBundle;
+export declare const groupAndAggregateOrders: (assetOrBundleFromJson: OpenSeaAsset | OpenSeaAssetBundle, asset_or_bundle: any) => OpenSeaAsset | OpenSeaAssetBundle;
 export declare const assetContractFromJSON: (asset_contract: any) => OpenSeaAssetContract;
 export declare const collectionFromJSON: (collection: any) => OpenSeaCollection;
 export declare const tokenFromJSON: (token: any) => OpenSeaFungibleToken;
@@ -93,7 +94,7 @@ export declare function getCurrentGasPrice(web3: Web3): Promise<BigNumber>;
  * @param web3 Web3 instance
  * @param asset The asset to check for transfer fees
  */
-export declare function getTransferFeeSettings(web3: Web3, { asset, accountAddress }: {
+export declare function getTransferFeeSettings(web3: Web3, { asset, accountAddress, }: {
     asset: Asset;
     accountAddress?: string;
 }): Promise<{

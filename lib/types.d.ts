@@ -1,7 +1,7 @@
-import BigNumber from 'bignumber.js';
-import * as Web3 from 'web3';
-import { Network, HowToCall, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
-import { Token } from 'wyvern-schemas/dist/types';
+import BigNumber from "bignumber.js";
+import * as Web3 from "web3";
+import { Network, HowToCall, ECSignature, Order as WyvernOrder } from "wyvern-js/lib/types";
+import { Token } from "wyvern-schemas/dist/types";
 export { Network, HowToCall, ECSignature };
 /**
  * Events emitted by the SDK. There are five types:
@@ -158,7 +158,7 @@ export interface WyvernBundle {
     description?: string;
     external_link?: string;
 }
-export declare type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<(number | BigNumber)>, string, string, string, string, string, string, Array<(number | BigNumber)>, string[]];
+export declare type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<number | BigNumber>, string, string, string, string, string, string, Array<number | BigNumber>, string[]];
 /**
  * The OpenSea account object appended to orders, providing extra metadata, profile images and usernames
  */
@@ -326,6 +326,8 @@ export interface OpenSeaAssetBundle {
     name: string;
     slug: string;
     permalink: string;
+    orders: Order[] | null;
+    buyOrders: Order[] | null;
     sellOrders: Order[] | null;
     assetContract?: OpenSeaAssetContract;
     description?: string;

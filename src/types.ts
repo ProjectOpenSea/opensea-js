@@ -1,14 +1,14 @@
-import BigNumber from 'bignumber.js'
-import * as Web3 from 'web3'
+import BigNumber from "bignumber.js"
+import * as Web3 from "web3"
 import {
   Network,
   HowToCall,
   // Note: Wyvern SaleKind is wrong!
   ECSignature,
   Order as WyvernOrder,
-} from 'wyvern-js/lib/types'
+} from "wyvern-js/lib/types"
 
-import { Token } from 'wyvern-schemas/dist/types'
+import { Token } from "wyvern-schemas/dist/types"
 
 export { Network, HowToCall, ECSignature }
 
@@ -29,37 +29,37 @@ export { Network, HowToCall, ECSignature }
  */
 export enum EventType {
   // Transactions and signature requests
-  TransactionCreated = 'TransactionCreated',
-  TransactionConfirmed = 'TransactionConfirmed',
-  TransactionDenied = 'TransactionDenied',
-  TransactionFailed = 'TransactionFailed',
+  TransactionCreated = "TransactionCreated",
+  TransactionConfirmed = "TransactionConfirmed",
+  TransactionDenied = "TransactionDenied",
+  TransactionFailed = "TransactionFailed",
 
   // Pre-transaction events
-  InitializeAccount = 'InitializeAccount',
-  WrapEth = 'WrapEth',
-  UnwrapWeth = 'UnwrapWeth',
-  ApproveCurrency = 'ApproveCurrency',
-  ApproveAsset = 'ApproveAsset',
-  ApproveAllAssets = 'ApproveAllAssets',
-  UnapproveCurrency = 'UnapproveCurrency',
+  InitializeAccount = "InitializeAccount",
+  WrapEth = "WrapEth",
+  UnwrapWeth = "UnwrapWeth",
+  ApproveCurrency = "ApproveCurrency",
+  ApproveAsset = "ApproveAsset",
+  ApproveAllAssets = "ApproveAllAssets",
+  UnapproveCurrency = "UnapproveCurrency",
 
   // Basic actions: matching orders, creating orders, and cancelling orders
-  MatchOrders = 'MatchOrders',
-  CancelOrder = 'CancelOrder',
-  ApproveOrder = 'ApproveOrder',
-  CreateOrder = 'CreateOrder',
+  MatchOrders = "MatchOrders",
+  CancelOrder = "CancelOrder",
+  ApproveOrder = "ApproveOrder",
+  CreateOrder = "CreateOrder",
   // When the signature request for an order is denied
-  OrderDenied = 'OrderDenied',
+  OrderDenied = "OrderDenied",
 
   // When transferring one or more assets
-  TransferAll = 'TransferAll',
-  TransferOne = 'TransferOne',
+  TransferAll = "TransferAll",
+  TransferOne = "TransferOne",
 
   // When wrapping or unwrapping NFTs
-  WrapAssets = 'WrapAssets',
-  UnwrapAssets = 'UnwrapAssets',
-  LiquidateAssets = 'LiquidateAssets',
-  PurchaseAssets = 'PurchaseAssets',
+  WrapAssets = "WrapAssets",
+  UnwrapAssets = "UnwrapAssets",
+  LiquidateAssets = "LiquidateAssets",
+  PurchaseAssets = "PurchaseAssets",
 }
 
 /**
@@ -132,19 +132,19 @@ export enum SaleKind {
  * Given by the asset_contract_type in the OpenSea API
  */
 export enum AssetContractType {
-  Fungible = 'fungible',
-  SemiFungible = 'semi-fungible',
-  NonFungible = 'non-fungible',
-  Unknown = 'unknown',
+  Fungible = "fungible",
+  SemiFungible = "semi-fungible",
+  NonFungible = "non-fungible",
+  Unknown = "unknown",
 }
 
 // Wyvern Schemas (see https://github.com/ProjectOpenSea/wyvern-schemas)
 export enum WyvernSchemaName {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721',
-  ERC1155 = 'ERC1155',
-  LegacyEnjin = 'Enjin',
-  ENSShortNameAuction = 'ENSShortNameAuction',
+  ERC20 = "ERC20",
+  ERC721 = "ERC721",
+  ERC1155 = "ERC1155",
+  LegacyEnjin = "Enjin",
+  ENSShortNameAuction = "ENSShortNameAuction",
   // CryptoPunks = 'CryptoPunks'
 }
 
@@ -161,18 +161,18 @@ export enum WyvernSchemaName {
  * locked: When the transfer function has been locked by the dev
  */
 export enum TokenStandardVersion {
-  Unsupported = 'unsupported',
-  Locked = 'locked',
-  Enjin = '1155-1.0',
-  ERC721v1 = '1.0',
-  ERC721v2 = '2.0',
-  ERC721v3 = '3.0',
+  Unsupported = "unsupported",
+  Locked = "locked",
+  Enjin = "1155-1.0",
+  ERC721v1 = "1.0",
+  ERC721v2 = "2.0",
+  ERC721v3 = "3.0",
 }
 
 export enum WyvernAssetLocation {
-  Account = 'account',
-  Proxy = 'proxy',
-  Other = 'other',
+  Account = "account",
+  Proxy = "proxy",
+  Other = "other",
 }
 
 export interface WyvernNFTAsset {
@@ -411,26 +411,26 @@ export interface AssetEvent {
  * Defines set of possible auctions types
  */
 export enum AuctionType {
-  Dutch = 'dutch',
-  English = 'english',
-  MinPrice = 'min_price',
+  Dutch = "dutch",
+  English = "english",
+  MinPrice = "min_price",
 }
 
 /**
  * Defines the possible types of asset events that can take place
  */
 export enum AssetEventType {
-  AuctionCreated = 'created',
-  AuctionSuccessful = 'successful',
-  AuctionCancelled = 'cancelled',
-  OfferEntered = 'offer_entered',
-  BidEntered = 'bid_entered',
-  BidWithdraw = 'bid_withdraw',
-  AssetTransfer = 'transfer',
-  AssetApprove = 'approve',
-  CompositionCreated = 'composition_created',
-  Custom = 'custom',
-  Payout = 'payout',
+  AuctionCreated = "created",
+  AuctionSuccessful = "successful",
+  AuctionCancelled = "cancelled",
+  OfferEntered = "offer_entered",
+  BidEntered = "bid_entered",
+  BidWithdraw = "bid_withdraw",
+  AssetTransfer = "transfer",
+  AssetApprove = "approve",
+  CompositionCreated = "composition_created",
+  Custom = "custom",
+  Payout = "payout",
 }
 
 /**

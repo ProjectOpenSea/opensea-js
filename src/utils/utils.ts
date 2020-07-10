@@ -1,18 +1,18 @@
-import BigNumber from 'bignumber.js'
-import { WyvernProtocol } from 'wyvern-js'
-import * as ethUtil from 'ethereumjs-util'
-import * as _ from 'lodash'
-import * as Web3 from 'web3'
+import BigNumber from "bignumber.js"
+import { WyvernProtocol } from "wyvern-js"
+import * as ethUtil from "ethereumjs-util"
+import * as _ from "lodash"
+import * as Web3 from "web3"
 import {
   AnnotatedFunctionABI,
   FunctionInputKind,
   FunctionOutputKind,
   Schema,
   StateMutability,
-} from 'wyvern-schemas/dist/types'
-import { ERC1155 } from '../contracts'
+} from "wyvern-schemas/dist/types"
+import { ERC1155 } from "../contracts"
 
-import { OpenSeaPort } from '..'
+import { OpenSeaPort } from ".."
 import {
   Asset,
   AssetContractType,
@@ -40,15 +40,15 @@ import {
   WyvernFTAsset,
   WyvernNFTAsset,
   WyvernSchemaName,
-} from '../types'
+} from "../types"
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
-} from '../constants'
-import { proxyABI } from '../abi/Proxy'
+} from "../constants"
+import { proxyABI } from "../abi/Proxy"
 
 export { WyvernProtocol }
 
@@ -58,19 +58,19 @@ export const annotateERC721TransferABI = (
   constant: false,
   inputs: [
     {
-      name: '_to',
-      type: 'address',
+      name: "_to",
+      type: "address",
       kind: FunctionInputKind.Replaceable,
     },
     {
-      name: '_tokenId',
-      type: 'uint256',
+      name: "_tokenId",
+      type: "uint256",
       kind: FunctionInputKind.Asset,
       value: asset.id,
     },
   ],
   target: asset.address,
-  name: 'transfer',
+  name: "transfer",
   outputs: [],
   payable: false,
   stateMutability: StateMutability.Nonpayable,
@@ -83,23 +83,23 @@ export const annotateERC20TransferABI = (
   constant: false,
   inputs: [
     {
-      name: '_to',
-      type: 'address',
+      name: "_to",
+      type: "address",
       kind: FunctionInputKind.Replaceable,
     },
     {
-      name: '_amount',
-      type: 'uint256',
+      name: "_amount",
+      type: "uint256",
       kind: FunctionInputKind.Count,
       value: asset.quantity,
     },
   ],
   target: asset.address,
-  name: 'transfer',
+  name: "transfer",
   outputs: [
     {
-      name: 'success',
-      type: 'bool',
+      name: "success",
+      type: "bool",
       kind: FunctionOutputKind.Other,
     },
   ],
@@ -153,7 +153,7 @@ export async function promisifyCall<T>(
 ): Promise<T | undefined> {
   try {
     const result: any = await promisify<T>(callback)
-    if (result == '0x') {
+    if (result == "0x") {
       // Geth compatibility
       return undefined
     }
@@ -175,21 +175,21 @@ const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
   } else {
     txCallbacks[txHash] = [onFinalized]
     const poll = async () => {
-      const tx = await promisify<Web3.Transaction>((c) =>
+      const tx = await promisify<Web3.Transaction>(c =>
         web3.eth.getTransaction(txHash, c)
       )
       if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
-        const receipt = await promisify<Web3.TransactionReceipt | null>((c) =>
+        const receipt = await promisify<Web3.TransactionReceipt | null>(c =>
           web3.eth.getTransactionReceipt(txHash, c)
         )
         if (!receipt) {
           // Hack: assume success if no receipt
-          console.warn('No receipt found for ', txHash)
+          console.warn("No receipt found for ", txHash)
         }
         const status = receipt
-          ? parseInt((receipt.status || '0').toString()) == 1
+          ? parseInt((receipt.status || "0").toString()) == 1
           : true
-        txCallbacks[txHash].map((f) => f(status))
+        txCallbacks[txHash].map(f => f(status))
         delete txCallbacks[txHash]
       } else {
         setTimeout(poll, 1000)
@@ -203,7 +203,7 @@ export const confirmTransaction = async (web3: Web3, txHash: string) => {
   return new Promise((resolve, reject) => {
     track(web3, txHash, (didSucceed: boolean) => {
       if (didSucceed) {
-        resolve('Transaction complete!')
+        resolve("Transaction complete!")
       } else {
         reject(
           new Error(
@@ -216,8 +216,8 @@ export const confirmTransaction = async (web3: Web3, txHash: string) => {
 }
 
 export const assetFromJSON = (asset: any): OpenSeaAsset => {
-  const isAnimated = asset.image_url && asset.image_url.endsWith('.gif')
-  const isSvg = asset.image_url && asset.image_url.endsWith('.svg')
+  const isAnimated = asset.image_url && asset.image_url.endsWith(".gif")
+  const isSvg = asset.image_url && asset.image_url.endsWith(".svg")
   const fromJSON: OpenSeaAsset = {
     tokenId: asset.token_id.toString(),
     tokenAddress: asset.asset_contract.address,
@@ -528,10 +528,10 @@ export async function personalSignAsync(
   message: string,
   signerAddress: string
 ): Promise<ECSignature> {
-  const signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
+  const signature = await promisify<Web3.JSONRPCResponsePayload>(c =>
     web3.currentProvider.sendAsync(
       {
-        method: 'personal_sign',
+        method: "personal_sign",
         params: [message, signerAddress],
         from: signerAddress,
         id: new Date().getTime(),
@@ -557,8 +557,8 @@ export async function isContractAddress(
   web3: Web3,
   address: string
 ): Promise<boolean> {
-  const code = await promisify<string>((c) => web3.eth.getCode(address, c))
-  return code !== '0x'
+  const code = await promisify<string>(c => web3.eth.getCode(address, c))
+  return code !== "0x"
 }
 
 /**
@@ -567,7 +567,7 @@ export async function isContractAddress(
  */
 export function makeBigNumber(arg: number | string | BigNumber): BigNumber {
   // Zero sometimes returned as 0x from contracts
-  if (arg === '0x') {
+  if (arg === "0x") {
     arg = 0
   }
   // fix "new BigNumber() number type has more than 15 significant digits"
@@ -597,7 +597,7 @@ export async function sendRawTransaction(
   }
 
   try {
-    const txHashRes = await promisify<string>((c) =>
+    const txHashRes = await promisify<string>(c =>
       web3.eth.sendTransaction(
         {
           from,
@@ -633,7 +633,7 @@ export async function rawCall(
   onError?: (error: Error) => void
 ): Promise<string> {
   try {
-    const result = await promisify<string>((c) =>
+    const result = await promisify<string>(c =>
       web3.eth.call(
         {
           from,
@@ -650,7 +650,7 @@ export async function rawCall(
       onError(error)
     }
     // Backwards compatibility with Geth nodes
-    return '0x'
+    return "0x"
   }
 }
 
@@ -666,7 +666,7 @@ export async function estimateGas(
   web3: Web3,
   { from, to, data, value = 0 }: Web3.TxData
 ): Promise<number> {
-  const amount = await promisify<number>((c) =>
+  const amount = await promisify<number>(c =>
     web3.eth.estimateGas(
       {
         from,
@@ -686,7 +686,7 @@ export async function estimateGas(
  * @param web3 Web3 instance
  */
 export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
-  const meanGas = await promisify<BigNumber>((c) => web3.eth.getGasPrice(c))
+  const meanGas = await promisify<BigNumber>(c => web3.eth.getGasPrice(c))
   return meanGas
 }
 
@@ -712,7 +712,7 @@ export async function getTransferFeeSettings(
     // Enjin asset
     const feeContract = web3.eth.contract(ERC1155 as any).at(asset.tokenAddress)
 
-    const params = await promisifyCall<any[]>((c) =>
+    const params = await promisifyCall<any[]>(c =>
       feeContract.transferSettings(asset.tokenId, { from: accountAddress }, c)
     )
     if (params) {
@@ -745,7 +745,7 @@ function parseSignatureHex(signature: string): ECSignature {
     return ecSignatureVRS
   }
 
-  throw new Error('Invalid signature')
+  throw new Error("Invalid signature")
 
   function _parseSignatureHexAsVRS(signatureHex: string) {
     const signatureBuffer: any = ethUtil.toBuffer(signatureHex)
@@ -857,11 +857,11 @@ export function getWyvernBundle(
   quantities: BigNumber[]
 ): WyvernBundle {
   if (assets.length != quantities.length) {
-    throw new Error('Bundle must have a quantity for every asset')
+    throw new Error("Bundle must have a quantity for every asset")
   }
 
   if (assets.length != schemas.length) {
-    throw new Error('Bundle must have a schema for every asset')
+    throw new Error("Bundle must have a schema for every asset")
   }
 
   const wyAssets = assets.map((asset, i) =>
@@ -881,8 +881,7 @@ export function getWyvernBundle(
   }))
 
   const uniqueAssets = _.uniqBy(
-    wyAssetsAndSchemas,
-    (group) => `${sorters[0](group)}-${sorters[1](group)}`
+    wyAssetsAndSchemas,group => `${sorters[0](group)}-${sorters[1](group)}`
   )
 
   if (uniqueAssets.length != wyAssetsAndSchemas.length) {
@@ -892,8 +891,8 @@ export function getWyvernBundle(
   const sortedWyAssetsAndSchemas = _.sortBy(wyAssetsAndSchemas, sorters)
 
   return {
-    assets: sortedWyAssetsAndSchemas.map((group) => group.asset),
-    schemas: sortedWyAssetsAndSchemas.map((group) => group.schema),
+    assets: sortedWyAssetsAndSchemas.map(group => group.asset),
+    schemas: sortedWyAssetsAndSchemas.map(group => group.schema),
   }
 }
 
@@ -961,7 +960,7 @@ async function canSettleOrder(
   //  to change null address to 0x1111111... for replacing calldata
   const calldata =
     order.calldata.slice(0, 98) +
-    '1111111111111111111111111111111111111111' +
+    "1111111111111111111111111111111111111111" +
     order.calldata.slice(138)
 
   const seller = order.side == OrderSide.Buy ? matchingOrder.maker : order.maker
@@ -971,7 +970,7 @@ async function canSettleOrder(
     return false
   }
   const contract = client.web3.eth.contract([proxyABI]).at(proxy)
-  return promisify<boolean>((c) =>
+  return promisify<boolean>(c =>
     contract.proxy.call(
       order.target,
       order.howToCall,
@@ -987,7 +986,7 @@ async function canSettleOrder(
  * @param ms milliseconds to wait
  */
 export async function delay(ms: number) {
-  return new Promise((res) => setTimeout(res, ms))
+  return new Promise(res => setTimeout(res, ms))
 }
 
 /**
@@ -1000,13 +999,13 @@ export function validateAndFormatWalletAddress(
   address: string
 ): string {
   if (!address) {
-    throw new Error('No wallet address found')
+    throw new Error("No wallet address found")
   }
   if (!web3.isAddress(address)) {
-    throw new Error('Invalid wallet address')
+    throw new Error("Invalid wallet address")
   }
   if (address == NULL_ADDRESS) {
-    throw new Error('Wallet cannot be the null address')
+    throw new Error("Wallet cannot be the null address")
   }
   return address.toLowerCase()
 }
@@ -1030,11 +1029,11 @@ export async function getNonCompliantApprovalAddress(
 ): Promise<string | undefined> {
   const results = await Promise.all([
     // CRYPTOKITTIES check
-    promisifyCall<string>((c) =>
+    promisifyCall<string>(c =>
       erc721Contract.kittyIndexToApproved.call(tokenId, c)
     ),
     // Etherbots check
-    promisifyCall<string>((c) =>
+    promisifyCall<string>(c =>
       erc721Contract.partIndexToApproved.call(tokenId, c)
     ),
   ])
