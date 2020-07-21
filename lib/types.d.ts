@@ -327,6 +327,8 @@ export interface OpenSeaAssetBundle {
     slug: string;
     permalink: string;
     sellOrders: Order[] | null;
+    orders: Order[] | null;
+    buyOrders: Order[] | null;
     assetContract?: OpenSeaAssetContract;
     description?: string;
     externalLink?: string;

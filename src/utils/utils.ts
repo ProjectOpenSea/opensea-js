@@ -307,7 +307,9 @@ export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
     externalLink: asset_bundle.external_link,
     permalink: asset_bundle.permalink,
 
-    sellOrders: asset_bundle.sell_orders ? asset_bundle.sell_orders.map(orderFromJSON) : null
+    sellOrders: asset_bundle.sell_orders ? asset_bundle.sell_orders.map(orderFromJSON) : null,
+    orders: asset_bundle.orders ? asset_bundle.orders.map(orderFromJSON) : null,
+    buyOrders: asset_bundle.buy_orders ? asset_bundle.buy_orders.map(orderFromJSON) : null
   }
 
   return fromJSON
