@@ -615,8 +615,7 @@ export class OpenSeaPort {
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
-        buyerEmail?: string;
-        schemaName?: WyvernSchemaName; }
+        buyerEmail?: string; }
     ): Promise<Order> {
 
     const order = await this._makeSellOrder({
@@ -3018,11 +3017,12 @@ export class OpenSeaPort {
     }
   }
 
-  private _getSchema(schemaName = WyvernSchemaName.ERC721): Schema<any> {
-    const schema = WyvernSchemas.schemas[this._networkName].filter(s => s.name == schemaName)[0]
+  private _getSchema(schemaName?: WyvernSchemaName): Schema<any> {
+    const schemaName_ = schemaName || WyvernSchemaName.ERC721
+    const schema = WyvernSchemas.schemas[this._networkName].filter(s => s.name == schemaName_)[0]
 
     if (!schema) {
-      throw new Error(`Trading for this asset (${schemaName}) is not yet supported. Please contact us or check back later!`)
+      throw new Error(`Trading for this asset (${schemaName_}) is not yet supported. Please contact us or check back later!`)
     }
     return schema
   }

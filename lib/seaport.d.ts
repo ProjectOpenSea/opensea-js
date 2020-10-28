@@ -218,7 +218,6 @@ export declare class OpenSeaPort {
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
         buyerEmail?: string;
-        schemaName?: WyvernSchemaName;
     }): Promise<Order>;
     /**
      * Create multiple sell orders in bulk to auction assets out of an asset factory.
