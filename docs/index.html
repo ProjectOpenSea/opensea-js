@@ -83,7 +83,10 @@
 									<li><a href="#bidding-on-ens-short-name-auctions">Bidding on ENS Short Name Auctions</a></li>
 								</ul>
 							</li>
-							<li><a href="#making-auctions">Making Auctions</a></li>
+							<li><a href="#making-listings--selling-items">Making Listings / Selling Items</a><ul>
+									<li><a href="#creating-english-auctions">Creating English Auctions</a></li>
+								</ul>
+							</li>
 							<li><a href="#running-crowdsales">Running Crowdsales</a></li>
 							<li><a href="#fetching-orders">Fetching Orders</a></li>
 							<li><a href="#buying-items">Buying Items</a></li>
@@ -253,13 +256,13 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   <span class="hljs-attr">startAmount</span>: <span class="hljs-number">1.2</span>,
 })
 </code></pre>
-				<h3 id="making-auctions">Making Auctions</h3>
-				<p>To sell an asset, call <code>createSellOrder</code>. You can do a fixed-price sale, where <code>startAmount</code> is equal to <code>endAmount</code>, or a declining <a href="https://en.wikipedia.org/wiki/Dutch_auction">Dutch auction</a>, where <code>endAmount</code> is lower and the price declines until <code>expirationTime</code> is hit:</p>
+				<h3 id="making-listings-selling-items">Making Listings / Selling Items</h3>
+				<p>To sell an asset, call <code>createSellOrder</code>. You can do a fixed-price listing, where <code>startAmount</code> is equal to <code>endAmount</code>, or a declining <a href="https://en.wikipedia.org/wiki/Dutch_auction">Dutch auction</a>, where <code>endAmount</code> is lower and the price declines until <code>expirationTime</code> is hit:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Expire this auction one day from now.</span>
 <span class="hljs-comment">// Note that we convert from the JavaScript timestamp (milliseconds):</span>
 <span class="hljs-keyword">const</span> expirationTime = <span class="hljs-built_in">Math</span>.round(<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>)
 
-<span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({
+<span class="hljs-keyword">const</span> listing = <span class="hljs-keyword">await</span> seaport.createSellOrder({
   <span class="hljs-attr">asset</span>: {
     tokenId,
     tokenAddress,
@@ -273,6 +276,28 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 </code></pre>
 				<p>The units for <code>startAmount</code> and <code>endAmount</code> are Ether, ETH. If you want to specify another ERC-20 token to use, see <a href="#using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</a>.</p>
 				<p>See <a href="#listening-to-events">Listening to Events</a> to respond to the setup transactions that occur the first time a user sells an item.</p>
+				<h4 id="creating-english-auctions">Creating English Auctions</h4>
+				<p>English Auctions are auctions that start at a small amount (we recommend even doing 0!) and increase with every bid. At expiration time, the item sells to the highest bidder.</p>
+				<p>To create an English Auction, create a listing that waits for the highest bid by setting <code>waitForHighestBid</code> to <code>true</code>:</p>
+				<pre><code class="lang-JavaScript">
+<span class="hljs-comment">// Create an auction to receive Wrapped Ether (WETH). See note below.</span>
+<span class="hljs-keyword">const</span> paymentTokenAddress = <span class="hljs-string">"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"</span>
+
+<span class="hljs-keyword">const</span> startAmount = <span class="hljs-number">0</span> <span class="hljs-comment">// The minimum amount to sell for, in normal units (e.g. ETH)</span>
+
+<span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({
+  <span class="hljs-attr">asset</span>: {
+    tokenId,
+    tokenAddress,
+  },
+  accountAddress,
+  startAmount,
+  expirationTime,
+  paymentTokenAddress,
+  <span class="hljs-attr">waitForHighestBid</span>: <span class="hljs-literal">true</span>
+})
+</code></pre>
+				<p>Note that auctions aren&#39;t supported with Ether directly due to limitations in Ethereum, so you have to use an ERC20 token, like Wrapped Ether (WETH), a stablecoin like DAI, etc. See <a href="#using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</a> for more info.</p>
 				<h3 id="running-crowdsales">Running Crowdsales</h3>
 				<p>You can now sell items to users <strong>without having to pay gas to mint them</strong>!</p>
 				<p>To create a presale or crowdsale and create batches of sell orders for a single asset factory, first follow the <a href="https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial">tutorial</a> for creating your crowdsale contract.</p>
@@ -1146,6 +1171,9 @@ handleSeaportEvents() {
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#getwyvernbundle" class="tsd-kind-icon">get<wbr>Wyvern<wbr>Bundle</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#iscontractaddress" class="tsd-kind-icon">is<wbr>Contract<wbr>Address</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#makebignumber" class="tsd-kind-icon">make<wbr>Big<wbr>Number</a>

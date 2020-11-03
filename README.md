@@ -17,7 +17,8 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Making Offers](#making-offers)
     - [Bidding on Multiple Assets](#bidding-on-multiple-assets)
     - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
-  - [Making Auctions](#making-auctions)
+  - [Making Listings / Selling Items](#making-listings--selling-items)
+    - [Creating English Auctions](#creating-english-auctions)
   - [Running Crowdsales](#running-crowdsales)
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
@@ -231,16 +232,16 @@ const offer = await seaport.createBuyOrder({
 })
 ```
 
-### Making Auctions
+### Making Listings / Selling Items
 
-To sell an asset, call `createSellOrder`. You can do a fixed-price sale, where `startAmount` is equal to `endAmount`, or a declining [Dutch auction](https://en.wikipedia.org/wiki/Dutch_auction), where `endAmount` is lower and the price declines until `expirationTime` is hit:
+To sell an asset, call `createSellOrder`. You can do a fixed-price listing, where `startAmount` is equal to `endAmount`, or a declining [Dutch auction](https://en.wikipedia.org/wiki/Dutch_auction), where `endAmount` is lower and the price declines until `expirationTime` is hit:
 
 ```JavaScript
 // Expire this auction one day from now.
 // Note that we convert from the JavaScript timestamp (milliseconds):
 const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24)
 
-const auction = await seaport.createSellOrder({
+const listing = await seaport.createSellOrder({
   asset: {
     tokenId,
     tokenAddress,
@@ -256,6 +257,34 @@ const auction = await seaport.createSellOrder({
 The units for `startAmount` and `endAmount` are Ether, ETH. If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
 
 See [Listening to Events](#listening-to-events) to respond to the setup transactions that occur the first time a user sells an item.
+
+#### Creating English Auctions
+
+English Auctions are auctions that start at a small amount (we recommend even doing 0!) and increase with every bid. At expiration time, the item sells to the highest bidder.
+
+To create an English Auction, create a listing that waits for the highest bid by setting `waitForHighestBid` to `true`:
+
+```JavaScript
+
+// Create an auction to receive Wrapped Ether (WETH). See note below.
+const paymentTokenAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+
+const startAmount = 0 // The minimum amount to sell for, in normal units (e.g. ETH)
+
+const auction = await seaport.createSellOrder({
+  asset: {
+    tokenId,
+    tokenAddress,
+  },
+  accountAddress,
+  startAmount,
+  expirationTime,
+  paymentTokenAddress,
+  waitForHighestBid: true
+})
+```
+
+Note that auctions aren't supported with Ether directly due to limitations in Ethereum, so you have to use an ERC20 token, like Wrapped Ether (WETH), a stablecoin like DAI, etc. See [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether) for more info.
 
 ### Running Crowdsales
 
