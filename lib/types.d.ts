@@ -387,6 +387,7 @@ export interface UnhashedOrder extends WyvernOrder {
     quantity: BigNumber;
     makerReferrerFee: BigNumber;
     waitingForBestCounterOrder: boolean;
+    englishAuctionReservePrice: BigNumber;
     metadata: ExchangeMetadata;
 }
 export interface UnsignedOrder extends UnhashedOrder {
