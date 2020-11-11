@@ -605,7 +605,7 @@ export class OpenSeaPort {
    * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
    */
   public async createSellOrder(
-      { asset, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, englishAuctionReservePrice = 0, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail }:
+      { asset, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail }:
       { asset: Asset;
         accountAddress: string;
         startAmount: number;
@@ -809,7 +809,7 @@ export class OpenSeaPort {
    * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, englishAuctionReservePrice = 0, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -1966,7 +1966,7 @@ export class OpenSeaPort {
   }
 
   public async _makeSellOrder(
-      { asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
+      { asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice = 0, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
       { asset: Asset;
         quantity: number;
         accountAddress: string;
@@ -2024,7 +2024,7 @@ export class OpenSeaPort {
       takerProtocolFee,
       makerReferrerFee,
       waitingForBestCounterOrder: waitForHighestBid,
-      englishAuctionReservePrice: makeBigNumber(englishAuctionReservePrice || 0),
+      englishAuctionReservePrice: englishAuctionReservePrice ? makeBigNumber(englishAuctionReservePrice) : undefined,
       feeMethod,
       feeRecipient,
       side: OrderSide.Sell,
@@ -2204,7 +2204,7 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice = 0, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -2270,7 +2270,7 @@ export class OpenSeaPort {
       takerProtocolFee,
       makerReferrerFee,
       waitingForBestCounterOrder: waitForHighestBid,
-      englishAuctionReservePrice: makeBigNumber(englishAuctionReservePrice || 0),
+      englishAuctionReservePrice: englishAuctionReservePrice ? makeBigNumber(englishAuctionReservePrice) : undefined,
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Sell,
@@ -2881,8 +2881,8 @@ export class OpenSeaPort {
     if (priceDiff > 0 && expirationTime == 0) {
       throw new Error('Expiration time must be set if order will change in price.')
     }
-    if (englishAuctionReservePrice && (startAmount < englishAuctionReservePrice)) {
-      throw new Error('Reserrve price must be greater than or equal to the start amount.')
+    if (englishAuctionReservePrice && (englishAuctionReservePrice < startAmount)) {
+      throw new Error('Reserve price must be greater than or equal to the start amount.')
     }
 
     // Note: WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)

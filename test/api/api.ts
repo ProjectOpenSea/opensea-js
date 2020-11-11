@@ -8,11 +8,23 @@ import {
   skip,
 } from 'mocha-typescript'
 
-import { Order, OrderSide, OrderJSON } from '../../src/types'
+import { OpenSeaPort } from '../../src/index'
+import * as Web3 from 'web3'
+import { WyvernProtocol } from 'wyvern-js'
+import { Network, Order, OrderSide, OrderJSON } from '../../src/types'
 import { orderToJSON } from '../../src'
-import { mainApi, rinkebyApi, apiToTest, ALEX_ADDRESS, CK_RINKEBY_TOKEN_ID, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE, RINKEBY_API_KEY, CK_ADDRESS } from '../constants'
-import { getOrderHash } from '../../src/utils/utils'
-import { ORDERBOOK_VERSION, NULL_ADDRESS } from '../../src/constants'
+import { mainApi, rinkebyApi, apiToTest, ALEX_ADDRESS, ALEX_ADDRESS_2, CK_RINKEBY_TOKEN_ID, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE, RINKEBY_API_KEY, CK_ADDRESS, WETH_ADDRESS, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY } from '../constants'
+import { getOrderHash, makeBigNumber } from '../../src/utils/utils'
+import { ORDERBOOK_VERSION, NULL_ADDRESS, MAINNET_PROVIDER_URL, ORDER_MATCHING_LATENCY_SECONDS } from '../../src/constants'
+
+
+
+const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
+
+const client = new OpenSeaPort(provider, {
+  networkName: Network.Main,
+  apiKey: MAINNET_API_KEY
+}, line => console.info(`MAINNET: ${line}`))
 
 suite('api', () => {
 
@@ -66,6 +78,46 @@ suite('api', () => {
       return
     }
     assert.equal(order.hash, getOrderHash(order))
+  })
+
+  test('orderToJSON is correct', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const quantity = 1
+    const amountInToken = 1.2
+    const paymentTokenAddress = WETH_ADDRESS
+    const extraBountyBasisPoints = 0
+    const expirationTime = Math.round(Date.now() / 1000 + 60) // one minute from now
+    const englishAuctionReservePrice = 2
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+    const order = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      quantity,
+      accountAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress,
+      extraBountyBasisPoints,
+      buyerAddress: NULL_ADDRESS,
+      expirationTime,
+      waitForHighestBid: true,
+      englishAuctionReservePrice,
+    })
+
+    const hashedOrder = {
+      ...order,
+      hash: getOrderHash(order)
+    }
+
+    const orderData = orderToJSON(hashedOrder)
+    assert.equal(orderData.quantity, quantity.toString())
+    assert.equal(orderData.maker, accountAddress)
+    assert.equal(orderData.taker, NULL_ADDRESS)
+    assert.equal(orderData.basePrice, WyvernProtocol.toBaseUnitAmount(makeBigNumber(amountInToken), 18).toString())
+    assert.equal(orderData.paymentToken, paymentTokenAddress)
+    assert.equal(orderData.extra, extraBountyBasisPoints.toString())
+    assert.equal(orderData.expirationTime, expirationTime + ORDER_MATCHING_LATENCY_SECONDS)
+    assert.equal(orderData.englishAuctionReservePrice, englishAuctionReservePrice.toString())
   })
 
   test('API fetches tokens', async () => {

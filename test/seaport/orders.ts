@@ -175,6 +175,24 @@ suite('seaport: orders', () => {
     } catch (error) {
       assert.include(error.message, 'Expiration time must be set if order will change in price')
     }
+
+    try {
+      await client._makeSellOrder({
+        asset: { tokenAddress, tokenId },
+        quantity: 1,
+        accountAddress,
+        startAmount: 2,
+        extraBountyBasisPoints: 0,
+        buyerAddress: NULL_ADDRESS,
+        expirationTime,
+        paymentTokenAddress,
+        waitForHighestBid: true,
+        englishAuctionReservePrice: 1
+      })
+      assert.fail()
+    } catch (error) {
+      assert.include(error.message, 'Reserve price must be greater than or equal to the start amount')
+    }
   })
 
   test("Correctly errors for invalid buy order price parameters", async () => {
