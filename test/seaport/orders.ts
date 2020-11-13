@@ -186,6 +186,24 @@ suite('seaport: orders', () => {
         buyerAddress: NULL_ADDRESS,
         expirationTime,
         paymentTokenAddress,
+        waitForHighestBid: false,
+        englishAuctionReservePrice: 1
+      })
+      assert.fail()
+    } catch (error) {
+      assert.include(error.message, 'Reserve prices may only be set on English auctions')
+    }
+
+    try {
+      await client._makeSellOrder({
+        asset: { tokenAddress, tokenId },
+        quantity: 1,
+        accountAddress,
+        startAmount: 2,
+        extraBountyBasisPoints: 0,
+        buyerAddress: NULL_ADDRESS,
+        expirationTime,
+        paymentTokenAddress,
         waitForHighestBid: true,
         englishAuctionReservePrice: 1
       })

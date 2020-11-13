@@ -1998,7 +1998,7 @@ export class OpenSeaPort {
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
-    const { basePrice, extra, paymentToken } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid, englishAuctionReservePrice)
+    const { basePrice, extra, paymentToken, reservePrice } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid, englishAuctionReservePrice)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
 
     const {
@@ -2024,7 +2024,7 @@ export class OpenSeaPort {
       takerProtocolFee,
       makerReferrerFee,
       waitingForBestCounterOrder: waitForHighestBid,
-      englishAuctionReservePrice: englishAuctionReservePrice ? makeBigNumber(englishAuctionReservePrice) : undefined,
+      englishAuctionReservePrice: reservePrice ? makeBigNumber(reservePrice) : undefined,
       feeMethod,
       feeRecipient,
       side: OrderSide.Sell,
@@ -2243,7 +2243,7 @@ export class OpenSeaPort {
 
     const { calldata, replacementPattern } = encodeAtomicizedSell(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol, this._networkName)
 
-    const { basePrice, extra, paymentToken } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid, englishAuctionReservePrice)
+    const { basePrice, extra, paymentToken, reservePrice } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid, englishAuctionReservePrice)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
 
     const orderSaleKind = endAmount != null && endAmount !== startAmount
@@ -2270,7 +2270,7 @@ export class OpenSeaPort {
       takerProtocolFee,
       makerReferrerFee,
       waitingForBestCounterOrder: waitForHighestBid,
-      englishAuctionReservePrice: englishAuctionReservePrice ? makeBigNumber(englishAuctionReservePrice) : undefined,
+      englishAuctionReservePrice: reservePrice ? makeBigNumber(reservePrice) : undefined,
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Sell,
@@ -2881,6 +2881,9 @@ export class OpenSeaPort {
     if (priceDiff > 0 && expirationTime == 0) {
       throw new Error('Expiration time must be set if order will change in price.')
     }
+    if (englishAuctionReservePrice && !waitingForBestCounterOrder) {
+      throw new Error('Reserve prices may only be set on English auctions.')
+    }
     if (englishAuctionReservePrice && (englishAuctionReservePrice < startAmount)) {
       throw new Error('Reserve price must be greater than or equal to the start amount.')
     }
@@ -2895,7 +2898,13 @@ export class OpenSeaPort {
       ? makeBigNumber(this.web3.toWei(priceDiff, 'ether')).round()
       : WyvernProtocol.toBaseUnitAmount(makeBigNumber(priceDiff), token.decimals)
 
-    return { basePrice, extra, paymentToken, englishAuctionReservePrice }
+    const reservePrice = englishAuctionReservePrice
+      ? isEther
+        ? makeBigNumber(this.web3.toWei(englishAuctionReservePrice, 'ether')).round()
+        : WyvernProtocol.toBaseUnitAmount(makeBigNumber(englishAuctionReservePrice), token.decimals)
+      : undefined
+
+    return { basePrice, extra, paymentToken, reservePrice }
   }
 
   private _getMetadata(order: Order, referrerAddress?: string) {

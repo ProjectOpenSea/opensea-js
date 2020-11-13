@@ -117,7 +117,7 @@ suite('api', () => {
     assert.equal(orderData.paymentToken, paymentTokenAddress)
     assert.equal(orderData.extra, extraBountyBasisPoints.toString())
     assert.equal(orderData.expirationTime, expirationTime + ORDER_MATCHING_LATENCY_SECONDS)
-    assert.equal(orderData.englishAuctionReservePrice, englishAuctionReservePrice.toString())
+    assert.equal(orderData.englishAuctionReservePrice, WyvernProtocol.toBaseUnitAmount(makeBigNumber(englishAuctionReservePrice), 18).toString())
   })
 
   test('API fetches tokens', async () => {
