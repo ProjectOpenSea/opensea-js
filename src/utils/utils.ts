@@ -462,6 +462,7 @@ export const orderToJSON = (order: Order): OrderJSON => {
     paymentToken: order.paymentToken.toLowerCase(),
     quantity: order.quantity.toString(),
     basePrice: order.basePrice.toString(),
+    englishAuctionReservePrice: order.englishAuctionReservePrice ? order.englishAuctionReservePrice.toString() : undefined,
     extra: order.extra.toString(),
     createdTime: order.createdTime
       ? order.createdTime.toString()

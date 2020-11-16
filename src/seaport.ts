@@ -598,13 +598,14 @@ export class OpenSeaPort {
    * @param quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
+   * @param englishAuctionReservePrice Optional price level, below which orders may be placed but will not be matched.  Orders below the reserve can be manually accepted but will not be automatically matched.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
    */
   public async createSellOrder(
-      { asset, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail }:
+      { asset, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail }:
       { asset: Asset;
         accountAddress: string;
         startAmount: number;
@@ -612,6 +613,7 @@ export class OpenSeaPort {
         quantity?: number;
         expirationTime?: number;
         waitForHighestBid?: boolean;
+        englishAuctionReservePrice?: number;
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string;
@@ -626,6 +628,7 @@ export class OpenSeaPort {
       endAmount,
       expirationTime,
       waitForHighestBid,
+      englishAuctionReservePrice,
       paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
       extraBountyBasisPoints,
       buyerAddress: buyerAddress || NULL_ADDRESS
@@ -800,12 +803,13 @@ export class OpenSeaPort {
    * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
+  * @param englishAuctionReservePrice Optional price level, below which orders may be placed but will not be matched.  Orders below the reserve can be manually accepted but will not be automatically matched.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -817,6 +821,7 @@ export class OpenSeaPort {
         endAmount?: number;
         expirationTime?: number;
         waitForHighestBid?: boolean;
+        englishAuctionReservePrice?: number;
         paymentTokenAddress?: string;
         extraBountyBasisPoints?: number;
         buyerAddress?: string; }
@@ -837,6 +842,7 @@ export class OpenSeaPort {
       endAmount,
       expirationTime,
       waitForHighestBid,
+      englishAuctionReservePrice,
       paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
       extraBountyBasisPoints,
       buyerAddress: buyerAddress || NULL_ADDRESS,
@@ -1960,13 +1966,14 @@ export class OpenSeaPort {
   }
 
   public async _makeSellOrder(
-      { asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
+      { asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice = 0, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
       { asset: Asset;
         quantity: number;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         waitForHighestBid: boolean;
+        englishAuctionReservePrice?: number;
         expirationTime: number;
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
@@ -1991,7 +1998,7 @@ export class OpenSeaPort {
       ? SaleKind.DutchAuction
       : SaleKind.FixedPrice
 
-    const { basePrice, extra, paymentToken } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
+    const { basePrice, extra, paymentToken, reservePrice } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid, englishAuctionReservePrice)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
 
     const {
@@ -2017,6 +2024,7 @@ export class OpenSeaPort {
       takerProtocolFee,
       makerReferrerFee,
       waitingForBestCounterOrder: waitForHighestBid,
+      englishAuctionReservePrice: reservePrice ? makeBigNumber(reservePrice) : undefined,
       feeMethod,
       feeRecipient,
       side: OrderSide.Sell,
@@ -2196,7 +2204,7 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice = 0, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -2208,6 +2216,7 @@ export class OpenSeaPort {
         endAmount?: number;
         expirationTime: number;
         waitForHighestBid: boolean;
+        englishAuctionReservePrice?: number;
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
         buyerAddress: string; }
@@ -2234,7 +2243,7 @@ export class OpenSeaPort {
 
     const { calldata, replacementPattern } = encodeAtomicizedSell(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol, this._networkName)
 
-    const { basePrice, extra, paymentToken } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid)
+    const { basePrice, extra, paymentToken, reservePrice } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid, englishAuctionReservePrice)
     const times = this._getTimeParameters(expirationTime, waitForHighestBid)
 
     const orderSaleKind = endAmount != null && endAmount !== startAmount
@@ -2261,6 +2270,7 @@ export class OpenSeaPort {
       takerProtocolFee,
       makerReferrerFee,
       waitingForBestCounterOrder: waitForHighestBid,
+      englishAuctionReservePrice: reservePrice ? makeBigNumber(reservePrice) : undefined,
       feeMethod: FeeMethod.SplitFee,
       feeRecipient,
       side: OrderSide.Sell,
@@ -2840,7 +2850,8 @@ export class OpenSeaPort {
       expirationTime: number,
       startAmount: number,
       endAmount ?: number,
-      waitingForBestCounterOrder = false
+      waitingForBestCounterOrder = false,
+      englishAuctionReservePrice?: number,
     ) {
 
     const priceDiff = endAmount != null
@@ -2870,6 +2881,12 @@ export class OpenSeaPort {
     if (priceDiff > 0 && expirationTime == 0) {
       throw new Error('Expiration time must be set if order will change in price.')
     }
+    if (englishAuctionReservePrice && !waitingForBestCounterOrder) {
+      throw new Error('Reserve prices may only be set on English auctions.')
+    }
+    if (englishAuctionReservePrice && (englishAuctionReservePrice < startAmount)) {
+      throw new Error('Reserve price must be greater than or equal to the start amount.')
+    }
 
     // Note: WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
     // will fail if too many decimal places, so special-case ether
@@ -2881,7 +2898,13 @@ export class OpenSeaPort {
       ? makeBigNumber(this.web3.toWei(priceDiff, 'ether')).round()
       : WyvernProtocol.toBaseUnitAmount(makeBigNumber(priceDiff), token.decimals)
 
-    return { basePrice, extra, paymentToken }
+    const reservePrice = englishAuctionReservePrice
+      ? isEther
+        ? makeBigNumber(this.web3.toWei(englishAuctionReservePrice, 'ether')).round()
+        : WyvernProtocol.toBaseUnitAmount(makeBigNumber(englishAuctionReservePrice), token.decimals)
+      : undefined
+
+    return { basePrice, extra, paymentToken, reservePrice }
   }
 
   private _getMetadata(order: Order, referrerAddress?: string) {

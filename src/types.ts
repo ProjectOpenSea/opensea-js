@@ -567,6 +567,7 @@ export interface UnhashedOrder extends WyvernOrder {
   // OpenSea-specific
   makerReferrerFee: BigNumber
   waitingForBestCounterOrder: boolean
+  englishAuctionReservePrice?: BigNumber;
 
   metadata: ExchangeMetadata
 }
@@ -622,6 +623,7 @@ export interface OrderJSON extends Partial<ECSignature> {
 
   quantity: string
   basePrice: string
+  englishAuctionReservePrice: string | undefined
   extra: string
 
   // createdTime is undefined when order hasn't been posted yet
