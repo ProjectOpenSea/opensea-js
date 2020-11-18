@@ -676,7 +676,7 @@ suite('seaport: orders', () => {
     })
   })
 
-  test('Matches first buy order in book', async () => {
+  test.skip('Matches first buy order in book', async () => {
     const order = await client.api.getOrder({side: OrderSide.Buy})
     assert.isNotNull(order)
     if (!order) {

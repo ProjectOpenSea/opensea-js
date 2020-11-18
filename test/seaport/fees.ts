@@ -127,7 +127,7 @@ suite('seaport: fees', () => {
     assert.equal(privateBuyerFees.sellerBountyBasisPoints, 0)
   })
 
-  test("Computes fees correctly for zero-fee asset", async () => {
+  test.skip("Computes fees correctly for zero-fee asset", async () => {
     const asset = await client.api.getAsset({ tokenAddress: DECENTRALAND_ADDRESS, tokenId: DECENTRALAND_ID })
     const bountyPercent = 0
 
