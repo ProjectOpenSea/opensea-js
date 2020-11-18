@@ -387,7 +387,7 @@ export interface UnhashedOrder extends WyvernOrder {
     quantity: BigNumber;
     makerReferrerFee: BigNumber;
     waitingForBestCounterOrder: boolean;
-    englishAuctionReservePrice: BigNumber;
+    englishAuctionReservePrice?: BigNumber;
     metadata: ExchangeMetadata;
 }
 export interface UnsignedOrder extends UnhashedOrder {
@@ -437,6 +437,7 @@ export interface OrderJSON extends Partial<ECSignature> {
     paymentToken: string;
     quantity: string;
     basePrice: string;
+    englishAuctionReservePrice: string | undefined;
     extra: string;
     createdTime?: number | string;
     listingTime: number | string;

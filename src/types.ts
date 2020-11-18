@@ -567,7 +567,7 @@ export interface UnhashedOrder extends WyvernOrder {
   // OpenSea-specific
   makerReferrerFee: BigNumber
   waitingForBestCounterOrder: boolean
-  englishAuctionReservePrice?: BigNumber;
+  englishAuctionReservePrice?: BigNumber
 
   metadata: ExchangeMetadata
 }
