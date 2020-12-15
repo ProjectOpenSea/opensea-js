@@ -107,7 +107,6 @@
 							<li><a href="#creating-bundles">Creating Bundles</a></li>
 							<li><a href="#using-erc-20-tokens-instead-of-ether">Using ERC-20 Tokens Instead of Ether</a></li>
 							<li><a href="#private-auctions">Private Auctions</a></li>
-							<li><a href="#airdrops-and-email-whitelisting">Airdrops and Email Whitelisting</a></li>
 							<li><a href="#sharing-sale-fees-with-opensea">Sharing Sale Fees with OpenSea</a></li>
 							<li><a href="#listening-to-events">Listening to Events</a></li>
 						</ul>
@@ -536,19 +535,6 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
   <span class="hljs-attr">accountAddress</span>: OWNERS_WALLET_ADDRESS,
   <span class="hljs-attr">startAmount</span>: <span class="hljs-number">10</span>,
   buyerAddress
-})
-</code></pre>
-				<h3 id="airdrops-and-email-whitelisting">Airdrops and Email Whitelisting</h3>
-				<p>These work similarly to <a href="#private-auctions">Private Auctions</a>. Just create a private sell order targeted to a specific email. The buyer will have to verify that email to fulfill the order. For example,</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-comment">// Email allowed to buy from you</span>
-<span class="hljs-keyword">const</span> buyerEmail = <span class="hljs-string">"captain@byer.com"</span>
-
-<span class="hljs-keyword">const</span> listing = <span class="hljs-keyword">await</span> seaport.createSellOrder({
-  <span class="hljs-attr">tokenAddress</span>: <span class="hljs-string">"0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d"</span>, <span class="hljs-comment">// Decentraland</span>
-  <span class="hljs-attr">tokenId</span>: <span class="hljs-string">"115792089237316195423570985008687907832853042650384256231655107562007036952461"</span>, <span class="hljs-comment">// Token ID</span>
-  <span class="hljs-attr">accountAddress</span>: OWNERS_WALLET_ADDRESS,
-  <span class="hljs-attr">startAmount</span>: <span class="hljs-number">10</span>,
-  buyerEmail
 })
 </code></pre>
 				<h3 id="sharing-sale-fees-with-opensea">Sharing Sale Fees with OpenSea</h3>

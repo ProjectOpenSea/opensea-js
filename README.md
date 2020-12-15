@@ -35,7 +35,6 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Creating Bundles](#creating-bundles)
   - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
   - [Private Auctions](#private-auctions)
-  - [Airdrops and Email Whitelisting](#airdrops-and-email-whitelisting)
   - [Sharing Sale Fees with OpenSea](#sharing-sale-fees-with-opensea)
   - [Listening to Events](#listening-to-events)
 - [Learning More](#learning-more)
@@ -621,23 +620,6 @@ const listing = await seaport.createSellOrder({
   accountAddress: OWNERS_WALLET_ADDRESS,
   startAmount: 10,
   buyerAddress
-})
-```
-
-### Airdrops and Email Whitelisting
-
-These work similarly to [Private Auctions](#private-auctions). Just create a private sell order targeted to a specific email. The buyer will have to verify that email to fulfill the order. For example,
-
-```JavaScript
-// Email allowed to buy from you
-const buyerEmail = "captain@byer.com"
-
-const listing = await seaport.createSellOrder({
-  tokenAddress: "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d", // Decentraland
-  tokenId: "115792089237316195423570985008687907832853042650384256231655107562007036952461", // Token ID
-  accountAddress: OWNERS_WALLET_ADDRESS,
-  startAmount: 10,
-  buyerEmail
 })
 ```
 
