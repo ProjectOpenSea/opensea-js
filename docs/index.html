@@ -398,10 +398,11 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 </code></pre>
 				<p>To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an <code>OpenSeaFungibleToken</code> as the <code>asset</code>, set <code>schemaName</code> to &quot;ERC20&quot;, and include <code>quantity</code> in base units (e.g. wei) to indicate how many.</p>
 				<p>Example for transfering 2 DAI ($2) to another address:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> paymentToken = (<span class="hljs-keyword">await</span> seaport.api.getPaymentTokens({ <span class="hljs-attr">symbol</span>: <span class="hljs-string">'DAI'</span>}))[<span class="hljs-number">0</span>]
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> paymentToken = (<span class="hljs-keyword">await</span> seaport.api.getPaymentTokens({ <span class="hljs-attr">symbol</span>: <span class="hljs-string">'DAI'</span>})).tokens[<span class="hljs-number">0</span>]
 <span class="hljs-keyword">const</span> quantity = <span class="hljs-keyword">new</span> BigNumber(<span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, paymentToken.decimals)).times(<span class="hljs-number">2</span>)
 <span class="hljs-keyword">const</span> transactionHash = <span class="hljs-keyword">await</span> seaport.transfer({
   <span class="hljs-attr">asset</span>: {
+    <span class="hljs-attr">tokenId</span>: <span class="hljs-literal">null</span>,
     <span class="hljs-attr">tokenAddress</span>: paymentToken.address,
     <span class="hljs-attr">schemaName</span>: <span class="hljs-string">"ERC20"</span>
   },
@@ -510,7 +511,7 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 })
 </code></pre>
 				<p>You can use <code>getPaymentTokens</code> to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:</p>
-				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> seaport.api.getPaymentTokens({ <span class="hljs-attr">symbol</span>: <span class="hljs-string">'MANA'</span>})[<span class="hljs-number">0</span>]
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> token = (<span class="hljs-keyword">await</span> seaport.api.getPaymentTokens({ <span class="hljs-attr">symbol</span>: <span class="hljs-string">'MANA'</span>})).tokens[<span class="hljs-number">0</span>]
 
 <span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrders({
   <span class="hljs-attr">side</span>: OrderSide.Sell,
