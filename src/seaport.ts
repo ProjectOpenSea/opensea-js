@@ -596,7 +596,8 @@ export class OpenSeaPort {
    * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
-   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+   * @param listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
+   * @param expirationTime Expiration time for the order, in UTC seconds. An expiration time of 0 means "never expire."
    * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
    * @param englishAuctionReservePrice Optional price level, below which orders may be placed but will not be matched.  Orders below the reserve can be manually accepted but will not be automatically matched.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
@@ -673,6 +674,7 @@ export class OpenSeaPort {
    * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param quantity The number of assets to sell at one time (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
+   * @param listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
@@ -806,6 +808,7 @@ export class OpenSeaPort {
    * @param accountAddress The address of the maker of the bundle and the owner of all the assets.
    * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction.
    * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`.
+   * @param listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
    * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
    * @param englishAuctionReservePrice Optional price level, below which orders may be placed but will not be matched.  Orders below the reserve can be manually accepted but will not be automatically matched.
@@ -2808,6 +2811,7 @@ export class OpenSeaPort {
   /**
    * Get the listing and expiration time paramters for a new order
    * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
+   * @param listingTimestamp Timestamp to start the order (in seconds), or undefined to start it now
    * @param waitingForBestCounterOrder Whether this order should be hidden until the best match is found
    */
   private _getTimeParameters(
@@ -2825,7 +2829,7 @@ export class OpenSeaPort {
     if (listingTimestamp && listingTimestamp < minListingTimestamp) {
       throw new Error('Listing time cannot be in the past.')
     }
-    if (listingTimestamp && expirationTimestamp != 0 &&listingTimestamp >= expirationTimestamp) {
+    if (listingTimestamp && expirationTimestamp != 0 && listingTimestamp >= expirationTimestamp) {
       throw new Error('Listing time must be before the expiration time.')
     }
     if (waitingForBestCounterOrder && expirationTimestamp == 0) {
