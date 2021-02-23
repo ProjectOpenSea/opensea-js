@@ -207,12 +207,13 @@ export declare class OpenSeaPort {
      * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
      * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
      */
-    createSellOrder({ asset, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail }: {
+    createSellOrder({ asset, accountAddress, startAmount, endAmount, quantity, listingTime, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail }: {
         asset: Asset;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         quantity?: number;
+        listingTime?: number;
         expirationTime?: number;
         waitForHighestBid?: boolean;
         englishAuctionReservePrice?: number;
@@ -241,12 +242,13 @@ export declare class OpenSeaPort {
      * @param numberOfOrders Number of times to repeat creating the same order for each asset. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
      * @returns The number of orders created in total
      */
-    createFactorySellOrders({ assets, accountAddress, startAmount, endAmount, quantity, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders }: {
+    createFactorySellOrders({ assets, accountAddress, startAmount, endAmount, quantity, listingTime, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders }: {
         assets: Asset[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         quantity?: number;
+        listingTime?: number;
         expirationTime?: number;
         waitForHighestBid?: boolean;
         paymentTokenAddress?: string;
@@ -276,7 +278,7 @@ export declare class OpenSeaPort {
      * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
      * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
      */
-    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
+    createBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, listingTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -288,6 +290,7 @@ export declare class OpenSeaPort {
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
+        listingTime?: number;
         expirationTime?: number;
         waitForHighestBid?: boolean;
         englishAuctionReservePrice?: number;
@@ -601,7 +604,7 @@ export declare class OpenSeaPort {
         sellOrder?: UnhashedOrder;
         referrerAddress?: string;
     }): Promise<UnhashedOrder>;
-    _makeSellOrder({ asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
+    _makeSellOrder({ asset, quantity, accountAddress, startAmount, endAmount, listingTime, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         asset: Asset;
         quantity: number;
         accountAddress: string;
@@ -609,6 +612,7 @@ export declare class OpenSeaPort {
         endAmount?: number;
         waitForHighestBid: boolean;
         englishAuctionReservePrice?: number;
+        listingTime?: number;
         expirationTime: number;
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
@@ -635,7 +639,7 @@ export declare class OpenSeaPort {
         sellOrder?: UnhashedOrder;
         referrerAddress?: string;
     }): Promise<UnhashedOrder>;
-    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
+    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, listingTime, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }: {
         bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -647,6 +651,7 @@ export declare class OpenSeaPort {
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
+        listingTime?: number;
         expirationTime: number;
         waitForHighestBid: boolean;
         englishAuctionReservePrice?: number;

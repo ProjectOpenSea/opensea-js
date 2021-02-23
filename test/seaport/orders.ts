@@ -182,6 +182,42 @@ suite('seaport: orders', () => {
         quantity: 1,
         accountAddress,
         startAmount: 2,
+        listingTime: Math.round(Date.now() / 1000 - 60),
+        extraBountyBasisPoints: 0,
+        buyerAddress: NULL_ADDRESS,
+        expirationTime: 0,
+        paymentTokenAddress: NULL_ADDRESS,
+        waitForHighestBid: false,
+      })
+      assert.fail()
+    } catch (error) {
+      assert.include(error.message, 'Listing time cannot be in the past')
+    }
+
+    try {
+      await client._makeSellOrder({
+        asset: { tokenAddress, tokenId },
+        quantity: 1,
+        accountAddress,
+        startAmount: 2,
+        listingTime: Math.round(Date.now() / 1000 + 20),
+        extraBountyBasisPoints: 0,
+        buyerAddress: NULL_ADDRESS,
+        expirationTime,
+        paymentTokenAddress,
+        waitForHighestBid: true,
+      })
+      assert.fail()
+    } catch (error) {
+      assert.include(error.message, 'Cannot schedule an English auction for the future')
+    }
+
+    try {
+      await client._makeSellOrder({
+        asset: { tokenAddress, tokenId },
+        quantity: 1,
+        accountAddress,
+        startAmount: 2,
         extraBountyBasisPoints: 0,
         buyerAddress: NULL_ADDRESS,
         expirationTime,

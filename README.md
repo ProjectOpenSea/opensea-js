@@ -30,6 +30,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Custom Affiliate Programs](#custom-affiliate-programs)
   - [Custom Referral Bounties](#custom-referral-bounties)
 - [Advanced](#advanced)
+  - [Scheduling Future Listings](#scheduling-future-listings)
   - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
   - [Bulk Transfers](#bulk-transfers)
   - [Creating Bundles](#creating-bundles)
@@ -513,7 +514,21 @@ Developers can request to increase the OpenSea fee to allow for higher bounties 
 
 ## Advanced
 
-Interested in purchasing for users server-side or with a bot, making bundling items together, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+Interested in purchasing for users server-side or with a bot, making bundling items together, scheduling future orders, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+
+### Scheduling Future Listings
+
+You can create sell orders that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in seconds) to your seaport instance:
+
+```JavaScript
+const auction = await seaport.createSellOrder({
+  tokenAddress,
+  tokenId,
+  accountAddress,
+  startAmount: 1,
+  listingTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day from now
+})
+```
 
 ### Purchasing Items for Other Users
 

@@ -605,12 +605,13 @@ export class OpenSeaPort {
    * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
    */
   public async createSellOrder(
-      { asset, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail }:
+      { asset, accountAddress, startAmount, endAmount, quantity = 1, listingTime, expirationTime = 0, waitForHighestBid = false, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail }:
       { asset: Asset;
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         quantity?: number;
+        listingTime?: number;
         expirationTime?: number;
         waitForHighestBid?: boolean;
         englishAuctionReservePrice?: number;
@@ -626,6 +627,7 @@ export class OpenSeaPort {
       accountAddress,
       startAmount,
       endAmount,
+      listingTime,
       expirationTime,
       waitForHighestBid,
       englishAuctionReservePrice,
@@ -681,12 +683,13 @@ export class OpenSeaPort {
    * @returns The number of orders created in total
    */
   public async createFactorySellOrders(
-      { assets, accountAddress, startAmount, endAmount, quantity = 1, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, numberOfOrders = 1 }:
+      { assets, accountAddress, startAmount, endAmount, quantity = 1, listingTime, expirationTime = 0, waitForHighestBid = false, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress, buyerEmail, numberOfOrders = 1 }:
       { assets: Asset[];
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
         quantity?: number;
+        listingTime?: number;
         expirationTime?: number;
         waitForHighestBid?: boolean;
         paymentTokenAddress?: string;
@@ -715,6 +718,7 @@ export class OpenSeaPort {
       accountAddress,
       startAmount,
       endAmount,
+      listingTime,
       expirationTime,
       waitForHighestBid,
       paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
@@ -730,6 +734,7 @@ export class OpenSeaPort {
         accountAddress,
         startAmount,
         endAmount,
+        listingTime,
         expirationTime,
         waitForHighestBid,
         paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
@@ -809,7 +814,7 @@ export class OpenSeaPort {
    * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
    */
   public async createBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime = 0, waitForHighestBid = false, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime = 0, listingTime, waitForHighestBid = false, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints = 0, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -819,6 +824,7 @@ export class OpenSeaPort {
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
+        listingTime?: number;
         expirationTime?: number;
         waitForHighestBid?: boolean;
         englishAuctionReservePrice?: number;
@@ -840,6 +846,7 @@ export class OpenSeaPort {
       accountAddress,
       startAmount,
       endAmount,
+      listingTime,
       expirationTime,
       waitForHighestBid,
       englishAuctionReservePrice,
@@ -1966,7 +1973,7 @@ export class OpenSeaPort {
   }
 
   public async _makeSellOrder(
-      { asset, quantity, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice = 0, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
+      { asset, quantity, accountAddress, startAmount, endAmount, listingTime, expirationTime, waitForHighestBid, englishAuctionReservePrice = 0, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
       { asset: Asset;
         quantity: number;
         accountAddress: string;
@@ -1974,6 +1981,7 @@ export class OpenSeaPort {
         endAmount?: number;
         waitForHighestBid: boolean;
         englishAuctionReservePrice?: number;
+        listingTime?: number;
         expirationTime: number;
         paymentTokenAddress: string;
         extraBountyBasisPoints: number;
@@ -1999,7 +2007,7 @@ export class OpenSeaPort {
       : SaleKind.FixedPrice
 
     const { basePrice, extra, paymentToken, reservePrice } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid, englishAuctionReservePrice)
-    const times = this._getTimeParameters(expirationTime, waitForHighestBid)
+    const times = this._getTimeParameters(expirationTime, listingTime, waitForHighestBid)
 
     const {
       makerRelayerFee,
@@ -2204,7 +2212,7 @@ export class OpenSeaPort {
   }
 
   public async _makeBundleSellOrder(
-      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, waitForHighestBid, englishAuctionReservePrice = 0, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
+      { bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, listingTime, expirationTime, waitForHighestBid, englishAuctionReservePrice = 0, paymentTokenAddress, extraBountyBasisPoints, buyerAddress }:
       { bundleName: string;
         bundleDescription?: string;
         bundleExternalLink?: string;
@@ -2214,6 +2222,7 @@ export class OpenSeaPort {
         accountAddress: string;
         startAmount: number;
         endAmount?: number;
+        listingTime?: number;
         expirationTime: number;
         waitForHighestBid: boolean;
         englishAuctionReservePrice?: number;
@@ -2244,7 +2253,7 @@ export class OpenSeaPort {
     const { calldata, replacementPattern } = encodeAtomicizedSell(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol, this._networkName)
 
     const { basePrice, extra, paymentToken, reservePrice } = await this._getPriceParameters(OrderSide.Sell, paymentTokenAddress, expirationTime, startAmount, endAmount, waitForHighestBid, englishAuctionReservePrice)
-    const times = this._getTimeParameters(expirationTime, waitForHighestBid)
+    const times = this._getTimeParameters(expirationTime, listingTime, waitForHighestBid)
 
     const orderSaleKind = endAmount != null && endAmount !== startAmount
       ? SaleKind.DutchAuction
@@ -2803,22 +2812,32 @@ export class OpenSeaPort {
    */
   private _getTimeParameters(
       expirationTimestamp: number,
+      listingTimestamp?: number,
       waitingForBestCounterOrder = false
     ) {
 
     // Validation
     const minExpirationTimestamp = Math.round(Date.now() / 1000 + MIN_EXPIRATION_SECONDS)
+    const minListingTimestamp = Math.round(Date.now() / 1000)
     if (expirationTimestamp != 0 && expirationTimestamp < minExpirationTimestamp) {
       throw new Error(`Expiration time must be at least ${MIN_EXPIRATION_SECONDS} seconds from now, or zero (non-expiring).`)
     }
+    if (listingTimestamp && listingTimestamp < minListingTimestamp) {
+      throw new Error('Listing time cannot be in the past.')
+    }
+    if (listingTimestamp && expirationTimestamp != 0 &&listingTimestamp >= expirationTimestamp) {
+      throw new Error('Listing time must be before the expiration time.')
+    }
     if (waitingForBestCounterOrder && expirationTimestamp == 0) {
       throw new Error('English auctions must have an expiration time.')
+    }
+    if (waitingForBestCounterOrder && listingTimestamp) {
+      throw new Error(`Cannot schedule an English auction for the future.`)
     }
     if (parseInt(expirationTimestamp.toString()) != expirationTimestamp) {
       throw new Error(`Expiration timestamp must be a whole number of seconds`)
     }
 
-    let listingTimestamp
     if (waitingForBestCounterOrder) {
       listingTimestamp = expirationTimestamp
       // Expire one week from now, to ensure server can match it
@@ -2826,7 +2845,7 @@ export class OpenSeaPort {
       expirationTimestamp = expirationTimestamp + ORDER_MATCHING_LATENCY_SECONDS
     } else {
       // Small offset to account for latency
-      listingTimestamp = Math.round(Date.now() / 1000 - 100)
+      listingTimestamp = listingTimestamp || Math.round(Date.now() / 1000 - 100)
     }
 
     return {
