@@ -102,6 +102,7 @@
 						</ul>
 					</li>
 					<li><a href="#advanced">Advanced</a><ul>
+							<li><a href="#scheduling-future-listings">Scheduling Future Listings</a></li>
 							<li><a href="#purchasing-items-for-other-users">Purchasing Items for Other Users</a></li>
 							<li><a href="#bulk-transfers">Bulk Transfers</a></li>
 							<li><a href="#creating-bundles">Creating Bundles</a></li>
@@ -459,7 +460,17 @@ sudo npm explore npm -g -- npm install node-gyp@latest <span class="hljs-comment
 				<p><strong>NOTE:</strong> The final bounty in the example above will be 10% from the seller plus 1% from OpenSea, or 11 ETH in total!</p>
 				<p>Developers can request to increase the OpenSea fee to allow for higher bounties - by default, it&#39;s capped at 2.5%. If you have any questions, contact us at <a href="mailto:contact@opensea.io">contact@opensea.io</a> (or in <a href="https://discord.gg/ga8EJbv">Discord</a>), or join the program at <a href="https://opensea.io/account#referrals">https://opensea.io/account#referrals</a>.</p>
 				<h2 id="advanced">Advanced</h2>
-				<p>Interested in purchasing for users server-side or with a bot, making bundling items together, or making bids in different ERC-20 tokens? OpenSea.js can help with that.</p>
+				<p>Interested in purchasing for users server-side or with a bot, making bundling items together, scheduling future orders, or making bids in different ERC-20 tokens? OpenSea.js can help with that.</p>
+				<h3 id="scheduling-future-listings">Scheduling Future Listings</h3>
+				<p>You can create sell orders that aren&#39;t fulfillable until a future date. Just pass in a <code>listingTime</code> (a UTC timestamp in seconds) to your seaport instance:</p>
+				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> auction = <span class="hljs-keyword">await</span> seaport.createSellOrder({
+  tokenAddress,
+  tokenId,
+  accountAddress,
+  <span class="hljs-attr">startAmount</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">listingTime</span>: <span class="hljs-built_in">Math</span>.round(<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span> + <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>) <span class="hljs-comment">// One day from now</span>
+})
+</code></pre>
 				<h3 id="purchasing-items-for-other-users">Purchasing Items for Other Users</h3>
 				<p>You can buy and transfer an item to someone else in one step! Just pass the <code>recipientAddress</code> parameter:</p>
 				<pre><code class="lang-JavaScript"><span class="hljs-keyword">const</span> order = <span class="hljs-keyword">await</span> seaport.api.getOrder({ <span class="hljs-attr">side</span>: OrderSide.Sell, ... })
