@@ -1275,7 +1275,7 @@ export class OpenSeaPort {
 
     this.logger(`Gas estimate for ${order.side == OrderSide.Sell ? "sell" : "buy"} order: ${gas}`)
 
-    return gas != null && gas > 0
+    return gas != null && gas != undefined && gas > 0
   }
 
   /**
