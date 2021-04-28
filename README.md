@@ -155,7 +155,7 @@ You can use this same method for fungible ERC-20 tokens like wrapped ETH (WETH).
 
 ```JavaScript
 const balanceOfWETH = await seaport.getTokenBalance({
-  accountAddress, // string
+  accountAddress: accountAddress, // string
   tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 })
 ```
