@@ -46,8 +46,9 @@
     "isomorphic-unfetch": "^2.1.1",
     "json-loader": "^0.5.7",
     "lodash": "^4.17.4",
+    "opensea-js": "^1.1.11",
     "query-string": "^6.11.1",
-    "web3": "0.20.7",
+    "web3": "^0.20.7",
     "webpack": "^3.10.0",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.2.1",
     "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#v0.11.1"
