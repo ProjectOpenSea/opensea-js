@@ -231,7 +231,7 @@ export interface Asset {
   // The asset's contract address
   tokenAddress: string,
   // The Wyvern schema name (e.g. "ERC721") for this asset
-  schemaName?: WyvernSchemaName,
+  schemaName: WyvernSchemaName,
   // The token standard version of this asset
   version?: TokenStandardVersion,
   // Optional for ENS names
