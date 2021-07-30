@@ -1,4 +1,6 @@
-![OpenSea.js Logo](https://storage.googleapis.com/opensea-static/opensea-js-logo-updated.png "OpenSea.js Logo")
+<p align="center">
+  <img src="https://storage.googleapis.com/opensea-static/opensea-js-logo-updated.png" />
+</p>
 
 # OpenSea.js <!-- omit in toc -->
 
