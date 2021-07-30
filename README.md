@@ -1,4 +1,4 @@
-![OpenSea.js Logo](https://storage.googleapis.com/opensea-static/opensea-js-logo.png "OpenSea.js Logo")
+![OpenSea.js Logo](https://storage.googleapis.com/opensea-static/opensea-js-logo-updated.png "OpenSea.js Logo")
 
 # OpenSea.js <!-- omit in toc -->
 
