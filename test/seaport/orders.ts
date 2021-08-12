@@ -1,22 +1,13 @@
+import { BigNumber } from 'bignumber.js'
 import {
-  assert,
+  assert
 } from 'chai'
-
 import { before } from 'mocha'
-
 import {
   suite,
-  test,
+  test
 } from 'mocha-typescript'
-
-import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, WyvernSchemaName } from '../../src/types'
-import { orderFromJSON, getOrderHash, estimateCurrentPrice, assignOrdersToSides, makeBigNumber} from '../../src/utils/utils'
-import * as ordersJSONFixture from '../fixtures/orders.json'
-import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, DISSOLUTION_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER, WETH_ADDRESS } from '../constants'
-import { testFeesMakerOrder } from './fees'
 import {
   ENJIN_ADDRESS,
   INVERSE_BASIS_POINT,
@@ -25,6 +16,15 @@ import {
   OPENSEA_FEE_RECIPIENT,
   RINKEBY_PROVIDER_URL
 } from '../../src/constants'
+import { OpenSeaPort } from '../../src/index'
+import { Asset, Network, Order, OrderJSON, OrderSide, SaleKind, UnhashedOrder, UnsignedOrder, WyvernSchemaName } from '../../src/types'
+import { assignOrdersToSides, estimateCurrentPrice, getOrderHash, makeBigNumber, orderFromJSON } from '../../src/utils/utils'
+import { ALEX_ADDRESS, ALEX_ADDRESS_2, CATS_IN_MECHS_ID, CK_ADDRESS, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CK_TOKEN_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, CRYPTO_CRYSTAL_ADDRESS, DEVIN_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, DISSOLUTION_TOKEN_ID, ENS_HELLO_NAME, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_SHORT_NAME_OWNER, ENS_RINKEBY_TOKEN_ADDRESS, MAINNET_API_KEY, MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID, RINKEBY_API_KEY, WETH_ADDRESS } from '../constants'
+import * as ordersJSONFixture from '../fixtures/orders.json'
+import { testFeesMakerOrder } from './fees'
+
+
+
 
 const ordersJSON = ordersJSONFixture as any
 const englishSellOrderJSON = ordersJSON[0] as OrderJSON
@@ -835,8 +835,6 @@ export async function testMatchingOrder(order: Order, accountAddress: string, te
       referrerAddress
     })
     assert.isTrue(isFulfillable)
-    const gasPrice = await client._computeGasPrice()
-    console.info(`Gas price to use: ${client.web3.fromWei(gasPrice, 'gwei')} gwei`)
   }
 }
 
