@@ -1,47 +1,12 @@
+import { BigNumber } from 'bignumber.js'
+import { isValidAddress } from 'ethereumjs-util'
+import { EventEmitter, EventSubscription } from 'fbemitter'
+import * as _ from 'lodash'
 import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js'
 import * as WyvernSchemas from 'wyvern-schemas'
 import { Schema } from 'wyvern-schemas/dist/types'
-import * as _ from 'lodash'
 import { OpenSeaAPI } from './api'
-import { CanonicalWETH, ERC20, ERC721, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy, UniswapFactory, UniswapExchange, StaticCheckTxOrigin, StaticCheckCheezeWizards, StaticCheckDecentralandEstates, CheezeWizardsBasicTournament, DecentralandEstates, getMethod } from './contracts'
-import { ECSignature, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OrderSide, SaleKind, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, WyvernAtomicMatchParameters, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset, WyvernNFTAsset, WyvernFTAsset, TokenStandardVersion } from './types'
-import {
-  confirmTransaction,
-  makeBigNumber, orderToJSON,
-  personalSignAsync,
-  sendRawTransaction, estimateCurrentPrice, getOrderHash,
-  getCurrentGasPrice, delay, assignOrdersToSides, estimateGas,
-  validateAndFormatWalletAddress,
-  getWyvernBundle,
-  getWyvernAsset,
-  getTransferFeeSettings,
-  rawCall,
-  promisifyCall,
-  annotateERC721TransferABI,
-  annotateERC20TransferABI,
-  onDeprecated,
-  getNonCompliantApprovalAddress,
-  isContractAddress,
-} from './utils/utils'
-import {
-  encodeAtomicizedTransfer,
-  encodeProxyCall,
-  encodeTransferCall,
-  encodeCall,
-  encodeBuy,
-  encodeSell,
-  encodeAtomicizedBuy,
-  encodeAtomicizedSell
-} from './utils/schema'
-import {
-  requireOrdersCanMatch,
-  MAX_ERROR_LENGTH,
-  requireOrderCalldataCanMatch,
-} from './debugging'
-import { BigNumber } from 'bignumber.js'
-import { EventEmitter, EventSubscription } from 'fbemitter'
-import { isValidAddress } from 'ethereumjs-util'
 import {
   CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS,
   CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS,
@@ -54,9 +19,7 @@ import {
   DEFAULT_GAS_INCREASE_FACTOR,
   DEFAULT_MAX_BOUNTY,
   DEFAULT_SELLER_FEE_BASIS_POINTS,
-  DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS,
-  INVERSE_BASIS_POINT, MAINNET_PROVIDER_URL,
-  MIN_EXPIRATION_SECONDS, NULL_ADDRESS, NULL_BLOCK_HASH, OPENSEA_FEE_RECIPIENT,
+  DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS, ENJIN_COIN_ADDRESS, INVERSE_BASIS_POINT, MAINNET_PROVIDER_URL, MANA_ADDRESS, MIN_EXPIRATION_SECONDS, NULL_ADDRESS, NULL_BLOCK_HASH, OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
   ORDER_MATCHING_LATENCY_SECONDS, RINKEBY_PROVIDER_URL,
   SELL_ORDER_BATCH_SIZE,
@@ -70,10 +33,22 @@ import {
   WRAPPED_NFT_FACTORY_ADDRESS_MAINNET,
   WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
-  WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY,
-  ENJIN_COIN_ADDRESS,
-  MANA_ADDRESS
+  WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY
 } from './constants'
+import { CanonicalWETH, CheezeWizardsBasicTournament, DecentralandEstates, ERC20, ERC721, getMethod, StaticCheckCheezeWizards, StaticCheckDecentralandEstates, StaticCheckTxOrigin, UniswapExchange, UniswapFactory, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy } from './contracts'
+import {
+  MAX_ERROR_LENGTH,
+  requireOrderCalldataCanMatch, requireOrdersCanMatch
+} from './debugging'
+import { Asset, ComputedFees, ECSignature, EventData, EventType, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OpenSeaAsset, OpenSeaFungibleToken, Order, OrderSide, PartialReadonlyContractAbi, SaleKind, TokenStandardVersion, UnhashedOrder, UnsignedOrder, WyvernAsset, WyvernAtomicMatchParameters, WyvernFTAsset, WyvernNFTAsset, WyvernSchemaName } from './types'
+import {
+  encodeAtomicizedBuy,
+  encodeAtomicizedSell, encodeAtomicizedTransfer, encodeBuy, encodeCall, encodeProxyCall, encodeSell, encodeTransferCall
+} from './utils/schema'
+import {
+  annotateERC20TransferABI, annotateERC721TransferABI, assignOrdersToSides, confirmTransaction, delay, estimateCurrentPrice, estimateGas, getCurrentGasPrice, getNonCompliantApprovalAddress, getOrderHash, getTransferFeeSettings, getWyvernAsset, getWyvernBundle, isContractAddress, makeBigNumber, onDeprecated, orderToJSON,
+  personalSignAsync, promisifyCall, rawCall, sendRawTransaction, validateAndFormatWalletAddress
+} from './utils/utils'
 
 export class OpenSeaPort {
 
@@ -110,7 +85,7 @@ export class OpenSeaPort {
 
     // API config
     apiConfig.networkName = apiConfig.networkName || Network.Main
-    apiConfig.gasPrice = apiConfig.gasPrice || makeBigNumber(300000)
+    apiConfig.gasPrice = apiConfig.gasPrice
     this.api = new OpenSeaAPI(apiConfig)
 
     this._networkName = apiConfig.networkName
@@ -124,13 +99,11 @@ export class OpenSeaPort {
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider, {
       network: this._networkName,
-      gasPrice: apiConfig.gasPrice,
     })
 
     // WyvernJS config for readonly (optimization for infura calls)
     this._wyvernProtocolReadOnly = new WyvernProtocol(readonlyProvider, {
       network: this._networkName,
-      gasPrice: apiConfig.gasPrice,
     })
 
     // WrappedNFTLiquidationProxy Config
@@ -202,14 +175,12 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.WrapAssets, { assets: wyAssets, accountAddress })
 
-    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       from: accountAddress,
       to: this._wrappedNFTLiquidationProxyAddress,
       value: 0,
       data: encodeCall(getMethod(WrappedNFTLiquidationProxy, 'wrapNFTs'),
-        [tokenIds, tokenAddresses, isMixedBatchOfAssets]),
-      gasPrice
+        [tokenIds, tokenAddresses, isMixedBatchOfAssets])
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
@@ -249,14 +220,12 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.UnwrapAssets, { assets: wyAssets, accountAddress })
 
-    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       from: accountAddress,
       to: this._wrappedNFTLiquidationProxyAddress,
       value: 0,
       data: encodeCall(getMethod(WrappedNFTLiquidationProxy, 'unwrapNFTs'),
         [tokenIds, tokenAddresses, destinationAddresses, isMixedBatchOfAssets]),
-      gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
@@ -297,14 +266,12 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.LiquidateAssets, { assets: wyAssets, accountAddress })
 
-    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       from: accountAddress,
       to: this._wrappedNFTLiquidationProxyAddress,
       value: 0,
       data: encodeCall(getMethod(WrappedNFTLiquidationProxy, 'liquidateNFTs'),
         [tokenIds, tokenAddresses, isMixedBatchOfAssets, uniswapSlippage]),
-      gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
@@ -333,14 +300,12 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.PurchaseAssets, { amount, contractAddress, accountAddress })
 
-    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       from: accountAddress,
       to: this._wrappedNFTLiquidationProxyAddress,
       value: amount,
       data: encodeCall(getMethod(WrappedNFTLiquidationProxy, 'purchaseNFTs'),
         [numTokensToBuy, contractAddress]),
-      gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
@@ -405,13 +370,11 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount })
 
-    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       from: accountAddress,
       to: token.address,
       value: amount,
       data: encodeCall(getMethod(CanonicalWETH, 'deposit'), []),
-      gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
@@ -437,13 +400,11 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount })
 
-    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       from: accountAddress,
       to: token.address,
       value: 0,
       data: encodeCall(getMethod(CanonicalWETH, 'withdraw'), [amount.toString()]),
-      gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
@@ -928,7 +889,6 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.CancelOrder, { order, accountAddress })
 
-    const gasPrice = await this._computeGasPrice()
     const transactionHash = await this._wyvernProtocol.wyvernExchange.cancelOrder_.sendTransactionAsync(
       [order.exchange, order.maker, order.taker, order.feeRecipient, order.target, order.staticTarget, order.paymentToken],
       [order.makerRelayerFee, order.takerRelayerFee, order.makerProtocolFee, order.takerProtocolFee, order.basePrice, order.extra, order.listingTime, order.expirationTime, order.salt],
@@ -942,7 +902,7 @@ export class OpenSeaPort {
       order.v || 0,
       order.r || NULL_BLOCK_HASH,
       order.s || NULL_BLOCK_HASH,
-      { from: accountAddress, gasPrice })
+      { from: accountAddress })
 
     await this._confirmTransaction(transactionHash.toString(), EventType.CancelOrder, "Cancelling order", async () => {
       const isOpen = await this._validateOrder(order)
@@ -1031,12 +991,10 @@ export class OpenSeaPort {
           contractAddress: tokenAddress
         })
 
-        const gasPrice = await this._computeGasPrice()
         const txHash = await sendRawTransaction(this.web3, {
           from: accountAddress,
           to: contract.address,
           data: contract.setApprovalForAll.getData(proxyAddress, true),
-          gasPrice
         }, error => {
           this._dispatch(EventType.TransactionDenied, { error, accountAddress })
         })
@@ -1089,12 +1047,10 @@ export class OpenSeaPort {
         asset: getWyvernAsset(schema, { tokenId, tokenAddress })
       })
 
-      const gasPrice = await this._computeGasPrice()
       const txHash = await sendRawTransaction(this.web3, {
         from: accountAddress,
         to: contract.address,
         data: contract.approve.getData(proxyAddress, tokenId),
-        gasPrice
       }, error => {
         this._dispatch(EventType.TransactionDenied, { error, accountAddress })
       })
@@ -1156,7 +1112,6 @@ export class OpenSeaPort {
       await this.unapproveFungibleToken({ accountAddress, tokenAddress, proxyAddress })
     }
 
-    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       from: accountAddress,
       to: tokenAddress,
@@ -1164,7 +1119,6 @@ export class OpenSeaPort {
         // Always approve maximum amount, to prevent the need for followup
         // transactions (and because old ERC20s like MANA/ENJ are non-compliant)
         [proxyAddress, WyvernProtocol.MAX_UINT_256.toString()]),
-      gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
@@ -1201,13 +1155,10 @@ export class OpenSeaPort {
   ): Promise<string> {
     proxyAddress = proxyAddress || WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
 
-    const gasPrice = await this._computeGasPrice()
-
     const txHash = await sendRawTransaction(this.web3, {
       from: accountAddress,
       to: tokenAddress,
       data: encodeCall(getMethod(ERC20, 'approve'), [proxyAddress, 0]),
-      gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress })
     })
@@ -1379,13 +1330,11 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.TransferOne, { accountAddress: fromAddress, toAddress, asset: wyAsset })
 
-    const gasPrice = await this._computeGasPrice()
     const data = encodeTransferCall(abi, fromAddress, toAddress)
     const txHash = await sendRawTransaction(this.web3, {
       from: fromAddress,
       to: abi.target,
       data,
-      gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress: fromAddress })
     })
@@ -1428,12 +1377,10 @@ export class OpenSeaPort {
 
     this._dispatch(EventType.TransferAll, { accountAddress: fromAddress, toAddress, assets: wyAssets })
 
-    const gasPrice = await this._computeGasPrice()
     const txHash = await sendRawTransaction(this.web3, {
       from: fromAddress,
       to: proxyAddress,
       data: encodeProxyCall(target, HowToCall.DelegateCall, calldata),
-      gasPrice
     }, error => {
       this._dispatch(EventType.TransactionDenied, { error, accountAddress: fromAddress })
     })
@@ -1696,6 +1643,8 @@ export class OpenSeaPort {
   }
 
   /**
+   * DEPRECATED: ERC-1559
+   * https://eips.ethereum.org/EIPS/eip-1559
    * Compute the gas price for sending a txn, in wei
    * Will be slightly above the mean to make it faster
    */
@@ -1843,12 +1792,10 @@ export class OpenSeaPort {
     this._dispatch(EventType.InitializeAccount, { accountAddress })
     this.logger(`Initializing proxy for account: ${accountAddress}`)
 
-    const gasPrice = await this._computeGasPrice()
     const txnData: any = { from: accountAddress }
     const gasEstimate = await this._wyvernProtocolReadOnly.wyvernProxyRegistry.registerProxy.estimateGasAsync(txnData)
     const transactionHash = await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync({
       ...txnData,
-      gasPrice,
       gas: this._correctGasAmount(gasEstimate)
     })
 
@@ -1857,7 +1804,7 @@ export class OpenSeaPort {
       return !!polledProxy
     })
 
-    const proxyAddress = await this._getProxy(accountAddress, 2)
+    const proxyAddress = await this._getProxy(accountAddress, 10)
     if (!proxyAddress) {
       throw new Error('Failed to initialize your account :( Please restart your wallet/browser and try again!')
     }
@@ -2513,7 +2460,6 @@ export class OpenSeaPort {
    */
   public async _approveOrder(order: UnsignedOrder) {
     const accountAddress = order.maker
-    const gasPrice = await this._computeGasPrice()
     const includeInOrderBook = true
 
     this._dispatch(EventType.ApproveOrder, { order, accountAddress })
@@ -2529,7 +2475,7 @@ export class OpenSeaPort {
       order.replacementPattern,
       order.staticExtradata,
       includeInOrderBook,
-      { from: accountAddress, gasPrice }
+      { from: accountAddress }
     )
 
     await this._confirmTransaction(transactionHash.toString(), EventType.ApproveOrder, "Approving order", async () => {
@@ -2999,7 +2945,6 @@ export class OpenSeaPort {
       // Typescript splat doesn't typecheck
       const gasEstimate = await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
 
-      txnData.gasPrice = await this._computeGasPrice()
       txnData.gas = this._correctGasAmount(gasEstimate)
 
     } catch (error) {

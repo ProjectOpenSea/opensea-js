@@ -1,23 +1,23 @@
 import {
-  assert,
+  assert
 } from 'chai'
-
 import {
   suite,
-  test,
+  test
 } from 'mocha-typescript'
-
-import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, Asset, WyvernSchemaName } from '../../src/types'
-import { getCurrentGasPrice, getNonCompliantApprovalAddress, isContractAddress} from '../../src/utils/utils'
-import { ALEX_ADDRESS, MAINNET_API_KEY, CK_TOKEN_ID, ALEX_ADDRESS_2, DAN_ADDRESS, DAN_DAPPER_ADDRESS, WETH_ADDRESS} from '../constants'
-import { ERC721 } from '../../src/contracts'
 import {
   CK_ADDRESS,
   MAINNET_PROVIDER_URL,
   MAX_UINT_256
 } from '../../src/constants'
+import { ERC721 } from '../../src/contracts'
+import { OpenSeaPort } from '../../src/index'
+import { Network } from '../../src/types'
+import { getNonCompliantApprovalAddress, isContractAddress } from '../../src/utils/utils'
+import { ALEX_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, DAN_ADDRESS, DAN_DAPPER_ADDRESS, MAINNET_API_KEY, WETH_ADDRESS } from '../constants'
+
+
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
 
@@ -42,13 +42,6 @@ suite('seaport: misc', () => {
   test('Instance exposes some underscored methods', () => {
     assert.equal(typeof client._initializeProxy, 'function')
     assert.equal(typeof client._getProxy, 'function')
-  })
-
-  test('Uses a gas price above the mean', async () => {
-    const gasPrice = await client._computeGasPrice()
-    const meanGasPrice = await getCurrentGasPrice(client.web3)
-    assert.isAbove(meanGasPrice.toNumber(), 0)
-    assert.isAbove(gasPrice.toNumber(), meanGasPrice.toNumber())
   })
 
   test('Fetches proxy for an account', async () => {

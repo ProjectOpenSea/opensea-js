@@ -1,8 +1,8 @@
-import * as Web3 from 'web3';
-import { OpenSeaAPI } from './api';
-import { FeeMethod, OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, OpenSeaAsset, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, ComputedFees, Asset } from './types';
 import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
+import * as Web3 from 'web3';
+import { OpenSeaAPI } from './api';
+import { Asset, ComputedFees, EventData, EventType, FeeMethod, OpenSeaAPIConfig, OpenSeaAsset, OpenSeaFungibleToken, Order, OrderSide, PartialReadonlyContractAbi, UnhashedOrder, UnsignedOrder, WyvernAsset, WyvernSchemaName } from './types';
 export declare class OpenSeaPort {
     web3: Web3;
     web3ReadOnly: Web3;
@@ -527,6 +527,8 @@ export declare class OpenSeaPort {
      */
     validateAndPostOrder(order: Order): Promise<Order>;
     /**
+     * DEPRECATED: ERC-1559
+     * https://eips.ethereum.org/EIPS/eip-1559
      * Compute the gas price for sending a txn, in wei
      * Will be slightly above the mean to make it faster
      */

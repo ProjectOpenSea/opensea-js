@@ -1,29 +1,13 @@
+import BigNumber from 'bignumber.js'
 import {
-  assert,
+  assert
 } from 'chai'
-
+import { before } from 'mocha'
 import {
   suite,
-  test,
+  test
 } from 'mocha-typescript'
-
-import { before } from 'mocha'
-
-import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderSide, UnhashedOrder, Order, OpenSeaCollection, OpenSeaAsset, OpenSeaAssetBundle, FeeMethod } from '../../src/types'
-import { getOrderHash} from '../../src/utils/utils'
-import {
-  MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS,
-  CK_ADDRESS, CK_TOKEN_ID,
-  MAINNET_API_KEY, ALEX_ADDRESS,
-  CATS_IN_MECHS_ID,
-  SPIRIT_CLASH_TOKEN_ID,
-  SPIRIT_CLASH_OWNER,
-  DECENTRALAND_ADDRESS,
-  DECENTRALAND_ID,
-  WETH_ADDRESS
- } from '../constants'
 import {
   DEFAULT_BUYER_FEE_BASIS_POINTS,
   DEFAULT_MAX_BOUNTY,
@@ -32,7 +16,17 @@ import {
   ENJIN_COIN_ADDRESS, MAINNET_PROVIDER_URL, NULL_ADDRESS, OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS
 } from '../../src/constants'
-import BigNumber from 'bignumber.js'
+import { OpenSeaPort } from '../../src/index'
+import { FeeMethod, Network, OpenSeaAsset, OpenSeaCollection, Order, OrderSide, UnhashedOrder } from '../../src/types'
+import { getOrderHash } from '../../src/utils/utils'
+import {
+  ALEX_ADDRESS,
+  CATS_IN_MECHS_ID, CK_ADDRESS, CK_TOKEN_ID, DECENTRALAND_ADDRESS,
+  DECENTRALAND_ID, MAINNET_API_KEY, MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID, SPIRIT_CLASH_OWNER, SPIRIT_CLASH_TOKEN_ID, WETH_ADDRESS
+} from '../constants'
+
+
+
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
 
@@ -195,8 +189,6 @@ suite('seaport: fees', () => {
         recipientAddress: accountAddress
       })
       const matchingOrderHash = matchingOrder.hash
-      delete matchingOrder.hash
-      assert.isUndefined(matchingOrder.hash)
 
       const orderHash = getOrderHash(matchingOrder)
       assert.equal(orderHash, matchingOrderHash)

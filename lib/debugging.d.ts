@@ -1,5 +1,5 @@
-import { Order } from './types';
 import { WyvernProtocol } from 'wyvern-js';
+import { Order } from './types';
 export declare const MAX_ERROR_LENGTH = 120;
 /**
  * Debug the `ordersCanMatch` part of Wyvern

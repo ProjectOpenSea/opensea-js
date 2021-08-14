@@ -16,7 +16,7 @@ export declare const annotateERC20TransferABI: (asset: WyvernFTAsset) => Annotat
  * @param onError callback when user denies transaction
  */
 export declare function promisifyCall<T>(callback: (fn: Web3Callback<T>) => void, onError?: (error: Error) => void): Promise<T | undefined>;
-export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise<{}>;
+export declare const confirmTransaction: (web3: Web3, txHash: string) => Promise<unknown>;
 export declare const assetFromJSON: (asset: any) => OpenSeaAsset;
 export declare const assetEventFromJSON: (assetEvent: any) => AssetEvent;
 export declare const transactionFromJSON: (transaction: any) => Transaction;
@@ -142,7 +142,7 @@ export declare function assignOrdersToSides(order: Order, matchingOrder: Unsigne
  * Delay using setTimeout
  * @param ms milliseconds to wait
  */
-export declare function delay(ms: number): Promise<{}>;
+export declare function delay(ms: number): Promise<unknown>;
 /**
  * Validates that an address exists, isn't null, and is properly
  * formatted for Wyvern and OpenSea
