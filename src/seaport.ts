@@ -1804,7 +1804,7 @@ export class OpenSeaPort {
       return !!polledProxy
     })
 
-    const proxyAddress = await this._getProxy(accountAddress, 2)
+    const proxyAddress = await this._getProxy(accountAddress, 3)
     if (!proxyAddress) {
       throw new Error('Failed to initialize your account :( Please restart your wallet/browser and try again!')
     }

@@ -1,21 +1,20 @@
 import {
-  assert,
+  assert
 } from 'chai'
-
 import {
   suite,
-  test,
-  skip,
+  test
 } from 'mocha-typescript'
-
-import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js'
-import { Network, Order, OrderSide, OrderJSON } from '../../src/types'
 import { orderToJSON } from '../../src'
-import { mainApi, rinkebyApi, apiToTest, ALEX_ADDRESS, ALEX_ADDRESS_2, CK_RINKEBY_TOKEN_ID, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE, RINKEBY_API_KEY, CK_ADDRESS, WETH_ADDRESS, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY } from '../constants'
+import { MAINNET_PROVIDER_URL, NULL_ADDRESS, ORDERBOOK_VERSION, ORDER_MATCHING_LATENCY_SECONDS } from '../../src/constants'
+import { OpenSeaPort } from '../../src/index'
+import { Network, OrderSide } from '../../src/types'
 import { getOrderHash, makeBigNumber } from '../../src/utils/utils'
-import { ORDERBOOK_VERSION, NULL_ADDRESS, MAINNET_PROVIDER_URL, ORDER_MATCHING_LATENCY_SECONDS } from '../../src/constants'
+import { ALEX_ADDRESS, apiToTest, CK_ADDRESS, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE, CK_RINKEBY_TOKEN_ID, mainApi, MAINNET_API_KEY, MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID, rinkebyApi, RINKEBY_API_KEY, WETH_ADDRESS } from '../constants'
+
+
 
 
 
@@ -49,7 +48,7 @@ suite('api', () => {
   test('Includes API key in token request', async () => {
     const oldLogger = rinkebyApi.logger
 
-    const logPromise = new Promise((resolve, reject) => {
+    const logPromise = new Promise<void>((resolve, reject) => {
       rinkebyApi.logger = log => {
         try {
           assert.include(log, `"X-API-KEY":"${RINKEBY_API_KEY}"`)
