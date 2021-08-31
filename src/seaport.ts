@@ -1592,15 +1592,6 @@ export class OpenSeaPort {
       throw new Error(errorMessage)
     }
 
-    // Remove fees for private orders
-    if (isPrivate) {
-      openseaBuyerFeeBasisPoints = 0
-      openseaSellerFeeBasisPoints = 0
-      devBuyerFeeBasisPoints = 0
-      devSellerFeeBasisPoints = 0
-      sellerBountyBasisPoints = 0
-    }
-
     return {
       totalBuyerFeeBasisPoints: openseaBuyerFeeBasisPoints + devBuyerFeeBasisPoints,
       totalSellerFeeBasisPoints: openseaSellerFeeBasisPoints + devSellerFeeBasisPoints,

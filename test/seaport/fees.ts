@@ -98,13 +98,13 @@ suite('seaport: fees', () => {
       side: OrderSide.Sell,
       isPrivate: true
     })
-    assert.equal(privateSellerFees.totalBuyerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.totalSellerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.devBuyerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.devSellerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.openseaBuyerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.openseaSellerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.sellerBountyBasisPoints, 0)
+    assert.equal(sellerFees.totalBuyerFeeBasisPoints, buyerFeeBasisPoints)
+    assert.equal(sellerFees.totalSellerFeeBasisPoints, sellerFeeBasisPoints)
+    assert.equal(sellerFees.devBuyerFeeBasisPoints, collection.devBuyerFeeBasisPoints)
+    assert.equal(sellerFees.devSellerFeeBasisPoints, collection.devSellerFeeBasisPoints)
+    assert.equal(sellerFees.openseaBuyerFeeBasisPoints, collection.openseaBuyerFeeBasisPoints)
+    assert.equal(sellerFees.openseaSellerFeeBasisPoints, collection.openseaSellerFeeBasisPoints)
+    assert.equal(sellerFees.sellerBountyBasisPoints, extraBountyBasisPoints)
 
     const privateBuyerFees = await client.computeFees({
       asset,
@@ -112,13 +112,13 @@ suite('seaport: fees', () => {
       side: OrderSide.Buy,
       isPrivate: true
     })
-    assert.equal(privateBuyerFees.totalBuyerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.totalSellerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.devBuyerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.devSellerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.openseaBuyerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.openseaSellerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.sellerBountyBasisPoints, 0)
+    assert.equal(buyerFees.totalBuyerFeeBasisPoints, buyerFeeBasisPoints)
+    assert.equal(buyerFees.totalSellerFeeBasisPoints, sellerFeeBasisPoints)
+    assert.equal(buyerFees.devBuyerFeeBasisPoints, collection.devBuyerFeeBasisPoints)
+    assert.equal(buyerFees.devSellerFeeBasisPoints, collection.devSellerFeeBasisPoints)
+    assert.equal(buyerFees.openseaBuyerFeeBasisPoints, collection.openseaBuyerFeeBasisPoints)
+    assert.equal(buyerFees.openseaSellerFeeBasisPoints, collection.openseaSellerFeeBasisPoints)
+    assert.equal(buyerFees.sellerBountyBasisPoints, 0)
   })
 
   test.skip("Computes fees correctly for zero-fee asset", async () => {
