@@ -91,34 +91,6 @@ suite('seaport: fees', () => {
     assert.equal(heterogenousBundleSellerFees.openseaBuyerFeeBasisPoints, DEFAULT_BUYER_FEE_BASIS_POINTS)
     assert.equal(heterogenousBundleSellerFees.openseaSellerFeeBasisPoints, DEFAULT_SELLER_FEE_BASIS_POINTS)
     assert.equal(heterogenousBundleSellerFees.sellerBountyBasisPoints, extraBountyBasisPoints)
-
-    const privateSellerFees = await client.computeFees({
-      asset,
-      extraBountyBasisPoints,
-      side: OrderSide.Sell,
-      isPrivate: true
-    })
-    assert.equal(privateSellerFees.totalBuyerFeeBasisPoints, buyerFeeBasisPoints)
-    assert.equal(privateSellerFees.totalSellerFeeBasisPoints, sellerFeeBasisPoints)
-    assert.equal(privateSellerFees.devBuyerFeeBasisPoints, collection.devBuyerFeeBasisPoints)
-    assert.equal(privateSellerFees.devSellerFeeBasisPoints, collection.devSellerFeeBasisPoints)
-    assert.equal(privateSellerFees.openseaBuyerFeeBasisPoints, collection.openseaBuyerFeeBasisPoints)
-    assert.equal(privateSellerFees.openseaSellerFeeBasisPoints, collection.openseaSellerFeeBasisPoints)
-    assert.equal(privateSellerFees.sellerBountyBasisPoints, extraBountyBasisPoints)
-
-    const privateBuyerFees = await client.computeFees({
-      asset,
-      extraBountyBasisPoints,
-      side: OrderSide.Buy,
-      isPrivate: true
-    })
-    assert.equal(privateBuyerFees.totalBuyerFeeBasisPoints, buyerFeeBasisPoints)
-    assert.equal(privateBuyerFees.totalSellerFeeBasisPoints, sellerFeeBasisPoints)
-    assert.equal(privateBuyerFees.devBuyerFeeBasisPoints, collection.devBuyerFeeBasisPoints)
-    assert.equal(privateBuyerFees.devSellerFeeBasisPoints, collection.devSellerFeeBasisPoints)
-    assert.equal(privateBuyerFees.openseaBuyerFeeBasisPoints, collection.openseaBuyerFeeBasisPoints)
-    assert.equal(privateBuyerFees.openseaSellerFeeBasisPoints, collection.openseaSellerFeeBasisPoints)
-    assert.equal(privateBuyerFees.sellerBountyBasisPoints, 0)
   })
 
   test.skip("Computes fees correctly for zero-fee asset", async () => {

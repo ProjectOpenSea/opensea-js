@@ -1531,11 +1531,10 @@ export class OpenSeaPort {
    * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
    */
   public async computeFees(
-      { asset, side, accountAddress, isPrivate = false, extraBountyBasisPoints = 0 }:
+      { asset, side, accountAddress, extraBountyBasisPoints = 0 }:
       { asset?: OpenSeaAsset;
         side: OrderSide;
         accountAddress?: string;
-        isPrivate?: boolean;
         extraBountyBasisPoints?: number }
     ): Promise<ComputedFees> {
 
@@ -1939,7 +1938,7 @@ export class OpenSeaPort {
 
     const { totalSellerFeeBasisPoints,
             totalBuyerFeeBasisPoints,
-            sellerBountyBasisPoints } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+            sellerBountyBasisPoints } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, extraBountyBasisPoints })
 
     const { target, calldata, replacementPattern } = encodeSell(schema, wyAsset, accountAddress)
 
@@ -2189,7 +2188,7 @@ export class OpenSeaPort {
     const {
       totalSellerFeeBasisPoints,
       totalBuyerFeeBasisPoints,
-      sellerBountyBasisPoints } = await this.computeFees({ asset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+      sellerBountyBasisPoints } = await this.computeFees({ asset, side: OrderSide.Sell, extraBountyBasisPoints })
 
     const { calldata, replacementPattern } = encodeAtomicizedSell(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol, this._networkName)
 

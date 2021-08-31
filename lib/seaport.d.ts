@@ -513,11 +513,10 @@ export declare class OpenSeaPort {
      * @param isPrivate Whether the order is private or not (known taker)
      * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
      */
-    computeFees({ asset, side, accountAddress, isPrivate, extraBountyBasisPoints }: {
+    computeFees({ asset, side, accountAddress, extraBountyBasisPoints }: {
         asset?: OpenSeaAsset;
         side: OrderSide;
         accountAddress?: string;
-        isPrivate?: boolean;
         extraBountyBasisPoints?: number;
     }): Promise<ComputedFees>;
     /**
