@@ -1578,7 +1578,7 @@ export class OpenSeaPort {
     }
 
     // Compute bounty
-    let sellerBountyBasisPoints = side == OrderSide.Sell
+    const sellerBountyBasisPoints = side == OrderSide.Sell
       ? extraBountyBasisPoints
       : 0
 
