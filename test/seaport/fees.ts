@@ -328,13 +328,6 @@ export function testFeesMakerOrder(order: Order | UnhashedOrder, collection?: Op
   } else {
     assert.equal(order.feeRecipient, OPENSEA_FEE_RECIPIENT)
   }
-  if (order.taker != NULL_ADDRESS && order.side == OrderSide.Sell) {
-    // Private sell order
-    assert.equal(order.makerReferrerFee.toNumber(), 0)
-    assert.equal(order.takerRelayerFee.toNumber(), 0)
-    assert.equal(order.makerRelayerFee.toNumber(), 0)
-    return
-  }
   // Public order
   if (makerBountyBPS != null) {
     assert.equal(order.makerReferrerFee.toNumber(), makerBountyBPS)

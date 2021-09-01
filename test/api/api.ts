@@ -33,7 +33,7 @@ suite('api', () => {
   })
 
   test('API fetches bundles and prefetches sell orders', async () => {
-    const { bundles } = await apiToTest.getBundles({asset_contract_address: CK_RINKEBY_ADDRESS, on_sale: true})
+    const { bundles } = await apiToTest.getBundles({asset_contract_address: CK_RINKEBY_ADDRESS})
     assert.isArray(bundles)
 
     const bundle = bundles[0]
@@ -131,7 +131,7 @@ suite('api', () => {
     if (!order.asset) {
       return
     }
-    const url = `https://rinkeby.opensea.io/assets/${order.asset.assetContract.address}/${order.asset.tokenId}`
+    const url = `https://testnets.opensea.io/assets/${order.asset.assetContract.address}/${order.asset.tokenId}`
     assert.equal(order.asset.openseaLink, url)
   })
 
@@ -209,7 +209,7 @@ suite('api', () => {
   })
 
   test('API excludes cancelledOrFinalized and markedInvalid orders', async () => {
-    const {orders} = await apiToTest.getOrders({limit: 100})
+    const {orders} = await apiToTest.getOrders({limit: 50})
     const finishedOrders = orders.filter(o => o.cancelledOrFinalized)
     assert.isEmpty(finishedOrders)
     const invalidOrders = orders.filter(o => o.markedInvalid)
