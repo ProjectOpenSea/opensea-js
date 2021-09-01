@@ -1527,7 +1527,6 @@ export class OpenSeaPort {
    * @param asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
    * @param side The side of the order (buy or sell)
    * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
-   * @param isPrivate Whether the order is private or not (known taker)
    * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
    */
   public async computeFees(
@@ -1932,7 +1931,6 @@ export class OpenSeaPort {
     const schema = this._getSchema(asset.schemaName)
     const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
-    const isPrivate = buyerAddress != NULL_ADDRESS
 
     const openSeaAsset = await this.api.getAsset(asset)
 
@@ -2178,8 +2176,6 @@ export class OpenSeaPort {
     bundle.name = bundleName
     bundle.description = bundleDescription
     bundle.external_link = bundleExternalLink
-
-    const isPrivate = buyerAddress != NULL_ADDRESS
 
     // If all assets are for the same collection, use its fees
     const asset = collection
