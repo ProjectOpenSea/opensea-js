@@ -2,6 +2,9 @@
 
 Full changelog coming soon. For now, here are the most important changes for doing major migrations:
 
+## Migrating to version 1.2
+- `OpenSeaPort::computeFees()` No longer accepts an `isPrivate` parameter.
+
 ## Migrating to version 1.1
 - `OpenSeaPort::computeFees()` No longer accepts a `fees` parameter, relying solely on `asset`.
 

@@ -91,34 +91,6 @@ suite('seaport: fees', () => {
     assert.equal(heterogenousBundleSellerFees.openseaBuyerFeeBasisPoints, DEFAULT_BUYER_FEE_BASIS_POINTS)
     assert.equal(heterogenousBundleSellerFees.openseaSellerFeeBasisPoints, DEFAULT_SELLER_FEE_BASIS_POINTS)
     assert.equal(heterogenousBundleSellerFees.sellerBountyBasisPoints, extraBountyBasisPoints)
-
-    const privateSellerFees = await client.computeFees({
-      asset,
-      extraBountyBasisPoints,
-      side: OrderSide.Sell,
-      isPrivate: true
-    })
-    assert.equal(privateSellerFees.totalBuyerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.totalSellerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.devBuyerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.devSellerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.openseaBuyerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.openseaSellerFeeBasisPoints, 0)
-    assert.equal(privateSellerFees.sellerBountyBasisPoints, 0)
-
-    const privateBuyerFees = await client.computeFees({
-      asset,
-      extraBountyBasisPoints,
-      side: OrderSide.Buy,
-      isPrivate: true
-    })
-    assert.equal(privateBuyerFees.totalBuyerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.totalSellerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.devBuyerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.devSellerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.openseaBuyerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.openseaSellerFeeBasisPoints, 0)
-    assert.equal(privateBuyerFees.sellerBountyBasisPoints, 0)
   })
 
   test.skip("Computes fees correctly for zero-fee asset", async () => {
@@ -355,13 +327,6 @@ export function testFeesMakerOrder(order: Order | UnhashedOrder, collection?: Op
     assert.equal(order.feeRecipient, NULL_ADDRESS)
   } else {
     assert.equal(order.feeRecipient, OPENSEA_FEE_RECIPIENT)
-  }
-  if (order.taker != NULL_ADDRESS && order.side == OrderSide.Sell) {
-    // Private sell order
-    assert.equal(order.makerReferrerFee.toNumber(), 0)
-    assert.equal(order.takerRelayerFee.toNumber(), 0)
-    assert.equal(order.makerRelayerFee.toNumber(), 0)
-    return
   }
   // Public order
   if (makerBountyBPS != null) {

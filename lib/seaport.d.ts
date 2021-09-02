@@ -510,14 +510,12 @@ export declare class OpenSeaPort {
      * @param asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
      * @param side The side of the order (buy or sell)
      * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
-     * @param isPrivate Whether the order is private or not (known taker)
      * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
      */
-    computeFees({ asset, side, accountAddress, isPrivate, extraBountyBasisPoints }: {
+    computeFees({ asset, side, accountAddress, extraBountyBasisPoints }: {
         asset?: OpenSeaAsset;
         side: OrderSide;
         accountAddress?: string;
-        isPrivate?: boolean;
         extraBountyBasisPoints?: number;
     }): Promise<ComputedFees>;
     /**

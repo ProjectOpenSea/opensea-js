@@ -1527,15 +1527,13 @@ export class OpenSeaPort {
    * @param asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
    * @param side The side of the order (buy or sell)
    * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
-   * @param isPrivate Whether the order is private or not (known taker)
    * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
    */
   public async computeFees(
-      { asset, side, accountAddress, isPrivate = false, extraBountyBasisPoints = 0 }:
+      { asset, side, accountAddress, extraBountyBasisPoints = 0 }:
       { asset?: OpenSeaAsset;
         side: OrderSide;
         accountAddress?: string;
-        isPrivate?: boolean;
         extraBountyBasisPoints?: number }
     ): Promise<ComputedFees> {
 
@@ -1578,7 +1576,7 @@ export class OpenSeaPort {
     }
 
     // Compute bounty
-    let sellerBountyBasisPoints = side == OrderSide.Sell
+    const sellerBountyBasisPoints = side == OrderSide.Sell
       ? extraBountyBasisPoints
       : 0
 
@@ -1590,15 +1588,6 @@ export class OpenSeaPort {
         errorMessage += ` Remember that OpenSea will add ${OPENSEA_SELLER_BOUNTY_BASIS_POINTS / 100}% for referrers with OpenSea accounts!`
       }
       throw new Error(errorMessage)
-    }
-
-    // Remove fees for private orders
-    if (isPrivate) {
-      openseaBuyerFeeBasisPoints = 0
-      openseaSellerFeeBasisPoints = 0
-      devBuyerFeeBasisPoints = 0
-      devSellerFeeBasisPoints = 0
-      sellerBountyBasisPoints = 0
     }
 
     return {
@@ -1942,13 +1931,12 @@ export class OpenSeaPort {
     const schema = this._getSchema(asset.schemaName)
     const quantityBN = WyvernProtocol.toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
     const wyAsset = getWyvernAsset(schema, asset, quantityBN)
-    const isPrivate = buyerAddress != NULL_ADDRESS
 
     const openSeaAsset = await this.api.getAsset(asset)
 
     const { totalSellerFeeBasisPoints,
             totalBuyerFeeBasisPoints,
-            sellerBountyBasisPoints } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+            sellerBountyBasisPoints } = await this.computeFees({ asset: openSeaAsset, side: OrderSide.Sell, extraBountyBasisPoints })
 
     const { target, calldata, replacementPattern } = encodeSell(schema, wyAsset, accountAddress)
 
@@ -2189,8 +2177,6 @@ export class OpenSeaPort {
     bundle.description = bundleDescription
     bundle.external_link = bundleExternalLink
 
-    const isPrivate = buyerAddress != NULL_ADDRESS
-
     // If all assets are for the same collection, use its fees
     const asset = collection
       ? await this.api.getAsset(assets[0])
@@ -2198,7 +2184,7 @@ export class OpenSeaPort {
     const {
       totalSellerFeeBasisPoints,
       totalBuyerFeeBasisPoints,
-      sellerBountyBasisPoints } = await this.computeFees({ asset, side: OrderSide.Sell, isPrivate, extraBountyBasisPoints })
+      sellerBountyBasisPoints } = await this.computeFees({ asset, side: OrderSide.Sell, extraBountyBasisPoints })
 
     const { calldata, replacementPattern } = encodeAtomicizedSell(orderedSchemas, bundle.assets, accountAddress, this._wyvernProtocol, this._networkName)
 

@@ -431,7 +431,7 @@ suite('seaport: orders', () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
     const amountInToken = 2
-    const bountyPercent = 0
+    const bountyPercent = 1
 
     const tokenId = MYTHEREUM_TOKEN_ID.toString()
     const tokenAddress = MYTHEREUM_ADDRESS
@@ -786,7 +786,7 @@ suite('seaport: orders', () => {
   })
 
   test('Matches a referred order via sell_orders and getAssets', async () => {
-    const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "current_price", order_direction: "desc" })
+    const { assets } = await client.api.getAssets({asset_contract_address: CRYPTO_CRYSTAL_ADDRESS, order_by: "sale_price", order_direction: "desc" })
 
     const asset = assets.filter(a => !!a.sellOrders)[0]
     assert.isNotNull(asset)

@@ -2,8 +2,8 @@ import { OpenSeaAPI } from '../src/api'
 import { Network } from '../src/types'
 import {CK_ADDRESS, CK_RINKEBY_ADDRESS} from '../src/constants'
 
-export const MAINNET_API_KEY = "testKeyMainnet"
-export const RINKEBY_API_KEY = "testKeyRinkeby"
+export const MAINNET_API_KEY = "f657f0172a3b4b61bffec08c376dbaf8"
+export const RINKEBY_API_KEY = "af3f190b8f2d4d98b51499ae40315829"
 
 export const mainApi = new OpenSeaAPI({
   apiKey: MAINNET_API_KEY,
