@@ -136,7 +136,7 @@ async function promisify<T>(
 /**
  * Promisify a call a method on a contract,
  * handling Parity errors. Returns '0x' if error.
- * Note that if T is not "string", this may return a falsey
+ * Note that if T is not "string", this may return a falsely
  * value when the contract doesn't support the method (e.g. `isApprovedForAll`).
  * @param callback An anonymous function that takes a web3 callback
  * and returns a Web3 Contract's call result, e.g. `c => erc721.ownerOf(3, c)`
