@@ -340,7 +340,7 @@ const { orders, count } = await seaport.api.getOrders({
 }, 2)
 ```
 
-Note that the listing price of an asset is equal to the `currentPrice` of the **lowest valid sell order** on the asset. Users can lower their listing price without invalidating previous sell orders, so all get shipped down until they're cancelled or one is fulfilled.
+Note that the listing price of an asset is equal to the `currentPrice` of the **lowest valid sell order** on the asset. Users can lower their listing price without invalidating previous sell orders, so all get shipped down until they're canceled, or one is fulfilled.
 
 To learn more about signatures, makers, takers, listingTime vs createdTime and other kinds of order terminology, please read the [**Terminology Section**](https://docs.opensea.io/reference#terminology) of the API Docs.
 
@@ -462,7 +462,7 @@ await this.props.seaport.fulfillOrder({ order, accountAddress, referrerAddress }
 
 This works for buying assets and bundles, along with accepting bids that had no referrer attached to them (see below).
 
-As long as the referrer hasn't referred the buyer before, OpenSea will send the referrer an email congradulating them, along with **1%** of the item's sale price. If you'd like to be able to refer the same user for multiple purchases, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)).
+As long as the referrer hasn't referred the buyer before, OpenSea will send the referrer an email congratulating them, along with **1%** of the item's sale price. If you'd like to be able to refer the same user for multiple purchases, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)).
 
 ### Referring Offers
 
