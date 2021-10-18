@@ -14,10 +14,6 @@ import { Network, OrderSide } from '../../src/types'
 import { getOrderHash, makeBigNumber } from '../../src/utils/utils'
 import { ALEX_ADDRESS, apiToTest, CK_ADDRESS, CK_RINKEBY_ADDRESS, CK_RINKEBY_SELLER_FEE, CK_RINKEBY_TOKEN_ID, mainApi, MAINNET_API_KEY, MYTHEREUM_ADDRESS, MYTHEREUM_TOKEN_ID, rinkebyApi, RINKEBY_API_KEY, WETH_ADDRESS } from '../constants'
 
-
-
-
-
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
 
 const client = new OpenSeaPort(provider, {
