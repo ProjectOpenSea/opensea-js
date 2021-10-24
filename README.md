@@ -374,7 +374,7 @@ To buy an item , you need to **fulfill a sell order**. To do that, it's just one
 ```JavaScript
 const order = await seaport.api.getOrder({ side: OrderSide.Sell, ... })
 const accountAddress = "0x..." // The buyer's wallet address, also the taker
-const transactionHash = await this.props.seaport.fulfillOrder({ order, accountAddress })
+const transactionHash = await seaport.fulfillOrder({ order, accountAddress })
 ```
 
 Note that the `fulfillOrder` promise resolves when the transaction has been confirmed and mined to the blockchain. To get the transaction hash before this happens, add an event listener (see [Listening to Events](#listening-to-events)) for the `TransactionCreated` event.
@@ -388,7 +388,7 @@ Similar to fulfilling sell orders above, you need to fulfill a buy order on an i
 ```JavaScript
 const order = await seaport.api.getOrder({ side: OrderSide.Buy, ... })
 const accountAddress = "0x..." // The owner's wallet address, also the taker
-await this.props.seaport.fulfillOrder({ order, accountAddress })
+await seaport.fulfillOrder({ order, accountAddress })
 ```
 
 If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
@@ -457,7 +457,7 @@ You can instantly create an affiliate program for your assets by just passing in
 
 ```JavaScript
 const referrerAddress = "0x..." // The referrer's wallet address
-await this.props.seaport.fulfillOrder({ order, accountAddress, referrerAddress })
+await seaport.fulfillOrder({ order, accountAddress, referrerAddress })
 ```
 
 This works for buying assets and bundles, along with accepting bids that had no referrer attached to them (see below).
@@ -470,7 +470,7 @@ Now you can also refer offers on assets! When the seller accepts the offer, the 
 
 ```JavaScript
 const referrerAddress = "0x..." // The referrer's wallet address
-await this.props.seaport.createBuyOrder({
+await seaport.createBuyOrder({
   asset: {
     tokenId,
     tokenAddress,
@@ -538,7 +538,7 @@ You can buy and transfer an item to someone else in one step! Just pass the `rec
 
 ```JavaScript
 const order = await seaport.api.getOrder({ side: OrderSide.Sell, ... })
-await this.props.seaport.fulfillOrder({
+await seaport.fulfillOrder({
   order,
   accountAddress, // The address of your wallet, which will sign the transaction
   recipientAddress // The address of the recipient, i.e. the wallet you're purchasing on behalf of
