@@ -62,6 +62,7 @@ export class OpenSeaPort {
   public readonly api: OpenSeaAPI
   // Extra gwei to add to the mean gas price when making transactions
   public gasPriceAddition = new BigNumber(3)
+
   // Multiply gas estimate by this factor when making transactions
   public gasIncreaseFactor = DEFAULT_GAS_INCREASE_FACTOR
 
@@ -72,6 +73,9 @@ export class OpenSeaPort {
   private _wrappedNFTFactoryAddress: string
   private _wrappedNFTLiquidationProxyAddress: string
   private _uniswapFactoryAddress: string
+
+  // Allows to use custom gas price
+  private _customGasPrice: number | null = null
 
   /**
    * Your very own seaport.
@@ -117,6 +121,10 @@ export class OpenSeaPort {
 
     // Debugging: default to nothing
     this.logger = logger || ((arg: string) => arg)
+  }
+
+  public set customGasPrice(gasPrice: number) {
+    this._customGasPrice = gasPrice
   }
 
   /**
@@ -2934,6 +2942,10 @@ export class OpenSeaPort {
 
       txnData.gas = this._correctGasAmount(gasEstimate)
 
+      if (this._customGasPrice !== null) {
+        txnData.gasPrice = this._customGasPrice
+      }
+
     } catch (error) {
       console.error(`Failed atomic match with args: `, args, error)
       throw new Error(`Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${error.message.substr(0, MAX_ERROR_LENGTH)}..."`)
@@ -2942,6 +2954,7 @@ export class OpenSeaPort {
     // Then do the transaction
     try {
       this.logger(`Fulfilling order with gas set to ${txnData.gas}`)
+      this.logger(`Fulfilling order with gas price set to ${txnData.gasPrice} gwei`)
       txHash = await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
     } catch (error) {
       console.error(error)

@@ -17,6 +17,7 @@ export declare class OpenSeaPort {
     private _wrappedNFTFactoryAddress;
     private _wrappedNFTLiquidationProxyAddress;
     private _uniswapFactoryAddress;
+    private _customGasPrice;
     /**
      * Your very own seaport.
      * Create a new instance of OpenSeaJS.
@@ -27,6 +28,7 @@ export declare class OpenSeaPort {
      *  information
      */
     constructor(provider: Web3.Provider, apiConfig?: OpenSeaAPIConfig, logger?: (arg: string) => void);
+    set customGasPrice(gasPrice: number);
     /**
      * Add a listener to a marketplace event
      * @param event An event to listen for
@@ -47,7 +49,7 @@ export declare class OpenSeaPort {
      */
     removeAllListeners(event?: EventType): void;
     /**
-     * Wraps an arbirary group of NFTs into their corresponding WrappedNFT ERC20 tokens.
+     * Wraps an arbitrary group of NFTs into their corresponding WrappedNFT ERC20 tokens.
      * Emits the `WrapAssets` event when the transaction is prompted.
      * @param param0 __namedParameters Object
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
@@ -58,7 +60,7 @@ export declare class OpenSeaPort {
         accountAddress: string;
     }): Promise<void>;
     /**
-     * Unwraps an arbirary group of NFTs from their corresponding WrappedNFT ERC20 tokens back into ERC721 tokens.
+     * Unwraps an arbitrary group of NFTs from their corresponding WrappedNFT ERC20 tokens back into ERC721 tokens.
      * Emits the `UnwrapAssets` event when the transaction is prompted.
      * @param param0 __namedParameters Object
      * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
@@ -71,7 +73,7 @@ export declare class OpenSeaPort {
         accountAddress: string;
     }): Promise<void>;
     /**
-     * Liquidates an arbirary group of NFTs by atomically wrapping them into their
+     * Liquidates an arbitrary group of NFTs by atomically wrapping them into their
      * corresponding WrappedNFT ERC20 tokens, and then immediately selling those
      * ERC20 tokens on their corresponding Uniswap exchange.
      * Emits the `LiquidateAssets` event when the transaction is prompted.

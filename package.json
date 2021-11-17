@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ProjectOpenSea/opensea-js.git"
+    "url": "git+https://github.com/vladopaets/opensea-js"
   },
   "keywords": [
     "marketplace",
@@ -35,7 +35,7 @@
   "author": "OpenSea Developers",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ProjectOpenSea/opensea-js/issues"
+    "url": "https://github.com/vladopaets/opensea-js"
   },
   "homepage": "https://docs.opensea.io/v1.0/reference",
   "dependencies": {
