@@ -2946,6 +2946,10 @@ export class OpenSeaPort {
       const gasEstimate = await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
 
       txnData.gas = this._correctGasAmount(gasEstimate)
+
+      if (this._customGasPrice !== null) {
+        txnData.gasPrice = this._customGasPrice
+      }
     } catch (error) {
       console.error(`Failed atomic match with args: `, args, error)
       throw new Error(`Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${error.message.substr(0, MAX_ERROR_LENGTH)}..."`)
@@ -2954,7 +2958,7 @@ export class OpenSeaPort {
     // Then do the transaction
     try {
       this.logger(`Fulfilling order with gas set to ${txnData.gas}`)
-      this.logger(`Fulfilling order with gas price set to ${txnData.gasPrice} gwei`)
+      this.logger(`Fulfilling order with gas price set to ${txnData.gasPrice} wei`)
       txHash = await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
     } catch (error) {
       console.error(error)
