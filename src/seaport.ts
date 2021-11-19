@@ -93,7 +93,7 @@ export class OpenSeaPort {
 
     const readonlyProvider = new Web3.providers.HttpProvider(`${this.api.apiBaseUrl}/${RPC_URL_PATH}`)
 
-    const useReadOnlyProvider = apiConfig.useReadOnlyProvider ?? true;
+    const useReadOnlyProvider = apiConfig.useReadOnlyProvider ?? true
 
     // Web3 Config
     this.web3 = new Web3(provider)

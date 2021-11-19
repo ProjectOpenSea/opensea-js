@@ -72,6 +72,7 @@ export interface OpenSeaAPIConfig {
     networkName?: Network;
     apiKey?: string;
     apiBaseUrl?: string;
+    useReadOnlyProvider?: boolean;
     gasPrice?: BigNumber;
 }
 /**
