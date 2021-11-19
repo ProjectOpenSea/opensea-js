@@ -28,7 +28,11 @@ export declare class OpenSeaPort {
      *  information
      */
     constructor(provider: Web3.Provider, apiConfig?: OpenSeaAPIConfig, logger?: (arg: string) => void);
-    set customGasPrice(gasPrice: number);
+    /**
+     * Set custom gas price
+     * @param gasPrice - in wei
+     */
+    setCustomGasPrice(gasPrice: number): void;
     /**
      * Add a listener to a marketplace event
      * @param event An event to listen for
