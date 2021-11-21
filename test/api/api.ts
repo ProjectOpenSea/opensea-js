@@ -38,7 +38,6 @@ suite('api', () => {
       return
     }
     assert.include(bundle.assets.map(a => a.assetContract.name), "CryptoKittiesRinkeby")
-    assert.isNotEmpty(bundle.sellOrders)
   })
 
   test('Includes API key in token request', async () => {
@@ -166,11 +165,7 @@ suite('api', () => {
     })
   }
 
-  test('API fetches orders for asset contract and asset', async () => {
-    const forKitties = await apiToTest.getOrders({asset_contract_address: CK_RINKEBY_ADDRESS})
-    assert.isAbove(forKitties.orders.length, 0)
-    assert.isAbove(forKitties.count, 0)
-
+  test('API fetches orders for asset', async () => {
     const forKitty = await apiToTest.getOrders({asset_contract_address: CK_RINKEBY_ADDRESS, token_id: CK_RINKEBY_TOKEN_ID})
     assert.isArray(forKitty.orders)
   })
@@ -195,15 +190,6 @@ suite('api', () => {
     })
   })
 
-  test("API doesn't fetch impossible orders", async () => {
-    try {
-      const order = await apiToTest.getOrder({maker: ALEX_ADDRESS, taker: ALEX_ADDRESS})
-      assert.fail()
-    } catch(e) {
-      assert.include(e.message, "Not found")
-    }
-  })
-
   test('API excludes cancelledOrFinalized and markedInvalid orders', async () => {
     const {orders} = await apiToTest.getOrders({limit: 50})
     const finishedOrders = orders.filter(o => o.cancelledOrFinalized)
@@ -220,7 +206,7 @@ suite('api', () => {
   })
 
   test('API fetches assets', async () => {
-    const { assets } = await apiToTest.getAssets({asset_contract_address: CK_RINKEBY_ADDRESS, order_by: "current_price"})
+    const { assets } = await apiToTest.getAssets({asset_contract_address: CK_RINKEBY_ADDRESS, order_by: "sale_date"})
     assert.isArray(assets)
     assert.equal(assets.length, apiToTest.pageSize)
 

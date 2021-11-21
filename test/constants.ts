@@ -1,9 +1,9 @@
-import { OpenSeaAPI } from '../src/api'
-import { Network } from '../src/types'
-import {CK_ADDRESS, CK_RINKEBY_ADDRESS} from '../src/constants'
+import { OpenSeaAPI } from '../src/api';
+import { CK_ADDRESS, CK_RINKEBY_ADDRESS } from '../src/constants';
+import { Network } from '../src/types';
 
-export const MAINNET_API_KEY = "testKeyMainnet"
-export const RINKEBY_API_KEY = "testKeyRinkeby"
+export const MAINNET_API_KEY = process.env.API_KEY;
+export const RINKEBY_API_KEY = process.env.API_KEY;
 
 export const mainApi = new OpenSeaAPI({
   apiKey: MAINNET_API_KEY,
@@ -20,11 +20,12 @@ export const apiToTest = rinkebyApi
 export {
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS
-}
+};
 export const GODS_UNCHAINED_ADDRESS = '0x6ebeaf8e8e946f0716e6533a6f2cefc83f60e8ab'
 export const CRYPTO_CRYSTAL_ADDRESS = '0xcfbc9103362aec4ce3089f155c2da2eea1cb7602'
 export const DIGITAL_ART_CHAIN_ADDRESS = '0x323a3e1693e7a0959f65972f3bf2dfcb93239dfe'
 export const MYTHEREUM_ADDRESS = '0xc70be5b7c19529ef642d16c10dfe91c58b5c3bf0'
+export const MYTHEREUM_SLUG = 'mythereum';
 export const DIGITAL_ART_CHAIN_TOKEN_ID = 189
 export const GODS_UNCHAINED_TOKEN_ID = 76719
 export const MYTHEREUM_TOKEN_ID = 4367

@@ -1,25 +1,24 @@
 import {
-  assert,
+  assert
 } from 'chai'
-
 import { before } from 'mocha'
-
 import {
   suite,
-  test,
+  test
 } from 'mocha-typescript'
-
-import { OpenSeaPort } from '../../src/index'
 import * as Web3 from 'web3'
-import { Network, WyvernSchemaName, UnhashedOrder } from '../../src/types'
-import { ALEX_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, MAINNET_API_KEY, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, AGE_OF_RUST_TOKEN_ID, ALEX_ADDRESS_2, BENZENE_ADDRESS, CRYPTOVOXELS_WEARABLE_2_ID, WETH_ADDRESS } from '../constants'
-import { testFeesMakerOrder } from './fees'
-import { testMatchingNewOrder } from './orders' 
 import {
-  MAINNET_PROVIDER_URL,
-  NULL_ADDRESS,
-  ENJIN_ADDRESS,
+  ENJIN_ADDRESS, MAINNET_PROVIDER_URL,
+  NULL_ADDRESS
 } from '../../src/constants'
+import { OpenSeaPort } from '../../src/index'
+import { Network, UnhashedOrder, WyvernSchemaName } from '../../src/types'
+import { AGE_OF_RUST_TOKEN_ID, ALEX_ADDRESS, ALEX_ADDRESS_2, BENZENE_ADDRESS, CRYPTOVOXELS_WEARABLE_2_ID, CRYPTOVOXELS_WEARABLE_ADDRESS, CRYPTOVOXELS_WEARABLE_ID, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, DISSOLUTION_TOKEN_ID, GODS_UNCHAINED_CHEST_ADDRESS, MAINNET_API_KEY, MYTHEREUM_ADDRESS, MYTHEREUM_SLUG, MYTHEREUM_TOKEN_ID, WETH_ADDRESS } from '../constants'
+import { testFeesMakerOrder } from './fees'
+import { testMatchingNewOrder } from './orders'
+
+
+
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
 
@@ -92,6 +91,7 @@ suite('seaport: bundles', () => {
 
     const order = await client._makeBundleBuyOrder({
       assets,
+      collection: { slug: MYTHEREUM_SLUG },
       quantities: [1],
       accountAddress,
       startAmount: amountInToken,
@@ -158,6 +158,7 @@ suite('seaport: bundles', () => {
       bundleName: "Test Homogenous Bundle",
       bundleDescription: "This is a test with one type of asset",
       assets,
+      collection: { slug: MYTHEREUM_SLUG },
       quantities: [1],
       accountAddress,
       startAmount: amountInEth,

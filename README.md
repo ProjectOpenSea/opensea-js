@@ -48,11 +48,11 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
 
 ## Synopsis
 
-This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest marketplace for crypto collectibles. It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**auctions**), create collections of assets to sell at once (**bundles**), and complete trades programmatically.
+This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs.
 
-For the first time, you can build a *cryptocommerce dapp*.
+It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**auctions**), create collections of assets to sell at once (**bundles**), and complete trades programmatically.
 
-You get started by instantiating your own seaport. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEth`) in the process.
+You get started by [requesting an API key](https://docs.opensea.io/reference) and instantiating your own seaport. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEth`) in the process.
 
 Happy seafaring! ⛵️
 
@@ -77,7 +77,9 @@ sudo npm explore npm -g -- npm install node-gyp@latest # (Optional) update node-
 
 ## Getting Started
 
-To get started, create a new OpenSeaJS client, called an OpenSeaPort 🚢, using your Web3 provider:
+To get started, first request an API key [here](https://docs.opensea.io/reference). Note the terms of use for using API data.
+
+Then, create a new OpenSeaJS client, called an OpenSeaPort 🚢, using your Web3 provider:
 
 ```JavaScript
 import * as Web3 from 'web3'
@@ -87,7 +89,8 @@ import { OpenSeaPort, Network } from 'opensea-js'
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
 const seaport = new OpenSeaPort(provider, {
-  networkName: Network.Main
+  networkName: Network.Main,
+  apiKey: YOUR_API_KEY
 })
 ```
 

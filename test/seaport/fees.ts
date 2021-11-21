@@ -311,8 +311,8 @@ function unitTestFeesBuyOrder({
   feeRecipient: string,
   feeMethod: FeeMethod
 }) {
-  assert.equal(+makerRelayerFee, asset.collection.openseaBuyerFeeBasisPoints)
-  assert.equal(+takerRelayerFee, asset.collection.openseaSellerFeeBasisPoints)
+  assert.equal(+makerRelayerFee, asset.collection.openseaBuyerFeeBasisPoints + asset.collection.devBuyerFeeBasisPoints)
+  assert.equal(+takerRelayerFee, asset.collection.openseaSellerFeeBasisPoints + asset.collection.devSellerFeeBasisPoints)
   assert.equal(+makerProtocolFee, 0)
   assert.equal(+takerProtocolFee, 0)
   assert.equal(+makerReferrerFee, 0)
