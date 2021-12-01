@@ -1959,7 +1959,7 @@ export class OpenSeaPort {
       extra,
       listingTime: times.listingTime,
       expirationTime: times.expirationTime,
-      salt: new BigNumber(Math.floor(Math.random() * 500)),
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         asset: wyAsset,
         schema: schema.name as WyvernSchemaName,
@@ -2043,7 +2043,7 @@ export class OpenSeaPort {
       extra,
       listingTime: times.listingTime,
       expirationTime: times.expirationTime,
-      salt: new BigNumber(Math.floor(Math.random() * 500)),
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         asset: wyAsset,
         schema: schema.name as WyvernSchemaName,
@@ -2198,7 +2198,7 @@ export class OpenSeaPort {
       extra,
       listingTime: times.listingTime,
       expirationTime: times.expirationTime,
-      salt: new BigNumber(Math.floor(Math.random() * 500)),
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle,
         referrerAddress
@@ -2288,7 +2288,7 @@ export class OpenSeaPort {
       extra,
       listingTime: times.listingTime,
       expirationTime: times.expirationTime,
-      salt: new BigNumber(Math.floor(Math.random() * 500)),
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle
       }
@@ -2367,7 +2367,7 @@ export class OpenSeaPort {
       extra: makeBigNumber(0),
       listingTime: times.listingTime,
       expirationTime: times.expirationTime,
-      salt: new BigNumber(Math.floor(Math.random() * 500)),
+      salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: order.metadata,
     }
 
