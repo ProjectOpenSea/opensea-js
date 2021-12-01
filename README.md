@@ -19,6 +19,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Making Offers](#making-offers)
     - [Bidding on Multiple Assets](#bidding-on-multiple-assets)
     - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
+    - [Offer Limits](#offer-limits)
   - [Making Listings / Selling Items](#making-listings--selling-items)
     - [Creating English Auctions](#creating-english-auctions)
   - [Running Crowdsales](#running-crowdsales)
@@ -236,6 +237,8 @@ const offer = await seaport.createBuyOrder({
   startAmount: 1.2,
 })
 ```
+#### Offer Limits
+Note: The total value of buy orders must not exceed 100 x wallet balance.
 
 ### Making Listings / Selling Items
 
