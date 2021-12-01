@@ -919,7 +919,7 @@ export class OpenSeaPort {
         accountAddress: string;
         recipientAddress?: string;
         referrerAddress?: string; }
-  ): Promise<number> {
+  ): Promise<any[]> {
     const matchingOrder = this._makeMatchingOrder({
       order,
       accountAddress,
