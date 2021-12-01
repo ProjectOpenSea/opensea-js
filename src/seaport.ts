@@ -867,7 +867,7 @@ export class OpenSeaPort {
     const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
     const metadata = this._getMetadata(order, referrerAddress)
-    const transactionHash = await this._atomicMatch({ buy, sell, accountAddress, metadata }, false)
+    const transactionHash = await this._atomicMatch({ buy, sell, accountAddress, metadata }, false, false)
 
     await this._confirmTransaction(transactionHash, EventType.MatchOrders, "Fulfilling order", async () => {
       const isOpen = await this._validateOrder(order)
@@ -901,9 +901,36 @@ export class OpenSeaPort {
       const { buy, sell } = assignOrdersToSides(order, matchingOrder)
   
       const metadata = this._getMetadata(order, referrerAddress)
-      return this._atomicMatch({ buy, sell, accountAddress, metadata }, true)
-  
+      return this._atomicMatch({ buy, sell, accountAddress, metadata }, true, false)
     }
+
+  /**
+   * Returns data required to fulfill the transaction.
+   * @param param0 __namedParamaters Object
+   * @param order The order to fulfill, a.k.a. "take"
+   * @param accountAddress The taker's wallet address
+   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
+   * @param referrerAddress The optional address that referred the order
+   * @returns gasEstimation
+   */
+  public async getFulfillOrderArgs(
+    { order, accountAddress, recipientAddress, referrerAddress }:
+      { order: Order;
+        accountAddress: string;
+        recipientAddress?: string;
+        referrerAddress?: string; }
+  ): Promise<number> {
+    const matchingOrder = this._makeMatchingOrder({
+      order,
+      accountAddress,
+      recipientAddress: recipientAddress || accountAddress
+    })
+
+    const { buy, sell } = assignOrdersToSides(order, matchingOrder)
+
+    const metadata = this._getMetadata(order, referrerAddress)
+    return this._atomicMatch({ buy, sell, accountAddress, metadata }, false, true)
+  }
 
   /**
    * Cancel an order on-chain, preventing it from ever being fulfilled.
@@ -2903,20 +2930,30 @@ export class OpenSeaPort {
   private async _atomicMatch(
     data:
       { buy: Order; sell: Order; accountAddress: string; metadata?: string },
-    onlyGetGasEstimation?: true,
+    onlyGetGasEstimation: true,
+    onlyGetCallArgs: false,
   ): Promise<number>
 
   private async _atomicMatch(
     data:
       { buy: Order; sell: Order; accountAddress: string; metadata?: string },
-    onlyGetGasEstimation?: false,
+    onlyGetGasEstimation: false,
+    onlyGetCallArgs: false,
   ): Promise<string>
+
+  private async _atomicMatch(
+    data:
+      { buy: Order; sell: Order; accountAddress: string; metadata?: string },
+    onlyGetGasEstimation: false,
+    onlyGetCallArgs: true,
+  ): Promise<any>
 
   private async _atomicMatch(
       { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH }:
       { buy: Order; sell: Order; accountAddress: string; metadata?: string },
-      onlyGetGasEstimation?: boolean,
-    ): Promise<string | number> {
+      onlyGetGasEstimation: boolean,
+      onlyGetCallArgs: boolean,
+    ): Promise<string | number | any> {
     let value
     let shouldValidateBuy = true
     let shouldValidateSell = true
@@ -2983,6 +3020,9 @@ export class OpenSeaPort {
       throw new Error(`Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${error.message.substr(0, MAX_ERROR_LENGTH)}..."`)
     }
 
+    if(onlyGetCallArgs) {
+      return [args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData];
+    }
     // Then do the transaction
     try {
       this.logger(`Fulfilling order with gas set to ${txnData.gas}`)

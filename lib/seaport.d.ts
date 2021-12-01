@@ -332,6 +332,21 @@ export declare class OpenSeaPort {
         referrerAddress?: string;
     }): Promise<number>;
     /**
+     * Returns data required to fulfill the transaction.
+     * @param param0 __namedParamaters Object
+     * @param order The order to fulfill, a.k.a. "take"
+     * @param accountAddress The taker's wallet address
+     * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
+     * @param referrerAddress The optional address that referred the order
+     * @returns gasEstimation
+     */
+    getFulfillOrderArgs({ order, accountAddress, recipientAddress, referrerAddress }: {
+        order: Order;
+        accountAddress: string;
+        recipientAddress?: string;
+        referrerAddress?: string;
+    }): Promise<number>;
+    /**
      * Cancel an order on-chain, preventing it from ever being fulfilled.
      * @param param0 __namedParameters Object
      * @param order The order to cancel
