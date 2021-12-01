@@ -919,7 +919,7 @@ export class OpenSeaPort {
         accountAddress: string;
         recipientAddress?: string;
         referrerAddress?: string; }
-  ): Promise<any[]> {
+  ): Promise<WyvernAtomicMatchParameters> {
     const matchingOrder = this._makeMatchingOrder({
       order,
       accountAddress,
@@ -2946,7 +2946,7 @@ export class OpenSeaPort {
       { buy: Order; sell: Order; accountAddress: string; metadata?: string },
     onlyGetGasEstimation: false,
     onlyGetCallArgs: true,
-  ): Promise<any>
+  ): Promise<WyvernAtomicMatchParameters>
 
   private async _atomicMatch(
       { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH }:

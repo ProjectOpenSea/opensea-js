@@ -2,7 +2,7 @@ import { BigNumber } from 'bignumber.js';
 import { EventSubscription } from 'fbemitter';
 import * as Web3 from 'web3';
 import { OpenSeaAPI } from './api';
-import { Asset, ComputedFees, EventData, EventType, FeeMethod, OpenSeaAPIConfig, OpenSeaAsset, OpenSeaFungibleToken, Order, OrderSide, PartialReadonlyContractAbi, UnhashedOrder, UnsignedOrder, WyvernAsset, WyvernSchemaName } from './types';
+import { Asset, ComputedFees, EventData, EventType, FeeMethod, OpenSeaAPIConfig, OpenSeaAsset, OpenSeaFungibleToken, Order, OrderSide, PartialReadonlyContractAbi, UnhashedOrder, UnsignedOrder, WyvernAsset, WyvernAtomicMatchParameters, WyvernSchemaName } from './types';
 export declare class OpenSeaPort {
     web3: Web3;
     web3ReadOnly: Web3;
@@ -345,7 +345,7 @@ export declare class OpenSeaPort {
         accountAddress: string;
         recipientAddress?: string;
         referrerAddress?: string;
-    }): Promise<any[]>;
+    }): Promise<WyvernAtomicMatchParameters>;
     /**
      * Cancel an order on-chain, preventing it from ever being fulfilled.
      * @param param0 __namedParameters Object
