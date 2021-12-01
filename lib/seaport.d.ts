@@ -345,7 +345,14 @@ export declare class OpenSeaPort {
         accountAddress: string;
         recipientAddress?: string;
         referrerAddress?: string;
-    }): Promise<WyvernAtomicMatchParameters>;
+    }): Promise<{
+        args: WyvernAtomicMatchParameters;
+        txnData: {
+            from: string;
+            value?: BigNumber;
+            gas?: number;
+        };
+    }>;
     /**
      * Cancel an order on-chain, preventing it from ever being fulfilled.
      * @param param0 __namedParameters Object
