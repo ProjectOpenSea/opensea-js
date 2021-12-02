@@ -93,9 +93,11 @@ export class OpenSeaPort {
 
     const readonlyProvider = new Web3.providers.HttpProvider(`${this.api.apiBaseUrl}/${RPC_URL_PATH}`)
 
+    const useReadOnlyProvider = apiConfig.useReadOnlyProvider ?? true
+
     // Web3 Config
     this.web3 = new Web3(provider)
-    this.web3ReadOnly = new Web3(readonlyProvider)
+    this.web3ReadOnly = useReadOnlyProvider ? new Web3(readonlyProvider) : this.web3
 
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider, {
@@ -103,9 +105,9 @@ export class OpenSeaPort {
     })
 
     // WyvernJS config for readonly (optimization for infura calls)
-    this._wyvernProtocolReadOnly = new WyvernProtocol(readonlyProvider, {
+    this._wyvernProtocolReadOnly = useReadOnlyProvider ? new WyvernProtocol(readonlyProvider, {
       network: this._networkName,
-    })
+    }) : this._wyvernProtocol
 
     // WrappedNFTLiquidationProxy Config
     this._wrappedNFTFactoryAddress = this._networkName == Network.Main ? WRAPPED_NFT_FACTORY_ADDRESS_MAINNET : WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY
