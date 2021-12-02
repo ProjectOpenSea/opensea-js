@@ -50,7 +50,7 @@
     "web3": "0.20.7",
     "webpack": "^3.10.0",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#josh/package-lock-npm",
-    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#josh/package-lock-npm"
+    "wyvern-schemas": "git+https://github.com/tiagoalves/wyvern-schemas.git#josh/package-lock-npm"
   },
   "husky": {
     "hooks": {
