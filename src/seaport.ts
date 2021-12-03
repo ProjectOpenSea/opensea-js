@@ -2,6 +2,7 @@ import { BigNumber } from 'bignumber.js'
 import { isValidAddress } from 'ethereumjs-util'
 import { EventEmitter, EventSubscription } from 'fbemitter'
 import * as _ from 'lodash'
+import { WyvernFeeWrapper } from 'src/abi/WyvernFeeWrapper'
 import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js'
 import * as WyvernSchemas from 'wyvern-schemas'
@@ -34,7 +35,8 @@ import {
   WRAPPED_NFT_FACTORY_ADDRESS_MAINNET,
   WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
-  WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY
+  WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY,
+  STATIC_CALL_FEE_WRAPPER_ADDRESS
 } from './constants'
 import { CanonicalWETH, CheezeWizardsBasicTournament, DecentralandEstates, ERC20, ERC721, getMethod, StaticCheckCheezeWizards, StaticCheckDecentralandEstates, StaticCheckTxOrigin, UniswapExchange, UniswapFactory, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy } from './contracts'
 import {
@@ -48,7 +50,7 @@ import {
 } from './utils/schema'
 import {
   annotateERC20TransferABI, annotateERC721TransferABI, assignOrdersToSides, confirmTransaction, delay, estimateCurrentPrice, estimateGas, getCurrentGasPrice, getNonCompliantApprovalAddress, getOrderHash, getTransferFeeSettings, getWyvernAsset, getWyvernBundle, isContractAddress, makeBigNumber, onDeprecated, orderToJSON,
-  personalSignAsync, promisifyCall, rawCall, sendRawTransaction, validateAndFormatWalletAddress
+  personalSignAsync, promisifyCall, rawCall, sendRawTransaction, validateAndFormatWalletAddress, isFeeWrapperStaticTarget
 } from './utils/utils'
 
 export class OpenSeaPort {
@@ -867,7 +869,34 @@ export class OpenSeaPort {
     const { buy, sell } = assignOrdersToSides(order, matchingOrder)
 
     const metadata = this._getMetadata(order, referrerAddress)
-    const transactionHash = await this._atomicMatch({ buy, sell, accountAddress, metadata })
+
+    let transactionHash: string = '';
+
+    if (
+      isFeeWrapperStaticTarget({buy, sell})
+    ) {
+      const vrs = await this._authorizeOrder(matchingOrder);
+      const properlySignedMatchingOrder = { ...matchingOrder, vrs };
+      transactionHash = await this._atomicMatch({
+        buy:
+          properlySignedMatchingOrder.side === OrderSide.Buy
+            ? properlySignedMatchingOrder
+            : buy,
+        sell:
+          properlySignedMatchingOrder.side === OrderSide.Sell
+            ? properlySignedMatchingOrder
+            : sell,
+        accountAddress,
+        metadata,
+      });
+    } else {
+      transactionHash = await this._atomicMatch({
+        buy,
+        sell,
+        accountAddress,
+        metadata,
+      });
+    }
 
     await this._confirmTransaction(transactionHash, EventType.MatchOrders, "Fulfilling order", async () => {
       const isOpen = await this._validateOrder(order)
@@ -2927,10 +2956,60 @@ export class OpenSeaPort {
       ]
     ]
 
+    const isFeeWrapperFlow = isFeeWrapperStaticTarget({ buy, sell });
+
+    const wyvernFeeWrapperArgs: [WyvernAtomicMatchParameters, string, [string, number][]] = [
+      args,
+      "dummy sig",
+      [["dummy fee recipient", 1]]
+    ];
+
+    const atomicMatchEstimateGas = async (): Promise<number> => {
+      return isFeeWrapperFlow
+        ? estimateGas(this.web3ReadOnly, {
+            from: accountAddress,
+            to: STATIC_CALL_FEE_WRAPPER_ADDRESS,
+            data: encodeCall(getMethod(WyvernFeeWrapper, 'atomicMatch_'), wyvernFeeWrapperArgs),
+          })
+        : await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
+            args[0],
+            args[1],
+            args[2],
+            args[3],
+            args[4],
+            args[5],
+            args[6],
+            args[7],
+            args[8],
+            args[9],
+            args[10],
+            txnData
+          );
+    };
+
+    const submitAtomicMatchTransaction = async (): Promise<string> => {
+      return isFeeWrapperFlow
+        ? Promise.resolve('')
+        : await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(
+            args[0],
+            args[1],
+            args[2],
+            args[3],
+            args[4],
+            args[5],
+            args[6],
+            args[7],
+            args[8],
+            args[9],
+            args[10],
+            txnData
+          );
+    };
+
     // Estimate gas first
     try {
       // Typescript splat doesn't typecheck
-      const gasEstimate = await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
+      const gasEstimate = await atomicMatchEstimateGas()
 
       txnData.gas = this._correctGasAmount(gasEstimate)
 
@@ -2942,7 +3021,7 @@ export class OpenSeaPort {
     // Then do the transaction
     try {
       this.logger(`Fulfilling order with gas set to ${txnData.gas}`)
-      txHash = await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], txnData)
+      txHash = await submitAtomicMatchTransaction()
     } catch (error) {
       console.error(error)
 

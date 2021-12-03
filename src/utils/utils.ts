@@ -45,7 +45,8 @@ import {
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
   NULL_ADDRESS,
-  NULL_BLOCK_HASH
+  NULL_BLOCK_HASH,
+  STATIC_CALL_FEE_WRAPPER_ADDRESS
 } from '../constants'
 import { proxyABI } from '../abi/Proxy'
 
@@ -864,6 +865,7 @@ export function assignOrdersToSides(order: Order, matchingOrder: UnsignedOrder )
 
   let buy: Order
   let sell: Order
+  
   if (!isSellOrder) {
     buy = order
     sell = {
@@ -959,3 +961,16 @@ export async function getNonCompliantApprovalAddress(erc721Contract: Web3.Contra
 
   return _.compact(results)[0]
 }
+
+export const isFeeWrapperStaticTarget = ({
+  buy,
+  sell,
+}: {
+  buy: Order;
+  sell: Order;
+}) => {
+  return (
+    buy.staticTarget === STATIC_CALL_FEE_WRAPPER_ADDRESS ||
+    sell.staticTarget === STATIC_CALL_FEE_WRAPPER_ADDRESS
+  );
+};
