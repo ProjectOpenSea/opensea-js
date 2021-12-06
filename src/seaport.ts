@@ -872,9 +872,7 @@ export class OpenSeaPort {
 
     let transactionHash: string = '';
 
-    if (
-      isFeeWrapperStaticTarget({buy, sell})
-    ) {
+    if (isFeeWrapperStaticTarget({buy, sell})) {
       const vrs = await this._authorizeOrder(matchingOrder);
       const properlySignedMatchingOrder = { ...matchingOrder, vrs };
       transactionHash = await this._atomicMatch({
@@ -902,6 +900,7 @@ export class OpenSeaPort {
       const isOpen = await this._validateOrder(order)
       return !isOpen
     })
+
     return transactionHash
   }
 
@@ -2963,9 +2962,8 @@ export class OpenSeaPort {
         [recipient, paymentTokenAmount.toNumber()] as [string, number]
     )
 
-    const wyvernFeeWrapperArgs:
-      | WyvernFeeWrapperAtomicMatchParameters
-      | undefined = isFeeWrapperFlow
+    const wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined = 
+      isFeeWrapperFlow
       ? [args, buy.serverSignature || sell.serverSignature || '', feeDataStruct]
       : undefined
 
