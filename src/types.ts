@@ -33,37 +33,37 @@ export {
  */
 export enum EventType {
   // Transactions and signature requests
-  TransactionCreated = "TransactionCreated",
-  TransactionConfirmed = "TransactionConfirmed",
-  TransactionDenied = "TransactionDenied",
-  TransactionFailed = "TransactionFailed",
+  TransactionCreated =  "TransactionCreated",
+  TransactionConfirmed =  "TransactionConfirmed",
+  TransactionDenied =  "TransactionDenied",
+  TransactionFailed =  "TransactionFailed",
 
   // Pre-transaction events
-  InitializeAccount = "InitializeAccount",
-  WrapEth = "WrapEth",
-  UnwrapWeth = "UnwrapWeth",
-  ApproveCurrency = "ApproveCurrency",
-  ApproveAsset = "ApproveAsset",
-  ApproveAllAssets = "ApproveAllAssets",
-  UnapproveCurrency = "UnapproveCurrency",
+  InitializeAccount =  "InitializeAccount",
+  WrapEth =  "WrapEth",
+  UnwrapWeth =  "UnwrapWeth",
+  ApproveCurrency =  "ApproveCurrency",
+  ApproveAsset =  "ApproveAsset",
+  ApproveAllAssets =  "ApproveAllAssets",
+  UnapproveCurrency =  "UnapproveCurrency",
 
   // Basic actions: matching orders, creating orders, and cancelling orders
-  MatchOrders = "MatchOrders",
-  CancelOrder = "CancelOrder",
-  ApproveOrder = "ApproveOrder",
-  CreateOrder = "CreateOrder",
+  MatchOrders =  "MatchOrders",
+  CancelOrder =  "CancelOrder",
+  ApproveOrder =  "ApproveOrder",
+  CreateOrder =  "CreateOrder",
   // When the signature request for an order is denied
-  OrderDenied = "OrderDenied",
+  OrderDenied =  "OrderDenied",
 
   // When transferring one or more assets
-  TransferAll = "TransferAll",
-  TransferOne = "TransferOne",
+  TransferAll =  "TransferAll",
+  TransferOne =  "TransferOne",
 
   // When wrapping or unwrapping NFTs
-  WrapAssets = "WrapAssets",
-  UnwrapAssets = "UnwrapAssets",
-  LiquidateAssets = "LiquidateAssets",
-  PurchaseAssets = "PurchaseAssets",
+  WrapAssets =  "WrapAssets",
+  UnwrapAssets =  "UnwrapAssets",
+  LiquidateAssets =  "LiquidateAssets",
+  PurchaseAssets =  "PurchaseAssets",
 }
 
 /**
@@ -136,19 +136,19 @@ export enum SaleKind {
  * Given by the asset_contract_type in the OpenSea API
  */
 export enum AssetContractType {
-  Fungible = 'fungible',
-  SemiFungible = 'semi-fungible',
-  NonFungible = 'non-fungible',
-  Unknown = 'unknown',
+  Fungible =  'fungible',
+  SemiFungible =  'semi-fungible',
+  NonFungible =  'non-fungible',
+  Unknown =  'unknown',
 }
 
 // Wyvern Schemas (see https://github.com/ProjectOpenSea/wyvern-schemas)
 export enum WyvernSchemaName {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721',
-  ERC1155 = 'ERC1155',
-  LegacyEnjin = 'Enjin',
-  ENSShortNameAuction = 'ENSShortNameAuction',
+  ERC20 =  'ERC20',
+  ERC721 =  'ERC721',
+  ERC1155 =  'ERC1155',
+  LegacyEnjin =  'Enjin',
+  ENSShortNameAuction =  'ENSShortNameAuction',
   // CryptoPunks = 'CryptoPunks'
 }
 
@@ -165,18 +165,18 @@ export enum WyvernSchemaName {
  * locked: When the transfer function has been locked by the dev
  */
 export enum TokenStandardVersion {
-  Unsupported = 'unsupported',
-  Locked = 'locked',
-  Enjin = '1155-1.0',
-  ERC721v1 = '1.0',
-  ERC721v2 = '2.0',
-  ERC721v3 = '3.0',
+  Unsupported =  'unsupported',
+  Locked =  'locked',
+  Enjin =  '1155-1.0',
+  ERC721v1 =  '1.0',
+  ERC721v2 =  '2.0',
+  ERC721v3 =  '3.0',
 }
 
 export enum WyvernAssetLocation {
-  Account = 'account',
-  Proxy = 'proxy',
-  Other = 'other'
+  Account =  'account',
+  Proxy =  'proxy',
+  Other =  'other'
 }
 
 export interface WyvernNFTAsset {
@@ -199,7 +199,9 @@ export interface WyvernBundle {
   external_link?: string
 }
 
-export type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<(number | BigNumber)>, string, string, string, string, string, string, Array<(number | BigNumber)>, string[]]
+export type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<(number | BigNumber)>, string , string , string , string , string , string , Array<(number | BigNumber)>, string []]
+
+export type WyvernFeeWrapperAtomicMatchParameters = [atomicMatchParams: WyvernAtomicMatchParameters, serverSignature: string , feeData: Array<[string, number ]>]
 
 /**
  * The OpenSea account object appended to orders, providing extra metadata, profile images and usernames
@@ -229,13 +231,13 @@ export interface Asset {
   // The asset's token ID, or null if ERC-20
   tokenId: string | null,
   // The asset's contract address
-  tokenAddress: string,
+  tokenAddress: string ,
   // The Wyvern schema name (e.g. "ERC721") for this asset
   schemaName?: WyvernSchemaName,
   // The token standard version of this asset
   version?: TokenStandardVersion,
   // Optional for ENS names
-  name?: string,
+  name?: string ,
   // Optional for fungible items
   decimals?: number
 }
@@ -267,7 +269,7 @@ export interface OpenSeaAssetContract extends OpenSeaFees {
   // Object with stats about the contract
   stats?: object
   // Array of trait types for the contract
-  traits?: object[]
+  traits?: object []
   // Link to the contract's main website
   externalLink?: string
   // Link to the contract's wiki, if available
@@ -275,12 +277,12 @@ export interface OpenSeaAssetContract extends OpenSeaFees {
 }
 
 interface NumericalTraitStats {
-  min: number,
+  min: number ,
   max: number
 }
 
 interface StringTraitStats {
-  [key: string]: number,
+  [key: string ]: number ,
 }
 
 /**
@@ -292,7 +294,7 @@ export interface OpenSeaCollection extends OpenSeaFees {
   // Slug, used in URL
   slug: string
   // Accounts allowed to edit this collection
-  editors: string[]
+  editors: string []
   // Whether this collection is hidden from the homepage
   hidden: boolean
   // Whether this collection is featured
@@ -311,11 +313,11 @@ export interface OpenSeaCollection extends OpenSeaFees {
   // Object with stats about the collection
   stats: object
   // Data about displaying cards
-  displayData: object,
+  displayData: object ,
   // Tokens allowed for this collection
   paymentTokens: OpenSeaFungibleToken[]
   // Address for dev fee payouts
-  payoutAddress?: string,
+  payoutAddress?: string ,
   // Array of trait types for the collection
   traitStats: OpenSeaTraitStats,
   // Link to the collection's main website
@@ -325,7 +327,7 @@ export interface OpenSeaCollection extends OpenSeaFees {
 }
 
 export interface OpenSeaTraitStats {
-  [traitName: string]: NumericalTraitStats | StringTraitStats
+  [traitName: string ]: NumericalTraitStats | StringTraitStats
 }
 
 /**
@@ -363,7 +365,7 @@ export interface OpenSeaAsset extends Asset {
   // Link to token on dapp's site
   externalLink: string
   // Array of traits on this token
-  traits: object[],
+  traits: object [],
   // Number of times this token has been traded (sold)
   numSales: number
   // Data about the last time this token was sold
@@ -404,26 +406,26 @@ export interface AssetEvent {
  * Defines set of possible auctions types
  */
 export enum AuctionType {
-  Dutch = 'dutch',
-  English = 'english',
-  MinPrice = 'min_price',
+  Dutch =  'dutch',
+  English =  'english',
+  MinPrice =  'min_price',
 }
 
 /**
  * Defines the possible types of asset events that can take place
  */
 export enum AssetEventType {
-  AuctionCreated = 'created',
-  AuctionSuccessful = 'successful',
-  AuctionCancelled = 'cancelled',
-  OfferEntered = 'offer_entered',
-  BidEntered = 'bid_entered',
-  BidWithdraw = 'bid_withdraw',
-  AssetTransfer = 'transfer',
-  AssetApprove = 'approve',
-  CompositionCreated = 'composition_created',
-  Custom = 'custom',
-  Payout = 'payout',
+  AuctionCreated =  'created',
+  AuctionSuccessful =  'successful',
+  AuctionCancelled =  'cancelled',
+  OfferEntered =  'offer_entered',
+  BidEntered =  'bid_entered',
+  BidWithdraw =  'bid_withdraw',
+  AssetTransfer =  'transfer',
+  AssetApprove =  'approve',
+  CompositionCreated =  'composition_created',
+  Custom =  'custom',
+  Payout =  'payout',
 }
 
 /**
@@ -576,6 +578,10 @@ export interface UnsignedOrder extends UnhashedOrder {
   hash: string
 }
 
+type FeeData = Array<{
+  recipient: string
+  paymentTokenAmount: BigNumber
+}>
 /**
  * Orders don't need to be signed if they're pre-approved
  * with a transaction on the contract to approveOrder_
@@ -593,6 +599,8 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
   markedInvalid?: boolean
   asset?: OpenSeaAsset
   assetBundle?: OpenSeaAssetBundle
+  serverSignature?: string
+  feeData?: FeeData
 }
 
 /**
@@ -645,10 +653,10 @@ export interface OrderJSON extends Partial<ECSignature> {
  * full docs.
  */
 export interface OrderQuery extends Partial<OrderJSON> {
-  owner?: string,
+  owner?: string ,
   sale_kind?: SaleKind,
-  asset_contract_address?: string,
-  payment_token_address?: string,
+  asset_contract_address?: string ,
+  payment_token_address?: string ,
   is_english?: boolean
   is_expired?: boolean
   bundled?: boolean
@@ -706,8 +714,8 @@ export type TxnCallback = (result: boolean) => void
 export interface PartialAbiDefinition {
   type: Web3.AbiType | string // Not Partial!
   name?: string
-  inputs?: object[]
-  outputs?: object[]
+  inputs?: object []
+  outputs?: object []
   payable?: boolean
   constant?: boolean
   anonymous?: boolean

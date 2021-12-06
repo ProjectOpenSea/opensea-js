@@ -43,7 +43,7 @@ import {
   MAX_ERROR_LENGTH,
   requireOrderCalldataCanMatch, requireOrdersCanMatch
 } from './debugging'
-import { Asset, ComputedFees, ECSignature, EventData, EventType, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OpenSeaAsset, OpenSeaFungibleToken, Order, OrderSide, PartialReadonlyContractAbi, SaleKind, TokenStandardVersion, UnhashedOrder, UnsignedOrder, WyvernAsset, WyvernAtomicMatchParameters, WyvernFTAsset, WyvernNFTAsset, WyvernSchemaName } from './types'
+import { Asset, ComputedFees, ECSignature, EventData, EventType, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OpenSeaAsset, OpenSeaFungibleToken, Order, OrderSide, PartialReadonlyContractAbi, SaleKind, TokenStandardVersion, UnhashedOrder, UnsignedOrder, WyvernAsset, WyvernAtomicMatchParameters, WyvernFTAsset, WyvernNFTAsset, WyvernSchemaName, WyvernFeeWrapperAtomicMatchParameters } from './types'
 import {
   encodeAtomicizedBuy,
   encodeAtomicizedSell, encodeAtomicizedTransfer, encodeBuy, encodeCall, encodeProxyCall, encodeSell, encodeTransferCall
@@ -2904,7 +2904,7 @@ export class OpenSeaPort {
       { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH }:
       { buy: Order; sell: Order; accountAddress: string; metadata?: string }
     ) {
-    let value
+    let value: BigNumber | undefined = undefined
     let shouldValidateBuy = true
     let shouldValidateSell = true
 
@@ -2956,20 +2956,29 @@ export class OpenSeaPort {
       ]
     ]
 
-    const isFeeWrapperFlow = isFeeWrapperStaticTarget({ buy, sell });
+    const isFeeWrapperFlow = isFeeWrapperStaticTarget({ buy, sell })
 
-    const wyvernFeeWrapperArgs: [WyvernAtomicMatchParameters, string, [string, number][]] = [
-      args,
-      "dummy sig",
-      [["dummy fee recipient", 1]]
-    ];
+    const feeDataStruct = (buy.feeData || sell.feeData || []).map(
+      ({ recipient, paymentTokenAmount }) =>
+        [recipient, paymentTokenAmount.toNumber()] as [string, number]
+    )
+
+    const wyvernFeeWrapperArgs:
+      | WyvernFeeWrapperAtomicMatchParameters
+      | undefined = isFeeWrapperFlow
+      ? [args, buy.serverSignature || sell.serverSignature || '', feeDataStruct]
+      : undefined
 
     const atomicMatchEstimateGas = async (): Promise<number> => {
-      return isFeeWrapperFlow
+      return isFeeWrapperFlow && wyvernFeeWrapperArgs
         ? estimateGas(this.web3ReadOnly, {
             from: accountAddress,
             to: STATIC_CALL_FEE_WRAPPER_ADDRESS,
-            data: encodeCall(getMethod(WyvernFeeWrapper, 'atomicMatch_'), wyvernFeeWrapperArgs),
+            data: encodeCall(
+              getMethod(WyvernFeeWrapper, 'atomicMatch_'),
+              wyvernFeeWrapperArgs
+            ),
+            value,
           })
         : await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
             args[0],
@@ -2984,12 +2993,26 @@ export class OpenSeaPort {
             args[9],
             args[10],
             txnData
-          );
-    };
+          )
+    }
 
     const submitAtomicMatchTransaction = async (): Promise<string> => {
-      return isFeeWrapperFlow
-        ? Promise.resolve('')
+      return isFeeWrapperFlow && wyvernFeeWrapperArgs
+        ? sendRawTransaction(
+            this.web3,
+            {
+              from: accountAddress,
+              to: STATIC_CALL_FEE_WRAPPER_ADDRESS,
+              data: encodeCall(
+                getMethod(WyvernFeeWrapper, 'atomicMatch_'),
+                wyvernFeeWrapperArgs
+              ),
+              value,
+            },
+            (error) => {
+              throw error;
+            }
+          )
         : await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(
             args[0],
             args[1],
@@ -3003,8 +3026,8 @@ export class OpenSeaPort {
             args[9],
             args[10],
             txnData
-          );
-    };
+          )
+    }
 
     // Estimate gas first
     try {
