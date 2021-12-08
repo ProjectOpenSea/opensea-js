@@ -233,7 +233,7 @@ const offer = await seaport.createBuyOrder({
 })
 ```
 #### Offer Limits
-Note: The total value of buy orders must not exceed 100 x wallet balance.
+Note: The total value of buy orders must not exceed 10000 x wallet balance.
 
 ### Making Listings / Selling Items
 
