@@ -32,6 +32,11 @@ const assetsForBundleOrder = [
   { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS, quantity: 1 },
 ]
 
+const assetsForBundleOrderERC721v3 = [
+  { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS, quantity: 1, schemaName: WyvernSchemaName.ERC721v3 },
+  { tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(), tokenAddress: DIGITAL_ART_CHAIN_ADDRESS, quantity: 1, schemaName: WyvernSchemaName.ERC721v3 },
+]
+
 const fungibleAssetsForBundleOrder = [
   { tokenAddress: BENZENE_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20, quantity: 20 },
   { tokenAddress: GODS_UNCHAINED_CHEST_ADDRESS, tokenId: null, schemaName: WyvernSchemaName.ERC20, quantity: 1 },
@@ -53,7 +58,7 @@ let manaAddress: string
 suite('seaport: bundles', () => {
 
   before(async () => {
-    manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0].address
+    manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA' })).tokens[0].address
   })
 
   test('Matches heterogenous bundle buy order', async () => {
@@ -146,6 +151,39 @@ suite('seaport: bundles', () => {
     await testMatchingNewOrder(order, takerAddress)
   })
 
+
+  test('Matches fixed heterogenous bountied bundle sell order ERC721v3', async () => {
+    const accountAddress = ALEX_ADDRESS
+    const takerAddress = ALEX_ADDRESS
+    const amountInEth = 1
+    const bountyPercent = 1.5
+
+    const order = await client._makeBundleSellOrder({
+      bundleName: "Test Bundle",
+      bundleDescription: "This is a test with different types of assets",
+      assets: assetsForBundleOrderERC721v3,
+      quantities: [1, 1],
+      accountAddress,
+      startAmount: amountInEth,
+      extraBountyBasisPoints: bountyPercent * 100,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false,
+      buyerAddress: NULL_ADDRESS
+    })
+
+    assert.equal(order.paymentToken, NULL_ADDRESS)
+    assert.equal(order.basePrice.toNumber(), Math.pow(10, 18) * amountInEth)
+    assert.equal(order.extra.toNumber(), 0)
+    assert.equal(order.expirationTime.toNumber(), 0)
+    testBundleMetadata(order, WyvernSchemaName.ERC721v3)
+    testFeesMakerOrder(order, undefined, bountyPercent * 100)
+
+    await client._sellOrderValidationAndApprovals({ order, accountAddress })
+    // Make sure match is valid
+    await testMatchingNewOrder(order, takerAddress)
+  })
+
   test('Matches homogenous, bountied bundle sell order', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
@@ -186,7 +224,7 @@ suite('seaport: bundles', () => {
   test('Matches a new bundle sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS
-    const token = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0]
+    const token = (await client.api.getPaymentTokens({ symbol: 'MANA' })).tokens[0]
     const amountInToken = 2.422
 
     const order = await client._makeBundleSellOrder({
@@ -366,7 +404,7 @@ suite('seaport: bundles', () => {
     // Make sure match is valid
     await testMatchingNewOrder(order, takerAddress)
   })
-  
+
   test('Matches bundle buy order for misordered assets with different schemas', async () => {
     const accountAddress = ALEX_ADDRESS_2
     const takerAddress = ALEX_ADDRESS

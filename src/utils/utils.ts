@@ -107,6 +107,7 @@ export const annotateERC20TransferABI = (asset: WyvernFTAsset): AnnotatedFunctio
 
 const SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE: {[key in WyvernSchemaName]: AssetContractType} = {
   [WyvernSchemaName.ERC721]: AssetContractType.NonFungible,
+  [WyvernSchemaName.ERC721v3]: AssetContractType.NonFungible,
   [WyvernSchemaName.ERC1155]: AssetContractType.SemiFungible,
   [WyvernSchemaName.ERC20]: AssetContractType.Fungible,
   [WyvernSchemaName.LegacyEnjin]: AssetContractType.SemiFungible,

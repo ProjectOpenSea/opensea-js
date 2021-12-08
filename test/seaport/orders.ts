@@ -55,8 +55,8 @@ let daiAddress: string
 suite('seaport: orders', () => {
 
   before(async () => {
-    daiAddress = (await client.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0].address
-    manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0].address
+    daiAddress = (await client.api.getPaymentTokens({ symbol: 'DAI' })).tokens[0].address
+    manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA' })).tokens[0].address
   })
 
   ordersJSON.map((orderJSON: OrderJSON, index: number) => {
@@ -407,6 +407,104 @@ suite('seaport: orders', () => {
     await client._sellOrderValidationAndApprovals({ order: sellOrder, accountAddress: takerAddress })
   })
 
+
+  test('Ensures ERC721v3 buy order compatibility with an English sell order', async () => {
+    const accountAddress = ALEX_ADDRESS_2
+    const takerAddress = ALEX_ADDRESS
+    const paymentTokenAddress = WETH_ADDRESS
+    const amountInToken = 0.01
+    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24) // one day from now
+    const extraBountyBasisPoints = 1.1 * 100
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
+
+    const sellOrder = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      quantity: 1,
+      accountAddress: takerAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress,
+      expirationTime,
+      extraBountyBasisPoints,
+      buyerAddress: NULL_ADDRESS,
+      waitForHighestBid: true,
+    })
+
+    const buyOrder = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721v3 },
+      quantity: 1,
+      accountAddress,
+      paymentTokenAddress,
+      startAmount: amountInToken,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      sellOrder,
+    })
+
+    testFeesMakerOrder(buyOrder, asset.collection)
+    assert.equal(sellOrder.taker, NULL_ADDRESS)
+    assert.equal(buyOrder.taker, sellOrder.maker)
+    assert.equal(buyOrder.makerRelayerFee.toNumber(), sellOrder.makerRelayerFee.toNumber())
+    assert.equal(buyOrder.takerRelayerFee.toNumber(), sellOrder.takerRelayerFee.toNumber())
+    assert.equal(buyOrder.makerProtocolFee.toNumber(), sellOrder.makerProtocolFee.toNumber())
+    assert.equal(buyOrder.takerProtocolFee.toNumber(), sellOrder.takerProtocolFee.toNumber())
+
+    await client._buyOrderValidationAndApprovals({ order: buyOrder, accountAddress })
+    await client._sellOrderValidationAndApprovals({ order: sellOrder, accountAddress: takerAddress })
+  })
+
+
+  test('Ensures buy order compatibility with an ERC721v3 English sell order', async () => {
+    const accountAddress = ALEX_ADDRESS_2
+    const takerAddress = ALEX_ADDRESS
+    const paymentTokenAddress = WETH_ADDRESS
+    const amountInToken = 0.01
+    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24) // one day from now
+    const extraBountyBasisPoints = 1.1 * 100
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString()
+    const tokenAddress = MYTHEREUM_ADDRESS
+
+    const asset = await client.api.getAsset({ tokenAddress, tokenId })
+
+    const sellOrder = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721v3 },
+      quantity: 1,
+      accountAddress: takerAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress,
+      expirationTime,
+      extraBountyBasisPoints,
+      buyerAddress: NULL_ADDRESS,
+      waitForHighestBid: true,
+    })
+
+    const buyOrder = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId },
+      quantity: 1,
+      accountAddress,
+      paymentTokenAddress,
+      startAmount: amountInToken,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      sellOrder,
+    })
+
+    testFeesMakerOrder(buyOrder, asset.collection)
+    assert.equal(sellOrder.taker, NULL_ADDRESS)
+    assert.equal(buyOrder.taker, sellOrder.maker)
+    assert.equal(buyOrder.makerRelayerFee.toNumber(), sellOrder.makerRelayerFee.toNumber())
+    assert.equal(buyOrder.takerRelayerFee.toNumber(), sellOrder.takerRelayerFee.toNumber())
+    assert.equal(buyOrder.makerProtocolFee.toNumber(), sellOrder.makerProtocolFee.toNumber())
+    assert.equal(buyOrder.takerProtocolFee.toNumber(), sellOrder.takerProtocolFee.toNumber())
+
+    await client._buyOrderValidationAndApprovals({ order: buyOrder, accountAddress })
+    await client._sellOrderValidationAndApprovals({ order: sellOrder, accountAddress: takerAddress })
+  })
+
   test.skip("Creates ENS name buy order", async () => {
     const paymentTokenAddress = WETH_ADDRESS
     const buyOrder = await rinkebyClient._makeBuyOrder({
@@ -568,7 +666,7 @@ suite('seaport: orders', () => {
   test('Matches a new bountied sell order for an ERC-20 token (MANA)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
-    const paymentToken = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0]
+    const paymentToken = (await client.api.getPaymentTokens({ symbol: 'MANA' })).tokens[0]
     const amountInToken = 5000
     const bountyPercent = 1
 
@@ -603,7 +701,7 @@ suite('seaport: orders', () => {
   test('Matches a buy order with an ERC-20 token (DAI)', async () => {
     const accountAddress = ALEX_ADDRESS
     const takerAddress = ALEX_ADDRESS_2
-    const paymentToken = (await client.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0]
+    const paymentToken = (await client.api.getPaymentTokens({ symbol: 'DAI' })).tokens[0]
     const amountInToken = 3
 
     const tokenId = CK_TOKEN_ID.toString()
@@ -751,7 +849,7 @@ suite('seaport: orders', () => {
   })
 
   test.skip('Matches first buy order in book', async () => {
-    const order = await client.api.getOrder({side: OrderSide.Buy})
+    const order = await client.api.getOrder({ side: OrderSide.Buy })
     assert.isNotNull(order)
     if (!order) {
       return
@@ -791,7 +889,7 @@ suite('seaport: orders', () => {
 
 export async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch = false, referrerAddress?: string) {
   // Test a separate recipient for sell orders
-  const recipientAddress = order.side === OrderSide.Sell ?  ALEX_ADDRESS_2 : accountAddress
+  const recipientAddress = order.side === OrderSide.Sell ? ALEX_ADDRESS_2 : accountAddress
   const matchingOrder = client._makeMatchingOrder({
     order,
     accountAddress,
@@ -880,9 +978,9 @@ export async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, account
   assert.isTrue(isValid)
 
   // Make sure assets are transferrable
-  await Promise.all(getAssetsAndQuantities(order).map(async ({asset, quantity}) => {
+  await Promise.all(getAssetsAndQuantities(order).map(async ({ asset, quantity }) => {
     const fromAddress = sell.maker
-    const toAddress =  buy.maker
+    const toAddress = buy.maker
     const useProxy = asset.tokenAddress === CK_ADDRESS || asset.schemaName === WyvernSchemaName.ERC20
     const isTransferrable = await client.isAssetTransferrable({
       asset,
@@ -896,13 +994,13 @@ export async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, account
 }
 
 function getAssetsAndQuantities(
-    order: Order | UnsignedOrder | UnhashedOrder
-  ): Array<{ asset: Asset, quantity: BigNumber }> {
+  order: Order | UnsignedOrder | UnhashedOrder
+): Array<{ asset: Asset, quantity: BigNumber }> {
 
   const wyAssets = 'bundle' in order.metadata
     ? order.metadata.bundle.assets
     : order.metadata.asset
-      ? [ order.metadata.asset ]
+      ? [order.metadata.asset]
       : []
   const schemaNames = 'bundle' in order.metadata && 'schemas' in order.metadata.bundle
     ? order.metadata.bundle.schemas
