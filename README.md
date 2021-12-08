@@ -734,10 +734,10 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 
 ## Diagnosing Common Issues
 
-* Is the `expirationTime` in future?  If not, change it to a time in the future.
+* Is the `expirationTime` in the future?  If not, change it to a time in the future.
 
 * Are the input addresses all strings? If not, convert them to strings.
 
 * Is your computer's internal clock accurate? If not, try enabling automatic clock adjustment locally or following [this tutorial](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html) to update an Amazon EC2 instance.
 
-* Are you attempting to purchase a token that's unpurchasable on [OpenSea](https://opensea.io/)?  If so, contact us [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel and we'll help to diagnose the issue.
+* Are you attempting to purchase a token that's unpurchasable on [OpenSea](https://opensea.io/)?  If so, contact us [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel and we'll help diagnose the issue.
