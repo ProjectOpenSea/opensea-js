@@ -2535,6 +2535,7 @@ export class OpenSeaPort {
       }
       switch (schemaName) {
         case WyvernSchemaName.ERC721:
+        case WyvernSchemaName.ERC721v3:
         case WyvernSchemaName.ERC1155:
         case WyvernSchemaName.LegacyEnjin:
         case WyvernSchemaName.ENSShortNameAuction:

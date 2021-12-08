@@ -113,6 +113,7 @@ export declare enum AssetContractType {
 export declare enum WyvernSchemaName {
     ERC20 = "ERC20",
     ERC721 = "ERC721",
+    ERC721v3 = "ERC721v3",
     ERC1155 = "ERC1155",
     LegacyEnjin = "Enjin",
     ENSShortNameAuction = "ENSShortNameAuction"

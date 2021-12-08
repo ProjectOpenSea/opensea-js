@@ -36,7 +36,7 @@ let manaAddress: string
 suite('seaport: owners and transfers', () => {
 
   before(async () => {
-    manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0].address
+    manaAddress = (await client.api.getPaymentTokens({ symbol: 'MANA' })).tokens[0].address
   })
 
   test("On-chain ownership throws for invalid assets", async () => {
@@ -127,11 +127,24 @@ suite('seaport: owners and transfers', () => {
     assert.isFalse(isOwner4)
   })
 
+  test('ERC-721v2 asset locked in contract is not transferrable', async () => {
+    const isTransferrable = await client.isAssetTransferrable({
+      asset: {
+        tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
+        tokenAddress: GODS_UNCHAINED_ADDRESS,
+      },
+      fromAddress: ALEX_ADDRESS,
+      toAddress: ALEX_ADDRESS_2
+    })
+    assert.isNotTrue(isTransferrable)
+  })
+
   test('ERC-721v3 asset locked in contract is not transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
       asset: {
         tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
         tokenAddress: GODS_UNCHAINED_ADDRESS,
+        schemaName: WyvernSchemaName.ERC721v3
       },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2
@@ -144,6 +157,7 @@ suite('seaport: owners and transfers', () => {
       asset: {
         tokenId: "1",
         tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+        schemaName: WyvernSchemaName.ERC721v3
       },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2
@@ -156,6 +170,19 @@ suite('seaport: owners and transfers', () => {
       asset: {
         tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
         tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+        schemaName: WyvernSchemaName.ERC721v3
+      },
+      fromAddress: ALEX_ADDRESS,
+      toAddress: ALEX_ADDRESS_2
+    })
+    assert.isTrue(isTransferrable)
+  })
+
+  test('ERC-721 v2 asset owned by fromAddress is transferrable', async () => {
+    const isTransferrable = await client.isAssetTransferrable({
+      asset: {
+        tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
+        tokenAddress: DIGITAL_ART_CHAIN_ADDRESS
       },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2
