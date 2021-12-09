@@ -699,7 +699,7 @@ export interface OrderbookResponse {
 
 
 // Array of tuples (feeRecipient, feeAmount)
-type FeeData = [string, string][]
+type FeeData = Array<[string, string]>
 
 export interface OrderFulfillmentDataResponse {
   fulfillmentData: {

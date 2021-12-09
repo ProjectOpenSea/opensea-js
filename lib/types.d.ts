@@ -72,6 +72,7 @@ export interface OpenSeaAPIConfig {
     networkName?: Network;
     apiKey?: string;
     apiBaseUrl?: string;
+    useReadOnlyProvider?: boolean;
     gasPrice?: BigNumber;
 }
 /**
@@ -493,6 +494,13 @@ export declare type FungibleTokenQuery = OpenSeaFungibleTokenQuery;
 export interface OrderbookResponse {
     orders: OrderJSON[];
     count: number;
+}
+declare type FeeData = Array<[string, string]>;
+export interface OrderFulfillmentDataResponse {
+    fulfillmentData: {
+        feeData: FeeData;
+        serverSignature: string;
+    };
 }
 export declare type Web3Callback<T> = (err: Error | null, result: T) => void;
 export declare type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>;

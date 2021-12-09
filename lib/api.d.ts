@@ -1,5 +1,5 @@
 import 'isomorphic-unfetch';
-import { OpenSeaAPIConfig, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaAssetBundleQuery, OpenSeaAssetQuery, OpenSeaFungibleToken, OpenSeaFungibleTokenQuery, Order, OrderJSON, OrderQuery } from './types';
+import { OpenSeaAPIConfig, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaAssetBundleQuery, OpenSeaAssetQuery, OpenSeaFungibleToken, OpenSeaFungibleTokenQuery, Order, OrderFulfillmentDataResponse, OrderJSON, OrderQuery } from './types';
 export declare class OpenSeaAPI {
     /**
      * Host url for OpenSea
@@ -60,6 +60,11 @@ export declare class OpenSeaAPI {
         orders: Order[];
         count: number;
     }>;
+    /**
+     * Get server signature and fee data for submitting an atomic match
+     * using the Wyvern fee wrapper
+     */
+    getOrderFulfillmentData(orderHash: string): Promise<OrderFulfillmentDataResponse>;
     /**
      * Fetch an asset from the API, throwing if none is found
      * @param tokenAddress Address of the asset's contract

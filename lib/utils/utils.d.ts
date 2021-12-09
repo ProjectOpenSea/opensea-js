@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { WyvernProtocol } from 'wyvern-js';
 import * as Web3 from 'web3';
-import { AnnotatedFunctionABI, Schema } from 'wyvern-schemas/dist/types';
+import { AnnotatedFunctionABI, Network, Schema } from 'wyvern-schemas/dist/types';
 import { Asset, AssetEvent, ECSignature, OpenSeaAccount, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaAssetContract, OpenSeaCollection, OpenSeaFungibleToken, OpenSeaUser, Order, OrderJSON, Transaction, UnhashedOrder, UnsignedOrder, Web3Callback, WyvernAsset, WyvernBundle, WyvernFTAsset, WyvernNFTAsset } from '../types';
 export { WyvernProtocol };
 export declare const annotateERC721TransferABI: (asset: WyvernNFTAsset) => AnnotatedFunctionABI;
@@ -159,3 +159,7 @@ export declare function onDeprecated(msg: string): void;
  * @param erc721Contract contract to check
  */
 export declare function getNonCompliantApprovalAddress(erc721Contract: Web3.ContractInstance, tokenId: string, accountAddress: string): Promise<string | undefined>;
+export declare const isFeeWrapperFlow: ({ buy, sell, }: {
+    buy: Order;
+    sell: Order;
+}, network: Network) => boolean;
