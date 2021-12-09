@@ -19,6 +19,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Making Offers](#making-offers)
     - [Bidding on Multiple Assets](#bidding-on-multiple-assets)
     - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
+    - [Offer Limits](#offer-limits)
   - [Making Listings / Selling Items](#making-listings--selling-items)
     - [Creating English Auctions](#creating-english-auctions)
   - [Running Crowdsales](#running-crowdsales)
@@ -26,11 +27,6 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
   - [Transferring Items or Coins (Gifting)](#transferring-items-or-coins-gifting)
-- [Affiliate Program](#affiliate-program)
-  - [Referring Listings](#referring-listings)
-  - [Referring Offers](#referring-offers)
-  - [Custom Affiliate Programs](#custom-affiliate-programs)
-  - [Custom Referral Bounties](#custom-referral-bounties)
 - [Advanced](#advanced)
   - [Scheduling Future Listings](#scheduling-future-listings)
   - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
@@ -236,6 +232,8 @@ const offer = await seaport.createBuyOrder({
   startAmount: 1.2,
 })
 ```
+#### Offer Limits
+Note: The total value of buy orders must not exceed 10000 x wallet balance.
 
 ### Making Listings / Selling Items
 
@@ -447,75 +445,6 @@ const transactionHash = await seaport.transfer({
 ```
 
 For more information, check out the documentation for WyvernSchemas on https://projectopensea.github.io/opensea-js/.
-
-## Affiliate Program
-
-OpenSea.js allows to you easily create an affiliate program in just a few lines of JavaScript! It's the crypto-equivalent of bounty hunting, and best of all, it's **fully paid for by OpenSea** so you can keep all of your winnings 💰
-
-If you want to be an affiliate, you can use this to **win at least 1%** of the sale price of any listing, both for assets and bundles.
-
-### Referring Listings
-
-You can instantly create an affiliate program for your assets by just passing in one more parameter when fulfilling orders... **and OpenSea will pay for it!** Whenever someone refers a sale or the acceptance of an offer, you can add a `referrerAddress` to give their wallet credit:
-
-```JavaScript
-const referrerAddress = "0x..." // The referrer's wallet address
-await this.props.seaport.fulfillOrder({ order, accountAddress, referrerAddress })
-```
-
-This works for buying assets and bundles, along with accepting bids that had no referrer attached to them (see below).
-
-As long as the referrer hasn't referred the buyer before, OpenSea will send the referrer an email congratulating them, along with **1%** of the item's sale price. If you'd like to be able to refer the same user for multiple purchases, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)).
-
-### Referring Offers
-
-Now you can also refer offers on assets! When the seller accepts the offer, the referrer will get credit:
-
-```JavaScript
-const referrerAddress = "0x..." // The referrer's wallet address
-await this.props.seaport.createBuyOrder({
-  asset: {
-    tokenId,
-    tokenAddress,
-  },
-  accountAddress, // Address of the bidder
-  startAmount: 1.2,
-  referrerAddress // Address of the referrer
-})
-```
-
-The same thing works for `createBundleBuyOrder`.
-
-### Custom Affiliate Programs
-
-You can use `createBuyOrder({ referrerAddress })` to create your own affiliate programs as well.
-
-When buyers place offers or bids on an asset, the referrers will automatically be recorded on OpenSea.io. Then, you can use the [Orderbook API](https://docs.opensea.io/reference#retrieving-orders) to inspect the `metadata` for orders and manually pay out referrers if you want to. The referrer will be labeled as `referrerAddress` in the `metadata` field.
-
-### Custom Referral Bounties
-
-Sellers can customize the bounties they add to their items when listing them for sale. By default, OpenSea will pay referrers 1% and sellers pay them nothing, but sellers can increase this up to the full OpenSea fee (currently 2.5% for most assets) for both assets and bundles:
-
-```JavaScript
-// Price the Genesis CryptoKitty at 100 ETH
-const startAmount = 100
-// Reward referrers with 10% of the final sale price,
-// or 10 ETH in this case
-const extraBountyPercent = 10
-// The final bounty will be 10% + 1% from OpenSea, or 11 ETH!
-
-const auction = await seaport.createSellOrder({
-  tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
-  tokenId: "1", // Token ID
-  accountAddress: OWNERS_WALLET_ADDRESS,
-  startAmount,
-  extraBountyBasisPoints: extraBountyPercent * 100
-})
-```
-
-**NOTE:** The final bounty in the example above will be 10% from the seller plus 1% from OpenSea, or 11 ETH in total!
-
-Developers can request to increase the OpenSea fee to allow for higher bounties - by default, it's capped at 2.5%. If you have any questions, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or join the program at https://opensea.io/account#referrals.
 
 ## Advanced
 
@@ -805,10 +734,10 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 
 ## Diagnosing Common Issues
 
-* Is the `expirationTime` in future?  If not, change it to a time in the future.
+* Is the `expirationTime` in the future?  If not, change it to a time in the future.
 
 * Are the input addresses all strings? If not, convert them to strings.
 
 * Is your computer's internal clock accurate? If not, try enabling automatic clock adjustment locally or following [this tutorial](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html) to update an Amazon EC2 instance.
 
-* Are you attempting to purchase a token that's unpurchasable on [OpenSea](https://opensea.io/)?  If so, contact us [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel and we'll help to diagnose the issue.
+* Are you attempting to purchase a token that's unpurchasable on [OpenSea](https://opensea.io/)?  If so, contact us [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel and we'll help diagnose the issue.

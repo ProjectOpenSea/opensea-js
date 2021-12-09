@@ -331,7 +331,7 @@ export declare class OpenSeaPort {
      * Requires an account to be initialized first.
      * Called internally, but exposed for dev flexibility.
      * Checks to see if already approved, first. Then tries different approval methods from best to worst.
-     * @param param0 __namedParamters Object
+     * @param param0 __namedParameters Object
      * @param tokenId Token id to approve, but only used if approve-all isn't
      *  supported by the token contract
      * @param tokenAddress The contract address of the token being approved
@@ -357,7 +357,7 @@ export declare class OpenSeaPort {
      * Approve a fungible token (e.g. W-ETH) for use in trades.
      * Called internally, but exposed for dev flexibility.
      * Checks to see if the minimum amount is already approved, first.
-     * @param param0 __namedParamters Object
+     * @param param0 __namedParameters Object
      * @param accountAddress The user's wallet address
      * @param tokenAddress The contract address of the token being approved
      * @param proxyAddress The user's proxy address. If unspecified, uses the Wyvern token transfer proxy address.
@@ -375,7 +375,7 @@ export declare class OpenSeaPort {
      * Called internally, but exposed for dev flexibility.
      * Useful for old ERC20s that require a 0 approval count before
      * changing the count
-     * @param param0 __namedParamters Object
+     * @param param0 __namedParameters Object
      * @param accountAddress The user's wallet address
      * @param tokenAddress The contract address of the token being approved
      * @param proxyAddress The user's proxy address. If unspecified, uses the Wyvern token transfer proxy address.
@@ -396,7 +396,7 @@ export declare class OpenSeaPort {
      * An order may not be fulfillable if a target item's transfer function
      * is locked for some reason, e.g. an item is being rented within a game
      * or trading has been locked for an item type.
-     * @param param0 __namedParamters Object
+     * @param param0 __namedParameters Object
      * @param order Order to check
      * @param accountAddress The account address that will be fulfilling the order
      * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
@@ -413,7 +413,7 @@ export declare class OpenSeaPort {
      * An asset may not be transferrable if its transfer function
      * is locked for some reason, e.g. an item is being rented within a game
      * or trading has been locked for an item type.
-     * @param param0 __namedParamters Object
+     * @param param0 __namedParameters Object
      * @param tokenId DEPRECATED: Token ID. Use `asset` instead.
      * @param tokenAddress DEPRECATED: Address of the token's contract. Use `asset` instead.
      * @param asset The asset to trade
@@ -463,7 +463,7 @@ export declare class OpenSeaPort {
     }): Promise<string>;
     /**
      * Get known payment tokens (ERC-20) that match your filters.
-     * @param param0 __namedParamters Object
+     * @param param0 __namedParameters Object
      * @param symbol Filter by the ERC-20 symbol for the token,
      *    e.g. "DAI" for Dai stablecoin
      * @param address Filter by the ERC-20 contract address for the token,
@@ -586,7 +586,7 @@ export declare class OpenSeaPort {
      * For a fungible token to use in trades (like W-ETH), get the amount
      *  approved for use by the Wyvern transfer proxy.
      * Internal method exposed for dev flexibility.
-     * @param param0 __namedParamters Object
+     * @param param0 __namedParameters Object
      * @param accountAddress Address for the user's wallet
      * @param tokenAddress Address for the token's contract
      * @param proxyAddress User's proxy address. If undefined, uses the token transfer proxy address
@@ -669,7 +669,7 @@ export declare class OpenSeaPort {
     }): UnsignedOrder;
     /**
      * Validate against Wyvern that a buy and sell order can match
-     * @param param0 __namedParamters Object
+     * @param param0 __namedParameters Object
      * @param buy The buy order to validate
      * @param sell The sell order to validate
      * @param accountAddress Address for the user's wallet
@@ -749,7 +749,7 @@ export declare class OpenSeaPort {
      */
     private _validateFees;
     /**
-     * Get the listing and expiration time paramters for a new order
+     * Get the listing and expiration time parameters for a new order
      * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
      * @param listingTimestamp Timestamp to start the order (in seconds), or undefined to start it now
      * @param waitingForBestCounterOrder Whether this order should be hidden until the best match is found
