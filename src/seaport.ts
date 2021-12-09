@@ -50,7 +50,7 @@ import {
 } from './utils/schema'
 import {
   annotateERC20TransferABI, annotateERC721TransferABI, assignOrdersToSides, confirmTransaction, delay, estimateCurrentPrice, estimateGas, getCurrentGasPrice, getNonCompliantApprovalAddress, getOrderHash, getTransferFeeSettings, getWyvernAsset, getWyvernBundle, isContractAddress, makeBigNumber, onDeprecated, orderToJSON,
-  personalSignAsync, promisifyCall, rawCall, sendRawTransaction, validateAndFormatWalletAddress, isFeeWrapperStaticTarget
+  personalSignAsync, promisifyCall, rawCall, sendRawTransaction, validateAndFormatWalletAddress, isFeeWrapperFlow
 } from './utils/utils'
 
 export class OpenSeaPort {
@@ -872,7 +872,7 @@ export class OpenSeaPort {
 
     let transactionHash: string = '';
 
-    if (isFeeWrapperStaticTarget({ buy, sell }, this._networkName)) {
+    if (isFeeWrapperFlow({ buy, sell }, this._networkName)) {
       const vrs = await this._authorizeOrder(matchingOrder);
       const properlySignedMatchingOrder = { ...matchingOrder, vrs };
       transactionHash = await this._atomicMatch({
@@ -2956,19 +2956,18 @@ export class OpenSeaPort {
       ]
     ]j
 
-    const isFeeWrapperFlow = isFeeWrapperStaticTarget({ buy, sell }, this._networkName)
+    const useFeeWrapper = isFeeWrapperFlow({ buy, sell }, this._networkName)
 
     let wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined;
 
-    if (isFeeWrapperFlow && makerOrder?.hash) {
+    if (useFeeWrapper && makerOrder?.hash) {
       const { fulfillmentData } = await this.api.getOrderFulfillmentData(makerOrder.hash)
 
       wyvernFeeWrapperArgs = [args, fulfillmentData.serverSignature || '', fulfillmentData.feeData]
     }
-    
 
     const atomicMatchEstimateGas = async (): Promise<number> => {
-      return isFeeWrapperFlow && wyvernFeeWrapperArgs
+      return useFeeWrapper && wyvernFeeWrapperArgs
         ? estimateGas(this.web3ReadOnly, {
             from: accountAddress,
             to: STATIC_CALL_FEE_WRAPPER_ADDRESS,
@@ -2995,7 +2994,7 @@ export class OpenSeaPort {
     }
 
     const submitAtomicMatchTransaction = async (): Promise<string> => {
-      return isFeeWrapperFlow && wyvernFeeWrapperArgs
+      return useFeeWrapper && wyvernFeeWrapperArgs
         ? sendRawTransaction(
             this.web3,
             {

@@ -667,15 +667,6 @@ export interface OrderQuery extends Partial<OrderJSON> {
   offset?: number
 }
 
-/**
- * Query interface for OrderFulfillmentData
- */
- export interface OrderFulfillmentDataResponse {
-  fulfillmentData: {
-    feeData: FeeData
-    serverSignature: string
-  }
-}
 
 /**
  * Query interface for Assets
@@ -707,6 +698,13 @@ export type FungibleTokenQuery = OpenSeaFungibleTokenQuery
 export interface OrderbookResponse {
   orders: OrderJSON[]
   count: number
+}
+
+export interface OrderFulfillmentDataResponse {
+  fulfillmentData: {
+    feeData: FeeData
+    serverSignature: string
+  }
 }
 
 // Types related to Web3

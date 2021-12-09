@@ -964,7 +964,7 @@ export async function getNonCompliantApprovalAddress(erc721Contract: Web3.Contra
   return _.compact(results)[0]
 }
 
-export const isFeeWrapperStaticTarget = ({
+export const isFeeWrapperFlow = ({
   buy,
   sell,
 }: {
