@@ -972,10 +972,7 @@ export const isFeeWrapperFlow = ({
   buy: Order;
   sell: Order;
 }, network: Network) => {
-  const feeWrapperAddress =
-    network === Network.Main
-      ? FEE_WRAPPER_ADDRESS_MAINNET
-      : FEE_WRAPPER_ADDRESS_RINKEBY
+  const feeWrapperAddress = getFeeWrapperAddress(network)
 
   return (
     (buy.staticTarget === feeWrapperAddress ||
@@ -983,3 +980,8 @@ export const isFeeWrapperFlow = ({
     sell.feeRecipient === feeWrapperAddress
   );
 }
+
+export const getFeeWrapperAddress = (network: Network) => 
+  network === Network.Main
+    ? FEE_WRAPPER_ADDRESS_MAINNET
+    : FEE_WRAPPER_ADDRESS_RINKEBY

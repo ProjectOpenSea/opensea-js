@@ -19,8 +19,7 @@ import {
   DEFAULT_GAS_INCREASE_FACTOR,
   DEFAULT_MAX_BOUNTY,
   DEFAULT_SELLER_FEE_BASIS_POINTS,
-  DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS, ENJIN_COIN_ADDRESS, INVERSE_BASIS_POINT, MANA_ADDRESS, MIN_EXPIRATION_SECONDS, NULL_ADDRESS, NULL_BLOCK_HASH, OPENSEA_FEE_RECIPIENT,
-  OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
+  DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS, ENJIN_COIN_ADDRESS, INVERSE_BASIS_POINT, MANA_ADDRESS, MIN_EXPIRATION_SECONDS, NULL_ADDRESS, NULL_BLOCK_HASH, OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
   ORDER_MATCHING_LATENCY_SECONDS,
   RPC_URL_PATH,
   SELL_ORDER_BATCH_SIZE,
@@ -50,7 +49,7 @@ import {
 } from './utils/schema'
 import {
   annotateERC20TransferABI, annotateERC721TransferABI, assignOrdersToSides, confirmTransaction, delay, estimateCurrentPrice, estimateGas, getCurrentGasPrice, getNonCompliantApprovalAddress, getOrderHash, getTransferFeeSettings, getWyvernAsset, getWyvernBundle, isContractAddress, makeBigNumber, onDeprecated, orderToJSON,
-  personalSignAsync, promisifyCall, rawCall, sendRawTransaction, validateAndFormatWalletAddress, isFeeWrapperFlow
+  personalSignAsync, promisifyCall, rawCall, sendRawTransaction, validateAndFormatWalletAddress, isFeeWrapperFlow, getFeeWrapperAddress
 } from './utils/utils'
 
 export class OpenSeaPort {
@@ -2321,7 +2320,7 @@ export class OpenSeaPort {
     const times = this._getTimeParameters(0)
     // Compat for matching buy orders that have fee recipient still on them
     const feeRecipient = order.feeRecipient == NULL_ADDRESS
-      ? OPENSEA_FEE_RECIPIENT
+      ? getFeeWrapperAddress(this._networkName)
       : NULL_ADDRESS
 
     const matchingOrder: UnhashedOrder = {
@@ -2729,7 +2728,7 @@ export class OpenSeaPort {
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
-      feeRecipient: OPENSEA_FEE_RECIPIENT,
+      feeRecipient: getFeeWrapperAddress(this._networkName),
       feeMethod: FeeMethod.SplitFee
     }
   }
@@ -2740,7 +2739,7 @@ export class OpenSeaPort {
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
     const feeRecipient = waitForHighestBid
       ? NULL_ADDRESS
-      : OPENSEA_FEE_RECIPIENT
+      : getFeeWrapperAddress(this._networkName)
 
     // Swap maker/taker fees when it's an English auction,
     // since these sell orders are takers not makers
@@ -2943,6 +2942,8 @@ export class OpenSeaPort {
 
     let txHash
     const txnData: any = { from: accountAddress, value }
+
+    debugger
     const args: WyvernAtomicMatchParameters = [
       [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
       buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
@@ -2969,9 +2970,7 @@ export class OpenSeaPort {
 
     const useFeeWrapper = isFeeWrapperFlow({ buy, sell }, this._networkName)
 
-    const feeWrapperAddress = this._networkName === Network.Main
-      ? FEE_WRAPPER_ADDRESS_MAINNET
-      : FEE_WRAPPER_ADDRESS_RINKEBY
+    const feeWrapperAddress = getFeeWrapperAddress(this._networkName)
 
     let wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined
 
