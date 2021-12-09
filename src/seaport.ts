@@ -872,6 +872,7 @@ export class OpenSeaPort {
 
     let transactionHash: string = ''
 
+    // We use a fee wrapper to handle fee distribution instead of Wyvern
     if (isFeeWrapperFlow({ buy, sell }, this._networkName)) {
       const vrs = await this._authorizeOrder(matchingOrder)
       const properlySignedMatchingOrder = { ...matchingOrder, vrs }
