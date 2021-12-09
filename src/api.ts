@@ -192,9 +192,9 @@ export class OpenSeaAPI {
   ): Promise<OrderFulfillmentDataResponse> {
     const result = await this.get(
       `${ORDERBOOK_PATH}/orders/fulfillment_data/${orderHash}`
-    );
+    )
 
-    return result;
+    return result
   }
   /**
    * Fetch an asset from the API, throwing if none is found

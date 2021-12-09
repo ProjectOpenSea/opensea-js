@@ -577,9 +577,6 @@ export interface UnsignedOrder extends UnhashedOrder {
   hash: string
 }
 
-// Array of tuples (feeRecipient, feeAmount)
-type FeeData = [string, string][]
-
 /**
  * Orders don't need to be signed if they're pre-approved
  * with a transaction on the contract to approveOrder_
@@ -699,6 +696,10 @@ export interface OrderbookResponse {
   orders: OrderJSON[]
   count: number
 }
+
+
+// Array of tuples (feeRecipient, feeAmount)
+type FeeData = [string, string][]
 
 export interface OrderFulfillmentDataResponse {
   fulfillmentData: {

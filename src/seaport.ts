@@ -870,11 +870,11 @@ export class OpenSeaPort {
 
     const metadata = this._getMetadata(order, referrerAddress)
 
-    let transactionHash: string = '';
+    let transactionHash: string = ''
 
     if (isFeeWrapperFlow({ buy, sell }, this._networkName)) {
-      const vrs = await this._authorizeOrder(matchingOrder);
-      const properlySignedMatchingOrder = { ...matchingOrder, vrs };
+      const vrs = await this._authorizeOrder(matchingOrder)
+      const properlySignedMatchingOrder = { ...matchingOrder, vrs }
       transactionHash = await this._atomicMatch({
         buy:
           properlySignedMatchingOrder.side === OrderSide.Buy
@@ -886,7 +886,7 @@ export class OpenSeaPort {
             : sell,
         accountAddress,
         metadata,
-      });
+      })
     } else {
       transactionHash = await this._atomicMatch({
         buy,
@@ -894,7 +894,7 @@ export class OpenSeaPort {
         accountAddress,
         metadata,
         makerOrder: order
-      });
+      })
     }
 
     await this._confirmTransaction(transactionHash, EventType.MatchOrders, "Fulfilling order", async () => {
@@ -2954,11 +2954,11 @@ export class OpenSeaPort {
         sell.s || NULL_BLOCK_HASH,
         metadata
       ]
-    ]j
+    ]
 
     const useFeeWrapper = isFeeWrapperFlow({ buy, sell }, this._networkName)
 
-    let wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined;
+    let wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined
 
     if (useFeeWrapper && makerOrder?.hash) {
       const { fulfillmentData } = await this.api.getOrderFulfillmentData(makerOrder.hash)
@@ -3007,7 +3007,7 @@ export class OpenSeaPort {
               value,
             },
             (error) => {
-              throw error;
+              throw error
             }
           )
         : await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(
