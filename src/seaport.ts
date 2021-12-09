@@ -872,7 +872,7 @@ export class OpenSeaPort {
 
     let transactionHash: string = '';
 
-    if (isFeeWrapperStaticTarget({buy, sell})) {
+    if (isFeeWrapperStaticTarget({ buy, sell }, this._networkName)) {
       const vrs = await this._authorizeOrder(matchingOrder);
       const properlySignedMatchingOrder = { ...matchingOrder, vrs };
       transactionHash = await this._atomicMatch({
@@ -893,6 +893,7 @@ export class OpenSeaPort {
         sell,
         accountAddress,
         metadata,
+        makerOrder: order
       });
     }
 
@@ -2900,8 +2901,8 @@ export class OpenSeaPort {
   }
 
   private async _atomicMatch(
-      { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH }:
-      { buy: Order; sell: Order; accountAddress: string; metadata?: string }
+      { buy, sell, accountAddress, metadata = NULL_BLOCK_HASH, makerOrder }:
+      { buy: Order; sell: Order; accountAddress: string; metadata?: string, makerOrder?: Order }
     ) {
     let value: BigNumber | undefined = undefined
     let shouldValidateBuy = true
@@ -2953,19 +2954,18 @@ export class OpenSeaPort {
         sell.s || NULL_BLOCK_HASH,
         metadata
       ]
-    ]
+    ]j
 
-    const isFeeWrapperFlow = isFeeWrapperStaticTarget({ buy, sell })
+    const isFeeWrapperFlow = isFeeWrapperStaticTarget({ buy, sell }, this._networkName)
 
-    const feeDataStruct = (buy.feeData || sell.feeData || []).map(
-      ({ recipient, paymentTokenAmount }) =>
-        [recipient, paymentTokenAmount.toNumber()] as [string, number]
-    )
+    let wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined;
 
-    const wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined = 
-      isFeeWrapperFlow
-      ? [args, buy.serverSignature || sell.serverSignature || '', feeDataStruct]
-      : undefined
+    if (isFeeWrapperFlow && makerOrder?.hash) {
+      const { fulfillmentData } = await this.api.getOrderFulfillmentData(makerOrder.hash)
+
+      wyvernFeeWrapperArgs = [args, fulfillmentData.serverSignature || '', fulfillmentData.feeData]
+    }
+    
 
     const atomicMatchEstimateGas = async (): Promise<number> => {
       return isFeeWrapperFlow && wyvernFeeWrapperArgs

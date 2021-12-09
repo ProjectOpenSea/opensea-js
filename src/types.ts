@@ -577,10 +577,8 @@ export interface UnsignedOrder extends UnhashedOrder {
   hash: string
 }
 
-type FeeData = {
-  recipient: string
-  paymentTokenAmount: BigNumber
-}[]
+// Array of tuples (feeRecipient, feeAmount)
+type FeeData = [string, string][]
 
 /**
  * Orders don't need to be signed if they're pre-approved
@@ -599,8 +597,6 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
   markedInvalid?: boolean
   asset?: OpenSeaAsset
   assetBundle?: OpenSeaAssetBundle
-  serverSignature?: string
-  feeData?: FeeData
 }
 
 /**
@@ -669,6 +665,16 @@ export interface OrderQuery extends Partial<OrderJSON> {
   listed_before?: number | string
   limit?: number
   offset?: number
+}
+
+/**
+ * Query interface for OrderFulfillmentData
+ */
+ export interface OrderFulfillmentDataResponse {
+  fulfillmentData: {
+    feeData: FeeData
+    serverSignature: string
+  }
 }
 
 /**

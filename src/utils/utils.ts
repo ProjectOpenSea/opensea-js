@@ -7,6 +7,7 @@ import {
   AnnotatedFunctionABI,
   FunctionInputKind,
   FunctionOutputKind,
+  Network,
   Schema,
   StateMutability
 } from 'wyvern-schemas/dist/types'
@@ -46,7 +47,8 @@ import {
   INVERSE_BASIS_POINT,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
-  STATIC_CALL_FEE_WRAPPER_ADDRESS
+  STATIC_CALL_FEE_WRAPPER_ADDRESS_MAINNET,
+  STATIC_CALL_FEE_WRAPPER_ADDRESS_RINKEBY
 } from '../constants'
 import { proxyABI } from '../abi/Proxy'
 
@@ -968,9 +970,15 @@ export const isFeeWrapperStaticTarget = ({
 }: {
   buy: Order;
   sell: Order;
-}) => {
+}, network: Network) => {
+  const feeWrapperAddress =
+    network === Network.Main
+      ? STATIC_CALL_FEE_WRAPPER_ADDRESS_MAINNET
+      : STATIC_CALL_FEE_WRAPPER_ADDRESS_RINKEBY
+
   return (
-    buy.staticTarget === STATIC_CALL_FEE_WRAPPER_ADDRESS ||
-    sell.staticTarget === STATIC_CALL_FEE_WRAPPER_ADDRESS
+    (buy.staticTarget === feeWrapperAddress ||
+      sell.staticTarget === feeWrapperAddress) &&
+    sell.feeRecipient === feeWrapperAddress
   );
-};
+}
