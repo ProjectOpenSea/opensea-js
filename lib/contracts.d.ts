@@ -20,3 +20,4 @@ export { WrappedNFTFactory } from './abi/WrappedNFTFactory';
 export { WrappedNFTLiquidationProxy } from './abi/WrappedNFTLiquidationProxy';
 export { UniswapFactory } from './abi/UniswapFactory';
 export { UniswapExchange } from './abi/UniswapExchange';
+export { WyvernFeeWrapper } from './abi/WyvernFeeWrapper';

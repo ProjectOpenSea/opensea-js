@@ -2,7 +2,6 @@ import { BigNumber } from 'bignumber.js'
 import { isValidAddress } from 'ethereumjs-util'
 import { EventEmitter, EventSubscription } from 'fbemitter'
 import * as _ from 'lodash'
-import { WyvernFeeWrapper } from 'src/abi/WyvernFeeWrapper'
 import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js'
 import * as WyvernSchemas from 'wyvern-schemas'
@@ -39,7 +38,7 @@ import {
   FEE_WRAPPER_ADDRESS_MAINNET,
   FEE_WRAPPER_ADDRESS_RINKEBY
 } from './constants'
-import { CanonicalWETH, CheezeWizardsBasicTournament, DecentralandEstates, ERC20, ERC721, getMethod, StaticCheckCheezeWizards, StaticCheckDecentralandEstates, StaticCheckTxOrigin, UniswapExchange, UniswapFactory, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy } from './contracts'
+import { CanonicalWETH, CheezeWizardsBasicTournament, DecentralandEstates, ERC20, ERC721, getMethod, StaticCheckCheezeWizards, StaticCheckDecentralandEstates, StaticCheckTxOrigin, UniswapExchange, UniswapFactory, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy, WyvernFeeWrapper } from './contracts'
 import {
   MAX_ERROR_LENGTH,
   requireOrderCalldataCanMatch, requireOrdersCanMatch
