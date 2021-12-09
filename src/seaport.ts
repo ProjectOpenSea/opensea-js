@@ -888,6 +888,7 @@ export class OpenSeaPort {
             : sell,
         accountAddress,
         metadata,
+        makerOrder: order
       })
     } else {
       transactionHash = await this._atomicMatch({
@@ -895,7 +896,6 @@ export class OpenSeaPort {
         sell,
         accountAddress,
         metadata,
-        makerOrder: order
       })
     }
 
@@ -2963,19 +2963,23 @@ export class OpenSeaPort {
 
     const useFeeWrapper = isFeeWrapperFlow({ buy, sell }, this._networkName)
 
+    const feeWrapperAddress = this._networkName === Network.Main
+      ? FEE_WRAPPER_ADDRESS_MAINNET
+      : FEE_WRAPPER_ADDRESS_RINKEBY
+
     let wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined
 
     if (useFeeWrapper && makerOrder?.hash) {
       const { fulfillmentData } = await this.api.getOrderFulfillmentData(makerOrder.hash)
 
-      wyvernFeeWrapperArgs = [args, fulfillmentData.serverSignature || '', fulfillmentData.feeData]
+      wyvernFeeWrapperArgs = [args, fulfillmentData.serverSignature, fulfillmentData.feeData]
     }
 
     const atomicMatchEstimateGas = async (): Promise<number> => {
-      return useFeeWrapper && wyvernFeeWrapperArgs
+      return (useFeeWrapper && wyvernFeeWrapperArgs)
         ? estimateGas(this.web3ReadOnly, {
             from: accountAddress,
-            to: STATIC_CALL_FEE_WRAPPER_ADDRESS,
+            to: feeWrapperAddress,
             data: encodeCall(
               getMethod(WyvernFeeWrapper, 'atomicMatch_'),
               wyvernFeeWrapperArgs
@@ -2999,12 +3003,12 @@ export class OpenSeaPort {
     }
 
     const submitAtomicMatchTransaction = async (): Promise<string> => {
-      return useFeeWrapper && wyvernFeeWrapperArgs
+      return (useFeeWrapper && wyvernFeeWrapperArgs)
         ? sendRawTransaction(
             this.web3,
             {
               from: accountAddress,
-              to: STATIC_CALL_FEE_WRAPPER_ADDRESS,
+              to: feeWrapperAddress,
               data: encodeCall(
                 getMethod(WyvernFeeWrapper, 'atomicMatch_'),
                 wyvernFeeWrapperArgs
