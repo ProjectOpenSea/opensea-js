@@ -187,17 +187,15 @@ export class OpenSeaAPI {
    * Get server signature and fee data for submitting an atomic match
    * using the Wyvern fee wrapper
    */
-   public async getOrderFulfillmentData(
-    orderHash: string,
+  public async getOrderFulfillmentData(
+    orderHash: string
   ): Promise<OrderFulfillmentDataResponse> {
+    const result = await this.get(
+      `${ORDERBOOK_PATH}/orders/fulfillment_data/${orderHash}`
+    );
 
-  const result = await this.get(
-    `${ORDERBOOK_PATH}/orders/fulfillment_data/${orderHash}`,
-  )
-
-  return result
-}
-
+    return result;
+  }
   /**
    * Fetch an asset from the API, throwing if none is found
    * @param tokenAddress Address of the asset's contract
