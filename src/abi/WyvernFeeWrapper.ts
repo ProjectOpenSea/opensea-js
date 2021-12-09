@@ -23,7 +23,13 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
     type: 'error',
   },
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'to',
+        type: 'address',
+      },
+    ],
     name: 'FailedToSendEther',
     type: 'error',
   },
@@ -46,6 +52,11 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
   {
     inputs: [],
     name: 'InvalidServerSignature',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'NotInWrapperTransaction',
     type: 'error',
   },
   {
@@ -181,6 +192,13 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
     name: 'atomicMatch_',
     outputs: [],
     stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'expectInTransaction',
+    outputs: [],
+    stateMutability: 'view',
     type: 'function',
   },
   {
