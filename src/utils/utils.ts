@@ -47,8 +47,8 @@ import {
   INVERSE_BASIS_POINT,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
-  STATIC_CALL_FEE_WRAPPER_ADDRESS_MAINNET,
-  STATIC_CALL_FEE_WRAPPER_ADDRESS_RINKEBY
+  FEE_WRAPPER_ADDRESS_MAINNET,
+  FEE_WRAPPER_ADDRESS_RINKEBY
 } from '../constants'
 import { proxyABI } from '../abi/Proxy'
 
@@ -973,8 +973,8 @@ export const isFeeWrapperFlow = ({
 }, network: Network) => {
   const feeWrapperAddress =
     network === Network.Main
-      ? STATIC_CALL_FEE_WRAPPER_ADDRESS_MAINNET
-      : STATIC_CALL_FEE_WRAPPER_ADDRESS_RINKEBY
+      ? FEE_WRAPPER_ADDRESS_MAINNET
+      : FEE_WRAPPER_ADDRESS_RINKEBY
 
   return (
     (buy.staticTarget === feeWrapperAddress ||

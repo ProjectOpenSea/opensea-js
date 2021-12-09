@@ -36,7 +36,8 @@ import {
   WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY,
-  STATIC_CALL_FEE_WRAPPER_ADDRESS
+  FEE_WRAPPER_ADDRESS_MAINNET,
+  FEE_WRAPPER_ADDRESS_RINKEBY
 } from './constants'
 import { CanonicalWETH, CheezeWizardsBasicTournament, DecentralandEstates, ERC20, ERC721, getMethod, StaticCheckCheezeWizards, StaticCheckDecentralandEstates, StaticCheckTxOrigin, UniswapExchange, UniswapFactory, WrappedNFT, WrappedNFTFactory, WrappedNFTLiquidationProxy } from './contracts'
 import {
@@ -2093,11 +2094,14 @@ export class OpenSeaPort {
           []),
       }
     } else {
-      // Noop - no checks
+      // Default to the fee wrapper static check
       return {
-        staticTarget: NULL_ADDRESS,
-        staticExtradata: '0x',
-      }
+        staticTarget:
+          this._networkName === Network.Main
+            ? FEE_WRAPPER_ADDRESS_MAINNET
+            : FEE_WRAPPER_ADDRESS_RINKEBY,
+        staticExtradata: encodeCall(getMethod(WyvernFeeWrapper, "expectInTransaction"), []),
+      };
     }
   }
 
