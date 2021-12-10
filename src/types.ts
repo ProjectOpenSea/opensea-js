@@ -204,6 +204,8 @@ export interface WyvernBundle {
 
 export type WyvernAtomicMatchParameters = [string[], BigNumber[], Array<(number | BigNumber)>, string, string, string, string, string, string, Array<(number | BigNumber)>, string[]]
 
+export type WyvernFeeWrapperAtomicMatchParameters = [WyvernAtomicMatchParameters, string, FeeData]
+
 /**
  * The OpenSea account object appended to orders, providing extra metadata, profile images and usernames
  */

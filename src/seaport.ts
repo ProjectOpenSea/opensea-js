@@ -6,6 +6,7 @@ import * as Web3 from 'web3'
 import { WyvernProtocol } from 'wyvern-js'
 import * as WyvernSchemas from 'wyvern-schemas'
 import { Schema } from 'wyvern-schemas/dist/types'
+import { ethers } from "ethers"
 import { OpenSeaAPI } from './api'
 import {
   CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS,
@@ -2973,11 +2974,14 @@ export class OpenSeaPort {
     const feeWrapperAddress = getFeeWrapperAddress(this._networkName)
 
     let wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined
+    let wyvernFeeWrapperCalldata: string | undefined
 
     if (useFeeWrapper && makerOrder?.hash) {
       const response = await this.api.getOrderFulfillmentData(makerOrder.hash)
 
       wyvernFeeWrapperArgs = [args, response.fulfillment_data.server_signature, response.fulfillment_data.fee_data]
+      // We use ethers because ethereumjs-abi does not support tuple ABI encoding
+      wyvernFeeWrapperCalldata = new ethers.utils.Interface(WyvernFeeWrapper).encodeFunctionData("atomicMatch_", wyvernFeeWrapperArgs)
     }
 
     const atomicMatchEstimateGas = async (): Promise<number> => {
@@ -2985,10 +2989,7 @@ export class OpenSeaPort {
         ? estimateGas(this.web3ReadOnly, {
             from: accountAddress,
             to: feeWrapperAddress,
-            data: encodeCall(
-              getMethod(WyvernFeeWrapper, 'atomicMatch_'),
-              wyvernFeeWrapperArgs
-            ),
+            data: wyvernFeeWrapperCalldata,
             value,
           })
         : await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
@@ -3014,10 +3015,7 @@ export class OpenSeaPort {
             {
               from: accountAddress,
               to: feeWrapperAddress,
-              data: encodeCall(
-                getMethod(WyvernFeeWrapper, 'atomicMatch_'),
-                wyvernFeeWrapperArgs
-              ),
+              data: wyvernFeeWrapperCalldata,
               value,
             },
             (error) => {
