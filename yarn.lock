@@ -2695,7 +2695,7 @@ ethereumjs-vm@^2.0.2:
     rustbn.js "~0.2.0"
     safe-buffer "^5.1.1"
 
-ethers@^5.5.2:
+ethers@5.5.2:
   version "5.5.2"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.5.2.tgz#cd2e508c7342c44fa70392f722e8de8f2416489f"
   integrity sha512-EF5W+6Wwcu6BqVwpgmyR5U2+L4c1FQzlM/02dkZOugN3KF0cG9bzHZP+TDJglmPm2/IzCEJDT7KBxzayk7SAHw==

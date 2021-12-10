@@ -556,10 +556,11 @@ export async function sendRawTransaction(
 
   if (gas == null) {
     // This gas cannot be increased due to an ethjs error
-    gas = await estimateGas(web3, { from, to, data, value })
+    // gas = await estimateGas(web3, { from, to, data, value })
   }
 
   try {
+    debugger
     const txHashRes = await promisify<string>(c => web3.eth.sendTransaction({
       from,
       to,
@@ -571,9 +572,10 @@ export async function sendRawTransaction(
     return txHashRes.toString()
 
   } catch (error) {
+    debugger
 
     onError(error)
-    throw error
+    // throw error
   }
 }
 
