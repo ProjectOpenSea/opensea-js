@@ -703,9 +703,9 @@ export interface OrderbookResponse {
 type FeeData = Array<[string, string]>
 
 export interface OrderFulfillmentDataResponse {
-  fulfillmentData: {
-    feeData: FeeData
-    serverSignature: string
+  fulfillment_data: {
+    fee_data: FeeData
+    server_signature: string
   }
 }
 

@@ -2977,7 +2977,7 @@ export class OpenSeaPort {
     if (useFeeWrapper && makerOrder?.hash) {
       const response = await this.api.getOrderFulfillmentData(makerOrder.hash)
 
-      wyvernFeeWrapperArgs = [args, response.fulfillmentData.serverSignature, response.fulfillmentData.feeData]
+      wyvernFeeWrapperArgs = [args, response.fulfillment_data.server_signature, response.fulfillment_data.fee_data]
     }
 
     const atomicMatchEstimateGas = async (): Promise<number> => {

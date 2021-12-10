@@ -498,9 +498,9 @@ export interface OrderbookResponse {
 }
 declare type FeeData = Array<[string, string]>;
 export interface OrderFulfillmentDataResponse {
-    fulfillmentData: {
-        feeData: FeeData;
-        serverSignature: string;
+    fulfillment_data: {
+        fee_data: FeeData;
+        server_signature: string;
     };
 }
 export declare type Web3Callback<T> = (err: Error | null, result: T) => void;
