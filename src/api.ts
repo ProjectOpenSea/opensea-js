@@ -194,6 +194,8 @@ export class OpenSeaAPI {
       `${ORDERBOOK_PATH}/orders/fulfillment_data/${orderHash}`
     )
 
+    debugger
+
     return result
   }
   /**

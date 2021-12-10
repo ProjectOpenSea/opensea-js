@@ -2975,9 +2975,9 @@ export class OpenSeaPort {
     let wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined
 
     if (useFeeWrapper && makerOrder?.hash) {
-      const { fulfillmentData } = await this.api.getOrderFulfillmentData(makerOrder.hash)
+      const response = await this.api.getOrderFulfillmentData(makerOrder.hash)
 
-      wyvernFeeWrapperArgs = [args, fulfillmentData.serverSignature, fulfillmentData.feeData]
+      wyvernFeeWrapperArgs = [args, response.fulfillmentData.serverSignature, response.fulfillmentData.feeData]
     }
 
     const atomicMatchEstimateGas = async (): Promise<number> => {
