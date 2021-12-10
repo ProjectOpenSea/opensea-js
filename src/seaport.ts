@@ -2984,6 +2984,8 @@ export class OpenSeaPort {
       // Ethers doesn't support strings for uints, so we need to replace it with ethers BigNumber
       const wyvernArgsWithBigNum = [...args.slice(0, 1), args[1].map(ethers.BigNumber.from), ...args.slice(2)] as WyvernAtomicMatchParametersWithEthers
 
+      debugger
+
       wyvernFeeWrapperArgs = [wyvernArgsWithBigNum, response.fulfillment_data.server_signature, feeDataAsBigNum]
       // We use ethers because ethereumjs-abi does not support tuple ABI encoding
       wyvernFeeWrapperCalldata = new ethers.utils.Interface(WyvernFeeWrapper).encodeFunctionData("atomicMatch_", wyvernFeeWrapperArgs)
