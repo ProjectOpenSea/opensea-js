@@ -2979,14 +2979,21 @@ export class OpenSeaPort {
     if (useFeeWrapper && makerOrder?.hash) {
       const response = await this.api.getOrderFulfillmentData(makerOrder.hash)
 
-      const feeDataAsBigNum = response.fulfillment_data.fee_data.map(([recipient, amount]) => [recipient, ethers.BigNumber.from(amount)] as [string, ethers.BigNumber])
+      const feeDataWithEthersBigNum = response.fulfillment_data.fee_data.map(([recipient, amount]) => [recipient, ethers.BigNumber.from(amount)] as [string, ethers.BigNumber])
 
-      // Ethers doesn't support strings for uints, so we need to replace it with ethers BigNumber
-      const wyvernArgsWithBigNum = [...args.slice(0, 1), args[1].map(ethers.BigNumber.from), ...args.slice(2)] as WyvernAtomicMatchParametersWithEthers
+      // We need to replace any number-type value with ethers big number to properly encode it
+      const wyvernArgsWithEthersBigNum = args.map((arg) =>
+        Array.isArray(arg)
+          ? arg.map((value) =>
+              typeof value === 'number' || value instanceof BigNumber
+                ? ethers.BigNumber.from(value.toString())
+                : value
+            )
+          : arg
+      ) as WyvernAtomicMatchParametersWithEthers;
 
-      debugger
 
-      wyvernFeeWrapperArgs = [wyvernArgsWithBigNum, response.fulfillment_data.server_signature, feeDataAsBigNum]
+      wyvernFeeWrapperArgs = [wyvernArgsWithEthersBigNum, response.fulfillment_data.server_signature, feeDataWithEthersBigNum]
       // We use ethers because ethereumjs-abi does not support tuple ABI encoding
       wyvernFeeWrapperCalldata = new ethers.utils.Interface(WyvernFeeWrapper).encodeFunctionData("atomicMatch_", wyvernFeeWrapperArgs)
     }
