@@ -2046,7 +2046,7 @@ export class OpenSeaPort {
     const isDecentralandEstate = asset.tokenAddress.toLowerCase() == DECENTRALAND_ESTATE_ADDRESS.toLowerCase()
     const isMainnet = this._networkName == Network.Main
 
-    if (isMainnet && !useTxnOriginStaticCall) {
+    if (true) {
       // While testing, we will use dummy values for mainnet. We will remove this if-statement once we have pushed the PR once and tested on Rinkeby
       return {
         staticTarget: NULL_ADDRESS,
