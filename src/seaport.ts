@@ -3055,9 +3055,9 @@ export class OpenSeaPort {
     // Estimate gas first
     try {
       // Typescript splat doesn't typecheck
-      const gasEstimate = await atomicMatchEstimateGas()
+      // const gasEstimate = await atomicMatchEstimateGas()
 
-      txnData.gas = this._correctGasAmount(gasEstimate)
+      // txnData.gas = this._correctGasAmount(gasEstimate)
 
     } catch (error) {
       console.error(`Failed atomic match with args: `, args, error)
