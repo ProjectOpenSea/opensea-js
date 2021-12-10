@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { Network, HowToCall, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
+import { BigNumber as EthersBigNumber } from 'ethers';
 import { Token } from 'wyvern-schemas/dist/types';
 export { Network, HowToCall, ECSignature };
 /**
@@ -498,10 +499,10 @@ export interface OrderbookResponse {
     orders: OrderJSON[];
     count: number;
 }
-declare type FeeData = Array<[string, string]>;
+declare type FeeData = Array<[string, EthersBigNumber]>;
 export interface OrderFulfillmentDataResponse {
     fulfillment_data: {
-        fee_data: FeeData;
+        fee_data: Array<[string, string]>;
         server_signature: string;
     };
 }

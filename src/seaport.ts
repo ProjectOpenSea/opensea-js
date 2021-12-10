@@ -2979,7 +2979,11 @@ export class OpenSeaPort {
     if (useFeeWrapper && makerOrder?.hash) {
       const response = await this.api.getOrderFulfillmentData(makerOrder.hash)
 
-      wyvernFeeWrapperArgs = [args, response.fulfillment_data.server_signature, response.fulfillment_data.fee_data]
+      const feeDataAsBigNum = response.fulfillment_data.fee_data.map(([recipient, amount]) => [recipient, ethers.BigNumber.from(amount)] as [string, ethers.BigNumber])
+
+      debugger
+
+      wyvernFeeWrapperArgs = [args, response.fulfillment_data.server_signature, feeDataAsBigNum]
       // We use ethers because ethereumjs-abi does not support tuple ABI encoding
       wyvernFeeWrapperCalldata = new ethers.utils.Interface(WyvernFeeWrapper).encodeFunctionData("atomicMatch_", wyvernFeeWrapperArgs)
     }

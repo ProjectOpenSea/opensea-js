@@ -7,7 +7,7 @@ import {
   ECSignature,
   Order as WyvernOrder
 } from 'wyvern-js/lib/types'
-
+import { BigNumber as EthersBigNumber } from 'ethers'
 import { Token } from 'wyvern-schemas/dist/types'
 
 export {
@@ -703,11 +703,12 @@ export interface OrderbookResponse {
 
 
 // Array of tuples (feeRecipient, feeAmount)
-type FeeData = Array<[string, string]>
+type FeeData = Array<[string, EthersBigNumber]>
 
 export interface OrderFulfillmentDataResponse {
   fulfillment_data: {
-    fee_data: FeeData
+    // Array of tuples (feeRecipient, feeAmount)
+    fee_data: Array<[string, string]>
     server_signature: string
   }
 }
