@@ -43,7 +43,7 @@ import {
   MAX_ERROR_LENGTH,
   requireOrderCalldataCanMatch, requireOrdersCanMatch
 } from './debugging'
-import { Asset, ComputedFees, ECSignature, EventData, EventType, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OpenSeaAsset, OpenSeaFungibleToken, Order, OrderSide, PartialReadonlyContractAbi, SaleKind, TokenStandardVersion, UnhashedOrder, UnsignedOrder, WyvernAsset, WyvernAtomicMatchParameters, WyvernFTAsset, WyvernNFTAsset, WyvernSchemaName, WyvernFeeWrapperAtomicMatchParameters } from './types'
+import { Asset, ComputedFees, ECSignature, EventData, EventType, FeeMethod, HowToCall, Network, OpenSeaAPIConfig, OpenSeaAsset, OpenSeaFungibleToken, Order, OrderSide, PartialReadonlyContractAbi, SaleKind, TokenStandardVersion, UnhashedOrder, UnsignedOrder, WyvernAsset, WyvernAtomicMatchParameters, WyvernAtomicMatchParametersWithEthers, WyvernFTAsset, WyvernNFTAsset, WyvernSchemaName, WyvernFeeWrapperAtomicMatchParameters } from './types'
 import {
   encodeAtomicizedBuy,
   encodeAtomicizedSell, encodeAtomicizedTransfer, encodeBuy, encodeCall, encodeProxyCall, encodeSell, encodeTransferCall
@@ -2981,9 +2981,10 @@ export class OpenSeaPort {
 
       const feeDataAsBigNum = response.fulfillment_data.fee_data.map(([recipient, amount]) => [recipient, ethers.BigNumber.from(amount)] as [string, ethers.BigNumber])
 
-      debugger
+      // Ethers doesn't support strings for uints, so we need to replace it with ethers BigNumber
+      const wyvernArgsWithBigNum = [...args.slice(0, 1), args[1].map(ethers.BigNumber.from), ...args.slice(2)] as WyvernAtomicMatchParametersWithEthers
 
-      wyvernFeeWrapperArgs = [args, response.fulfillment_data.server_signature, feeDataAsBigNum]
+      wyvernFeeWrapperArgs = [wyvernArgsWithBigNum, response.fulfillment_data.server_signature, feeDataAsBigNum]
       // We use ethers because ethereumjs-abi does not support tuple ABI encoding
       wyvernFeeWrapperCalldata = new ethers.utils.Interface(WyvernFeeWrapper).encodeFunctionData("atomicMatch_", wyvernFeeWrapperArgs)
     }
