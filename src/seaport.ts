@@ -879,7 +879,7 @@ export class OpenSeaPort {
 
     // We use a fee wrapper to handle fee distribution instead of Wyvern
     if (isFeeWrapperFlow({ buy, sell }, this._networkName)) {
-      const vrs = await this._authorizeOrder(matchingOrder)
+      const vrs = await this._authorizeOrder(matchingOrder, true)
       const properlySignedMatchingOrder = { ...matchingOrder, vrs }
       transactionHash = await this._atomicMatch({
         buy:
@@ -3084,13 +3084,13 @@ export class OpenSeaPort {
   }
 
   private async _authorizeOrder(
-      order: UnsignedOrder
+      order: UnsignedOrder,
+      isFeeWrapperAtomicMatchFlow?: boolean
     ): Promise<ECSignature | null> {
     const message = order.hash
     const signerAddress = order.maker
 
-    // All orders from this point on will be going through the fee wrapper flow
-    this._dispatch(EventType.CreateOrder, { order, accountAddress: order.maker, isFeeWrapperFlow: true })
+    this._dispatch(EventType.CreateOrder, { order, accountAddress: order.maker, isFeeWrapperFlow: isFeeWrapperAtomicMatchFlow })
 
     const makerIsSmartContract = await isContractAddress(this.web3, signerAddress)
 
