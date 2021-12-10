@@ -874,10 +874,6 @@ export class OpenSeaPort {
 
     let transactionHash: string = ''
 
-    debugger
-
-    console.log("is fee wrapper flow", isFeeWrapperFlow({ buy, sell }, this._networkName))
-
     // We use a fee wrapper to handle fee distribution instead of Wyvern
     if (isFeeWrapperFlow({ buy, sell }, this._networkName)) {
       const vrs = await this._authorizeOrder(matchingOrder, true)
@@ -2944,7 +2940,6 @@ export class OpenSeaPort {
     let txHash
     const txnData: any = { from: accountAddress, value }
 
-    debugger
     const args: WyvernAtomicMatchParameters = [
       [buy.exchange, buy.maker, buy.taker, buy.feeRecipient, buy.target,
       buy.staticTarget, buy.paymentToken, sell.exchange, sell.maker, sell.taker, sell.feeRecipient, sell.target, sell.staticTarget, sell.paymentToken],
@@ -2979,7 +2974,13 @@ export class OpenSeaPort {
     if (useFeeWrapper && makerOrder?.hash) {
       const response = await this.api.getOrderFulfillmentData(makerOrder.hash)
 
-      const feeDataWithEthersBigNum = response.fulfillment_data.fee_data.map(([recipient, amount]) => [recipient, ethers.BigNumber.from(amount)] as [string, ethers.BigNumber])
+      const feeDataWithEthersBigNum = response.fulfillment_data.fee_data.map(
+        ([recipient, amount]) =>
+          [recipient, ethers.BigNumber.from(amount)] as [
+            string,
+            ethers.BigNumber
+          ]
+      )
 
       // We need to replace any number-type value with ethers big number to properly encode it
       const wyvernArgsWithEthersBigNum = args.map((arg) =>
@@ -2993,9 +2994,15 @@ export class OpenSeaPort {
       ) as WyvernAtomicMatchParametersWithEthers;
 
 
-      wyvernFeeWrapperArgs = [wyvernArgsWithEthersBigNum, response.fulfillment_data.server_signature, feeDataWithEthersBigNum]
+      wyvernFeeWrapperArgs = [
+        wyvernArgsWithEthersBigNum,
+        response.fulfillment_data.server_signature,
+        feeDataWithEthersBigNum,
+      ]
       // We use ethers because ethereumjs-abi does not support tuple ABI encoding
-      wyvernFeeWrapperCalldata = new ethers.utils.Interface(WyvernFeeWrapper).encodeFunctionData("atomicMatch_", wyvernFeeWrapperArgs)
+      wyvernFeeWrapperCalldata = new ethers.utils.Interface(
+        WyvernFeeWrapper
+      ).encodeFunctionData('atomicMatch_', wyvernFeeWrapperArgs)
     }
 
     const atomicMatchEstimateGas = async (): Promise<number> => {
