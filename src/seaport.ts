@@ -3089,7 +3089,8 @@ export class OpenSeaPort {
     const message = order.hash
     const signerAddress = order.maker
 
-    this._dispatch(EventType.CreateOrder, { order, accountAddress: order.maker })
+    // All orders from this point on will be going through the fee wrapper flow
+    this._dispatch(EventType.CreateOrder, { order, accountAddress: order.maker, isFeeWrapperFlow: true })
 
     const makerIsSmartContract = await isContractAddress(this.web3, signerAddress)
 

@@ -60,6 +60,7 @@ export interface EventData {
     buy?: Order;
     sell?: Order;
     matchMetadata?: string;
+    isFeeWrapperFlow?: boolean;
 }
 /**
  * OpenSea API configuration object
