@@ -163,4 +163,4 @@ export declare const isFeeWrapperFlow: ({ buy, sell, }: {
     buy: Order;
     sell: Order;
 }, network: Network) => boolean;
-export declare const getFeeWrapperAddress: (network: Network) => "0xPLACEHOLDER" | "0x00bcf6092bc2582c9f4bf0f01ee0b6875057174b";
+export declare const getFeeWrapperAddress: (network: Network) => "0xPLACEHOLDER" | "0x356c2f229761e89983965688de0050b5982fd66e";
