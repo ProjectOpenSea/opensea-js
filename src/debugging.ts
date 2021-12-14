@@ -16,11 +16,11 @@ const SaleKindInterface = {
     Side,
     SaleKind,
 
-    validateParameters(saleKind: SaleKind, expirationTime: number): boolean {
+    validateParameters(saleKind: SaleKind, expirationTime: number ): boolean {
         return (saleKind === SaleKind.FixedPrice || expirationTime > 0)
     },
 
-    canSettleOrder(listingTime: number, expirationTime: number): boolean {
+    canSettleOrder(listingTime: number , expirationTime: number ): boolean {
         const now = Math.round(Date.now() / 1000)
         return (listingTime < now) && (expirationTime === 0 || now < expirationTime)
     }

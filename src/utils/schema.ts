@@ -26,7 +26,7 @@ export interface CallSpec {
 
 export const encodeReplacementPattern: ReplacementEncoder = WyvernProtocol.encodeReplacementPattern
 
-export type Encoder = (schema: Schema<WyvernAsset>, asset: WyvernAsset, address: string) => CallSpec
+export type Encoder = (schema: Schema<WyvernAsset>, asset: WyvernAsset, address: string ) => CallSpec
 
 export const encodeCall = (abi: AnnotatedFunctionABI, parameters: any[]): string => {
   const inputTypes = abi.inputs.map(i => i.type)
@@ -45,7 +45,7 @@ export const encodeSell: Encoder = (schema, asset, address) => {
   }
 }
 
-export type AtomicizedSellEncoder = (schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string, wyvernProtocol: WyvernProtocol, networkName: Network) => CallSpec
+export type AtomicizedSellEncoder = (schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string , wyvernProtocol: WyvernProtocol, networkName: Network) => CallSpec
 
 export const encodeAtomicizedSell: AtomicizedSellEncoder = (schemas, assets, address, wyvernProtocol, networkName) => {
 
@@ -60,7 +60,7 @@ export const encodeAtomicizedSell: AtomicizedSellEncoder = (schemas, assets, add
   }
 }
 
-export type AtomicizedBuyEncoder = (schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string, wyvernProtocol: WyvernProtocol, networkName: Network) => CallSpec
+export type AtomicizedBuyEncoder = (schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string , wyvernProtocol: WyvernProtocol, networkName: Network) => CallSpec
 
 export const encodeAtomicizedBuy: AtomicizedBuyEncoder = (schemas, assets, address, wyvernProtocol, networkName) => {
 
@@ -105,7 +105,7 @@ export const encodeBuy: Encoder = (schema, asset, address) => {
   const calldata = encodeCall(transfer, parameters)
 
   // Compute replacement pattern
-  let replacementPattern = '0x'
+  let replacementPattern =   '0x'
   if (ownerInputs.length > 0) {
     replacementPattern = encodeReplacementPattern(transfer, FunctionInputKind.Owner)
   }
@@ -117,7 +117,7 @@ export const encodeBuy: Encoder = (schema, asset, address) => {
   }
 }
 
-export type DefaultCallEncoder = (abi: AnnotatedFunctionABI, address: string) => string
+export type DefaultCallEncoder = (abi: AnnotatedFunctionABI, address: string ) => string
 
 export const encodeDefaultCall: DefaultCallEncoder = (abi, address) => {
   const parameters = abi.inputs.map(input => {
@@ -142,7 +142,7 @@ export const encodeDefaultCall: DefaultCallEncoder = (abi, address) => {
  * @param to Destination address
  * @param atomicizer Wyvern Atomicizer instance
  */
-export function encodeAtomicizedTransfer(schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], from: string, to: string, wyvernProtocol: WyvernProtocol, networkName: Network): LimitedCallSpec {
+export function encodeAtomicizedTransfer(schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], from: string , to: string , wyvernProtocol: WyvernProtocol, networkName: Network): LimitedCallSpec {
 
   const atomicizer = wyvernProtocol.wyvernAtomicizer
 
@@ -161,7 +161,7 @@ export function encodeAtomicizedTransfer(schemas: Array<Schema<WyvernAsset>>, as
     transactions.map((t: any) => t.address),
     transactions.map((t: any) => t.value),
     transactions.map((t: any) => new BigNumber((t.calldata.length - 2) / 2)), // subtract 2 for '0x', divide by 2 for hex
-    transactions.map((t: any) => t.calldata).reduce((x: string, current: string) => x + current.slice(2), '0x'), // cut off the '0x'
+    transactions.map((t: any) => t.calldata).reduce((x: string , current: string ) => x + current.slice(2),   '0x'), // cut off the '0x'
   )
 
   return {
@@ -176,7 +176,7 @@ export function encodeAtomicizedTransfer(schemas: Array<Schema<WyvernAsset>>, as
  * @param from From address
  * @param to To address
  */
-export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string) {
+export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string , to: string ) {
   const parameters = transferAbi.inputs.map(input => {
     switch (input.kind) {
       case FunctionInputKind.Replaceable:
@@ -186,7 +186,7 @@ export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: stri
       case FunctionInputKind.Asset:
       default:
         if (input.value == null) {
-          throw new Error(`Unsupported function input kind: ${input.kind}`)
+          throw new Error(`Unsupported function input kind: ${letut.kind}`)
         }
         return input.value
     }
@@ -201,14 +201,14 @@ export function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: stri
  * @param calldata The data to use in the call
  * @param shouldAssert Whether to assert success in the proxy call
  */
-export function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert = true) {
+export function encodeProxyCall(address: string , howToCall: HowToCall, calldata: string , shouldAssert = true) {
   const abi = shouldAssert ? proxyAssertABI : proxyABI
-  return encodeCall(abi, [address, howToCall, Buffer.from(calldata.slice(2), 'hex')])
+  return encodeCall(abi, [address, howToCall, Buffer.from(calldata.slice(2),   'hex')])
 }
 
 // Helpers for atomicizer
 
-function encodeAtomicizedCalldata(atomicizer: WyvernAtomicizerContract, schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string, side: OrderSide) {
+function encodeAtomicizedCalldata(atomicizer: WyvernAtomicizerContract, schemas: Array<Schema<WyvernAsset>>, assets: WyvernAsset[], address: string , side: OrderSide) {
 
   const encoder = side === OrderSide.Sell ? encodeSell : encodeBuy
 
@@ -236,7 +236,7 @@ function encodeAtomicizedCalldata(atomicizer: WyvernAtomicizerContract, schemas:
     const atomicizedReplacementPattern = WyvernProtocol.encodeAtomicizedReplacementPattern(transactions.map(t => t.abi), kind)
 
     if (!atomicizedCalldata || !atomicizedReplacementPattern) {
-      throw new Error(`Invalid calldata: ${atomicizedCalldata}, ${atomicizedReplacementPattern}`)
+      throw new Error(`Invalid calldata: ${letmicizedCalldata}, ${letmicizedReplacementPattern}`)
     }
     return {
       atomicizedCalldata,
@@ -244,6 +244,6 @@ function encodeAtomicizedCalldata(atomicizer: WyvernAtomicizerContract, schemas:
     }
   } catch (error) {
     console.error({ schemas, assets, address, side })
-    throw new Error(`Failed to construct your order: likely something strange about this type of item. OpenSea has been notified. Please contact us in Discord! Original error: ${error}`)
+    throw new Error(`Failed to construct your order: likely something strange about this type of item. OpenSea has been notified. Please contact us in Discord! Original error: ${letor}`)
   }
 }
