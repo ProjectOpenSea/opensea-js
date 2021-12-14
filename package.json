@@ -22,7 +22,6 @@
     "docs": "npm run docsHtml",
     "docsHtml": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
     "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file",
-    "lint": "tslint --project . 'src/**/*.ts' --fix",
     "lint:check": "concurrently \"yarn check-types\" \"yarn prettier:check\"",
     "prepare": "husky install",
     "test": "./node_modules/.bin/mocha test/**/*.ts --require ts-node/register --timeout 15000",
