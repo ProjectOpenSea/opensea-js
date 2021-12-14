@@ -12,9 +12,9 @@
   "bugs": {
     "url": "https://github.com/ProjectOpenSea/opensea-js/issues"
   },
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "files": [
-    "lib"
+    "dist"
   ],
   "scripts": {
     "build": "tsc",
