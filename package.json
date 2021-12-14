@@ -18,6 +18,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "check-types": "tsc --noEmit --project src/tsconfig.json",
     "docs": "npm run docsHtml",
     "docsHtml": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
     "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file",
