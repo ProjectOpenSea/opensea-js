@@ -29,6 +29,7 @@
     "prettier:check:package.json": "yarn prettier-package-json --list-different",
     "prettier:fix": "prettier --write ."
   },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "bignumber.js": "^4.1.0",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
