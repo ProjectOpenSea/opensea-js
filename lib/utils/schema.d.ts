@@ -1,8 +1,8 @@
-import { WyvernProtocol } from 'wyvern-js';
-import { HowToCall, ReplacementEncoder, Network } from 'wyvern-js/lib/types';
-import { AnnotatedFunctionABI, Schema } from 'wyvern-schemas/dist/types';
-export { AbiType } from 'wyvern-schemas';
-import { WyvernAsset } from '../types';
+import { WyvernProtocol } from "wyvern-js";
+import { HowToCall, ReplacementEncoder, Network } from "wyvern-js/lib/types";
+import { AnnotatedFunctionABI, Schema } from "wyvern-schemas/dist/types";
+export { AbiType } from "wyvern-schemas";
+import { WyvernAsset } from "../types";
 export interface LimitedCallSpec {
     target: string;
     calldata: string;
