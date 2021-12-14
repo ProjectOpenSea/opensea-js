@@ -26,7 +26,9 @@
     "lint:check": "concurrently \"yarn check-types\"",
     "prepare": "husky install",
     "test": "./node_modules/.bin/mocha test/**/*.ts --require ts-node/register --timeout 15000",
-    "prettier:check:package.json": "yarn prettier-package-json --list-different"
+    "prettier:check": "prettier --check .",
+    "prettier:check:package.json": "yarn prettier-package-json --list-different",
+    "prettier:fix": "prettier --write ."
   },
   "dependencies": {
     "bignumber.js": "^4.1.0",
@@ -53,6 +55,7 @@
     "lint-staged": "^12.1.2",
     "mocha": "^5.2.0",
     "mocha-typescript": "^1.1.15",
+    "prettier": "^2.5.1",
     "prettier-package-json": "^2.6.0",
     "ts-node": "^6.1.0",
     "typedoc": "^0.11.1",
