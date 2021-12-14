@@ -5,6 +5,7 @@
 # OpenSea.js <!-- omit in toc -->
 
 [![https://badges.frapsoft.com/os/mit/mit.svg?v=102](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://opensource.org/licenses/MIT)
+
 <!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
 
 A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don't have to deploy your own smart contracts or backend orderbooks.
@@ -57,6 +58,7 @@ Happy seafaring! ⛵️
 We recommend switching to Node.js version 8.11 to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
 
 Then, in your project, run:
+
 ```bash
 npm install --save opensea-js
 ```
@@ -232,7 +234,9 @@ const offer = await seaport.createBuyOrder({
   startAmount: 1.2,
 })
 ```
+
 #### Offer Limits
+
 Note: The total value of buy orders must not exceed 10000 x wallet balance.
 
 ### Making Listings / Selling Items
@@ -380,7 +384,7 @@ const transactionHash = await this.props.seaport.fulfillOrder({ order, accountAd
 
 Note that the `fulfillOrder` promise resolves when the transaction has been confirmed and mined to the blockchain. To get the transaction hash before this happens, add an event listener (see [Listening to Events](#listening-to-events)) for the `TransactionCreated` event.
 
-If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the *buyer* and this will prompt the buyer to pay for the item(s).
+If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s).
 
 ### Accepting Offers
 
@@ -392,7 +396,7 @@ const accountAddress = "0x..." // The owner's wallet address, also the taker
 await this.props.seaport.fulfillOrder({ order, accountAddress })
 ```
 
-If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the *owner* and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
+If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
 
 ### Transferring Items or Coins (Gifting)
 
@@ -477,7 +481,7 @@ await this.props.seaport.fulfillOrder({
 })
 ```
 
-If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the *buyer* and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is a buy order ( `OrderSide.Buy`), the taker is the *seller* but the bid amount be sent to the `recipientAddress`.
+If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is a buy order ( `OrderSide.Buy`), the taker is the _seller_ but the bid amount be sent to the `recipientAddress`.
 
 ### Bulk Transfers
 
@@ -550,9 +554,9 @@ const order = await seaport.api.getOrders({
 
 **Fun note:** soon, all ERC-20 tokens will be allowed! This will mean you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea:
 
-* MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942 
-* DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
-* And tons more! See the "Currencies" list in the sidebar on https://opensea.io/assets for a full list, or contact us to add yours: [Discord](https://discord.gg/ga8EJbv)
+- MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942
+- DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
+- And tons more! See the "Currencies" list in the sidebar on https://opensea.io/assets for a full list, or contact us to add yours: [Discord](https://discord.gg/ga8EJbv)
 
 ### Private Auctions
 
@@ -573,10 +577,9 @@ const listing = await seaport.createSellOrder({
 })
 ```
 
-
 ### Sharing Sale Fees with OpenSea
 
-We share fees for successful sales with game developers, relayers, and affiliates using the OpenSea orderbook. Developers can customize the fee amount to apply to  buyers and/or sellers.
+We share fees for successful sales with game developers, relayers, and affiliates using the OpenSea orderbook. Developers can customize the fee amount to apply to buyers and/or sellers.
 
 See [Affiliate Program](#affiliate-program) above for how to register referrers for sales.
 
@@ -705,6 +708,7 @@ npm run build
 ```
 
 Or run the tests:
+
 ```bash
 npm test
 ```
@@ -714,16 +718,19 @@ Note that the tests require access to both Infura and the OpenSea API. The timeo
 **Generate Documentation**
 
 Generate html docs, also available for browsing [here](https://projectopensea.github.io/opensea-js/):
+
 ```bash
 npm run docsHtml
 ```
 
 Or generate markdown docs available for browsing on git repos:
+
 ```bash
 npm run docsMarkdown
 ```
 
 Due to a markdown theme typescript issue, `docs` just generates html docs right now:
+
 ```bash
 npm run docs
 ```
@@ -734,10 +741,10 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 
 ## Diagnosing Common Issues
 
-* Is the `expirationTime` in the future?  If not, change it to a time in the future.
+- Is the `expirationTime` in the future? If not, change it to a time in the future.
 
-* Are the input addresses all strings? If not, convert them to strings.
+- Are the input addresses all strings? If not, convert them to strings.
 
-* Is your computer's internal clock accurate? If not, try enabling automatic clock adjustment locally or following [this tutorial](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html) to update an Amazon EC2 instance.
+- Is your computer's internal clock accurate? If not, try enabling automatic clock adjustment locally or following [this tutorial](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html) to update an Amazon EC2 instance.
 
-* Are you attempting to purchase a token that's unpurchasable on [OpenSea](https://opensea.io/)?  If so, contact us [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel and we'll help diagnose the issue.
+- Are you attempting to purchase a token that's unpurchasable on [OpenSea](https://opensea.io/)? If so, contact us [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel and we'll help diagnose the issue.
