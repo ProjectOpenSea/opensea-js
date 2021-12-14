@@ -6,7 +6,7 @@
     "./node_modules/types-ethereumjs-util/index.d.ts"
   ],
   "compilerOptions": {
-    "outDir": "dist",
+    "outDir": "lib",
     "noImplicitThis": false,
     "module": "commonjs",
     "target": "es5",

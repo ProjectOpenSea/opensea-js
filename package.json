@@ -12,9 +12,9 @@
   "bugs": {
     "url": "https://github.com/ProjectOpenSea/opensea-js/issues"
   },
-  "main": "dist/index.js",
+  "main": "lib/index.js",
   "files": [
-    "dist"
+    "lib"
   ],
   "scripts": {
     "build": "tsc",
@@ -29,7 +29,7 @@
     "prettier:check:package.json": "yarn prettier-package-json --list-different",
     "prettier:fix": "prettier --write ."
   },
-  "types": "dist/index.d.ts",
+  "types": "lib/index.d.ts",
   "dependencies": {
     "bignumber.js": "^4.1.0",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
