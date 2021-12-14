@@ -3,9 +3,11 @@
 Full changelog coming soon. For now, here are the most important changes for doing major migrations:
 
 ## Migrating to version 1.2
+
 - `OpenSeaPort::computeFees()` No longer accepts an `isPrivate` parameter.
 
 ## Migrating to version 1.1
+
 - `OpenSeaPort::computeFees()` No longer accepts a `fees` parameter, relying solely on `asset`.
 
 ## Migrating to version 1.0
@@ -13,14 +15,17 @@ Full changelog coming soon. For now, here are the most important changes for doi
 Version 1.0 introduces bundling for semi-fungible and fungible assets, serialized asset collections, a smaller bundle size, and more, along with many bug fixes.
 
 **Breaking directory changes**
+
 - Many constants inside of `/utils` have been moved to `/constants`.
 - Other utils have been moved to `/utils/utils`
 
 **Breaking type changes**
+
 - `profile_img_url` in the `OpenSeaAccount` type has been renamed to `profileImgUrl`
 - `OpenSeaPort::computeFees()` now returns a new type, `ComputedFees`, which expands "BPS" to "BasisPoints" for each of its member keys
 
 **Breaking interface changes**
+
 - `OpenSeaPort::computeFees()` now takes in a single asset, and returns a new and more consistent type, `ComputedFees`
 - `schemaName` has been moved out of main method calls and into the `Asset` type
 - `OpenSeaAPI::getAsset()` now accepts named arguments, consistent with other methods
@@ -29,6 +34,7 @@ Version 1.0 introduces bundling for semi-fungible and fungible assets, serialize
 - `OpenSeaPort::approveNonFungibleToken()` has been renamed to `approveSemiOrNonFungibleToken()`, though it always worked for semi-fungible tokens like ERC-1155
 
 **Removed deprecations:**
+
 - `OpenSeaPort::transferOne()`, replaced by `OpenSeaPort::transfer()`
 - `tokenId` and `tokenAddress` parameters for most SDK methods, replaced by creating an `Asset` type and passing that in
 
