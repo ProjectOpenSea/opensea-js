@@ -233,7 +233,7 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Fetch list of fungible tokens from the API matching paramters
+   * Fetch list of fungible tokens from the API matching parameters
    * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
    * @param page Page number, defaults to 1. Can be overridden by
    * `limit` and `offset` attributes from OpenSeaFungibleTokenQuery
@@ -264,7 +264,7 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Fetch an bundle from the API, return null if it isn't found
+   * Fetch a bundle from the API, return null if it isn't found
    * @param slug The bundle's identifier
    */
   public async getBundle({ slug }: {
