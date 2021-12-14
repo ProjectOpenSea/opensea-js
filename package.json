@@ -80,6 +80,9 @@
   "lint-staged": {
     "package.json": [
       "prettier-package-json --write"
+    ],
+    "**/*.{ts,tsx,js,jsx,html,md,mdx,yml,json}": [
+      "prettier --write"
     ]
   }
 }
