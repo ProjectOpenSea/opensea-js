@@ -23,6 +23,7 @@
     "docsHtml": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
     "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file",
     "lint": "tslint --project . 'src/**/*.ts' --fix",
+    "lint:check": "concurrently \"yarn check-types\"",
     "prepare": "husky install",
     "test": "./node_modules/.bin/mocha test/**/*.ts --require ts-node/register --timeout 15000",
     "prettier:check:package.json": "yarn prettier-package-json --list-different"
@@ -48,6 +49,7 @@
     "@types/node-fetch": "2.5.5",
     "@types/query-string": "^6.1.0",
     "chai": "^4.1.2",
+    "concurrently": "^6.4.0",
     "husky": "^7.0.4",
     "lint-staged": "^12.1.2",
     "mocha": "^5.2.0",

@@ -1,11 +1,10 @@
-import { BigNumber } from "bignumber.js";
 export declare const DEFAULT_GAS_INCREASE_FACTOR = 1.01;
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
 export declare const DEP_INFURA_KEY = "e8695bce67944848aa95459fac052f8e";
 export declare const INVERSE_BASIS_POINT = 10000;
-export declare const MAX_UINT_256: BigNumber;
+export declare const MAX_UINT_256: import("bignumber.js").BigNumber;
 export declare const WYVERN_EXCHANGE_ADDRESS_MAINNET = "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b";
 export declare const WYVERN_EXCHANGE_ADDRESS_RINKEBY = "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9";
 export declare const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";
