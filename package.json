@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "check-types": "tsc --noEmit --project src/tsconfig.json",
+    "check-types": "tsc --noEmit --project tsconfig.json",
     "docs": "npm run docsHtml",
     "docsHtml": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
     "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file",
@@ -54,8 +54,6 @@
     "mocha-typescript": "^1.1.15",
     "prettier-package-json": "^2.6.0",
     "ts-node": "^6.1.0",
-    "tslint": "^5.9.1",
-    "tslint-eslint-rules": "^4.1.1",
     "typedoc": "^0.11.1",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "0.0.8",
