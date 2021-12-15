@@ -20,7 +20,7 @@ jobs:
         run: yarn install --immutable --ignore-scripts
 
       - name: Build
-        run: yarn docsHtml
+        run: yarn docs-build
 
       - name: Deploy 🚀
         if: github.ref == 'refs/heads/master'
