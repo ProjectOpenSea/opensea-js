@@ -1,18 +1,18 @@
 import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { suite, test } from "mocha";
 import * as Web3 from "web3";
 import {
   CK_ADDRESS,
   MAINNET_PROVIDER_URL,
   MAX_UINT_256,
-} from "../../src/constants";
-import { ERC721 } from "../../src/contracts";
-import { OpenSeaPort } from "../../src/index";
-import { Network } from "../../src/types";
+} from "../../constants";
+import { ERC721 } from "../../contracts";
+import { OpenSeaPort } from "../../index";
+import { Network } from "../../types";
 import {
   getNonCompliantApprovalAddress,
   isContractAddress,
-} from "../../src/utils/utils";
+} from "../../utils/utils";
 import {
   ALEX_ADDRESS,
   ALEX_ADDRESS_2,
@@ -74,10 +74,14 @@ suite("seaport: misc", () => {
 
   test("Single-approval tokens are approved for tester address", async () => {
     const accountAddress = ALEX_ADDRESS_2;
+    // @ts-expect-error unused
     const _proxyAddress = await client._getProxy(accountAddress);
     const tokenId = CK_TOKEN_ID.toString();
     const tokenAddress = CK_ADDRESS;
-    const erc721 = await client.web3.eth.contract(ERC721).at(tokenAddress);
+    const erc721 = await client.web3.eth
+      .contract(ERC721 as Web3.AbiDefinition[])
+      .at(tokenAddress);
+    // @ts-expect-error unused
     const _approvedAddress = await getNonCompliantApprovalAddress(
       erc721,
       tokenId,

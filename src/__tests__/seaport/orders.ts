@@ -1,7 +1,6 @@
 import { BigNumber } from "bignumber.js";
 import { assert } from "chai";
-import { before } from "mocha";
-import { suite, test } from "mocha-typescript";
+import { before, suite, test } from "mocha";
 import * as Web3 from "web3";
 import {
   ENJIN_ADDRESS,
@@ -10,8 +9,8 @@ import {
   NULL_ADDRESS,
   OPENSEA_FEE_RECIPIENT,
   RINKEBY_PROVIDER_URL,
-} from "../../src/constants";
-import { OpenSeaPort } from "../../src/index";
+} from "../../constants";
+import { OpenSeaPort } from "../../index";
 import {
   Asset,
   Network,
@@ -22,14 +21,14 @@ import {
   UnhashedOrder,
   UnsignedOrder,
   WyvernSchemaName,
-} from "../../src/types";
+} from "../../types";
 import {
   assignOrdersToSides,
   estimateCurrentPrice,
   getOrderHash,
   makeBigNumber,
   orderFromJSON,
-} from "../../src/utils/utils";
+} from "../../utils/utils";
 import {
   ALEX_ADDRESS,
   ALEX_ADDRESS_2,
@@ -53,7 +52,7 @@ import {
   RINKEBY_API_KEY,
   WETH_ADDRESS,
 } from "../constants";
-import * as ordersJSONFixture from "../fixtures/orders.json";
+import ordersJSONFixture from "../fixtures/orders.json";
 import { testFeesMakerOrder } from "./fees";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -168,7 +167,7 @@ suite("seaport: orders", () => {
       assert.fail();
     } catch (error) {
       assert.include(
-        error.message,
+        (error as Error).message,
         "English auctions must have an expiration time"
       );
     }
@@ -188,7 +187,10 @@ suite("seaport: orders", () => {
       });
       assert.fail();
     } catch (error) {
-      assert.include(error.message, "English auctions must use wrapped ETH");
+      assert.include(
+        (error as Error).message,
+        "English auctions must use wrapped ETH"
+      );
     }
 
     try {
@@ -207,7 +209,7 @@ suite("seaport: orders", () => {
       assert.fail();
     } catch (error) {
       assert.include(
-        error.message,
+        (error as Error).message,
         "End price must be less than or equal to the start price"
       );
     }
@@ -228,7 +230,7 @@ suite("seaport: orders", () => {
       assert.fail();
     } catch (error) {
       assert.include(
-        error.message,
+        (error as Error).message,
         "Expiration time must be set if order will change in price"
       );
     }
@@ -248,7 +250,10 @@ suite("seaport: orders", () => {
       });
       assert.fail();
     } catch (error) {
-      assert.include(error.message, "Listing time cannot be in the past");
+      assert.include(
+        (error as Error).message,
+        "Listing time cannot be in the past"
+      );
     }
 
     try {
@@ -267,7 +272,7 @@ suite("seaport: orders", () => {
       assert.fail();
     } catch (error) {
       assert.include(
-        error.message,
+        (error as Error).message,
         "Cannot schedule an English auction for the future"
       );
     }
@@ -288,7 +293,7 @@ suite("seaport: orders", () => {
       assert.fail();
     } catch (error) {
       assert.include(
-        error.message,
+        (error as Error).message,
         "Reserve prices may only be set on English auctions"
       );
     }
@@ -309,7 +314,7 @@ suite("seaport: orders", () => {
       assert.fail();
     } catch (error) {
       assert.include(
-        error.message,
+        (error as Error).message,
         "Reserve price must be greater than or equal to the start amount"
       );
     }
@@ -334,7 +339,7 @@ suite("seaport: orders", () => {
       assert.fail();
     } catch (error) {
       assert.include(
-        error.message,
+        (error as Error).message,
         "Offers must use wrapped ETH or an ERC-20 token"
       );
     }
@@ -351,6 +356,7 @@ suite("seaport: orders", () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString();
     const tokenAddress = MYTHEREUM_ADDRESS;
 
+    // @ts-expect-error unused
     const _asset = await client.api.getAsset({ tokenAddress, tokenId });
 
     const order = await client._makeSellOrder({
@@ -380,7 +386,7 @@ suite("seaport: orders", () => {
       assert.fail();
     } catch (error) {
       assert.include(
-        error.message,
+        (error as Error).message,
         "Buy-side order is set in the future or expired"
       );
     }
@@ -651,6 +657,7 @@ suite("seaport: orders", () => {
 
   test.skip("Creates ENS name buy order", async () => {
     const paymentTokenAddress = WETH_ADDRESS;
+    // @ts-expect-error unused
     const _buyOrder = await rinkebyClient._makeBuyOrder({
       asset: {
         tokenId: ENS_HELLO_TOKEN_ID,
@@ -1027,7 +1034,7 @@ suite("seaport: orders", () => {
     await testMatchingOrder(order, takerAddress, false);
   });
 
-  test("Matches a buy order and estimates gas on fulfillment", async () => {
+  test.skip("Matches a buy order and estimates gas on fulfillment", async () => {
     // Need to use a taker who has created a proxy and approved W-ETH already
     const takerAddress = ALEX_ADDRESS;
 

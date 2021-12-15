@@ -1,7 +1,6 @@
 import BigNumber from "bignumber.js";
 import { assert } from "chai";
-import { before } from "mocha";
-import { suite, test } from "mocha-typescript";
+import { before, suite, test } from "mocha";
 import * as Web3 from "web3";
 import {
   DEFAULT_BUYER_FEE_BASIS_POINTS,
@@ -13,8 +12,8 @@ import {
   NULL_ADDRESS,
   OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
-} from "../../src/constants";
-import { OpenSeaPort } from "../../src/index";
+} from "../../constants";
+import { OpenSeaPort } from "../../index";
 import {
   FeeMethod,
   Network,
@@ -23,8 +22,8 @@ import {
   Order,
   OrderSide,
   UnhashedOrder,
-} from "../../src/types";
-import { getOrderHash } from "../../src/utils/utils";
+} from "../../types";
+import { getOrderHash } from "../../utils/utils";
 import {
   ALEX_ADDRESS,
   CATS_IN_MECHS_ID,
@@ -193,7 +192,8 @@ suite("seaport: fees", () => {
         side: OrderSide.Sell,
       });
       assert.fail();
-    } catch (error) {
+    } catch (err) {
+      const error = err as Error;
       if (
         !error.message.includes("bounty exceeds the maximum") ||
         !error.message.includes("OpenSea will add")

@@ -1,16 +1,16 @@
 import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { suite, test } from "mocha";
 import * as Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
-import { orderToJSON, OpenSeaPort } from "../../src";
 import {
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
   ORDERBOOK_VERSION,
   ORDER_MATCHING_LATENCY_SECONDS,
-} from "../../src/constants";
-import { Network, OrderSide } from "../../src/types";
-import { getOrderHash, makeBigNumber } from "../../src/utils/utils";
+} from "../../constants";
+import { orderToJSON, OpenSeaPort } from "../../index";
+import { Network, OrderSide } from "../../types";
+import { getOrderHash, makeBigNumber } from "../../utils/utils";
 import {
   ALEX_ADDRESS,
   apiToTest,
@@ -226,13 +226,13 @@ suite("api", () => {
 
   test("API fetches buy orders for maker", async () => {
     const forMaker = await apiToTest.getOrders({
-      maker: ALEX_ADDRESS,
+      maker: "0x5a237d6ce6d1fa3766fc15256cbfb8bdcf5a5b8a",
       side: OrderSide.Buy,
     });
     assert.isAbove(forMaker.orders.length, 0);
     assert.isAbove(forMaker.count, 0);
     forMaker.orders.forEach((order) => {
-      assert.equal(ALEX_ADDRESS, order.maker);
+      assert.equal("0x5a237d6ce6d1fa3766fc15256cbfb8bdcf5a5b8a", order.maker);
       assert.equal(OrderSide.Buy, order.side);
     });
   });
@@ -275,14 +275,14 @@ suite("api", () => {
     try {
       await apiToTest.get("/user");
     } catch (error) {
-      assert.include(error.message, "Unauthorized");
+      assert.include((error as Error).message, "Unauthorized");
     }
 
     // 404 Not found
     try {
       await apiToTest.get(`/asset/${CK_RINKEBY_ADDRESS}/0`);
     } catch (error) {
-      assert.include(error.message, "Not found");
+      assert.include((error as Error).message, "Not found");
     }
 
     // 400 malformed
