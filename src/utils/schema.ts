@@ -280,7 +280,7 @@ export function encodeProxyCall(
   shouldAssert = true
 ) {
   const abi = shouldAssert ? proxyAssertABI : proxyABI;
-  return encodeCall(abi, [
+  return encodeCall(abi as AnnotatedFunctionABI, [
     address,
     howToCall,
     Buffer.from(calldata.slice(2), "hex"),

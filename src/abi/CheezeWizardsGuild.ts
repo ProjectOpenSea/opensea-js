@@ -1,5 +1,6 @@
 import { PartialReadonlyContractAbi } from "../types";
 
+// eslint-disable-next-line import/no-unused-modules
 export const CheezeWizardsGuild: PartialReadonlyContractAbi = [
   {
     constant: false,

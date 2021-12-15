@@ -1,11 +1,15 @@
 import { assert } from "chai";
-
 import { before } from "mocha";
-
 import { suite, test } from "mocha-typescript";
-
-import { OpenSeaPort } from "../../src/index";
 import * as Web3 from "web3";
+import {
+  ENJIN_ADDRESS,
+  ENJIN_LEGACY_ADDRESS,
+  MAINNET_PROVIDER_URL,
+  MAX_UINT_256,
+  RINKEBY_PROVIDER_URL,
+} from "../../src/constants";
+import { OpenSeaPort } from "../../src/index";
 import {
   Network,
   WyvernSchemaName,
@@ -36,13 +40,6 @@ import {
   AGE_OF_RUST_TOKEN_ID,
   WETH_ADDRESS,
 } from "../constants";
-import {
-  ENJIN_ADDRESS,
-  ENJIN_LEGACY_ADDRESS,
-  MAINNET_PROVIDER_URL,
-  MAX_UINT_256,
-  RINKEBY_PROVIDER_URL,
-} from "../../src/constants";
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL);
@@ -82,7 +79,7 @@ suite("seaport: owners and transfers", () => {
     };
     try {
       // Use mainnet client with rinkeby asset
-      const isOwner = await client._ownsAssetOnChain({
+      const _isOwner = await client._ownsAssetOnChain({
         accountAddress,
         wyAsset: wyAssetRinkeby,
         schemaName,
