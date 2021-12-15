@@ -27,7 +27,6 @@ import {
   MIN_EXPIRATION_SECONDS,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
-  OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
   ORDER_MATCHING_LATENCY_SECONDS,
   RPC_URL_PATH,
@@ -4186,10 +4185,11 @@ export class OpenSeaPort {
     } catch (error) {
       console.error(`Failed atomic match with args: `, args, error);
       throw new Error(
-        `Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${error.message.substr(
-          0,
-          MAX_ERROR_LENGTH
-        )}..."`
+        `Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${
+          error instanceof Error
+            ? error.message.substr(0, MAX_ERROR_LENGTH)
+            : ""
+        }..."`
       );
     }
 
@@ -4210,7 +4210,7 @@ export class OpenSeaPort {
 
       throw new Error(
         `Failed to authorize transaction: "${
-          error.message ? error.message : "user denied"
+          error instanceof Error ? error.message : "user denied"
         }..."`
       );
     }
