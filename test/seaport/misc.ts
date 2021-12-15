@@ -1,84 +1,105 @@
-import {
-  assert
-} from 'chai'
-import {
-  suite,
-  test
-} from 'mocha-typescript'
-import * as Web3 from 'web3'
+import { assert } from "chai";
+import { suite, test } from "mocha-typescript";
+import * as Web3 from "web3";
 import {
   CK_ADDRESS,
   MAINNET_PROVIDER_URL,
-  MAX_UINT_256
-} from '../../src/constants'
-import { ERC721 } from '../../src/contracts'
-import { OpenSeaPort } from '../../src/index'
-import { Network } from '../../src/types'
-import { getNonCompliantApprovalAddress, isContractAddress } from '../../src/utils/utils'
-import { ALEX_ADDRESS, ALEX_ADDRESS_2, CK_TOKEN_ID, DAN_ADDRESS, DAN_DAPPER_ADDRESS, MAINNET_API_KEY, WETH_ADDRESS } from '../constants'
+  MAX_UINT_256,
+} from "../../src/constants";
+import { ERC721 } from "../../src/contracts";
+import { OpenSeaPort } from "../../src/index";
+import { Network } from "../../src/types";
+import {
+  getNonCompliantApprovalAddress,
+  isContractAddress,
+} from "../../src/utils/utils";
+import {
+  ALEX_ADDRESS,
+  ALEX_ADDRESS_2,
+  CK_TOKEN_ID,
+  DAN_ADDRESS,
+  DAN_DAPPER_ADDRESS,
+  MAINNET_API_KEY,
+  WETH_ADDRESS,
+} from "../constants";
 
+const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 
+const client = new OpenSeaPort(
+  provider,
+  {
+    networkName: Network.Main,
+    apiKey: MAINNET_API_KEY,
+  },
+  (line) => console.info(`MAINNET: ${line}`)
+);
 
-const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL)
+suite("seaport: misc", () => {
+  test("Instance has public methods", () => {
+    assert.equal(typeof client.getCurrentPrice, "function");
+    assert.equal(typeof client.wrapEth, "function");
+  });
 
-const client = new OpenSeaPort(provider, {
-  networkName: Network.Main,
-  apiKey: MAINNET_API_KEY
-}, line => console.info(`MAINNET: ${line}`))
+  test("Instance exposes API methods", () => {
+    assert.equal(typeof client.api.getOrder, "function");
+    assert.equal(typeof client.api.getOrders, "function");
+    assert.equal(typeof client.api.postOrder, "function");
+  });
 
-suite('seaport: misc', () => {
+  test("Instance exposes some underscored methods", () => {
+    assert.equal(typeof client._initializeProxy, "function");
+    assert.equal(typeof client._getProxy, "function");
+  });
 
-  test('Instance has public methods', () => {
-    assert.equal(typeof client.getCurrentPrice, 'function')
-    assert.equal(typeof client.wrapEth, 'function')
-  })
+  test("Fetches proxy for an account", async () => {
+    const accountAddress = ALEX_ADDRESS;
+    const proxy = await client._getProxy(accountAddress);
+    assert.isNotNull(proxy);
+  });
 
-  test('Instance exposes API methods', () => {
-    assert.equal(typeof client.api.getOrder, 'function')
-    assert.equal(typeof client.api.getOrders, 'function')
-    assert.equal(typeof client.api.postOrder, 'function')
-  })
+  test("Fetches positive token balance for an account", async () => {
+    const accountAddress = ALEX_ADDRESS;
+    const balance = await client.getTokenBalance({
+      accountAddress,
+      tokenAddress: WETH_ADDRESS,
+    });
+    assert.isAbove(balance.toNumber(), 0);
+  });
 
-  test('Instance exposes some underscored methods', () => {
-    assert.equal(typeof client._initializeProxy, 'function')
-    assert.equal(typeof client._getProxy, 'function')
-  })
+  test("Accounts have maximum token balance approved", async () => {
+    const accountAddress = ALEX_ADDRESS;
+    const approved = await client._getApprovedTokenCount({ accountAddress });
+    assert.equal(approved.toString(), MAX_UINT_256.toString());
+  });
 
-  test('Fetches proxy for an account', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const proxy = await client._getProxy(accountAddress)
-    assert.isNotNull(proxy)
-  })
-
-  test('Fetches positive token balance for an account', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const balance = await client.getTokenBalance({ accountAddress, tokenAddress: WETH_ADDRESS })
-    assert.isAbove(balance.toNumber(), 0)
-  })
-
-  test('Accounts have maximum token balance approved', async () => {
-    const accountAddress = ALEX_ADDRESS
-    const approved = await client._getApprovedTokenCount({ accountAddress })
-    assert.equal(approved.toString(), MAX_UINT_256.toString())
-  })
-
-  test('Single-approval tokens are approved for tester address', async () => {
-    const accountAddress = ALEX_ADDRESS_2
-    const proxyAddress = await client._getProxy(accountAddress)
-    const tokenId = CK_TOKEN_ID.toString()
-    const tokenAddress = CK_ADDRESS
-    const erc721 = await client.web3.eth.contract(ERC721 as any).at(tokenAddress)
-    const approvedAddress = await getNonCompliantApprovalAddress(erc721, tokenId, accountAddress)
+  test("Single-approval tokens are approved for tester address", async () => {
+    const accountAddress = ALEX_ADDRESS_2;
+    const proxyAddress = await client._getProxy(accountAddress);
+    const tokenId = CK_TOKEN_ID.toString();
+    const tokenAddress = CK_ADDRESS;
+    const erc721 = await client.web3.eth
+      .contract(ERC721 as any)
+      .at(tokenAddress);
+    const approvedAddress = await getNonCompliantApprovalAddress(
+      erc721,
+      tokenId,
+      accountAddress
+    );
     // assert.equal(approvedAddress, proxyAddress)
-  })
+  });
 
-  test('Checks whether an address is a contract addrress', async () => {
-    const smartContractWalletAddress = DAN_DAPPER_ADDRESS
-    const acccountOneIsContractAddress = await isContractAddress(client.web3, smartContractWalletAddress)
-    const nonSmartContractWalletAddress = DAN_ADDRESS
-    const acccountTwoIsContractAddress = await isContractAddress(client.web3, nonSmartContractWalletAddress)
-    assert.equal(acccountOneIsContractAddress, true)
-    assert.equal(acccountTwoIsContractAddress, false)
-  })
-
-})
+  test("Checks whether an address is a contract addrress", async () => {
+    const smartContractWalletAddress = DAN_DAPPER_ADDRESS;
+    const acccountOneIsContractAddress = await isContractAddress(
+      client.web3,
+      smartContractWalletAddress
+    );
+    const nonSmartContractWalletAddress = DAN_ADDRESS;
+    const acccountTwoIsContractAddress = await isContractAddress(
+      client.web3,
+      nonSmartContractWalletAddress
+    );
+    assert.equal(acccountOneIsContractAddress, true);
+    assert.equal(acccountTwoIsContractAddress, false);
+  });
+});

@@ -31,6 +31,7 @@ import {
   SITE_HOST_RINKEBY
 } from './constants'
 
+
 export class OpenSeaAPI {
 
   /**
@@ -419,12 +420,14 @@ export class OpenSeaAPI {
   }
 }
 
-function _throwOrContinue(error: Error, retries: number) {
-  const isUnavailable = !!error.message && (
+function _throwOrContinue(error: unknown, retries: number) {
+  const isUnavailable =   error instanceof Error && !!error.message && (
     error.message.includes('503') ||
     error.message.includes('429')
   )
+
   if (retries <= 0 || !isUnavailable) {
     throw error
   }
 }
+
