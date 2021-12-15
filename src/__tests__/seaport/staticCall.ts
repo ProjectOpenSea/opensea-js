@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { suite, test } from "mocha-typescript";
+import { suite, test } from "mocha";
 import * as Web3 from "web3";
 import {
   MAINNET_PROVIDER_URL,

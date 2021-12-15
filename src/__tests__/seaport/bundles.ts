@@ -1,6 +1,5 @@
 import { assert } from "chai";
-import { before } from "mocha";
-import { suite, test } from "mocha-typescript";
+import { before, suite, test } from "mocha";
 import * as Web3 from "web3";
 import {
   ENJIN_ADDRESS,
