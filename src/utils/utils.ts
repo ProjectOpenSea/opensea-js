@@ -9,6 +9,7 @@ import {
   FunctionOutputKind,
   Schema,
   StateMutability,
+  Network,
 } from "wyvern-schemas/dist/types";
 import {
   ENJIN_ADDRESS,
@@ -16,6 +17,8 @@ import {
   INVERSE_BASIS_POINT,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
+  FEE_WRAPPER_ADDRESS_MAINNET,
+  FEE_WRAPPER_ADDRESS_RINKEBY
 } from "../constants";
 import { ERC1155 } from "../contracts";
 import {
@@ -1001,3 +1004,24 @@ export async function getNonCompliantApprovalAddress(
 
   return _.compact(results)[0];
 }
+
+export const isFeeWrapperFlow = ({
+  buy,
+  sell,
+}: {
+  buy: Order;
+  sell: Order;
+}, network: Network) => {
+  const feeWrapperAddress = getFeeWrapperAddress(network)
+
+  return (
+    (buy.staticTarget === feeWrapperAddress ||
+      sell.staticTarget === feeWrapperAddress) &&
+    sell.feeRecipient === feeWrapperAddress
+  );
+}
+
+export const getFeeWrapperAddress = (network: Network) =>
+  network === Network.Main
+    ? FEE_WRAPPER_ADDRESS_MAINNET
+    : FEE_WRAPPER_ADDRESS_RINKEBY

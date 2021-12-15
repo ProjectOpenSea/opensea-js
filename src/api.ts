@@ -21,6 +21,7 @@ import {
   Order,
   OrderbookResponse,
   OrderJSON,
+  OrderFulfillmentDataResponse,
   OrderQuery,
 } from "./types";
 import {
@@ -177,6 +178,20 @@ export class OpenSeaAPI {
         count: json.count,
       };
     }
+  }
+
+  /**
+   * Get server signature and fee data for submitting an atomic match
+   * using the Wyvern fee wrapper
+   */
+   public async getOrderFulfillmentData(
+    orderHash: string
+  ): Promise<OrderFulfillmentDataResponse> {
+    const result = await this.get(
+      `${ORDERBOOK_PATH}/orders/fulfillment_data/${orderHash}`
+    )
+
+    return result
   }
 
   /**

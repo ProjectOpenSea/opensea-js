@@ -1,5 +1,6 @@
 import { BigNumber } from "bignumber.js";
 import { isValidAddress } from "ethereumjs-util";
+import { ethers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import Web3 from "web3";
@@ -42,6 +43,8 @@ import {
   WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY,
+  FEE_WRAPPER_ADDRESS_MAINNET,
+  FEE_WRAPPER_ADDRESS_RINKEBY,
 } from "./constants";
 import {
   CanonicalWETH,
@@ -58,6 +61,7 @@ import {
   WrappedNFT,
   WrappedNFTFactory,
   WrappedNFTLiquidationProxy,
+  WyvernFeeWrapper,
 } from "./contracts";
 import {
   MAX_ERROR_LENGTH,
@@ -88,6 +92,8 @@ import {
   WyvernFTAsset,
   WyvernNFTAsset,
   WyvernSchemaName,
+  WyvernAtomicMatchParametersWithEthers,
+  WyvernFeeWrapperAtomicMatchParameters,
 } from "./types";
 import {
   encodeAtomicizedBuy,
@@ -122,6 +128,8 @@ import {
   rawCall,
   sendRawTransaction,
   validateAndFormatWalletAddress,
+  isFeeWrapperFlow,
+  getFeeWrapperAddress,
 } from "./utils/utils";
 
 export class OpenSeaPort {
@@ -1154,12 +1162,34 @@ export class OpenSeaPort {
     const { buy, sell } = assignOrdersToSides(order, matchingOrder);
 
     const metadata = this._getMetadata(order, referrerAddress);
-    const transactionHash = await this._atomicMatch({
-      buy,
-      sell,
-      accountAddress,
-      metadata,
-    });
+
+    let transactionHash = "";
+
+    // We use a fee wrapper to handle fee distribution instead of Wyvern
+    if (isFeeWrapperFlow({ buy, sell }, this._networkName)) {
+      const vrs = await this._authorizeOrder(matchingOrder, true);
+      const properlySignedMatchingOrder = { ...matchingOrder, ...vrs };
+      transactionHash = await this._atomicMatch({
+        buy:
+          properlySignedMatchingOrder.side === OrderSide.Buy
+            ? properlySignedMatchingOrder
+            : buy,
+        sell:
+          properlySignedMatchingOrder.side === OrderSide.Sell
+            ? properlySignedMatchingOrder
+            : sell,
+        accountAddress,
+        metadata,
+        makerOrder: order,
+      });
+    } else {
+      transactionHash = await this._atomicMatch({
+        buy,
+        sell,
+        accountAddress,
+        metadata,
+      });
+    }
 
     await this._confirmTransaction(
       transactionHash,
@@ -1170,6 +1200,7 @@ export class OpenSeaPort {
         return !isOpen;
       }
     );
+
     return transactionHash;
   }
 
@@ -2804,10 +2835,16 @@ export class OpenSeaPort {
         ),
       };
     } else {
-      // Noop - no checks
+      // Default to the fee wrapper static check
       return {
-        staticTarget: NULL_ADDRESS,
-        staticExtradata: "0x",
+        staticTarget:
+          this._networkName === Network.Main
+            ? FEE_WRAPPER_ADDRESS_MAINNET
+            : FEE_WRAPPER_ADDRESS_RINKEBY,
+        staticExtradata: encodeCall(
+          getMethod(WyvernFeeWrapper, "expectInTransaction"),
+          []
+        ),
       };
     }
   }
@@ -3131,7 +3168,9 @@ export class OpenSeaPort {
     const times = this._getTimeParameters(0);
     // Compat for matching buy orders that have fee recipient still on them
     const feeRecipient =
-      order.feeRecipient == NULL_ADDRESS ? OPENSEA_FEE_RECIPIENT : NULL_ADDRESS;
+      order.feeRecipient == NULL_ADDRESS
+        ? getFeeWrapperAddress(this._networkName)
+        : NULL_ADDRESS;
 
     const matchingOrder: UnhashedOrder = {
       exchange: order.exchange,
@@ -3697,7 +3736,7 @@ export class OpenSeaPort {
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
-      feeRecipient: OPENSEA_FEE_RECIPIENT,
+      feeRecipient: getFeeWrapperAddress(this._networkName),
       feeMethod: FeeMethod.SplitFee,
     };
   }
@@ -3712,7 +3751,7 @@ export class OpenSeaPort {
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
     const feeRecipient = waitForHighestBid
       ? NULL_ADDRESS
-      : OPENSEA_FEE_RECIPIENT;
+      : getFeeWrapperAddress(this._networkName);
 
     // Swap maker/taker fees when it's an English auction,
     // since these sell orders are takers not makers
@@ -3927,13 +3966,15 @@ export class OpenSeaPort {
     sell,
     accountAddress,
     metadata = NULL_BLOCK_HASH,
+    makerOrder,
   }: {
     buy: Order;
     sell: Order;
     accountAddress: string;
     metadata?: string;
+    makerOrder?: Order;
   }) {
-    let value;
+    let value: BigNumber | undefined = undefined;
     let shouldValidateBuy = true;
     let shouldValidateSell = true;
 
@@ -3977,8 +4018,8 @@ export class OpenSeaPort {
     });
 
     let txHash;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const txnData: any = { from: accountAddress, value };
+
     const args: WyvernAtomicMatchParameters = [
       [
         buy.exchange,
@@ -4042,55 +4083,120 @@ export class OpenSeaPort {
       ],
     ];
 
+    const useFeeWrapper = isFeeWrapperFlow({ buy, sell }, this._networkName);
+
+    const feeWrapperAddress = getFeeWrapperAddress(this._networkName);
+
+    let wyvernFeeWrapperArgs: WyvernFeeWrapperAtomicMatchParameters | undefined;
+    let wyvernFeeWrapperCalldata: string | undefined;
+
+    if (useFeeWrapper && makerOrder?.hash) {
+      const response = await this.api.getOrderFulfillmentData(makerOrder.hash);
+
+      const feeDataWithEthersBigNum = response.fulfillment_data.fee_data.map(
+        ([recipient, amount]) =>
+          [recipient, ethers.BigNumber.from(amount)] as [
+            string,
+            ethers.BigNumber
+          ]
+      );
+
+      // We need to replace any number-type value with ethers big number to properly encode it
+      const wyvernArgsWithEthersBigNum = args.map((arg) =>
+        Array.isArray(arg)
+          ? arg.map((value) =>
+              typeof value === "number" || value instanceof BigNumber
+                ? ethers.BigNumber.from(value.toString())
+                : value
+            )
+          : arg
+      ) as WyvernAtomicMatchParametersWithEthers;
+
+      wyvernFeeWrapperArgs = [
+        wyvernArgsWithEthersBigNum,
+        response.fulfillment_data.server_signature,
+        feeDataWithEthersBigNum,
+      ];
+      // We use ethers because ethereumjs-abi does not support tuple ABI encoding
+      wyvernFeeWrapperCalldata = new ethers.utils.Interface(
+        WyvernFeeWrapper
+      ).encodeFunctionData("atomicMatch_", wyvernFeeWrapperArgs);
+    }
+
+    const atomicMatchEstimateGas = async (): Promise<number> => {
+      return useFeeWrapper && wyvernFeeWrapperArgs
+        ? estimateGas(this.web3ReadOnly, {
+            from: accountAddress,
+            to: feeWrapperAddress,
+            data: wyvernFeeWrapperCalldata,
+            value,
+          })
+        : await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
+            args[0],
+            args[1],
+            args[2],
+            args[3],
+            args[4],
+            args[5],
+            args[6],
+            args[7],
+            args[8],
+            args[9],
+            args[10],
+            txnData
+          );
+    };
+
+    const submitAtomicMatchTransaction = async (): Promise<string> => {
+      return useFeeWrapper && wyvernFeeWrapperArgs
+        ? sendRawTransaction(
+            this.web3,
+            {
+              from: accountAddress,
+              to: feeWrapperAddress,
+              data: wyvernFeeWrapperCalldata,
+              value,
+            },
+            (error) => {
+              throw error;
+            }
+          )
+        : await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(
+            args[0],
+            args[1],
+            args[2],
+            args[3],
+            args[4],
+            args[5],
+            args[6],
+            args[7],
+            args[8],
+            args[9],
+            args[10],
+            txnData
+          );
+    };
+
     // Estimate gas first
     try {
       // Typescript splat doesn't typecheck
-      const gasEstimate =
-        await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
-          args[0],
-          args[1],
-          args[2],
-          args[3],
-          args[4],
-          args[5],
-          args[6],
-          args[7],
-          args[8],
-          args[9],
-          args[10],
-          txnData
-        );
+      const gasEstimate = await atomicMatchEstimateGas();
 
       txnData.gas = this._correctGasAmount(gasEstimate);
     } catch (error) {
       console.error(`Failed atomic match with args: `, args, error);
       throw new Error(
-        `Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${
-          error instanceof Error
-            ? error.message.substr(0, MAX_ERROR_LENGTH)
-            : "unknown"
-        }..."`
+        `Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${error.message.substr(
+          0,
+          MAX_ERROR_LENGTH
+        )}..."`
       );
     }
 
     // Then do the transaction
     try {
       this.logger(`Fulfilling order with gas set to ${txnData.gas}`);
-      txHash =
-        await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(
-          args[0],
-          args[1],
-          args[2],
-          args[3],
-          args[4],
-          args[5],
-          args[6],
-          args[7],
-          args[8],
-          args[9],
-          args[10],
-          txnData
-        );
+      txHash = await submitAtomicMatchTransaction();
     } catch (error) {
       console.error(error);
 
@@ -4104,9 +4210,7 @@ export class OpenSeaPort {
 
       throw new Error(
         `Failed to authorize transaction: "${
-          error instanceof Error && error.message
-            ? error.message
-            : "user denied"
+          error.message ? error.message : "user denied"
         }..."`
       );
     }
@@ -4127,7 +4231,8 @@ export class OpenSeaPort {
   }
 
   private async _authorizeOrder(
-    order: UnsignedOrder
+    order: UnsignedOrder,
+    isFeeWrapperAtomicMatchFlow?: boolean
   ): Promise<ECSignature | null> {
     const message = order.hash;
     const signerAddress = order.maker;
@@ -4135,6 +4240,7 @@ export class OpenSeaPort {
     this._dispatch(EventType.CreateOrder, {
       order,
       accountAddress: order.maker,
+      isFeeWrapperFlow: isFeeWrapperAtomicMatchFlow,
     });
 
     const makerIsSmartContract = await isContractAddress(

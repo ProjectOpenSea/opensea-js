@@ -1,4 +1,5 @@
 import BigNumber from "bignumber.js";
+import { BigNumber as EthersBigNumber } from "ethers";
 import * as Web3 from "web3";
 import {
   Network,
@@ -81,6 +82,7 @@ export interface EventData {
   buy?: Order;
   sell?: Order;
   matchMetadata?: string;
+  isFeeWrapperFlow?: boolean;
 }
 
 /**
@@ -202,6 +204,25 @@ export type WyvernAtomicMatchParameters = [
   string,
   Array<number | BigNumber>,
   string[]
+];
+
+export type WyvernAtomicMatchParametersWithEthers = [
+  string[],
+  EthersBigNumber[],
+  Array<number | BigNumber>,
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
+  Array<number | BigNumber>,
+  string[]
+];
+export type WyvernFeeWrapperAtomicMatchParameters = [
+  WyvernAtomicMatchParametersWithEthers,
+  string,
+  FeeData
 ];
 
 /**
@@ -710,3 +731,14 @@ interface PartialAbiDefinition {
   stateMutability?: Web3.ConstructorStateMutability | string;
 }
 export type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>;
+
+// Array of tuples (feeRecipient, feeAmount)
+type FeeData = Array<[string, EthersBigNumber]>;
+
+export interface OrderFulfillmentDataResponse {
+  fulfillment_data: {
+    // Array of tuples (feeRecipient, feeAmount)
+    fee_data: Array<[string, string]>;
+    server_signature: string;
+  };
+}
