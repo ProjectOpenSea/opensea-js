@@ -66,3 +66,5 @@ typings/
 lib
 
 docs
+
+.DS_Store
