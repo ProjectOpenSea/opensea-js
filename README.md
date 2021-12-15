@@ -722,19 +722,7 @@ Note that the tests require access to both Infura and the OpenSea API. The timeo
 Generate html docs, also available for browsing [here](https://projectopensea.github.io/opensea-js/):
 
 ```bash
-npm run docsHtml
-```
-
-Or generate markdown docs available for browsing on git repos:
-
-```bash
-npm run docsMarkdown
-```
-
-Due to a markdown theme typescript issue, `docs` just generates html docs right now:
-
-```bash
-npm run docs
+yarn docs-build
 ```
 
 **Contributing**
