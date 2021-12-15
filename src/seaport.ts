@@ -4020,7 +4020,7 @@ export class OpenSeaPort {
     const txnData: {
       from: string;
       value: BigNumber | undefined;
-      gas?: BigNumber;
+      gas?: number;
     } = { from: accountAddress, value };
 
     const args: WyvernAtomicMatchParameters = [
