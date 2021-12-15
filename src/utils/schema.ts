@@ -1,17 +1,16 @@
 import { BigNumber } from "bignumber.js";
 import * as ethABI from "ethereumjs-abi";
 import { WyvernProtocol } from "wyvern-js";
-import { HowToCall, ReplacementEncoder, Network } from "wyvern-js/lib/types";
 import { WyvernAtomicizerContract } from "wyvern-js/lib/abi_gen/wyvern_atomicizer";
-
+import { HowToCall, ReplacementEncoder, Network } from "wyvern-js/lib/types";
 import {
   AnnotatedFunctionABI,
   FunctionInputKind,
   Schema,
 } from "wyvern-schemas/dist/types";
 export { AbiType } from "wyvern-schemas";
-import { WyvernAsset, OrderSide } from "../types";
 import { proxyAssertABI, proxyABI } from "../abi/Proxy";
+import { WyvernAsset, OrderSide } from "../types";
 
 export interface LimitedCallSpec {
   target: string;
@@ -35,7 +34,7 @@ export type Encoder = (
 
 export const encodeCall = (
   abi: AnnotatedFunctionABI,
-  parameters: any[]
+  parameters: unknown[]
 ): string => {
   const inputTypes = abi.inputs.map((i) => i.type);
   return (
@@ -125,10 +124,10 @@ export const encodeAtomicizedBuy: AtomicizedBuyEncoder = (
 export const encodeBuy: Encoder = (schema, asset, address) => {
   const transfer = schema.functions.transfer(asset);
   const replaceables = transfer.inputs.filter(
-    (i: any) => i.kind === FunctionInputKind.Replaceable
+    (i) => i.kind === FunctionInputKind.Replaceable
   );
   const ownerInputs = transfer.inputs.filter(
-    (i: any) => i.kind === FunctionInputKind.Owner
+    (i) => i.kind === FunctionInputKind.Owner
   );
 
   // Validate
@@ -141,7 +140,7 @@ export const encodeBuy: Encoder = (schema, asset, address) => {
   }
 
   // Compute calldata
-  const parameters = transfer.inputs.map((input: any) => {
+  const parameters = transfer.inputs.map((input) => {
     switch (input.kind) {
       case FunctionInputKind.Replaceable:
         return address;
@@ -225,11 +224,11 @@ export function encodeAtomicizedTransfer(
   });
 
   const atomicizedCalldata = atomicizer.atomicize.getABIEncodedTransactionData(
-    transactions.map((t: any) => t.address),
-    transactions.map((t: any) => t.value),
-    transactions.map((t: any) => new BigNumber((t.calldata.length - 2) / 2)), // subtract 2 for '0x', divide by 2 for hex
+    transactions.map((t) => t.address),
+    transactions.map((t) => t.value),
+    transactions.map((t) => new BigNumber((t.calldata.length - 2) / 2)), // subtract 2 for '0x', divide by 2 for hex
     transactions
-      .map((t: any) => t.calldata)
+      .map((t) => t.calldata)
       .reduce((x: string, current: string) => x + current.slice(2), "0x") // cut off the '0x'
   );
 
@@ -281,7 +280,7 @@ export function encodeProxyCall(
   shouldAssert = true
 ) {
   const abi = shouldAssert ? proxyAssertABI : proxyABI;
-  return encodeCall(abi, [
+  return encodeCall(abi as AnnotatedFunctionABI, [
     address,
     howToCall,
     Buffer.from(calldata.slice(2), "hex"),

@@ -26,8 +26,6 @@ export const apiToTest = rinkebyApi;
 export { CK_ADDRESS, CK_RINKEBY_ADDRESS };
 export const GODS_UNCHAINED_ADDRESS =
   "0x6ebeaf8e8e946f0716e6533a6f2cefc83f60e8ab";
-export const CRYPTO_CRYSTAL_ADDRESS =
-  "0xcfbc9103362aec4ce3089f155c2da2eea1cb7602";
 export const DIGITAL_ART_CHAIN_ADDRESS =
   "0x323a3e1693e7a0959f65972f3bf2dfcb93239dfe";
 export const MYTHEREUM_ADDRESS = "0xc70be5b7c19529ef642d16c10dfe91c58b5c3bf0";
@@ -35,7 +33,6 @@ export const MYTHEREUM_SLUG = "mythereum";
 export const DIGITAL_ART_CHAIN_TOKEN_ID = 189;
 export const GODS_UNCHAINED_TOKEN_ID = 76719;
 export const MYTHEREUM_TOKEN_ID = 4367;
-export const CK_RINKEBY_BUNDLE_SLUG = "puff-kitty";
 export const WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 export const ENS_RINKEBY_TOKEN_ADDRESS =
   "0x53ceb15b76023fbec5bb39450214926f6aa77d2e";
@@ -47,7 +44,6 @@ export const ENS_HELLO_NAME = "hello";
 
 export const CK_RINKEBY_TOKEN_ID = 1068;
 export const CK_TOKEN_ID = 637488;
-export const CRYPTOPUNKS_ID = 7858;
 export const CK_RINKEBY_SELLER_FEE = 250;
 
 // Toasta Gun, NFT
@@ -68,7 +64,6 @@ export const DISSOLUTION_TOKEN_ID =
   "39803530675327460487158288219684256433559304725576879659134376004308812431360";
 export const CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE =
   "0x8bc67d00253fd60b1afcce88b78820413139f4c6";
-export const CRYPTOPUNKS_ADDRESS = "0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb";
 export const SANDBOX_RINKEBY_ADDRESS =
   "0xcdeadfb2caa81d8c16d2935f3e379dda61242be9";
 export const SANDBOX_RINKEBY_ID =

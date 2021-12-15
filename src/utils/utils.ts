@@ -1,8 +1,8 @@
 import BigNumber from "bignumber.js";
-import { WyvernProtocol } from "wyvern-js";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
 import * as Web3 from "web3";
+import { WyvernProtocol } from "wyvern-js";
 import {
   AnnotatedFunctionABI,
   FunctionInputKind,
@@ -10,12 +10,16 @@ import {
   Schema,
   StateMutability,
 } from "wyvern-schemas/dist/types";
+import {
+  ENJIN_ADDRESS,
+  ENJIN_COIN_ADDRESS,
+  INVERSE_BASIS_POINT,
+  NULL_ADDRESS,
+  NULL_BLOCK_HASH,
+} from "../constants";
 import { ERC1155 } from "../contracts";
-
-import { OpenSeaPort } from "..";
 import {
   Asset,
-  AssetContractType,
   AssetEvent,
   ECSignature,
   OpenSeaAccount,
@@ -41,14 +45,6 @@ import {
   WyvernNFTAsset,
   WyvernSchemaName,
 } from "../types";
-import {
-  ENJIN_ADDRESS,
-  ENJIN_COIN_ADDRESS,
-  INVERSE_BASIS_POINT,
-  NULL_ADDRESS,
-  NULL_BLOCK_HASH,
-} from "../constants";
-import { proxyABI } from "../abi/Proxy";
 
 export { WyvernProtocol };
 
@@ -108,17 +104,6 @@ export const annotateERC20TransferABI = (
   type: Web3.AbiType.Function,
 });
 
-const SCHEMA_NAME_TO_ASSET_CONTRACT_TYPE: {
-  [key in WyvernSchemaName]: AssetContractType;
-} = {
-  [WyvernSchemaName.ERC721]: AssetContractType.NonFungible,
-  [WyvernSchemaName.ERC721v3]: AssetContractType.NonFungible,
-  [WyvernSchemaName.ERC1155]: AssetContractType.SemiFungible,
-  [WyvernSchemaName.ERC20]: AssetContractType.Fungible,
-  [WyvernSchemaName.LegacyEnjin]: AssetContractType.SemiFungible,
-  [WyvernSchemaName.ENSShortNameAuction]: AssetContractType.NonFungible,
-};
-
 // OTHER
 
 const txCallbacks: { [key: string]: TxnCallback[] } = {};
@@ -149,12 +134,12 @@ async function promisify<T>(inner: (fn: Web3Callback<T>) => void) {
  * @param onError callback when user denies transaction
  */
 export async function promisifyCall<T>(
-  callback: (fn: Web3Callback<T>) => void,
+  callback: (fn: Web3Callback<T>) => T,
   onError?: (error: unknown) => void
 ): Promise<T | undefined> {
   try {
-    const result: any = await promisify<T>(callback);
-    if (result == "0x") {
+    const result = await promisify<T>(callback);
+    if (typeof result === "string" && result == "0x") {
       // Geth compatibility
       return undefined;
     }
@@ -216,6 +201,7 @@ export const confirmTransaction = async (web3: Web3, txHash: string) => {
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const assetFromJSON = (asset: any): OpenSeaAsset => {
   const isAnimated = asset.image_url && asset.image_url.endsWith(".gif");
   const isSvg = asset.image_url && asset.image_url.endsWith(".svg");
@@ -267,6 +253,7 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
   return fromJSON;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const assetEventFromJSON = (assetEvent: any): AssetEvent => {
   return {
     eventType: assetEvent.event_type,
@@ -282,6 +269,7 @@ export const assetEventFromJSON = (assetEvent: any): AssetEvent => {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const transactionFromJSON = (transaction: any): Transaction => {
   return {
     fromAccount: accountFromJSON(transaction.from_account),
@@ -296,6 +284,7 @@ export const transactionFromJSON = (transaction: any): Transaction => {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const accountFromJSON = (account: any): OpenSeaAccount => {
   return {
     address: account.address,
@@ -305,12 +294,14 @@ export const accountFromJSON = (account: any): OpenSeaAccount => {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const userFromJSON = (user: any): OpenSeaUser => {
   return {
     username: user.username,
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
   const fromJSON: OpenSeaAssetBundle = {
     maker: asset_bundle.maker,
@@ -333,6 +324,7 @@ export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
 };
 
 export const assetContractFromJSON = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   asset_contract: any
 ): OpenSeaAssetContract => {
   return {
@@ -355,6 +347,7 @@ export const assetContractFromJSON = (
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const collectionFromJSON = (collection: any): OpenSeaCollection => {
   const createdDate = new Date(`${collection.created_date}Z`);
 
@@ -383,6 +376,7 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
   const fromJSON: OpenSeaFungibleToken = {
     name: token.name,
@@ -397,6 +391,7 @@ export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
   return fromJSON;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const orderFromJSON = (order: any): Order => {
   const createdDate = new Date(`${order.created_date}Z`);
 
@@ -525,11 +520,13 @@ export async function personalSignAsync(
         params: [message, signerAddress],
         from: signerAddress,
         id: new Date().getTime(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       c
     )
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const error = (signature as any).error;
   if (error) {
     throw new Error(error);
@@ -701,9 +698,10 @@ export async function getTransferFeeSettings(
   if (asset.tokenAddress.toLowerCase() == ENJIN_ADDRESS.toLowerCase()) {
     // Enjin asset
     const feeContract = web3.eth
-      .contract(ERC1155 as any)
+      .contract(ERC1155 as Web3.AbiDefinition[])
       .at(asset.tokenAddress);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params = await promisifyCall<any[]>((c) =>
       feeContract.transferSettings(asset.tokenId, { from: accountAddress }, c)
     );
@@ -740,6 +738,7 @@ function parseSignatureHex(signature: string): ECSignature {
   throw new Error("Invalid signature");
 
   function _parseSignatureHexAsVRS(signatureHex: string) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const signatureBuffer: any = ethUtil.toBuffer(signatureHex);
     let v = signatureBuffer[0];
     if (v < 27) {
@@ -905,6 +904,7 @@ export function getOrderHash(order: UnhashedOrder) {
     howToCall: order.howToCall.toString(),
     feeMethod: order.feeMethod.toString(),
   };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return WyvernProtocol.getOrderHashHex(orderWithStringTypes as any);
 }
 
@@ -940,39 +940,6 @@ export function assignOrdersToSides(
   }
 
   return { buy, sell };
-}
-
-// BROKEN
-// TODO fix this calldata for buy orders
-async function canSettleOrder(
-  client: OpenSeaPort,
-  order: Order,
-  matchingOrder: Order
-): Promise<boolean> {
-  // HACK that doesn't always work
-  //  to change null address to 0x1111111... for replacing calldata
-  const calldata =
-    order.calldata.slice(0, 98) +
-    "1111111111111111111111111111111111111111" +
-    order.calldata.slice(138);
-
-  const seller =
-    order.side == OrderSide.Buy ? matchingOrder.maker : order.maker;
-  const proxy = await client._getProxy(seller);
-  if (!proxy) {
-    console.warn(`No proxy found for seller ${seller}`);
-    return false;
-  }
-  const contract = client.web3.eth.contract([proxyABI]).at(proxy);
-  return promisify<boolean>((c) =>
-    contract.proxy.call(
-      order.target,
-      order.howToCall,
-      calldata,
-      { from: seller },
-      c
-    )
-  );
 }
 
 /**
@@ -1019,7 +986,7 @@ export function onDeprecated(msg: string) {
 export async function getNonCompliantApprovalAddress(
   erc721Contract: Web3.ContractInstance,
   tokenId: string,
-  accountAddress: string
+  _accountAddress: string
 ): Promise<string | undefined> {
   const results = await Promise.all([
     // CRYPTOKITTIES check

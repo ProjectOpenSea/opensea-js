@@ -6,13 +6,8 @@ export const NULL_BLOCK_HASH =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 export const OPENSEA_FEE_RECIPIENT =
   "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
-export const DEP_INFURA_KEY = "e8695bce67944848aa95459fac052f8e";
 export const INVERSE_BASIS_POINT = 10000;
 export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256;
-export const WYVERN_EXCHANGE_ADDRESS_MAINNET =
-  "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b";
-export const WYVERN_EXCHANGE_ADDRESS_RINKEBY =
-  "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9";
 export const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";
 export const MANA_ADDRESS = "0x0f5d2fb29fb7d3cfee444a200298f468908cc942";
 export const ENJIN_ADDRESS = "0xfaaFDc07907ff5120a76b34b731b278c38d6043C";
@@ -58,8 +53,7 @@ export const DEFAULT_MAX_BOUNTY = DEFAULT_SELLER_FEE_BASIS_POINTS;
 export const MIN_EXPIRATION_SECONDS = 10;
 export const ORDER_MATCHING_LATENCY_SECONDS = 60 * 60 * 24 * 7;
 export const SELL_ORDER_BATCH_SIZE = 3;
-export const ORDERBOOK_VERSION: number = 1;
-export const API_VERSION: number = 1;
+export const ORDERBOOK_VERSION = 1 as number;
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_RINKEBY = "https://testnets-api.opensea.io";
 export const SITE_HOST_MAINNET = "https://opensea.io";

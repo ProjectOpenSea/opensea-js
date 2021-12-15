@@ -1,4 +1,4 @@
-export const proxyABI: any = {
+export const proxyABI = {
   constant: false,
   inputs: [
     { name: "dest", type: "address" },
@@ -12,7 +12,7 @@ export const proxyABI: any = {
   type: "function",
 };
 
-export const proxyAssertABI: any = {
+export const proxyAssertABI = {
   constant: false,
   inputs: [
     { name: "dest", type: "address" },

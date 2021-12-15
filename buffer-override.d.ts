@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unused-modules */
 // Fixes Buffer type override issue in feross/buffer:
 // https://github.com/Microsoft/TypeScript/issues/26086
 
@@ -10,7 +11,7 @@ export class Buffer extends Uint8Array {
     encoding?: string
   ): number;
   toString(encoding?: string, start?: number, end?: number): string;
-  toJSON(): { type: "Buffer"; data: any[] };
+  toJSON(): { type: "Buffer"; data: unknown[] };
   equals(otherBuffer: Buffer): boolean;
   compare(
     otherBuffer: Buffer,
@@ -85,7 +86,7 @@ export class Buffer extends Uint8Array {
   writeFloatBE(value: number, offset: number, noAssert?: boolean): number;
   writeDoubleLE(value: number, offset: number, noAssert?: boolean): number;
   writeDoubleBE(value: number, offset: number, noAssert?: boolean): number;
-  fill(value: any, offset?: number, end?: number): this;
+  fill(value: unknown, offset?: number, end?: number): this;
   indexOf(
     value: string | number | Buffer,
     byteOffset?: number,
@@ -134,7 +135,7 @@ export class Buffer extends Uint8Array {
    *
    * @param array The octets to store.
    */
-  constructor(array: any[]);
+  constructor(array: unknown[]);
   /**
    * Copies the passed {buffer} data onto a new {Buffer} instance.
    *
@@ -147,7 +148,7 @@ export class Buffer extends Uint8Array {
    *
    * @param array
    */
-  static from(array: any[]): Buffer;
+  static from(array: unknown[]): Buffer;
   /**
    * When passed a reference to the .buffer property of a TypedArray instance,
    * the newly created Buffer will share the same allocated memory as the TypedArray.
@@ -182,7 +183,7 @@ export class Buffer extends Uint8Array {
    *
    * @param obj object to test.
    */
-  static isBuffer(obj: any): obj is Buffer;
+  static isBuffer(obj: unknown): obj is Buffer;
   /**
    * Returns true if {encoding} is a valid encoding argument.
    * Valid string encodings in Node 0.12: 'ascii'|'utf8'|'utf16le'|'ucs2'(alias of 'utf16le')|'base64'|'binary'(deprecated)|'hex'

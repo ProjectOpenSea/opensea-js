@@ -1,11 +1,16 @@
-import * as WyvernSchemas from "wyvern-schemas";
 import { assert } from "chai";
-
 import { suite, test } from "mocha-typescript";
-
-import { OpenSeaPort } from "../../src/index";
 import * as Web3 from "web3";
+import {
+  MAINNET_PROVIDER_URL,
+  NULL_ADDRESS,
+  RINKEBY_PROVIDER_URL,
+  STATIC_CALL_TX_ORIGIN_ADDRESS,
+} from "../../src/constants";
+import { getMethod, StaticCheckTxOrigin } from "../../src/contracts";
+import { OpenSeaPort } from "../../src/index";
 import { Network } from "../../src/types";
+import { encodeCall } from "../../src/utils/schema";
 import {
   ALEX_ADDRESS,
   MYTHEREUM_TOKEN_ID,
@@ -15,15 +20,7 @@ import {
   RINKEBY_API_KEY,
 } from "../constants";
 import { testFeesMakerOrder } from "./fees";
-import { getMethod, StaticCheckTxOrigin } from "../../src/contracts";
 import { testMatchingNewOrder } from "./orders";
-import {
-  MAINNET_PROVIDER_URL,
-  NULL_ADDRESS,
-  RINKEBY_PROVIDER_URL,
-  STATIC_CALL_TX_ORIGIN_ADDRESS,
-} from "../../src/constants";
-import { encodeCall } from "../../src/utils/schema";
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL);

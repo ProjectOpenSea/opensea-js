@@ -22,7 +22,8 @@
     "docs": "npm run docsHtml",
     "docsHtml": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
     "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file",
-    "lint:check": "concurrently \"yarn check-types\" \"yarn prettier:check\"",
+    "eslint:check": "eslint . --max-warnings 0 --ext .js,.ts",
+    "lint:check": "concurrently \"yarn check-types\" \"yarn prettier:check\" \"yarn eslint:check\"",
     "prepare": "husky install",
     "test": "./node_modules/.bin/mocha test/**/*.ts --require ts-node/register --timeout 15000",
     "prettier:check": "prettier --check .",
@@ -49,8 +50,16 @@
     "@types/node": "^9.3.0",
     "@types/node-fetch": "2.5.5",
     "@types/query-string": "^6.1.0",
+    "@typescript-eslint/eslint-plugin": "^5.7.0",
+    "@typescript-eslint/parser": "^5.7.0",
     "chai": "^4.1.2",
     "concurrently": "6.4.0",
+    "confusing-browser-globals": "^1.0.11",
+    "eslint": "^8.4.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-jest": "^25.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "husky": "7.0.4",
     "lint-staged": "12.1.2",
     "mocha": "^5.2.0",
@@ -83,6 +92,9 @@
     ],
     "**/*.{ts,tsx,js,jsx,html,md,mdx,yml,json}": [
       "prettier --write"
+    ],
+    "**/*.{ts,tsx,js,jsx}": [
+      "eslint --cache --fix"
     ]
   }
 }

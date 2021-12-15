@@ -533,6 +533,6 @@ function testBundleMetadata(
     return;
   }
   assert.isNotEmpty(order.metadata.bundle.assets);
-  const expectedSchemas = order.metadata.bundle.assets.map((a) => schemaName);
+  const expectedSchemas = order.metadata.bundle.assets.map(() => schemaName);
   assert.deepEqual(order.metadata.bundle.schemas, expectedSchemas);
 }
