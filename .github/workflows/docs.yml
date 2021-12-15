@@ -1,0 +1,24 @@
+name: Build and Deploy
+
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14.17.0"
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --immutable --ignore-scripts
+
+      - name: Build
+        run: yarn docsHtml
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.7
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: build # The folder the action should deploy.
