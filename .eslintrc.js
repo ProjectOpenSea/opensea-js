@@ -6,9 +6,11 @@ module.exports = {
     node: true,
   },
   root: true,
+  ignorePatterns: ["docs"],
   reportUnusedDisableDirectives: true,
   parser: "@typescript-eslint/parser",
   plugins: ["@typescript-eslint", "import", "jest", "prettier"],
+
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
