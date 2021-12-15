@@ -4160,7 +4160,7 @@ export class OpenSeaPort {
     }
   }
 
-  private _getSchema(schemaName?: WyvernSchemaName): Schema<any> {
+  private _getSchema(schemaName?: WyvernSchemaName): Schema<WyvernAsset> {
     const schemaName_ = schemaName || WyvernSchemaName.ERC721;
     const schema = WyvernSchemas.schemas[this._networkName].filter(
       (s) => s.name == schemaName_

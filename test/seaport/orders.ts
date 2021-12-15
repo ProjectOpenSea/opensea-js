@@ -56,6 +56,7 @@ import {
 import * as ordersJSONFixture from "../fixtures/orders.json";
 import { testFeesMakerOrder } from "./fees";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ordersJSON = ordersJSONFixture as any;
 const englishSellOrderJSON = ordersJSON[0] as OrderJSON;
 
@@ -350,7 +351,7 @@ suite("seaport: orders", () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString();
     const tokenAddress = MYTHEREUM_ADDRESS;
 
-    const asset = await client.api.getAsset({ tokenAddress, tokenId });
+    const _asset = await client.api.getAsset({ tokenAddress, tokenId });
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
@@ -650,7 +651,7 @@ suite("seaport: orders", () => {
 
   test.skip("Creates ENS name buy order", async () => {
     const paymentTokenAddress = WETH_ADDRESS;
-    const buyOrder = await rinkebyClient._makeBuyOrder({
+    const _buyOrder = await rinkebyClient._makeBuyOrder({
       asset: {
         tokenId: ENS_HELLO_TOKEN_ID,
         tokenAddress: ENS_RINKEBY_TOKEN_ADDRESS,
@@ -1049,7 +1050,7 @@ suite("seaport: orders", () => {
   });
 });
 
-export async function testMatchingOrder(
+async function testMatchingOrder(
   order: Order,
   accountAddress: string,
   testAtomicMatch = false,

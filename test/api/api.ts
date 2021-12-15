@@ -2,14 +2,13 @@ import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 import * as Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
-import { orderToJSON } from "../../src";
+import { orderToJSON, OpenSeaPort } from "../../src";
 import {
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
   ORDERBOOK_VERSION,
   ORDER_MATCHING_LATENCY_SECONDS,
 } from "../../src/constants";
-import { OpenSeaPort } from "../../src/index";
 import { Network, OrderSide } from "../../src/types";
 import { getOrderHash, makeBigNumber } from "../../src/utils/utils";
 import {
