@@ -2,7 +2,7 @@ import { BigNumber } from "bignumber.js";
 import { isValidAddress } from "ethereumjs-util";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
 import * as WyvernSchemas from "wyvern-schemas";
 import { Schema } from "wyvern-schemas/dist/types";
@@ -161,7 +161,6 @@ export class OpenSeaPort {
   ) {
     // API config
     apiConfig.networkName = apiConfig.networkName || Network.Main;
-    apiConfig.gasPrice = apiConfig.gasPrice;
     this.api = new OpenSeaAPI(apiConfig);
 
     this._networkName = apiConfig.networkName;
@@ -269,8 +268,8 @@ export class OpenSeaPort {
 
     // Check if all tokenAddresses match. If not, then we have a mixedBatch of
     // NFTs from different NFT core contracts
-    const isMixedBatchOfAssets: boolean = !tokenAddresses.every(
-      (val, i, arr) => val === arr[0]
+    const isMixedBatchOfAssets = !tokenAddresses.every(
+      (val, _i, arr) => val === arr[0]
     );
 
     this._dispatch(EventType.WrapAssets, { assets: wyAssets, accountAddress });
@@ -335,8 +334,8 @@ export class OpenSeaPort {
 
     // Check if all tokenAddresses match. If not, then we have a mixedBatch of
     // NFTs from different NFT core contracts
-    const isMixedBatchOfAssets: boolean = !tokenAddresses.every(
-      (val, i, arr) => val === arr[0]
+    const isMixedBatchOfAssets = !tokenAddresses.every(
+      (val, _i, arr) => val === arr[0]
     );
 
     this._dispatch(EventType.UnwrapAssets, {
@@ -403,8 +402,8 @@ export class OpenSeaPort {
 
     // Check if all tokenAddresses match. If not, then we have a mixedBatch of
     // NFTs from different NFT core contracts
-    const isMixedBatchOfAssets: boolean = !tokenAddresses.every(
-      (val, i, arr) => val === arr[0]
+    const isMixedBatchOfAssets = !tokenAddresses.every(
+      (val, _i, arr) => val === arr[0]
     );
 
     this._dispatch(EventType.LiquidateAssets, {
@@ -455,8 +454,6 @@ export class OpenSeaPort {
     contractAddress: string;
     accountAddress: string;
   }) {
-    const token = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther;
-
     this._dispatch(EventType.PurchaseAssets, {
       amount,
       contractAddress,
@@ -504,17 +501,19 @@ export class OpenSeaPort {
   }) {
     // Get UniswapExchange for WrappedNFTContract for contractAddress
     const wrappedNFTFactoryContract = this.web3.eth.contract(
-      WrappedNFTFactory as any[]
+      WrappedNFTFactory as Web3.AbiDefinition[]
     );
     const wrappedNFTFactory = await wrappedNFTFactoryContract.at(
       this._wrappedNFTFactoryAddress
     );
     const wrappedNFTAddress =
       await wrappedNFTFactory.nftContractToWrapperContract(contractAddress);
-    const wrappedNFTContract = this.web3.eth.contract(WrappedNFT as any[]);
+    const wrappedNFTContract = this.web3.eth.contract(
+      WrappedNFT as Web3.AbiDefinition[]
+    );
     const wrappedNFT = await wrappedNFTContract.at(wrappedNFTAddress);
     const uniswapFactoryContract = this.web3.eth.contract(
-      UniswapFactory as any[]
+      UniswapFactory as Web3.AbiDefinition[]
     );
     const uniswapFactory = await uniswapFactoryContract.at(
       this._uniswapFactoryAddress
@@ -523,7 +522,7 @@ export class OpenSeaPort {
       wrappedNFTAddress
     );
     const uniswapExchangeContract = this.web3.eth.contract(
-      UniswapExchange as any[]
+      UniswapExchange as Web3.AbiDefinition[]
     );
     const uniswapExchange = await uniswapExchangeContract.at(
       uniswapExchangeAddress
@@ -665,7 +664,7 @@ export class OpenSeaPort {
     referrerAddress?: string;
   }): Promise<Order> {
     // Default to 1 of each asset
-    quantities = quantities || assets.map((a) => 1);
+    quantities = quantities || assets.map((_a) => 1);
     paymentTokenAddress =
       paymentTokenAddress ||
       WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address;
@@ -1083,7 +1082,7 @@ export class OpenSeaPort {
     buyerAddress?: string;
   }): Promise<Order> {
     // Default to one of each asset
-    quantities = quantities || assets.map((a) => 1);
+    quantities = quantities || assets.map((_a) => 1);
 
     const order = await this._makeBundleSellOrder({
       bundleName,
@@ -1271,7 +1270,9 @@ export class OpenSeaPort {
     schemaName?: WyvernSchemaName;
   }): Promise<string | null> {
     const schema = this._getSchema(schemaName);
-    const tokenContract = this.web3.eth.contract(tokenAbi as any[]);
+    const tokenContract = this.web3.eth.contract(
+      tokenAbi as Web3.AbiDefinition[]
+    );
     const contract = await tokenContract.at(tokenAddress);
 
     if (!proxyAddress) {
@@ -2215,7 +2216,7 @@ export class OpenSeaPort {
     }: { buy: Order; sell: Order; accountAddress: string; metadata?: string },
     retries = 1
   ): Promise<number | undefined> {
-    let value;
+    let value: BigNumber | undefined;
     if (
       buy.maker.toLowerCase() == accountAddress.toLowerCase() &&
       buy.paymentToken == NULL_ADDRESS
@@ -2288,6 +2289,7 @@ export class OpenSeaPort {
           metadata,
         ],
         // Typescript error in estimate gas method, so use any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         { from: accountAddress, value } as any
       );
     } catch (error) {
@@ -2398,7 +2400,7 @@ export class OpenSeaPort {
     this._dispatch(EventType.InitializeAccount, { accountAddress });
     this.logger(`Initializing proxy for account: ${accountAddress}`);
 
-    const txnData: any = { from: accountAddress };
+    const txnData = { from: accountAddress };
     const gasEstimate =
       await this._wyvernProtocolReadOnly.wyvernProxyRegistry.registerProxy.estimateGasAsync(
         txnData
@@ -2740,7 +2742,7 @@ export class OpenSeaPort {
         ? CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS
         : CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS;
       const cheezeWizardsBasicTournamentABI = this.web3.eth.contract(
-        CheezeWizardsBasicTournament as any[]
+        CheezeWizardsBasicTournament as Web3.AbiDefinition[]
       );
       const cheezeWizardsBasicTournmentInstance =
         await cheezeWizardsBasicTournamentABI.at(
@@ -2769,7 +2771,7 @@ export class OpenSeaPort {
       // calls on mainnet, since Decentraland uses Ropsten
       const decentralandEstateAddress = DECENTRALAND_ESTATE_ADDRESS;
       const decentralandEstateABI = this.web3.eth.contract(
-        DecentralandEstates as any[]
+        DecentralandEstates as Web3.AbiDefinition[]
       );
       const decentralandEstateInstance = await decentralandEstateABI.at(
         decentralandEstateAddress
@@ -3485,6 +3487,7 @@ export class OpenSeaPort {
           case WyvernSchemaName.LegacyEnjin:
           case WyvernSchemaName.ENSShortNameAuction:
             // Handle NFTs and SFTs
+            // eslint-disable-next-line no-case-declarations
             const wyNFTAsset = wyAsset as WyvernNFTAsset;
             return await this.approveSemiOrNonFungibleToken({
               tokenId: wyNFTAsset.id.toString(),
@@ -3496,6 +3499,7 @@ export class OpenSeaPort {
             });
           case WyvernSchemaName.ERC20:
             // Handle FTs
+            // eslint-disable-next-line no-case-declarations
             const wyFTAsset = wyAsset as WyvernFTAsset;
             if (contractsWithApproveAll.has(wyFTAsset.address)) {
               // Return null to indicate no tx occurred
@@ -3973,6 +3977,7 @@ export class OpenSeaPort {
     });
 
     let txHash;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const txnData: any = { from: accountAddress, value };
     const args: WyvernAtomicMatchParameters = [
       [
@@ -4244,7 +4249,7 @@ export class OpenSeaPort {
     description: string,
     testForSuccess: () => Promise<boolean>
   ): Promise<void> {
-    return new Promise<void>(async (resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const initialRetries = 60;
 
       const testResolve: (r: number) => Promise<void> = async (retries) => {

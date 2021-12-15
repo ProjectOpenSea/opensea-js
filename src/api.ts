@@ -1,6 +1,15 @@
 import 'isomorphic-unfetch'
 import * as QueryString from 'query-string'
 import {
+  API_BASE_MAINNET,
+  API_BASE_RINKEBY,
+  API_PATH,
+  ORDERBOOK_PATH,
+  ORDERBOOK_VERSION,
+  SITE_HOST_MAINNET,
+  SITE_HOST_RINKEBY
+} from './constants'
+import {
   Network,
   OpenSeaAPIConfig,
   OpenSeaAsset,
@@ -21,15 +30,7 @@ import {
   orderFromJSON,
   tokenFromJSON
 } from './utils/utils'
-import {
-  API_BASE_MAINNET,
-  API_BASE_RINKEBY,
-  API_PATH,
-  ORDERBOOK_PATH,
-  ORDERBOOK_VERSION,
-  SITE_HOST_MAINNET,
-  SITE_HOST_RINKEBY
-} from './constants'
+
 
 
 export class OpenSeaAPI {
@@ -111,10 +112,10 @@ export class OpenSeaAPI {
       email: string
     ): Promise<boolean> {
 
-    const json = await this.post(`${API_PATH}/asset/${tokenAddress}/${tokenId}/whitelist/`, {
+    const json = await this.post<{success:boolean}>(`${API_PATH}/asset/${tokenAddress}/${tokenId}/whitelist/`, {
       email
     })
-
+    
     return !!json.success
   }
 
@@ -221,14 +222,14 @@ export class OpenSeaAPI {
       page = 1
     ): Promise<{assets: OpenSeaAsset[]; estimatedCount: number}> {
 
-    const json = await this.get(`${API_PATH}/assets/`, {
+    const json = await this.get<{estimated_count: number; assets:unknown[]}>(`${API_PATH}/assets/`, {
       limit: this.pageSize,
       offset: (page - 1) * this.pageSize,
       ...query
     })
 
     return {
-      assets: json.assets.map((j: any) => assetFromJSON(j)),
+      assets: json.assets.map((j) => assetFromJSON(j)),
       estimatedCount: json.estimated_count
     }
   }
@@ -248,7 +249,7 @@ export class OpenSeaAPI {
 
     let json
     try {
-      json = await this.get(`${API_PATH}/tokens/`, {
+      json = await this.get<unknown[]>(`${API_PATH}/tokens/`, {
         ...query,
         limit: this.pageSize,
         offset: (page - 1) * this.pageSize
@@ -260,7 +261,7 @@ export class OpenSeaAPI {
     }
 
     return {
-      tokens: json.map((t: any) => tokenFromJSON(t))
+      tokens: json.map((t) => tokenFromJSON(t))
     }
   }
 
@@ -288,14 +289,14 @@ export class OpenSeaAPI {
       page = 1
     ): Promise<{bundles: OpenSeaAssetBundle[]; estimatedCount: number}> {
 
-    const json = await this.get(`${API_PATH}/bundles/`, {
+    const json = await this.get<{estimated_count: number; bundles: unknown[]}>(`${API_PATH}/bundles/`, {
       ...query,
       limit: this.pageSize,
       offset: (page - 1) * this.pageSize
     })
 
     return {
-      bundles: json.bundles.map((j: any) => assetBundleFromJSON(j)),
+      bundles: json.bundles.map((j) => assetBundleFromJSON(j)),
       estimatedCount: json.estimated_count
     }
   }
@@ -305,7 +306,7 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param query Data to send. Will be stringified using QueryString
    */
-  public async get(apiPath: string, query: object = {}): Promise<any> {
+  public async get<T>(apiPath: string, query: object = {}): Promise<T> {
 
     const qs = QueryString.stringify(query)
     const url = `${apiPath}?${qs}`
@@ -321,7 +322,7 @@ export class OpenSeaAPI {
    * @param opts RequestInit opts, similar to Fetch API. If it contains
    *  a body, it won't be stringified.
    */
-  public async post(apiPath: string, body?: object, opts: RequestInit = {}): Promise<any> {
+  public async post<T>(apiPath: string, body?: object, opts: RequestInit = {}): Promise<T> {
 
     const fetchOpts = {
       method: 'POST',

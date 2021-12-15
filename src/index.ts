@@ -1,5 +1,6 @@
-import { OpenSeaPort } from "./seaport";
+/* eslint-disable import/no-unused-modules */
 import { OpenSeaAPI } from "./api";
+import { OpenSeaPort } from "./seaport";
 import { Network, EventData, EventType } from "./types";
 export { orderToJSON, orderFromJSON, WyvernProtocol } from "./utils/utils";
 export {
@@ -30,9 +31,8 @@ export {
   OpenSeaAPI,
   // Useful for serializing and deserializing orders:
   // Types to help initialize SDK and listen to events.
-  // Can also be imported using e.g.
-  //   import { EventType } from 'opensea-js/lib/types'
-  EventData,
   EventType,
   Network,
 };
+
+export type { EventData };

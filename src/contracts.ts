@@ -1,6 +1,5 @@
-import { PartialReadonlyContractAbi } from "./types";
-import { EventAbi } from "web3";
-import { AnnotatedFunctionABI } from "wyvern-js/lib/types";
+import type { AnnotatedFunctionABI } from "wyvern-js/lib/types";
+import type { PartialReadonlyContractAbi } from "./types";
 
 export const getMethod = (
   abi: PartialReadonlyContractAbi,
@@ -13,23 +12,6 @@ export const getMethod = (
   // Have to cast since there's a bug in
   // web3 types on the 'type' field
   return methodAbi as AnnotatedFunctionABI;
-};
-
-export const event = (
-  abi: PartialReadonlyContractAbi,
-  name: string
-): EventAbi => {
-  const eventAbi = abi.find((x) => x.type == "event" && x.name == name);
-  if (!eventAbi) {
-    throw new Error(`ABI ${name} not found`);
-  }
-  // Have to cast since there's a bug in
-  // web3 types on the 'type' field
-  return eventAbi as EventAbi;
-};
-
-export const DECENTRALAND_AUCTION_CONFIG = {
-  "1": "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d",
 };
 
 export { ERC20 } from "./abi/ERC20";

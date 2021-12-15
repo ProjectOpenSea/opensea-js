@@ -3,14 +3,13 @@ import * as Web3 from "web3";
 import {
   Network,
   HowToCall,
-  // Note: Wyvern SaleKind is wrong!
   ECSignature,
   Order as WyvernOrder,
 } from "wyvern-js/lib/types";
+import type { Token } from "wyvern-schemas/dist/types";
 
-import { Token } from "wyvern-schemas/dist/types";
-
-export { Network, HowToCall, ECSignature };
+export { HowToCall, Network };
+export type { ECSignature };
 
 /**
  * Events emitted by the SDK. There are five types:
@@ -132,7 +131,7 @@ export enum SaleKind {
  * Types of asset contracts
  * Given by the asset_contract_type in the OpenSea API
  */
-export enum AssetContractType {
+enum AssetContractType {
   Fungible = "fungible",
   SemiFungible = "semi-fungible",
   NonFungible = "non-fungible",
@@ -169,12 +168,6 @@ export enum TokenStandardVersion {
   ERC721v1 = "1.0",
   ERC721v2 = "2.0",
   ERC721v3 = "3.0",
-}
-
-export enum WyvernAssetLocation {
-  Account = "account",
-  Proxy = "proxy",
-  Other = "other",
 }
 
 export interface WyvernNFTAsset {
@@ -412,7 +405,7 @@ export interface AssetEvent {
 /**
  * Defines set of possible auctions types
  */
-export enum AuctionType {
+enum AuctionType {
   Dutch = "dutch",
   English = "english",
   MinPrice = "min_price",
@@ -421,7 +414,7 @@ export enum AuctionType {
 /**
  * Defines the possible types of asset events that can take place
  */
-export enum AssetEventType {
+enum AssetEventType {
   AuctionCreated = "created",
   AuctionSuccessful = "successful",
   AuctionCancelled = "cancelled",
@@ -476,9 +469,6 @@ export interface OpenSeaFungibleToken extends Token {
   usdPrice?: string;
 }
 
-// Backwards compat
-export type FungibleToken = OpenSeaFungibleToken;
-
 /**
  * Bundles of assets, grouped together into one OpenSea order
  * URLs for bundles are auto-generated from the name
@@ -498,7 +488,7 @@ export interface OpenSeaAssetBundle {
   externalLink?: string;
 }
 
-export interface OpenSeaAssetBundleJSON {
+interface OpenSeaAssetBundleJSON {
   assets: OpenSeaAsset[];
   name: string;
   description?: string;
@@ -525,7 +515,7 @@ export interface OpenSeaAssetBundleQuery
 /**
  * The basis point values of each type of fee
  */
-export interface OpenSeaFees {
+interface OpenSeaFees {
   // Fee for OpenSea levied on sellers
   openseaSellerFeeBasisPoints: number;
   // Fee for OpenSea levied on buyers
@@ -553,20 +543,18 @@ export interface ComputedFees extends OpenSeaFees {
   sellerBountyBasisPoints: number;
 }
 
-export interface ExchangeMetadataForAsset {
+interface ExchangeMetadataForAsset {
   asset: WyvernAsset;
   schema: WyvernSchemaName;
   referrerAddress?: string;
 }
 
-export interface ExchangeMetadataForBundle {
+interface ExchangeMetadataForBundle {
   bundle: WyvernBundle;
   referrerAddress?: string;
 }
 
-export type ExchangeMetadata =
-  | ExchangeMetadataForAsset
-  | ExchangeMetadataForBundle;
+type ExchangeMetadata = ExchangeMetadataForAsset | ExchangeMetadataForBundle;
 
 export interface UnhashedOrder extends WyvernOrder {
   feeMethod: FeeMethod;
@@ -699,9 +687,6 @@ export interface OpenSeaFungibleTokenQuery
   symbol?: string;
 }
 
-// Backwards compat
-export type FungibleTokenQuery = OpenSeaFungibleTokenQuery;
-
 export interface OrderbookResponse {
   orders: OrderJSON[];
   count: number;
@@ -709,14 +694,13 @@ export interface OrderbookResponse {
 
 // Types related to Web3
 export type Web3Callback<T> = (err: Error | null, result: T) => void;
-export type Web3RPCCallback = Web3Callback<Web3.JSONRPCResponsePayload>;
 export type TxnCallback = (result: boolean) => void;
 
 /**
  * To simplify typifying ABIs
  */
-export interface PartialAbiDefinition {
-  type: Web3.AbiType | string; // Not Partial!
+interface PartialAbiDefinition {
+  type: Web3.AbiType | string;
   name?: string;
   inputs?: object[];
   outputs?: object[];
