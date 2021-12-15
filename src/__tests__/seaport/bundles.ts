@@ -6,9 +6,9 @@ import {
   ENJIN_ADDRESS,
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
-} from "../../src/constants";
-import { OpenSeaPort } from "../../src/index";
-import { Network, UnhashedOrder, WyvernSchemaName } from "../../src/types";
+} from "../../constants";
+import { OpenSeaPort } from "../../index";
+import { Network, UnhashedOrder, WyvernSchemaName } from "../../types";
 import {
   AGE_OF_RUST_TOKEN_ID,
   ALEX_ADDRESS,

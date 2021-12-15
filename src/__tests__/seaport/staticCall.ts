@@ -6,11 +6,11 @@ import {
   NULL_ADDRESS,
   RINKEBY_PROVIDER_URL,
   STATIC_CALL_TX_ORIGIN_ADDRESS,
-} from "../../src/constants";
-import { getMethod, StaticCheckTxOrigin } from "../../src/contracts";
-import { OpenSeaPort } from "../../src/index";
-import { Network } from "../../src/types";
-import { encodeCall } from "../../src/utils/schema";
+} from "../../constants";
+import { getMethod, StaticCheckTxOrigin } from "../../contracts";
+import { OpenSeaPort } from "../../index";
+import { Network } from "../../types";
+import { encodeCall } from "../../utils/schema";
 import {
   ALEX_ADDRESS,
   MYTHEREUM_TOKEN_ID,

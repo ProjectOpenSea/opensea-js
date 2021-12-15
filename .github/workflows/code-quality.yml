@@ -9,9 +9,8 @@ env:
   CI: true
 
 jobs:
-  linting:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -24,3 +23,18 @@ jobs:
 
       - name: Run linters
         run: yarn lint:check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14.17.0"
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --immutable --ignore-scripts
+
+      - name: Run tests
+        run: yarn test

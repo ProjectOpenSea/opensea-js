@@ -25,7 +25,7 @@
     "eslint:check": "eslint . --max-warnings 0 --ext .js,.ts",
     "lint:check": "concurrently \"yarn check-types\" \"yarn prettier:check\" \"yarn eslint:check\"",
     "prepare": "husky install",
-    "test": "./node_modules/.bin/mocha test/**/*.ts --require ts-node/register --timeout 15000",
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true mocha -r ts-node/register src/__tests__/**/*.ts --timeout 15000",
     "prettier:check": "prettier --check .",
     "prettier:check:package.json": "yarn prettier-package-json --list-different",
     "prettier:fix": "prettier --write ."
@@ -66,7 +66,7 @@
     "mocha-typescript": "^1.1.15",
     "prettier": "2.5.1",
     "prettier-package-json": "2.6.0",
-    "ts-node": "^6.1.0",
+    "ts-node": "10.4.0",
     "typedoc": "^0.11.1",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "0.0.8",

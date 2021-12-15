@@ -8,14 +8,14 @@ import {
   MAINNET_PROVIDER_URL,
   MAX_UINT_256,
   RINKEBY_PROVIDER_URL,
-} from "../../src/constants";
-import { OpenSeaPort } from "../../src/index";
+} from "../../constants";
+import { OpenSeaPort } from "../../index";
 import {
   Network,
   WyvernSchemaName,
   WyvernNFTAsset,
   WyvernFTAsset,
-} from "../../src/types";
+} from "../../types";
 import {
   ALEX_ADDRESS,
   DIGITAL_ART_CHAIN_ADDRESS,
@@ -79,6 +79,7 @@ suite("seaport: owners and transfers", () => {
     };
     try {
       // Use mainnet client with rinkeby asset
+      // @ts-expect-error unused
       const _isOwner = await client._ownsAssetOnChain({
         accountAddress,
         wyAsset: wyAssetRinkeby,
@@ -86,7 +87,7 @@ suite("seaport: owners and transfers", () => {
       });
       assert.fail();
     } catch (error) {
-      assert.include(error.message, "Unable to get current owner");
+      assert.include((error as Error).message, "Unable to get current owner");
     }
   });
 
