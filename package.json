@@ -20,7 +20,7 @@
     "build": "tsc",
     "check-types": "tsc --noEmit --project tsconfig.json",
     "coverage-report": "nyc report --reporter=text-lcov | coveralls",
-    "docs-build": "typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
+    "docs-build": "typedoc --out docs src/index.ts",
     "eslint:check": "eslint . --max-warnings 0 --ext .js,.ts",
     "lint:check": "concurrently \"yarn check-types\" \"yarn prettier:check\" \"yarn eslint:check\"",
     "prepare": "husky install",
