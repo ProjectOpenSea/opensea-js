@@ -37,4 +37,6 @@ jobs:
         run: yarn install --immutable --ignore-scripts
 
       - name: Run tests
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
         run: yarn test
