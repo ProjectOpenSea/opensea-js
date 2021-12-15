@@ -748,3 +748,10 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 - Is your computer's internal clock accurate? If not, try enabling automatic clock adjustment locally or following [this tutorial](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html) to update an Amazon EC2 instance.
 
 - Are you attempting to purchase a token that's unpurchasable on [OpenSea](https://opensea.io/)? If so, contact us [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel and we'll help diagnose the issue.
+
+## Testing your branch locally
+
+```sh
+yarn link # in opensea-js repo
+yarn link opensea-js # in repo you're working on
+```
