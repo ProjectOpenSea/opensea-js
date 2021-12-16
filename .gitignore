@@ -63,7 +63,8 @@ typings/
 # next.js build output
 .next
 
-lib
+# Commented out only for this branch
+# lib
 
 docs
 
