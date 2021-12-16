@@ -407,7 +407,7 @@ interface ExchangeMetadataForBundle {
     bundle: WyvernBundle;
     referrerAddress?: string;
 }
-declare type ExchangeMetadata = ExchangeMetadataForAsset | ExchangeMetadataForBundle;
+export declare type ExchangeMetadata = ExchangeMetadataForAsset | ExchangeMetadataForBundle;
 export interface UnhashedOrder extends WyvernOrder {
     feeMethod: FeeMethod;
     side: OrderSide;

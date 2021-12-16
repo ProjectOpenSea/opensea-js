@@ -575,7 +575,9 @@ interface ExchangeMetadataForBundle {
   referrerAddress?: string;
 }
 
-type ExchangeMetadata = ExchangeMetadataForAsset | ExchangeMetadataForBundle;
+export type ExchangeMetadata =
+  | ExchangeMetadataForAsset
+  | ExchangeMetadataForBundle;
 
 export interface UnhashedOrder extends WyvernOrder {
   feeMethod: FeeMethod;
