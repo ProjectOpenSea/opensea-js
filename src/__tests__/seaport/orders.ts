@@ -7,7 +7,6 @@ import {
   INVERSE_BASIS_POINT,
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
-  OPENSEA_FEE_RECIPIENT,
   RINKEBY_PROVIDER_URL,
 } from "../../constants";
 import { OpenSeaPort } from "../../index";
@@ -28,6 +27,7 @@ import {
   getOrderHash,
   makeBigNumber,
   orderFromJSON,
+  getFeeWrapperAddress,
 } from "../../utils/utils";
 import {
   ALEX_ADDRESS,
@@ -1120,7 +1120,10 @@ export async function testMatchingNewOrder(
   assert.equal(matchingOrder.makerProtocolFee.toNumber(), 0);
   assert.equal(matchingOrder.takerProtocolFee.toNumber(), 0);
   if (order.waitingForBestCounterOrder) {
-    assert.equal(matchingOrder.feeRecipient, OPENSEA_FEE_RECIPIENT);
+    assert.equal(
+      matchingOrder.feeRecipient,
+      getFeeWrapperAddress(Network.Main)
+    );
   } else {
     assert.equal(matchingOrder.feeRecipient, NULL_ADDRESS);
   }

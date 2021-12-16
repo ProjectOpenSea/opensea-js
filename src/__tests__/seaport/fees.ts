@@ -10,7 +10,6 @@ import {
   ENJIN_COIN_ADDRESS,
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
-  OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
 } from "../../constants";
 import { OpenSeaPort } from "../../index";
@@ -417,7 +416,7 @@ export function testFeesMakerOrder(
   if (order.waitingForBestCounterOrder) {
     assert.equal(order.feeRecipient, NULL_ADDRESS);
   } else {
-    assert.equal(order.feeRecipient, OPENSEA_FEE_RECIPIENT);
+    assert.equal(order.feeRecipient, getFeeWrapperAddress(Network.Main));
   }
   // Public order
   if (makerBountyBPS != null) {

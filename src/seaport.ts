@@ -44,6 +44,7 @@ import {
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY,
   FEE_WRAPPER_ADDRESS_MAINNET,
   FEE_WRAPPER_ADDRESS_RINKEBY,
+  OPENSEA_FEE_RECIPIENT,
 } from "./constants";
 import {
   CanonicalWETH,
@@ -1165,7 +1166,7 @@ export class OpenSeaPort {
     let transactionHash = "";
 
     // We use a fee wrapper to handle fee distribution instead of Wyvern
-    if (isFeeWrapperFlow({ buy, sell }, this._networkName)) {
+    if (isFeeWrapperFlow(order, this._networkName)) {
       const vrs = await this._authorizeOrder(matchingOrder, true);
       const properlySignedMatchingOrder = { ...matchingOrder, ...vrs };
       transactionHash = await this._atomicMatch({
@@ -3167,9 +3168,7 @@ export class OpenSeaPort {
     const times = this._getTimeParameters(0);
     // Compat for matching buy orders that have fee recipient still on them
     const feeRecipient =
-      order.feeRecipient == NULL_ADDRESS
-        ? getFeeWrapperAddress(this._networkName)
-        : NULL_ADDRESS;
+      order.feeRecipient == NULL_ADDRESS ? OPENSEA_FEE_RECIPIENT : NULL_ADDRESS;
 
     const matchingOrder: UnhashedOrder = {
       exchange: order.exchange,
@@ -4086,7 +4085,9 @@ export class OpenSeaPort {
       ],
     ];
 
-    const useFeeWrapper = isFeeWrapperFlow({ buy, sell }, this._networkName);
+    const useFeeWrapper =
+      isFeeWrapperFlow(buy, this._networkName) ||
+      isFeeWrapperFlow(sell, this._networkName);
 
     const feeWrapperAddress = getFeeWrapperAddress(this._networkName);
 

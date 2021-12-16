@@ -1005,23 +1005,14 @@ export async function getNonCompliantApprovalAddress(
   return _.compact(results)[0];
 }
 
-export const isFeeWrapperFlow = (
-  {
-    buy,
-    sell,
-  }: {
-    buy: Order;
-    sell: Order;
-  },
-  network: Network
-) => {
+export const isFeeWrapperFlow = (order: Order, network: Network) => {
   const feeWrapperAddress = getFeeWrapperAddress(network);
+  const isCorrectFeeRecipient =
+    order.side === OrderSide.Sell
+      ? order.feeRecipient === feeWrapperAddress
+      : true;
 
-  return (
-    (buy.staticTarget === feeWrapperAddress ||
-      sell.staticTarget === feeWrapperAddress) &&
-    sell.feeRecipient === feeWrapperAddress
-  );
+  return order.staticTarget === feeWrapperAddress && isCorrectFeeRecipient;
 };
 
 export const getFeeWrapperAddress = (network: Network) =>
