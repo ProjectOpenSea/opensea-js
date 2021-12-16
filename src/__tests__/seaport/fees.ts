@@ -23,7 +23,7 @@ import {
   OrderSide,
   UnhashedOrder,
 } from "../../types";
-import { getOrderHash } from "../../utils/utils";
+import { getOrderHash, getFeeWrapperAddress } from "../../utils/utils";
 import {
   ALEX_ADDRESS,
   CATS_IN_MECHS_ID,
@@ -403,7 +403,7 @@ function unitTestFeesBuyOrder({
   assert.equal(+makerProtocolFee, 0);
   assert.equal(+takerProtocolFee, 0);
   assert.equal(+makerReferrerFee, 0);
-  assert.equal(feeRecipient, OPENSEA_FEE_RECIPIENT);
+  assert.equal(feeRecipient, getFeeWrapperAddress(Network.Main));
   assert.equal(feeMethod, FeeMethod.SplitFee);
 }
 
