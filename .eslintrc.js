@@ -22,10 +22,6 @@ module.exports = {
   rules: {
     "no-restricted-globals": ["error"].concat(restrictedGlobals),
     curly: ["error"],
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
-    ],
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-var-requires": "off",
@@ -40,7 +36,6 @@ module.exports = {
         },
       },
     ],
-    "import/no-unused-modules": [1, { unusedExports: true }],
     "no-control-regex": "off",
 
     "object-shorthand": ["error", "always"],
