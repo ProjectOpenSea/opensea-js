@@ -4127,29 +4127,29 @@ export class OpenSeaPort {
       ).encodeFunctionData("atomicMatch_", wyvernFeeWrapperArgs);
     }
 
-    const atomicMatchEstimateGas = async (): Promise<number> => {
-      return useFeeWrapper && wyvernFeeWrapperArgs
-        ? estimateGas(this.web3ReadOnly, {
-            from: accountAddress,
-            to: feeWrapperAddress,
-            data: wyvernFeeWrapperCalldata,
-            value,
-          })
-        : await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
-            args[0],
-            args[1],
-            args[2],
-            args[3],
-            args[4],
-            args[5],
-            args[6],
-            args[7],
-            args[8],
-            args[9],
-            args[10],
-            txnData
-          );
-    };
+    // const atomicMatchEstimateGas = async (): Promise<number> => {
+    //   return useFeeWrapper && wyvernFeeWrapperArgs
+    //     ? estimateGas(this.web3ReadOnly, {
+    //         from: accountAddress,
+    //         to: feeWrapperAddress,
+    //         data: wyvernFeeWrapperCalldata,
+    //         value,
+    //       })
+    //     : await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
+    //         args[0],
+    //         args[1],
+    //         args[2],
+    //         args[3],
+    //         args[4],
+    //         args[5],
+    //         args[6],
+    //         args[7],
+    //         args[8],
+    //         args[9],
+    //         args[10],
+    //         txnData
+    //       );
+    // };
 
     const submitAtomicMatchTransaction = async (): Promise<string> => {
       return useFeeWrapper && wyvernFeeWrapperArgs
@@ -4184,9 +4184,8 @@ export class OpenSeaPort {
     // Estimate gas first
     try {
       // Typescript splat doesn't typecheck
-      const gasEstimate = await atomicMatchEstimateGas();
-
-      txnData.gas = this._correctGasAmount(gasEstimate);
+      // const gasEstimate = await atomicMatchEstimateGas();
+      // txnData.gas = this._correctGasAmount(gasEstimate);
     } catch (error) {
       console.error(`Failed atomic match with args: `, args, error);
       throw new Error(
