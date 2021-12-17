@@ -583,7 +583,7 @@ export async function sendRawTransaction(
 ): Promise<string> {
   if (gas == null) {
     // This gas cannot be increased due to an ethjs error
-    gas = await estimateGas(web3, { from, to, data, value });
+    // gas = await estimateGas(web3, { from, to, data, value });
   }
 
   try {
@@ -594,7 +594,7 @@ export async function sendRawTransaction(
           to,
           value,
           data,
-          gas,
+          gas: undefined,
           gasPrice,
         },
         c
