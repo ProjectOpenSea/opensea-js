@@ -132,7 +132,7 @@ export enum SaleKind {
  * Types of asset contracts
  * Given by the asset_contract_type in the OpenSea API
  */
-enum AssetContractType {
+export enum AssetContractType {
   Fungible = "fungible",
   SemiFungible = "semi-fungible",
   NonFungible = "non-fungible",
