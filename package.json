@@ -1,47 +1,61 @@
 {
   "name": "opensea-js",
-  "version": "1.2.7",
+  "version": "1.2.1",
   "description": "JavaScript SDK for the OpenSea marketplace. Let users buy or sell crypto collectibles and other cryptogoods, all on your own site!",
-  "license": "MIT",
-  "author": "OpenSea Developers",
-  "homepage": "https://docs.opensea.io/v1.0/reference",
+  "files": [
+    "lib",
+    "webpack.config.js"
+  ],
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha test/**/*.ts --require ts-node/register --timeout 15000",
+    "lint": "tslint --project . 'src/**/*.ts' --fix",
+    "build": "npm run lint && tsc",
+    "docs": "npm run docsHtml",
+    "docsHtml": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
+    "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ProjectOpenSea/opensea-js.git"
   },
+  "keywords": [
+    "marketplace",
+    "crypto",
+    "collectibles",
+    "javascript",
+    "sdk",
+    "node",
+    "nft",
+    "non-fungible-tokens",
+    "ethereum",
+    "project-opensea",
+    "smart-contracts"
+  ],
+  "author": "OpenSea Developers",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/ProjectOpenSea/opensea-js/issues"
   },
-  "main": "lib/index.js",
-  "files": [
-    "lib"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "check-types": "tsc --noEmit --project tsconfig.json",
-    "docs": "npm run docsHtml",
-    "docsHtml": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
-    "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file",
-    "eslint:check": "eslint . --max-warnings 0 --ext .js,.ts",
-    "lint:check": "concurrently \"yarn check-types\" \"yarn prettier:check\" \"yarn eslint:check\"",
-    "prepare": "husky install",
-    "test": "./node_modules/.bin/mocha test/**/*.ts --require ts-node/register --timeout 15000",
-    "prettier:check": "prettier --check .",
-    "prettier:check:package.json": "yarn prettier-package-json --list-different",
-    "prettier:fix": "prettier --write ."
-  },
-  "types": "lib/index.d.ts",
+  "homepage": "https://docs.opensea.io/v1.0/reference",
   "dependencies": {
     "bignumber.js": "^4.1.0",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
     "ethereumjs-util": "^5.2.0",
     "fbemitter": "^2.1.1",
     "isomorphic-unfetch": "^2.1.1",
+    "json-loader": "^0.5.7",
     "lodash": "^4.17.4",
     "query-string": "^6.11.1",
     "web3": "0.20.7",
+    "webpack": "^3.10.0",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.2.1",
-    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#v0.13.1"
+    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#v0.11.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm run build && git add lib/*"
+    }
   },
   "devDependencies": {
     "@types/chai": "4.2.9",
@@ -50,51 +64,18 @@
     "@types/node": "^9.3.0",
     "@types/node-fetch": "2.5.5",
     "@types/query-string": "^6.1.0",
-    "@typescript-eslint/eslint-plugin": "^5.7.0",
-    "@typescript-eslint/parser": "^5.7.0",
     "chai": "^4.1.2",
-    "concurrently": "6.4.0",
-    "confusing-browser-globals": "^1.0.11",
-    "eslint": "^8.4.1",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.25.3",
-    "eslint-plugin-jest": "^25.3.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "husky": "7.0.4",
-    "lint-staged": "12.1.2",
+    "husky": "^4.2.3",
     "mocha": "^5.2.0",
     "mocha-typescript": "^1.1.15",
-    "prettier": "2.5.1",
-    "prettier-package-json": "2.6.0",
     "ts-node": "^6.1.0",
+    "tslint": "^5.9.1",
+    "tslint-eslint-rules": "^4.1.1",
     "typedoc": "^0.11.1",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "0.0.8",
-    "typescript": "4.5.4",
+    "typescript": "^4.3.5",
+    "typescript-eslint-parser": "^16.0.0",
     "web3-typescript-typings": "^0.9.3"
-  },
-  "keywords": [
-    "collectibles",
-    "crypto",
-    "ethereum",
-    "javascript",
-    "marketplace",
-    "nft",
-    "node",
-    "non-fungible-tokens",
-    "project-opensea",
-    "sdk",
-    "smart-contracts"
-  ],
-  "lint-staged": {
-    "package.json": [
-      "prettier-package-json --write"
-    ],
-    "**/*.{ts,tsx,js,jsx,html,md,mdx,yml,json}": [
-      "prettier --write"
-    ],
-    "**/*.{ts,tsx,js,jsx}": [
-      "eslint --cache --fix"
-    ]
   }
 }
