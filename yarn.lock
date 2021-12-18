@@ -5917,39 +5917,26 @@ wrappy@1:
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
 
-"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.2.1":
+"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.3.1-beta":
   version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#fabb7660f23f2252c141077e32193d281036299e"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#0a162e67fc532cef3250c256f2ae1c0970116d37"
   dependencies:
     "0x.js" "^0.29.2"
     "@0xproject/abi-gen" "^0.1.1"
     "@0xproject/assert" "^0.0.11"
     "@0xproject/json-schemas" "^0.7.3"
-    "@0xproject/types" "^0.1.3"
     "@0xproject/utils" "^0.1.3"
     "@0xproject/web3-wrapper" "^0.1.4"
-    "@types/lodash" "^4.14.92"
-    "@types/node" "^9.3.0"
-    awesome-typescript-loader "^3.4.1"
     bn.js "^4.11.8"
     ethereumjs-abi "https://github.com/ProjectWyvern/ethereumjs-abi.git"
     ethereumjs-util "^5.1.3"
     json-loader "^0.5.7"
     jsonschema "^1.2.2"
     lodash "^4.17.4"
-    ts-node "^6.1.0"
-    tslint "^5.9.1"
-    tslint-eslint-rules "^4.1.1"
-    types-bn "^0.0.1"
-    types-ethereumjs-util "^0.0.5"
-    typescript "^2.6.2"
-    typescript-eslint-parser "^16.0.0"
     web3 "^0.20.4"
-    webpack "^3.10.0"
 
 "wyvern-js@github:ProjectOpenSea/wyvern-js#semver:^3.2.1":
   version "3.2.0"
-  uid fabb7660f23f2252c141077e32193d281036299e
   resolved "https://codeload.github.com/ProjectOpenSea/wyvern-js/tar.gz/fabb7660f23f2252c141077e32193d281036299e"
   dependencies:
     "0x.js" "^0.29.2"
