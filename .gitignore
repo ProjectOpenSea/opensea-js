@@ -63,8 +63,6 @@ typings/
 # next.js build output
 .next
 
-lib
-
 docs
 
 .DS_Store
