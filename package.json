@@ -23,7 +23,7 @@
     "docs-build": "typedoc --out docs src/index.ts",
     "eslint:check": "eslint . --max-warnings 0 --ext .js,.ts",
     "lint:check": "concurrently \"yarn check-types\" \"yarn prettier:check\" \"yarn eslint:check\"",
-    "prepare": "husky install",
+    "prepare": "husky install && npm run build",
     "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register src/__tests__/**/*.ts --timeout 15000",
     "prettier:check": "prettier --check .",
     "prettier:check:package.json": "yarn prettier-package-json --list-different",
@@ -36,11 +36,9 @@
     "ethereumjs-util": "^5.2.0",
     "fbemitter": "2.1.1",
     "isomorphic-unfetch": "^2.1.1",
-    "json-loader": "^0.5.7",
     "lodash": "^4.17.21",
     "query-string": "^6.11.1",
     "web3": "0.20.7",
-    "webpack": "^3.10.0",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.3.1-beta",
     "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#v0.14.0"
   },
@@ -69,13 +67,10 @@
     "prettier": "2.5.1",
     "prettier-package-json": "2.6.0",
     "ts-node": "10.4.0",
-    "tslint": "^5.9.1",
-    "tslint-eslint-rules": "^4.1.1",
     "typedoc": "0.22.10",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "0.0.8",
     "typescript": "4.5.4",
-    "typescript-eslint-parser": "^16.0.0",
     "web3-typescript-typings": "^0.9.3"
   },
   "keywords": [
@@ -91,11 +86,6 @@
     "sdk",
     "smart-contracts"
   ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint && npm run build && git add lib/*"
-    }
-  },
   "lint-staged": {
     "package.json": [
       "prettier-package-json --write"
