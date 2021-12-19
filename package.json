@@ -1,10 +1,17 @@
 {
   "name": "opensea-js",
-  "version": "1.2.8-beta.1.5.0",
+  "version": "1.2.8-beta.1.5.1.0",
   "description": "JavaScript SDK for the OpenSea marketplace. Let users buy or sell crypto collectibles and other cryptogoods, all on your own site!",
   "license": "MIT",
   "author": "OpenSea Developers",
   "homepage": "https://docs.opensea.io/v1.0/reference",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ProjectOpenSea/opensea-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ProjectOpenSea/opensea-js/issues"
+  },
   "main": "lib/index.js",
   "files": [
     "lib"
@@ -23,13 +30,6 @@
     "prettier:fix": "prettier --write ."
   },
   "types": "lib/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ProjectOpenSea/opensea-js.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ProjectOpenSea/opensea-js/issues"
-  },
   "dependencies": {
     "bignumber.js": "^4.1.0",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
@@ -43,11 +43,6 @@
     "webpack": "^3.10.0",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.3.1-beta",
     "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#v0.14.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint && npm run build && git add lib/*"
-    }
   },
   "devDependencies": {
     "@types/chai": "4.3.0",
@@ -96,6 +91,11 @@
     "sdk",
     "smart-contracts"
   ],
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm run build && git add lib/*"
+    }
+  },
   "lint-staged": {
     "package.json": [
       "prettier-package-json --write"
