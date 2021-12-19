@@ -11,6 +11,7 @@
     "test": "./node_modules/.bin/mocha test/**/*.ts --require ts-node/register --timeout 15000",
     "lint": "tslint --project . 'src/**/*.ts' --fix",
     "build": "npm run lint && tsc",
+    "prepare": "npm run build",
     "docs": "npm run docsHtml",
     "docsHtml": "./node_modules/.bin/typedoc --target ES5 --exclude src/abi --excludePrivate --out ./docs --ignoreCompilerErrors --mode file",
     "docsMarkdown": "./node_modules/.bin/typedoc --theme markdown --target ES5 --exclude src/abi --excludePrivate --out ./docs_markdown --ignoreCompilerErrors --mode file"
