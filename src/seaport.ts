@@ -45,6 +45,8 @@ import {
   FEE_WRAPPER_ADDRESS_MAINNET,
   FEE_WRAPPER_ADDRESS_RINKEBY,
   OPENSEA_FEE_RECIPIENT,
+  STATIC_CALL_TX_ORIGIN_ADDRESS_SENDER,
+  STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS_SENDER,
 } from "./constants";
 import {
   CanonicalWETH,
@@ -2829,9 +2831,9 @@ export class OpenSeaPort {
         staticExtradata: encodeCall(
           getMethod(
             StaticCheckTxOrigin,
-            "succeedIfTxOriginMatchesHardcodedAddress"
+            "succeedIfTxOriginMatchesSpecifiedAddress"
           ),
-          []
+          [isMainnet ? STATIC_CALL_TX_ORIGIN_ADDRESS_SENDER : STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS_SENDER]
         ),
       };
     } else {
