@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unused-modules */
 import BigNumber from "bignumber.js";
 import { BigNumber as EthersBigNumber } from "ethers";
 import * as Web3 from "web3";
