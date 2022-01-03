@@ -13,6 +13,7 @@ import { Network, OrderSide } from "../../types";
 import { getOrderHash, makeBigNumber } from "../../utils/utils";
 import {
   ALEX_ADDRESS,
+  ALEX_ADDRESS_2,
   apiToTest,
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
@@ -226,13 +227,13 @@ suite("api", () => {
 
   test("API fetches buy orders for maker", async () => {
     const forMaker = await apiToTest.getOrders({
-      maker: "0x5a237d6ce6d1fa3766fc15256cbfb8bdcf5a5b8a",
+      maker: ALEX_ADDRESS_2,
       side: OrderSide.Buy,
     });
     assert.isAbove(forMaker.orders.length, 0);
     assert.isAbove(forMaker.count, 0);
     forMaker.orders.forEach((order) => {
-      assert.equal("0x5a237d6ce6d1fa3766fc15256cbfb8bdcf5a5b8a", order.maker);
+      assert.equal(ALEX_ADDRESS_2, order.maker);
       assert.equal(OrderSide.Buy, order.side);
     });
   });
