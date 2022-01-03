@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unused-modules */
 import BigNumber from "bignumber.js";
 import * as Web3 from "web3";
 import {
@@ -131,7 +132,7 @@ export enum SaleKind {
  * Types of asset contracts
  * Given by the asset_contract_type in the OpenSea API
  */
-enum AssetContractType {
+export enum AssetContractType {
   Fungible = "fungible",
   SemiFungible = "semi-fungible",
   NonFungible = "non-fungible",
@@ -554,7 +555,9 @@ interface ExchangeMetadataForBundle {
   referrerAddress?: string;
 }
 
-type ExchangeMetadata = ExchangeMetadataForAsset | ExchangeMetadataForBundle;
+export type ExchangeMetadata =
+  | ExchangeMetadataForAsset
+  | ExchangeMetadataForBundle;
 
 export interface UnhashedOrder extends WyvernOrder {
   feeMethod: FeeMethod;
