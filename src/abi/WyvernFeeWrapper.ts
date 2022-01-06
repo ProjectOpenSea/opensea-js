@@ -9,13 +9,18 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
         type: "address",
       },
       {
-        internalType: "address",
-        name: "_serverSignerAddress",
-        type: "address",
+        internalType: "address[]",
+        name: "_serverSignerAddresses",
+        type: "address[]",
       },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
+  },
+  {
+    inputs: [],
+    name: "AddressIsZeroAddress",
+    type: "error",
   },
   {
     inputs: [],
@@ -30,7 +35,7 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
         type: "address",
       },
     ],
-    name: "FailedToSendEther",
+    name: "FailedToTransferFees",
     type: "error",
   },
   {
@@ -52,6 +57,11 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
   {
     inputs: [],
     name: "InvalidServerSignature",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "MoreThanTwoServerSignerAddresses",
     type: "error",
   },
   {
@@ -81,25 +91,6 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
       },
     ],
     name: "OwnershipTransferred",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "Received",
     type: "event",
   },
   {
@@ -183,15 +174,38 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
             name: "paymentTokenAmount",
             type: "uint256",
           },
+          {
+            internalType: "uint256",
+            name: "basisPoints",
+            type: "uint256",
+          },
         ],
         internalType: "struct LibFeeData.FeeData[]",
         name: "_feeData",
         type: "tuple[]",
       },
+      {
+        internalType: "enum Order.Side",
+        name: "serverSignedOrderSide",
+        type: "uint8",
+      },
     ],
     name: "atomicMatch_",
     outputs: [],
     stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "exchange",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -203,71 +217,12 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
   },
   {
     inputs: [],
-    name: "getExchange",
+    name: "getServerSignerAddresses",
     outputs: [
       {
-        internalType: "address",
+        internalType: "address[]",
         name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "recipient",
-            type: "address",
-          },
-          {
-            internalType: "uint256",
-            name: "paymentTokenAmount",
-            type: "uint256",
-          },
-        ],
-        internalType: "struct LibFeeData.FeeData[]",
-        name: "feeData",
-        type: "tuple[]",
-      },
-      {
-        internalType: "address",
-        name: "paymentTokenAddress",
-        type: "address",
-      },
-      {
-        internalType: "uint8",
-        name: "vs",
-        type: "uint8",
-      },
-      {
-        internalType: "bytes32[2]",
-        name: "rssMetadata",
-        type: "bytes32[2]",
-      },
-    ],
-    name: "getMessageHash",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getServerSignerAddress",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
+        type: "address[]",
       },
     ],
     stateMutability: "view",
@@ -296,6 +251,25 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "serverSignerAddresses",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_exchange",
         type: "address",
@@ -309,12 +283,12 @@ export const WyvernFeeWrapper: PartialReadonlyContractAbi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "_serverSignerAddress",
-        type: "address",
+        internalType: "address[]",
+        name: "_serverSignerAddresses",
+        type: "address[]",
       },
     ],
-    name: "setServerSignerAddress",
+    name: "setServerSignerAddresses",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

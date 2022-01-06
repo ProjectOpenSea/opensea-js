@@ -2833,7 +2833,11 @@ export class OpenSeaPort {
             StaticCheckTxOrigin,
             "succeedIfTxOriginMatchesSpecifiedAddress"
           ),
-          [isMainnet ? STATIC_CALL_TX_ORIGIN_ADDRESS_SENDER : STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS_SENDER]
+          [
+            isMainnet
+              ? STATIC_CALL_TX_ORIGIN_ADDRESS_SENDER
+              : STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS_SENDER,
+          ]
         ),
       };
     } else {
@@ -4100,11 +4104,12 @@ export class OpenSeaPort {
       const response = await this.api.getOrderFulfillmentData(makerOrder.hash);
 
       const feeDataWithEthersBigNum = response.fulfillment_data.fee_data.map(
-        ([recipient, amount]) =>
-          [recipient, ethers.BigNumber.from(amount)] as [
-            string,
-            ethers.BigNumber
-          ]
+        ([recipient, amount, basisPoints]) =>
+          [
+            recipient,
+            ethers.BigNumber.from(amount),
+            ethers.BigNumber.from(basisPoints),
+          ] as [string, ethers.BigNumber, ethers.BigNumber]
       );
 
       // We need to replace any number-type value with ethers big number to properly encode it

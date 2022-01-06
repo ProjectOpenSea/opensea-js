@@ -735,13 +735,13 @@ interface PartialAbiDefinition {
 }
 export type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>;
 
-// Array of tuples (feeRecipient, feeAmount)
-type FeeData = Array<[string, EthersBigNumber]>;
+// Array of tuples (feeRecipient, feeAmount, basisPoints)
+type FeeData = Array<[string, EthersBigNumber, EthersBigNumber]>;
 
 export interface OrderFulfillmentDataResponse {
   fulfillment_data: {
-    // Array of tuples (feeRecipient, feeAmount)
-    fee_data: Array<[string, string]>;
+    // Array of tuples (feeRecipient, feeAmount, basisPoints)
+    fee_data: Array<[string, string, string]>;
     server_signature: string;
   };
 }
