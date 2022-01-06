@@ -4123,13 +4123,13 @@ export class OpenSeaPort {
           : arg
       ) as WyvernAtomicMatchParametersWithEthers;
 
-      const serverSignedOrderSide = makerOrder.saleKind;
+      const serverSignedOrderSide = makerOrder.side;
 
       wyvernFeeWrapperArgs = [
         wyvernArgsWithEthersBigNum,
         response.fulfillment_data.server_signature,
         feeDataWithEthersBigNum,
-        ethers.BigNumber.from(serverSignedOrderSide)
+        ethers.BigNumber.from(serverSignedOrderSide),
       ];
       // We use ethers because ethereumjs-abi does not support tuple ABI encoding
       wyvernFeeWrapperCalldata = new ethers.utils.Interface(
