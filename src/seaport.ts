@@ -4129,7 +4129,7 @@ export class OpenSeaPort {
         wyvernArgsWithEthersBigNum,
         response.fulfillment_data.server_signature,
         feeDataWithEthersBigNum,
-        serverSignedOrderSide
+        ethers.BigNumber.from(serverSignedOrderSide)
       ];
       // We use ethers because ethereumjs-abi does not support tuple ABI encoding
       wyvernFeeWrapperCalldata = new ethers.utils.Interface(

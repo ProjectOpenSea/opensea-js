@@ -224,7 +224,7 @@ export type WyvernFeeWrapperAtomicMatchParameters = [
   WyvernAtomicMatchParametersWithEthers,
   string,
   FeeData,
-  number
+  EthersBigNumber
 ];
 
 /**
