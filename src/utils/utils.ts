@@ -227,6 +227,9 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     imageUrlOriginal: asset.image_original_url,
     imageUrlThumbnail: asset.image_thumbnail_url,
 
+    animationUrl: asset.animation_url,
+    animationUrlOriginal: asset.animation_original_url,
+
     externalLink: asset.external_link,
     openseaLink: asset.permalink,
     traits: asset.traits,

@@ -362,6 +362,10 @@ export interface OpenSeaAsset extends Asset {
   imageUrlOriginal: string;
   // Thumbnail url for this token
   imageUrlThumbnail: string;
+  // The animation url for this token, if it exists
+  animationUrl: string | null;
+  // The original animation url for this token, if it exists
+  animationUrlOriginal: string | null;
   // Link to token on OpenSea
   openseaLink: string;
   // Link to token on dapp's site
