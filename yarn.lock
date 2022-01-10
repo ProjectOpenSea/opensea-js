@@ -775,7 +775,7 @@ async-eventemitter@^0.2.2:
   dependencies:
     async "^2.4.0"
 
-"async-eventemitter@github:ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c":
+async-eventemitter@ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c:
   version "0.2.3"
   resolved "https://codeload.github.com/ahultgren/async-eventemitter/tar.gz/fa06e39e56786ba541c180061dbf2c0a5bbf951c"
   dependencies:
@@ -5952,9 +5952,9 @@ write-file-atomic@^3.0.0:
     lodash "^4.17.4"
     web3 "^0.20.4"
 
-"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#v0.14.1-beta":
-  version "0.13.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#dea9c03d6e0107f21a3050bd6235625c898143c2"
+"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#v0.14.1":
+  version "0.14.1"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#beb40a4cc9df7886cc34dd1625afe31a10dabddd"
   dependencies:
     "@0xproject/utils" "^0.3.4"
     axios "^0.17.1"
