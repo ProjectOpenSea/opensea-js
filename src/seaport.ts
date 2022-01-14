@@ -670,7 +670,9 @@ export class OpenSeaPort {
       accountAddress,
       startAmount,
       expirationTime,
-      paymentTokenAddress: paymentTokenAddress ?? WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address,
+      paymentTokenAddress:
+        paymentTokenAddress ??
+        WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address,
       extraBountyBasisPoints: 0,
       sellOrder,
       referrerAddress,
@@ -733,14 +735,15 @@ export class OpenSeaPort {
     sellOrder?: Order;
     referrerAddress?: string;
   }): Promise<Order> {
-
     const order = await this._makeBuyOrder({
       asset,
       quantity,
       accountAddress,
       startAmount,
       expirationTime,
-      paymentTokenAddress: paymentTokenAddress ?? WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address,
+      paymentTokenAddress:
+        paymentTokenAddress ??
+        WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address,
       extraBountyBasisPoints: 0,
       sellOrder,
       referrerAddress,
