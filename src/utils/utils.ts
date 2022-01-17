@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
 import {
   AnnotatedFunctionABI,
@@ -673,8 +673,8 @@ export async function estimateGas(
  * @param web3 Web3 instance
  */
 export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
-  const meanGas = await promisify<BigNumber>((c) => web3.eth.getGasPrice(c));
-  return meanGas;
+  const gasPrice = await web3.eth.getGasPrice();
+  return new BigNumber(gasPrice);
 }
 
 /**

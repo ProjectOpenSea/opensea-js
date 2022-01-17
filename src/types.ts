@@ -1,6 +1,6 @@
 /* eslint-disable import/no-unused-modules */
 import BigNumber from "bignumber.js";
-import * as Web3 from "web3";
+import { AbiItem } from "web3-utils";
 import {
   Network,
   HowToCall,
@@ -699,17 +699,4 @@ export interface OrderbookResponse {
 export type Web3Callback<T> = (err: Error | null, result: T) => void;
 export type TxnCallback = (result: boolean) => void;
 
-/**
- * To simplify typifying ABIs
- */
-interface PartialAbiDefinition {
-  type: Web3.AbiType | string;
-  name?: string;
-  inputs?: object[];
-  outputs?: object[];
-  payable?: boolean;
-  constant?: boolean;
-  anonymous?: boolean;
-  stateMutability?: Web3.ConstructorStateMutability | string;
-}
-export type PartialReadonlyContractAbi = Array<Readonly<PartialAbiDefinition>>;
+export type PartialReadonlyContractAbi = AbiItem[];

@@ -1,4 +1,5 @@
 import { BigNumber } from "bignumber.js";
+import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
@@ -6,6 +7,8 @@ import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
 import * as WyvernSchemas from "wyvern-schemas";
 import { Schema } from "wyvern-schemas/dist/types";
+import { UniswapExchange } from "../types/web3-v1-contracts/UniswapExchange";
+import { WrappedNFTFactory as WrappedNFTFactoryType } from "../types/web3-v1-contracts/WrappedNFTFactory"
 import { OpenSeaAPI } from "./api";
 import {
   CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS,
@@ -50,15 +53,14 @@ import {
   ERC20,
   ERC721,
   getMethod,
-  StaticCheckCheezeWizards,
   StaticCheckDecentralandEstates,
   StaticCheckTxOrigin,
-  UniswapExchange,
   UniswapFactory,
   WrappedNFT,
   WrappedNFTFactory,
   WrappedNFTLiquidationProxy,
 } from "./contracts";
+import StaticCheeseWizards from "../src/abi/StaticCheckCheezeWizards.json"
 import {
   MAX_ERROR_LENGTH,
   requireOrderCalldataCanMatch,
@@ -155,7 +157,7 @@ export class OpenSeaPort {
    *  information
    */
   constructor(
-    provider: Web3.Provider,
+    provider: Web3["currentProvider"],
     apiConfig: OpenSeaAPIConfig = {},
     logger?: (arg: string) => void
   ) {
@@ -178,13 +180,13 @@ export class OpenSeaPort {
       : this.web3;
 
     // WyvernJS config
-    this._wyvernProtocol = new WyvernProtocol(provider, {
+    this._wyvernProtocol = new WyvernProtocol(provider as Web3JsProvider, {
       network: this._networkName,
     });
 
     // WyvernJS config for readonly (optimization for infura calls)
     this._wyvernProtocolReadOnly = useReadOnlyProvider
-      ? new WyvernProtocol(readonlyProvider, {
+      ? new WyvernProtocol(readonlyProvider as Web3JsProvider, {
           network: this._networkName,
         })
       : this._wyvernProtocol;
@@ -500,27 +502,25 @@ export class OpenSeaPort {
     contractAddress: string;
   }) {
     // Get UniswapExchange for WrappedNFTContract for contractAddress
-    const wrappedNFTFactoryContract = this.web3.eth.contract(
-      WrappedNFTFactory as Web3.AbiDefinition[]
-    );
-    const wrappedNFTFactory = await wrappedNFTFactoryContract.at(
+    const wrappedNFTFactory = (new this.web3.eth.Contract(
+      WrappedNFTFactory,
       this._wrappedNFTFactoryAddress
-    );
-    const wrappedNFTAddress =
-      await wrappedNFTFactory.nftContractToWrapperContract(contractAddress);
-    const wrappedNFTContract = this.web3.eth.contract(
-      WrappedNFT as Web3.AbiDefinition[]
-    );
-    const wrappedNFT = await wrappedNFTContract.at(wrappedNFTAddress);
-    const uniswapFactoryContract = this.web3.eth.contract(
-      UniswapFactory as Web3.AbiDefinition[]
-    );
-    const uniswapFactory = await uniswapFactoryContract.at(
-      this._uniswapFactoryAddress
-    );
-    const uniswapExchangeAddress = await uniswapFactory.getExchange(
+    ) as unknown) as WrappedNFTFactoryType;
+
+    const wrappedNFTAddress: string = await wrappedNFTFactory.methods
+      .nftContractToWrapperContract(contractAddress)
+      .call();
+    const wrappedNFT = new this.web3.eth.Contract(
+      WrappedNFT,
       wrappedNFTAddress
     );
+    const uniswapFactory = new this.web3.eth.Contract(
+      UniswapFactory,
+      this._uniswapFactoryAddress
+    ) as UniswapExchange;
+    const uniswapExchangeAddress = await uniswapFactory.methods
+      .getExchange(wrappedNFTAddress)
+      .call();
     const uniswapExchangeContract = this.web3.eth.contract(
       UniswapExchange as Web3.AbiDefinition[]
     );
@@ -2760,7 +2760,7 @@ export class OpenSeaPort {
           : STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS,
         staticExtradata: encodeCall(
           getMethod(
-            StaticCheckCheezeWizards,
+            StaticCheeseWizards,
             "succeedIfCurrentWizardFingerprintMatchesProvidedWizardFingerprint"
           ),
           [asset.tokenId, wizardFingerprint, useTxnOriginStaticCall]
