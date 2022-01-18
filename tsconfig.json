@@ -14,7 +14,7 @@
     "noImplicitReturns": true,
     "noErrorTruncation": true,
     "noImplicitThis": false,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": true,
     "preserveConstEnums": true,
     "removeComments": false,
