@@ -1,7 +1,7 @@
 import { BigNumber } from "bignumber.js";
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import {
   ENJIN_ADDRESS,
   INVERSE_BASIS_POINT,
@@ -356,7 +356,6 @@ suite("seaport: orders", () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString();
     const tokenAddress = MYTHEREUM_ADDRESS;
 
-    // @ts-expect-error unused
     const _asset = await client.api.getAsset({ tokenAddress, tokenId });
 
     const order = await client._makeSellOrder({
@@ -657,7 +656,6 @@ suite("seaport: orders", () => {
 
   test.skip("Creates ENS name buy order", async () => {
     const paymentTokenAddress = WETH_ADDRESS;
-    // @ts-expect-error unused
     const _buyOrder = await rinkebyClient._makeBuyOrder({
       asset: {
         tokenId: ENS_HELLO_TOKEN_ID,

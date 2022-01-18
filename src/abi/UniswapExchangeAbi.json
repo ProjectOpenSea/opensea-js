@@ -82,8 +82,8 @@
   {
     "name": "removeLiquidity",
     "outputs": [
-      { "type": "uint256", "name": "out" },
-      { "type": "uint256", "name": "out" }
+      { "type": "uint256", "name": "out_a" },
+      { "type": "uint256", "name": "out_b" }
     ],
     "inputs": [
       { "type": "uint256", "name": "amount" },

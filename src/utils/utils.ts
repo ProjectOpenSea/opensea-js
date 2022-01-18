@@ -3,9 +3,10 @@ import { AbiType, CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
 import Web3 from "web3";
+import { JsonRpcResponse } from "web3-core-helpers/types";
+import { HttpProvider } from "web3-core/types";
+import { Contract } from "web3-eth-contract";
 import { WyvernProtocol } from "wyvern-js";
-import {HttpProvider} from "web3-core/types"
-import { JsonRpcResponse } from "web3-core-helpers/types"
 import {
   AnnotatedFunctionABI,
   FunctionInputKind,
@@ -13,6 +14,7 @@ import {
   Schema,
   StateMutability,
 } from "wyvern-schemas/dist/types";
+import { ERC1155Abi } from "typechain/contracts/ERC1155Abi";
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
@@ -48,9 +50,6 @@ import {
   WyvernNFTAsset,
   WyvernSchemaName,
 } from "../types";
-import { Contract } from "web3-eth-contract";
-import { ERC1155Abi } from "src/abi/contracts/ERC1155Abi";
-
 
 export { WyvernProtocol };
 
@@ -167,9 +166,9 @@ const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
   } else {
     txCallbacks[txHash] = [onFinalized];
     const poll = async () => {
-      const tx = await web3.eth.getTransaction(txHash)
+      const tx = await web3.eth.getTransaction(txHash);
       if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
-        const receipt = await web3.eth.getTransactionReceipt(txHash)
+        const receipt = await web3.eth.getTransactionReceipt(txHash);
         if (!receipt) {
           // Hack: assume success if no receipt
           console.warn("No receipt found for ", txHash);
@@ -699,11 +698,14 @@ export async function getTransferFeeSettings(
 
   if (asset.tokenAddress.toLowerCase() == ENJIN_ADDRESS.toLowerCase()) {
     // Enjin asset
-    const feeContract = new web3.eth
-      .Contract(ERC1155, asset.tokenAddress) as unknown as ERC1155Abi
+    const feeContract = new web3.eth.Contract(
+      ERC1155,
+      asset.tokenAddress
+    ) as unknown as ERC1155Abi;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const params = await feeContract.methods.transferSettings(asset.tokenId as string).call({ from: accountAddress })
+    const params = await feeContract.methods
+      .transferSettings(asset.tokenId as string)
+      .call({ from: accountAddress });
     if (params) {
       transferFee = makeBigNumber(params[3]);
       if (params[2] === "0") {
@@ -993,7 +995,7 @@ export async function getNonCompliantApprovalAddress(
     // CRYPTOKITTIES check
     erc721Contract.methods.kittyIndexToApproved.call(tokenId),
     // Etherbots check
-    erc721Contract.methods.partIndexToApproved.call(tokenId)
+    erc721Contract.methods.partIndexToApproved.call(tokenId),
   ]);
 
   return _.compact(results)[0];

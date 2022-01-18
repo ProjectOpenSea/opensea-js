@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import {
   CK_ADDRESS,
   MAINNET_PROVIDER_URL,
@@ -74,14 +74,10 @@ suite("seaport: misc", () => {
 
   test("Single-approval tokens are approved for tester address", async () => {
     const accountAddress = ALEX_ADDRESS_2;
-    // @ts-expect-error unused
     const _proxyAddress = await client._getProxy(accountAddress);
     const tokenId = CK_TOKEN_ID.toString();
     const tokenAddress = CK_ADDRESS;
-    const erc721 = await client.web3.eth
-      .contract(ERC721 as Web3.AbiDefinition[])
-      .at(tokenAddress);
-    // @ts-expect-error unused
+    const erc721 = new client.web3.eth.Contract(ERC721, tokenAddress);
     const _approvedAddress = await getNonCompliantApprovalAddress(
       erc721,
       tokenId,
