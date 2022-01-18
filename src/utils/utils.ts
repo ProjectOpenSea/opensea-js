@@ -910,6 +910,7 @@ export function getOrderHash(order: UnhashedOrder) {
 
 /**
  * Assign an order and a new matching order to their buy/sell sides
+ * Note: The new matching order is generated on the fly and not from the database
  * @param order Original order
  * @param matchingOrder The result of _makeMatchingOrder
  */
@@ -921,21 +922,23 @@ export function assignOrdersToSides(
 
   let buy: Order;
   let sell: Order;
+  // Since wyvern does not validate signature of sender, we can send
+  // null signature data to save on space, and thus gas.
   if (!isSellOrder) {
     buy = order;
     sell = {
       ...matchingOrder,
-      v: buy.v,
-      r: buy.r,
-      s: buy.s,
+      v: 0,
+      r: NULL_BLOCK_HASH,
+      s: NULL_BLOCK_HASH,
     };
   } else {
     sell = order;
     buy = {
       ...matchingOrder,
-      v: sell.v,
-      r: sell.r,
-      s: sell.s,
+      v: 0,
+      r: NULL_BLOCK_HASH,
+      s: NULL_BLOCK_HASH,
     };
   }
 
