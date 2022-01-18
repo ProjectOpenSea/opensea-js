@@ -1,4 +1,4 @@
 import { PartialReadonlyContractAbi } from "../types";
-import UniswapExchangeABI from "./UniswapExchange.json";
+import UniswapExchangeAbi from "./UniswapExchangeAbi.json";
 
-export const UniswapExchange = UniswapExchangeABI as PartialReadonlyContractAbi
+export const UniswapExchange = UniswapExchangeAbi as PartialReadonlyContractAbi;

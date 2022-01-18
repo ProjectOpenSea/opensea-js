@@ -1,8 +1,11 @@
 import BigNumber from "bignumber.js";
+import { AbiType, CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
 import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
+import {HttpProvider} from "web3-core/types"
+import { JsonRpcResponse } from "web3-core-helpers/types"
 import {
   AnnotatedFunctionABI,
   FunctionInputKind,
@@ -45,6 +48,9 @@ import {
   WyvernNFTAsset,
   WyvernSchemaName,
 } from "../types";
+import { Contract } from "web3-eth-contract";
+import { ERC1155Abi } from "src/abi/contracts/ERC1155Abi";
+
 
 export { WyvernProtocol };
 
@@ -70,7 +76,7 @@ export const annotateERC721TransferABI = (
   outputs: [],
   payable: false,
   stateMutability: StateMutability.Nonpayable,
-  type: Web3.AbiType.Function,
+  type: AbiType.Function,
 });
 
 export const annotateERC20TransferABI = (
@@ -101,7 +107,7 @@ export const annotateERC20TransferABI = (
   ],
   payable: false,
   stateMutability: StateMutability.Nonpayable,
-  type: Web3.AbiType.Function,
+  type: AbiType.Function,
 });
 
 // OTHER
@@ -161,13 +167,9 @@ const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
   } else {
     txCallbacks[txHash] = [onFinalized];
     const poll = async () => {
-      const tx = await promisify<Web3.Transaction>((c) =>
-        web3.eth.getTransaction(txHash, c)
-      );
+      const tx = await web3.eth.getTransaction(txHash)
       if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
-        const receipt = await promisify<Web3.TransactionReceipt | null>((c) =>
-          web3.eth.getTransactionReceipt(txHash, c)
-        );
+        const receipt = await web3.eth.getTransactionReceipt(txHash)
         if (!receipt) {
           // Hack: assume success if no receipt
           console.warn("No receipt found for ", txHash);
@@ -513,8 +515,8 @@ export async function personalSignAsync(
   message: string,
   signerAddress: string
 ): Promise<ECSignature> {
-  const signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
-    web3.currentProvider.sendAsync(
+  const signature = await promisify<JsonRpcResponse | undefined>((c) =>
+    (web3.currentProvider as HttpProvider).send(
       {
         method: "personal_sign",
         params: [message, signerAddress],
@@ -532,7 +534,7 @@ export async function personalSignAsync(
     throw new Error(error);
   }
 
-  return parseSignatureHex(signature.result);
+  return parseSignatureHex(signature?.result);
 }
 
 /**
@@ -575,7 +577,7 @@ export function makeBigNumber(arg: number | string | BigNumber): BigNumber {
  */
 export async function sendRawTransaction(
   web3: Web3,
-  { from, to, data, gasPrice, value = 0, gas }: Web3.TxData,
+  { from, to, data, gasPrice, value = 0, gas }: TxData,
   onError: (error: unknown) => void
 ): Promise<string> {
   if (gas == null) {
@@ -589,10 +591,10 @@ export async function sendRawTransaction(
         {
           from,
           to,
-          value,
+          value: value.toString(),
           data,
-          gas,
-          gasPrice,
+          gas: gas?.toString(),
+          gasPrice: gasPrice?.toString(),
         },
         c
       )
@@ -616,7 +618,7 @@ export async function sendRawTransaction(
  */
 export async function rawCall(
   web3: Web3,
-  { from, to, data }: Web3.CallData,
+  { from, to, data }: CallData,
   onError?: (error: unknown) => void
 ): Promise<string> {
   try {
@@ -651,14 +653,14 @@ export async function rawCall(
  */
 export async function estimateGas(
   web3: Web3,
-  { from, to, data, value = 0 }: Web3.TxData
+  { from, to, data, value = 0 }: TxData
 ): Promise<number> {
   const amount = await promisify<number>((c) =>
     web3.eth.estimateGas(
       {
         from,
         to,
-        value,
+        value: value.toString(),
         data,
       },
       c
@@ -697,17 +699,14 @@ export async function getTransferFeeSettings(
 
   if (asset.tokenAddress.toLowerCase() == ENJIN_ADDRESS.toLowerCase()) {
     // Enjin asset
-    const feeContract = web3.eth
-      .contract(ERC1155 as Web3.AbiDefinition[])
-      .at(asset.tokenAddress);
+    const feeContract = new web3.eth
+      .Contract(ERC1155, asset.tokenAddress) as unknown as ERC1155Abi
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const params = await promisifyCall<any[]>((c) =>
-      feeContract.transferSettings(asset.tokenId, { from: accountAddress }, c)
-    );
+    const params = await feeContract.methods.transferSettings(asset.tokenId as string).call({ from: accountAddress })
     if (params) {
       transferFee = makeBigNumber(params[3]);
-      if (params[2] == 0) {
+      if (params[2] === "0") {
         transferFeeTokenAddress = ENJIN_COIN_ADDRESS;
       }
     }
@@ -811,7 +810,9 @@ export function estimateCurrentPrice(
     exactPrice = exactPrice.times(+takerRelayerFee / INVERSE_BASIS_POINT + 1);
   }
 
-  return shouldRoundUp ? exactPrice.ceil() : exactPrice;
+  return shouldRoundUp
+    ? exactPrice.integerValue(BigNumber.ROUND_CEIL)
+    : exactPrice;
 }
 
 /**
@@ -962,7 +963,7 @@ export function validateAndFormatWalletAddress(
   if (!address) {
     throw new Error("No wallet address found");
   }
-  if (!web3.isAddress(address)) {
+  if (!web3.utils.isAddress(address)) {
     throw new Error("Invalid wallet address");
   }
   if (address == NULL_ADDRESS) {
@@ -984,19 +985,15 @@ export function onDeprecated(msg: string) {
  * @param erc721Contract contract to check
  */
 export async function getNonCompliantApprovalAddress(
-  erc721Contract: Web3.ContractInstance,
+  erc721Contract: Contract,
   tokenId: string,
   _accountAddress: string
 ): Promise<string | undefined> {
   const results = await Promise.all([
     // CRYPTOKITTIES check
-    promisifyCall<string>((c) =>
-      erc721Contract.kittyIndexToApproved.call(tokenId, c)
-    ),
+    erc721Contract.methods.kittyIndexToApproved.call(tokenId),
     // Etherbots check
-    promisifyCall<string>((c) =>
-      erc721Contract.partIndexToApproved.call(tokenId, c)
-    ),
+    erc721Contract.methods.partIndexToApproved.call(tokenId)
   ]);
 
   return _.compact(results)[0];

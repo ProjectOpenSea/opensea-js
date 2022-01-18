@@ -17,7 +17,7 @@
     "lib"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "yarn abi-type-gen && tsc",
     "check-types": "tsc --noEmit --project tsconfig.json",
     "coverage-report": "nyc report --reporter=text-lcov | coveralls",
     "docs-build": "typedoc --out docs src/index.ts",
@@ -25,6 +25,7 @@
     "lint:check": "concurrently \"yarn check-types\" \"yarn prettier:check\" \"yarn eslint:check\"",
     "prepare": "husky install && npm run build",
     "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register src/__tests__/**/*.ts --timeout 15000",
+    "abi-type-gen": "yarn run typechain --target=web3-v1 src/abi/*.json --out-dir=src/abi/contracts",
     "prettier:check": "prettier --check .",
     "prettier:check:package.json": "yarn prettier-package-json --list-different",
     "prettier:fix": "prettier --write ."
