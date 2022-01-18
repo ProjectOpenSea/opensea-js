@@ -6901,9 +6901,9 @@ ws@^3.0.0:
     safe-buffer "~5.1.0"
     ultron "~1.1.0"
 
-"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#487f076f1445f711c6f43399705626891614fbcb":
+"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#e3165bb2bb651b86c769c48cc781ade8d7849c24":
   version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#487f076f1445f711c6f43399705626891614fbcb"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#e3165bb2bb651b86c769c48cc781ade8d7849c24"
   dependencies:
     "@0x/abi-gen" "^5.7.0"
     "@0x/assert" "^3.0.30"
@@ -6920,13 +6920,13 @@ ws@^3.0.0:
     lodash "^4.17.21"
     web3 "^1.6.1"
 
-"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#4036285fb2f6d613568e54753b45e34a6e212fbc":
+"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#bf11ce61315d8c04d44d8bc7ede85225aa5e4912":
   version "0.14.1"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#4036285fb2f6d613568e54753b45e34a6e212fbc"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#bf11ce61315d8c04d44d8bc7ede85225aa5e4912"
   dependencies:
     "@0x/utils" "^6.4.4"
     axios "^0.17.1"
-    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#487f076f1445f711c6f43399705626891614fbcb"
+    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#e3165bb2bb651b86c769c48cc781ade8d7849c24"
 
 xhr-request-promise@^0.1.2:
   version "0.1.3"
