@@ -2007,12 +2007,15 @@ export class OpenSeaPort {
         );
       }
       const inputValues = abi.inputs.map((i) => i.value.toString());
-      const owner = await contract.methods[abi.name](...inputValues).call();
-      if (owner) {
-        return owner.toLowerCase() == accountAddress.toLowerCase()
-          ? new BigNumber(1)
-          : new BigNumber(0);
-      }
+      try {
+        const owner = await contract.methods[abi.name](...inputValues).call();
+        if (owner) {
+          return owner.toLowerCase() == accountAddress.toLowerCase()
+            ? new BigNumber(1)
+            : new BigNumber(0);
+        }
+        // eslint-disable-next-line no-empty
+      } catch {}
     } else {
       // Missing ownership call - skip check to allow listings
       // by default

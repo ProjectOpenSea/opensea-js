@@ -86,10 +86,10 @@
     ethereum-types "^3.6.0"
     popper.js "1.14.3"
 
-"@0x/utils@^6.4.4":
-  version "6.4.4"
-  resolved "https://registry.yarnpkg.com/@0x/utils/-/utils-6.4.4.tgz#de9782a7ee2af77580a98a8c6db010dda7f56b94"
-  integrity sha512-gTfK14tdMNtsmHC6FCrWz221+MYJNdDBdhA1hhnT+Kvru22uvhdTpP2udy7296/4yHZaEkDt5ZkvgJMsJCEhbg==
+"@0x/utils@^6.4.4", "@0x/utils@^6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@0x/utils/-/utils-6.5.0.tgz#a75eda9a1cdc7cd2520056dbaec678f20f7f16c4"
+  integrity sha512-1+9nIagW9OQG0rcUaBvIOMolWgZHqSjNADQIJk+GmEMYnt7wUpokSkHPHxmw+/xVQs/da5dh1U0/nWsW+A1Nuw==
   dependencies:
     "@0x/types" "^3.3.4"
     "@0x/typescript-typings" "^5.2.1"
@@ -6901,15 +6901,15 @@ ws@^3.0.0:
     safe-buffer "~5.1.0"
     ultron "~1.1.0"
 
-"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#e3165bb2bb651b86c769c48cc781ade8d7849c24":
+"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#962657e8c42672d302afeee95f55f23018d6242b":
   version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#e3165bb2bb651b86c769c48cc781ade8d7849c24"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#962657e8c42672d302afeee95f55f23018d6242b"
   dependencies:
     "@0x/abi-gen" "^5.7.0"
     "@0x/assert" "^3.0.30"
     "@0x/base-contract" "^6.4.4"
     "@0x/json-schemas" "^6.4.0"
-    "@0x/utils" "^6.4.4"
+    "@0x/utils" "^6.5.0"
     "@0x/web3-wrapper" "^7.6.1"
     bn.js "^4.11.8"
     ethereumjs-abi "https://github.com/ProjectWyvern/ethereumjs-abi.git"
@@ -6920,13 +6920,13 @@ ws@^3.0.0:
     lodash "^4.17.21"
     web3 "^1.6.1"
 
-"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#bf11ce61315d8c04d44d8bc7ede85225aa5e4912":
+"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#18628a03ca8546df2129d3d44ce977241bbf53c3":
   version "0.14.1"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#bf11ce61315d8c04d44d8bc7ede85225aa5e4912"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#18628a03ca8546df2129d3d44ce977241bbf53c3"
   dependencies:
-    "@0x/utils" "^6.4.4"
+    "@0x/utils" "^6.5.0"
     axios "^0.17.1"
-    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#e3165bb2bb651b86c769c48cc781ade8d7849c24"
+    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#962657e8c42672d302afeee95f55f23018d6242b"
 
 xhr-request-promise@^0.1.2:
   version "0.1.3"
