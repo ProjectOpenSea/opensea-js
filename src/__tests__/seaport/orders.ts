@@ -32,12 +32,13 @@ import {
 import {
   ALEX_ADDRESS,
   ALEX_ADDRESS_2,
-  CATS_IN_MECHS_ID,
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
   CK_RINKEBY_TOKEN_ID,
   CK_TOKEN_ID,
   CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE,
+  CRYPTOVOXELS_WEARABLE_2_ID,
+  CRYPTOVOXELS_WEARABLE_ADDRESS,
   DEVIN_ADDRESS,
   DIGITAL_ART_CHAIN_ADDRESS,
   DIGITAL_ART_CHAIN_TOKEN_ID,
@@ -754,8 +755,8 @@ suite("seaport: orders", () => {
     const takerAddress = ALEX_ADDRESS_2;
     const amountInEth = 2;
 
-    const tokenId = CATS_IN_MECHS_ID;
-    const tokenAddress = ENJIN_ADDRESS;
+    const tokenId = CRYPTOVOXELS_WEARABLE_2_ID;
+    const tokenAddress = CRYPTOVOXELS_WEARABLE_ADDRESS;
 
     const asset = await client.api.getAsset({ tokenAddress, tokenId });
 
