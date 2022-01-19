@@ -19,6 +19,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable --ignore-scripts
 
+      - name: Gen ABI
+        run: yarn abi-type-gen
+
       - name: Build
         run: yarn docs-build
 
