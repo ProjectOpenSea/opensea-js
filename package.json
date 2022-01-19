@@ -39,9 +39,9 @@
     "isomorphic-unfetch": "^2.1.1",
     "lodash": "^4.17.21",
     "query-string": "^6.11.1",
-    "web3": "^1.6.1",
-    "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#962657e8c42672d302afeee95f55f23018d6242b",
-    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#18628a03ca8546df2129d3d44ce977241bbf53c3"
+    "web3": "1.7.0",
+    "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#3d4930aa2ec434653c4b857a93fd7ca7abddbb0b",
+    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#a7ccf39a9dce204b80008fff7b6ea45a21bb2f10"
   },
   "devDependencies": {
     "@typechain/web3-v1": "^5.0.0",
