@@ -1977,19 +1977,21 @@ export class OpenSeaPort {
 
       const abi = schema.functions.countOf(wyAsset);
       const contract = new (this._getClientsForRead(retries).web3.eth.Contract)(
-        abi,
+        [abi],
         abi.target
       );
       const inputValues = abi.inputs
         .filter((x) => x.value !== undefined)
         .map((x) => x.value);
-      const count = await contract.methods[abi.name].call(
-        accountAddress,
-        ...inputValues
-      );
 
-      if (count !== undefined) {
+      try {
+        const count = await contract.methods[abi.name].call(
+          accountAddress,
+          ...inputValues
+        );
         return count;
+      } catch (error) {
+        console.error(error);
       }
     } else if (schema.functions.ownerOf) {
       // ERC721 asset

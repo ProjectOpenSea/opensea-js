@@ -51,13 +51,13 @@ suite.only("seaport: misc", () => {
     assert.equal(typeof client._getProxy, "function");
   });
 
-  test.only("Fetches proxy for an account", async () => {
+  test("Fetches proxy for an account", async () => {
     const accountAddress = ALEX_ADDRESS;
     const proxy = await client._getProxy(accountAddress);
     assert.isNotNull(proxy);
   });
 
-  test("Fetches positive token balance for an account", async () => {
+  test.only("Fetches positive token balance for an account", async () => {
     const accountAddress = ALEX_ADDRESS;
     const balance = await client.getTokenBalance({
       accountAddress,
