@@ -991,12 +991,12 @@ export async function getNonCompliantApprovalAddress(
   tokenId: string,
   _accountAddress: string
 ): Promise<string | undefined> {
-  const results = await Promise.all([
+  const results = await Promise.allSettled([
     // CRYPTOKITTIES check
-    erc721Contract.methods.kittyIndexToApproved.call(tokenId),
+    erc721Contract.methods.kittyIndexToApproved(tokenId).call(),
     // Etherbots check
-    erc721Contract.methods.partIndexToApproved.call(tokenId),
+    erc721Contract.methods.partIndexToApproved(tokenId).call(),
   ]);
 
-  return _.compact(results)[0];
+  return _.compact(results)[0].status;
 }

@@ -34,7 +34,7 @@ const client = new OpenSeaPort(
   (line) => console.info(`MAINNET: ${line}`)
 );
 
-suite.only("seaport: misc", () => {
+suite("seaport: misc", () => {
   test("Instance has public methods", () => {
     assert.equal(typeof client.getCurrentPrice, "function");
     assert.equal(typeof client.wrapEth, "function");
@@ -57,7 +57,7 @@ suite.only("seaport: misc", () => {
     assert.isNotNull(proxy);
   });
 
-  test.only("Fetches positive token balance for an account", async () => {
+  test("Fetches positive token balance for an account", async () => {
     const accountAddress = ALEX_ADDRESS;
     const balance = await client.getTokenBalance({
       accountAddress,

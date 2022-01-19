@@ -1984,21 +1984,20 @@ export class OpenSeaPort {
         .filter((x) => x.value !== undefined)
         .map((x) => x.value);
 
-      try {
-        const count = await contract.methods[abi.name].call(
-          accountAddress,
-          ...inputValues
-        );
-        return count;
-      } catch (error) {
-        console.error(error);
+      const count = await contract.methods[abi.name](
+        accountAddress,
+        ...inputValues
+      ).call();
+
+      if (count !== undefined) {
+        return new BigNumber(count);
       }
     } else if (schema.functions.ownerOf) {
       // ERC721 asset
 
       const abi = schema.functions.ownerOf(wyAsset);
       const contract = new (this._getClientsForRead(retries).web3.eth.Contract)(
-        abi,
+        [abi],
         abi.target
       );
 
@@ -2008,7 +2007,7 @@ export class OpenSeaPort {
         );
       }
       const inputValues = abi.inputs.map((i) => i.value.toString());
-      const owner = await contract.methods[abi.name].call(...inputValues);
+      const owner = await contract.methods[abi.name](...inputValues).call();
       if (owner) {
         return owner.toLowerCase() == accountAddress.toLowerCase()
           ? new BigNumber(1)
