@@ -34,7 +34,7 @@ const client = new OpenSeaPort(
   (line) => console.info(`MAINNET: ${line}`)
 );
 
-suite("seaport: misc", () => {
+suite.only("seaport: misc", () => {
   test("Instance has public methods", () => {
     assert.equal(typeof client.getCurrentPrice, "function");
     assert.equal(typeof client.wrapEth, "function");
@@ -51,7 +51,7 @@ suite("seaport: misc", () => {
     assert.equal(typeof client._getProxy, "function");
   });
 
-  test("Fetches proxy for an account", async () => {
+  test.only("Fetches proxy for an account", async () => {
     const accountAddress = ALEX_ADDRESS;
     const proxy = await client._getProxy(accountAddress);
     assert.isNotNull(proxy);
