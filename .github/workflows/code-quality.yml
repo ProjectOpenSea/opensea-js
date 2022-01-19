@@ -20,7 +20,8 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --immutable --ignore-scripts
-
+      - name: Gen ABI
+        run: yarn abi-type-gen
       - name: Run linters
         run: yarn lint:check
 
