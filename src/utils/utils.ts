@@ -545,7 +545,7 @@ export async function isContractAddress(
   web3: Web3,
   address: string
 ): Promise<boolean> {
-  const code = await promisify<string>((c) => web3.eth.getCode(address, c));
+  const code = await web3.eth.getCode(address);
   return code !== "0x";
 }
 
@@ -585,19 +585,14 @@ export async function sendRawTransaction(
   }
 
   try {
-    const txHashRes = await promisify<string>((c) =>
-      web3.eth.sendTransaction(
-        {
-          from,
-          to,
-          value: value.toString(),
-          data,
-          gas: gas?.toString(),
-          gasPrice: gasPrice?.toString(),
-        },
-        c
-      )
-    );
+    const txHashRes = await web3.eth.sendTransaction({
+      from,
+      to,
+      value: value.toString(),
+      data,
+      gas: gas?.toString(),
+      gasPrice: gasPrice?.toString(),
+    });
     return txHashRes.toString();
   } catch (error) {
     onError(error);
@@ -621,16 +616,11 @@ export async function rawCall(
   onError?: (error: unknown) => void
 ): Promise<string> {
   try {
-    const result = await promisify<string>((c) =>
-      web3.eth.call(
-        {
-          from,
-          to,
-          data,
-        },
-        c
-      )
-    );
+    const result = await web3.eth.call({
+      from,
+      to,
+      data,
+    });
     return result;
   } catch (error) {
     // Probably method not found, and web3 is a Parity node
@@ -654,17 +644,12 @@ export async function estimateGas(
   web3: Web3,
   { from, to, data, value = 0 }: TxData
 ): Promise<number> {
-  const amount = await promisify<number>((c) =>
-    web3.eth.estimateGas(
-      {
-        from,
-        to,
-        value: value.toString(),
-        data,
-      },
-      c
-    )
-  );
+  const amount = await web3.eth.estimateGas({
+    from,
+    to,
+    value: value.toString(),
+    data,
+  });
 
   return amount;
 }
