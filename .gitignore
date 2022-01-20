@@ -70,4 +70,4 @@ docs
 .DS_Store
 
 # Auto generated typechain contracts
-typechain/contracts/
+src/typechain/contracts/

@@ -7,14 +7,6 @@ import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
 import * as WyvernSchemas from "wyvern-schemas";
 import { Schema } from "wyvern-schemas/dist/types";
-import { CheezeWizardsBasicTournamentAbi } from "typechain/contracts/CheezeWizardsBasicTournamentAbi";
-import { DecentralandEstatesAbi } from "typechain/contracts/DecentralandEstatesAbi";
-import { ERC1155Abi } from "typechain/contracts/ERC1155Abi";
-import { ERC721v3Abi } from "typechain/contracts/ERC721v3Abi";
-import { UniswapExchangeAbi } from "typechain/contracts/UniswapExchangeAbi";
-import { UniswapFactoryAbi } from "typechain/contracts/UniswapFactoryAbi";
-import { WrappedNFTAbi } from "typechain/contracts/WrappedNFTAbi";
-import { WrappedNFTFactoryAbi } from "typechain/contracts/WrappedNFTFactoryAbi";
 import { OpenSeaAPI } from "./api";
 import {
   CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS,
@@ -73,6 +65,14 @@ import {
   requireOrderCalldataCanMatch,
   requireOrdersCanMatch,
 } from "./debugging";
+import { CheezeWizardsBasicTournamentAbi } from "./typechain/contracts/CheezeWizardsBasicTournamentAbi";
+import { DecentralandEstatesAbi } from "./typechain/contracts/DecentralandEstatesAbi";
+import { ERC1155Abi } from "./typechain/contracts/ERC1155Abi";
+import { ERC721v3Abi } from "./typechain/contracts/ERC721v3Abi";
+import { UniswapExchangeAbi } from "./typechain/contracts/UniswapExchangeAbi";
+import { UniswapFactoryAbi } from "./typechain/contracts/UniswapFactoryAbi";
+import { WrappedNFTAbi } from "./typechain/contracts/WrappedNFTAbi";
+import { WrappedNFTFactoryAbi } from "./typechain/contracts/WrappedNFTFactoryAbi";
 import {
   Asset,
   ComputedFees,

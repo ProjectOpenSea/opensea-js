@@ -14,7 +14,6 @@ import {
   Schema,
   StateMutability,
 } from "wyvern-schemas/dist/types";
-import { ERC1155Abi } from "typechain/contracts/ERC1155Abi";
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
@@ -23,6 +22,7 @@ import {
   NULL_BLOCK_HASH,
 } from "../constants";
 import { ERC1155 } from "../contracts";
+import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
 import {
   Asset,
   AssetEvent,

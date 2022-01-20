@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "1.2.8-beta.1.6.3",
+  "version": "1.2.8-beta.1.6.4",
   "description": "JavaScript SDK for the OpenSea marketplace. Let users buy or sell crypto collectibles and other cryptogoods, all on your own site!",
   "license": "MIT",
   "author": "OpenSea Developers",
@@ -17,7 +17,7 @@
     "lib"
   ],
   "scripts": {
-    "abi-type-gen": "yarn run typechain --target=web3-v1 src/abi/*.json --out-dir=typechain/contracts",
+    "abi-type-gen": "yarn run typechain --target=web3-v1 src/abi/*.json --out-dir=src/typechain/contracts",
     "build": "yarn abi-type-gen && tsc",
     "check-types": "tsc --noEmit --project tsconfig.json",
     "coverage-report": "nyc report --reporter=text-lcov | coveralls",
