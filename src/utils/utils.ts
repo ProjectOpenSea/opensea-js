@@ -593,7 +593,7 @@ export async function sendRawTransaction(
       gas: gas?.toString(),
       gasPrice: gasPrice?.toString(),
     });
-    return txHashRes.toString();
+    return txHashRes.transactionHash;
   } catch (error) {
     onError(error);
     throw error;
