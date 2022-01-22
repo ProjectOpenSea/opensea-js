@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "1.2.8-beta.1.6.6",
+  "version": "1.2.8-beta.1.6.7",
   "description": "JavaScript SDK for the OpenSea marketplace. Let users buy or sell crypto collectibles and other cryptogoods, all on your own site!",
   "license": "MIT",
   "author": "OpenSea Developers",
@@ -40,8 +40,8 @@
     "lodash": "^4.17.21",
     "query-string": "^6.11.1",
     "web3": "1.7.0",
-    "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#3d4930aa2ec434653c4b857a93fd7ca7abddbb0b",
-    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#a7ccf39a9dce204b80008fff7b6ea45a21bb2f10"
+    "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#1319d0bb8df3b6b3549a8e698762151a9d0d3bb0",
+    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#e48d74d12a6039c4cbb7e71bff84dbcf64286efe"
   },
   "devDependencies": {
     "@typechain/web3-v1": "^5.0.0",
