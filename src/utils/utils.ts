@@ -173,9 +173,7 @@ const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
           // Hack: assume success if no receipt
           console.warn("No receipt found for ", txHash);
         }
-        const status = receipt
-          ? parseInt((receipt.status || "0").toString()) == 1
-          : true;
+        const status = receipt.status;
         txCallbacks[txHash].map((f) => f(status));
         delete txCallbacks[txHash];
       } else {
