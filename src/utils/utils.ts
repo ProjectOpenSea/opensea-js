@@ -494,9 +494,10 @@ export async function personalSignAsync(
   )({
     method: "personal_sign",
     params: [message, signerAddress],
+    from: signerAddress,
     id: new Date().getTime(),
-    jsonrpc: "2.0",
-  });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const error = (signature as any).error;
