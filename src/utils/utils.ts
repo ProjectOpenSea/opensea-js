@@ -3,6 +3,7 @@ import { AbiType, CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
 import Web3 from "web3";
+import { JsonRpcResponse } from "web3-core-helpers/types";
 import { HttpProvider } from "web3-core/types";
 import { Contract } from "web3-eth-contract";
 import { WyvernProtocol } from "wyvern-js";
@@ -42,6 +43,7 @@ import {
   TxnCallback,
   UnhashedOrder,
   UnsignedOrder,
+  Web3Callback,
   WyvernAsset,
   WyvernBundle,
   WyvernFTAsset,
@@ -111,31 +113,52 @@ export const annotateERC20TransferABI = (
 
 const txCallbacks: { [key: string]: TxnCallback[] } = {};
 
-type Callback<T> = (error: Error | null, result: T) => unknown;
+/**
+ * Promisify a callback-syntax web3 function
+ * @param inner callback function that accepts a Web3 callback function and passes
+ * it to the Web3 function
+ */
+async function promisify<T>(inner: (fn: Web3Callback<T>) => void) {
+  return new Promise<T>((resolve, reject) =>
+    inner((err, res) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(res);
+    })
+  );
+}
 
 /**
- * Many legacy library functions implement their asynchronous behavior using callbacks.
- * It's generally more convenient and a best practice to use promises instead.
- * This converts a function using the callback pattern into one that returns a promise.
- *
- * @param fn A function that takes a callback as its last argument.
- * The callback should take an error (if any) as the first argument and the result data (if any) as the second argument.
+ * Promisify a call a method on a contract,
+ * handling Parity errors. Returns '0x' if error.
+ * Note that if T is not "string", this may return a falsey
+ * value when the contract doesn't support the method (e.g. `isApprovedForAll`).
+ * @param callback An anonymous function that takes a web3 callback
+ * and returns a Web3 Contract's call result, e.g. `c => erc721.ownerOf(3, c)`
+ * @param onError callback when user denies transaction
  */
-const promisifyAny =
-  <T>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fn: (...args: any[]) => unknown
-  ): ((...args: unknown[]) => Promise<T>) =>
-  async (...args: unknown[]) =>
-    new Promise((resolve, reject) =>
-      fn(...args, (error: unknown, result: T) =>
-        error ? reject(error) : resolve(result)
-      )
-    );
-
-export const promisify1 = <V0, T>(
-  fn: (arg0: V0, callback: Callback<T>) => unknown
-): ((arg0: V0) => Promise<T>) => promisifyAny(fn);
+export async function promisifyCall<T>(
+  callback: (fn: Web3Callback<T>) => T,
+  onError?: (error: unknown) => void
+): Promise<T | undefined> {
+  try {
+    const result = await promisify<T>(callback);
+    if (typeof result === "string" && result == "0x") {
+      // Geth compatibility
+      return undefined;
+    }
+    return result as T;
+  } catch (error) {
+    // Probably method not found, and web3 is a Parity node
+    if (onError) {
+      onError(error);
+    } else {
+      console.error(error);
+    }
+    return undefined;
+  }
+}
 
 const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
   if (txCallbacks[txHash]) {
@@ -489,14 +512,18 @@ export async function personalSignAsync(
   message: string,
   signerAddress: string
 ): Promise<ECSignature> {
-  const signature = await promisify1(
-    (web3.currentProvider as HttpProvider).send
-  )({
-    method: "personal_sign",
-    params: [message, signerAddress],
-    id: new Date().getTime(),
-    jsonrpc: "2.0",
-  });
+  const signature = await promisify<JsonRpcResponse | undefined>((c) =>
+    (web3.currentProvider as HttpProvider).send(
+      {
+        method: "personal_sign",
+        params: [message, signerAddress],
+        from: signerAddress,
+        id: new Date().getTime(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
+      c
+    )
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const error = (signature as any).error;
@@ -556,7 +583,7 @@ export async function sendRawTransaction(
   }
 
   try {
-    const txHash = await promisify1(web3.eth.sendTransaction)({
+    const txHashRes = await web3.eth.sendTransaction({
       from,
       to,
       value: value.toString(),
@@ -564,7 +591,7 @@ export async function sendRawTransaction(
       gas: gas?.toString(),
       gasPrice: gasPrice?.toString(),
     });
-    return txHash;
+    return txHashRes.transactionHash;
   } catch (error) {
     onError(error);
     throw error;
