@@ -583,15 +583,20 @@ export async function sendRawTransaction(
   }
 
   try {
-    const txHashRes = await web3.eth.sendTransaction({
-      from,
-      to,
-      value: value.toString(),
-      data,
-      gas: gas?.toString(),
-      gasPrice: gasPrice?.toString(),
-    });
-    return txHashRes.transactionHash;
+    const txHashRes = await promisify<string>((c) =>
+      web3.eth.sendTransaction(
+        {
+          from,
+          to,
+          value: value.toString(),
+          data,
+          gas: gas?.toString(),
+          gasPrice: gasPrice?.toString(),
+        },
+        c
+      )
+    );
+    return txHashRes;
   } catch (error) {
     onError(error);
     throw error;
