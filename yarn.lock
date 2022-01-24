@@ -86,39 +86,14 @@
     ethereum-types "^3.6.0"
     popper.js "1.14.3"
 
-"@0x/utils@^6.4.4", "@0x/utils@^6.5.0":
+"@0x/utils@^6.4.4", "@0x/utils@https://github.com/ProjectOpensea/0x-tools/raw/provider-patch/utils/0x-utils-6.5.0.tgz":
   version "6.5.0"
-  resolved "https://registry.yarnpkg.com/@0x/utils/-/utils-6.5.0.tgz#a75eda9a1cdc7cd2520056dbaec678f20f7f16c4"
-  integrity sha512-1+9nIagW9OQG0rcUaBvIOMolWgZHqSjNADQIJk+GmEMYnt7wUpokSkHPHxmw+/xVQs/da5dh1U0/nWsW+A1Nuw==
+  resolved "https://github.com/ProjectOpensea/0x-tools/raw/provider-patch/utils/0x-utils-6.5.0.tgz#49cc5308ac0a5a7d5e3ae25288971c3bf0f9ee16"
   dependencies:
-    "@0x/types" "^3.3.4"
-    "@0x/typescript-typings" "^5.2.1"
-    "@types/mocha" "^5.2.7"
-    "@types/node" "12.12.54"
     abortcontroller-polyfill "^1.1.9"
     bignumber.js "~9.0.0"
     chalk "^2.3.0"
     detect-node "2.0.3"
-    ethereum-types "^3.6.0"
-    ethereumjs-util "^7.1.0"
-    ethers "~4.0.4"
-    isomorphic-fetch "2.2.1"
-    js-sha3 "^0.7.0"
-    lodash "^4.17.11"
-
-"@0x/utils@https://github.com/ProjectOpensea/0x-tools/raw/provider-patch/utils/0x-utils-6.5.0.tgz":
-  version "6.5.0"
-  resolved "https://github.com/ProjectOpensea/0x-tools/raw/provider-patch/utils/0x-utils-6.5.0.tgz#c52b0eaac2d8250387535730306124e4f752aedf"
-  dependencies:
-    "@0x/types" "^3.3.4"
-    "@0x/typescript-typings" "^5.2.1"
-    "@types/mocha" "^5.2.7"
-    "@types/node" "12.12.54"
-    abortcontroller-polyfill "^1.1.9"
-    bignumber.js "~9.0.0"
-    chalk "^2.3.0"
-    detect-node "2.0.3"
-    ethereum-types "^3.6.0"
     ethereumjs-util "^7.1.0"
     ethers "~4.0.4"
     isomorphic-fetch "2.2.1"
@@ -676,11 +651,6 @@
   version "4.14.178"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.178.tgz#341f6d2247db528d4a13ddbb374bcdc80406f4f8"
   integrity sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==
-
-"@types/mocha@^5.2.7":
-  version "5.2.7"
-  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-5.2.7.tgz#315d570ccb56c53452ff8638738df60726d5b6ea"
-  integrity sha512-NYrtPht0wGzhwe9+/idPaBB+TqkY9AhTvOLMkThm0IoEfLaiVQZwBwyJ5puCkO3AUCWrmcoePjp2mbFocKy4SQ==
 
 "@types/mocha@^9.0.0":
   version "9.0.0"
@@ -6920,9 +6890,9 @@ ws@^3.0.0:
     safe-buffer "~5.1.0"
     ultron "~1.1.0"
 
-"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#1319d0bb8df3b6b3549a8e698762151a9d0d3bb0":
+"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#57967e70114ad523e306ed8da52cf5494f6e7008":
   version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#1319d0bb8df3b6b3549a8e698762151a9d0d3bb0"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#57967e70114ad523e306ed8da52cf5494f6e7008"
   dependencies:
     "@0x/abi-gen" "^5.7.0"
     "@0x/assert" "^3.0.30"
@@ -6939,32 +6909,13 @@ ws@^3.0.0:
     lodash "^4.17.21"
     web3 "^1.7.0"
 
-"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#3d4930aa2ec434653c4b857a93fd7ca7abddbb0b":
-  version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#3d4930aa2ec434653c4b857a93fd7ca7abddbb0b"
-  dependencies:
-    "@0x/abi-gen" "^5.7.0"
-    "@0x/assert" "^3.0.30"
-    "@0x/base-contract" "^6.4.4"
-    "@0x/json-schemas" "^6.4.0"
-    "@0x/utils" "^6.5.0"
-    "@0x/web3-wrapper" "^7.6.1"
-    bn.js "^4.11.8"
-    ethereumjs-abi "https://github.com/ProjectWyvern/ethereumjs-abi.git"
-    ethereumjs-util "^5.1.3"
-    ethers "^4.0.49"
-    json-loader "^0.5.7"
-    jsonschema "^1.2.2"
-    lodash "^4.17.21"
-    web3 "^1.7.0"
-
-"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#e48d74d12a6039c4cbb7e71bff84dbcf64286efe":
+"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#b7c1bbac10e0d188b8ee195e1bb8b3abb21b3573":
   version "0.14.1"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#e48d74d12a6039c4cbb7e71bff84dbcf64286efe"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#b7c1bbac10e0d188b8ee195e1bb8b3abb21b3573"
   dependencies:
     "@0x/utils" "https://github.com/ProjectOpensea/0x-tools/raw/provider-patch/utils/0x-utils-6.5.0.tgz"
     axios "^0.17.1"
-    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#3d4930aa2ec434653c4b857a93fd7ca7abddbb0b"
+    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#57967e70114ad523e306ed8da52cf5494f6e7008"
 
 xhr-request-promise@^0.1.2:
   version "0.1.3"
