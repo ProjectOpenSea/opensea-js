@@ -1161,15 +1161,15 @@ export class OpenSeaPort {
       metadata,
     });
 
-    await this._confirmTransaction(
-      transactionHash,
-      EventType.MatchOrders,
-      "Fulfilling order",
-      async () => {
-        const isOpen = await this._validateOrder(order);
-        return !isOpen;
-      }
-    );
+//     await this._confirmTransaction(
+//       transactionHash,
+//       EventType.MatchOrders,
+//       "Fulfilling order",
+//       async () => {
+//         const isOpen = await this._validateOrder(order);
+//         return !isOpen;
+//       }
+//     );
     return transactionHash;
   }
 
