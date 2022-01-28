@@ -4303,7 +4303,7 @@ export class OpenSeaPort {
     const proxy = await this._wyvernProtocol.getAuthenticatedProxy(
       accountAddress
     );
-    return proxy.setRevoke.sendTransactionAsync(true);
+    return proxy.setRevoke.sendTransactionAsync(true, { from: accountAddress });
   }
 
   /**
@@ -4317,6 +4317,6 @@ export class OpenSeaPort {
     const proxy = await this._wyvernProtocol.getAuthenticatedProxy(
       accountAddress
     );
-    return proxy.setRevoke.sendTransactionAsync(false);
+    return proxy.setRevoke.sendTransactionAsync(true, { from: accountAddress });
   }
 }
