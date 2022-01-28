@@ -1144,7 +1144,7 @@ export class OpenSeaPort {
     accountAddress: string;
     recipientAddress?: string;
     referrerAddress?: string;
-  }): Promise<string> {
+  }): Promise<Vector> {
     const matchingOrder = this._makeMatchingOrder({
       order,
       accountAddress,
