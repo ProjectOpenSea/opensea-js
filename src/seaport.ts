@@ -4276,4 +4276,47 @@ export class OpenSeaPort {
       return testResolve(initialRetries);
     });
   }
+
+  /**
+   * Returns whether or not an authenticated proxy is revoked for a specific account address
+   * @param accountAddress
+   * @returns
+   */
+  public async isAuthenticatedProxyRevoked(
+    accountAddress: string
+  ): Promise<boolean> {
+    const proxy = await this._wyvernProtocol.getAuthenticatedProxy(
+      accountAddress
+    );
+
+    return proxy.revoked.callAsync();
+  }
+
+  /**
+   * Revokes an authenticated proxy's access i.e. for freezing listings
+   * @param accountAddress
+   * @returns transaction hash
+   */
+  public async revokeAuthenticatedProxyAccess(
+    accountAddress: string
+  ): Promise<string> {
+    const proxy = await this._wyvernProtocol.getAuthenticatedProxy(
+      accountAddress
+    );
+    return proxy.setRevoke.sendTransactionAsync(true);
+  }
+
+  /**
+   * Unrevokes an authenticated proxy's access i.e. for unfreezing listings
+   * @param accountAddress
+   * @returns transaction hash
+   */
+  public async unrevokeAuthenticatedProxyAccess(
+    accountAddress: string
+  ): Promise<string> {
+    const proxy = await this._wyvernProtocol.getAuthenticatedProxy(
+      accountAddress
+    );
+    return proxy.setRevoke.sendTransactionAsync(false);
+  }
 }
