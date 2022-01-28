@@ -60,7 +60,7 @@ import {
   WrappedNFTLiquidationProxy,
 } from "./contracts";
 import {
-  MAX_ERROR_LENGTH,
+//   MAX_ERROR_LENGTH,
   requireOrderCalldataCanMatch,
   requireOrdersCanMatch,
 } from "./debugging";
@@ -1144,7 +1144,7 @@ export class OpenSeaPort {
     accountAddress: string;
     recipientAddress?: string;
     referrerAddress?: string;
-  }): Promise<Vector> {
+  }) {
     const matchingOrder = this._makeMatchingOrder({
       order,
       accountAddress,
@@ -3976,7 +3976,7 @@ export class OpenSeaPort {
       matchMetadata: metadata,
     });
 
-    let txHash;
+//     let txHash;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const txnData: any = { from: accountAddress, value };
     const args: WyvernAtomicMatchParameters = [
