@@ -5797,10 +5797,10 @@ web3-provider-engine@^13.6.5:
     xhr "^2.2.0"
     xtend "^4.0.1"
 
-web3-typescript-typings@^0.9.3:
-  version "0.9.11"
-  resolved "https://registry.yarnpkg.com/web3-typescript-typings/-/web3-typescript-typings-0.9.11.tgz#2f5464e572843b0853f47a1a0801029d6dfb5793"
-  integrity sha512-SBadXrLAYE0yRzj8cDCtkEON39Nd2uLXi5IepjqykHSWOI4ybu7deD++RinUJ7eYOvwgljchJ8D6iexrmbdPbQ==
+web3-typescript-typings@0.10.2:
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/web3-typescript-typings/-/web3-typescript-typings-0.10.2.tgz#a9903815d2a8a0dbd73fd5db374070de0bd30497"
+  integrity sha1-qZA4FdKooNvXP9XbN0Bw3gvTBJc=
   dependencies:
     bignumber.js "~4.1.0"
 
