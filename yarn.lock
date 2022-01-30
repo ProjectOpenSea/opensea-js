@@ -5944,9 +5944,9 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.3.3":
+"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.3.4":
   version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#910dd41e3cfc1cfe7ce5844160f385c30608daf4"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#4fffae98c1bc5c5b8c41d791071e4d9b13d2af2c"
   dependencies:
     "0x.js" "^0.29.2"
     "@0xproject/abi-gen" "0.1.2"
