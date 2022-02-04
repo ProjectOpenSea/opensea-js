@@ -237,8 +237,10 @@ export class OpenSeaPort {
     // Debugging: default to nothing
     this.logger = logger || ((arg: string) => arg);
 
-    this._wyvernExchangeForOrderCreationPromise =
-      this.api.getOrderCreateWyvernExchangeAddress();
+    this._wyvernExchangeForOrderCreationPromise = apiConfig.wyvernConfig
+      ?.wyvernExchangeContractAddress
+      ? Promise.resolve(apiConfig.wyvernConfig.wyvernExchangeContractAddress)
+      : this.api.getOrderCreateWyvernExchangeAddress();
   }
 
   /**

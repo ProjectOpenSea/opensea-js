@@ -130,6 +130,9 @@ export class OpenSeaAPI {
       const result = await this.get(`${ORDERBOOK_PATH}/exchange/`);
       return result as string;
     } catch (error) {
+      this.logger(
+        "Couldn't retrieve Wyvern exchange address for order creation"
+      );
       return null;
     }
   }
