@@ -5727,9 +5727,9 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#adb0b5ceb8616ce1414096a27c0a8a953120c0aa":
+"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#v4.0.0":
   version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#adb0b5ceb8616ce1414096a27c0a8a953120c0aa"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#cdff8a631e1a06fa3b694cc399d1e46fa67b1f9f"
   dependencies:
     "0x.js" "^0.29.2"
     "@0xproject/assert" "^0.0.11"
@@ -5744,16 +5744,16 @@ write-file-atomic@^3.0.0:
     lodash "^4.17.4"
     web3 "^0.20.4"
 
-"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#cfb57e3a2cd9138966f5fdb842b55b8d6556cbc1":
+"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#v0.15.0":
   version "0.14.1"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#cfb57e3a2cd9138966f5fdb842b55b8d6556cbc1"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#1ed62bc986742db02546b59ed6b8718199b3918c"
   dependencies:
     "@0xproject/utils" "^0.3.4"
     axios "^0.17.1"
     bignumber.js "^6.0.0"
     typed-promisify "^0.4.0"
     web3-provider-engine "^13.6.5"
-    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#adb0b5ceb8616ce1414096a27c0a8a953120c0aa"
+    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#v4.0.0"
 
 xhr2-cookies@^1.1.0:
   version "1.1.0"
