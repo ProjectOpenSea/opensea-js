@@ -7,6 +7,7 @@ import {
   AnnotatedFunctionABI,
   FunctionInputKind,
   FunctionOutputKind,
+  Network,
   Schema,
   StateMutability,
 } from "wyvern-schemas/dist/types";
@@ -14,8 +15,12 @@ import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
+  MERKLE_VALIDATOR_MAINNET,
+  MERKLE_VALIDATOR_RINKEBY,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
+  WYVERN2_2EXCHANGE_ADDRESS_MAINNET,
+  WYVERN2_2EXCHANGE_ADDRESS_RINKEBY,
 } from "../constants";
 import { ERC1155 } from "../contracts";
 import {
@@ -495,8 +500,6 @@ export const orderToJSON = (order: Order): OrderJSON => {
     v: order.v,
     r: order.r,
     s: order.s,
-
-    hash: order.hash,
   };
   return asJSON;
 };
@@ -518,6 +521,40 @@ export async function personalSignAsync(
       {
         method: "personal_sign",
         params: [message, signerAddress],
+        from: signerAddress,
+        id: new Date().getTime(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
+      c
+    )
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const error = (signature as any).error;
+  if (error) {
+    throw new Error(error);
+  }
+
+  return parseSignatureHex(signature.result);
+}
+
+/**
+ * Sign messages using web3 signTypedData signatures
+ * @param web3 Web3 instance
+ * @param message message to sign
+ * @param signerAddress web3 address signing the message
+ * @returns A signature if provider can sign, otherwise null
+ */
+export async function signTypedDataAsync(
+  web3: Web3,
+  message: string,
+  signerAddress: string
+): Promise<ECSignature> {
+  const signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
+    web3.currentProvider.sendAsync(
+      {
+        method: "eth_signTypedData_v4",
+        params: [signerAddress, message],
         from: signerAddress,
         id: new Date().getTime(),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1001,3 +1038,13 @@ export async function getNonCompliantApprovalAddress(
 
   return _.compact(results)[0];
 }
+
+export const merkleValidatorByNetwork = {
+  [Network.Main]: MERKLE_VALIDATOR_MAINNET,
+  [Network.Rinkeby]: MERKLE_VALIDATOR_RINKEBY,
+};
+
+export const wyvern2_2AddressByNetwork = {
+  [Network.Main]: WYVERN2_2EXCHANGE_ADDRESS_MAINNET,
+  [Network.Rinkeby]: WYVERN2_2EXCHANGE_ADDRESS_RINKEBY,
+};

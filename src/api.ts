@@ -122,6 +122,19 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Get which version of Wyvern exchange to use to create orders
+   * Simply return null in case API doesn't give us a good response
+   */
+  public async getOrderCreateWyvernExchangeAddress(): Promise<string | null> {
+    try {
+      const result = await this.get(`${ORDERBOOK_PATH}/exchange/`);
+      return result as string;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /**
    * Get an order from the orderbook, throwing if none is found.
    * @param query Query to use for getting orders. A subset of parameters
    *  on the `OrderJSON` type is supported

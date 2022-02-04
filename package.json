@@ -39,8 +39,8 @@
     "lodash": "^4.17.21",
     "query-string": "^6.11.1",
     "web3": "0.20.7",
-    "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.3.4",
-    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#v0.14.0"
+    "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#wyvern-2.3",
+    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#check-and-transfer"
   },
   "devDependencies": {
     "@types/chai": "4.3.0",

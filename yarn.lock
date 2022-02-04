@@ -38,6 +38,21 @@
     web3 "^0.20.0"
     yargs "^10.0.3"
 
+"@0xproject/abi-gen@^0.1.1":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@0xproject/abi-gen/-/abi-gen-0.1.7.tgz#36ed8b7a909c529ecff74438edb87fbb600dd2fa"
+  integrity sha512-mFFprGLVYHl9sD6PGwcAwTqncueqfau6wPGwJV7mQ/Vj3thMo17BY8xzpeSIkXjrdo6lZHlzyVUVrEA1krfjSw==
+  dependencies:
+    "@0xproject/utils" "^0.3.0"
+    chalk "^2.3.0"
+    glob "^7.1.2"
+    handlebars "^4.0.11"
+    lodash "^4.17.4"
+    mkdirp "^0.5.1"
+    to-snake-case "^1.0.0"
+    web3 "^0.20.0"
+    yargs "^10.0.3"
+
 "@0xproject/assert@^0.0.10":
   version "0.0.10"
   resolved "https://registry.yarnpkg.com/@0xproject/assert/-/assert-0.0.10.tgz#4fa380c467fb878ea7cd70daa934b276325a187d"
@@ -103,7 +118,7 @@
     lodash "^4.17.4"
     web3 "^0.20.0"
 
-"@0xproject/utils@^0.3.4":
+"@0xproject/utils@^0.3.0", "@0xproject/utils@^0.3.4":
   version "0.3.4"
   resolved "https://registry.yarnpkg.com/@0xproject/utils/-/utils-0.3.4.tgz#263ac7a5ef0b4c65ce893d3e6d1e9b1c2cf75b0b"
   integrity sha512-6rNzuZvY3PghEMcZBGzwGdyMBQ11DXXWWMF3Ar3ajRZvSIjPSLpO7cVXcQQOTnTksiSDLJn/kkaQHz8ZT9yJ+w==
@@ -5929,9 +5944,27 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.3.4":
+"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.3.2":
   version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#06d291e1a111ec1726ad4e605b571b45e13232de"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#1e69699e8ba39edcb177b503caeaaefbf0c31385"
+  dependencies:
+    "0x.js" "^0.29.2"
+    "@0xproject/abi-gen" "^0.1.1"
+    "@0xproject/assert" "^0.0.11"
+    "@0xproject/json-schemas" "^0.7.3"
+    "@0xproject/utils" "^0.1.3"
+    "@0xproject/web3-wrapper" "^0.1.4"
+    bn.js "^4.11.8"
+    ethereumjs-abi "https://github.com/ProjectWyvern/ethereumjs-abi.git"
+    ethereumjs-util "^5.1.3"
+    json-loader "^0.5.7"
+    jsonschema "^1.2.2"
+    lodash "^4.17.4"
+    web3 "^0.20.4"
+
+"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#wyvern-2.3":
+  version "3.2.0"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#d455c5eb0ba139427a8f1f8e83337fcc544e447f"
   dependencies:
     "0x.js" "^0.29.2"
     "@0xproject/abi-gen" "0.1.2"
@@ -5947,35 +5980,16 @@ write-file-atomic@^3.0.0:
     lodash "^4.17.4"
     web3 "^0.20.4"
 
-"wyvern-js@github:ProjectOpenSea/wyvern-js#semver:^3.3.0":
-  version "3.2.0"
-  uid "06d291e1a111ec1726ad4e605b571b45e13232de"
-  resolved "https://codeload.github.com/ProjectOpenSea/wyvern-js/tar.gz/06d291e1a111ec1726ad4e605b571b45e13232de"
-  dependencies:
-    "0x.js" "^0.29.2"
-    "@0xproject/abi-gen" "0.1.2"
-    "@0xproject/assert" "^0.0.11"
-    "@0xproject/json-schemas" "^0.7.3"
-    "@0xproject/utils" "^0.1.3"
-    "@0xproject/web3-wrapper" "^0.1.4"
-    bn.js "^4.11.8"
-    ethereumjs-abi "https://github.com/ProjectWyvern/ethereumjs-abi.git"
-    ethereumjs-util "^5.1.3"
-    json-loader "^0.5.7"
-    jsonschema "^1.2.2"
-    lodash "^4.17.4"
-    web3 "^0.20.4"
-
-"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#v0.14.0":
-  version "0.13.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#304ae05e57cd3e88f7b8000266f760aed507e7e3"
+"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#check-and-transfer":
+  version "0.14.1"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#0a0c2cd4f8e88885fe7c367ce300071419940cf7"
   dependencies:
     "@0xproject/utils" "^0.3.4"
     axios "^0.17.1"
     bignumber.js "^6.0.0"
     typed-promisify "^0.4.0"
     web3-provider-engine "^13.6.5"
-    wyvern-js "github:ProjectOpenSea/wyvern-js#semver:^3.3.0"
+    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#v3.3.2"
 
 xhr2-cookies@^1.1.0:
   version "1.1.0"

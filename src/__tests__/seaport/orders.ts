@@ -25,14 +25,13 @@ import {
 import {
   assignOrdersToSides,
   estimateCurrentPrice,
-  getOrderHash,
   makeBigNumber,
   orderFromJSON,
 } from "../../utils/utils";
 import {
+  AGE_OF_RUST_TOKEN_ID,
   ALEX_ADDRESS,
   ALEX_ADDRESS_2,
-  CATS_IN_MECHS_ID,
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
   CK_RINKEBY_TOKEN_ID,
@@ -105,16 +104,8 @@ suite("seaport: orders", () => {
     test("Order #" + index + " has correct types", () => {
       const order = orderFromJSON(orderJSON);
       assert.instanceOf(order.basePrice, BigNumber);
-      assert.typeOf(order.hash, "string");
       assert.typeOf(order.maker, "string");
       assert.equal(+order.quantity, 1);
-    });
-  });
-
-  ordersJSON.map((orderJSON: OrderJSON, index: number) => {
-    test("Order #" + index + " has correct hash", () => {
-      const order = orderFromJSON(orderJSON);
-      assert.equal(order.hash, getOrderHash(order));
     });
   });
 
@@ -754,7 +745,7 @@ suite("seaport: orders", () => {
     const takerAddress = ALEX_ADDRESS_2;
     const amountInEth = 2;
 
-    const tokenId = CATS_IN_MECHS_ID;
+    const tokenId = AGE_OF_RUST_TOKEN_ID;
     const tokenAddress = ENJIN_ADDRESS;
 
     const asset = await client.api.getAsset({ tokenAddress, tokenId });
@@ -1071,7 +1062,6 @@ async function testMatchingOrder(
     accountAddress,
     recipientAddress,
   });
-  assert.equal(matchingOrder.hash, getOrderHash(matchingOrder));
 
   const { buy, sell } = assignOrdersToSides(order, matchingOrder);
 
@@ -1096,15 +1086,10 @@ async function testMatchingOrder(
 }
 
 export async function testMatchingNewOrder(
-  unhashedOrder: UnhashedOrder,
+  order: UnhashedOrder,
   accountAddress: string,
   counterOrderListingTime?: number
 ) {
-  const order = {
-    ...unhashedOrder,
-    hash: getOrderHash(unhashedOrder),
-  };
-
   const matchingOrder = client._makeMatchingOrder({
     order,
     accountAddress,
@@ -1112,9 +1097,7 @@ export async function testMatchingNewOrder(
   });
   if (counterOrderListingTime != null) {
     matchingOrder.listingTime = makeBigNumber(counterOrderListingTime);
-    matchingOrder.hash = getOrderHash(matchingOrder);
   }
-  assert.equal(matchingOrder.hash, getOrderHash(matchingOrder));
 
   // Test fees
   assert.equal(matchingOrder.makerProtocolFee.toNumber(), 0);

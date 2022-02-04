@@ -63,3 +63,49 @@ export const MAINNET_PROVIDER_URL = `${API_BASE_MAINNET}/${RPC_URL_PATH}`;
 export const RINKEBY_PROVIDER_URL = `${API_BASE_RINKEBY}/${RPC_URL_PATH}`;
 export const ORDERBOOK_PATH = `/wyvern/v${ORDERBOOK_VERSION}`;
 export const API_PATH = `/api/v${ORDERBOOK_VERSION}`;
+
+export const EIP_712_ORDER_TYPES = {
+  EIP712Domain: [
+    { name: "name", type: "string" },
+    { name: "version", type: "string" },
+    { name: "chainId", type: "uint256" },
+    { name: "verifyingContract", type: "address" },
+  ],
+  Order: [
+    { name: "exchange", type: "address" },
+    { name: "maker", type: "address" },
+    { name: "taker", type: "address" },
+    { name: "makerRelayerFee", type: "uint256" },
+    { name: "takerRelayerFee", type: "uint256" },
+    { name: "makerProtocolFee", type: "uint256" },
+    { name: "takerProtocolFee", type: "uint256" },
+    { name: "feeRecipient", type: "address" },
+    { name: "feeMethod", type: "uint8" },
+    { name: "side", type: "uint8" },
+    { name: "saleKind", type: "uint8" },
+    { name: "target", type: "address" },
+    { name: "howToCall", type: "uint8" },
+    { name: "calldata", type: "bytes" },
+    { name: "replacementPattern", type: "bytes" },
+    { name: "staticTarget", type: "address" },
+    { name: "staticExtradata", type: "bytes" },
+    { name: "paymentToken", type: "address" },
+    { name: "basePrice", type: "uint256" },
+    { name: "extra", type: "uint256" },
+    { name: "listingTime", type: "uint256" },
+    { name: "expirationTime", type: "uint256" },
+    { name: "salt", type: "uint256" },
+    { name: "nonce", type: "uint256" },
+  ],
+};
+
+export const EIP_712_WYVERN_DOMAIN_NAME = "Wyvern Exchange Contract";
+export const EIP_712_WYVERN_DOMAIN_VERSION = "2.3";
+export const MERKLE_VALIDATOR_MAINNET =
+  "0xbaf2127b49fc93cbca6269fade0f7f31df4c88a7";
+export const MERKLE_VALIDATOR_RINKEBY =
+  "0x45b594792a5cdc008d0de1c1d69faa3d16b3ddc1";
+export const WYVERN2_2EXCHANGE_ADDRESS_MAINNET =
+  "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b";
+export const WYVERN2_2EXCHANGE_ADDRESS_RINKEBY =
+  "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9";
