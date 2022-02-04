@@ -2731,7 +2731,10 @@ export class OpenSeaPort {
       side: OrderSide.Sell,
       saleKind: orderSaleKind,
       target,
-      howToCall: HowToCall.DelegateCall,
+      howToCall:
+        target === merkleValidatorByNetwork[this._networkName]
+          ? HowToCall.DelegateCall
+          : HowToCall.Call,
       calldata,
       replacementPattern,
       staticTarget,
