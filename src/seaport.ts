@@ -117,7 +117,6 @@ import {
   getTransferFeeSettings,
   getWyvernAsset,
   getWyvernBundle,
-  isContractAddress,
   makeBigNumber,
   merkleValidatorByNetwork,
   onDeprecated,
@@ -2555,10 +2554,9 @@ export class OpenSeaPort {
       schema,
       wyAsset,
       accountAddress,
-      {
-        isEnglishAuction: sellOrder?.waitingForBestCounterOrder,
-        validatorAddress: merkleValidatorByNetwork[this._networkName],
-      }
+      sellOrder?.waitingForBestCounterOrder
+        ? undefined
+        : merkleValidatorByNetwork[this._networkName]
     );
 
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(
@@ -2665,10 +2663,9 @@ export class OpenSeaPort {
       schema,
       wyAsset,
       accountAddress,
-      {
-        isEnglishAuction: waitForHighestBid,
-        validatorAddress: merkleValidatorByNetwork[this._networkName],
-      }
+      waitForHighestBid
+        ? undefined
+        : merkleValidatorByNetwork[this._networkName]
     );
 
     const orderSaleKind =
@@ -3148,13 +3145,13 @@ export class OpenSeaPort {
               schema,
               order.metadata.asset,
               recipientAddress,
-              shouldValidate ? { validatorAddress: order.target } : undefined
+              shouldValidate ? order.target : undefined
             )
           : encodeBuy(
               schema,
               order.metadata.asset,
               recipientAddress,
-              shouldValidate ? { validatorAddress: order.target } : undefined
+              shouldValidate ? order.target : undefined
             );
       } else if ("bundle" in order.metadata) {
         // We're matching a bundle order
@@ -3411,7 +3408,7 @@ export class OpenSeaPort {
    * @param order Order to approve
    * @returns Transaction hash of the approval transaction
    */
-  public async _approveOrder(order: UnsignedOrder) {
+  public async approveOrder(order: UnsignedOrder) {
     const accountAddress = order.maker;
     const includeInOrderBook = true;
 
@@ -4226,74 +4223,62 @@ export class OpenSeaPort {
       accountAddress: order.maker,
     });
 
-    const makerIsSmartContract = await isContractAddress(
-      this.web3,
-      signerAddress
-    );
-
     try {
-      if (makerIsSmartContract) {
-        // The web3 provider is probably a smart contract wallet.
-        // Fallback to on-chain approval.
-        await this._approveOrder(order);
-        return null;
-      } else {
-        // 2.2 Sign order flow
-        if (
-          order.exchange === wyvern2_2AddressByNetwork[this._networkName] &&
-          order.hash
-        ) {
-          const message = order.hash;
+      // 2.2 Sign order flow
+      if (
+        order.exchange === wyvern2_2AddressByNetwork[this._networkName] &&
+        order.hash
+      ) {
+        const message = order.hash;
 
-          return await personalSignAsync(this.web3, message, signerAddress);
-        }
-
-        // 2.3 Sign order flow using EIP-712
-        const signerOrderNonce = await this.getNonce(signerAddress);
-
-        // We need to manually specify each field because OS orders can contain unrelated data
-        const orderForSigning: RawWyvernOrderJSON = {
-          maker: order.maker,
-          exchange: order.exchange,
-          taker: order.taker,
-          makerRelayerFee: order.makerRelayerFee.toString(),
-          takerRelayerFee: order.takerRelayerFee.toString(),
-          makerProtocolFee: order.makerProtocolFee.toString(),
-          takerProtocolFee: order.takerProtocolFee.toString(),
-          feeRecipient: order.feeRecipient,
-          feeMethod: order.feeMethod,
-          side: order.side,
-          saleKind: order.saleKind,
-          target: order.target,
-          howToCall: order.howToCall,
-          calldata: order.calldata,
-          replacementPattern: order.replacementPattern,
-          staticTarget: order.staticTarget,
-          staticExtradata: order.staticExtradata,
-          paymentToken: order.paymentToken,
-          basePrice: order.basePrice.toString(),
-          extra: order.extra.toString(),
-          listingTime: order.listingTime.toString(),
-          expirationTime: order.expirationTime.toString(),
-          salt: order.salt.toString(),
-        };
-
-        const message = JSON.stringify({
-          types: EIP_712_ORDER_TYPES,
-          domain: {
-            name: EIP_712_WYVERN_DOMAIN_NAME,
-            version: EIP_712_WYVERN_DOMAIN_VERSION,
-            chainId: this._networkName == Network.Main ? 1 : 4,
-            verifyingContract: WyvernProtocol.getExchangeContractAddress(
-              this._networkName
-            ),
-          },
-          primaryType: "Order",
-          message: { ...orderForSigning, nonce: signerOrderNonce.toNumber() },
-        });
-
-        return await signTypedDataAsync(this.web3, message, signerAddress);
+        return await personalSignAsync(this.web3, message, signerAddress);
       }
+
+      // 2.3 Sign order flow using EIP-712
+      const signerOrderNonce = await this.getNonce(signerAddress);
+
+      // We need to manually specify each field because OS orders can contain unrelated data
+      const orderForSigning: RawWyvernOrderJSON = {
+        maker: order.maker,
+        exchange: order.exchange,
+        taker: order.taker,
+        makerRelayerFee: order.makerRelayerFee.toString(),
+        takerRelayerFee: order.takerRelayerFee.toString(),
+        makerProtocolFee: order.makerProtocolFee.toString(),
+        takerProtocolFee: order.takerProtocolFee.toString(),
+        feeRecipient: order.feeRecipient,
+        feeMethod: order.feeMethod,
+        side: order.side,
+        saleKind: order.saleKind,
+        target: order.target,
+        howToCall: order.howToCall,
+        calldata: order.calldata,
+        replacementPattern: order.replacementPattern,
+        staticTarget: order.staticTarget,
+        staticExtradata: order.staticExtradata,
+        paymentToken: order.paymentToken,
+        basePrice: order.basePrice.toString(),
+        extra: order.extra.toString(),
+        listingTime: order.listingTime.toString(),
+        expirationTime: order.expirationTime.toString(),
+        salt: order.salt.toString(),
+      };
+
+      const message = JSON.stringify({
+        types: EIP_712_ORDER_TYPES,
+        domain: {
+          name: EIP_712_WYVERN_DOMAIN_NAME,
+          version: EIP_712_WYVERN_DOMAIN_VERSION,
+          chainId: this._networkName == Network.Main ? 1 : 4,
+          verifyingContract: WyvernProtocol.getExchangeContractAddress(
+            this._networkName
+          ),
+        },
+        primaryType: "Order",
+        message: { ...orderForSigning, nonce: signerOrderNonce.toNumber() },
+      });
+
+      return await signTypedDataAsync(this.web3, message, signerAddress);
     } catch (error) {
       this._dispatch(EventType.OrderDenied, {
         order,

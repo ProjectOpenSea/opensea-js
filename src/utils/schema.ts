@@ -30,7 +30,7 @@ export type Encoder = (
   schema: Schema<WyvernAsset>,
   asset: WyvernAsset,
   address: string,
-  validatorOptions?: { isEnglishAuction?: boolean; validatorAddress?: string }
+  validatorAddress?: string
 ) => CallSpec;
 
 export const encodeCall = (
@@ -51,10 +51,10 @@ export const encodeSell: Encoder = (
   schema,
   asset,
   address,
-  { isEnglishAuction, validatorAddress } = {}
+  validatorAddress?: string
 ) => {
   const transfer =
-    validatorAddress && schema.functions.checkAndTransfer && !isEnglishAuction
+    validatorAddress && schema.functions.checkAndTransfer
       ? schema.functions.checkAndTransfer(asset, validatorAddress)
       : schema.functions.transfer(asset);
   return {
@@ -134,10 +134,10 @@ export const encodeBuy: Encoder = (
   schema,
   asset,
   address,
-  { isEnglishAuction, validatorAddress } = {}
+  validatorAddress?: string
 ) => {
   const transfer =
-    validatorAddress && schema.functions.checkAndTransfer && !isEnglishAuction
+    validatorAddress && schema.functions.checkAndTransfer
       ? schema.functions.checkAndTransfer(asset, validatorAddress)
       : schema.functions.transfer(asset);
   const replaceables = transfer.inputs.filter(
