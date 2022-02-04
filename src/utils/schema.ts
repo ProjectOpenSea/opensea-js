@@ -134,10 +134,10 @@ export const encodeBuy: Encoder = (
   schema,
   asset,
   address,
-  { validatorAddress } = {}
+  { isEnglishAuction, validatorAddress } = {}
 ) => {
   const transfer =
-    validatorAddress && schema.functions.checkAndTransfer
+    validatorAddress && schema.functions.checkAndTransfer && !isEnglishAuction
       ? schema.functions.checkAndTransfer(asset, validatorAddress)
       : schema.functions.transfer(asset);
   const replaceables = transfer.inputs.filter(

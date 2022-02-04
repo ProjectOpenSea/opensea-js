@@ -2555,7 +2555,10 @@ export class OpenSeaPort {
       schema,
       wyAsset,
       accountAddress,
-      { validatorAddress: merkleValidatorByNetwork[this._networkName] }
+      {
+        isEnglishAuction: sellOrder?.waitingForBestCounterOrder,
+        validatorAddress: merkleValidatorByNetwork[this._networkName],
+      }
     );
 
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(
