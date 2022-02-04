@@ -23,21 +23,6 @@
     uuid "^3.1.0"
     web3 "^0.20.0"
 
-"@0xproject/abi-gen@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@0xproject/abi-gen/-/abi-gen-0.1.2.tgz#a74baa088f94ff83431573b5a3e010ccbb5ba300"
-  integrity sha512-vwArB0lTTuInOWTh5KeeNeJTswrGJrHebau8sdrG8TBNiVwAAehthfWflieMRKK54D11Z+7TO8fupCMa7BaoxA==
-  dependencies:
-    "@0xproject/utils" "^0.2.0"
-    chalk "^2.3.0"
-    glob "^7.1.2"
-    handlebars "^4.0.11"
-    lodash "^4.17.4"
-    mkdirp "^0.5.1"
-    to-snake-case "^1.0.0"
-    web3 "^0.20.0"
-    yargs "^10.0.3"
-
 "@0xproject/abi-gen@^0.1.1":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@0xproject/abi-gen/-/abi-gen-0.1.7.tgz#36ed8b7a909c529ecff74438edb87fbb600dd2fa"
@@ -5964,10 +5949,9 @@ write-file-atomic@^3.0.0:
 
 "wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#wyvern-2.3":
   version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#d455c5eb0ba139427a8f1f8e83337fcc544e447f"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#adb0b5ceb8616ce1414096a27c0a8a953120c0aa"
   dependencies:
     "0x.js" "^0.29.2"
-    "@0xproject/abi-gen" "0.1.2"
     "@0xproject/assert" "^0.0.11"
     "@0xproject/json-schemas" "^0.7.3"
     "@0xproject/utils" "^0.1.3"
