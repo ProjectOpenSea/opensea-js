@@ -2,14 +2,16 @@ import { BigNumber } from "bignumber.js";
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
 import * as Web3 from "web3";
+import { HowToCall } from "wyvern-js/lib/types";
 import {
+  MERKLE_VALIDATOR_MAINNET,
   ENJIN_ADDRESS,
   INVERSE_BASIS_POINT,
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
   OPENSEA_FEE_RECIPIENT,
   RINKEBY_PROVIDER_URL,
-} from "../../constants";
+} from "../../../src/constants";
 import { OpenSeaPort } from "../../index";
 import {
   Asset,
@@ -1045,6 +1047,171 @@ suite("seaport: orders", () => {
       return;
     }
     await testMatchingOrder(order, takerAddress, true);
+  });
+
+  test("Correct order data on merkle ERC721 listing", async () => {
+    const accountAddress = ALEX_ADDRESS;
+    const tokenId = DISSOLUTION_TOKEN_ID.toString();
+    const tokenAddress = ENJIN_ADDRESS;
+    const quantity = 1;
+    const decimals = 2;
+
+    const order = await client._makeSellOrder({
+      asset: {
+        tokenAddress,
+        tokenId,
+        decimals,
+        schemaName: WyvernSchemaName.ERC721,
+      },
+      quantity,
+      accountAddress,
+      startAmount: 2,
+      extraBountyBasisPoints: 0,
+      buyerAddress: NULL_ADDRESS,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false,
+    });
+
+    assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
+    assert.equal(
+      order["replacementPattern"],
+      "0x000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(order.howToCall, HowToCall.DelegateCall);
+  });
+
+  test("Correct order data on merkle ERC1155 listing", async () => {
+    const accountAddress = ALEX_ADDRESS;
+    const tokenId = DISSOLUTION_TOKEN_ID.toString();
+    const tokenAddress = ENJIN_ADDRESS;
+    const quantity = 1;
+    const decimals = 2;
+
+    const order = await client._makeSellOrder({
+      asset: {
+        tokenAddress,
+        tokenId,
+        decimals,
+        schemaName: WyvernSchemaName.ERC1155,
+      },
+      quantity,
+      accountAddress,
+      startAmount: 2,
+      extraBountyBasisPoints: 0,
+      buyerAddress: NULL_ADDRESS,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false,
+    });
+
+    assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
+    assert.equal(
+      order["replacementPattern"],
+      "0x000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(order.howToCall, HowToCall.DelegateCall);
+  });
+
+  test("Correct order data on merkle ERC721 offer", async () => {
+    const accountAddress = ALEX_ADDRESS_2;
+    const paymentTokenAddress = WETH_ADDRESS;
+    const amountInToken = 0.01;
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString();
+    const tokenAddress = MYTHEREUM_ADDRESS;
+
+    const order = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
+      quantity: 1,
+      accountAddress,
+      paymentTokenAddress,
+      startAmount: amountInToken,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+    });
+
+    assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
+    assert.equal(
+      order["replacementPattern"],
+      "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(order.howToCall, HowToCall.DelegateCall);
+  });
+
+  test("Correct order data on merkle ERC1155 offer", async () => {
+    const accountAddress = ALEX_ADDRESS_2;
+    const paymentTokenAddress = WETH_ADDRESS;
+    const amountInToken = 0.01;
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString();
+    const tokenAddress = MYTHEREUM_ADDRESS;
+
+    const order = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC1155 },
+      quantity: 1,
+      accountAddress,
+      paymentTokenAddress,
+      startAmount: amountInToken,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+    });
+
+    assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
+    assert.equal(
+      order["replacementPattern"],
+      "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(order.howToCall, HowToCall.DelegateCall);
+  });
+
+  test.only("Verify no merkle data on ERC721 english auction listing and bids", async () => {
+    const accountAddress = ALEX_ADDRESS_2;
+    const takerAddress = ALEX_ADDRESS;
+    const paymentTokenAddress = WETH_ADDRESS;
+    const amountInToken = 0.01;
+    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
+    const extraBountyBasisPoints = 1.1 * 100;
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString();
+    const tokenAddress = MYTHEREUM_ADDRESS;
+
+    const sellOrder = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      quantity: 1,
+      accountAddress: takerAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress,
+      expirationTime,
+      extraBountyBasisPoints,
+      buyerAddress: NULL_ADDRESS,
+      waitForHighestBid: true,
+    });
+
+    assert.equal(sellOrder["target"], tokenAddress);
+    assert.equal(
+      sellOrder["replacementPattern"],
+      "0x000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(sellOrder.howToCall, HowToCall.Call);
+
+    const buyOrder = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
+      quantity: 1,
+      accountAddress,
+      paymentTokenAddress,
+      startAmount: amountInToken,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      sellOrder,
+    });
+
+    assert.equal(buyOrder["target"], tokenAddress);
+    assert.equal(
+      buyOrder["replacementPattern"],
+      "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(buyOrder.howToCall, HowToCall.Call);
   });
 });
 
