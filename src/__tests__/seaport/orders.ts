@@ -1165,7 +1165,7 @@ suite("seaport: orders", () => {
     assert.equal(order.howToCall, HowToCall.DelegateCall);
   });
 
-  test.only("Verify no merkle data on ERC721 english auction listing and bids", async () => {
+  test("Verify no merkle data on ERC721 english auction listing and bids", async () => {
     const accountAddress = ALEX_ADDRESS_2;
     const takerAddress = ALEX_ADDRESS;
     const paymentTokenAddress = WETH_ADDRESS;
