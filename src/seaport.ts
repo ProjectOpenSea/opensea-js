@@ -2568,7 +2568,9 @@ export class OpenSeaPort {
       schema,
       wyAsset,
       accountAddress,
-      sellOrder ? undefined : merkleValidatorByNetwork[this._networkName]
+      sellOrder?.waitingForBestCounterOrder
+        ? undefined
+        : merkleValidatorByNetwork[this._networkName]
     );
 
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(
