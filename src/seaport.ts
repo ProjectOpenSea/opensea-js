@@ -127,7 +127,7 @@ import {
   sendRawTransaction,
   signTypedDataAsync,
   validateAndFormatWalletAddress,
-  wyvern2_2AddressByNetwork,
+  wyvern2_2ConfigByNetwork,
 } from "./utils/utils";
 
 export class OpenSeaPort {
@@ -148,6 +148,7 @@ export class OpenSeaPort {
   private _wyvernProtocolReadOnly: WyvernProtocol;
   private _wyvern2_2Protocol: WyvernProtocol;
   private _wyvern2_2ProtocolReadOnly: WyvernProtocol;
+  private _wyvernConfigOverride?: OpenSeaAPIConfig["wyvernConfig"];
   private _wyvernExchangeForOrderCreationPromise: Promise<string | null>;
   private _emitter: EventEmitter;
   private _wrappedNFTFactoryAddress: string;
@@ -171,6 +172,7 @@ export class OpenSeaPort {
     // API config
     apiConfig.networkName = apiConfig.networkName || Network.Main;
     this.api = new OpenSeaAPI(apiConfig);
+    this._wyvernConfigOverride = apiConfig.wyvernConfig;
 
     this._networkName = apiConfig.networkName;
 
@@ -195,8 +197,7 @@ export class OpenSeaPort {
     // Wyvern2.2JS config
     this._wyvern2_2Protocol = new WyvernProtocol(provider, {
       network: this._networkName,
-      wyvernExchangeContractAddress:
-        wyvern2_2AddressByNetwork[this._networkName],
+      ...wyvern2_2ConfigByNetwork[this._networkName],
     });
 
     // WyvernJS config for readonly (optimization for infura calls)
@@ -211,8 +212,7 @@ export class OpenSeaPort {
     this._wyvern2_2ProtocolReadOnly = useReadOnlyProvider
       ? new WyvernProtocol(readonlyProvider, {
           network: this._networkName,
-          wyvernExchangeContractAddress:
-            wyvern2_2AddressByNetwork[this._networkName],
+          ...wyvern2_2ConfigByNetwork[this._networkName],
         })
       : this._wyvern2_2Protocol;
 
@@ -2390,13 +2390,15 @@ export class OpenSeaPort {
    * Internal method exposed for dev flexibility.
    * @param accountAddress The user's wallet address
    * @param retries Optional number of retries to do
+   * @param wyvernProtocol optional wyvern protocol override
    */
   public async _getProxy(
     accountAddress: string,
-    retries = 0
+    retries = 0,
+    wyvernProtocol = this._wyvernProtocolReadOnly
   ): Promise<string | null> {
     let proxyAddress: string | null =
-      await this._wyvernProtocolReadOnly.wyvernProxyRegistry.proxies.callAsync(
+      await wyvernProtocol.wyvernProxyRegistry.proxies.callAsync(
         accountAddress
       );
 
@@ -2422,18 +2424,22 @@ export class OpenSeaPort {
    *  trades can happen when the maker isn't online.
    * Internal method exposed for dev flexibility.
    * @param accountAddress The user's wallet address
+   * @param wyvernProtocol optional wyvern protocol override
    */
-  public async _initializeProxy(accountAddress: string): Promise<string> {
+  public async _initializeProxy(
+    accountAddress: string,
+    wyvernProtocol = this._wyvernProtocol
+  ): Promise<string> {
     this._dispatch(EventType.InitializeAccount, { accountAddress });
     this.logger(`Initializing proxy for account: ${accountAddress}`);
 
     const txnData = { from: accountAddress };
     const gasEstimate =
-      await this._wyvernProtocolReadOnly.wyvernProxyRegistry.registerProxy.estimateGasAsync(
+      await wyvernProtocol.wyvernProxyRegistry.registerProxy.estimateGasAsync(
         txnData
       );
     const transactionHash =
-      await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync(
+      await wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync(
         {
           ...txnData,
           gas: this._correctGasAmount(gasEstimate),
@@ -2445,12 +2451,20 @@ export class OpenSeaPort {
       EventType.InitializeAccount,
       "Initializing proxy for account",
       async () => {
-        const polledProxy = await this._getProxy(accountAddress);
+        const polledProxy = await this._getProxy(
+          accountAddress,
+          0,
+          wyvernProtocol
+        );
         return !!polledProxy;
       }
     );
 
-    const proxyAddress = await this._getProxy(accountAddress, 10);
+    const proxyAddress = await this._getProxy(
+      accountAddress,
+      10,
+      wyvernProtocol
+    );
     if (!proxyAddress) {
       throw new Error(
         "Failed to initialize your account :( Please restart your wallet/browser and try again!"
@@ -3347,25 +3361,33 @@ export class OpenSeaPort {
         : [];
     const tokenAddress = order.paymentToken;
 
-    await this._approveAll({ schemaNames, wyAssets, accountAddress });
+    const wyvernProtocol = this._getWyvernProtocolForOrder(order);
+
+    await this._approveAll({
+      schemaNames,
+      wyAssets,
+      accountAddress,
+      wyvernProtocol,
+    });
 
     // For fulfilling bids,
     // need to approve access to fungible token because of the way fees are paid
     // This can be done at a higher level to show UI
     if (tokenAddress != NULL_ADDRESS) {
       const minimumAmount = makeBigNumber(order.basePrice);
+      const tokenTransferProxyAddress =
+        this._getWyvernTokenTransferProxyAddressForOrder(order);
       await this.approveFungibleToken({
         accountAddress,
         tokenAddress,
         minimumAmount,
+        proxyAddress: tokenTransferProxyAddress,
       });
     }
 
-    const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(order);
-
     // Check sell parameters
     const sellValid =
-      await wyvernProtocolReadOnly.wyvernExchange.validateOrderParameters_.callAsync(
+      await wyvernProtocol.wyvernExchange.validateOrderParameters_.callAsync(
         [
           order.exchange,
           order.maker,
@@ -3508,16 +3530,23 @@ export class OpenSeaPort {
     wyAssets,
     accountAddress,
     proxyAddress,
+    wyvernProtocol = this._wyvernProtocol,
   }: {
     schemaNames: WyvernSchemaName[];
     wyAssets: WyvernAsset[];
     accountAddress: string;
     proxyAddress?: string;
+    wyvernProtocol?: WyvernProtocol;
   }) {
     proxyAddress =
-      proxyAddress || (await this._getProxy(accountAddress)) || undefined;
+      proxyAddress ||
+      (await this._getProxy(accountAddress, 0, wyvernProtocol)) ||
+      undefined;
     if (!proxyAddress) {
-      proxyAddress = await this._initializeProxy(accountAddress);
+      proxyAddress = await this._initializeProxy(
+        accountAddress,
+        wyvernProtocol
+      );
     }
     const contractsWithApproveAll: Set<string> = new Set();
 
@@ -3635,12 +3664,16 @@ export class OpenSeaPort {
         }
       }
 
+      const tokenTransferProxyAddress =
+        this._getWyvernTokenTransferProxyAddressForOrder(order);
+
       // Check token approval
       // This can be done at a higher level to show UI
       await this.approveFungibleToken({
         accountAddress,
         tokenAddress,
         minimumAmount,
+        proxyAddress: tokenTransferProxyAddress,
       });
     }
 
@@ -4227,7 +4260,9 @@ export class OpenSeaPort {
     try {
       // 2.2 Sign order flow
       if (
-        order.exchange === wyvern2_2AddressByNetwork[this._networkName] &&
+        order.exchange ===
+          wyvern2_2ConfigByNetwork[this._networkName]
+            .wyvernExchangeContractAddress &&
         order.hash
       ) {
         const message = order.hash;
@@ -4407,12 +4442,27 @@ export class OpenSeaPort {
   }
 
   private _getWyvernProtocolForOrder(order: Order, useReadOnly?: boolean) {
-    if (order.exchange === wyvern2_2AddressByNetwork[this._networkName]) {
+    if (
+      order.exchange ===
+      wyvern2_2ConfigByNetwork[this._networkName].wyvernExchangeContractAddress
+    ) {
       return useReadOnly
         ? this._wyvern2_2ProtocolReadOnly
         : this._wyvern2_2Protocol;
     }
     return useReadOnly ? this._wyvernProtocolReadOnly : this._wyvernProtocol;
+  }
+
+  private _getWyvernTokenTransferProxyAddressForOrder(order: Order) {
+    return (
+      (order.exchange ===
+      wyvern2_2ConfigByNetwork[this._networkName].wyvernExchangeContractAddress
+        ? wyvern2_2ConfigByNetwork[this._networkName]
+            .wyvernTokenTransferProxyContractAddress
+        : this._wyvernConfigOverride
+            ?.wyvernTokenTransferProxyContractAddress) ||
+      WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
+    );
   }
 
   /**

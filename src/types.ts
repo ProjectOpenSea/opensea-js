@@ -101,8 +101,12 @@ export interface OpenSeaAPIConfig {
   // Sent to WyvernJS
   gasPrice?: BigNumber;
 
-  wyvernConfig?: WyvernProtocolConfig;
+  wyvernConfig?: WyvernConfig;
 }
+
+export type WyvernConfig = WyvernProtocolConfig & {
+  wyvernTokenTransferProxyContractAddress?: string;
+};
 
 /**
  * Wyvern order side: buy or sell.
