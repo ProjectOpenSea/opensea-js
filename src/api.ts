@@ -127,7 +127,8 @@ export class OpenSeaAPI {
    * Simply return null in case API doesn't give us a good response
    */
   public getOrderCreateWyvernExchangeAddress = _.memoize(
-    async (): Promise<string | null> => {
+    // Lodash memoize requires an argument in order to cache it
+    async (_cache_key: string): Promise<string | null> => {
       try {
         const result = await this.get(`${ORDERBOOK_PATH}/exchange/`);
         return result as string;

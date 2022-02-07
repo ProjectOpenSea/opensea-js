@@ -239,7 +239,7 @@ export class OpenSeaPort {
     this._wyvernExchangeForOrderCreationPromise = apiConfig.wyvernConfig
       ?.wyvernExchangeContractAddress
       ? Promise.resolve(apiConfig.wyvernConfig.wyvernExchangeContractAddress)
-      : this.api.getOrderCreateWyvernExchangeAddress();
+      : this.api.getOrderCreateWyvernExchangeAddress("exchange");
   }
 
   /**
