@@ -603,6 +603,7 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
   markedInvalid?: boolean;
   asset?: OpenSeaAsset;
   assetBundle?: OpenSeaAssetBundle;
+  nonce?: number;
 }
 
 /**
@@ -643,6 +644,8 @@ export interface OrderJSON extends Partial<ECSignature> {
   // createdTime is undefined when order hasn't been posted yet
   createdTime?: number | string;
   metadata: ExchangeMetadata;
+
+  nonce?: number;
 }
 
 export type RawWyvernOrderJSON = Omit<

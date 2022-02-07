@@ -498,6 +498,8 @@ export const orderToJSON = (order: Order): OrderJSON => {
     v: order.v,
     r: order.r,
     s: order.s,
+
+    nonce: order.nonce,
   };
   return asJSON;
 };

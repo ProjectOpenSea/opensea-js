@@ -4247,11 +4247,11 @@ export class OpenSeaPort {
   /**
    * Generate the signature for authorizing an order
    * @param order Unsigned wyvern order
-   * @returns order signature in the form of v, r, s
+   * @returns order signature in the form of v, r, s, also an optional nonce
    */
   public async authorizeOrder(
     order: UnsignedOrder
-  ): Promise<ECSignature | null> {
+  ): Promise<(ECSignature & { nonce?: number }) | null> {
     const signerAddress = order.maker;
 
     this._dispatch(EventType.CreateOrder, {
@@ -4316,7 +4316,12 @@ export class OpenSeaPort {
         message: { ...orderForSigning, nonce: signerOrderNonce.toNumber() },
       });
 
-      return await signTypedDataAsync(this.web3, message, signerAddress);
+      const ecSignature = await signTypedDataAsync(
+        this.web3,
+        message,
+        signerAddress
+      );
+      return { ...ecSignature, nonce: signerOrderNonce.toNumber() };
     } catch (error) {
       this._dispatch(EventType.OrderDenied, {
         order,
