@@ -1,4 +1,5 @@
 import "isomorphic-unfetch";
+import _ from "lodash";
 import * as QueryString from "query-string";
 import {
   API_BASE_MAINNET,
@@ -125,17 +126,19 @@ export class OpenSeaAPI {
    * Get which version of Wyvern exchange to use to create orders
    * Simply return null in case API doesn't give us a good response
    */
-  public async getOrderCreateWyvernExchangeAddress(): Promise<string | null> {
-    try {
-      const result = await this.get(`${ORDERBOOK_PATH}/exchange/`);
-      return result as string;
-    } catch (error) {
-      this.logger(
-        "Couldn't retrieve Wyvern exchange address for order creation"
-      );
-      return null;
+  public getOrderCreateWyvernExchangeAddress = _.memoize(
+    async (): Promise<string | null> => {
+      try {
+        const result = await this.get(`${ORDERBOOK_PATH}/exchange/`);
+        return result as string;
+      } catch (error) {
+        this.logger(
+          "Couldn't retrieve Wyvern exchange address for order creation"
+        );
+        return null;
+      }
     }
-  }
+  );
 
   /**
    * Get an order from the orderbook, throwing if none is found.
