@@ -126,21 +126,17 @@ export class OpenSeaAPI {
    * Get which version of Wyvern exchange to use to create orders
    * Simply return null in case API doesn't give us a good response
    */
-  public getOrderCreateWyvernExchangeAddress = _.memoize(
-    // Lodash memoize requires an argument in order to cache it
-    async (_cache_key: string): Promise<string | null> => {
-      try {
-        const result = await this.get(`${ORDERBOOK_PATH}/exchange/`);
-        return result as string;
-      } catch (error) {
-        this.logger(
-          "Couldn't retrieve Wyvern exchange address for order creation"
-        );
-        return null;
-      }
+  public async getOrderCreateWyvernExchangeAddress(): Promise<string | null> {
+    try {
+      const result = await this.get(`${ORDERBOOK_PATH}/exchange/`);
+      return result as string;
+    } catch (error) {
+      this.logger(
+        "Couldn't retrieve Wyvern exchange address for order creation"
+      );
+      return null;
     }
-  );
-
+  }
   /**
    * Get an order from the orderbook, throwing if none is found.
    * @param query Query to use for getting orders. A subset of parameters

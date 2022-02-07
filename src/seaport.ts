@@ -149,7 +149,6 @@ export class OpenSeaPort {
   private _wyvern2_2Protocol: WyvernProtocol;
   private _wyvern2_2ProtocolReadOnly: WyvernProtocol;
   private _wyvernConfigOverride?: OpenSeaAPIConfig["wyvernConfig"];
-  private _wyvernExchangeForOrderCreationPromise: Promise<string | null>;
   private _emitter: EventEmitter;
   private _wrappedNFTFactoryAddress: string;
   private _wrappedNFTLiquidationProxyAddress: string;
@@ -235,11 +234,24 @@ export class OpenSeaPort {
 
     // Debugging: default to nothing
     this.logger = logger || ((arg: string) => arg);
+  }
 
-    this._wyvernExchangeForOrderCreationPromise = apiConfig.wyvernConfig
-      ?.wyvernExchangeContractAddress
-      ? Promise.resolve(apiConfig.wyvernConfig.wyvernExchangeContractAddress)
-      : this.api.getOrderCreateWyvernExchangeAddress("exchange");
+  private _getOrderCreateWyvernExchangeAddress() {
+    let exchangeAddress =
+      this._wyvernConfigOverride?.wyvernExchangeContractAddress ?? null;
+
+    return (async () => {
+      if (exchangeAddress) {
+        return exchangeAddress;
+      }
+
+      const exchangeAddressFromApi =
+        await this.api.getOrderCreateWyvernExchangeAddress();
+
+      exchangeAddress = exchangeAddressFromApi;
+
+      return exchangeAddress;
+    })();
   }
 
   /**
@@ -2587,7 +2599,7 @@ export class OpenSeaPort {
         useTxnOriginStaticCall: false,
       });
 
-    const exchange = await this._wyvernExchangeForOrderCreationPromise;
+    const exchange = await this._getOrderCreateWyvernExchangeAddress();
 
     return {
       exchange:
@@ -2727,7 +2739,7 @@ export class OpenSeaPort {
         useTxnOriginStaticCall: waitForHighestBid,
       });
 
-    const exchange = await this._wyvernExchangeForOrderCreationPromise;
+    const exchange = await this._getOrderCreateWyvernExchangeAddress();
 
     return {
       exchange:
@@ -2951,7 +2963,7 @@ export class OpenSeaPort {
     );
     const times = this._getTimeParameters(expirationTime);
 
-    const exchange = await this._wyvernExchangeForOrderCreationPromise;
+    const exchange = await this._getOrderCreateWyvernExchangeAddress();
 
     return {
       exchange:
@@ -3096,7 +3108,7 @@ export class OpenSeaPort {
       sellerBountyBasisPoints
     );
 
-    const exchange = await this._wyvernExchangeForOrderCreationPromise;
+    const exchange = await this._getOrderCreateWyvernExchangeAddress();
 
     return {
       exchange:
