@@ -236,13 +236,16 @@ export class OpenSeaPort {
     this.logger = logger || ((arg: string) => arg);
   }
 
-  private _getOrderCreateWyvernExchangeAddress() {
-    let exchangeAddress =
-      this._wyvernConfigOverride?.wyvernExchangeContractAddress ?? null;
+  private _getOrderCreateWyvernExchangeAddress = (() => {
+    let exchangeAddress: string | null = null;
 
-    return (async () => {
-      if (exchangeAddress) {
-        return exchangeAddress;
+    return async () => {
+      const exchangeAddressToUse =
+        this._wyvernConfigOverride?.wyvernExchangeContractAddress ||
+        exchangeAddress;
+
+      if (exchangeAddressToUse) {
+        return exchangeAddressToUse;
       }
 
       const exchangeAddressFromApi =
@@ -251,8 +254,8 @@ export class OpenSeaPort {
       exchangeAddress = exchangeAddressFromApi;
 
       return exchangeAddress;
-    })();
-  }
+    };
+  })();
 
   /**
    * Add a listener to a marketplace event
