@@ -1792,7 +1792,7 @@ export class OpenSeaPort {
     const data = encodeTransferCall(abi, fromAddress, toAddress);
 
     try {
-      const gas = await estimateGas(this._getClientsForRead(retries).web3, {
+      const gas = await estimateGas(this._getClientsForRead({ retries }).web3, {
         from,
         to: abi.target,
         data,
@@ -2032,7 +2032,7 @@ export class OpenSeaPort {
       // ERC20 or ERC1155 (non-Enjin)
 
       const abi = schema.functions.countOf(wyAsset);
-      const contract = this._getClientsForRead(retries)
+      const contract = this._getClientsForRead({ retries })
         .web3.eth.contract([abi as Web3.FunctionAbi])
         .at(abi.target);
       const inputValues = abi.inputs
@@ -2049,7 +2049,7 @@ export class OpenSeaPort {
       // ERC721 asset
 
       const abi = schema.functions.ownerOf(wyAsset);
-      const contract = this._getClientsForRead(retries)
+      const contract = this._getClientsForRead({ retries })
         .web3.eth.contract([abi as Web3.FunctionAbi])
         .at(abi.target);
       if (abi.inputs.filter((x) => x.value === undefined)[0]) {
@@ -2266,10 +2266,15 @@ export class OpenSeaPort {
       value = await this._getRequiredAmountForTakingSellOrder(sell);
     }
 
+    const wyvernProtocol = this._getWyvernProtocolForOrder(buy);
+    const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(buy, true);
+
     try {
-      return await this._getClientsForRead(
-        retries
-      ).wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
+      return await this._getClientsForRead({
+        retries,
+        wyvernProtocol,
+        wyvernProtocolReadOnly,
+      }).wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
         [
           buy.exchange,
           buy.maker,
@@ -3312,14 +3317,18 @@ export class OpenSeaPort {
         }
       }
 
+      const wyvernProtocol = this._getWyvernProtocolForOrder(buy);
+      const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(buy, true);
+
       const canMatch = await requireOrdersCanMatch(
-        this._getClientsForRead(retries).wyvernProtocol,
+        this._getClientsForRead({ retries, wyvernProtocol }).wyvernProtocol,
         { buy, sell, accountAddress }
       );
       this.logger(`Orders matching: ${canMatch}`);
 
       const calldataCanMatch = await requireOrderCalldataCanMatch(
-        this._getClientsForRead(retries).wyvernProtocol,
+        this._getClientsForRead({ retries, wyvernProtocolReadOnly })
+          .wyvernProtocol,
         { buy, sell }
       );
       this.logger(`Order calldata matching: ${calldataCanMatch}`);
@@ -4365,8 +4374,18 @@ export class OpenSeaPort {
   /**
    * Get the clients to use for a read call
    * @param retries current retry value
+   * @param wyvernProtocol optional wyvern protocol to use, has default
+   * @param wyvernProtocol optional readonly wyvern protocol to use, has default
    */
-  private _getClientsForRead(retries = 1): {
+  private _getClientsForRead({
+    retries,
+    wyvernProtocol = this._wyvernProtocol,
+    wyvernProtocolReadOnly = this._wyvernProtocolReadOnly,
+  }: {
+    retries: number;
+    wyvernProtocol?: WyvernProtocol;
+    wyvernProtocolReadOnly?: WyvernProtocol;
+  }): {
     web3: Web3;
     wyvernProtocol: WyvernProtocol;
   } {
@@ -4374,13 +4393,13 @@ export class OpenSeaPort {
       // Use injected provider by default
       return {
         web3: this.web3,
-        wyvernProtocol: this._wyvernProtocol,
+        wyvernProtocol,
       };
     } else {
       // Use provided provider as fallback
       return {
         web3: this.web3ReadOnly,
-        wyvernProtocol: this._wyvernProtocolReadOnly,
+        wyvernProtocol: wyvernProtocolReadOnly,
       };
     }
   }
