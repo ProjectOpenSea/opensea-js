@@ -20,6 +20,9 @@ import {
   DEFAULT_MAX_BOUNTY,
   DEFAULT_SELLER_FEE_BASIS_POINTS,
   DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS,
+  EIP_712_ORDER_TYPES,
+  EIP_712_WYVERN_DOMAIN_NAME,
+  EIP_712_WYVERN_DOMAIN_VERSION,
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
   MANA_ADDRESS,
@@ -79,6 +82,7 @@ import {
   Order,
   OrderSide,
   PartialReadonlyContractAbi,
+  RawWyvernOrderJSON,
   SaleKind,
   TokenStandardVersion,
   UnhashedOrder,
@@ -113,15 +117,17 @@ import {
   getTransferFeeSettings,
   getWyvernAsset,
   getWyvernBundle,
-  isContractAddress,
   makeBigNumber,
+  merkleValidatorByNetwork,
   onDeprecated,
   orderToJSON,
   personalSignAsync,
   promisifyCall,
   rawCall,
   sendRawTransaction,
+  signTypedDataAsync,
   validateAndFormatWalletAddress,
+  wyvern2_2ConfigByNetwork,
 } from "./utils/utils";
 
 export class OpenSeaPort {
@@ -140,6 +146,9 @@ export class OpenSeaPort {
   private _networkName: Network;
   private _wyvernProtocol: WyvernProtocol;
   private _wyvernProtocolReadOnly: WyvernProtocol;
+  private _wyvern2_2Protocol: WyvernProtocol;
+  private _wyvern2_2ProtocolReadOnly: WyvernProtocol;
+  private _wyvernConfigOverride?: OpenSeaAPIConfig["wyvernConfig"];
   private _emitter: EventEmitter;
   private _wrappedNFTFactoryAddress: string;
   private _wrappedNFTLiquidationProxyAddress: string;
@@ -162,6 +171,7 @@ export class OpenSeaPort {
     // API config
     apiConfig.networkName = apiConfig.networkName || Network.Main;
     this.api = new OpenSeaAPI(apiConfig);
+    this._wyvernConfigOverride = apiConfig.wyvernConfig;
 
     this._networkName = apiConfig.networkName;
 
@@ -180,14 +190,30 @@ export class OpenSeaPort {
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider, {
       network: this._networkName,
+      ...apiConfig.wyvernConfig,
+    });
+
+    // Wyvern2.2JS config
+    this._wyvern2_2Protocol = new WyvernProtocol(provider, {
+      network: this._networkName,
+      ...wyvern2_2ConfigByNetwork[this._networkName],
     });
 
     // WyvernJS config for readonly (optimization for infura calls)
     this._wyvernProtocolReadOnly = useReadOnlyProvider
       ? new WyvernProtocol(readonlyProvider, {
           network: this._networkName,
+          ...apiConfig.wyvernConfig,
         })
       : this._wyvernProtocol;
+
+    // Wyvern2.2 JS config for readonly (optimization for infura calls)
+    this._wyvern2_2ProtocolReadOnly = useReadOnlyProvider
+      ? new WyvernProtocol(readonlyProvider, {
+          network: this._networkName,
+          ...wyvern2_2ConfigByNetwork[this._networkName],
+        })
+      : this._wyvern2_2Protocol;
 
     // WrappedNFTLiquidationProxy Config
     this._wrappedNFTFactoryAddress =
@@ -209,6 +235,27 @@ export class OpenSeaPort {
     // Debugging: default to nothing
     this.logger = logger || ((arg: string) => arg);
   }
+
+  private _getOrderCreateWyvernExchangeAddress = (() => {
+    let exchangeAddress: string | null = null;
+
+    return async () => {
+      const exchangeAddressToUse =
+        this._wyvernConfigOverride?.wyvernExchangeContractAddress ||
+        exchangeAddress;
+
+      if (exchangeAddressToUse) {
+        return exchangeAddressToUse;
+      }
+
+      const exchangeAddressFromApi =
+        await this.api.getOrderCreateWyvernExchangeAddress();
+
+      exchangeAddress = exchangeAddressFromApi;
+
+      return exchangeAddress;
+    };
+  })();
 
   /**
    * Add a listener to a marketplace event
@@ -669,6 +716,10 @@ export class OpenSeaPort {
       paymentTokenAddress ||
       WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address;
 
+    if (!paymentTokenAddress) {
+      throw new Error("Payment token required");
+    }
+
     const order = await this._makeBundleBuyOrder({
       assets,
       collection,
@@ -693,7 +744,7 @@ export class OpenSeaPort {
     };
     let signature;
     try {
-      signature = await this._authorizeOrder(hashedOrder);
+      signature = await this.authorizeOrder(hashedOrder);
     } catch (error) {
       console.error(error);
       throw new Error("You declined to authorize your offer");
@@ -742,6 +793,9 @@ export class OpenSeaPort {
     paymentTokenAddress =
       paymentTokenAddress ||
       WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address;
+    if (!paymentTokenAddress) {
+      throw new Error("Payment token required");
+    }
 
     const order = await this._makeBuyOrder({
       asset,
@@ -759,14 +813,13 @@ export class OpenSeaPort {
     // frontend checks to make sure
     // token is approved and sufficiently available
     await this._buyOrderValidationAndApprovals({ order, accountAddress });
-
     const hashedOrder = {
       ...order,
       hash: getOrderHash(order),
     };
     let signature;
     try {
-      signature = await this._authorizeOrder(hashedOrder);
+      signature = await this.authorizeOrder(hashedOrder);
     } catch (error) {
       console.error(error);
       throw new Error("You declined to authorize your offer");
@@ -856,7 +909,7 @@ export class OpenSeaPort {
     };
     let signature;
     try {
-      signature = await this._authorizeOrder(hashedOrder);
+      signature = await this.authorizeOrder(hashedOrder);
     } catch (error) {
       console.error(error);
       throw new Error("You declined to authorize your auction");
@@ -978,7 +1031,7 @@ export class OpenSeaPort {
       };
       let signature;
       try {
-        signature = await this._authorizeOrder(hashedOrder);
+        signature = await this.authorizeOrder(hashedOrder);
       } catch (error) {
         console.error(error);
         throw new Error(
@@ -1111,7 +1164,7 @@ export class OpenSeaPort {
     };
     let signature;
     try {
-      signature = await this._authorizeOrder(hashedOrder);
+      signature = await this.authorizeOrder(hashedOrder);
     } catch (error) {
       console.error(error);
       throw new Error("You declined to authorize your auction");
@@ -1188,8 +1241,10 @@ export class OpenSeaPort {
   }) {
     this._dispatch(EventType.CancelOrder, { order, accountAddress });
 
+    const wyvernProtocol = this._getWyvernProtocolForOrder(order);
+
     const transactionHash =
-      await this._wyvernProtocol.wyvernExchange.cancelOrder_.sendTransactionAsync(
+      await wyvernProtocol.wyvernExchange.cancelOrder_.sendTransactionAsync(
         [
           order.exchange,
           order.maker,
@@ -1231,6 +1286,30 @@ export class OpenSeaPort {
         const isOpen = await this._validateOrder(order);
         return !isOpen;
       }
+    );
+  }
+
+  /**
+   * Cancel all existing orders with a lower nonce on-chain, preventing them from ever being fulfilled.
+   * @param param0 __namedParameters Object
+   * @param accountAddress The order maker's wallet address
+   */
+  public async bulkCancelExistingOrders({
+    accountAddress,
+  }: {
+    accountAddress: string;
+  }) {
+    this._dispatch(EventType.BulkCancelExistingOrders, { accountAddress });
+
+    const transactionHash =
+      await this._wyvernProtocol.wyvernExchange.incrementNonce.sendTransactionAsync(
+        { from: accountAddress }
+      );
+
+    await this._confirmTransaction(
+      transactionHash.toString(),
+      EventType.BulkCancelExistingOrders,
+      "Bulk cancelling existing orders"
     );
   }
 
@@ -1575,8 +1654,10 @@ export class OpenSeaPort {
    * @param order The order to calculate the price for
    */
   public async getCurrentPrice(order: Order) {
+    const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(order);
+
     const currentPrice =
-      await this._wyvernProtocolReadOnly.wyvernExchange.calculateCurrentPrice_.callAsync(
+      await wyvernProtocolReadOnly.wyvernExchange.calculateCurrentPrice_.callAsync(
         [
           order.exchange,
           order.maker,
@@ -1711,7 +1792,7 @@ export class OpenSeaPort {
     const data = encodeTransferCall(abi, fromAddress, toAddress);
 
     try {
-      const gas = await estimateGas(this._getClientsForRead(retries).web3, {
+      const gas = await estimateGas(this._getClientsForRead({ retries }).web3, {
         from,
         to: abi.target,
         data,
@@ -1951,7 +2032,7 @@ export class OpenSeaPort {
       // ERC20 or ERC1155 (non-Enjin)
 
       const abi = schema.functions.countOf(wyAsset);
-      const contract = this._getClientsForRead(retries)
+      const contract = this._getClientsForRead({ retries })
         .web3.eth.contract([abi as Web3.FunctionAbi])
         .at(abi.target);
       const inputValues = abi.inputs
@@ -1968,7 +2049,7 @@ export class OpenSeaPort {
       // ERC721 asset
 
       const abi = schema.functions.ownerOf(wyAsset);
-      const contract = this._getClientsForRead(retries)
+      const contract = this._getClientsForRead({ retries })
         .web3.eth.contract([abi as Web3.FunctionAbi])
         .at(abi.target);
       if (abi.inputs.filter((x) => x.value === undefined)[0]) {
@@ -2128,50 +2209,11 @@ export class OpenSeaPort {
   }
 
   /**
-   * Validate and post an order to the OpenSea orderbook.
+   * Post an order to the OpenSea orderbook.
    * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
    * @returns The order as stored by the orderbook
    */
   public async validateAndPostOrder(order: Order): Promise<Order> {
-    const hash =
-      await this._wyvernProtocolReadOnly.wyvernExchange.hashOrder_.callAsync(
-        [
-          order.exchange,
-          order.maker,
-          order.taker,
-          order.feeRecipient,
-          order.target,
-          order.staticTarget,
-          order.paymentToken,
-        ],
-        [
-          order.makerRelayerFee,
-          order.takerRelayerFee,
-          order.makerProtocolFee,
-          order.takerProtocolFee,
-          order.basePrice,
-          order.extra,
-          order.listingTime,
-          order.expirationTime,
-          order.salt,
-        ],
-        order.feeMethod,
-        order.side,
-        order.saleKind,
-        order.howToCall,
-        order.calldata,
-        order.replacementPattern,
-        order.staticExtradata
-      );
-
-    if (hash !== order.hash) {
-      console.error(order);
-      throw new Error(
-        `Order couldn't be validated by the exchange due to a hash mismatch. Make sure your wallet is on the right network!`
-      );
-    }
-    this.logger("Order hashes match");
-
     // Validation is called server-side
     const confirmedOrder = await this.api.postOrder(orderToJSON(order));
     return confirmedOrder;
@@ -2224,10 +2266,15 @@ export class OpenSeaPort {
       value = await this._getRequiredAmountForTakingSellOrder(sell);
     }
 
+    const wyvernProtocol = this._getWyvernProtocolForOrder(buy);
+    const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(buy, true);
+
     try {
-      return await this._getClientsForRead(
-        retries
-      ).wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
+      return await this._getClientsForRead({
+        retries,
+        wyvernProtocol,
+        wyvernProtocolReadOnly,
+      }).wyvernProtocol.wyvernExchange.atomicMatch_.estimateGasAsync(
         [
           buy.exchange,
           buy.maker,
@@ -2363,13 +2410,15 @@ export class OpenSeaPort {
    * Internal method exposed for dev flexibility.
    * @param accountAddress The user's wallet address
    * @param retries Optional number of retries to do
+   * @param wyvernProtocol optional wyvern protocol override
    */
   public async _getProxy(
     accountAddress: string,
-    retries = 0
+    retries = 0,
+    wyvernProtocol = this._wyvernProtocolReadOnly
   ): Promise<string | null> {
     let proxyAddress: string | null =
-      await this._wyvernProtocolReadOnly.wyvernProxyRegistry.proxies.callAsync(
+      await wyvernProtocol.wyvernProxyRegistry.proxies.callAsync(
         accountAddress
       );
 
@@ -2395,18 +2444,22 @@ export class OpenSeaPort {
    *  trades can happen when the maker isn't online.
    * Internal method exposed for dev flexibility.
    * @param accountAddress The user's wallet address
+   * @param wyvernProtocol optional wyvern protocol override
    */
-  public async _initializeProxy(accountAddress: string): Promise<string> {
+  public async _initializeProxy(
+    accountAddress: string,
+    wyvernProtocol = this._wyvernProtocol
+  ): Promise<string> {
     this._dispatch(EventType.InitializeAccount, { accountAddress });
     this.logger(`Initializing proxy for account: ${accountAddress}`);
 
     const txnData = { from: accountAddress };
     const gasEstimate =
-      await this._wyvernProtocolReadOnly.wyvernProxyRegistry.registerProxy.estimateGasAsync(
+      await wyvernProtocol.wyvernProxyRegistry.registerProxy.estimateGasAsync(
         txnData
       );
     const transactionHash =
-      await this._wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync(
+      await wyvernProtocol.wyvernProxyRegistry.registerProxy.sendTransactionAsync(
         {
           ...txnData,
           gas: this._correctGasAmount(gasEstimate),
@@ -2418,12 +2471,20 @@ export class OpenSeaPort {
       EventType.InitializeAccount,
       "Initializing proxy for account",
       async () => {
-        const polledProxy = await this._getProxy(accountAddress);
+        const polledProxy = await this._getProxy(
+          accountAddress,
+          0,
+          wyvernProtocol
+        );
         return !!polledProxy;
       }
     );
 
-    const proxyAddress = await this._getProxy(accountAddress, 10);
+    const proxyAddress = await this._getProxy(
+      accountAddress,
+      10,
+      wyvernProtocol
+    );
     if (!proxyAddress) {
       throw new Error(
         "Failed to initialize your account :( Please restart your wallet/browser and try again!"
@@ -2526,7 +2587,10 @@ export class OpenSeaPort {
     const { target, calldata, replacementPattern } = encodeBuy(
       schema,
       wyAsset,
-      accountAddress
+      accountAddress,
+      sellOrder?.waitingForBestCounterOrder
+        ? undefined
+        : merkleValidatorByNetwork[this._networkName]
     );
 
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(
@@ -2543,8 +2607,12 @@ export class OpenSeaPort {
         useTxnOriginStaticCall: false,
       });
 
+    const exchange = await this._getOrderCreateWyvernExchangeAddress();
+
     return {
-      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
+      exchange:
+        exchange ||
+        WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker,
       quantity: quantityBN,
@@ -2559,7 +2627,10 @@ export class OpenSeaPort {
       side: OrderSide.Buy,
       saleKind: SaleKind.FixedPrice,
       target,
-      howToCall: HowToCall.Call,
+      howToCall:
+        target === merkleValidatorByNetwork[this._networkName]
+          ? HowToCall.DelegateCall
+          : HowToCall.Call,
       calldata,
       replacementPattern,
       staticTarget,
@@ -2628,7 +2699,10 @@ export class OpenSeaPort {
     const { target, calldata, replacementPattern } = encodeSell(
       schema,
       wyAsset,
-      accountAddress
+      accountAddress,
+      waitForHighestBid
+        ? undefined
+        : merkleValidatorByNetwork[this._networkName]
     );
 
     const orderSaleKind =
@@ -2673,8 +2747,12 @@ export class OpenSeaPort {
         useTxnOriginStaticCall: waitForHighestBid,
       });
 
+    const exchange = await this._getOrderCreateWyvernExchangeAddress();
+
     return {
-      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
+      exchange:
+        exchange ||
+        WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: buyerAddress,
       quantity: quantityBN,
@@ -2692,7 +2770,10 @@ export class OpenSeaPort {
       side: OrderSide.Sell,
       saleKind: orderSaleKind,
       target,
-      howToCall: HowToCall.Call,
+      howToCall:
+        target === merkleValidatorByNetwork[this._networkName]
+          ? HowToCall.DelegateCall
+          : HowToCall.Call,
       calldata,
       replacementPattern,
       staticTarget,
@@ -2890,8 +2971,12 @@ export class OpenSeaPort {
     );
     const times = this._getTimeParameters(expirationTime);
 
+    const exchange = await this._getOrderCreateWyvernExchangeAddress();
+
     return {
-      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
+      exchange:
+        exchange ||
+        WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker,
       quantity: makeBigNumber(1),
@@ -3031,8 +3116,12 @@ export class OpenSeaPort {
       sellerBountyBasisPoints
     );
 
+    const exchange = await this._getOrderCreateWyvernExchangeAddress();
+
     return {
-      exchange: WyvernProtocol.getExchangeContractAddress(this._networkName),
+      exchange:
+        exchange ||
+        WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: buyerAddress,
       quantity: makeBigNumber(1),
@@ -3083,11 +3172,24 @@ export class OpenSeaPort {
     );
 
     const computeOrderParams = () => {
+      const shouldValidate =
+        order.target === merkleValidatorByNetwork[this._networkName];
+
       if ("asset" in order.metadata) {
         const schema = this._getSchema(order.metadata.schema);
         return order.side == OrderSide.Buy
-          ? encodeSell(schema, order.metadata.asset, recipientAddress)
-          : encodeBuy(schema, order.metadata.asset, recipientAddress);
+          ? encodeSell(
+              schema,
+              order.metadata.asset,
+              recipientAddress,
+              shouldValidate ? order.target : undefined
+            )
+          : encodeBuy(
+              schema,
+              order.metadata.asset,
+              recipientAddress,
+              shouldValidate ? order.target : undefined
+            );
       } else if ("bundle" in order.metadata) {
         // We're matching a bundle order
         const bundle = order.metadata.bundle;
@@ -3163,10 +3265,7 @@ export class OpenSeaPort {
       metadata: order.metadata,
     };
 
-    return {
-      ...matchingOrder,
-      hash: getOrderHash(matchingOrder),
-    };
+    return matchingOrder;
   }
 
   /**
@@ -3218,14 +3317,18 @@ export class OpenSeaPort {
         }
       }
 
+      const wyvernProtocol = this._getWyvernProtocolForOrder(buy);
+      const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(buy, true);
+
       const canMatch = await requireOrdersCanMatch(
-        this._getClientsForRead(retries).wyvernProtocol,
+        this._getClientsForRead({ retries, wyvernProtocol }).wyvernProtocol,
         { buy, sell, accountAddress }
       );
       this.logger(`Orders matching: ${canMatch}`);
 
       const calldataCanMatch = await requireOrderCalldataCanMatch(
-        this._getClientsForRead(retries).wyvernProtocol,
+        this._getClientsForRead({ retries, wyvernProtocolReadOnly })
+          .wyvernProtocol,
         { buy, sell }
       );
       this.logger(`Order calldata matching: ${calldataCanMatch}`);
@@ -3284,23 +3387,33 @@ export class OpenSeaPort {
         : [];
     const tokenAddress = order.paymentToken;
 
-    await this._approveAll({ schemaNames, wyAssets, accountAddress });
+    const wyvernProtocol = this._getWyvernProtocolForOrder(order);
+
+    await this._approveAll({
+      schemaNames,
+      wyAssets,
+      accountAddress,
+      wyvernProtocol,
+    });
 
     // For fulfilling bids,
     // need to approve access to fungible token because of the way fees are paid
     // This can be done at a higher level to show UI
     if (tokenAddress != NULL_ADDRESS) {
       const minimumAmount = makeBigNumber(order.basePrice);
+      const tokenTransferProxyAddress =
+        this._getWyvernTokenTransferProxyAddressForOrder(order);
       await this.approveFungibleToken({
         accountAddress,
         tokenAddress,
         minimumAmount,
+        proxyAddress: tokenTransferProxyAddress,
       });
     }
 
     // Check sell parameters
     const sellValid =
-      await this._wyvernProtocolReadOnly.wyvernExchange.validateOrderParameters_.callAsync(
+      await wyvernProtocol.wyvernExchange.validateOrderParameters_.callAsync(
         [
           order.exchange,
           order.maker,
@@ -3344,14 +3457,16 @@ export class OpenSeaPort {
    * @param order Order to approve
    * @returns Transaction hash of the approval transaction
    */
-  public async _approveOrder(order: UnsignedOrder) {
+  public async approveOrder(order: UnsignedOrder) {
     const accountAddress = order.maker;
     const includeInOrderBook = true;
 
     this._dispatch(EventType.ApproveOrder, { order, accountAddress });
 
+    const wyvernProtocol = this._getWyvernProtocolForOrder(order);
+
     const transactionHash =
-      await this._wyvernProtocol.wyvernExchange.approveOrder_.sendTransactionAsync(
+      await wyvernProtocol.wyvernExchange.approveOrder_.sendTransactionAsync(
         [
           order.exchange,
           order.maker,
@@ -3397,8 +3512,10 @@ export class OpenSeaPort {
   }
 
   public async _validateOrder(order: Order): Promise<boolean> {
+    const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(order, true);
+
     const isValid =
-      await this._wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
+      await wyvernProtocolReadOnly.wyvernExchange.validateOrder_.callAsync(
         [
           order.exchange,
           order.maker,
@@ -3439,16 +3556,23 @@ export class OpenSeaPort {
     wyAssets,
     accountAddress,
     proxyAddress,
+    wyvernProtocol = this._wyvernProtocol,
   }: {
     schemaNames: WyvernSchemaName[];
     wyAssets: WyvernAsset[];
     accountAddress: string;
     proxyAddress?: string;
+    wyvernProtocol?: WyvernProtocol;
   }) {
     proxyAddress =
-      proxyAddress || (await this._getProxy(accountAddress)) || undefined;
+      proxyAddress ||
+      (await this._getProxy(accountAddress, 0, wyvernProtocol)) ||
+      undefined;
     if (!proxyAddress) {
-      proxyAddress = await this._initializeProxy(accountAddress);
+      proxyAddress = await this._initializeProxy(
+        accountAddress,
+        wyvernProtocol
+      );
     }
     const contractsWithApproveAll: Set<string> = new Set();
 
@@ -3566,18 +3690,24 @@ export class OpenSeaPort {
         }
       }
 
+      const tokenTransferProxyAddress =
+        this._getWyvernTokenTransferProxyAddressForOrder(order);
+
       // Check token approval
       // This can be done at a higher level to show UI
       await this.approveFungibleToken({
         accountAddress,
         tokenAddress,
         minimumAmount,
+        proxyAddress: tokenTransferProxyAddress,
       });
     }
 
+    const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(order);
+
     // Check order formation
     const buyValid =
-      await this._wyvernProtocolReadOnly.wyvernExchange.validateOrderParameters_.callAsync(
+      await wyvernProtocolReadOnly.wyvernExchange.validateOrderParameters_.callAsync(
         [
           order.exchange,
           order.maker,
@@ -3936,6 +4066,9 @@ export class OpenSeaPort {
     let value;
     let shouldValidateBuy = true;
     let shouldValidateSell = true;
+    // Only check buy, but shouldn't matter as they should always be equal
+    const wyvernProtocol = this._getWyvernProtocolForOrder(buy);
+    const wyvernProtocolReadOnly = this._getWyvernProtocolForOrder(buy, true);
 
     if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
       // USER IS THE SELLER, only validate the buy order
@@ -4046,7 +4179,7 @@ export class OpenSeaPort {
     try {
       // Typescript splat doesn't typecheck
       const gasEstimate =
-        await this._wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
+        await wyvernProtocolReadOnly.wyvernExchange.atomicMatch_.estimateGasAsync(
           args[0],
           args[1],
           args[2],
@@ -4077,7 +4210,7 @@ export class OpenSeaPort {
     try {
       this.logger(`Fulfilling order with gas set to ${txnData.gas}`);
       txHash =
-        await this._wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(
+        await wyvernProtocol.wyvernExchange.atomicMatch_.sendTransactionAsync(
           args[0],
           args[1],
           args[2],
@@ -4126,10 +4259,23 @@ export class OpenSeaPort {
     return fee.plus(maxPrice).ceil();
   }
 
-  private async _authorizeOrder(
+  /**
+   * Gets the current order nonce for an account
+   * @param accountAddress account to check the nonce for
+   * @returns nonce
+   */
+  public getNonce(accountAddress: string) {
+    return this._wyvernProtocol.wyvernExchange.nonces.callAsync(accountAddress);
+  }
+
+  /**
+   * Generate the signature for authorizing an order
+   * @param order Unsigned wyvern order
+   * @returns order signature in the form of v, r, s, also an optional nonce
+   */
+  public async authorizeOrder(
     order: UnsignedOrder
-  ): Promise<ECSignature | null> {
-    const message = order.hash;
+  ): Promise<(ECSignature & { nonce?: number }) | null> {
     const signerAddress = order.maker;
 
     this._dispatch(EventType.CreateOrder, {
@@ -4137,20 +4283,67 @@ export class OpenSeaPort {
       accountAddress: order.maker,
     });
 
-    const makerIsSmartContract = await isContractAddress(
-      this.web3,
-      signerAddress
-    );
-
     try {
-      if (makerIsSmartContract) {
-        // The web3 provider is probably a smart contract wallet.
-        // Fallback to on-chain approval.
-        await this._approveOrder(order);
-        return null;
-      } else {
+      // 2.2 Sign order flow
+      if (
+        order.exchange ===
+          wyvern2_2ConfigByNetwork[this._networkName]
+            .wyvernExchangeContractAddress &&
+        order.hash
+      ) {
+        const message = order.hash;
+
         return await personalSignAsync(this.web3, message, signerAddress);
       }
+
+      // 2.3 Sign order flow using EIP-712
+      const signerOrderNonce = await this.getNonce(signerAddress);
+
+      // We need to manually specify each field because OS orders can contain unrelated data
+      const orderForSigning: RawWyvernOrderJSON = {
+        maker: order.maker,
+        exchange: order.exchange,
+        taker: order.taker,
+        makerRelayerFee: order.makerRelayerFee.toString(),
+        takerRelayerFee: order.takerRelayerFee.toString(),
+        makerProtocolFee: order.makerProtocolFee.toString(),
+        takerProtocolFee: order.takerProtocolFee.toString(),
+        feeRecipient: order.feeRecipient,
+        feeMethod: order.feeMethod,
+        side: order.side,
+        saleKind: order.saleKind,
+        target: order.target,
+        howToCall: order.howToCall,
+        calldata: order.calldata,
+        replacementPattern: order.replacementPattern,
+        staticTarget: order.staticTarget,
+        staticExtradata: order.staticExtradata,
+        paymentToken: order.paymentToken,
+        basePrice: order.basePrice.toString(),
+        extra: order.extra.toString(),
+        listingTime: order.listingTime.toString(),
+        expirationTime: order.expirationTime.toString(),
+        salt: order.salt.toString(),
+      };
+
+      const message = JSON.stringify({
+        types: EIP_712_ORDER_TYPES,
+        domain: {
+          name: EIP_712_WYVERN_DOMAIN_NAME,
+          version: EIP_712_WYVERN_DOMAIN_VERSION,
+          chainId: this._networkName == Network.Main ? 1 : 4,
+          verifyingContract: order.exchange,
+        },
+        primaryType: "Order",
+        message: { ...orderForSigning, nonce: signerOrderNonce.toNumber() },
+      });
+
+      const ecSignature = await signTypedDataAsync(
+        this.web3,
+        message,
+        signerAddress
+      );
+      return { ...ecSignature, nonce: signerOrderNonce.toNumber() };
     } catch (error) {
       this._dispatch(EventType.OrderDenied, {
         order,
@@ -4181,8 +4374,18 @@ export class OpenSeaPort {
   /**
    * Get the clients to use for a read call
    * @param retries current retry value
+   * @param wyvernProtocol optional wyvern protocol to use, has default
+   * @param wyvernProtocol optional readonly wyvern protocol to use, has default
    */
-  private _getClientsForRead(retries = 1): {
+  private _getClientsForRead({
+    retries,
+    wyvernProtocol = this._wyvernProtocol,
+    wyvernProtocolReadOnly = this._wyvernProtocolReadOnly,
+  }: {
+    retries: number;
+    wyvernProtocol?: WyvernProtocol;
+    wyvernProtocolReadOnly?: WyvernProtocol;
+  }): {
     web3: Web3;
     wyvernProtocol: WyvernProtocol;
   } {
@@ -4190,13 +4393,13 @@ export class OpenSeaPort {
       // Use injected provider by default
       return {
         web3: this.web3,
-        wyvernProtocol: this._wyvernProtocol,
+        wyvernProtocol,
       };
     } else {
       // Use provided provider as fallback
       return {
         web3: this.web3ReadOnly,
-        wyvernProtocol: this._wyvernProtocolReadOnly,
+        wyvernProtocol: wyvernProtocolReadOnly,
       };
     }
   }
@@ -4275,6 +4478,30 @@ export class OpenSeaPort {
 
       return testResolve(initialRetries);
     });
+  }
+
+  private _getWyvernProtocolForOrder(order: Order, useReadOnly?: boolean) {
+    if (
+      order.exchange ===
+      wyvern2_2ConfigByNetwork[this._networkName].wyvernExchangeContractAddress
+    ) {
+      return useReadOnly
+        ? this._wyvern2_2ProtocolReadOnly
+        : this._wyvern2_2Protocol;
+    }
+    return useReadOnly ? this._wyvernProtocolReadOnly : this._wyvernProtocol;
+  }
+
+  private _getWyvernTokenTransferProxyAddressForOrder(order: Order) {
+    return (
+      (order.exchange ===
+      wyvern2_2ConfigByNetwork[this._networkName].wyvernExchangeContractAddress
+        ? wyvern2_2ConfigByNetwork[this._networkName]
+            .wyvernTokenTransferProxyContractAddress
+        : this._wyvernConfigOverride
+            ?.wyvernTokenTransferProxyContractAddress) ||
+      WyvernProtocol.getTokenTransferProxyAddress(this._networkName)
+    );
   }
 
   /**
