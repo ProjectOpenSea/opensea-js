@@ -4323,9 +4323,7 @@ export class OpenSeaPort {
           name: EIP_712_WYVERN_DOMAIN_NAME,
           version: EIP_712_WYVERN_DOMAIN_VERSION,
           chainId: this._networkName == Network.Main ? 1 : 4,
-          verifyingContract: WyvernProtocol.getExchangeContractAddress(
-            this._networkName
-          ),
+          verifyingContract: order.exchange,
         },
         primaryType: "Order",
         message: { ...orderForSigning, nonce: signerOrderNonce.toNumber() },
