@@ -130,7 +130,8 @@ export class OpenSeaAPI {
     retries = 2
   ): Promise<string | null> {
     try {
-      return await this.get<string>(`${ORDERBOOK_PATH}/exchange/`);
+      const result = await this.get(`${ORDERBOOK_PATH}/exchange/`);
+      return result as string;
     } catch (error) {
       if (retries <= 0) {
         this.logger(
