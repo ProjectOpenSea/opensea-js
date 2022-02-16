@@ -126,15 +126,21 @@ export class OpenSeaAPI {
    * Get which version of Wyvern exchange to use to create orders
    * Simply return null in case API doesn't give us a good response
    */
-  public async getOrderCreateWyvernExchangeAddress(): Promise<string | null> {
+  public async getOrderCreateWyvernExchangeAddress(
+    retries = 2
+  ): Promise<string | null> {
     try {
-      const result = await this.get(`${ORDERBOOK_PATH}/exchange/`);
-      return result as string;
+      return await this.get<string>(`${ORDERBOOK_PATH}/exchange/`);
     } catch (error) {
-      this.logger(
-        "Couldn't retrieve Wyvern exchange address for order creation"
-      );
-      return null;
+      if (retries <= 0) {
+        this.logger(
+          "Couldn't retrieve Wyvern exchange address for order creation"
+        );
+        return null;
+      } else {
+        await delay(3000);
+        return this.getOrderCreateWyvernExchangeAddress(retries - 1);
+      }
     }
   }
   /**
