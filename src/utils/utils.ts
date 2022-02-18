@@ -547,7 +547,7 @@ export async function personalSignAsync(
  */
 export async function signTypedDataAsync(
   web3: Web3,
-  message: string,
+  message: object,
   signerAddress: string
 ): Promise<ECSignature> {
   const signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
