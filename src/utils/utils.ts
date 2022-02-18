@@ -553,7 +553,7 @@ export async function signTypedDataAsync(
   const signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
     web3.currentProvider.sendAsync(
       {
-        method: "eth_signTypedData_v4",
+        method: "eth_signTypedData",
         params: [signerAddress, message],
         from: signerAddress,
         id: new Date().getTime(),
