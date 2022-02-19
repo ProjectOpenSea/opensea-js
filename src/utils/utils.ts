@@ -547,21 +547,40 @@ export async function personalSignAsync(
  */
 export async function signTypedDataAsync(
   web3: Web3,
-  message: string,
+  message: object,
   signerAddress: string
 ): Promise<ECSignature> {
-  const signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
-    web3.currentProvider.sendAsync(
-      {
-        method: "eth_signTypedData_v4",
-        params: [signerAddress, message],
-        from: signerAddress,
-        id: new Date().getTime(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-      c
-    )
-  );
+  let signature: Web3.JSONRPCResponsePayload;
+  try {
+    // Using sign typed data V4 works with a stringified message, used by browser providers i.e. Metamask
+    signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
+      web3.currentProvider.sendAsync(
+        {
+          method: "eth_signTypedData_v4",
+          params: [signerAddress, JSON.stringify(message)],
+          from: signerAddress,
+          id: new Date().getTime(),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        c
+      )
+    );
+  } catch {
+    // Fallback to normal sign typed data for node providers, without using stringified message
+    // https://github.com/coinbase/coinbase-wallet-sdk/issues/60
+    signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
+      web3.currentProvider.sendAsync(
+        {
+          method: "eth_signTypedData",
+          params: [signerAddress, message],
+          from: signerAddress,
+          id: new Date().getTime(),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        c
+      )
+    );
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const error = (signature as any).error;

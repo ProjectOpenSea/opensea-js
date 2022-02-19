@@ -4326,7 +4326,9 @@ export class OpenSeaPort {
         salt: order.salt.toString(),
       };
 
-      const message = JSON.stringify({
+      // We don't JSON.stringify as certain wallet providers sanitize this data
+      // https://github.com/coinbase/coinbase-wallet-sdk/issues/60
+      const message = {
         types: EIP_712_ORDER_TYPES,
         domain: {
           name: EIP_712_WYVERN_DOMAIN_NAME,
@@ -4336,7 +4338,7 @@ export class OpenSeaPort {
         },
         primaryType: "Order",
         message: { ...orderForSigning, nonce: signerOrderNonce.toNumber() },
-      });
+      };
 
       const ecSignature = await signTypedDataAsync(
         this.web3,
