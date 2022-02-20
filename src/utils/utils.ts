@@ -7,6 +7,7 @@ import {
   AnnotatedFunctionABI,
   FunctionInputKind,
   FunctionOutputKind,
+  Network,
   Schema,
   StateMutability,
 } from "wyvern-schemas/dist/types";
@@ -14,6 +15,8 @@ import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
+  MERKLE_VALIDATOR_MAINNET,
+  MERKLE_VALIDATOR_RINKEBY,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
 } from "../constants";
@@ -496,7 +499,7 @@ export const orderToJSON = (order: Order): OrderJSON => {
     r: order.r,
     s: order.s,
 
-    hash: order.hash,
+    nonce: order.nonce,
   };
   return asJSON;
 };
@@ -525,6 +528,59 @@ export async function personalSignAsync(
       c
     )
   );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const error = (signature as any).error;
+  if (error) {
+    throw new Error(error);
+  }
+
+  return parseSignatureHex(signature.result);
+}
+
+/**
+ * Sign messages using web3 signTypedData signatures
+ * @param web3 Web3 instance
+ * @param message message to sign
+ * @param signerAddress web3 address signing the message
+ * @returns A signature if provider can sign, otherwise null
+ */
+export async function signTypedDataAsync(
+  web3: Web3,
+  message: object,
+  signerAddress: string
+): Promise<ECSignature> {
+  let signature: Web3.JSONRPCResponsePayload;
+  try {
+    // Using sign typed data V4 works with a stringified message, used by browser providers i.e. Metamask
+    signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
+      web3.currentProvider.sendAsync(
+        {
+          method: "eth_signTypedData_v4",
+          params: [signerAddress, JSON.stringify(message)],
+          from: signerAddress,
+          id: new Date().getTime(),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        c
+      )
+    );
+  } catch {
+    // Fallback to normal sign typed data for node providers, without using stringified message
+    // https://github.com/coinbase/coinbase-wallet-sdk/issues/60
+    signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
+      web3.currentProvider.sendAsync(
+        {
+          method: "eth_signTypedData",
+          params: [signerAddress, message],
+          from: signerAddress,
+          id: new Date().getTime(),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        c
+      )
+    );
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const error = (signature as any).error;
@@ -1001,3 +1057,25 @@ export async function getNonCompliantApprovalAddress(
 
   return _.compact(results)[0];
 }
+
+export const merkleValidatorByNetwork = {
+  [Network.Main]: MERKLE_VALIDATOR_MAINNET,
+  [Network.Rinkeby]: MERKLE_VALIDATOR_RINKEBY,
+};
+
+export const wyvern2_2ConfigByNetwork = {
+  [Network.Main]: {
+    wyvernExchangeContractAddress: "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b",
+    wyvernProxyRegistryContractAddress:
+      "0xa5409ec958c83c3f309868babaca7c86dcb077c1",
+    wyvernTokenTransferProxyContractAddress:
+      "0xe5c783ee536cf5e63e792988335c4255169be4e1",
+  },
+  [Network.Rinkeby]: {
+    wyvernExchangeContractAddress: "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9",
+    wyvernProxyRegistryContractAddress:
+      "0xf57b2c51ded3a29e6891aba85459d600256cf317",
+    wyvernTokenTransferProxyContractAddress:
+      "0x82d102457854c985221249f86659c9d6cf12aa72",
+  },
+} as const;

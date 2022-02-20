@@ -44,6 +44,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
 - [Migrating to version 1.0](#migrating-to-version-10)
 - [Development Information](#development-information)
 - [Diagnosing Common Issues](#diagnosing-common-issues)
+- [Testing your branch locally](#testing-your-branch-locally)
 
 ## Synopsis
 
@@ -57,7 +58,7 @@ Happy seafaring! ⛵️
 
 ## Installation
 
-We recommend switching to Node.js version 8.11 to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
+We recommend switching to Node.js version 16 to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
 
 Then, in your project, run:
 
@@ -686,8 +687,6 @@ See the [Changelog](CHANGELOG.md).
 ## Development Information
 
 **Setup**
-
-[Node >= v8.11.2](https://nodejs.org/en/) required.
 
 Before any development, install the required NPM dependencies:
 
