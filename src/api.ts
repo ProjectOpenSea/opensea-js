@@ -125,6 +125,7 @@ export class OpenSeaAPI {
   /**
    * Get which version of Wyvern exchange to use to create orders
    * Simply return null in case API doesn't give us a good response
+   * @param retries Number of times to retry if the service is unavailable for any reason
    */
   public async getOrderCreateWyvernExchangeAddress(
     retries = 2
@@ -139,6 +140,7 @@ export class OpenSeaAPI {
         );
         return null;
       } else {
+        //Wait and retry while 'retries' > 0
         await delay(3000);
         return this.getOrderCreateWyvernExchangeAddress(retries - 1);
       }
