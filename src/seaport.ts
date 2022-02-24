@@ -28,7 +28,6 @@ import {
   MANA_ADDRESS,
   MAX_EXPIRATION_MONTHS,
   MIN_EXPIRATION_MINUTES,
-  MIN_EXPIRATION_SECONDS,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
   OPENSEA_FEE_RECIPIENT,
@@ -3916,10 +3915,7 @@ export class OpenSeaPort {
     waitingForBestCounterOrder?: boolean;
     isMatchingOrder?: boolean;
   }) {
-    // Validation - small buffer to account for latency
-    const minExpirationTimestamp =
-      Math.round(Date.now() / 1000 + MIN_EXPIRATION_MINUTES * 60) - 100;
-    const maxExpirationDate = new Date(minExpirationTimestamp);
+    const maxExpirationDate = new Date();
 
     maxExpirationDate.setMonth(
       maxExpirationDate.getMonth() + MAX_EXPIRATION_MONTHS
@@ -3930,40 +3926,25 @@ export class OpenSeaPort {
     );
 
     const minListingTimestamp = Math.round(Date.now() / 1000);
-    if (
-      expirationTimestamp != 0 &&
-      expirationTimestamp < minExpirationTimestamp
-    ) {
-      throw new Error(
-        `Expiration time must be at least ${MIN_EXPIRATION_MINUTES} minutes from now`
-      );
-    }
-    if (
-      expirationTimestamp > maxExpirationTimeStamp ||
-      (expirationTimestamp === 0 && !isMatchingOrder)
-    ) {
-      throw new Error(
-        "Expiration time must not exceed six months from now or be infinitely lasting"
-      );
+
+    if (!isMatchingOrder && expirationTimestamp === 0) {
+      throw new Error("Expiration time cannot be 0");
     }
     if (listingTimestamp && listingTimestamp < minListingTimestamp) {
       throw new Error("Listing time cannot be in the past.");
     }
-    if (
-      listingTimestamp &&
-      expirationTimestamp != 0 &&
-      listingTimestamp >= expirationTimestamp
-    ) {
+    if (listingTimestamp && listingTimestamp >= expirationTimestamp) {
       throw new Error("Listing time must be before the expiration time.");
     }
-    if (waitingForBestCounterOrder && expirationTimestamp == 0) {
-      throw new Error("English auctions must have an expiration time.");
-    }
+
     if (waitingForBestCounterOrder && listingTimestamp) {
       throw new Error(`Cannot schedule an English auction for the future.`);
     }
     if (parseInt(expirationTimestamp.toString()) != expirationTimestamp) {
       throw new Error(`Expiration timestamp must be a whole number of seconds`);
+    }
+    if (expirationTimestamp > maxExpirationTimeStamp) {
+      throw new Error("Expiration time must not exceed six months from now");
     }
 
     if (waitingForBestCounterOrder) {
@@ -3976,6 +3957,16 @@ export class OpenSeaPort {
       // Small offset to account for latency
       listingTimestamp =
         listingTimestamp || Math.round(Date.now() / 1000 - 100);
+
+      const minExpirationTimestamp =
+        listingTimestamp + MIN_EXPIRATION_MINUTES * 60;
+
+      // small buffer to account for latency
+      if (!isMatchingOrder && expirationTimestamp < minExpirationTimestamp) {
+        throw new Error(
+          `Expiration time must be at least ${MIN_EXPIRATION_MINUTES} minutes from the listing date`
+        );
+      }
     }
 
     return {

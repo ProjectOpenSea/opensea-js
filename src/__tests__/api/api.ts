@@ -82,7 +82,7 @@ suite("api", () => {
     await logPromise;
   });
 
-  test.only("orderToJSON is correct", async () => {
+  test("orderToJSON is correct", async () => {
     const accountAddress = ALEX_ADDRESS;
     const quantity = 1;
     const amountInToken = 1.2;
@@ -198,7 +198,8 @@ suite("api", () => {
     assert.isArray(forKitty.orders);
   });
 
-  test("API fetches orders for asset owner", async () => {
+  // Temp skip due to migration
+  test.skip("API fetches orders for asset owner", async () => {
     const forOwner = await apiToTest.getOrders({ owner: ALEX_ADDRESS });
     assert.isAbove(forOwner.orders.length, 0);
     assert.isAbove(forOwner.count, 0);
@@ -210,7 +211,8 @@ suite("api", () => {
     });
   });
 
-  test("API fetches buy orders for maker", async () => {
+  // Temp skip due to migration
+  test.skip("API fetches buy orders for maker", async () => {
     const forMaker = await apiToTest.getOrders({
       maker: ALEX_ADDRESS_2,
       side: OrderSide.Buy,
