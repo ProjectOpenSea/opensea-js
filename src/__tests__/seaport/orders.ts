@@ -130,7 +130,6 @@ suite("seaport: orders", () => {
       startAmount: 2,
       extraBountyBasisPoints: 0,
       buyerAddress: NULL_ADDRESS,
-      expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
     });
@@ -153,7 +152,6 @@ suite("seaport: orders", () => {
         startAmount: 2,
         extraBountyBasisPoints: 0,
         buyerAddress: NULL_ADDRESS,
-        expirationTime: 0,
         paymentTokenAddress,
         waitForHighestBid: true,
       });
@@ -216,7 +214,6 @@ suite("seaport: orders", () => {
         endAmount: 1,
         extraBountyBasisPoints: 0,
         buyerAddress: NULL_ADDRESS,
-        expirationTime: 0,
         paymentTokenAddress: NULL_ADDRESS,
         waitForHighestBid: false,
       });
@@ -237,7 +234,6 @@ suite("seaport: orders", () => {
         listingTime: Math.round(Date.now() / 1000 - 60),
         extraBountyBasisPoints: 0,
         buyerAddress: NULL_ADDRESS,
-        expirationTime: 0,
         paymentTokenAddress: NULL_ADDRESS,
         waitForHighestBid: false,
       });
@@ -481,7 +477,6 @@ suite("seaport: orders", () => {
       accountAddress,
       paymentTokenAddress,
       startAmount: amountInToken,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
       sellOrder,
     });
@@ -547,7 +542,6 @@ suite("seaport: orders", () => {
       accountAddress,
       paymentTokenAddress,
       startAmount: amountInToken,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
       sellOrder,
     });
@@ -613,7 +607,6 @@ suite("seaport: orders", () => {
       accountAddress,
       paymentTokenAddress,
       startAmount: amountInToken,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
       sellOrder,
     });
@@ -687,7 +680,6 @@ suite("seaport: orders", () => {
       startAmount: amountInToken,
       extraBountyBasisPoints: bountyPercent * 100,
       buyerAddress: takerAddress,
-      expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
     });
@@ -760,7 +752,6 @@ suite("seaport: orders", () => {
       paymentTokenAddress: NULL_ADDRESS,
       extraBountyBasisPoints: 0,
       buyerAddress: NULL_ADDRESS,
-      expirationTime: 0,
       waitForHighestBid: false,
     });
 
@@ -791,7 +782,6 @@ suite("seaport: orders", () => {
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
     });
 
@@ -828,7 +818,6 @@ suite("seaport: orders", () => {
       paymentTokenAddress: paymentToken.address,
       extraBountyBasisPoints: bountyPercent * 100,
       buyerAddress: NULL_ADDRESS, // Check that null doesn't trigger private orders
-      expirationTime: 0,
       waitForHighestBid: false,
     });
 
@@ -864,7 +853,6 @@ suite("seaport: orders", () => {
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken.address,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
     });
 
@@ -1068,7 +1056,6 @@ suite("seaport: orders", () => {
       startAmount: 2,
       extraBountyBasisPoints: 0,
       buyerAddress: NULL_ADDRESS,
-      expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
     });
@@ -1100,7 +1087,6 @@ suite("seaport: orders", () => {
       startAmount: 2,
       extraBountyBasisPoints: 0,
       buyerAddress: NULL_ADDRESS,
-      expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
     });
@@ -1127,7 +1113,6 @@ suite("seaport: orders", () => {
       accountAddress,
       paymentTokenAddress,
       startAmount: amountInToken,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
     });
 
@@ -1153,7 +1138,6 @@ suite("seaport: orders", () => {
       accountAddress,
       paymentTokenAddress,
       startAmount: amountInToken,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
     });
 
@@ -1201,7 +1185,6 @@ suite("seaport: orders", () => {
       accountAddress,
       paymentTokenAddress,
       startAmount: amountInToken,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
       sellOrder,
     });

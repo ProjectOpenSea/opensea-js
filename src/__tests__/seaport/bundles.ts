@@ -138,7 +138,6 @@ suite("seaport: bundles", () => {
       accountAddress,
       startAmount: amountInEth,
       extraBountyBasisPoints: 0,
-      expirationTime: 0,
       paymentTokenAddress: WETH_ADDRESS,
     });
 
@@ -172,7 +171,6 @@ suite("seaport: bundles", () => {
       accountAddress,
       startAmount: amountInToken,
       extraBountyBasisPoints: 0,
-      expirationTime: 0,
       paymentTokenAddress: manaAddress,
     });
 
@@ -204,7 +202,6 @@ suite("seaport: bundles", () => {
       accountAddress,
       startAmount: amountInEth,
       extraBountyBasisPoints: bountyPercent * 100,
-      expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
       buyerAddress: NULL_ADDRESS,
@@ -236,7 +233,6 @@ suite("seaport: bundles", () => {
       accountAddress,
       startAmount: amountInEth,
       extraBountyBasisPoints: bountyPercent * 100,
-      expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
       buyerAddress: NULL_ADDRESS,
@@ -276,7 +272,6 @@ suite("seaport: bundles", () => {
       accountAddress,
       startAmount: amountInEth,
       extraBountyBasisPoints: bountyPercent * 100,
-      expirationTime: 0,
       paymentTokenAddress: NULL_ADDRESS,
       waitForHighestBid: false,
       buyerAddress: NULL_ADDRESS,
@@ -312,7 +307,6 @@ suite("seaport: bundles", () => {
       startAmount: amountInToken,
       paymentTokenAddress: token.address,
       extraBountyBasisPoints: 0,
-      expirationTime: 0,
       waitForHighestBid: false,
       buyerAddress: NULL_ADDRESS,
     });
@@ -375,7 +369,6 @@ suite("seaport: bundles", () => {
       quantities: fungibleAssetsForBundleOrder.map((a) => a.quantity),
       accountAddress,
       startAmount: amountInEth,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
       waitForHighestBid: false,
       buyerAddress: NULL_ADDRESS,
@@ -406,7 +399,6 @@ suite("seaport: bundles", () => {
       ),
       accountAddress,
       startAmount: amountInEth,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
       waitForHighestBid: false,
       buyerAddress: NULL_ADDRESS,
@@ -441,7 +433,6 @@ suite("seaport: bundles", () => {
       ),
       accountAddress,
       startAmount: amountInEth,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
       waitForHighestBid: false,
       buyerAddress: NULL_ADDRESS,
@@ -475,7 +466,6 @@ suite("seaport: bundles", () => {
       quantities: assets.map((a) => a.quantity),
       accountAddress,
       startAmount: amountInEth,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
       waitForHighestBid: false,
       buyerAddress: NULL_ADDRESS,
@@ -506,7 +496,6 @@ suite("seaport: bundles", () => {
       quantities: assets.map((a) => a.quantity),
       accountAddress,
       startAmount: amountInEth,
-      expirationTime: 0,
       extraBountyBasisPoints: 0,
       paymentTokenAddress: WETH_ADDRESS,
     });

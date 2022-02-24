@@ -4,6 +4,7 @@ import * as Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
 import {
   MAINNET_PROVIDER_URL,
+  MIN_EXPIRATION_MINUTES,
   NULL_ADDRESS,
   ORDERBOOK_VERSION,
   ORDER_MATCHING_LATENCY_SECONDS,
@@ -81,13 +82,15 @@ suite("api", () => {
     await logPromise;
   });
 
-  test("orderToJSON is correct", async () => {
+  test.only("orderToJSON is correct", async () => {
     const accountAddress = ALEX_ADDRESS;
     const quantity = 1;
     const amountInToken = 1.2;
     const paymentTokenAddress = WETH_ADDRESS;
     const extraBountyBasisPoints = 0;
-    const expirationTime = Math.round(Date.now() / 1000 + 60); // one minute from now
+    const expirationTime = Math.round(
+      Date.now() / 1000 + MIN_EXPIRATION_MINUTES * 60
+    ); // fifteen minutes from now
     const englishAuctionReservePrice = 2;
 
     const tokenId = MYTHEREUM_TOKEN_ID.toString();

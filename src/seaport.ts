@@ -26,6 +26,8 @@ import {
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
   MANA_ADDRESS,
+  MAX_EXPIRATION_MONTHS,
+  MIN_EXPIRATION_MINUTES,
   MIN_EXPIRATION_SECONDS,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
@@ -128,6 +130,7 @@ import {
   signTypedDataAsync,
   validateAndFormatWalletAddress,
   wyvern2_2ConfigByNetwork,
+  getMaxOrderExpirationTimestamp,
 } from "./utils/utils";
 
 export class OpenSeaPort {
@@ -684,7 +687,7 @@ export class OpenSeaPort {
    * @param quantities The quantity of each asset to sell. Defaults to 1 for each.
    * @param accountAddress Address of the maker's wallet
    * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
-   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
+   * @param expirationTime Expiration time for the order, in seconds.
    * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
    * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
    * @param referrerAddress The optional address that referred the order
@@ -695,7 +698,7 @@ export class OpenSeaPort {
     quantities,
     accountAddress,
     startAmount,
-    expirationTime = 0,
+    expirationTime = getMaxOrderExpirationTimestamp(),
     paymentTokenAddress,
     sellOrder,
     referrerAddress,
@@ -766,7 +769,7 @@ export class OpenSeaPort {
    * @param accountAddress Address of the maker's wallet
    * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
    * @param quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
-   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire"
+   * @param expirationTime Expiration time for the order, in seconds.
    * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
    * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
    * @param referrerAddress The optional address that referred the order
@@ -776,7 +779,7 @@ export class OpenSeaPort {
     accountAddress,
     startAmount,
     quantity = 1,
-    expirationTime = 0,
+    expirationTime = getMaxOrderExpirationTimestamp(),
     paymentTokenAddress,
     sellOrder,
     referrerAddress,
@@ -845,7 +848,7 @@ export class OpenSeaPort {
    * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
    * @param listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
-   * @param expirationTime Expiration time for the order, in UTC seconds. An expiration time of 0 means "never expire."
+   * @param expirationTime Expiration time for the order, in UTC seconds.
    * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
    * @param englishAuctionReservePrice Optional price level, below which orders may be placed but will not be matched.  Orders below the reserve can be manually accepted but will not be automatically matched.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
@@ -860,7 +863,7 @@ export class OpenSeaPort {
     endAmount,
     quantity = 1,
     listingTime,
-    expirationTime = 0,
+    expirationTime = getMaxOrderExpirationTimestamp(),
     waitForHighestBid = false,
     englishAuctionReservePrice,
     paymentTokenAddress,
@@ -935,7 +938,7 @@ export class OpenSeaPort {
    * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param quantity The number of assets to sell at one time (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
    * @param listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
-   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+   * @param expirationTime Expiration time for the order, in seconds.
    * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
@@ -951,7 +954,7 @@ export class OpenSeaPort {
     endAmount,
     quantity = 1,
     listingTime,
-    expirationTime = 0,
+    expirationTime = getMaxOrderExpirationTimestamp(),
     waitForHighestBid = false,
     paymentTokenAddress,
     extraBountyBasisPoints = 0,
@@ -1092,7 +1095,7 @@ export class OpenSeaPort {
    * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction.
    * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`.
    * @param listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
-   * @param expirationTime Expiration time for the order, in seconds. An expiration time of 0 means "never expire."
+   * @param expirationTime Expiration time for the order, in seconds.
    * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
    * @param englishAuctionReservePrice Optional price level, below which orders may be placed but will not be matched.  Orders below the reserve can be manually accepted but will not be automatically matched.
    * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
@@ -1109,7 +1112,7 @@ export class OpenSeaPort {
     accountAddress,
     startAmount,
     endAmount,
-    expirationTime = 0,
+    expirationTime = getMaxOrderExpirationTimestamp(),
     listingTime,
     waitForHighestBid = false,
     englishAuctionReservePrice,
@@ -2535,7 +2538,7 @@ export class OpenSeaPort {
     quantity,
     accountAddress,
     startAmount,
-    expirationTime = 0,
+    expirationTime = getMaxOrderExpirationTimestamp(),
     paymentTokenAddress,
     extraBountyBasisPoints = 0,
     sellOrder,
@@ -2545,7 +2548,7 @@ export class OpenSeaPort {
     quantity: number;
     accountAddress: string;
     startAmount: number;
-    expirationTime: number;
+    expirationTime?: number;
     paymentTokenAddress: string;
     extraBountyBasisPoints: number;
     sellOrder?: UnhashedOrder;
@@ -2599,7 +2602,9 @@ export class OpenSeaPort {
       expirationTime,
       startAmount
     );
-    const times = this._getTimeParameters(expirationTime);
+    const times = this._getTimeParameters({
+      expirationTimestamp: expirationTime,
+    });
 
     const { staticTarget, staticExtradata } =
       await this._getStaticCallTargetAndExtraData({
@@ -2656,7 +2661,7 @@ export class OpenSeaPort {
     startAmount,
     endAmount,
     listingTime,
-    expirationTime,
+    expirationTime = getMaxOrderExpirationTimestamp(),
     waitForHighestBid,
     englishAuctionReservePrice = 0,
     paymentTokenAddress,
@@ -2671,7 +2676,7 @@ export class OpenSeaPort {
     waitForHighestBid: boolean;
     englishAuctionReservePrice?: number;
     listingTime?: number;
-    expirationTime: number;
+    expirationTime?: number;
     paymentTokenAddress: string;
     extraBountyBasisPoints: number;
     buyerAddress: string;
@@ -2720,11 +2725,11 @@ export class OpenSeaPort {
         waitForHighestBid,
         englishAuctionReservePrice
       );
-    const times = this._getTimeParameters(
-      expirationTime,
-      listingTime,
-      waitForHighestBid
-    );
+    const times = this._getTimeParameters({
+      expirationTimestamp: expirationTime,
+      listingTimestamp: listingTime,
+      waitingForBestCounterOrder: waitForHighestBid,
+    });
 
     const {
       makerRelayerFee,
@@ -2899,7 +2904,7 @@ export class OpenSeaPort {
     quantities,
     accountAddress,
     startAmount,
-    expirationTime = 0,
+    expirationTime = getMaxOrderExpirationTimestamp(),
     paymentTokenAddress,
     extraBountyBasisPoints = 0,
     sellOrder,
@@ -2910,7 +2915,7 @@ export class OpenSeaPort {
     quantities: number[];
     accountAddress: string;
     startAmount: number;
-    expirationTime: number;
+    expirationTime?: number;
     paymentTokenAddress: string;
     extraBountyBasisPoints: number;
     sellOrder?: UnhashedOrder;
@@ -2969,7 +2974,9 @@ export class OpenSeaPort {
       expirationTime,
       startAmount
     );
-    const times = this._getTimeParameters(expirationTime);
+    const times = this._getTimeParameters({
+      expirationTimestamp: expirationTime,
+    });
 
     const exchange = await this._getOrderCreateWyvernExchangeAddress();
 
@@ -3020,7 +3027,7 @@ export class OpenSeaPort {
     startAmount,
     endAmount,
     listingTime,
-    expirationTime,
+    expirationTime = getMaxOrderExpirationTimestamp(),
     waitForHighestBid,
     englishAuctionReservePrice = 0,
     paymentTokenAddress,
@@ -3037,7 +3044,7 @@ export class OpenSeaPort {
     startAmount: number;
     endAmount?: number;
     listingTime?: number;
-    expirationTime: number;
+    expirationTime?: number;
     waitForHighestBid: boolean;
     englishAuctionReservePrice?: number;
     paymentTokenAddress: string;
@@ -3091,11 +3098,11 @@ export class OpenSeaPort {
         waitForHighestBid,
         englishAuctionReservePrice
       );
-    const times = this._getTimeParameters(
-      expirationTime,
-      listingTime,
-      waitForHighestBid
-    );
+    const times = this._getTimeParameters({
+      expirationTimestamp: expirationTime,
+      listingTimestamp: listingTime,
+      waitingForBestCounterOrder: waitForHighestBid,
+    });
 
     const orderSaleKind =
       endAmount != null && endAmount !== startAmount
@@ -3230,7 +3237,10 @@ export class OpenSeaPort {
     };
 
     const { target, calldata, replacementPattern } = computeOrderParams();
-    const times = this._getTimeParameters(0);
+    const times = this._getTimeParameters({
+      expirationTimestamp: 0,
+      isMatchingOrder: true,
+    });
     // Compat for matching buy orders that have fee recipient still on them
     const feeRecipient =
       order.feeRecipient == NULL_ADDRESS ? OPENSEA_FEE_RECIPIENT : NULL_ADDRESS;
@@ -3895,22 +3905,45 @@ export class OpenSeaPort {
    * @param listingTimestamp Timestamp to start the order (in seconds), or undefined to start it now
    * @param waitingForBestCounterOrder Whether this order should be hidden until the best match is found
    */
-  private _getTimeParameters(
-    expirationTimestamp: number,
-    listingTimestamp?: number,
-    waitingForBestCounterOrder = false
-  ) {
-    // Validation
-    const minExpirationTimestamp = Math.round(
-      Date.now() / 1000 + MIN_EXPIRATION_SECONDS
+  private _getTimeParameters({
+    expirationTimestamp = getMaxOrderExpirationTimestamp(),
+    listingTimestamp,
+    waitingForBestCounterOrder = false,
+    isMatchingOrder = false,
+  }: {
+    expirationTimestamp?: number;
+    listingTimestamp?: number;
+    waitingForBestCounterOrder?: boolean;
+    isMatchingOrder?: boolean;
+  }) {
+    // Validation - small buffer to account for latency
+    const minExpirationTimestamp =
+      Math.round(Date.now() / 1000 + MIN_EXPIRATION_MINUTES * 60) - 100;
+    const maxExpirationDate = new Date(minExpirationTimestamp);
+
+    maxExpirationDate.setMonth(
+      maxExpirationDate.getMonth() + MAX_EXPIRATION_MONTHS
     );
+
+    const maxExpirationTimeStamp = Math.round(
+      maxExpirationDate.getTime() / 1000
+    );
+
     const minListingTimestamp = Math.round(Date.now() / 1000);
     if (
       expirationTimestamp != 0 &&
       expirationTimestamp < minExpirationTimestamp
     ) {
       throw new Error(
-        `Expiration time must be at least ${MIN_EXPIRATION_SECONDS} seconds from now, or zero (non-expiring).`
+        `Expiration time must be at least ${MIN_EXPIRATION_MINUTES} minutes from now`
+      );
+    }
+    if (
+      expirationTimestamp > maxExpirationTimeStamp ||
+      (expirationTimestamp === 0 && !isMatchingOrder)
+    ) {
+      throw new Error(
+        "Expiration time must not exceed six months from now or be infinitely lasting"
       );
     }
     if (listingTimestamp && listingTimestamp < minListingTimestamp) {
