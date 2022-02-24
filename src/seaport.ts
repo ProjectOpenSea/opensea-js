@@ -3958,10 +3958,10 @@ export class OpenSeaPort {
       listingTimestamp =
         listingTimestamp || Math.round(Date.now() / 1000 - 100);
 
+      // The minimum expiration time has to be at least fifteen minutes from now
       const minExpirationTimestamp =
         listingTimestamp + MIN_EXPIRATION_MINUTES * 60;
 
-      // small buffer to account for latency
       if (!isMatchingOrder && expirationTimestamp < minExpirationTimestamp) {
         throw new Error(
           `Expiration time must be at least ${MIN_EXPIRATION_MINUTES} minutes from the listing date`
