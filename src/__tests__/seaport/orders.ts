@@ -2,14 +2,16 @@ import { BigNumber } from "bignumber.js";
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
 import Web3 from "web3";
+import { HowToCall } from "wyvern-js/lib/types";
 import {
+  MERKLE_VALIDATOR_MAINNET,
   ENJIN_ADDRESS,
   INVERSE_BASIS_POINT,
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
   OPENSEA_FEE_RECIPIENT,
   RINKEBY_PROVIDER_URL,
-} from "../../constants";
+} from "../../../src/constants";
 import { OpenSeaPort } from "../../index";
 import {
   Asset,
@@ -25,11 +27,11 @@ import {
 import {
   assignOrdersToSides,
   estimateCurrentPrice,
-  getOrderHash,
   makeBigNumber,
   orderFromJSON,
 } from "../../utils/utils";
 import {
+  AGE_OF_RUST_TOKEN_ID,
   ALEX_ADDRESS,
   ALEX_ADDRESS_2,
   CK_ADDRESS,
@@ -37,8 +39,6 @@ import {
   CK_RINKEBY_TOKEN_ID,
   CK_TOKEN_ID,
   CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE,
-  CRYPTOVOXELS_WEARABLE_2_ID,
-  CRYPTOVOXELS_WEARABLE_ADDRESS,
   DEVIN_ADDRESS,
   DIGITAL_ART_CHAIN_ADDRESS,
   DIGITAL_ART_CHAIN_TOKEN_ID,
@@ -106,16 +106,8 @@ suite("seaport: orders", () => {
     test("Order #" + index + " has correct types", () => {
       const order = orderFromJSON(orderJSON);
       assert.instanceOf(order.basePrice, BigNumber);
-      assert.typeOf(order.hash, "string");
       assert.typeOf(order.maker, "string");
       assert.equal(+order.quantity, 1);
-    });
-  });
-
-  ordersJSON.map((orderJSON: OrderJSON, index: number) => {
-    test("Order #" + index + " has correct hash", () => {
-      const order = orderFromJSON(orderJSON);
-      assert.equal(order.hash, getOrderHash(order));
     });
   });
 
@@ -753,8 +745,8 @@ suite("seaport: orders", () => {
     const takerAddress = ALEX_ADDRESS_2;
     const amountInEth = 2;
 
-    const tokenId = CRYPTOVOXELS_WEARABLE_2_ID;
-    const tokenAddress = CRYPTOVOXELS_WEARABLE_ADDRESS;
+    const tokenId = AGE_OF_RUST_TOKEN_ID;
+    const tokenAddress = ENJIN_ADDRESS;
 
     const asset = await client.api.getAsset({ tokenAddress, tokenId });
 
@@ -1054,6 +1046,171 @@ suite("seaport: orders", () => {
     }
     await testMatchingOrder(order, takerAddress, true);
   });
+
+  test("Correct order data on merkle ERC721 listing", async () => {
+    const accountAddress = ALEX_ADDRESS;
+    const tokenId = DISSOLUTION_TOKEN_ID.toString();
+    const tokenAddress = ENJIN_ADDRESS;
+    const quantity = 1;
+    const decimals = 2;
+
+    const order = await client._makeSellOrder({
+      asset: {
+        tokenAddress,
+        tokenId,
+        decimals,
+        schemaName: WyvernSchemaName.ERC721,
+      },
+      quantity,
+      accountAddress,
+      startAmount: 2,
+      extraBountyBasisPoints: 0,
+      buyerAddress: NULL_ADDRESS,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false,
+    });
+
+    assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
+    assert.equal(
+      order["replacementPattern"],
+      "0x000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(order.howToCall, HowToCall.DelegateCall);
+  });
+
+  test("Correct order data on merkle ERC1155 listing", async () => {
+    const accountAddress = ALEX_ADDRESS;
+    const tokenId = DISSOLUTION_TOKEN_ID.toString();
+    const tokenAddress = ENJIN_ADDRESS;
+    const quantity = 1;
+    const decimals = 2;
+
+    const order = await client._makeSellOrder({
+      asset: {
+        tokenAddress,
+        tokenId,
+        decimals,
+        schemaName: WyvernSchemaName.ERC1155,
+      },
+      quantity,
+      accountAddress,
+      startAmount: 2,
+      extraBountyBasisPoints: 0,
+      buyerAddress: NULL_ADDRESS,
+      expirationTime: 0,
+      paymentTokenAddress: NULL_ADDRESS,
+      waitForHighestBid: false,
+    });
+
+    assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
+    assert.equal(
+      order["replacementPattern"],
+      "0x000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(order.howToCall, HowToCall.DelegateCall);
+  });
+
+  test("Correct order data on merkle ERC721 offer", async () => {
+    const accountAddress = ALEX_ADDRESS_2;
+    const paymentTokenAddress = WETH_ADDRESS;
+    const amountInToken = 0.01;
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString();
+    const tokenAddress = MYTHEREUM_ADDRESS;
+
+    const order = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
+      quantity: 1,
+      accountAddress,
+      paymentTokenAddress,
+      startAmount: amountInToken,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+    });
+
+    assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
+    assert.equal(
+      order["replacementPattern"],
+      "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(order.howToCall, HowToCall.DelegateCall);
+  });
+
+  test("Correct order data on merkle ERC1155 offer", async () => {
+    const accountAddress = ALEX_ADDRESS_2;
+    const paymentTokenAddress = WETH_ADDRESS;
+    const amountInToken = 0.01;
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString();
+    const tokenAddress = MYTHEREUM_ADDRESS;
+
+    const order = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC1155 },
+      quantity: 1,
+      accountAddress,
+      paymentTokenAddress,
+      startAmount: amountInToken,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+    });
+
+    assert.equal(order["target"], MERKLE_VALIDATOR_MAINNET);
+    assert.equal(
+      order["replacementPattern"],
+      "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(order.howToCall, HowToCall.DelegateCall);
+  });
+
+  test("Verify no merkle data on ERC721 english auction listing and bids", async () => {
+    const accountAddress = ALEX_ADDRESS_2;
+    const takerAddress = ALEX_ADDRESS;
+    const paymentTokenAddress = WETH_ADDRESS;
+    const amountInToken = 0.01;
+    const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
+    const extraBountyBasisPoints = 1.1 * 100;
+
+    const tokenId = MYTHEREUM_TOKEN_ID.toString();
+    const tokenAddress = MYTHEREUM_ADDRESS;
+
+    const sellOrder = await client._makeSellOrder({
+      asset: { tokenAddress, tokenId },
+      quantity: 1,
+      accountAddress: takerAddress,
+      startAmount: amountInToken,
+      paymentTokenAddress,
+      expirationTime,
+      extraBountyBasisPoints,
+      buyerAddress: NULL_ADDRESS,
+      waitForHighestBid: true,
+    });
+
+    assert.equal(sellOrder["target"], tokenAddress);
+    assert.equal(
+      sellOrder["replacementPattern"],
+      "0x000000000000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(sellOrder.howToCall, HowToCall.Call);
+
+    const buyOrder = await client._makeBuyOrder({
+      asset: { tokenAddress, tokenId, schemaName: WyvernSchemaName.ERC721 },
+      quantity: 1,
+      accountAddress,
+      paymentTokenAddress,
+      startAmount: amountInToken,
+      expirationTime: 0,
+      extraBountyBasisPoints: 0,
+      sellOrder,
+    });
+
+    assert.equal(buyOrder["target"], tokenAddress);
+    assert.equal(
+      buyOrder["replacementPattern"],
+      "0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    );
+    assert.equal(buyOrder.howToCall, HowToCall.Call);
+  });
 });
 
 async function testMatchingOrder(
@@ -1070,7 +1227,6 @@ async function testMatchingOrder(
     accountAddress,
     recipientAddress,
   });
-  assert.equal(matchingOrder.hash, getOrderHash(matchingOrder));
 
   const { buy, sell } = assignOrdersToSides(order, matchingOrder);
 
@@ -1095,15 +1251,10 @@ async function testMatchingOrder(
 }
 
 export async function testMatchingNewOrder(
-  unhashedOrder: UnhashedOrder,
+  order: UnhashedOrder,
   accountAddress: string,
   counterOrderListingTime?: number
 ) {
-  const order = {
-    ...unhashedOrder,
-    hash: getOrderHash(unhashedOrder),
-  };
-
   const matchingOrder = client._makeMatchingOrder({
     order,
     accountAddress,
@@ -1111,9 +1262,7 @@ export async function testMatchingNewOrder(
   });
   if (counterOrderListingTime != null) {
     matchingOrder.listingTime = makeBigNumber(counterOrderListingTime);
-    matchingOrder.hash = getOrderHash(matchingOrder);
   }
-  assert.equal(matchingOrder.hash, getOrderHash(matchingOrder));
 
   // Test fees
   assert.equal(matchingOrder.makerProtocolFee.toNumber(), 0);

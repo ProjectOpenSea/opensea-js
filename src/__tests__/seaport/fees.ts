@@ -23,7 +23,6 @@ import {
   OrderSide,
   UnhashedOrder,
 } from "../../types";
-import { getOrderHash } from "../../utils/utils";
 import {
   ALEX_ADDRESS,
   CATS_IN_MECHS_ID,
@@ -203,7 +202,7 @@ suite("seaport: fees", () => {
     }
   });
 
-  test("First page of orders have valid hashes and fees", async () => {
+  test("First page of orders have valid fees", async () => {
     const { orders } = await client.api.getOrders();
     assert.isNotEmpty(orders);
 
@@ -214,17 +213,6 @@ suite("seaport: fees", () => {
         testFeesMakerOrder(order, order.asset.collection);
       }
       assert.isNotEmpty(order.paymentTokenContract);
-
-      const accountAddress = ALEX_ADDRESS;
-      const matchingOrder = client._makeMatchingOrder({
-        order,
-        accountAddress,
-        recipientAddress: accountAddress,
-      });
-      const matchingOrderHash = matchingOrder.hash;
-
-      const orderHash = getOrderHash(matchingOrder);
-      assert.equal(orderHash, matchingOrderHash);
     });
   });
 

@@ -2,10 +2,11 @@
 import BigNumber from "bignumber.js";
 import { AbiItem } from "web3-utils";
 import {
-  Network,
-  HowToCall,
   ECSignature,
+  HowToCall,
+  Network,
   Order as WyvernOrder,
+  WyvernProtocolConfig,
 } from "wyvern-js/lib/types";
 import type { Token } from "wyvern-schemas/dist/types";
 
@@ -46,6 +47,7 @@ export enum EventType {
   // Basic actions: matching orders, creating orders, and cancelling orders
   MatchOrders = "MatchOrders",
   CancelOrder = "CancelOrder",
+  BulkCancelExistingOrders = "BulkCancelExistingOrders",
   ApproveOrder = "ApproveOrder",
   CreateOrder = "CreateOrder",
   // When the signature request for an order is denied
@@ -98,7 +100,13 @@ export interface OpenSeaAPIConfig {
   useReadOnlyProvider?: boolean;
   // Sent to WyvernJS
   gasPrice?: BigNumber;
+
+  wyvernConfig?: WyvernConfig;
 }
+
+export type WyvernConfig = WyvernProtocolConfig & {
+  wyvernTokenTransferProxyContractAddress?: string;
+};
 
 /**
  * Wyvern order side: buy or sell.
@@ -575,7 +583,7 @@ export interface UnhashedOrder extends WyvernOrder {
 }
 
 export interface UnsignedOrder extends UnhashedOrder {
-  hash: string;
+  hash?: string;
 }
 
 /**
@@ -595,6 +603,7 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
   markedInvalid?: boolean;
   asset?: OpenSeaAsset;
   assetBundle?: OpenSeaAssetBundle;
+  nonce?: number;
 }
 
 /**
@@ -603,6 +612,7 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
  * list of API query parameters and documentation.
  */
 export interface OrderJSON extends Partial<ECSignature> {
+  // Base wyvern fields
   exchange: string;
   maker: string;
   taker: string;
@@ -610,7 +620,6 @@ export interface OrderJSON extends Partial<ECSignature> {
   takerRelayerFee: string;
   makerProtocolFee: string;
   takerProtocolFee: string;
-  makerReferrerFee: string;
   feeRecipient: string;
   feeMethod: number;
   side: number;
@@ -622,23 +631,35 @@ export interface OrderJSON extends Partial<ECSignature> {
   staticTarget: string;
   staticExtradata: string;
   paymentToken: string;
-
-  quantity: string;
   basePrice: string;
-  englishAuctionReservePrice: string | undefined;
   extra: string;
+  listingTime: number | string;
+  expirationTime: number | string;
+  salt: string;
+
+  makerReferrerFee: string;
+  quantity: string;
+  englishAuctionReservePrice: string | undefined;
 
   // createdTime is undefined when order hasn't been posted yet
   createdTime?: number | string;
-  listingTime: number | string;
-  expirationTime: number | string;
-
-  salt: string;
-
   metadata: ExchangeMetadata;
 
-  hash: string;
+  nonce?: number;
 }
+
+export type RawWyvernOrderJSON = Omit<
+  OrderJSON,
+  | "makerReferrerFee"
+  | "quantity"
+  | "englishAuctionReservePrice"
+  | "createdTime"
+  | "metadata"
+  | "hash"
+  | "v"
+  | "r"
+  | "s"
+>;
 
 /**
  * Query interface for Orders

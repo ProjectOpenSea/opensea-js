@@ -2,15 +2,15 @@ import { BigNumber } from "bignumber.js";
 import * as ethABI from "ethereumjs-abi";
 import { WyvernProtocol } from "wyvern-js";
 import { WyvernAtomicizerContract } from "wyvern-js/lib/abi_gen/wyvern_atomicizer";
-import { HowToCall, ReplacementEncoder, Network } from "wyvern-js/lib/types";
+import { HowToCall, Network, ReplacementEncoder } from "wyvern-js/lib/types";
 import {
   AnnotatedFunctionABI,
   FunctionInputKind,
   Schema,
 } from "wyvern-schemas/dist/types";
+import { proxyABI, proxyAssertABI } from "../abi/Proxy";
+import { OrderSide, WyvernAsset } from "../types";
 export { AbiType } from "wyvern-schemas";
-import { proxyAssertABI, proxyABI } from "../abi/Proxy";
-import { WyvernAsset, OrderSide } from "../types";
 
 export interface LimitedCallSpec {
   target: string;
@@ -29,7 +29,8 @@ export const encodeReplacementPattern: ReplacementEncoder =
 export type Encoder = (
   schema: Schema<WyvernAsset>,
   asset: WyvernAsset,
-  address: string
+  address: string,
+  validatorAddress?: string
 ) => CallSpec;
 
 export const encodeCall = (
@@ -46,8 +47,16 @@ export const encodeCall = (
   );
 };
 
-export const encodeSell: Encoder = (schema, asset, address) => {
-  const transfer = schema.functions.transfer(asset);
+export const encodeSell: Encoder = (
+  schema,
+  asset,
+  address,
+  validatorAddress?: string
+) => {
+  const transfer =
+    validatorAddress && schema.functions.checkAndTransfer
+      ? schema.functions.checkAndTransfer(asset, validatorAddress)
+      : schema.functions.transfer(asset);
   return {
     target: transfer.target,
     calldata: encodeDefaultCall(transfer, address),
@@ -121,8 +130,16 @@ export const encodeAtomicizedBuy: AtomicizedBuyEncoder = (
   };
 };
 
-export const encodeBuy: Encoder = (schema, asset, address) => {
-  const transfer = schema.functions.transfer(asset);
+export const encodeBuy: Encoder = (
+  schema,
+  asset,
+  address,
+  validatorAddress?: string
+) => {
+  const transfer =
+    validatorAddress && schema.functions.checkAndTransfer
+      ? schema.functions.checkAndTransfer(asset, validatorAddress)
+      : schema.functions.transfer(asset);
   const replaceables = transfer.inputs.filter(
     (i) => i.kind === FunctionInputKind.Replaceable
   );

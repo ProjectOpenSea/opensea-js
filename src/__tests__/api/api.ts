@@ -15,7 +15,6 @@ import {
   ALEX_ADDRESS,
   ALEX_ADDRESS_2,
   apiToTest,
-  CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
   CK_RINKEBY_SELLER_FEE,
   CK_RINKEBY_TOKEN_ID,
@@ -80,23 +79,6 @@ suite("api", () => {
     });
 
     await logPromise;
-  });
-
-  test("An API asset's order has correct hash", async () => {
-    const asset = await mainApi.getAsset({
-      tokenAddress: CK_ADDRESS,
-      tokenId: 1,
-    });
-    assert.isNotNull(asset.orders);
-    if (!asset.orders) {
-      return;
-    }
-    const order = asset.orders[0];
-    assert.isNotNull(order);
-    if (!order) {
-      return;
-    }
-    assert.equal(order.hash, getOrderHash(order));
   });
 
   test("orderToJSON is correct", async () => {
