@@ -19,6 +19,7 @@ import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
+  MAX_EXPIRATION_MONTHS,
   MERKLE_VALIDATOR_MAINNET,
   MERKLE_VALIDATOR_RINKEBY,
   NULL_ADDRESS,
@@ -1066,3 +1067,17 @@ export const wyvern2_2ConfigByNetwork = {
       "0x82d102457854c985221249f86659c9d6cf12aa72",
   },
 } as const;
+
+/**
+ * The longest time that an order is valid for is six months from the current date
+ * @returns unix timestamp
+ */
+export const getMaxOrderExpirationTimestamp = () => {
+  const maxExpirationDate = new Date();
+
+  maxExpirationDate.setDate(
+    maxExpirationDate.getDate() + MAX_EXPIRATION_MONTHS
+  );
+
+  return Math.round(maxExpirationDate.getTime() / 1000);
+};

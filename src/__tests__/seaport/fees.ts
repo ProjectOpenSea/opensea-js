@@ -273,7 +273,6 @@ suite("seaport: fees", () => {
       paymentTokenAddress: NULL_ADDRESS,
       extraBountyBasisPoints,
       buyerAddress: NULL_ADDRESS,
-      expirationTime: 0,
       waitForHighestBid: false,
     });
 
