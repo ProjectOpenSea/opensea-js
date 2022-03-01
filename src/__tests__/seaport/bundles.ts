@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import { getMaxOrderExpirationTimestamp } from "../../../src/utils";
 import {
   ENJIN_ADDRESS,

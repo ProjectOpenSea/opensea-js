@@ -15,12 +15,13 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: "14.17.0"
+          node-version: "16.11.0"
           cache: yarn
 
       - name: Install dependencies
         run: yarn install --immutable --ignore-scripts
-
+      - name: Gen ABI
+        run: yarn abi-type-gen
       - name: Run linters
         run: yarn lint:check
 
@@ -30,12 +31,13 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: "14.17.0"
+          node-version: "16.11.0"
           cache: yarn
 
       - name: Install dependencies
         run: yarn install --immutable --ignore-scripts
-
+      - name: Gen ABI
+        run: yarn abi-type-gen
       - name: Run tests
         env:
           API_KEY: ${{ secrets.API_KEY }}

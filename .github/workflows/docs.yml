@@ -13,11 +13,14 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: "14.17.0"
+          node-version: "16.11.0"
           cache: yarn
 
       - name: Install dependencies
         run: yarn install --immutable --ignore-scripts
+
+      - name: Gen ABI
+        run: yarn abi-type-gen
 
       - name: Build
         run: yarn docs-build

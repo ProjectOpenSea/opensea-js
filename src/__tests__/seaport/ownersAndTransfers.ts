@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
-import * as Web3 from "web3";
+import Web3 from "web3";
 import {
   ENJIN_ADDRESS,
   ENJIN_LEGACY_ADDRESS,
@@ -78,7 +78,6 @@ suite("seaport: owners and transfers", () => {
     };
     try {
       // Use mainnet client with rinkeby asset
-      // @ts-expect-error unused
       const _isOwner = await client._ownsAssetOnChain({
         accountAddress,
         wyAsset: wyAssetRinkeby,

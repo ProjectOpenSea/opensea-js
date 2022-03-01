@@ -1,7 +1,11 @@
 import BigNumber from "bignumber.js";
+import { AbiType, CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
-import * as Web3 from "web3";
+import Web3 from "web3";
+import { JsonRpcResponse } from "web3-core-helpers/types";
+import { HttpProvider } from "web3-core/types";
+import { Contract } from "web3-eth-contract";
 import { WyvernProtocol } from "wyvern-js";
 import {
   AnnotatedFunctionABI,
@@ -22,6 +26,7 @@ import {
   NULL_BLOCK_HASH,
 } from "../constants";
 import { ERC1155 } from "../contracts";
+import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
 import {
   Asset,
   AssetEvent,
@@ -74,7 +79,7 @@ export const annotateERC721TransferABI = (
   outputs: [],
   payable: false,
   stateMutability: StateMutability.Nonpayable,
-  type: Web3.AbiType.Function,
+  type: AbiType.Function,
 });
 
 export const annotateERC20TransferABI = (
@@ -105,7 +110,7 @@ export const annotateERC20TransferABI = (
   ],
   payable: false,
   stateMutability: StateMutability.Nonpayable,
-  type: Web3.AbiType.Function,
+  type: AbiType.Function,
 });
 
 // OTHER
@@ -165,20 +170,14 @@ const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
   } else {
     txCallbacks[txHash] = [onFinalized];
     const poll = async () => {
-      const tx = await promisify<Web3.Transaction>((c) =>
-        web3.eth.getTransaction(txHash, c)
-      );
+      const tx = await web3.eth.getTransaction(txHash);
       if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
-        const receipt = await promisify<Web3.TransactionReceipt | null>((c) =>
-          web3.eth.getTransactionReceipt(txHash, c)
-        );
+        const receipt = await web3.eth.getTransactionReceipt(txHash);
         if (!receipt) {
           // Hack: assume success if no receipt
           console.warn("No receipt found for ", txHash);
         }
-        const status = receipt
-          ? parseInt((receipt.status || "0").toString()) == 1
-          : true;
+        const status = receipt.status;
         txCallbacks[txHash].map((f) => f(status));
         delete txCallbacks[txHash];
       } else {
@@ -517,8 +516,8 @@ export async function personalSignAsync(
   message: string,
   signerAddress: string
 ): Promise<ECSignature> {
-  const signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
-    web3.currentProvider.sendAsync(
+  const signature = await promisify<JsonRpcResponse | undefined>((c) =>
+    (web3.currentProvider as HttpProvider).send(
       {
         method: "personal_sign",
         params: [message, signerAddress],
@@ -536,7 +535,7 @@ export async function personalSignAsync(
     throw new Error(error);
   }
 
-  return parseSignatureHex(signature.result);
+  return parseSignatureHex(signature?.result);
 }
 
 /**
@@ -551,11 +550,11 @@ export async function signTypedDataAsync(
   message: object,
   signerAddress: string
 ): Promise<ECSignature> {
-  let signature: Web3.JSONRPCResponsePayload;
+  let signature: JsonRpcResponse | undefined;
   try {
     // Using sign typed data V4 works with a stringified message, used by browser providers i.e. Metamask
-    signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
-      web3.currentProvider.sendAsync(
+    signature = await promisify<JsonRpcResponse | undefined>((c) =>
+      (web3.currentProvider as HttpProvider).send(
         {
           method: "eth_signTypedData_v4",
           params: [signerAddress, JSON.stringify(message)],
@@ -569,8 +568,8 @@ export async function signTypedDataAsync(
   } catch {
     // Fallback to normal sign typed data for node providers, without using stringified message
     // https://github.com/coinbase/coinbase-wallet-sdk/issues/60
-    signature = await promisify<Web3.JSONRPCResponsePayload>((c) =>
-      web3.currentProvider.sendAsync(
+    signature = await promisify<JsonRpcResponse | undefined>((c) =>
+      (web3.currentProvider as HttpProvider).send(
         {
           method: "eth_signTypedData",
           params: [signerAddress, message],
@@ -589,7 +588,7 @@ export async function signTypedDataAsync(
     throw new Error(error);
   }
 
-  return parseSignatureHex(signature.result);
+  return parseSignatureHex(signature?.result);
 }
 
 /**
@@ -601,7 +600,7 @@ export async function isContractAddress(
   web3: Web3,
   address: string
 ): Promise<boolean> {
-  const code = await promisify<string>((c) => web3.eth.getCode(address, c));
+  const code = await web3.eth.getCode(address);
   return code !== "0x";
 }
 
@@ -632,7 +631,7 @@ export function makeBigNumber(arg: number | string | BigNumber): BigNumber {
  */
 export async function sendRawTransaction(
   web3: Web3,
-  { from, to, data, gasPrice, value = 0, gas }: Web3.TxData,
+  { from, to, data, gasPrice, value = 0, gas }: TxData,
   onError: (error: unknown) => void
 ): Promise<string> {
   if (gas == null) {
@@ -646,15 +645,15 @@ export async function sendRawTransaction(
         {
           from,
           to,
-          value,
+          value: value.toString(),
           data,
-          gas,
-          gasPrice,
+          gas: gas?.toString(),
+          gasPrice: gasPrice?.toString(),
         },
         c
       )
     );
-    return txHashRes.toString();
+    return txHashRes;
   } catch (error) {
     onError(error);
     throw error;
@@ -673,20 +672,15 @@ export async function sendRawTransaction(
  */
 export async function rawCall(
   web3: Web3,
-  { from, to, data }: Web3.CallData,
+  { from, to, data }: CallData,
   onError?: (error: unknown) => void
 ): Promise<string> {
   try {
-    const result = await promisify<string>((c) =>
-      web3.eth.call(
-        {
-          from,
-          to,
-          data,
-        },
-        c
-      )
-    );
+    const result = await web3.eth.call({
+      from,
+      to,
+      data,
+    });
     return result;
   } catch (error) {
     // Probably method not found, and web3 is a Parity node
@@ -708,19 +702,14 @@ export async function rawCall(
  */
 export async function estimateGas(
   web3: Web3,
-  { from, to, data, value = 0 }: Web3.TxData
+  { from, to, data, value = 0 }: TxData
 ): Promise<number> {
-  const amount = await promisify<number>((c) =>
-    web3.eth.estimateGas(
-      {
-        from,
-        to,
-        value,
-        data,
-      },
-      c
-    )
-  );
+  const amount = await web3.eth.estimateGas({
+    from,
+    to,
+    value: value.toString(),
+    data,
+  });
 
   return amount;
 }
@@ -730,8 +719,8 @@ export async function estimateGas(
  * @param web3 Web3 instance
  */
 export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
-  const meanGas = await promisify<BigNumber>((c) => web3.eth.getGasPrice(c));
-  return meanGas;
+  const gasPrice = await web3.eth.getGasPrice();
+  return new BigNumber(gasPrice);
 }
 
 /**
@@ -754,17 +743,17 @@ export async function getTransferFeeSettings(
 
   if (asset.tokenAddress.toLowerCase() == ENJIN_ADDRESS.toLowerCase()) {
     // Enjin asset
-    const feeContract = web3.eth
-      .contract(ERC1155 as Web3.AbiDefinition[])
-      .at(asset.tokenAddress);
+    const feeContract = new web3.eth.Contract(
+      ERC1155,
+      asset.tokenAddress
+    ) as unknown as ERC1155Abi;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const params = await promisifyCall<any[]>((c) =>
-      feeContract.transferSettings(asset.tokenId, { from: accountAddress }, c)
-    );
+    const params = await feeContract.methods
+      .transferSettings(asset.tokenId as string)
+      .call({ from: accountAddress });
     if (params) {
       transferFee = makeBigNumber(params[3]);
-      if (params[2] == 0) {
+      if (params[2] === "0") {
         transferFeeTokenAddress = ENJIN_COIN_ADDRESS;
       }
     }
@@ -868,7 +857,9 @@ export function estimateCurrentPrice(
     exactPrice = exactPrice.times(+takerRelayerFee / INVERSE_BASIS_POINT + 1);
   }
 
-  return shouldRoundUp ? exactPrice.ceil() : exactPrice;
+  return shouldRoundUp
+    ? exactPrice.integerValue(BigNumber.ROUND_CEIL)
+    : exactPrice;
 }
 
 /**
@@ -1019,7 +1010,7 @@ export function validateAndFormatWalletAddress(
   if (!address) {
     throw new Error("No wallet address found");
   }
-  if (!web3.isAddress(address)) {
+  if (!web3.utils.isAddress(address)) {
     throw new Error("Invalid wallet address");
   }
   if (address == NULL_ADDRESS) {
@@ -1041,22 +1032,18 @@ export function onDeprecated(msg: string) {
  * @param erc721Contract contract to check
  */
 export async function getNonCompliantApprovalAddress(
-  erc721Contract: Web3.ContractInstance,
+  erc721Contract: Contract,
   tokenId: string,
   _accountAddress: string
 ): Promise<string | undefined> {
-  const results = await Promise.all([
+  const results = await Promise.allSettled([
     // CRYPTOKITTIES check
-    promisifyCall<string>((c) =>
-      erc721Contract.kittyIndexToApproved.call(tokenId, c)
-    ),
+    erc721Contract.methods.kittyIndexToApproved(tokenId).call(),
     // Etherbots check
-    promisifyCall<string>((c) =>
-      erc721Contract.partIndexToApproved.call(tokenId, c)
-    ),
+    erc721Contract.methods.partIndexToApproved(tokenId).call(),
   ]);
 
-  return _.compact(results)[0];
+  return _.compact(results)[0].status;
 }
 
 export const merkleValidatorByNetwork = {
