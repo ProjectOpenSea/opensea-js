@@ -3953,6 +3953,19 @@ export class OpenSeaPort {
       // Later, this will expire closer to the listingTime
       expirationTimestamp =
         expirationTimestamp + ORDER_MATCHING_LATENCY_SECONDS;
+
+      // The minimum expiration time has to be at least fifteen minutes from now
+      const minEnglishAuctionListingTimestamp =
+        minListingTimestamp + MIN_EXPIRATION_MINUTES * 60;
+
+      if (
+        !isMatchingOrder &&
+        listingTimestamp < minEnglishAuctionListingTimestamp
+      ) {
+        throw new Error(
+          `Expiration time must be at least ${MIN_EXPIRATION_MINUTES} minutes from now`
+        );
+      }
     } else {
       // Small offset to account for latency
       listingTimestamp =
