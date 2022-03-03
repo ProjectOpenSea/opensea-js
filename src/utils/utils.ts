@@ -117,20 +117,34 @@ export const annotateERC20TransferABI = (
 
 const txCallbacks: { [key: string]: TxnCallback[] } = {};
 
+class PromisifyExistingPromiseError extends Error {
+  public constructor() {
+    super(`Function to promisify was already a promise`);
+  }
+}
+
 /**
  * Promisify a callback-syntax web3 function
  * @param inner callback function that accepts a Web3 callback function and passes
  * it to the Web3 function
  */
-async function promisify<T>(inner: (fn: Web3Callback<T>) => void) {
-  return new Promise<T>((resolve, reject) =>
-    inner((err, res) => {
+async function promisify<T>(
+  inner: (fn: Web3Callback<T>) => unknown,
+  disallowFnToReturnPromise = false
+) {
+  return new Promise<T>((resolve, reject) => {
+    const possibleResult = inner((err, res) => {
       if (err) {
         reject(err);
       }
       resolve(res);
-    })
-  );
+    });
+
+    // We should immediately reject if the fn itself is a promise
+    if (disallowFnToReturnPromise && possibleResult instanceof Promise) {
+      reject(new PromisifyExistingPromiseError());
+    }
+  });
 }
 
 /**
@@ -504,39 +518,46 @@ export const orderToJSON = (order: Order): OrderJSON => {
   return asJSON;
 };
 
-/**
- * Sign messages using web3 personal signatures
- * @param web3 Web3 instance
- * @param message message to sign
- * @param signerAddress web3 address signing the message
- * @returns A signature if provider can sign, otherwise null
- */
-export async function personalSignAsync(
+export const jsonRpcSend = async (
   web3: Web3,
-  message: string,
+  method: string,
+  params: unknown[] = [],
   signerAddress: string
-): Promise<ECSignature> {
-  const signature = await promisify<JsonRpcResponse | undefined>((c) =>
-    (web3.currentProvider as HttpProvider).send(
-      {
-        method: "personal_sign",
-        params: [message, signerAddress],
-        from: signerAddress,
-        id: new Date().getTime(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-      c
-    )
-  );
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const error = (signature as any).error;
-  if (error) {
-    throw new Error(error);
+) => {
+  const id = new Date().getTime();
+  try {
+    return await promisify<JsonRpcResponse | undefined>(
+      (c) =>
+        (web3.currentProvider as HttpProvider).send(
+          {
+            method,
+            params,
+            from: signerAddress,
+            id,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any,
+          c
+        ),
+      true
+    );
+  } catch {
+    return await promisify<JsonRpcResponse | undefined>(
+      (c) =>
+        // @ts-expect-error Fall back to sendAsync as not all providers support send properly
+        (web3.currentProvider as HttpProvider).sendAsync(
+          {
+            method,
+            params,
+            from: signerAddress,
+            id,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any,
+          c
+        ),
+      true
+    );
   }
-
-  return parseSignatureHex(signature?.result);
-}
+};
 
 /**
  * Sign messages using web3 signTypedData signatures
@@ -553,32 +574,20 @@ export async function signTypedDataAsync(
   let signature: JsonRpcResponse | undefined;
   try {
     // Using sign typed data V4 works with a stringified message, used by browser providers i.e. Metamask
-    signature = await promisify<JsonRpcResponse | undefined>((c) =>
-      (web3.currentProvider as HttpProvider).send(
-        {
-          method: "eth_signTypedData_v4",
-          params: [signerAddress, JSON.stringify(message)],
-          from: signerAddress,
-          id: new Date().getTime(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        c
-      )
+    signature = await jsonRpcSend(
+      web3,
+      "eth_signTypedData_v4",
+      [signerAddress, JSON.stringify(message)],
+      signerAddress
     );
   } catch {
     // Fallback to normal sign typed data for node providers, without using stringified message
     // https://github.com/coinbase/coinbase-wallet-sdk/issues/60
-    signature = await promisify<JsonRpcResponse | undefined>((c) =>
-      (web3.currentProvider as HttpProvider).send(
-        {
-          method: "eth_signTypedData",
-          params: [signerAddress, message],
-          from: signerAddress,
-          id: new Date().getTime(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        c
-      )
+    signature = await jsonRpcSend(
+      web3,
+      "eth_signTypedData",
+      [signerAddress, message],
+      signerAddress
     );
   }
 

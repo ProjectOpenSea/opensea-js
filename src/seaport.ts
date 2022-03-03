@@ -131,7 +131,6 @@ import {
   merkleValidatorByNetwork,
   onDeprecated,
   orderToJSON,
-  personalSignAsync,
   rawCall,
   sendRawTransaction,
   signTypedDataAsync,
@@ -4355,19 +4354,6 @@ export class OpenSeaPort {
     });
 
     try {
-      // 2.2 Sign order flow
-      if (
-        order.exchange ===
-          wyvern2_2ConfigByNetwork[this._networkName]
-            .wyvernExchangeContractAddress &&
-        order.hash
-      ) {
-        const message = order.hash;
-
-        return await personalSignAsync(this.web3, message, signerAddress);
-      }
-
-      // 2.3 Sign order flow using EIP-712
       const signerOrderNonce = await this.getNonce(signerAddress);
 
       // We need to manually specify each field because OS orders can contain unrelated data
