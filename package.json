@@ -39,7 +39,7 @@
     "isomorphic-unfetch": "^2.1.1",
     "lodash": "^4.17.21",
     "query-string": "^6.11.1",
-    "web3": "1.7.0",
+    "web3": "1.7.1",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#7823dfdf5a272ebbc6a46e66d23563a9d6cc1be2",
     "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#0a8d569931ddb6faa6e96f5a60fa2f83f0a8750e"
   },
