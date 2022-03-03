@@ -1062,7 +1062,7 @@ export const wyvern2_2ConfigByNetwork = {
   [Network.Rinkeby]: {
     wyvernExchangeContractAddress: "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9",
     wyvernProxyRegistryContractAddress:
-      "0xf57b2c51ded3a29e6891aba85459d600256cf317",
+      "0x1e525eeaf261ca41b809884cbde9dd9e1619573a",
     wyvernTokenTransferProxyContractAddress:
       "0x82d102457854c985221249f86659c9d6cf12aa72",
   },
