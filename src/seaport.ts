@@ -1793,7 +1793,7 @@ export class OpenSeaPort {
     },
     retries = 1
   ): Promise<boolean> {
-    const schema = this._getSchema(asset.schemaName);
+    const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = quantity
       ? WyvernProtocol.toBaseUnitAmount(
           makeBigNumber(quantity),
@@ -1858,7 +1858,7 @@ export class OpenSeaPort {
     asset: Asset;
     quantity?: number | BigNumber;
   }): Promise<string> {
-    const schema = this._getSchema(asset.schemaName);
+    const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = WyvernProtocol.toBaseUnitAmount(
       makeBigNumber(quantity),
       asset.decimals || 0
@@ -1877,7 +1877,7 @@ export class OpenSeaPort {
         ));
 
     const abi =
-      asset.schemaName === WyvernSchemaName.ERC20
+      this._getSchemaName(asset) === WyvernSchemaName.ERC20
         ? annotateERC20TransferABI(wyAsset as WyvernFTAsset)
         : isOldNFT
         ? annotateERC721TransferABI(wyAsset as WyvernNFTAsset)
@@ -1936,9 +1936,11 @@ export class OpenSeaPort {
   }): Promise<string> {
     toAddress = validateAndFormatWalletAddress(this.web3, toAddress);
 
-    const schemaNames = assets.map((asset) => asset.schemaName || schemaName);
+    const schemaNames = assets.map(
+      (asset) => this._getSchemaName(asset) || schemaName
+    );
     const wyAssets = assets.map((asset) =>
-      getWyvernAsset(this._getSchema(asset.schemaName), asset)
+      getWyvernAsset(this._getSchema(this._getSchemaName(asset)), asset)
     );
 
     const { calldata, target } = encodeAtomicizedTransfer(
@@ -2051,7 +2053,7 @@ export class OpenSeaPort {
     { accountAddress, asset }: { accountAddress: string; asset: Asset },
     retries = 1
   ): Promise<BigNumber> {
-    const schema = this._getSchema(asset.schemaName);
+    const schema = this._getSchema(this._getSchemaName(asset));
     const wyAsset = getWyvernAsset(schema, asset);
 
     if (schema.functions.countOf) {
@@ -2404,9 +2406,11 @@ export class OpenSeaPort {
     toAddress: string;
     schemaName?: WyvernSchemaName;
   }): Promise<number> {
-    const schemaNames = assets.map((asset) => asset.schemaName || schemaName);
+    const schemaNames = assets.map(
+      (asset) => this._getSchemaName(asset) || schemaName
+    );
     const wyAssets = assets.map((asset) =>
-      getWyvernAsset(this._getSchema(asset.schemaName), asset)
+      getWyvernAsset(this._getSchema(this._getSchemaName(asset)), asset)
     );
 
     const proxyAddress = await this._getProxy(fromAddress);
@@ -2581,7 +2585,7 @@ export class OpenSeaPort {
     referrerAddress?: string;
   }): Promise<UnhashedOrder> {
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
-    const schema = this._getSchema(asset.schemaName);
+    const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = WyvernProtocol.toBaseUnitAmount(
       makeBigNumber(quantity),
       asset.decimals || 0
@@ -2708,7 +2712,7 @@ export class OpenSeaPort {
     buyerAddress: string;
   }): Promise<UnhashedOrder> {
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
-    const schema = this._getSchema(asset.schemaName);
+    const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = WyvernProtocol.toBaseUnitAmount(
       makeBigNumber(quantity),
       asset.decimals || 0
@@ -4424,6 +4428,14 @@ export class OpenSeaPort {
       });
       throw error;
     }
+  }
+
+  private _getSchemaName(asset: Asset | OpenSeaAsset) {
+    if ("assetContract" in asset) {
+      return asset.assetContract.schemaName;
+    }
+
+    return asset.schemaName;
   }
 
   private _getSchema(schemaName?: WyvernSchemaName): Schema<WyvernAsset> {
