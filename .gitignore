@@ -63,7 +63,7 @@ typings/
 # next.js build output
 .next
 
-lib
+# lib
 
 docs
 
