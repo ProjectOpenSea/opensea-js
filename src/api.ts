@@ -228,8 +228,6 @@ export class OpenSeaAPI {
   /**
    * Fetch list of assets from the API, returning the page of assets and the count of total assets
    * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
-   * @param page Page number, defaults to 1. Can be overridden by the
-   * `limit` attribute from OpenSeaAssetQuery
    */
   public async getAssets(
     query: OpenSeaAssetQuery = {}
