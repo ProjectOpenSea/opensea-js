@@ -232,7 +232,7 @@ export class OpenSeaAPI {
   public async getAssets(
     query: OpenSeaAssetQuery = {}
   ): Promise<{ assets: OpenSeaAsset[]; estimatedCount: number; next: string | undefined; previous: string | undefined }> {
-    const json = await this.get<{ estimated_count: number; assets: unknown[] }>(
+    const json = await this.get<{ estimated_count: number; assets: unknown[]; next: string | undefined; previous: string | undefined; }>(
       `${API_PATH}/assets/`,
       {
         limit: this.pageSize,
