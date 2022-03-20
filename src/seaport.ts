@@ -909,10 +909,8 @@ export class OpenSeaPort {
       paymentTokenAddress: paymentTokenAddress || NULL_ADDRESS,
       extraBountyBasisPoints,
       buyerAddress: buyerAddress || NULL_ADDRESS,
-    });
-  
+    }); 
     await this._sellOrderValidationAndApprovals({ order, accountAddress });
- 
     if (buyerEmail) {
       await this._createEmailWhitelistEntry({ order, buyerEmail });
     }
@@ -2727,8 +2725,7 @@ export class OpenSeaPort {
       makeBigNumber(quantity),
       asset.decimals || 0
     );
-    const wyAsset = getWyvernAsset(schema, asset, quantityBN);
-    
+    const wyAsset = getWyvernAsset(schema, asset, quantityBN);   
     const openSeaAsset = await this.api.getAsset(asset);
 
     const {
