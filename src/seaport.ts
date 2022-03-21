@@ -1451,20 +1451,18 @@ export class OpenSeaPort {
 
     const approvalOneCheck = async () => {
       // Note: approvedAddr will be 'undefined' if not supported
-      let approvedAddr: string | undefined = await Promise.resolve(
-        (tokenContract as ERC721v3Abi).methods.getApproved(tokenId).call()
-      )
-        .then((result) => {
-          if (typeof approvedAddr === "string" && approvedAddr == "0x") {
-            // Geth compatibility
-            return undefined;
-          }
-          return result;
-        })
-        .catch((error) => {
-          console.error(error);
-          return undefined;
-        });
+      let approvedAddr: string | undefined;
+      try {
+        approvedAddr = await (tokenContract as ERC721v3Abi).methods
+          .getApproved(tokenId)
+          .call();
+        if (typeof approvedAddr === "string" && approvedAddr == "0x") {
+          // Geth compatibility
+          approvedAddr = undefined;
+        }
+      } catch (error) {
+        console.error(error);
+      }
 
       if (approvedAddr == proxyAddress) {
         this.logger("Already approved proxy for this token");
