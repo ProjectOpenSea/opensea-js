@@ -2268,8 +2268,6 @@ export class OpenSeaPort {
     try {
       return await this._getClientsForRead({
         retries,
-        wyvernProtocol: this._wyvernProtocol,
-        wyvernProtocolReadOnly: this._wyvernProtocolReadOnly,
       })
         .wyvernProtocol.wyvernExchange.atomicMatch_(
           [
@@ -3299,7 +3297,6 @@ export class OpenSeaPort {
       const canMatch = await requireOrdersCanMatch(
         this._getClientsForRead({
           retries,
-          wyvernProtocol: this._wyvernProtocol,
         }).wyvernProtocol,
         { buy, sell, accountAddress }
       );
@@ -3308,7 +3305,6 @@ export class OpenSeaPort {
       const calldataCanMatch = await requireOrderCalldataCanMatch(
         this._getClientsForRead({
           retries,
-          wyvernProtocolReadOnly: this._wyvernProtocolReadOnly,
         }).wyvernProtocol,
         { buy, sell }
       );
