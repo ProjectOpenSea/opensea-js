@@ -910,9 +910,7 @@ export class OpenSeaPort {
       extraBountyBasisPoints,
       buyerAddress: buyerAddress || NULL_ADDRESS,
     });
-
     await this._sellOrderValidationAndApprovals({ order, accountAddress });
-
     if (buyerEmail) {
       await this._createEmailWhitelistEntry({ order, buyerEmail });
     }
@@ -1452,12 +1450,19 @@ export class OpenSeaPort {
     this.logger("Contract does not support Approve All");
 
     const approvalOneCheck = async () => {
-      // Note: approvedAddr will be '0x' if not supported
-      let approvedAddr: string | undefined = await (
-        tokenContract as ERC721v3Abi
-      ).methods
-        .getApproved(tokenId)
-        .call();
+      // Note: approvedAddr will be 'undefined' if not supported
+      let approvedAddr: string | undefined;
+      try {
+        approvedAddr = await (tokenContract as ERC721v3Abi).methods
+          .getApproved(tokenId)
+          .call();
+        if (typeof approvedAddr === "string" && approvedAddr == "0x") {
+          // Geth compatibility
+          approvedAddr = undefined;
+        }
+      } catch (error) {
+        console.error(error);
+      }
 
       if (approvedAddr == proxyAddress) {
         this.logger("Already approved proxy for this token");
@@ -2718,7 +2723,6 @@ export class OpenSeaPort {
       asset.decimals || 0
     );
     const wyAsset = getWyvernAsset(schema, asset, quantityBN);
-
     const openSeaAsset = await this.api.getAsset(asset);
 
     const {
