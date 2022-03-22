@@ -37,7 +37,6 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Creating Bundles](#creating-bundles)
   - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
   - [Private Auctions](#private-auctions)
-  - [Sharing Sale Fees with OpenSea](#sharing-sale-fees-with-opensea)
   - [Listening to Events](#listening-to-events)
 - [Learning More](#learning-more)
   - [Example Code](#example-code)
@@ -579,14 +578,6 @@ const listing = await seaport.createSellOrder({
   buyerAddress
 })
 ```
-
-### Sharing Sale Fees with OpenSea
-
-We share fees for successful sales with game developers, relayers, and affiliates using the OpenSea orderbook. Developers can customize the fee amount to apply to buyers and/or sellers.
-
-See [Affiliate Program](#affiliate-program) above for how to register referrers for sales.
-
-More information will appear here when our redesigned affiliate program is ready. In the meantime, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)), or use our legacy affiliate program at https://opensea.io/account#referrals.
 
 ### Listening to Events
 
