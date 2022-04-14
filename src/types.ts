@@ -43,6 +43,7 @@ export enum EventType {
   ApproveAsset = "ApproveAsset",
   ApproveAllAssets = "ApproveAllAssets",
   UnapproveCurrency = "UnapproveCurrency",
+  UnapproveAsset = "UnapproveAsset",
 
   // Basic actions: matching orders, creating orders, and cancelling orders
   MatchOrders = "MatchOrders",

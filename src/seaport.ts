@@ -1408,45 +1408,12 @@ export class OpenSeaPort {
     // Does not support ApproveAll (ERC721 v1 or v2)
     this.logger("Contract does not support Approve All");
 
-    const approvalOneCheck = async () => {
-      // Note: approvedAddr will be 'undefined' if not supported
-      let approvedAddr: string | undefined;
-      try {
-        approvedAddr = await (tokenContract as ERC721v3Abi).methods
-          .getApproved(tokenId)
-          .call();
-        if (typeof approvedAddr === "string" && approvedAddr == "0x") {
-          // Geth compatibility
-          approvedAddr = undefined;
-        }
-      } catch (error) {
-        console.error(error);
-      }
-
-      if (approvedAddr == proxyAddress) {
-        this.logger("Already approved proxy for this token");
-        return true;
-      }
-      this.logger(`Approve response: ${approvedAddr}`);
-
-      // SPECIAL CASING non-compliant contracts
-      if (!approvedAddr) {
-        approvedAddr = await getNonCompliantApprovalAddress(
-          // @ts-expect-error This is an actual contract instance
-          tokenContract,
-          tokenId,
-          accountAddress
-        );
-        if (approvedAddr == proxyAddress) {
-          this.logger("Already approved proxy for this item");
-          return true;
-        }
-        this.logger(`Special-case approve response: ${approvedAddr}`);
-      }
-      return false;
-    };
-
-    const isApprovedForOne = await approvalOneCheck();
+    const isApprovedForOne = await this._approvalOneCheck({
+      accountAddress,
+      proxyAddress,
+      tokenContract,
+      tokenId,
+    });
     if (isApprovedForOne) {
       return null;
     }
@@ -1481,7 +1448,13 @@ export class OpenSeaPort {
         txHash,
         EventType.ApproveAsset,
         "Approving single token for trading",
-        approvalOneCheck
+        async () => await this._approvalOneCheck({
+          accountAddress,
+          // TODO: need to handle this type error
+          proxyAddress,
+          tokenContract,
+          tokenId,
+        })
       );
       return txHash;
     } catch (error) {
@@ -1582,6 +1555,67 @@ export class OpenSeaPort {
         });
         return newlyApprovedAmount.isGreaterThanOrEqualTo(minimumAmount);
       }
+    );
+    return txHash;
+  }
+
+  /**
+   * Un-approve a semi or non fungible token for use in trades.
+   * Called internally, but exposed for dev flexibility.
+   * @param accountAddress The user's wallet address
+   * @param tokenAddress The contract address of the token being un-approved
+   * @param tokenId Token id to un-approve
+   * @param proxyAddress The user's proxy address. If unspecified, uses the Wyvern token transfer proxy address.
+   * @returns Transaction hash
+   */
+  public async unapproveSemiOrNonFungibleToken({
+    accountAddress,
+    tokenAddress,
+    tokenId,
+    proxyAddress,
+    tokenAbi = ERC721,
+  }: {
+    accountAddress: string;
+    tokenAddress: string;
+    tokenId: string;
+    proxyAddress?: string;
+    tokenAbi?: PartialReadonlyContractAbi;
+  }): Promise<string> {
+    proxyAddress =
+      proxyAddress ||
+      this._wyvernConfigOverride?.wyvernTokenTransferProxyContractAddress ||
+      WyvernProtocol.getTokenTransferProxyAddress(this._networkName);
+
+    const tokenContract = new this.web3.eth.Contract(
+      tokenAbi,
+      tokenAddress
+    ) as unknown as ERC721v3Abi | ERC1155Abi;
+
+    const txHash = await sendRawTransaction(
+      this.web3,
+      {
+        from: accountAddress,
+        to: tokenContract.options.address,
+        data: tokenContract.methods
+          .approve(proxyAddress, 0)
+          .encodeABI(),
+      },
+      (error) => {
+        this._dispatch(EventType.TransactionDenied, { error, accountAddress });
+      }
+    );
+
+    await this._confirmTransaction(
+      txHash,
+      EventType.UnapproveAsset,
+      "Resetting Asset Approval",
+      async () => await this._approvalOneCheck({
+        accountAddress,
+        // TODO: need to handle this type error
+        proxyAddress,
+        tokenContract,
+        tokenId,
+      })
     );
     return txHash;
   }
@@ -4365,6 +4399,53 @@ export class OpenSeaPort {
   private _dispatch(event: EventType, data: EventData) {
     this._emitter.emit(event, data);
   }
+  private async _approvalOneCheck({
+    accountAddress,
+    tokenContract,
+    tokenId,
+    proxyAddress,
+  } : {
+    tokenContract: ERC721v3Abi | ERC1155Abi;
+    tokenId: string;
+    accountAddress: string;
+    proxyAddress: string;
+  }) {
+    // Note: approvedAddr will be 'undefined' if not supported
+    let approvedAddr: string | undefined;
+    try {
+      approvedAddr = await (tokenContract as ERC721v3Abi).methods
+        .getApproved(tokenId)
+        .call();
+      if (typeof approvedAddr === "string" && approvedAddr == "0x") {
+        // Geth compatibility
+        approvedAddr = undefined;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    if (approvedAddr == proxyAddress) {
+      this.logger("Already approved proxy for this token");
+      return true;
+    }
+    this.logger(`Approve response: ${approvedAddr}`);
+
+    // SPECIAL CASING non-compliant contracts
+    if (!approvedAddr) {
+      approvedAddr = await getNonCompliantApprovalAddress(
+        // @ts-expect-error This is an actual contract instance
+        tokenContract,
+        tokenId,
+        accountAddress
+      );
+      if (approvedAddr == proxyAddress) {
+        this.logger("Already approved proxy for this item");
+        return true;
+      }
+      this.logger(`Special-case approve response: ${approvedAddr}`);
+    }
+    return false;
+  };
 
   /**
    * Get the clients to use for a read call
