@@ -2026,6 +2026,7 @@ export class OpenSeaPort {
       const abi = schema.functions.countOf(wyAsset);
       const contract = new (this._getClientsForRead({
         retries,
+        useReadOnlyProvider: true,
       }).web3.eth.Contract)([abi], abi.target);
       const inputValues = abi.inputs
         .filter((x) => x.value !== undefined)
@@ -2045,6 +2046,7 @@ export class OpenSeaPort {
       const abi = schema.functions.ownerOf(wyAsset);
       const contract = new (this._getClientsForRead({
         retries,
+        useReadOnlyProvider: true,
       }).web3.eth.Contract)([abi], abi.target);
 
       if (abi.inputs.filter((x) => x.value === undefined)[0]) {
@@ -4369,14 +4371,19 @@ export class OpenSeaPort {
   /**
    * Get the clients to use for a read call
    * @param retries current retry value
-   * @param wyvernProtocol optional wyvern protocol to use, has default
-   * @param wyvernProtocol optional readonly wyvern protocol to use, has default
+   * @param useReadOnlyProvider optional flag to use read only provider, defaults to false
    */
-  private _getClientsForRead({ retries }: { retries: number }): {
+  private _getClientsForRead({
+    retries,
+    useReadOnlyProvider = false,
+  }: {
+    retries: number;
+    useReadOnlyProvider?: boolean;
+  }): {
     web3: Web3;
     wyvernProtocol: WyvernProtocol;
   } {
-    if (retries > 0) {
+    if (retries > 0 && !useReadOnlyProvider) {
       // Use injected provider by default
       return {
         web3: this.web3,
