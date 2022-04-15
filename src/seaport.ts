@@ -3630,29 +3630,12 @@ export class OpenSeaPort {
     const tokenAddress = order.paymentToken;
 
     if (tokenAddress != NULL_ADDRESS) {
-      const balance = await this.getTokenBalance({
-        accountAddress,
-        tokenAddress,
-      });
-
       /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
       let minimumAmount = makeBigNumber(order.basePrice);
       if (counterOrder) {
         minimumAmount = await this._getRequiredAmountForTakingSellOrder(
           counterOrder
         );
-      }
-
-      // Check WETH balance
-      if (balance.toNumber() < minimumAmount.toNumber()) {
-        if (
-          tokenAddress ==
-          WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address
-        ) {
-          throw new Error("Insufficient balance. You may need to wrap Ether.");
-        } else {
-          throw new Error("Insufficient balance.");
-        }
       }
 
       // Check token approval
