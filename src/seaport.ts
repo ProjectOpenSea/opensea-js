@@ -4341,11 +4341,13 @@ export class OpenSeaPort {
   }
 
   private _getSchemaName(asset: Asset | OpenSeaAsset) {
-    if ("assetContract" in asset) {
+    if (asset.schemaName) {
+      return asset.schemaName;
+    } else if ("assetContract" in asset) {
       return asset.assetContract.schemaName;
     }
 
-    return asset.schemaName;
+    return undefined;
   }
 
   private _getSchema(schemaName?: WyvernSchemaName): Schema<WyvernAsset> {
