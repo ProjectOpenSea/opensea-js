@@ -651,7 +651,6 @@ export class OpenSeaPort {
 
   /**
    * Create a buy order to make an offer on a bundle or group of assets.
-   * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
    * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
    * @param param0 __namedParameters Object
    * @param assets Array of Asset objects to bid on
@@ -734,7 +733,6 @@ export class OpenSeaPort {
 
   /**
    * Create a buy order to make an offer on an asset.
-   * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
    * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
    * @param param0 __namedParameters Object
    * @param asset The asset to trade
