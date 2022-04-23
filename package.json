@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "abi-type-gen": "yarn run typechain --target=web3-v1 src/abi/*.json --out-dir=src/typechain/contracts",
-    "build": "yarn abi-type-gen && tsc",
+    "build": "yarn abi-type-gen && tsc -p ts-config-build.json",
     "check-types": "tsc --noEmit --project tsconfig.json",
     "coverage-report": "nyc report --reporter=text-lcov | coveralls",
     "docs-build": "typedoc --out docs src/index.ts",
