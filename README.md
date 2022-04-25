@@ -58,7 +58,7 @@ Happy seafaring! ⛵️
 
 ## Installation
 
-We recommend switching to Node.js version 16 to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
+Switching to Node.js version 16 is required for SDK Version 3.0+ and to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
 
 Then, in your project, run:
 
