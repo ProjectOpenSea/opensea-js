@@ -1051,23 +1051,6 @@ export const merkleValidatorByNetwork = {
   [Network.Rinkeby]: MERKLE_VALIDATOR_RINKEBY,
 };
 
-export const wyvern2_2ConfigByNetwork = {
-  [Network.Main]: {
-    wyvernExchangeContractAddress: "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b",
-    wyvernProxyRegistryContractAddress:
-      "0xa5409ec958c83c3f309868babaca7c86dcb077c1",
-    wyvernTokenTransferProxyContractAddress:
-      "0xe5c783ee536cf5e63e792988335c4255169be4e1",
-  },
-  [Network.Rinkeby]: {
-    wyvernExchangeContractAddress: "0x5206e78b21ce315ce284fb24cf05e0585a93b1d9",
-    wyvernProxyRegistryContractAddress:
-      "0xf57b2c51ded3a29e6891aba85459d600256cf317",
-    wyvernTokenTransferProxyContractAddress:
-      "0x82d102457854c985221249f86659c9d6cf12aa72",
-  },
-} as const;
-
 /**
  * The longest time that an order is valid for is six months from the current date
  * @returns unix timestamp
