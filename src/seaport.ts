@@ -547,7 +547,7 @@ export class OpenSeaPort {
 
     // Convert desired WNFT to wei
     const amount = WyvernProtocol.toBaseUnitAmount(
-      makeBigNumber(numTokens),
+      makeBigNumber(numTokens) as any,
       Number(wrappedNFT.methods.decimals().call())
     );
 
@@ -585,9 +585,9 @@ export class OpenSeaPort {
     const token = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther;
 
     const amount = WyvernProtocol.toBaseUnitAmount(
-      makeBigNumber(amountInEth),
+      makeBigNumber(amountInEth) as any,
       token.decimals
-    );
+    ) as any;
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount });
 
@@ -624,9 +624,9 @@ export class OpenSeaPort {
     const token = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther;
 
     const amount = WyvernProtocol.toBaseUnitAmount(
-      makeBigNumber(amountInEth),
+      makeBigNumber(amountInEth) as any,
       token.decimals
-    );
+    ) as any;
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
 
@@ -1508,7 +1508,7 @@ export class OpenSeaPort {
     accountAddress,
     tokenAddress,
     proxyAddress,
-    minimumAmount = WyvernProtocol.MAX_UINT_256,
+    minimumAmount = WyvernProtocol.MAX_UINT_256 as any,
   }: {
     accountAddress: string;
     tokenAddress: string;
@@ -1761,10 +1761,10 @@ export class OpenSeaPort {
     const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = quantity
       ? WyvernProtocol.toBaseUnitAmount(
-          makeBigNumber(quantity),
+          makeBigNumber(quantity) as any,
           asset.decimals || 0
         )
-      : makeBigNumber(1);
+      : (makeBigNumber(1) as any);
     const wyAsset = getWyvernAsset(schema, asset, quantityBN);
     const abi = schema.functions.transfer(wyAsset);
 
@@ -1825,9 +1825,9 @@ export class OpenSeaPort {
   }): Promise<string> {
     const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = WyvernProtocol.toBaseUnitAmount(
-      makeBigNumber(quantity),
+      makeBigNumber(quantity) as any,
       asset.decimals || 0
-    );
+    ) as any;
     const wyAsset = getWyvernAsset(schema, asset, quantityBN);
     const isCryptoKitties = [CK_ADDRESS, CK_RINKEBY_ADDRESS].includes(
       wyAsset.address
@@ -2257,7 +2257,7 @@ export class OpenSeaPort {
     }: { buy: Order; sell: Order; accountAddress: string; metadata?: string },
     retries = 1
   ): Promise<number | undefined> {
-    let value: BigNumber | undefined;
+    let value: any | BigNumber | undefined;
     if (
       buy.maker.toLowerCase() == accountAddress.toLowerCase() &&
       buy.paymentToken == NULL_ADDRESS
@@ -2536,9 +2536,9 @@ export class OpenSeaPort {
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
     const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = WyvernProtocol.toBaseUnitAmount(
-      makeBigNumber(quantity),
+      makeBigNumber(quantity) as any,
       asset.decimals || 0
-    );
+    ) as any;
     const wyAsset = getWyvernAsset(schema, asset, quantityBN);
 
     const openSeaAsset: OpenSeaAsset = await this.api.getAsset(asset);
@@ -2564,7 +2564,7 @@ export class OpenSeaPort {
       totalBuyerFeeBasisPoints,
       totalSellerFeeBasisPoints,
       sellOrder
-    );
+    ) as any;
 
     const { target, calldata, replacementPattern } = encodeBuy(
       schema,
@@ -2575,12 +2575,12 @@ export class OpenSeaPort {
         : merkleValidatorByNetwork[this._networkName]
     );
 
-    const { basePrice, extra, paymentToken } = await this._getPriceParameters(
+    const { basePrice, extra, paymentToken } = (await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
       expirationTime,
       startAmount
-    );
+    )) as any;
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
     });
@@ -2620,8 +2620,8 @@ export class OpenSeaPort {
       paymentToken,
       basePrice,
       extra,
-      listingTime: times.listingTime,
-      expirationTime: times.expirationTime,
+      listingTime: times.listingTime as any,
+      expirationTime: times.expirationTime as any,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         asset: wyAsset,
@@ -2661,9 +2661,9 @@ export class OpenSeaPort {
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
     const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = WyvernProtocol.toBaseUnitAmount(
-      makeBigNumber(quantity),
+      makeBigNumber(quantity) as any,
       asset.decimals || 0
-    );
+    ) as any;
     const wyAsset = getWyvernAsset(schema, asset, quantityBN);
     const openSeaAsset = await this.api.getAsset(asset);
 
@@ -2692,7 +2692,7 @@ export class OpenSeaPort {
         : SaleKind.FixedPrice;
 
     const { basePrice, extra, paymentToken, reservePrice } =
-      await this._getPriceParameters(
+      (await this._getPriceParameters(
         OrderSide.Sell,
         paymentTokenAddress,
         expirationTime,
@@ -2700,7 +2700,7 @@ export class OpenSeaPort {
         endAmount,
         waitForHighestBid,
         englishAuctionReservePrice
-      );
+      )) as any;
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
       listingTimestamp: listingTime,
@@ -2720,7 +2720,7 @@ export class OpenSeaPort {
       totalSellerFeeBasisPoints,
       waitForHighestBid,
       sellerBountyBasisPoints
-    );
+    ) as any;
 
     const { staticTarget, staticExtradata } =
       await this._getStaticCallTargetAndExtraData({
@@ -2734,7 +2734,7 @@ export class OpenSeaPort {
         WyvernProtocol.getExchangeContractAddress(this._networkName),
       maker: accountAddress,
       taker: buyerAddress,
-      quantity: quantityBN,
+      quantity: quantityBN as any,
       makerRelayerFee,
       takerRelayerFee,
       makerProtocolFee,
@@ -2742,7 +2742,7 @@ export class OpenSeaPort {
       makerReferrerFee,
       waitingForBestCounterOrder: waitForHighestBid,
       englishAuctionReservePrice: reservePrice
-        ? makeBigNumber(reservePrice)
+        ? makeBigNumber(reservePrice as any)
         : undefined,
       feeMethod,
       feeRecipient,
@@ -2760,8 +2760,8 @@ export class OpenSeaPort {
       paymentToken,
       basePrice,
       extra,
-      listingTime: times.listingTime,
-      expirationTime: times.expirationTime,
+      listingTime: times.listingTime as any,
+      expirationTime: times.expirationTime as any,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         asset: wyAsset,
@@ -2895,10 +2895,10 @@ export class OpenSeaPort {
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
     const quantityBNs = quantities.map((quantity, i) =>
       WyvernProtocol.toBaseUnitAmount(
-        makeBigNumber(quantity),
+        makeBigNumber(quantity) as any,
         assets[i].decimals || 0
       )
-    );
+    ) as any;
     const bundle = getWyvernBundle(
       assets,
       assets.map((a) => this._getSchema(a.schemaName)),
@@ -2929,7 +2929,7 @@ export class OpenSeaPort {
       totalBuyerFeeBasisPoints,
       totalSellerFeeBasisPoints,
       sellOrder
-    );
+    ) as any;
 
     const { calldata, replacementPattern } = encodeAtomicizedBuy(
       orderedSchemas,
@@ -2939,12 +2939,12 @@ export class OpenSeaPort {
       this._networkName
     );
 
-    const { basePrice, extra, paymentToken } = await this._getPriceParameters(
+    const { basePrice, extra, paymentToken } = (await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
       expirationTime,
       startAmount
-    );
+    )) as any;
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
     });
@@ -2975,8 +2975,8 @@ export class OpenSeaPort {
       paymentToken,
       basePrice,
       extra,
-      listingTime: times.listingTime,
-      expirationTime: times.expirationTime,
+      listingTime: times.listingTime as any,
+      expirationTime: times.expirationTime as any,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle,
@@ -3023,10 +3023,10 @@ export class OpenSeaPort {
     accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
     const quantityBNs = quantities.map((quantity, i) =>
       WyvernProtocol.toBaseUnitAmount(
-        makeBigNumber(quantity),
+        makeBigNumber(quantity) as any,
         assets[i].decimals || 0
       )
-    );
+    ) as any;
     const bundle = getWyvernBundle(
       assets,
       assets.map((a) => this._getSchema(a.schemaName)),
@@ -3058,7 +3058,7 @@ export class OpenSeaPort {
     );
 
     const { basePrice, extra, paymentToken, reservePrice } =
-      await this._getPriceParameters(
+      (await this._getPriceParameters(
         OrderSide.Sell,
         paymentTokenAddress,
         expirationTime,
@@ -3066,7 +3066,7 @@ export class OpenSeaPort {
         endAmount,
         waitForHighestBid,
         englishAuctionReservePrice
-      );
+      )) as any;
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
       listingTimestamp: listingTime,
@@ -3090,7 +3090,7 @@ export class OpenSeaPort {
       totalSellerFeeBasisPoints,
       waitForHighestBid,
       sellerBountyBasisPoints
-    );
+    ) as any;
 
     return {
       exchange:
@@ -3121,8 +3121,8 @@ export class OpenSeaPort {
       paymentToken,
       basePrice,
       extra,
-      listingTime: times.listingTime,
-      expirationTime: times.expirationTime,
+      listingTime: times.listingTime as any,
+      expirationTime: times.expirationTime as any,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: {
         bundle,
@@ -3235,9 +3235,9 @@ export class OpenSeaPort {
       staticExtradata: "0x",
       paymentToken: order.paymentToken,
       basePrice: order.basePrice,
-      extra: makeBigNumber(0),
-      listingTime: times.listingTime,
-      expirationTime: times.expirationTime,
+      extra: makeBigNumber(0) as any,
+      listingTime: times.listingTime as any,
+      expirationTime: times.expirationTime as any,
       salt: WyvernProtocol.generatePseudoRandomSalt(),
       metadata: order.metadata,
     };
@@ -3374,7 +3374,7 @@ export class OpenSeaPort {
     // need to approve access to fungible token because of the way fees are paid
     // This can be done at a higher level to show UI
     if (tokenAddress != NULL_ADDRESS) {
-      const minimumAmount = makeBigNumber(order.basePrice);
+      const minimumAmount = makeBigNumber(order.basePrice as any);
       const tokenTransferProxyAddress =
         this._wyvernConfigOverride?.wyvernTokenTransferProxyContractAddress ||
         WyvernProtocol.getTokenTransferProxyAddress(this._networkName);
@@ -3631,7 +3631,7 @@ export class OpenSeaPort {
 
     if (tokenAddress != NULL_ADDRESS) {
       /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
-      let minimumAmount = makeBigNumber(order.basePrice);
+      let minimumAmount = makeBigNumber(order.basePrice as any) as any;
       if (counterOrder) {
         minimumAmount = await this._getRequiredAmountForTakingSellOrder(
           counterOrder
@@ -3756,11 +3756,11 @@ export class OpenSeaPort {
       // Swap maker/taker depending on whether it's an English auction (taker)
       // TODO add extraBountyBasisPoints when making bidder bounties
       makerRelayerFee = sellOrder.waitingForBestCounterOrder
-        ? makeBigNumber(sellOrder.makerRelayerFee)
-        : makeBigNumber(sellOrder.takerRelayerFee);
+        ? makeBigNumber(sellOrder.makerRelayerFee as any)
+        : makeBigNumber(sellOrder.takerRelayerFee as any);
       takerRelayerFee = sellOrder.waitingForBestCounterOrder
-        ? makeBigNumber(sellOrder.takerRelayerFee)
-        : makeBigNumber(sellOrder.makerRelayerFee);
+        ? makeBigNumber(sellOrder.takerRelayerFee as any)
+        : makeBigNumber(sellOrder.makerRelayerFee as any);
     } else {
       makerRelayerFee = makeBigNumber(totalBuyerFeeBasisPoints);
       takerRelayerFee = makeBigNumber(totalSellerFeeBasisPoints);
@@ -3994,7 +3994,7 @@ export class OpenSeaPort {
           this.web3.utils.toWei(startAmount.toString(), "ether")
         ).integerValue()
       : WyvernProtocol.toBaseUnitAmount(
-          makeBigNumber(startAmount),
+          makeBigNumber(startAmount) as any,
           token.decimals
         );
 
@@ -4003,7 +4003,7 @@ export class OpenSeaPort {
           this.web3.utils.toWei(priceDiff.toString(), "ether")
         ).integerValue()
       : WyvernProtocol.toBaseUnitAmount(
-          makeBigNumber(priceDiff),
+          makeBigNumber(priceDiff) as any,
           token.decimals
         );
 
@@ -4016,7 +4016,7 @@ export class OpenSeaPort {
             )
           ).integerValue()
         : WyvernProtocol.toBaseUnitAmount(
-            makeBigNumber(englishAuctionReservePrice),
+            makeBigNumber(englishAuctionReservePrice) as any,
             token.decimals
           )
       : undefined;
@@ -4108,7 +4108,7 @@ export class OpenSeaPort {
         sell.paymentToken,
       ],
       [
-        buy.makerRelayerFee,
+        buy.makerRelayerFee as any,
         buy.takerRelayerFee,
         buy.makerProtocolFee,
         buy.takerProtocolFee,
@@ -4159,15 +4159,15 @@ export class OpenSeaPort {
       const gasEstimate = await this._wyvernProtocolReadOnly.wyvernExchange
         .atomicMatch_(
           args[0],
-          args[1],
-          args[2],
+          args[1] as any,
+          args[2] as any,
           args[3],
           args[4],
           args[5],
           args[6],
           args[7],
           args[8],
-          args[9],
+          args[9] as any,
           args[10]
         )
         .estimateGasAsync(txnData);
@@ -4190,15 +4190,15 @@ export class OpenSeaPort {
       txHash = await this._wyvernProtocol.wyvernExchange
         .atomicMatch_(
           args[0],
-          args[1],
-          args[2],
+          args[1] as any,
+          args[2] as any,
           args[3],
           args[4],
           args[5],
           args[6],
           args[7],
           args[8],
-          args[9],
+          args[9] as any,
           args[10]
         )
         .sendTransactionAsync(txnData);
@@ -4231,7 +4231,7 @@ export class OpenSeaPort {
     const maxPrice = BigNumber.max(currentPrice, estimatedPrice);
 
     // TODO Why is this not always a big number?
-    sell.takerRelayerFee = makeBigNumber(sell.takerRelayerFee);
+    sell.takerRelayerFee = makeBigNumber(sell.takerRelayerFee as any) as any;
     const feePercentage = sell.takerRelayerFee.div(INVERSE_BASIS_POINT);
     const fee = feePercentage.times(maxPrice);
     return fee.plus(maxPrice).integerValue(BigNumber.ROUND_CEIL);

@@ -410,10 +410,10 @@ export const orderFromJSON = (order: any): Order => {
     // Use string address to conform to Wyvern Order schema
     maker: order.maker.address,
     taker: order.taker.address,
-    makerRelayerFee: new BigNumber(order.maker_relayer_fee),
-    takerRelayerFee: new BigNumber(order.taker_relayer_fee),
-    makerProtocolFee: new BigNumber(order.maker_protocol_fee),
-    takerProtocolFee: new BigNumber(order.taker_protocol_fee),
+    makerRelayerFee: new BigNumber(order.maker_relayer_fee) as any,
+    takerRelayerFee: new BigNumber(order.taker_relayer_fee) as any,
+    makerProtocolFee: new BigNumber(order.maker_protocol_fee) as any,
+    takerProtocolFee: new BigNumber(order.taker_protocol_fee) as any,
     makerReferrerFee: new BigNumber(order.maker_referrer_fee || 0),
     waitingForBestCounterOrder: order.fee_recipient.address == NULL_ADDRESS,
     feeMethod: order.fee_method,
@@ -428,16 +428,16 @@ export const orderFromJSON = (order: any): Order => {
     staticTarget: order.static_target,
     staticExtradata: order.static_extradata,
     paymentToken: order.payment_token,
-    basePrice: new BigNumber(order.base_price),
-    extra: new BigNumber(order.extra),
+    basePrice: new BigNumber(order.base_price) as any,
+    extra: new BigNumber(order.extra) as any,
     currentBounty: new BigNumber(order.current_bounty || 0),
     currentPrice: new BigNumber(order.current_price || 0),
 
     createdTime: new BigNumber(Math.round(createdDate.getTime() / 1000)),
-    listingTime: new BigNumber(order.listing_time),
-    expirationTime: new BigNumber(order.expiration_time),
+    listingTime: new BigNumber(order.listing_time) as any,
+    expirationTime: new BigNumber(order.expiration_time) as any,
 
-    salt: new BigNumber(order.salt),
+    salt: new BigNumber(order.salt) as any,
     v: parseInt(order.v),
     r: order.r,
     s: order.s,
@@ -452,7 +452,7 @@ export const orderFromJSON = (order: any): Order => {
   };
 
   // Use client-side price calc, to account for buyer fee (not added by server) and latency
-  fromJSON.currentPrice = estimateCurrentPrice(fromJSON);
+  fromJSON.currentPrice = estimateCurrentPrice(fromJSON) as any;
 
   return fromJSON;
 };
@@ -829,10 +829,10 @@ export function estimateCurrentPrice(
   const now = new BigNumber(Math.round(Date.now() / 1000)).minus(
     secondsToBacktrack
   );
-  basePrice = new BigNumber(basePrice);
-  listingTime = new BigNumber(listingTime);
-  expirationTime = new BigNumber(expirationTime);
-  extra = new BigNumber(extra);
+  basePrice = new BigNumber(basePrice) as any;
+  listingTime = new BigNumber(listingTime) as any;
+  expirationTime = new BigNumber(expirationTime) as any;
+  extra = new BigNumber(extra) as any;
 
   let exactPrice = basePrice;
 
