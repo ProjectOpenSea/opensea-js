@@ -78,12 +78,12 @@ export declare class OpenSeaAPI {
     /**
      * Fetch list of assets from the API, returning the page of assets and the count of total assets
      * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
-     * @param page Page number, defaults to 1. Can be overridden by
-     * `limit` and `offset` attributes from OpenSeaAssetQuery
      */
-    getAssets(query?: OpenSeaAssetQuery, page?: number): Promise<{
+    getAssets(query?: OpenSeaAssetQuery): Promise<{
         assets: OpenSeaAsset[];
         estimatedCount: number;
+        next: string | undefined;
+        previous: string | undefined;
     }>;
     /**
      * Fetch list of fungible tokens from the API matching parameters

@@ -1,7 +1,6 @@
 import { BigNumber } from "bignumber.js";
 import { EventSubscription } from "fbemitter";
 import Web3 from "web3";
-import { WyvernProtocol } from "wyvern-js";
 import { OpenSeaAPI } from "./api";
 import { Asset, ComputedFees, ECSignature, EventData, EventType, FeeMethod, OpenSeaAPIConfig, OpenSeaAsset, OpenSeaFungibleToken, Order, OrderSide, PartialReadonlyContractAbi, UnhashedOrder, UnsignedOrder, WyvernAsset, WyvernSchemaName } from "./types";
 export declare class OpenSeaPort {
@@ -14,8 +13,6 @@ export declare class OpenSeaPort {
     private _networkName;
     private _wyvernProtocol;
     private _wyvernProtocolReadOnly;
-    private _wyvern2_2Protocol;
-    private _wyvern2_2ProtocolReadOnly;
     private _wyvernConfigOverride?;
     private _emitter;
     private _wrappedNFTFactoryAddress;
@@ -31,7 +28,6 @@ export declare class OpenSeaPort {
      *  information
      */
     constructor(provider: Web3["currentProvider"], apiConfig?: OpenSeaAPIConfig, logger?: (arg: string) => void);
-    private _getOrderCreateWyvernExchangeAddress;
     /**
      * Add a listener to a marketplace event
      * @param event An event to listen for
@@ -142,7 +138,6 @@ export declare class OpenSeaPort {
     }): Promise<void>;
     /**
      * Create a buy order to make an offer on a bundle or group of assets.
-     * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
      * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
      * @param param0 __namedParameters Object
      * @param assets Array of Asset objects to bid on
@@ -170,7 +165,6 @@ export declare class OpenSeaPort {
     }): Promise<Order>;
     /**
      * Create a buy order to make an offer on an asset.
-     * Will throw an 'Insufficient balance' error if the maker doesn't have enough W-ETH to make the offer.
      * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
      * @param param0 __namedParameters Object
      * @param asset The asset to trade
@@ -587,7 +581,7 @@ export declare class OpenSeaPort {
      * @param retries Optional number of retries to do
      * @param wyvernProtocol optional wyvern protocol override
      */
-    _getProxy(accountAddress: string, retries?: number, wyvernProtocol?: WyvernProtocol): Promise<string | null>;
+    _getProxy(accountAddress: string, retries?: number): Promise<string | null>;
     /**
      * Initialize the proxy for a user's wallet.
      * Proxies are used to make trades on behalf of the order's maker so that
@@ -596,7 +590,7 @@ export declare class OpenSeaPort {
      * @param accountAddress The user's wallet address
      * @param wyvernProtocol optional wyvern protocol override
      */
-    _initializeProxy(accountAddress: string, wyvernProtocol?: WyvernProtocol): Promise<string>;
+    _initializeProxy(accountAddress: string): Promise<string>;
     /**
      * For a fungible token to use in trades (like W-ETH), get the amount
      *  approved for use by the Wyvern transfer proxy.
@@ -715,12 +709,11 @@ export declare class OpenSeaPort {
      */
     approveOrder(order: UnsignedOrder): Promise<string>;
     _validateOrder(order: Order): Promise<boolean>;
-    _approveAll({ schemaNames, wyAssets, accountAddress, proxyAddress, wyvernProtocol, }: {
+    _approveAll({ schemaNames, wyAssets, accountAddress, proxyAddress, }: {
         schemaNames: WyvernSchemaName[];
         wyAssets: WyvernAsset[];
         accountAddress: string;
         proxyAddress?: string;
-        wyvernProtocol?: WyvernProtocol;
     }): Promise<(string | null)[]>;
     _buyOrderValidationAndApprovals({ order, counterOrder, accountAddress, }: {
         order: UnhashedOrder;
@@ -798,6 +791,7 @@ export declare class OpenSeaPort {
     authorizeOrder(order: UnsignedOrder): Promise<(ECSignature & {
         nonce?: number;
     }) | null>;
+    private _getSchemaName;
     private _getSchema;
     private _dispatch;
     /**
@@ -809,8 +803,6 @@ export declare class OpenSeaPort {
     private _getClientsForRead;
     private _confirmTransaction;
     private _pollCallbackForConfirmation;
-    private _getWyvernProtocolForOrder;
-    private _getWyvernTokenTransferProxyAddressForOrder;
     /**
      * Returns whether or not an authenticated proxy is revoked for a specific account address
      * @param accountAddress

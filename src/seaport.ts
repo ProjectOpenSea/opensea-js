@@ -194,14 +194,17 @@ export class OpenSeaPort {
       : this.web3;
 
     // WyvernJS config
-    this._wyvernProtocol = new WyvernProtocol(provider as Web3JsProvider, {
-      network: this._networkName,
-      ...apiConfig.wyvernConfig,
-    });
+    this._wyvernProtocol = new WyvernProtocol(
+      provider as unknown as Web3JsProvider,
+      {
+        network: this._networkName,
+        ...apiConfig.wyvernConfig,
+      }
+    );
 
     // WyvernJS config for readonly (optimization for infura calls)
     this._wyvernProtocolReadOnly = useReadOnlyProvider
-      ? new WyvernProtocol(readonlyProvider as Web3JsProvider, {
+      ? new WyvernProtocol(readonlyProvider as unknown as Web3JsProvider, {
           network: this._networkName,
           ...apiConfig.wyvernConfig,
         })
