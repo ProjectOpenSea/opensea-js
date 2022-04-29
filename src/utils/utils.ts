@@ -1058,8 +1058,8 @@ export const merkleValidatorByNetwork = {
 export const getMaxOrderExpirationTimestamp = () => {
   const maxExpirationDate = new Date();
 
-  maxExpirationDate.setDate(
-    maxExpirationDate.getDate() + MAX_EXPIRATION_MONTHS
+  maxExpirationDate.setMonth(
+    maxExpirationDate.getMonth() + MAX_EXPIRATION_MONTHS
   );
 
   return Math.round(maxExpirationDate.getTime() / 1000);
