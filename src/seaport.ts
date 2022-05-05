@@ -84,6 +84,7 @@ import {
   EventData,
   EventType,
   FeeMethod,
+  GasOptions,
   HowToCall,
   Network,
   OpenSeaAPIConfig,
@@ -1163,11 +1164,13 @@ export class OpenSeaPort {
     accountAddress,
     recipientAddress,
     referrerAddress,
+    gasOptions,
   }: {
     order: Order;
     accountAddress: string;
     recipientAddress?: string;
     referrerAddress?: string;
+    gasOptions?: GasOptions;
   }): Promise<string> {
     const matchingOrder = this._makeMatchingOrder({
       order,
@@ -1183,6 +1186,7 @@ export class OpenSeaPort {
       sell,
       accountAddress,
       metadata,
+      gasOptions,
     });
 
     await this._confirmTransaction(
@@ -2236,6 +2240,25 @@ export class OpenSeaPort {
   public _correctGasAmount(estimation: number): number {
     return Math.ceil(estimation * this.gasIncreaseFactor);
   }
+
+  /**
+   * Add EIP-1559 gas options to a transaction object
+   * @param gasOptions The optional txn params for tipping
+   */
+  
+   public _addGasParams(
+       txnData: any, 
+       gasOptions?: GasOptions
+   ): any {
+       if(gasOptions && gasOptions.maxFeePerGas){
+           txnData.maxFeePerGas = gasOptions.maxFeePerGas;
+       }
+       if(gasOptions && gasOptions.maxPriorityFeePerGas){
+           txnData.maxPriorityFeePerGas = gasOptions.maxPriorityFeePerGas;
+       }
+       return txnData;
+   }
+
 
   /**
    * Estimate the gas needed to match two orders. Returns undefined if tx errors
@@ -4035,11 +4058,13 @@ export class OpenSeaPort {
     sell,
     accountAddress,
     metadata = NULL_BLOCK_HASH,
+    gasOptions,
   }: {
     buy: Order;
     sell: Order;
     accountAddress: string;
     metadata?: string;
+    gasOptions?: GasOptions ;
   }) {
     let value;
     let shouldValidateBuy = true;
@@ -4087,7 +4112,9 @@ export class OpenSeaPort {
 
     let txHash;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const txnData: any = { from: accountAddress, value };
+        //set EIP-1559 gas options if they exist
+    const txnData: any = this._addGasParams({ from: accountAddress, value }, gasOptions);
+    
     const args: WyvernAtomicMatchParameters = [
       [
         buy.exchange,
