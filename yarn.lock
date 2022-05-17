@@ -6293,7 +6293,7 @@ web3-utils@1.7.0:
     randombytes "^2.1.0"
     utf8 "3.0.0"
 
-web3@1.7.0, web3@^1.7.0:
+web3@1.7.0:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/web3/-/web3-1.7.0.tgz#5867cd10a2bebb5c33fc218368e3f6f826f6897e"
   integrity sha512-n39O7QQNkpsjhiHMJ/6JY6TaLbdX+2FT5iGs8tb3HbIWOhPm4+a7UDbr5Lkm+gLa9aRKWesZs5D5hWyEvg4aJA==
@@ -6431,9 +6431,9 @@ ws@^3.0.0:
     safe-buffer "~5.1.0"
     ultron "~1.1.0"
 
-"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#7823dfdf5a272ebbc6a46e66d23563a9d6cc1be2":
+"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#josh/remove-web3-dep":
   version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#7823dfdf5a272ebbc6a46e66d23563a9d6cc1be2"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#50727408c3d0d200ed9477133ea2fb5a702b5cef"
   dependencies:
     "@0x/assert" "^3.0.30"
     "@0x/base-contract" "^6.4.4"
@@ -6447,33 +6447,14 @@ ws@^3.0.0:
     json-loader "^0.5.7"
     jsonschema "^1.2.2"
     lodash "^4.17.21"
-    web3 "^1.7.0"
 
-"wyvern-js@git+https://github.com/ProjectOpenSea/wyvern-js.git#f7704ad2571f05136f9a42735966dcd3f1485474":
-  version "3.2.0"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-js.git#f7704ad2571f05136f9a42735966dcd3f1485474"
-  dependencies:
-    "@0x/assert" "^3.0.30"
-    "@0x/base-contract" "^6.4.4"
-    "@0x/json-schemas" "^6.4.0"
-    "@0x/utils" "https://github.com/ProjectOpensea/0x-tools/raw/provider-patch/utils/0x-utils-6.5.0.tgz"
-    "@0x/web3-wrapper" "^7.6.1"
-    bn.js "^4.11.8"
-    ethereumjs-abi "https://github.com/ProjectWyvern/ethereumjs-abi.git"
-    ethereumjs-util "^5.1.3"
-    ethers "^4.0.49"
-    json-loader "^0.5.7"
-    jsonschema "^1.2.2"
-    lodash "^4.17.21"
-    web3 "^1.7.0"
-
-"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#0a8d569931ddb6faa6e96f5a60fa2f83f0a8750e":
+"wyvern-schemas@git+https://github.com/ProjectOpenSea/wyvern-schemas.git#josh/remove-web3-dep":
   version "0.14.1"
-  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#0a8d569931ddb6faa6e96f5a60fa2f83f0a8750e"
+  resolved "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#2bbb1b79054d74b47fe5b11954f04629d0baeef2"
   dependencies:
     "@0x/utils" "https://github.com/ProjectOpensea/0x-tools/raw/provider-patch/utils/0x-utils-6.5.0.tgz"
     axios "^0.17.1"
-    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#f7704ad2571f05136f9a42735966dcd3f1485474"
+    wyvern-js "git+https://github.com/ProjectOpenSea/wyvern-js.git#josh/remove-web3-dep"
 
 xhr-request-promise@^0.1.2:
   version "0.1.3"
