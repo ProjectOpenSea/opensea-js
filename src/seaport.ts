@@ -1,6 +1,11 @@
 import { BigNumber } from "bignumber.js";
+import { Consideration } from "consideration-js";
+// TODO: Export Network enum from consideration-js
+import { Network as ConsiderationNetwork } from "consideration-js/lib/constants";
+import { OrderComponents } from "consideration-js/lib/types";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
+import { providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import Web3 from "web3";
@@ -69,6 +74,8 @@ import {
   requireOrderCalldataCanMatch,
   requireOrdersCanMatch,
 } from "./debugging";
+import { CONSIDERATION_ADDRESS, WYVERN_ADDRESS } from "./orders/constants";
+import { OrderV2 } from "./orders/types";
 import { CheezeWizardsBasicTournamentAbi } from "./typechain/contracts/CheezeWizardsBasicTournamentAbi";
 import { DecentralandEstatesAbi } from "./typechain/contracts/DecentralandEstatesAbi";
 import { ERC1155Abi } from "./typechain/contracts/ERC1155Abi";
@@ -142,6 +149,10 @@ export class OpenSeaPort {
   // Web3 instance to use
   public web3: Web3;
   public web3ReadOnly: Web3;
+  // Ethers provider
+  public ethersProvider: providers.Web3Provider;
+  // Consideration client
+  public consideration: Consideration;
   // Logger function to use when debugging
   public logger: (arg: string) => void;
   // API instance on this seaport
@@ -192,6 +203,17 @@ export class OpenSeaPort {
     this.web3ReadOnly = useReadOnlyProvider
       ? new Web3(readonlyProvider)
       : this.web3;
+
+    // Ethers Config
+    this.ethersProvider = new providers.Web3Provider(
+      provider as providers.ExternalProvider
+    );
+    this.consideration = new Consideration(this.ethersProvider, {
+      network: ConsiderationNetwork.RINKEBY,
+      overrides: {
+        contractAddress: "0xe6909f026bea09f1c5b03acb43a065b9f3b71ca1",
+      },
+    });
 
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider as Web3JsProvider, {
@@ -1197,6 +1219,19 @@ export class OpenSeaPort {
     return transactionHash;
   }
 
+  private async cancelSeaportOrders({
+    orders,
+    accountAddress,
+  }: {
+    orders: OrderComponents[];
+    accountAddress: string;
+  }): Promise<string> {
+    const transaction = await this.consideration
+      .cancelOrders(orders, accountAddress)
+      .transact();
+    return transaction.hash;
+  }
+
   /**
    * Cancel an order on-chain, preventing it from ever being fulfilled.
    * @param param0 __namedParameters Object
@@ -1204,6 +1239,48 @@ export class OpenSeaPort {
    * @param accountAddress The order maker's wallet address
    */
   public async cancelOrder({
+    order,
+    accountAddress,
+  }: {
+    order: OrderV2;
+    accountAddress: string;
+  }) {
+    // this._dispatch(EventType.CancelOrder, { order, accountAddress });
+
+    // Transact and get the transaction hash
+    let transactionHash: string;
+    switch (order.protocolAddress) {
+      case WYVERN_ADDRESS:
+        throw new Error("Not implemented");
+      case CONSIDERATION_ADDRESS: {
+        transactionHash = await this.cancelSeaportOrders({
+          orders: [order.protocolData],
+          accountAddress,
+        });
+        break;
+      }
+      default:
+        throw new Error("Unknown protocol");
+    }
+
+    // Await transaction confirmation
+    await this._confirmTransaction(
+      transactionHash,
+      EventType.CancelOrder,
+      "Cancelling order",
+      async () => {
+        return true;
+      }
+    );
+  }
+
+  /**
+   * Cancel an order on-chain, preventing it from ever being fulfilled.
+   * @param param0 __namedParameters Object
+   * @param order The order to cancel
+   * @param accountAddress The order maker's wallet address
+   */
+  public async cancelOrderLegacyWyvern({
     order,
     accountAddress,
   }: {

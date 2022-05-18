@@ -33,8 +33,10 @@
   "types": "lib/index.d.ts",
   "dependencies": {
     "bignumber.js": "9.0.1",
+    "consideration-js": "git+https://github.com/ProjectOpenSea/consideration-js.git#befbdb4673e984ea27c8298c3f149edcebf146c1",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
     "ethereumjs-util": "^5.2.0",
+    "ethers": "^5.6.6",
     "fbemitter": "2.1.1",
     "isomorphic-unfetch": "^2.1.1",
     "lodash": "^4.17.21",
