@@ -1183,6 +1183,52 @@ export class OpenSeaPort {
   public async fulfillOrder({
     order,
     accountAddress,
+  }: {
+    order: OrderV2;
+    accountAddress: string;
+    recipientAddress?: string;
+    referrerAddress?: string;
+  }): Promise<string> {
+    let transactionHash: string;
+    switch (order.protocolAddress) {
+      case WYVERN_ADDRESS:
+        throw new Error("Not implemented");
+      case CONSIDERATION_ADDRESS: {
+        const { executeAllActions } = await this.consideration.fulfillOrder({
+          order: order.protocolData,
+          accountAddress,
+        });
+        const transaction = await executeAllActions();
+        transactionHash = transaction.hash;
+        break;
+      }
+      default:
+        throw new Error("Unknown protocol");
+    }
+
+    await this._confirmTransaction(
+      transactionHash,
+      EventType.MatchOrders,
+      "Fulfilling order",
+      async () => {
+        return true;
+      }
+    );
+    return transactionHash;
+  }
+
+  /**
+   * Fullfill or "take" an order for an asset, either a buy or sell order
+   * @param param0 __namedParamaters Object
+   * @param order The order to fulfill, a.k.a. "take"
+   * @param accountAddress The taker's wallet address
+   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
+   * @param referrerAddress The optional address that referred the order
+   * @returns Transaction hash for fulfilling the order
+   */
+  public async fulfillOrderLegacyWyvern({
+    order,
+    accountAddress,
     recipientAddress,
     referrerAddress,
   }: {
