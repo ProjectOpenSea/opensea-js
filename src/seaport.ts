@@ -1254,7 +1254,7 @@ export class OpenSeaPort {
         throw new Error("Not implemented");
       case CONSIDERATION_ADDRESS: {
         transactionHash = await this.cancelSeaportOrders({
-          orders: [order.protocolData],
+          orders: [order.protocolData.parameters],
           accountAddress,
         });
         break;
