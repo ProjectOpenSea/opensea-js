@@ -1,9 +1,8 @@
 import { BigNumber } from "bignumber.js";
-import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
+import { providers, Contract, utils } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
-import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
 import * as WyvernSchemas from "wyvern-schemas";
 import { Schema } from "wyvern-schemas/dist/types";
@@ -139,9 +138,9 @@ import {
 } from "./utils/utils";
 
 export class OpenSeaPort {
-  // Web3 instance to use
-  public web3: Web3;
-  public web3ReadOnly: Web3;
+  // providers
+  public provider: providers.JsonRpcProvider;
+  public providerReadOnly: providers.JsonRpcProvider;
   // Logger function to use when debugging
   public logger: (arg: string) => void;
   // API instance on this seaport
@@ -163,14 +162,14 @@ export class OpenSeaPort {
   /**
    * Your very own seaport.
    * Create a new instance of OpenSeaJS.
-   * @param provider Web3 Provider to use for transactions. For example:
-   *  `const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')`
+   * @param provider providers
+   *  `const provider = new providers
    * @param apiConfig configuration options, including `networkName`
    * @param logger logger, optional, a function that will be called with debugging
    *  information
    */
   constructor(
-    provider: Web3["currentProvider"],
+    provider: providers.JsonRpcProvider,
     apiConfig: OpenSeaAPIConfig = {},
     logger?: (arg: string) => void
   ) {
@@ -181,27 +180,25 @@ export class OpenSeaPort {
 
     this._networkName = apiConfig.networkName;
 
-    const readonlyProvider = new Web3.providers.HttpProvider(
+    const readonlyProvider = new providers.JsonRpcProvider(
       `${this.api.apiBaseUrl}/${RPC_URL_PATH}`
     );
 
     const useReadOnlyProvider = apiConfig.useReadOnlyProvider ?? true;
 
-    // Web3 Config
-    this.web3 = new Web3(provider);
-    this.web3ReadOnly = useReadOnlyProvider
-      ? new Web3(readonlyProvider)
-      : this.web3;
+    // providers
+    this.provider = provider;
+    this.providerReadOnly = readonlyProvider;
 
     // WyvernJS config
-    this._wyvernProtocol = new WyvernProtocol(provider as Web3JsProvider, {
+    this._wyvernProtocol = new WyvernProtocol(provider, {
       network: this._networkName,
       ...apiConfig.wyvernConfig,
     });
 
     // WyvernJS config for readonly (optimization for infura calls)
     this._wyvernProtocolReadOnly = useReadOnlyProvider
-      ? new WyvernProtocol(readonlyProvider as Web3JsProvider, {
+      ? new WyvernProtocol(readonlyProvider, {
           network: this._networkName,
           ...apiConfig.wyvernConfig,
         })
@@ -293,7 +290,7 @@ export class OpenSeaPort {
     this._dispatch(EventType.WrapAssets, { assets: wyAssets, accountAddress });
 
     const txHash = await sendRawTransaction(
-      this.web3,
+      this.provider,
       {
         from: accountAddress,
         to: this._wrappedNFTLiquidationProxyAddress,
@@ -362,7 +359,7 @@ export class OpenSeaPort {
     });
 
     const txHash = await sendRawTransaction(
-      this.web3,
+      this.provider,
       {
         from: accountAddress,
         to: this._wrappedNFTLiquidationProxyAddress,
@@ -430,7 +427,7 @@ export class OpenSeaPort {
     });
 
     const txHash = await sendRawTransaction(
-      this.web3,
+      this.provider,
       {
         from: accountAddress,
         to: this._wrappedNFTLiquidationProxyAddress,
@@ -479,7 +476,7 @@ export class OpenSeaPort {
     });
 
     const txHash = await sendRawTransaction(
-      this.web3,
+      this.provider,
       {
         from: accountAddress,
         to: this._wrappedNFTLiquidationProxyAddress,
@@ -518,28 +515,28 @@ export class OpenSeaPort {
     contractAddress: string;
   }) {
     // Get UniswapExchange for WrappedNFTContract for contractAddress
-    const wrappedNFTFactory = new this.web3.eth.Contract(
-      WrappedNFTFactory,
-      this._wrappedNFTFactoryAddress
+    const wrappedNFTFactory = new Contract(
+      this._wrappedNFTFactoryAddress,
+      WrappedNFTFactory as any
     ) as unknown as WrappedNFTFactoryAbi;
 
     const wrappedNFTAddress: string = await wrappedNFTFactory.methods
       .nftContractToWrapperContract(contractAddress)
       .call();
-    const wrappedNFT = new this.web3.eth.Contract(
-      WrappedNFT,
-      wrappedNFTAddress
+    const wrappedNFT = new Contract(
+      wrappedNFTAddress,
+      WrappedNFT as any
     ) as unknown as WrappedNFTAbi;
-    const uniswapFactory = new this.web3.eth.Contract(
-      UniswapFactory,
-      this._uniswapFactoryAddress
+    const uniswapFactory = new Contract(
+      this._uniswapFactoryAddress,
+      UniswapFactory as any
     ) as unknown as UniswapFactoryAbi;
     const uniswapExchangeAddress = await uniswapFactory.methods
       .getExchange(wrappedNFTAddress)
       .call();
-    const uniswapExchange = new this.web3.eth.Contract(
-      UniswapExchange,
-      uniswapExchangeAddress
+    const uniswapExchange = new Contract(
+      uniswapExchangeAddress,
+      UniswapExchange as any
     ) as unknown as UniswapExchangeAbi;
 
     // Convert desired WNFT to wei
@@ -589,7 +586,7 @@ export class OpenSeaPort {
     this._dispatch(EventType.WrapEth, { accountAddress, amount });
 
     const txHash = await sendRawTransaction(
-      this.web3,
+      this.provider,
       {
         from: accountAddress,
         to: token.address,
@@ -628,7 +625,7 @@ export class OpenSeaPort {
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
 
     const txHash = await sendRawTransaction(
-      this.web3,
+      this.provider,
       {
         from: accountAddress,
         to: token.address,
@@ -1317,9 +1314,9 @@ export class OpenSeaPort {
     schemaName?: WyvernSchemaName;
   }): Promise<string | null> {
     const schema = this._getSchema(schemaName);
-    const tokenContract = new this.web3.eth.Contract(
-      tokenAbi,
-      tokenAddress
+    const tokenContract = new Contract(
+      tokenAddress,
+      tokenAbi as any
     ) as unknown as ERC721v3Abi | ERC1155Abi;
 
     if (!proxyAddress) {
@@ -1332,7 +1329,7 @@ export class OpenSeaPort {
     const approvalAllCheck = async () => {
       // NOTE:
       // Use this long way of calling so we can check for method existence on a bool-returning method.
-      const isApprovedForAllRaw = await rawCall(this.web3ReadOnly, {
+      const isApprovedForAllRaw = await rawCall(this.providerReadOnly, {
         from: accountAddress,
         to: tokenContract.options.address,
         data: tokenContract.methods
@@ -1370,7 +1367,7 @@ export class OpenSeaPort {
         });
 
         const txHash = await sendRawTransaction(
-          this.web3,
+          this.provider,
           {
             from: accountAddress,
             to: tokenContract.options.address,
@@ -1459,7 +1456,7 @@ export class OpenSeaPort {
       });
 
       const txHash = await sendRawTransaction(
-        this.web3,
+        this.provider,
         {
           from: accountAddress,
           to: tokenContract.options.address,
@@ -1552,7 +1549,7 @@ export class OpenSeaPort {
     }
 
     const txHash = await sendRawTransaction(
-      this.web3,
+      this.provider,
       {
         from: accountAddress,
         to: tokenAddress,
@@ -1610,7 +1607,7 @@ export class OpenSeaPort {
       WyvernProtocol.getTokenTransferProxyAddress(this._networkName);
 
     const txHash = await sendRawTransaction(
-      this.web3,
+      this.provider,
       {
         from: accountAddress,
         to: tokenAddress,
@@ -1853,7 +1850,7 @@ export class OpenSeaPort {
 
     const data = encodeTransferCall(abi, fromAddress, toAddress);
     const txHash = await sendRawTransaction(
-      this.web3,
+      this.provider,
       {
         from: fromAddress,
         to: abi.target,
@@ -1896,7 +1893,7 @@ export class OpenSeaPort {
     toAddress: string;
     schemaName?: WyvernSchemaName;
   }): Promise<string> {
-    toAddress = validateAndFormatWalletAddress(this.web3, toAddress);
+    toAddress = validateAndFormatWalletAddress(this.provider, toAddress);
 
     const schemaNames = assets.map(
       (asset) => this._getSchemaName(asset) || schemaName
@@ -1933,7 +1930,7 @@ export class OpenSeaPort {
     });
 
     const txHash = await sendRawTransaction(
-      this.web3,
+      this.provider,
       {
         from: fromAddress,
         to: proxyAddress,
@@ -2022,9 +2019,10 @@ export class OpenSeaPort {
       // ERC20 or ERC1155 (non-Enjin)
 
       const abi = schema.functions.countOf(wyAsset);
-      const contract = new (this._getClientsForRead({
+      const { web3: provider } = this._getClientsForRead({
         retries,
-      }).web3.eth.Contract)([abi], abi.target);
+      });
+      const contract = new Contract(abi.target, [abi], provider);
       const inputValues = abi.inputs
         .filter((x) => x.value !== undefined)
         .map((x) => x.value);
@@ -2041,9 +2039,10 @@ export class OpenSeaPort {
       // ERC721 asset
 
       const abi = schema.functions.ownerOf(wyAsset);
-      const contract = new (this._getClientsForRead({
+      const { web3: provider } = this._getClientsForRead({
         retries,
-      }).web3.eth.Contract)([abi], abi.target);
+      });
+      const contract = new Contract(abi.target, [abi], provider);
 
       if (abi.inputs.filter((x) => x.value === undefined)[0]) {
         throw new Error(
@@ -2153,7 +2152,7 @@ export class OpenSeaPort {
 
       try {
         // web3 call to update it
-        const result = await getTransferFeeSettings(this.web3, {
+        const result = await getTransferFeeSettings(this.provider, {
           asset,
           accountAddress,
         });
@@ -2220,8 +2219,8 @@ export class OpenSeaPort {
    * Will be slightly above the mean to make it faster
    */
   public async _computeGasPrice(): Promise<BigNumber> {
-    const meanGas = await getCurrentGasPrice(this.web3);
-    const weiToAdd = this.web3.utils.toWei(
+    const meanGas = await getCurrentGasPrice(this.provider);
+    const weiToAdd = utils.formatUnits(
       this.gasPriceAddition.toString(),
       "gwei"
     );
@@ -2391,7 +2390,7 @@ export class OpenSeaPort {
       this._networkName
     );
 
-    return estimateGas(this.web3, {
+    return estimateGas(this.provider, {
       from: fromAddress,
       to: proxyAddress,
       data: encodeProxyCall(target, HowToCall.DelegateCall, calldata),
@@ -2499,7 +2498,7 @@ export class OpenSeaPort {
       proxyAddress ||
       this._wyvernConfigOverride?.wyvernTokenTransferProxyContractAddress ||
       WyvernProtocol.getTokenTransferProxyAddress(this._networkName);
-    const approved = await rawCall(this.web3, {
+    const approved = await rawCall(this.provider, {
       from: accountAddress,
       to: tokenAddress,
       data: encodeCall(getMethod(ERC20, "allowance"), [
@@ -2531,7 +2530,10 @@ export class OpenSeaPort {
     sellOrder?: UnhashedOrder;
     referrerAddress?: string;
   }): Promise<UnhashedOrder> {
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
+    accountAddress = validateAndFormatWalletAddress(
+      this.provider,
+      accountAddress
+    );
     const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = WyvernProtocol.toBaseUnitAmount(
       makeBigNumber(quantity),
@@ -2656,7 +2658,10 @@ export class OpenSeaPort {
     extraBountyBasisPoints: number;
     buyerAddress: string;
   }): Promise<UnhashedOrder> {
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
+    accountAddress = validateAndFormatWalletAddress(
+      this.provider,
+      accountAddress
+    );
     const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = WyvernProtocol.toBaseUnitAmount(
       makeBigNumber(quantity),
@@ -2799,11 +2804,11 @@ export class OpenSeaPort {
       const cheezeWizardsBasicTournamentAddress = isMainnet
         ? CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS
         : CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS;
-      const cheezeWizardsBasicTournamentInstance = new this.web3.eth.Contract(
-        CheezeWizardsBasicTournament,
-        cheezeWizardsBasicTournamentAddress
+      const cheezeWizardsBasicTournamentInstance = new Contract(
+        cheezeWizardsBasicTournamentAddress,
+        CheezeWizardsBasicTournament as any
       ) as unknown as CheezeWizardsBasicTournamentAbi;
-      const wizardFingerprint = await rawCall(this.web3, {
+      const wizardFingerprint = await rawCall(this.provider, {
         to: cheezeWizardsBasicTournamentInstance.options.address,
         data: cheezeWizardsBasicTournamentInstance.methods
           .wizardFingerprint(asset.tokenId as string)
@@ -2825,11 +2830,11 @@ export class OpenSeaPort {
       // We stated that we will only use Decentraland estates static
       // calls on mainnet, since Decentraland uses Ropsten
       const decentralandEstateAddress = DECENTRALAND_ESTATE_ADDRESS;
-      const decentralandEstateInstance = new this.web3.eth.Contract(
-        DecentralandEstates,
-        decentralandEstateAddress
+      const decentralandEstateInstance = new Contract(
+        decentralandEstateAddress,
+        DecentralandEstates as any
       ) as unknown as DecentralandEstatesAbi;
-      const estateFingerprint = await rawCall(this.web3, {
+      const estateFingerprint = await rawCall(this.provider, {
         to: decentralandEstateInstance.options.address,
         data: decentralandEstateInstance.methods
           .getFingerprint(asset.tokenId as string)
@@ -2890,7 +2895,10 @@ export class OpenSeaPort {
     sellOrder?: UnhashedOrder;
     referrerAddress?: string;
   }): Promise<UnhashedOrder> {
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
+    accountAddress = validateAndFormatWalletAddress(
+      this.provider,
+      accountAddress
+    );
     const quantityBNs = quantities.map((quantity, i) =>
       WyvernProtocol.toBaseUnitAmount(
         makeBigNumber(quantity),
@@ -3018,7 +3026,10 @@ export class OpenSeaPort {
     extraBountyBasisPoints: number;
     buyerAddress: string;
   }): Promise<UnhashedOrder> {
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
+    accountAddress = validateAndFormatWalletAddress(
+      this.provider,
+      accountAddress
+    );
     const quantityBNs = quantities.map((quantity, i) =>
       WyvernProtocol.toBaseUnitAmount(
         makeBigNumber(quantity),
@@ -3137,9 +3148,12 @@ export class OpenSeaPort {
     accountAddress: string;
     recipientAddress: string;
   }): UnsignedOrder {
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
+    accountAddress = validateAndFormatWalletAddress(
+      this.provider,
+      accountAddress
+    );
     recipientAddress = validateAndFormatWalletAddress(
-      this.web3,
+      this.provider,
       recipientAddress
     );
 
@@ -3989,7 +4003,7 @@ export class OpenSeaPort {
     // will fail if too many decimal places, so special-case ether
     const basePrice = isEther
       ? makeBigNumber(
-          this.web3.utils.toWei(startAmount.toString(), "ether")
+          utils.formatUnits(startAmount.toString(), "ether")
         ).integerValue()
       : WyvernProtocol.toBaseUnitAmount(
           makeBigNumber(startAmount),
@@ -3998,7 +4012,7 @@ export class OpenSeaPort {
 
     const extra = isEther
       ? makeBigNumber(
-          this.web3.utils.toWei(priceDiff.toString(), "ether")
+          utils.formatUnits(priceDiff.toString(), "ether")
         ).integerValue()
       : WyvernProtocol.toBaseUnitAmount(
           makeBigNumber(priceDiff),
@@ -4008,10 +4022,7 @@ export class OpenSeaPort {
     const reservePrice = englishAuctionReservePrice
       ? isEther
         ? makeBigNumber(
-            this.web3.utils.toWei(
-              englishAuctionReservePrice.toString(),
-              "ether"
-            )
+            utils.formatUnits(englishAuctionReservePrice.toString(), "ether")
           ).integerValue()
         : WyvernProtocol.toBaseUnitAmount(
             makeBigNumber(englishAuctionReservePrice),
@@ -4307,7 +4318,7 @@ export class OpenSeaPort {
       };
 
       const ecSignature = await signTypedDataAsync(
-        this.web3,
+        this.provider,
         message,
         signerAddress
       );
@@ -4356,19 +4367,19 @@ export class OpenSeaPort {
    * @param wyvernProtocol optional readonly wyvern protocol to use, has default
    */
   private _getClientsForRead({ retries }: { retries: number }): {
-    web3: Web3;
+    web3: providers.JsonRpcProvider;
     wyvernProtocol: WyvernProtocol;
   } {
     if (retries > 0) {
       // Use injected provider by default
       return {
-        web3: this.web3,
+        web3: this.provider,
         wyvernProtocol: this._wyvernProtocol,
       };
     } else {
       // Use provided provider as fallback
       return {
-        web3: this.web3ReadOnly,
+        web3: this.providerReadOnly,
         wyvernProtocol: this._wyvernProtocolReadOnly,
       };
     }
@@ -4404,7 +4415,7 @@ export class OpenSeaPort {
     // Normal wallet
     try {
       this._dispatch(EventType.TransactionCreated, transactionEventData);
-      await confirmTransaction(this.web3, transactionHash);
+      await confirmTransaction(this.provider, transactionHash);
       this.logger(`Transaction succeeded: ${description}`);
       this._dispatch(EventType.TransactionConfirmed, transactionEventData);
     } catch (error) {

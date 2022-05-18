@@ -1,11 +1,8 @@
 import BigNumber from "bignumber.js";
 import { AbiType, CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
+import { providers, Contract, utils } from "ethers";
 import * as _ from "lodash";
-import Web3 from "web3";
-import { JsonRpcResponse } from "web3-core-helpers/types";
-import { AbstractProvider } from "web3-core/types";
-import { Contract } from "web3-eth-contract";
 import { WyvernProtocol } from "wyvern-js";
 import {
   AnnotatedFunctionABI,
@@ -31,6 +28,7 @@ import {
   Asset,
   AssetEvent,
   ECSignature,
+  JsonRpcResponse,
   OpenSeaAccount,
   OpenSeaAsset,
   OpenSeaAssetBundle,
@@ -164,20 +162,24 @@ export async function promisifyCall<T>(
   }
 }
 
-const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
+const track = (
+  provider: providers.JsonRpcProvider,
+  txHash: string,
+  onFinalized: TxnCallback
+) => {
   if (txCallbacks[txHash]) {
     txCallbacks[txHash].push(onFinalized);
   } else {
     txCallbacks[txHash] = [onFinalized];
     const poll = async () => {
-      const tx = await web3.eth.getTransaction(txHash);
+      const tx = await provider.getTransaction(txHash);
       if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
-        const receipt = await web3.eth.getTransactionReceipt(txHash);
+        const receipt = await provider.getTransactionReceipt(txHash);
         if (!receipt) {
           // Hack: assume success if no receipt
           console.warn("No receipt found for ", txHash);
         }
-        const status = receipt.status;
+        const status = Boolean(receipt.status);
         txCallbacks[txHash].map((f) => f(status));
         delete txCallbacks[txHash];
       } else {
@@ -188,9 +190,12 @@ const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
   }
 };
 
-export const confirmTransaction = async (web3: Web3, txHash: string) => {
+export const confirmTransaction = async (
+  provider: providers.JsonRpcProvider,
+  txHash: string
+) => {
   return new Promise((resolve, reject) => {
-    track(web3, txHash, (didSucceed: boolean) => {
+    track(provider, txHash, (didSucceed: boolean) => {
       if (didSucceed) {
         resolve("Transaction complete!");
       } else {
@@ -512,22 +517,14 @@ export const orderToJSON = (order: Order): OrderJSON => {
  * @returns A signature if provider can sign, otherwise null
  */
 export async function personalSignAsync(
-  web3: Web3,
+  provider: providers.JsonRpcProvider,
   message: string,
   signerAddress: string
 ): Promise<ECSignature> {
-  const signature = await promisify<JsonRpcResponse | undefined>((c) =>
-    (web3.currentProvider as AbstractProvider).sendAsync(
-      {
-        method: "personal_sign",
-        params: [message, signerAddress],
-        from: signerAddress,
-        id: new Date().getTime(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-      c
-    )
-  );
+  const signature = await provider.send("personal_sign", [
+    message,
+    signerAddress,
+  ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const error = (signature as any).error;
@@ -546,40 +543,24 @@ export async function personalSignAsync(
  * @returns A signature if provider can sign, otherwise null
  */
 export async function signTypedDataAsync(
-  web3: Web3,
+  provider: providers.JsonRpcProvider,
   message: object,
   signerAddress: string
 ): Promise<ECSignature> {
   let signature: JsonRpcResponse | undefined;
   try {
     // Using sign typed data V4 works with a stringified message, used by browser providers i.e. Metamask
-    signature = await promisify<JsonRpcResponse | undefined>((c) =>
-      (web3.currentProvider as AbstractProvider).sendAsync(
-        {
-          method: "eth_signTypedData_v4",
-          params: [signerAddress, JSON.stringify(message)],
-          from: signerAddress,
-          id: new Date().getTime(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        c
-      )
-    );
+    signature = await provider.send("eth_signTypedData_v4", [
+      signerAddress,
+      JSON.stringify(message),
+    ]);
   } catch {
     // Fallback to normal sign typed data for node providers, without using stringified message
     // https://github.com/coinbase/coinbase-wallet-sdk/issues/60
-    signature = await promisify<JsonRpcResponse | undefined>((c) =>
-      (web3.currentProvider as AbstractProvider).sendAsync(
-        {
-          method: "eth_signTypedData",
-          params: [signerAddress, message],
-          from: signerAddress,
-          id: new Date().getTime(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        c
-      )
-    );
+    signature = await provider.send("eth_signTypedData", [
+      signerAddress,
+      message,
+    ]);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -597,10 +578,10 @@ export async function signTypedDataAsync(
  * @param address input address
  */
 export async function isContractAddress(
-  web3: Web3,
+  provider: providers.JsonRpcProvider,
   address: string
 ): Promise<boolean> {
-  const code = await web3.eth.getCode(address);
+  const code = await provider.getCode(address);
   return code !== "0x";
 }
 
@@ -630,30 +611,28 @@ export function makeBigNumber(arg: number | string | BigNumber): BigNumber {
  * @param onError callback when user denies transaction
  */
 export async function sendRawTransaction(
-  web3: Web3,
+  provider: providers.JsonRpcProvider,
   { from, to, data, gasPrice, value = 0, gas }: TxData,
   onError: (error: unknown) => void
 ): Promise<string> {
   if (gas == null) {
     // This gas cannot be increased due to an ethjs error
-    gas = await estimateGas(web3, { from, to, data, value });
+    gas = await estimateGas(provider, { from, to, data, value });
   }
 
   try {
-    const txHashRes = await promisify<string>((c) =>
-      web3.eth.sendTransaction(
-        {
-          from,
-          to,
-          value: value.toString(),
-          data,
-          gas: gas?.toString(),
-          gasPrice: gasPrice?.toString(),
-        },
-        c
-      )
-    );
-    return txHashRes;
+    const txHashRes = await provider.getSigner().sendTransaction({
+      from,
+      to,
+      value: value.toString(),
+      data,
+      gasLimit: gas?.toString(),
+      gasPrice: gasPrice?.toString(),
+    });
+    if (txHashRes.raw === undefined) {
+      throw new Error("Raw transaction result is undefined");
+    }
+    return txHashRes.raw;
   } catch (error) {
     onError(error);
     throw error;
@@ -671,12 +650,12 @@ export async function sendRawTransaction(
  * @param onError callback when user denies transaction
  */
 export async function rawCall(
-  web3: Web3,
+  provider: providers.JsonRpcProvider,
   { from, to, data }: CallData,
   onError?: (error: unknown) => void
 ): Promise<string> {
   try {
-    const result = await web3.eth.call({
+    const result = await provider.call({
       from,
       to,
       data,
@@ -701,26 +680,28 @@ export async function rawCall(
  * @param value value in ETH to send with data
  */
 export async function estimateGas(
-  web3: Web3,
+  provider: providers.JsonRpcProvider,
   { from, to, data, value = 0 }: TxData
 ): Promise<number> {
-  const amount = await web3.eth.estimateGas({
+  const amount = await provider.estimateGas({
     from,
     to,
     value: value.toString(),
     data,
   });
 
-  return amount;
+  return amount.toNumber();
 }
 
 /**
  * Get mean gas price for sending a txn, in wei
  * @param web3 Web3 instance
  */
-export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
-  const gasPrice = await web3.eth.getGasPrice();
-  return new BigNumber(gasPrice);
+export async function getCurrentGasPrice(
+  provider: providers.JsonRpcProvider
+): Promise<BigNumber> {
+  const gasPrice = await provider.getGasPrice();
+  return new BigNumber(gasPrice.toString());
 }
 
 /**
@@ -729,7 +710,7 @@ export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
  * @param asset The asset to check for transfer fees
  */
 export async function getTransferFeeSettings(
-  web3: Web3,
+  _provider: providers.JsonRpcProvider,
   {
     asset,
     accountAddress,
@@ -743,9 +724,9 @@ export async function getTransferFeeSettings(
 
   if (asset.tokenAddress.toLowerCase() == ENJIN_ADDRESS.toLowerCase()) {
     // Enjin asset
-    const feeContract = new web3.eth.Contract(
-      ERC1155,
-      asset.tokenAddress
+    const feeContract = new Contract(
+      asset.tokenAddress,
+      ERC1155 as any
     ) as unknown as ERC1155Abi;
 
     const params = await feeContract.methods
@@ -1004,13 +985,13 @@ export async function delay(ms: number) {
  * @param address input address
  */
 export function validateAndFormatWalletAddress(
-  web3: Web3,
+  _provider: providers.JsonRpcProvider,
   address: string
 ): string {
   if (!address) {
     throw new Error("No wallet address found");
   }
-  if (!web3.utils.isAddress(address)) {
+  if (!utils.isAddress(address)) {
     throw new Error("Invalid wallet address");
   }
   if (address == NULL_ADDRESS) {

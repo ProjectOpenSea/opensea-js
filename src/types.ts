@@ -722,3 +722,10 @@ export type Web3Callback<T> = (err: Error | null, result: T) => void;
 export type TxnCallback = (result: boolean) => void;
 
 export type PartialReadonlyContractAbi = AbiItem[];
+
+export interface JsonRpcResponse {
+  jsonrpc: string;
+  id: number;
+  result?: any;
+  error?: string;
+}
