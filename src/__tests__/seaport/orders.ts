@@ -388,7 +388,7 @@ suite("seaport: orders", () => {
     const now = Math.round(Date.now() / 1000);
     // Get bid from server
     const paymentTokenAddress = WETH_ADDRESS;
-    const { orders } = await rinkebyClient.api.getOrders({
+    const { orders } = await rinkebyClient.api.getOrdersLegacyWyvern({
       side: OrderSide.Buy,
       asset_contract_address: CK_RINKEBY_ADDRESS,
       token_id: CK_RINKEBY_TOKEN_ID,
@@ -903,7 +903,7 @@ suite("seaport: orders", () => {
   test("Serializes payment token and matches most recent ERC-20 sell order", async () => {
     const takerAddress = ALEX_ADDRESS;
 
-    const order = await client.api.getOrder({
+    const order = await client.api.getOrderLegacyWyvern({
       side: OrderSide.Sell,
       payment_token_address: manaAddress,
     });
@@ -953,7 +953,7 @@ suite("seaport: orders", () => {
 
   // Temp skip due to migration
   test.skip("orderToJSON computes correct current price for Dutch auctions", async () => {
-    const { orders } = await client.api.getOrders({
+    const { orders } = await client.api.getOrdersLegacyWyvern({
       sale_kind: SaleKind.DutchAuction,
     });
     assert.equal(orders.length, client.api.pageSize);
@@ -986,7 +986,7 @@ suite("seaport: orders", () => {
 
   // Skipping brittle test, due to token id dependency
   test.skip("orderToJSON current price includes buyer fee", async () => {
-    const { orders } = await client.api.getOrders({
+    const { orders } = await client.api.getOrdersLegacyWyvern({
       sale_kind: SaleKind.FixedPrice,
       asset_contract_address: CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE,
       token_id: 8645,
@@ -1011,7 +1011,7 @@ suite("seaport: orders", () => {
   });
 
   test("orderToJSON current price does not include buyer fee for English auctions", async () => {
-    const { orders } = await client.api.getOrders({
+    const { orders } = await client.api.getOrdersLegacyWyvern({
       side: OrderSide.Sell,
       is_english: true,
     });
@@ -1030,7 +1030,9 @@ suite("seaport: orders", () => {
   });
 
   test.skip("Matches first buy order in book", async () => {
-    const order = await client.api.getOrder({ side: OrderSide.Buy });
+    const order = await client.api.getOrderLegacyWyvern({
+      side: OrderSide.Buy,
+    });
     assert.isNotNull(order);
     if (!order) {
       return;
@@ -1049,7 +1051,7 @@ suite("seaport: orders", () => {
     // Need to use a taker who has created a proxy and approved W-ETH already
     const takerAddress = ALEX_ADDRESS;
 
-    const order = await client.api.getOrder({
+    const order = await client.api.getOrderLegacyWyvern({
       side: OrderSide.Buy,
       owner: takerAddress,
       // Use a token that has already been approved via approve-all

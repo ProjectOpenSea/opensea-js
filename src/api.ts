@@ -11,6 +11,12 @@ import {
   SITE_HOST_RINKEBY,
 } from "./constants";
 import {
+  OrdersQueryOptions,
+  OrdersQueryResponse,
+  OrderV2,
+} from "./orders/types";
+import { serializeOrdersQueryOptions, getOrdersAPIPath } from "./orders/utils";
+import {
   Network,
   OpenSeaAPIConfig,
   OpenSeaAsset,
@@ -51,6 +57,7 @@ export class OpenSeaAPI {
   public logger: (arg: string) => void;
 
   private apiKey: string | undefined;
+  private networkName: Network;
 
   /**
    * Create an instance of the OpenSea API
@@ -59,6 +66,7 @@ export class OpenSeaAPI {
    */
   constructor(config: OpenSeaAPIConfig, logger?: (arg: string) => void) {
     this.apiKey = config.apiKey;
+    this.networkName = config.networkName ?? Network.Main;
 
     switch (config.networkName) {
       case Network.Rinkeby:
@@ -142,7 +150,33 @@ export class OpenSeaAPI {
    * @param query Query to use for getting orders. A subset of parameters
    *  on the `OrderJSON` type is supported
    */
-  public async getOrder(query: OrderQuery): Promise<Order> {
+  public async getOrder({
+    orderBy = "created_date",
+    orderDirection = "desc",
+    protocol = "seaport",
+    ...restOptions
+  }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
+    const result = await this.get(
+      getOrdersAPIPath(this.networkName, protocol),
+      serializeOrdersQueryOptions({
+        limit: 1,
+        orderBy,
+        orderDirection,
+        protocol,
+        ...restOptions,
+      })
+    );
+
+    const json = result as OrdersQueryResponse;
+    return json.orders[0];
+  }
+
+  /**
+   * Get an order from the orderbook using the legacy wyvern API, throwing if none is found.
+   * @param query Query to use for getting orders. A subset of parameters
+   *  on the `OrderJSON` type is supported
+   */
+  public async getOrderLegacyWyvern(query: OrderQuery): Promise<Order> {
     const result = await this.get(`${ORDERBOOK_PATH}/orders/`, {
       limit: 1,
       ...query,
@@ -170,7 +204,36 @@ export class OpenSeaAPI {
    * @param page Page number, defaults to 1. Can be overridden by
    * `limit` and `offset` attributes from OrderQuery
    */
-  public async getOrders(
+  public async getOrders({
+    orderBy = "created_date",
+    orderDirection = "desc",
+    protocol = "seaport",
+    ...restOptions
+  }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2[]> {
+    const result = await this.get(
+      getOrdersAPIPath(this.networkName, protocol),
+      serializeOrdersQueryOptions({
+        limit: this.pageSize,
+        orderBy,
+        orderDirection,
+        protocol,
+        ...restOptions,
+      })
+    );
+
+    const json = result as OrdersQueryResponse;
+    return json.orders;
+  }
+
+  /**
+   * Get a list of orders from the orderbook, returning the page of orders
+   *  and the count of total orders found.
+   * @param query Query to use for getting orders. A subset of parameters
+   *  on the `OrderJSON` type is supported
+   * @param page Page number, defaults to 1. Can be overridden by
+   * `limit` and `offset` attributes from OrderQuery
+   */
+  public async getOrdersLegacyWyvern(
     query: OrderQuery = {},
     page = 1
   ): Promise<{ orders: Order[]; count: number }> {
