@@ -2221,18 +2221,9 @@ confusing-browser-globals@^1.0.11:
   resolved "https://registry.yarnpkg.com/confusing-browser-globals/-/confusing-browser-globals-1.0.11.tgz#ae40e9b57cdd3915408a2805ebd3a5585608dc81"
   integrity sha512-JsPKdmh8ZkmnHxDk55FZ1TqVLvEQTvoByJZRN9jzI0UjxK/QgAmsphz7PGtqgPieQZ/CQcHWXCR7ATDNhGe+YA==
 
-"consideration-js@git+https://github.com/ProjectOpenSea/consideration-js.git#befbdb4673e984ea27c8298c3f149edcebf146c1":
+"consideration@git+ssh://git@github.com/ProjectOpenSea/consideration.git#b6fd1b34879a1d8436375df58e83c7fedbfcc7ff":
   version "0.0.1"
-  resolved "git+https://github.com/ProjectOpenSea/consideration-js.git#befbdb4673e984ea27c8298c3f149edcebf146c1"
-  dependencies:
-    "@0xsequence/multicall" "^0.36.7"
-    consideration "git+ssh://git@github.com/ProjectOpenSea/consideration.git#3bc42673597d10be50b27adec43861f38a30872a"
-    ethers "^5.6.0"
-    merkletreejs "^0.2.31"
-
-"consideration@git+ssh://git@github.com/ProjectOpenSea/consideration.git#3bc42673597d10be50b27adec43861f38a30872a":
-  version "0.0.1"
-  resolved "git+ssh://git@github.com/ProjectOpenSea/consideration.git#3bc42673597d10be50b27adec43861f38a30872a"
+  resolved "git+ssh://git@github.com/ProjectOpenSea/consideration.git#b6fd1b34879a1d8436375df58e83c7fedbfcc7ff"
   dependencies:
     ethers "^5.5.3"
     ethers-eip712 "^0.2.0"
@@ -6321,6 +6312,15 @@ scrypt-js@3.0.1, scrypt-js@^3.0.0, scrypt-js@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/scrypt-js/-/scrypt-js-3.0.1.tgz#d314a57c2aef69d1ad98a138a21fe9eafa9ee312"
   integrity sha512-cdwTTnqPu0Hyvf5in5asVdZocVDTNRmR7XEcJuIzMjJeSHybHl7vpB66AzwTaIg6CLSbtjcxc8fqcySfnTkccA==
+
+"seaport-js@git+ssh://git@github.com:ProjectOpenSea/seaport-js.git#cfdfa21438570226a8f63d55c347ebbdb3f96567":
+  version "0.0.1"
+  resolved "git+ssh://git@github.com:ProjectOpenSea/seaport-js.git#cfdfa21438570226a8f63d55c347ebbdb3f96567"
+  dependencies:
+    "@0xsequence/multicall" "^0.36.7"
+    consideration "git+ssh://git@github.com/ProjectOpenSea/consideration.git#b6fd1b34879a1d8436375df58e83c7fedbfcc7ff"
+    ethers "^5.6.0"
+    merkletreejs "^0.2.31"
 
 secp256k1@^4.0.1:
   version "4.0.2"

@@ -1,13 +1,11 @@
 import { BigNumber } from "bignumber.js";
-import { Consideration } from "consideration-js";
-// TODO: Export Network enum from consideration-js
-import { Network as ConsiderationNetwork } from "consideration-js/lib/constants";
-import { OrderComponents } from "consideration-js/lib/types";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
 import { providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
+import { Seaport } from "seaport-js";
+import { OrderComponents } from "seaport-js/lib/types";
 import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
 import * as WyvernSchemas from "wyvern-schemas";
@@ -74,7 +72,7 @@ import {
   requireOrderCalldataCanMatch,
   requireOrdersCanMatch,
 } from "./debugging";
-import { CONSIDERATION_ADDRESS, WYVERN_ADDRESS } from "./orders/constants";
+import { SEAPORT_ADDRESS, WYVERN_ADDRESS } from "./orders/constants";
 import { OrderV2 } from "./orders/types";
 import { CheezeWizardsBasicTournamentAbi } from "./typechain/contracts/CheezeWizardsBasicTournamentAbi";
 import { DecentralandEstatesAbi } from "./typechain/contracts/DecentralandEstatesAbi";
@@ -151,8 +149,8 @@ export class OpenSeaPort {
   public web3ReadOnly: Web3;
   // Ethers provider
   public ethersProvider: providers.Web3Provider;
-  // Consideration client
-  public consideration: Consideration;
+  // Seaport client
+  public seaport: Seaport;
   // Logger function to use when debugging
   public logger: (arg: string) => void;
   // API instance on this seaport
@@ -208,8 +206,7 @@ export class OpenSeaPort {
     this.ethersProvider = new providers.Web3Provider(
       provider as providers.ExternalProvider
     );
-    this.consideration = new Consideration(this.ethersProvider, {
-      network: ConsiderationNetwork.RINKEBY,
+    this.seaport = new Seaport(this.ethersProvider, {
       overrides: {
         contractAddress: "0xe6909f026bea09f1c5b03acb43a065b9f3b71ca1",
       },
@@ -1193,8 +1190,8 @@ export class OpenSeaPort {
     switch (order.protocolAddress) {
       case WYVERN_ADDRESS:
         throw new Error("Not implemented");
-      case CONSIDERATION_ADDRESS: {
-        const { executeAllActions } = await this.consideration.fulfillOrder({
+      case SEAPORT_ADDRESS: {
+        const { executeAllActions } = await this.seaport.fulfillOrder({
           order: order.protocolData,
           accountAddress,
         });
@@ -1272,7 +1269,7 @@ export class OpenSeaPort {
     orders: OrderComponents[];
     accountAddress: string;
   }): Promise<string> {
-    const transaction = await this.consideration
+    const transaction = await this.seaport
       .cancelOrders(orders, accountAddress)
       .transact();
     return transaction.hash;
@@ -1298,7 +1295,7 @@ export class OpenSeaPort {
     switch (order.protocolAddress) {
       case WYVERN_ADDRESS:
         throw new Error("Not implemented");
-      case CONSIDERATION_ADDRESS: {
+      case SEAPORT_ADDRESS: {
         transactionHash = await this.cancelSeaportOrders({
           orders: [order.protocolData.parameters],
           accountAddress,

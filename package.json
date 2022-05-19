@@ -33,7 +33,6 @@
   "types": "lib/index.d.ts",
   "dependencies": {
     "bignumber.js": "9.0.1",
-    "consideration-js": "git+https://github.com/ProjectOpenSea/consideration-js.git#befbdb4673e984ea27c8298c3f149edcebf146c1",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
     "ethereumjs-util": "^5.2.0",
     "ethers": "^5.6.6",
@@ -41,6 +40,7 @@
     "isomorphic-unfetch": "^2.1.1",
     "lodash": "^4.17.21",
     "query-string": "^6.11.1",
+    "seaport-js": "git+ssh://git@github.com:ProjectOpenSea/seaport-js.git#cfdfa21438570226a8f63d55c347ebbdb3f96567",
     "web3": "1.7.0",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#7823dfdf5a272ebbc6a46e66d23563a9d6cc1be2",
     "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#0a8d569931ddb6faa6e96f5a60fa2f83f0a8750e"
