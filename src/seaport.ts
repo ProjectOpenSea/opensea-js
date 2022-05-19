@@ -206,11 +206,7 @@ export class OpenSeaPort {
     this.ethersProvider = new providers.Web3Provider(
       provider as providers.ExternalProvider
     );
-    this.seaport = new Seaport(this.ethersProvider, {
-      overrides: {
-        contractAddress: "0xe6909f026bea09f1c5b03acb43a065b9f3b71ca1",
-      },
-    });
+    this.seaport = new Seaport(this.ethersProvider, {});
 
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider as Web3JsProvider, {
