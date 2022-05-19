@@ -203,7 +203,7 @@ suite("seaport: fees", () => {
   });
 
   test("First page of orders have valid fees", async () => {
-    const { orders } = await client.api.getOrders();
+    const { orders } = await client.api.getOrdersLegacyWyvern();
     assert.isNotEmpty(orders);
 
     orders.forEach((order) => {
