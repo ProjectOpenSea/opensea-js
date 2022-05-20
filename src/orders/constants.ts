@@ -1,2 +1,0 @@
-export const SEAPORT_ADDRESS = "0x00000000006cee72100d161c57ada5bb2be1ca79";
-export const WYVERN_ADDRESS = "TODO";

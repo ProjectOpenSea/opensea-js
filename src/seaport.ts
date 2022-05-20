@@ -19,6 +19,7 @@ import {
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
   CONDUIT_KEYS_TO_CONDUIT,
+  CROSS_CHAIN_SEAPORT_ADDRESS,
   DECENTRALAND_ESTATE_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS,
   DEFAULT_GAS_INCREASE_FACTOR,
@@ -73,7 +74,6 @@ import {
   requireOrderCalldataCanMatch,
   requireOrdersCanMatch,
 } from "./debugging";
-import { SEAPORT_ADDRESS, WYVERN_ADDRESS } from "./orders/constants";
 import { OrderV2 } from "./orders/types";
 import { CheezeWizardsBasicTournamentAbi } from "./typechain/contracts/CheezeWizardsBasicTournamentAbi";
 import { DecentralandEstatesAbi } from "./typechain/contracts/DecentralandEstatesAbi";
@@ -1187,9 +1187,7 @@ export class OpenSeaPort {
   }): Promise<string> {
     let transactionHash: string;
     switch (order.protocolAddress) {
-      case WYVERN_ADDRESS:
-        throw new Error("Not implemented");
-      case SEAPORT_ADDRESS: {
+      case CROSS_CHAIN_SEAPORT_ADDRESS: {
         const { executeAllActions } = await this.seaport.fulfillOrder({
           order: order.protocolData,
           accountAddress,
@@ -1199,7 +1197,7 @@ export class OpenSeaPort {
         break;
       }
       default:
-        throw new Error("Unknown protocol");
+        throw new Error("Unsupported protocol");
     }
 
     await this._confirmTransaction(
@@ -1292,9 +1290,7 @@ export class OpenSeaPort {
     // Transact and get the transaction hash
     let transactionHash: string;
     switch (order.protocolAddress) {
-      case WYVERN_ADDRESS:
-        throw new Error("Not implemented");
-      case SEAPORT_ADDRESS: {
+      case CROSS_CHAIN_SEAPORT_ADDRESS: {
         transactionHash = await this.cancelSeaportOrders({
           orders: [order.protocolData.parameters],
           accountAddress,
@@ -1302,7 +1298,7 @@ export class OpenSeaPort {
         break;
       }
       default:
-        throw new Error("Unknown protocol");
+        throw new Error("Unsupported protocol");
     }
 
     // Await transaction confirmation
