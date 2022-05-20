@@ -85,6 +85,54 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Gets an order from API based on query options, throwing if none is found.
+   */
+  public async getOrder({
+    orderBy = "created_date",
+    orderDirection = "desc",
+    protocol = "seaport",
+    ...restOptions
+  }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
+    const { orders } = await this.get<OrdersQueryResponse>(
+      getOrdersAPIPath(this.networkName, protocol),
+      serializeOrdersQueryOptions({
+        limit: 1,
+        orderBy,
+        orderDirection,
+        protocol,
+        ...restOptions,
+      })
+    );
+    if (orders.length === 0) {
+      throw new Error("Not found: no matching order found");
+    }
+    return orders[0];
+  }
+
+  /**
+   * Gets a list of orders from API based on query options and returns orders
+   * with next and previous cursors.
+   */
+  public async getOrders({
+    orderBy = "created_date",
+    orderDirection = "desc",
+    protocol = "seaport",
+    ...restOptions
+  }: Omit<OrdersQueryOptions, "limit">): Promise<OrdersQueryResponse> {
+    const response = await this.get<OrdersQueryResponse>(
+      getOrdersAPIPath(this.networkName, protocol),
+      serializeOrdersQueryOptions({
+        limit: this.pageSize,
+        orderBy,
+        orderDirection,
+        protocol,
+        ...restOptions,
+      })
+    );
+    return response;
+  }
+
+  /**
    * Send an order to the orderbook.
    * Throws when the order is invalid.
    * IN NEXT VERSION: change order input to Order type
@@ -145,29 +193,6 @@ export class OpenSeaAPI {
       return null;
     }
   }
-  /**
-   * Get an order from the orderbook, throwing if none is found.
-   * @param query Query to use for getting orders. A subset of parameters
-   *  on the `OrderJSON` type is supported
-   */
-  public async getOrder({
-    orderBy = "created_date",
-    orderDirection = "desc",
-    protocol = "seaport",
-    ...restOptions
-  }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
-    const { orders } = await this.get<OrdersQueryResponse>(
-      getOrdersAPIPath(this.networkName, protocol),
-      serializeOrdersQueryOptions({
-        limit: 1,
-        orderBy,
-        orderDirection,
-        protocol,
-        ...restOptions,
-      })
-    );
-    return orders[0];
-  }
 
   /**
    * Get an order from the orderbook using the legacy wyvern API, throwing if none is found.
@@ -192,33 +217,6 @@ export class OpenSeaAPI {
       throw new Error(`Not found: no matching order found`);
     }
     return orderFromJSON(orderJSON);
-  }
-
-  /**
-   * Get a list of orders from the orderbook, returning the page of orders
-   *  and the count of total orders found.
-   * @param query Query to use for getting orders. A subset of parameters
-   *  on the `OrderJSON` type is supported
-   * @param page Page number, defaults to 1. Can be overridden by
-   * `limit` and `offset` attributes from OrderQuery
-   */
-  public async getOrders({
-    orderBy = "created_date",
-    orderDirection = "desc",
-    protocol = "seaport",
-    ...restOptions
-  }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2[]> {
-    const { orders } = await this.get<OrdersQueryResponse>(
-      getOrdersAPIPath(this.networkName, protocol),
-      serializeOrdersQueryOptions({
-        limit: this.pageSize,
-        orderBy,
-        orderDirection,
-        protocol,
-        ...restOptions,
-      })
-    );
-    return orders;
   }
 
   /**
