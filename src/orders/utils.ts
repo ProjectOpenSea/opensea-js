@@ -1,17 +1,25 @@
 import { Network } from "../types";
-import { OrderProtocol, OrdersQueryOptions } from "./types";
+import { OrderProtocol, OrdersQueryOptions, OrderSide } from "./types";
 
 const NETWORK_TO_CHAIN = {
   [Network.Main]: "ethereum",
   [Network.Rinkeby]: "rinkeby",
 };
 
-export const getOrdersAPIPath = (network: Network, protocol: OrderProtocol) => {
+export const getOrdersAPIPath = (
+  network: Network,
+  protocol: OrderProtocol,
+  side: OrderSide
+) => {
   const chain = NETWORK_TO_CHAIN[network];
-  return `/api/v2/orders/${chain}/${protocol}/listings`;
+  const sidePath = side === "ask" ? "listings" : "offers";
+  return `/api/v2/orders/${chain}/${protocol}/${sidePath}`;
 };
 
-export const serializeOrdersQueryOptions = (options: OrdersQueryOptions) => {
+type OrdersQueryPathOptions = "protocol" | "side";
+export const serializeOrdersQueryOptions = (
+  options: Omit<OrdersQueryOptions, OrdersQueryPathOptions>
+) => {
   return {
     limit: options.limit,
     cursor: options.cursor,

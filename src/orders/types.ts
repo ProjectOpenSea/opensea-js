@@ -1,5 +1,5 @@
 import { OrderWithNonce } from "seaport-js/lib/types";
-import { OpenSeaAccount, OpenSeaAssetBundle, OrderSide } from "../types";
+import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
 
 // Protocol data
 export type OrderProtocol = "seaport" | "wyvern";
@@ -8,6 +8,7 @@ type ProtocolData = ConsiderationProtocolData;
 
 // Protocol agnostic order data
 type OrderType = "basic" | "dutch" | "english" | "criteria";
+export type OrderSide = "ask" | "bid";
 
 export type OrderV2 = {
   createdDate: string;
@@ -44,6 +45,7 @@ type OrderByDirection = "asc" | "desc";
 
 export type OrdersQueryOptions = {
   protocol: OrderProtocol;
+  side: OrderSide;
 
   limit: number;
   cursor?: string;

@@ -91,15 +91,15 @@ export class OpenSeaAPI {
     orderBy = "created_date",
     orderDirection = "desc",
     protocol = "seaport",
+    side = "ask",
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
     const { orders } = await this.get<OrdersQueryResponse>(
-      getOrdersAPIPath(this.networkName, protocol),
+      getOrdersAPIPath(this.networkName, protocol, side),
       serializeOrdersQueryOptions({
         limit: 1,
         orderBy,
         orderDirection,
-        protocol,
         ...restOptions,
       })
     );
@@ -117,15 +117,15 @@ export class OpenSeaAPI {
     orderBy = "created_date",
     orderDirection = "desc",
     protocol = "seaport",
+    side = "ask",
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<OrdersQueryResponse> {
     const response = await this.get<OrdersQueryResponse>(
-      getOrdersAPIPath(this.networkName, protocol),
+      getOrdersAPIPath(this.networkName, protocol, side),
       serializeOrdersQueryOptions({
         limit: this.pageSize,
         orderBy,
         orderDirection,
-        protocol,
         ...restOptions,
       })
     );
