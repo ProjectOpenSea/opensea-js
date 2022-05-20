@@ -1,13 +1,13 @@
-import { OrderWithNonce } from "consideration-js/lib/types";
+import { OrderWithNonce } from "seaport-js/lib/types";
 import { OpenSeaAccount, OpenSeaAssetBundle, OrderSide } from "../types";
 
+// Protocol data
 export type OrderProtocol = "seaport" | "wyvern";
-type OrderType = "basic" | "dutch" | "english";
-
 type ConsiderationProtocolData = OrderWithNonce;
 type ProtocolData = ConsiderationProtocolData;
-// | WyvernProtocolData
-// | ZeroExProtocolData
+
+// Protocol agnostic order data
+type OrderType = "basic" | "dutch" | "english" | "criteria";
 
 export type OrderV2 = {
   createdDate: string;
@@ -38,6 +38,7 @@ export type OrderV2 = {
   takerAssetBundle: OpenSeaAssetBundle;
 };
 
+// API query types
 type OpenOrderOrderingOption = "created_date" | "eth_price";
 type OrderByDirection = "asc" | "desc";
 

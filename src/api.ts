@@ -156,7 +156,7 @@ export class OpenSeaAPI {
     protocol = "seaport",
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
-    const result = await this.get(
+    const { orders } = await this.get<OrdersQueryResponse>(
       getOrdersAPIPath(this.networkName, protocol),
       serializeOrdersQueryOptions({
         limit: 1,
@@ -166,9 +166,7 @@ export class OpenSeaAPI {
         ...restOptions,
       })
     );
-
-    const json = result as OrdersQueryResponse;
-    return json.orders[0];
+    return orders[0];
   }
 
   /**
@@ -210,7 +208,7 @@ export class OpenSeaAPI {
     protocol = "seaport",
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2[]> {
-    const result = await this.get(
+    const { orders } = await this.get<OrdersQueryResponse>(
       getOrdersAPIPath(this.networkName, protocol),
       serializeOrdersQueryOptions({
         limit: this.pageSize,
@@ -220,9 +218,7 @@ export class OpenSeaAPI {
         ...restOptions,
       })
     );
-
-    const json = result as OrdersQueryResponse;
-    return json.orders;
+    return orders;
   }
 
   /**
