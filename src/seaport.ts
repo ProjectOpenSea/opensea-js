@@ -18,6 +18,7 @@ import {
   CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS,
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
+  CONDUIT_KEYS_TO_CONDUIT,
   DECENTRALAND_ESTATE_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS,
   DEFAULT_GAS_INCREASE_FACTOR,
@@ -206,7 +207,9 @@ export class OpenSeaPort {
     this.ethersProvider = new providers.Web3Provider(
       provider as providers.ExternalProvider
     );
-    this.seaport = new Seaport(this.ethersProvider, {});
+    this.seaport = new Seaport(this.ethersProvider, {
+      conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
+    });
 
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider as Web3JsProvider, {
