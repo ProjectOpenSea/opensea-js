@@ -1174,12 +1174,11 @@ export class OpenSeaPort {
    * @param order The order to fulfill, a.k.a. "take"
    * @param accountAddress The taker's wallet address
    * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
-   * @param referrerAddress The optional address that referred the order
    * @returns Transaction hash for fulfilling the order
    */
   public async fulfillOrder({
     order,
-    accountAddress,
+    accountAddress, //TODO: Implement recipientAddress
   }: {
     order: OrderV2;
     accountAddress: string;
@@ -1815,7 +1814,7 @@ export class OpenSeaPort {
       case CROSS_CHAIN_SEAPORT_ADDRESS: {
         try {
           await this.seaport
-            .approveOrders([order.protocolData], accountAddress)
+            .validate([order.protocolData], accountAddress)
             .callStatic();
           return true;
         } catch (error) {

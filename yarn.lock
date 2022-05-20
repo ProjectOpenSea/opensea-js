@@ -6313,9 +6313,9 @@ scrypt-js@3.0.1, scrypt-js@^3.0.0, scrypt-js@^3.0.1:
   resolved "https://registry.yarnpkg.com/scrypt-js/-/scrypt-js-3.0.1.tgz#d314a57c2aef69d1ad98a138a21fe9eafa9ee312"
   integrity sha512-cdwTTnqPu0Hyvf5in5asVdZocVDTNRmR7XEcJuIzMjJeSHybHl7vpB66AzwTaIg6CLSbtjcxc8fqcySfnTkccA==
 
-"seaport-js@git+ssh://git@github.com:ProjectOpenSea/seaport-js.git#cfdfa21438570226a8f63d55c347ebbdb3f96567":
+"seaport-js@git+ssh://git@github.com:ProjectOpenSea/seaport-js.git#188f2144a06d867fcf0e175c69cad3f8fad9f367":
   version "0.0.1"
-  resolved "git+ssh://git@github.com:ProjectOpenSea/seaport-js.git#cfdfa21438570226a8f63d55c347ebbdb3f96567"
+  resolved "git+ssh://git@github.com:ProjectOpenSea/seaport-js.git#188f2144a06d867fcf0e175c69cad3f8fad9f367"
   dependencies:
     "@0xsequence/multicall" "^0.36.7"
     consideration "git+ssh://git@github.com/ProjectOpenSea/consideration.git#b6fd1b34879a1d8436375df58e83c7fedbfcc7ff"
