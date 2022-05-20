@@ -142,6 +142,7 @@ import {
   signTypedDataAsync,
   validateAndFormatWalletAddress,
   getMaxOrderExpirationTimestamp,
+  hasErrorCode,
 } from "./utils/utils";
 
 export class OpenSeaPort {
@@ -1804,6 +1805,44 @@ export class OpenSeaPort {
    * @param referrerAddress The optional address that referred the order
    */
   public async isOrderFulfillable({
+    order,
+    accountAddress,
+  }: {
+    order: OrderV2;
+    accountAddress: string;
+  }): Promise<boolean> {
+    switch (order.protocolAddress) {
+      case CROSS_CHAIN_SEAPORT_ADDRESS: {
+        try {
+          await this.seaport
+            .approveOrders([order.protocolData], accountAddress)
+            .callStatic();
+          return true;
+        } catch (error) {
+          if (hasErrorCode(error) && error.code === "CALL_EXCEPTION") {
+            return false;
+          }
+          throw error;
+        }
+        break;
+      }
+      default:
+        throw new Error("Unsupported protocol");
+    }
+  }
+
+  /**
+   * Returns whether an order is fulfillable.
+   * An order may not be fulfillable if a target item's transfer function
+   * is locked for some reason, e.g. an item is being rented within a game
+   * or trading has been locked for an item type.
+   * @param param0 __namedParameters Object
+   * @param order Order to check
+   * @param accountAddress The account address that will be fulfilling the order
+   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
+   * @param referrerAddress The optional address that referred the order
+   */
+  public async isOrderFulfillableLegacyWyvern({
     order,
     accountAddress,
     recipientAddress,

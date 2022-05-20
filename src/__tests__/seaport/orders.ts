@@ -1437,7 +1437,7 @@ async function testMatchingOrder(
   if (testAtomicMatch && !order.waitingForBestCounterOrder) {
     const isValid = await client._validateOrder(order);
     assert.isTrue(isValid);
-    const isFulfillable = await client.isOrderFulfillable({
+    const isFulfillable = await client.isOrderFulfillableLegacyWyvern({
       order,
       accountAddress,
       recipientAddress,

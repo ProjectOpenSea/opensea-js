@@ -1064,3 +1064,12 @@ export const getMaxOrderExpirationTimestamp = () => {
 
   return Math.round(maxExpirationDate.getTime() / 1000);
 };
+
+interface ErrorWithCode extends Error {
+  code: string;
+}
+
+export const hasErrorCode = (error: unknown): error is ErrorWithCode => {
+  const untypedError = error as Partial<ErrorWithCode>;
+  return !!untypedError.code;
+};
