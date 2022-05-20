@@ -903,7 +903,7 @@ suite("seaport: orders", () => {
   test("Serializes payment token and matches most recent ERC-20 sell order", async () => {
     const takerAddress = ALEX_ADDRESS;
 
-    const order = await client.api.getOrder({
+    const order = await client.api.getOrderLegacyWyvern({
       side: OrderSide.Sell,
       payment_token_address: manaAddress,
     });
@@ -1030,7 +1030,7 @@ suite("seaport: orders", () => {
   });
 
   test.skip("Matches first buy order in book", async () => {
-    const order = await client.api.getOrder({
+    const order = await client.api.getOrderLegacyWyvern({
       side: OrderSide.Buy,
     });
     assert.isNotNull(order);
@@ -1051,7 +1051,7 @@ suite("seaport: orders", () => {
     // Need to use a taker who has created a proxy and approved W-ETH already
     const takerAddress = ALEX_ADDRESS;
 
-    const order = await client.api.getOrder({
+    const order = await client.api.getOrderLegacyWyvern({
       side: OrderSide.Buy,
       owner: takerAddress,
       // Use a token that has already been approved via approve-all
