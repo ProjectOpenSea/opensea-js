@@ -93,10 +93,10 @@ export class OpenSeaAPI {
    * Gets an order from API based on query options, throwing if none is found.
    */
   public async getOrder({
-    orderBy = "created_date",
-    orderDirection = "desc",
     protocol,
     side,
+    orderDirection = "desc",
+    orderBy = "created_date",
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
     const { orders } = await this.get<OrdersQueryResponse>(
@@ -119,10 +119,10 @@ export class OpenSeaAPI {
    * with next and previous cursors.
    */
   public async getOrders({
-    orderBy = "created_date",
-    orderDirection = "desc",
     protocol,
     side,
+    orderDirection = "desc",
+    orderBy = "created_date",
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<
     QueryCursors & {
