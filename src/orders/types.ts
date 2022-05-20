@@ -58,15 +58,47 @@ export type OrdersQueryOptions = {
   includeBundled?: boolean;
   listedAfter?: number | string;
   listedBefore?: number | string;
-  tokenIds?: number[];
+  tokenIds?: string[];
   assetContractAddress?: string;
   orderBy?: OpenOrderOrderingOption;
   orderDirection?: OrderByDirection;
   onlyEnglish?: boolean;
 };
 
-export type OrdersQueryResponse = {
+export type SerializedOrderV2 = {
+  created_date: string;
+  closing_date: string | null;
+  listing_time: number;
+  expiration_time: number;
+  order_hash: string | null;
+  maker: unknown;
+  taker: unknown | null;
+  protocol_data: ProtocolData;
+  protocol_address: string;
+  current_price: string;
+  maker_fees: {
+    account: unknown;
+    basis_points: string;
+  }[];
+  taker_fees: {
+    account: unknown;
+    basis_points: string;
+  }[];
+  side: OrderSide;
+  order_type: OrderType;
+  cancelled: boolean;
+  finalized: boolean;
+  marked_invalid: boolean;
+  client_signature: string | null;
+  maker_asset_bundle: unknown;
+  taker_asset_bundle: unknown;
+};
+
+export type QueryCursors = {
   next: string | null;
   previous: string | null;
-  orders: OrderV2[];
+};
+
+export type OrdersQueryResponse = QueryCursors & {
+  orders: SerializedOrderV2[];
 };

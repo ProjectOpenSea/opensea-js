@@ -1,5 +1,12 @@
 import { Network } from "../types";
-import { OrderProtocol, OrdersQueryOptions, OrderSide } from "./types";
+import { accountFromJSON, assetBundleFromJSON } from "../utils";
+import {
+  OrderProtocol,
+  OrdersQueryOptions,
+  OrderSide,
+  OrderV2,
+  SerializedOrderV2,
+} from "./types";
 
 const NETWORK_TO_CHAIN = {
   [Network.Main]: "ethereum",
@@ -37,5 +44,36 @@ export const serializeOrdersQueryOptions = (
     order_by: options.orderBy,
     order_direction: options.orderDirection,
     only_english: options.onlyEnglish,
+  };
+};
+
+export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
+  return {
+    createdDate: order.created_date,
+    closingDate: order.closing_date,
+    listingTime: order.listing_time,
+    expirationTime: order.expiration_time,
+    orderHash: order.order_hash,
+    maker: accountFromJSON(order.maker),
+    taker: order.taker ? accountFromJSON(order.taker) : null,
+    protocolData: order.protocol_data,
+    protocolAddress: order.protocol_address,
+    currentPrice: order.current_price,
+    makerFees: order.maker_fees.map(({ account, basis_points }) => ({
+      account: accountFromJSON(account),
+      basisPoints: basis_points,
+    })),
+    takerFees: order.taker_fees.map(({ account, basis_points }) => ({
+      account: accountFromJSON(account),
+      basisPoints: basis_points,
+    })),
+    side: order.side,
+    orderType: order.order_type,
+    cancelled: order.cancelled,
+    finalized: order.finalized,
+    markedInvalid: order.marked_invalid,
+    clientSignature: order.client_signature,
+    makerAssetBundle: assetBundleFromJSON(order.maker_asset_bundle),
+    takerAssetBundle: assetBundleFromJSON(order.taker_asset_bundle),
   };
 };

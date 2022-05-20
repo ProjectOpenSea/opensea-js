@@ -14,8 +14,13 @@ import {
   OrdersQueryOptions,
   OrdersQueryResponse,
   OrderV2,
+  QueryCursors,
 } from "./orders/types";
-import { serializeOrdersQueryOptions, getOrdersAPIPath } from "./orders/utils";
+import {
+  serializeOrdersQueryOptions,
+  getOrdersAPIPath,
+  deserializeOrder,
+} from "./orders/utils";
 import {
   Network,
   OpenSeaAPIConfig,
@@ -90,8 +95,8 @@ export class OpenSeaAPI {
   public async getOrder({
     orderBy = "created_date",
     orderDirection = "desc",
-    protocol = "seaport",
-    side = "ask",
+    protocol,
+    side,
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
     const { orders } = await this.get<OrdersQueryResponse>(
@@ -106,7 +111,7 @@ export class OpenSeaAPI {
     if (orders.length === 0) {
       throw new Error("Not found: no matching order found");
     }
-    return orders[0];
+    return deserializeOrder(orders[0]);
   }
 
   /**
@@ -116,10 +121,14 @@ export class OpenSeaAPI {
   public async getOrders({
     orderBy = "created_date",
     orderDirection = "desc",
-    protocol = "seaport",
-    side = "ask",
+    protocol,
+    side,
     ...restOptions
-  }: Omit<OrdersQueryOptions, "limit">): Promise<OrdersQueryResponse> {
+  }: Omit<OrdersQueryOptions, "limit">): Promise<
+    QueryCursors & {
+      orders: OrderV2[];
+    }
+  > {
     const response = await this.get<OrdersQueryResponse>(
       getOrdersAPIPath(this.networkName, protocol, side),
       serializeOrdersQueryOptions({
@@ -129,7 +138,10 @@ export class OpenSeaAPI {
         ...restOptions,
       })
     );
-    return response;
+    return {
+      ...response,
+      orders: response.orders.map(deserializeOrder),
+    };
   }
 
   /**
