@@ -11,6 +11,10 @@ export type ProtocolData =
 // Protocol agnostic order data
 type OrderType = "basic" | "dutch" | "english" | "criteria";
 export type OrderSide = "ask" | "bid";
+export type OrderFee = {
+  account: OpenSeaAccount;
+  basisPoints: string;
+};
 
 export type OrderV2 = {
   createdDate: string;
@@ -23,14 +27,8 @@ export type OrderV2 = {
   protocolData: ProtocolData;
   protocolAddress: string;
   currentPrice: string;
-  makerFees: {
-    account: OpenSeaAccount;
-    basisPoints: string;
-  }[];
-  takerFees: {
-    account: OpenSeaAccount;
-    basisPoints: string;
-  }[];
+  makerFees: OrderFee[];
+  takerFees: OrderFee[];
   side: OrderSide;
   orderType: OrderType;
   cancelled: boolean;

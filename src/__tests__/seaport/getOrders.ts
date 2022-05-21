@@ -5,7 +5,7 @@ import { RINKEBY_PROVIDER_URL } from "../../constants";
 import { OpenSeaPort } from "../../index";
 import { Network } from "../../types";
 import { RINKEBY_API_KEY } from "../constants";
-import { assertIsOrderV2 } from "../utils";
+import { expectValidOrder } from "../utils";
 
 // Client setup
 const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL);
@@ -23,7 +23,7 @@ suite.only("Getting orders", () => {
         protocol: "seaport",
         side: "ask",
       });
-      assertIsOrderV2(order);
+      expectValidOrder(order);
     });
   });
 
@@ -52,7 +52,7 @@ suite.only("Getting orders", () => {
         protocol: "seaport",
         side: "ask",
       });
-      orders.map(assertIsOrderV2);
+      orders.map((order) => expectValidOrder(order));
       expect(next).to.not.be.undefined;
       expect(previous).to.not.be.undefined;
     });

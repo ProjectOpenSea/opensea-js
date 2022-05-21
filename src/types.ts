@@ -231,7 +231,7 @@ export interface OpenSeaAccount {
 
 export interface OpenSeaUser {
   // Username for this user
-  username: string;
+  username?: string;
 }
 
 /**
