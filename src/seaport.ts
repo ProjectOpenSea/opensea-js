@@ -1813,10 +1813,10 @@ export class OpenSeaPort {
     switch (order.protocolAddress) {
       case CROSS_CHAIN_SEAPORT_ADDRESS: {
         try {
-          await this.seaport
+          const isValid = await this.seaport
             .validate([order.protocolData], accountAddress)
             .callStatic();
-          return true;
+          return !!isValid;
         } catch (error) {
           if (hasErrorCode(error) && error.code === "CALL_EXCEPTION") {
             return false;
