@@ -5,6 +5,7 @@ import { providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import { Seaport } from "seaport-js";
+import { CROSS_CHAIN_SEAPORT_ADDRESS } from "seaport-js/lib/constants";
 import { OrderComponents } from "seaport-js/lib/types";
 import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
@@ -19,7 +20,6 @@ import {
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
   CONDUIT_KEYS_TO_CONDUIT,
-  CROSS_CHAIN_SEAPORT_ADDRESS,
   DECENTRALAND_ESTATE_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS,
   DEFAULT_GAS_INCREASE_FACTOR,
