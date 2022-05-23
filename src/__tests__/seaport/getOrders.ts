@@ -1,4 +1,5 @@
-import { assert, expect } from "chai";
+import "../support/setup";
+import { expect } from "chai";
 import { suite, test } from "mocha";
 import Web3 from "web3";
 import { RINKEBY_PROVIDER_URL } from "../../constants";
@@ -28,22 +29,15 @@ suite.only("Getting orders", () => {
   });
 
   test(`getOrder should throw if no order found`, async () => {
-    let didThrow = false;
-    try {
-      const _order = await rinkebyClient.api.getOrder({
+    await expect(
+      rinkebyClient.api.getOrder({
         protocol: "seaport",
         side: "ask",
         maker: "0x000000000000000000000000000000000000dEaD",
-      });
-    } catch (error) {
-      expect((error as Error).message).to.equal(
-        "Not found: no matching order found"
-      );
-      didThrow = true;
-    }
-    if (!didThrow) {
-      assert.fail("Expected getOrder to throw");
-    }
+      })
+    )
+      .to.eventually.be.rejected.and.be.an.instanceOf(Error)
+      .and.have.property("message", "Not found: no matching order found");
   });
 
   ["ask", "bid"].forEach((side) => {
