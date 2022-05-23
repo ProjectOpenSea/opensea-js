@@ -1,3 +1,4 @@
+import { OrderWithNonce } from "seaport-js/lib/types";
 import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
 
 // Protocol data
