@@ -2,9 +2,12 @@ import { OrderWithNonce } from "seaport-js/lib/types";
 import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
 
 // Protocol data
-export type OrderProtocol = "seaport" | "wyvern";
-type ConsiderationProtocolData = OrderWithNonce;
-type ProtocolData = ConsiderationProtocolData;
+type OrderProtocolToProtocolData = {
+  seaport: OrderWithNonce;
+};
+export type OrderProtocol = keyof OrderProtocolToProtocolData;
+export type ProtocolData =
+  OrderProtocolToProtocolData[keyof OrderProtocolToProtocolData];
 
 // Protocol agnostic order data
 type OrderType = "basic" | "dutch" | "english" | "criteria";
@@ -43,10 +46,12 @@ export type OrderV2 = {
 type OpenOrderOrderingOption = "created_date" | "eth_price";
 type OrderByDirection = "asc" | "desc";
 
-export type OrdersQueryOptions = {
+export type OrderAPIOptions = {
   protocol: OrderProtocol;
   side: OrderSide;
+};
 
+export type OrdersQueryOptions = OrderAPIOptions & {
   limit: number;
   cursor?: string;
 
@@ -102,3 +107,5 @@ export type QueryCursors = {
 export type OrdersQueryResponse = QueryCursors & {
   orders: SerializedOrderV2[];
 };
+
+export type OrdersPostQueryResponse = { order: SerializedOrderV2 };

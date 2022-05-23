@@ -290,7 +290,7 @@ suite("api", () => {
         r: "",
         s: "",
       };
-      await apiToTest.postOrder(newOrder);
+      await apiToTest.postOrderLegacyWyvern(newOrder);
     } catch (error) {
       // TODO sometimes the error is "Expected the listing time to be at or past the current time"
       // assert.include(error.message, "Order failed exchange validation")

@@ -2362,7 +2362,9 @@ export class OpenSeaPort {
    */
   public async validateAndPostOrder(order: Order): Promise<Order> {
     // Validation is called server-side
-    const confirmedOrder = await this.api.postOrder(orderToJSON(order));
+    const confirmedOrder = await this.api.postOrderLegacyWyvern(
+      orderToJSON(order)
+    );
     return confirmedOrder;
   }
 

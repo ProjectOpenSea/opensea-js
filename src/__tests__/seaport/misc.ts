@@ -43,7 +43,7 @@ suite("seaport: misc", () => {
   test("Instance exposes API methods", () => {
     assert.equal(typeof client.api.getOrder, "function");
     assert.equal(typeof client.api.getOrders, "function");
-    assert.equal(typeof client.api.postOrder, "function");
+    assert.equal(typeof client.api.postOrderLegacyWyvern, "function");
   });
 
   test("Instance exposes some underscored methods", () => {

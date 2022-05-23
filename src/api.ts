@@ -11,9 +11,12 @@ import {
   SITE_HOST_RINKEBY,
 } from "./constants";
 import {
+  OrderAPIOptions,
+  OrdersPostQueryResponse,
   OrdersQueryOptions,
   OrdersQueryResponse,
   OrderV2,
+  ProtocolData,
   QueryCursors,
 } from "./orders/types";
 import {
@@ -63,6 +66,7 @@ export class OpenSeaAPI {
 
   private apiKey: string | undefined;
   private networkName: Network;
+  private retryDelay = 3000;
 
   /**
    * Create an instance of the OpenSea API
@@ -90,7 +94,7 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Gets an order from API based on query options, throwing if none is found.
+   * Gets an order from API based on query options. Throws when no order is found.
    */
   public async getOrder({
     protocol,
@@ -145,13 +149,40 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Send an order to be posted. Throws when the order is invalid.
+   */
+  public async postOrder(
+    order: ProtocolData,
+    apiOptions: OrderAPIOptions,
+    { retries = 2 }: { retries?: number } = {}
+  ): Promise<OrderV2> {
+    let response: OrdersPostQueryResponse;
+    // TODO: Validate apiOptions. Avoid API calls that will definitely fail
+    const { protocol, side } = apiOptions;
+    try {
+      response = await this.post<OrdersPostQueryResponse>(
+        getOrdersAPIPath(this.networkName, protocol, side),
+        order
+      );
+    } catch (error) {
+      _throwOrContinue(error, retries);
+      await delay(this.retryDelay);
+      return this.postOrder(order, apiOptions, { retries: retries - 1 });
+    }
+    return deserializeOrder(response.order);
+  }
+
+  /**
    * Send an order to the orderbook.
    * Throws when the order is invalid.
    * IN NEXT VERSION: change order input to Order type
    * @param order Order JSON to post to the orderbook
    * @param retries Number of times to retry if the service is unavailable for any reason
    */
-  public async postOrder(order: OrderJSON, retries = 2): Promise<Order> {
+  public async postOrderLegacyWyvern(
+    order: OrderJSON,
+    retries = 2
+  ): Promise<Order> {
     let json;
     try {
       json = (await this.post(
@@ -161,7 +192,7 @@ export class OpenSeaAPI {
     } catch (error) {
       _throwOrContinue(error, retries);
       await delay(3000);
-      return this.postOrder(order, retries - 1);
+      return this.postOrderLegacyWyvern(order, retries - 1);
     }
     return orderFromJSON(json);
   }
