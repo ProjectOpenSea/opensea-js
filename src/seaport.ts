@@ -1203,10 +1203,7 @@ export class OpenSeaPort {
     await this._confirmTransaction(
       transactionHash,
       EventType.MatchOrders,
-      "Fulfilling order",
-      async () => {
-        return true;
-      }
+      "Fulfilling order"
     );
     return transactionHash;
   }
@@ -1305,10 +1302,7 @@ export class OpenSeaPort {
     await this._confirmTransaction(
       transactionHash,
       EventType.CancelOrder,
-      "Cancelling order",
-      async () => {
-        return true;
-      }
+      "Cancelling order"
     );
   }
 
