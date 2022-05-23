@@ -17,12 +17,14 @@ const feeSchema: JSONSchemaType<OrderFee> = {
   required: ["account", "basisPoints"],
 };
 
+// TODO: Validate entire OrderV2 type
 type PartialOrderV2Type = Omit<
   OrderV2,
-  "makerAssetBundle" | "takerAssetBundle"
+  "makerAssetBundle" | "takerAssetBundle" | "protocolData"
 > & {
   makerAssetBundle: PartialAssetBundleType;
   takerAssetBundle: PartialAssetBundleType;
+  protocolData: object;
 };
 
 const orderSchema: JSONSchemaType<PartialOrderV2Type> = {
