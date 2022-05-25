@@ -52,7 +52,7 @@ This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest market
 
 It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**auctions**), create collections of assets to sell at once (**bundles**), and complete trades programmatically.
 
-You get started by [requesting an API key](https://docs.opensea.io/reference) and instantiating your own seaport. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEth`) in the process.
+You get started by [requesting an API key](https://docs.opensea.io/reference) and instantiating your own opensea sdk instance. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEth`) in the process.
 
 Happy seafaring! ⛵️
 
@@ -89,7 +89,7 @@ import { OpenSeaPort, Network } from 'opensea-js'
 // This example provider won't let you make transactions, only read-only calls:
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
-const seaport = new OpenSeaPort(provider, {
+const openseaSDK = new OpenSeaPort(provider, {
   networkName: Network.Main,
   apiKey: YOUR_API_KEY
 })
@@ -128,7 +128,7 @@ The `Asset` type is the minimal type you need for most marketplace actions. `Wyv
 You can fetch an asset using the `OpenSeaAPI`, which will return an `OpenSeaAsset` for you (`OpenSeaAsset` extends `Asset`):
 
 ```TypeScript
-const asset: OpenSeaAsset = await seaport.api.getAsset({
+const asset: OpenSeaAsset = await openseaSDK.api.getAsset({
   tokenAddress, // string
   tokenId, // string | number | null
 })
@@ -149,7 +149,7 @@ const asset = {
   tokenId: "1", // Token ID
 }
 
-const balance = await seaport.getAssetBalance({
+const balance = await openseaSDK.getAssetBalance({
   accountAddress, // string
   asset, // Asset
 })
@@ -160,7 +160,7 @@ const ownsKitty = balance.greaterThan(0)
 You can use this same method for fungible ERC-20 tokens like wrapped ETH (WETH). As a convenience, you can use this fungible wrapper for checking fungible balances:
 
 ```JavaScript
-const balanceOfWETH = await seaport.getTokenBalance({
+const balanceOfWETH = await openseaSDK.getTokenBalance({
   accountAddress, // string
   tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 })
@@ -176,7 +176,7 @@ const { tokenId, tokenAddress } = YOUR_ASSET
 // The offerer's wallet address:
 const accountAddress = "0x1234..."
 
-const offer = await seaport.createBuyOrder({
+const offer = await openseaSDK.createBuyOrder({
   asset: {
     tokenId,
     tokenAddress,
@@ -196,7 +196,7 @@ You can also make an offer on a bundle of assets. This could also be used for cr
 
 ```JavaScript
 const assets = YOUR_ASSETS
-const offer = await seaport.createBundleBuyOrder({
+const offer = await openseaSDK.createBundleBuyOrder({
   assets,
   accountAddress,
   startAmount: 2.4,
@@ -220,9 +220,9 @@ const {
   tokenAddress,
   // Name must have `.eth` at the end and correspond with the tokenId
   name
-} = ENS_ASSET // You can get an ENS asset from `seaport.api.getAsset(...)`
+} = ENS_ASSET // You can get an ENS asset from `openseaSDK.api.getAsset(...)`
 
-const offer = await seaport.createBuyOrder({
+const offer = await openseaSDK.createBuyOrder({
   asset: {
     tokenId,
     tokenAddress,
@@ -251,7 +251,7 @@ To sell an asset, call `createSellOrder`. You can do a fixed-price listing, wher
 // Note that we convert from the JavaScript timestamp (milliseconds):
 const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24)
 
-const listing = await seaport.createSellOrder({
+const listing = await openseaSDK.createSellOrder({
   asset: {
     tokenId,
     tokenAddress,
@@ -281,7 +281,7 @@ const paymentTokenAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 
 const startAmount = 0 // The minimum amount to sell for, in normal units (e.g. ETH)
 
-const auction = await seaport.createSellOrder({
+const auction = await openseaSDK.createSellOrder({
   asset: {
     tokenId,
     tokenAddress,
@@ -308,7 +308,7 @@ Then call `createFactorySellOrders` with your factory contract address and asset
 // Expire these auctions one day from now
 const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24)
 
-const sellOrders = await seaport.createFactorySellOrders({
+const sellOrders = await openseaSDK.createFactorySellOrders({
   assetId: ASSET_OPTION_ID,
   factoryAddress: FACTORY_CONTRACT_ADDRESS,
   accountAddress,
@@ -322,7 +322,7 @@ const sellOrders = await seaport.createFactorySellOrders({
 
 Here's an [example script](https://github.com/ProjectOpenSea/opensea-creatures/blob/master/scripts/sell.js) you can use to mint items.
 
-**NOTE:** If `numberOfOrders` is greater than 5, we will automatically batch them in groups of 5 so you can post orders in parallel. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
+**NOTE:** If `numberOfOrders` is greater than 5, we will automatically batch them in groups of 5 so you can post orders in parallel. Requires an `apiKey` to be set during SDK initialization in order to not be throttled by the API.
 
 Games using this method include [Coins & Steel](https://opensea.io/assets/coins&steelfounderssale) and a couple in stealth :) If you have questions or want support, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)).
 
@@ -334,14 +334,14 @@ To retrieve a list of offers and auction on an asset, you can use an instance of
 import { OrderSide } from 'opensea-js/lib/types'
 
 // Get offers (bids), a.k.a. orders where `side == 0`
-const { orders, count } = await seaport.api.getOrders({
+const { orders, count } = await openseaSDK.api.getOrders({
   asset_contract_address: tokenAddress,
   token_id: token_id,
   side: OrderSide.Buy
 })
 
 // Get page 2 of all auctions, a.k.a. orders where `side == 1`
-const { orders, count } = await seaport.api.getOrders({
+const { orders, count } = await openseaSDK.api.getOrders({
   asset_contract_address: tokenAddress,
   token_id: token_id,
   side: OrderSide.Sell
@@ -380,9 +380,9 @@ The available API filters for the orders endpoint is documented in the `OrderJSO
 To buy an item , you need to **fulfill a sell order**. To do that, it's just one call:
 
 ```JavaScript
-const order = await seaport.api.getOrder({ side: OrderSide.Sell, ... })
+const order = await openseaSDK.api.getOrder({ side: OrderSide.Sell, ... })
 const accountAddress = "0x..." // The buyer's wallet address, also the taker
-const transactionHash = await this.props.seaport.fulfillOrder({ order, accountAddress })
+const transactionHash = await this.props.openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
 Note that the `fulfillOrder` promise resolves when the transaction has been confirmed and mined to the blockchain. To get the transaction hash before this happens, add an event listener (see [Listening to Events](#listening-to-events)) for the `TransactionCreated` event.
@@ -394,9 +394,9 @@ If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the
 Similar to fulfilling sell orders above, you need to fulfill a buy order on an item you own to receive the tokens in the offer.
 
 ```JavaScript
-const order = await seaport.api.getOrder({ side: OrderSide.Buy, ... })
+const order = await openseaSDK.api.getOrder({ side: OrderSide.Buy, ... })
 const accountAddress = "0x..." // The owner's wallet address, also the taker
-await this.props.seaport.fulfillOrder({ order, accountAddress })
+await this.props.openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
 If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
@@ -409,7 +409,7 @@ To transfer an ERC-721 asset or an ERC-1155 asset, it's just one call:
 
 ```JavaScript
 
-const transactionHash = await seaport.transfer({
+const transactionHash = await openseaSDK.transfer({
   asset: { tokenId, tokenAddress },
   fromAddress, // Must own the asset
   toAddress
@@ -420,7 +420,7 @@ For fungible ERC-1155 assets, you can set `schemaName` to "ERC1155" and pass a `
 
 ```JavaScript
 
-const transactionHash = await seaport.transfer({
+const transactionHash = await openseaSDK.transfer({
   asset: {
     tokenId,
     tokenAddress,
@@ -437,9 +437,9 @@ To transfer fungible assets without token IDs, like ERC20 tokens, you can pass i
 Example for transfering 2 DAI ($2) to another address:
 
 ```JavaScript
-const paymentToken = (await seaport.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0]
+const paymentToken = (await openseaSDK.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0]
 const quantity = new BigNumber(Math.pow(10, paymentToken.decimals)).times(2)
-const transactionHash = await seaport.transfer({
+const transactionHash = await openseaSDK.transfer({
   asset: {
     tokenId: null,
     tokenAddress: paymentToken.address,
@@ -459,10 +459,10 @@ Interested in purchasing for users server-side or with a bot, making bundling it
 
 ### Scheduling Future Listings
 
-You can create sell orders that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in seconds) to your seaport instance:
+You can create sell orders that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in seconds) to your SDK instance:
 
 ```JavaScript
-const auction = await seaport.createSellOrder({
+const auction = await openseaSDK.createSellOrder({
   tokenAddress,
   tokenId,
   accountAddress,
@@ -476,8 +476,8 @@ const auction = await seaport.createSellOrder({
 You can buy and transfer an item to someone else in one step! Just pass the `recipientAddress` parameter:
 
 ```JavaScript
-const order = await seaport.api.getOrder({ side: OrderSide.Sell, ... })
-await this.props.seaport.fulfillOrder({
+const order = await openseaSDK.api.getOrder({ side: OrderSide.Sell, ... })
+await this.props.openseaSDK.fulfillOrder({
   order,
   accountAddress, // The address of your wallet, which will sign the transaction
   recipientAddress // The address of the recipient, i.e. the wallet you're purchasing on behalf of
@@ -495,7 +495,7 @@ To make a bulk transfer, it's just one call:
 ```JavaScript
 const assets: Array<{tokenId: string; tokenAddress: string}> = [...]
 
-const transactionHash = await seaport.transferAll({
+const transactionHash = await openseaSDK.transferAll({
   assets,
   fromAddress, // Must own all the assets
   toAddress
@@ -513,7 +513,7 @@ To make a bundle, it's just one call:
 ```JavaScript
 const assets: Array<{tokenId: string; tokenAddress: string}> = [...]
 
-const bundle = await seaport.createBundleSellOrder({
+const bundle = await openseaSDK.createBundleSellOrder({
   bundleName, bundleDescription, bundleExternalLink,
   assets, accountAddress, startAmount, endAmount,
   expirationTime, paymentTokenAddress
@@ -535,7 +535,7 @@ Here's an example of listing the Genesis CryptoKitty for $100! No more needing t
 const paymentTokenAddress = "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359"
 
 // The units for `startAmount` and `endAmount` are now in DAI, so $100 USD
-const auction = await seaport.createSellOrder({
+const auction = await openseaSDK.createSellOrder({
   tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
   tokenId: "1", // Token ID
   accountAddress: OWNERS_WALLET_ADDRESS,
@@ -547,9 +547,9 @@ const auction = await seaport.createSellOrder({
 You can use `getPaymentTokens` to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:
 
 ```JavaScript
-const token = (await seaport.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0]
+const token = (await openseaSDK.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0]
 
-const order = await seaport.api.getOrders({
+const order = await openseaSDK.api.getOrders({
   side: OrderSide.Sell,
   payment_token_address: token.address
 })
@@ -571,7 +571,7 @@ Here's an example of listing a Decentraland parcel for 10 ETH with a specific bu
 // Address allowed to buy from you
 const buyerAddress = "0x123..."
 
-const listing = await seaport.createSellOrder({
+const listing = await openseaSDK.createSellOrder({
   tokenAddress: "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d", // Decentraland
   tokenId: "115792089237316195423570985008687907832853042650384256231655107562007036952461", // Token ID
   accountAddress: OWNERS_WALLET_ADDRESS,
@@ -666,7 +666,7 @@ handleSeaportEvents() {
 }
 ```
 
-To remove all listeners and start over, just call `seaport.removeAllListeners()`.
+To remove all listeners and start over, just call `openseaSDK.removeAllListeners()`.
 
 ## Learning More
 
