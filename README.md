@@ -52,7 +52,7 @@ This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest market
 
 It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**auctions**), create collections of assets to sell at once (**bundles**), and complete trades programmatically.
 
-You get started by [requesting an API key](https://docs.opensea.io/reference) and instantiating your own opensea sdk instance. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEth`) in the process.
+You get started by [requesting an API key](https://docs.opensea.io/reference) and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEth`) in the process.
 
 Happy seafaring! ⛵️
 
