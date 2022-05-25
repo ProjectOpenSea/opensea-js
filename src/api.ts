@@ -91,9 +91,10 @@ export class OpenSeaAPI {
         order
       )) as OrderJSON;
     } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(3000);
-      return this.postOrder(order, retries - 1);
+      throw error;
+      //_throwOrContinue(error, retries);
+      //await delay(3000);
+      //return this.postOrder(order, retries - 1);
     }
     return orderFromJSON(json);
   }
