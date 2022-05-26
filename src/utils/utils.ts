@@ -2,6 +2,7 @@ import BigNumber from "bignumber.js";
 import { AbiType, CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
+import { ItemType } from "seaport-js/lib/constants";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers/types";
 import { AbstractProvider } from "web3-core/types";
@@ -1072,4 +1073,17 @@ interface ErrorWithCode extends Error {
 export const hasErrorCode = (error: unknown): error is ErrorWithCode => {
   const untypedError = error as Partial<ErrorWithCode>;
   return !!untypedError.code;
+};
+
+export const getAssetItemType = (schemaName?: WyvernSchemaName) => {
+  switch (schemaName) {
+    case "ERC20":
+      return ItemType.ERC20;
+    case "ERC721":
+      return ItemType.ERC721;
+    case "ERC1155":
+      return ItemType.ERC1155;
+    default:
+      throw new Error(`Unknown schema name: ${schemaName}`);
+  }
 };
