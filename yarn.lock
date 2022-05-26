@@ -83,35 +83,35 @@
     ethers "~4.0.4"
     lodash "^4.17.11"
 
-"@0xsequence/abi@^0.36.13":
-  version "0.36.13"
-  resolved "https://registry.yarnpkg.com/@0xsequence/abi/-/abi-0.36.13.tgz#069435271b7954dd3d84126df62db906a266e4c1"
-  integrity sha512-PldKY3Ct+4dZ3z9m+edTn0JS/By7fDakx0BbynZRwNcfVnAWvmJDsIWI1xtg6reMPC4QYXCAmdZU5eWop3MSOg==
+"@0xsequence/abi@^0.39.0":
+  version "0.39.0"
+  resolved "https://registry.yarnpkg.com/@0xsequence/abi/-/abi-0.39.0.tgz#5102831ab106735352bb0af7a0bc2a7b7658627c"
+  integrity sha512-26KvkoDEymIbuOwPFlOsgL2rwNjuWaCN+Ea9X9TD9P+MDjZ/ThCsYfyVgzdoN0IXBtxrOAUNIpQ6wk1v98RMuA==
 
-"@0xsequence/multicall@^0.36.7":
-  version "0.36.13"
-  resolved "https://registry.yarnpkg.com/@0xsequence/multicall/-/multicall-0.36.13.tgz#85b02aa7e9e439f5a5d1ff600134148ec9155d57"
-  integrity sha512-fzTUllwKotOcqBNeiqnYcqkxNCpFKHpIhuNLn47ksfsSySEVlln+8jNhivC6WoUiqNbZRSCq3akiYRO8lz7TSA==
+"@0xsequence/multicall@0.39.0":
+  version "0.39.0"
+  resolved "https://registry.yarnpkg.com/@0xsequence/multicall/-/multicall-0.39.0.tgz#b130a8558a5d123f1fbc8f380ec287dbed864fe8"
+  integrity sha512-McLpU3zFCnIsLfvU+xRGqp30/0LjnphboId2dfgS4el4KaSQpnhNarmrGa/ON/hHHjFR3aFj4OKV6FecM5k7Yg==
   dependencies:
-    "@0xsequence/abi" "^0.36.13"
-    "@0xsequence/network" "^0.36.13"
-    "@0xsequence/utils" "^0.36.13"
+    "@0xsequence/abi" "^0.39.0"
+    "@0xsequence/network" "^0.39.0"
+    "@0xsequence/utils" "^0.39.0"
     "@ethersproject/providers" "^5.5.1"
     ethers "^5.5.2"
 
-"@0xsequence/network@^0.36.13":
-  version "0.36.13"
-  resolved "https://registry.yarnpkg.com/@0xsequence/network/-/network-0.36.13.tgz#16995347fd10ea0c1f440c310b60ead80a6f8606"
-  integrity sha512-PmNRI6MehDS38MSEONpRkjyESsfZ4EDLbaOR/40gYSlhvfFHxYLtXgj5+f62/refxrA4e/LwWG3wkkr12XIU4A==
+"@0xsequence/network@^0.39.0":
+  version "0.39.0"
+  resolved "https://registry.yarnpkg.com/@0xsequence/network/-/network-0.39.0.tgz#7dba08936a45f8312ab3236e24028713fcb6bd58"
+  integrity sha512-OAJmb9NC6h9L95RN8oJSIcoDoO3QumLESpvoXsKzNNlzNkTD92QbCgQ6h7mxmqtQhwJ+6GOT08beARMf5MTS+A==
   dependencies:
-    "@0xsequence/utils" "^0.36.13"
+    "@0xsequence/utils" "^0.39.0"
     "@ethersproject/providers" "^5.5.1"
     ethers "^5.5.2"
 
-"@0xsequence/utils@^0.36.13":
-  version "0.36.13"
-  resolved "https://registry.yarnpkg.com/@0xsequence/utils/-/utils-0.36.13.tgz#2e5c21d621d977da4a97deb8367ea8a9a53100f2"
-  integrity sha512-mn9gAPo8M+vKER+NxQ4R8RKumG5NhLee/e9MuEVbjPM1SwW6D1AcyOaR6sqWfgmZmVHZoitq2GKgZFRh3ny9nw==
+"@0xsequence/utils@^0.39.0":
+  version "0.39.0"
+  resolved "https://registry.yarnpkg.com/@0xsequence/utils/-/utils-0.39.0.tgz#011a21caa9cf9f69acd1138e7b7a73b43c269eb5"
+  integrity sha512-+h0bfGomUsAoOzEnPuWSi1keuoXP0d/oAybtfLe0OQwGL+nuhJnIsW4nKlL8qelnjbV69/EqjQjTa5k5b9YHBw==
   dependencies:
     "@ethersproject/abstract-signer" "^5.5.0"
     "@ethersproject/properties" "^5.5.0"
@@ -695,6 +695,13 @@
   dependencies:
     "@ethersproject/logger" "^5.6.0"
 
+"@ethersproject/networks@5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@ethersproject/networks/-/networks-5.6.3.tgz#3ee3ab08f315b433b50c99702eb32e0cf31f899f"
+  integrity sha512-QZxRH7cA5Ut9TbXwZFiCyuPchdWi87ZtVNHWZd0R6YFgYtes2jQ3+bsslJ0WdyDe0i6QumqtoYqvY3rrQFRZOQ==
+  dependencies:
+    "@ethersproject/logger" "^5.6.0"
+
 "@ethersproject/networks@^5.5.0":
   version "5.5.2"
   resolved "https://registry.yarnpkg.com/@ethersproject/networks/-/networks-5.5.2.tgz#784c8b1283cd2a931114ab428dae1bd00c07630b"
@@ -732,6 +739,32 @@
     "@ethersproject/abstract-provider" "^5.6.0"
     "@ethersproject/abstract-signer" "^5.6.0"
     "@ethersproject/address" "^5.6.0"
+    "@ethersproject/basex" "^5.6.0"
+    "@ethersproject/bignumber" "^5.6.0"
+    "@ethersproject/bytes" "^5.6.0"
+    "@ethersproject/constants" "^5.6.0"
+    "@ethersproject/hash" "^5.6.0"
+    "@ethersproject/logger" "^5.6.0"
+    "@ethersproject/networks" "^5.6.0"
+    "@ethersproject/properties" "^5.6.0"
+    "@ethersproject/random" "^5.6.0"
+    "@ethersproject/rlp" "^5.6.0"
+    "@ethersproject/sha2" "^5.6.0"
+    "@ethersproject/strings" "^5.6.0"
+    "@ethersproject/transactions" "^5.6.0"
+    "@ethersproject/web" "^5.6.0"
+    bech32 "1.1.4"
+    ws "7.4.6"
+
+"@ethersproject/providers@5.6.7":
+  version "5.6.7"
+  resolved "https://registry.yarnpkg.com/@ethersproject/providers/-/providers-5.6.7.tgz#1f88ec94febb79a90e33f7e0100354878fb4dabe"
+  integrity sha512-QG7KLxfYk0FA0ycWATKMM8UzMOfOvchtkN89nNORlPqqhX5zatdamJ506dh5ECk+ybcnCkeVOdStlzrOMkkGOA==
+  dependencies:
+    "@ethersproject/abstract-provider" "^5.6.0"
+    "@ethersproject/abstract-signer" "^5.6.0"
+    "@ethersproject/address" "^5.6.0"
+    "@ethersproject/base64" "^5.6.0"
     "@ethersproject/basex" "^5.6.0"
     "@ethersproject/bignumber" "^5.6.0"
     "@ethersproject/bytes" "^5.6.0"
@@ -840,6 +873,21 @@
   version "5.6.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/transactions/-/transactions-5.6.0.tgz#4b594d73a868ef6e1529a2f8f94a785e6791ae4e"
   integrity sha512-4HX+VOhNjXHZyGzER6E/LVI2i6lf9ejYeWD6l4g50AdmimyuStKc39kvKf1bXWQMg7QNVh+uC7dYwtaZ02IXeg==
+  dependencies:
+    "@ethersproject/address" "^5.6.0"
+    "@ethersproject/bignumber" "^5.6.0"
+    "@ethersproject/bytes" "^5.6.0"
+    "@ethersproject/constants" "^5.6.0"
+    "@ethersproject/keccak256" "^5.6.0"
+    "@ethersproject/logger" "^5.6.0"
+    "@ethersproject/properties" "^5.6.0"
+    "@ethersproject/rlp" "^5.6.0"
+    "@ethersproject/signing-key" "^5.6.0"
+
+"@ethersproject/transactions@5.6.1":
+  version "5.6.1"
+  resolved "https://registry.yarnpkg.com/@ethersproject/transactions/-/transactions-5.6.1.tgz#3091b888fe6b89bd6208ea1e9ee5e4ea91d730a3"
+  integrity sha512-oIAC7zBCDnjVlEn0KSG1udbqR7hP9FOurxIV/aG+erCdvdvi+QXEZRUtVP9+lu3WYUe8SMYhdAVwNJtD7dZMRw==
   dependencies:
     "@ethersproject/address" "^5.6.0"
     "@ethersproject/bignumber" "^5.6.0"
@@ -2250,14 +2298,6 @@ confusing-browser-globals@^1.0.11:
   resolved "https://registry.yarnpkg.com/confusing-browser-globals/-/confusing-browser-globals-1.0.11.tgz#ae40e9b57cdd3915408a2805ebd3a5585608dc81"
   integrity sha512-JsPKdmh8ZkmnHxDk55FZ1TqVLvEQTvoByJZRN9jzI0UjxK/QgAmsphz7PGtqgPieQZ/CQcHWXCR7ATDNhGe+YA==
 
-"consideration@git+ssh://git@github.com/ProjectOpenSea/consideration.git#b6fd1b34879a1d8436375df58e83c7fedbfcc7ff":
-  version "0.0.1"
-  resolved "git+ssh://git@github.com/ProjectOpenSea/consideration.git#b6fd1b34879a1d8436375df58e83c7fedbfcc7ff"
-  dependencies:
-    ethers "^5.5.3"
-    ethers-eip712 "^0.2.0"
-    hardhat "https://github.com/0age/hardhat/releases/download/viaIR-2.9.3/hardhat-v2.9.3.tgz"
-
 content-disposition@0.5.4:
   version "0.5.4"
   resolved "https://registry.yarnpkg.com/content-disposition/-/content-disposition-0.5.4.tgz#8b82b4efac82512a02bb0b1dcec9d2c5e8eb5bfe"
@@ -3280,6 +3320,42 @@ ethers-eip712@^0.2.0:
   resolved "https://registry.yarnpkg.com/ethers-eip712/-/ethers-eip712-0.2.0.tgz#52973b3a9a22638f7357283bf66624994c6e91ed"
   integrity sha512-fgS196gCIXeiLwhsWycJJuxI9nL/AoUPGSQ+yvd+8wdWR+43G+J1n69LmWVWvAON0M6qNaf2BF4/M159U8fujQ==
 
+ethers@5.6.7:
+  version "5.6.7"
+  resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.6.7.tgz#3e6257b2a0fdd5fc93e68e141cf2b9761900f374"
+  integrity sha512-Q8pmMraUENK0cY6cy6IvIe3e9xL/+4kBvxmUvLXg1O7Abob0c7XzWI76E29j5em/HxWMl5hYiSClmOMW3jJmdg==
+  dependencies:
+    "@ethersproject/abi" "5.6.2"
+    "@ethersproject/abstract-provider" "5.6.0"
+    "@ethersproject/abstract-signer" "5.6.1"
+    "@ethersproject/address" "5.6.0"
+    "@ethersproject/base64" "5.6.0"
+    "@ethersproject/basex" "5.6.0"
+    "@ethersproject/bignumber" "5.6.1"
+    "@ethersproject/bytes" "5.6.1"
+    "@ethersproject/constants" "5.6.0"
+    "@ethersproject/contracts" "5.6.1"
+    "@ethersproject/hash" "5.6.0"
+    "@ethersproject/hdnode" "5.6.1"
+    "@ethersproject/json-wallets" "5.6.0"
+    "@ethersproject/keccak256" "5.6.0"
+    "@ethersproject/logger" "5.6.0"
+    "@ethersproject/networks" "5.6.3"
+    "@ethersproject/pbkdf2" "5.6.0"
+    "@ethersproject/properties" "5.6.0"
+    "@ethersproject/providers" "5.6.7"
+    "@ethersproject/random" "5.6.0"
+    "@ethersproject/rlp" "5.6.0"
+    "@ethersproject/sha2" "5.6.0"
+    "@ethersproject/signing-key" "5.6.1"
+    "@ethersproject/solidity" "5.6.0"
+    "@ethersproject/strings" "5.6.0"
+    "@ethersproject/transactions" "5.6.1"
+    "@ethersproject/units" "5.6.0"
+    "@ethersproject/wallet" "5.6.1"
+    "@ethersproject/web" "5.6.0"
+    "@ethersproject/wordlists" "5.6.0"
+
 ethers@^4.0.49, ethers@~4.0.4:
   version "4.0.49"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-4.0.49.tgz#0eb0e9161a0c8b4761be547396bbe2fb121a8894"
@@ -3295,7 +3371,7 @@ ethers@^4.0.49, ethers@~4.0.4:
     uuid "2.0.1"
     xmlhttprequest "1.8.0"
 
-ethers@^5.5.2, ethers@^5.5.3, ethers@^5.6.0, ethers@^5.6.6:
+ethers@^5.5.2, ethers@^5.5.3, ethers@^5.6.6:
   version "5.6.6"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.6.6.tgz#a37aa7e265a484a1b4d2ef91d4d89d6b43808a57"
   integrity sha512-2B2ZmSGvRcJpHnFMBk58mkXP50njFipUBCgLK8jUTFbomhVs501cLzyMU6+Vx8YnUDQxywC3qkZvd33xWS+2FA==
@@ -5184,7 +5260,7 @@ merkle-patricia-tree@^4.2.2, merkle-patricia-tree@^4.2.4:
     readable-stream "^3.6.0"
     semaphore-async-await "^1.5.1"
 
-merkletreejs@^0.2.31:
+merkletreejs@0.2.31:
   version "0.2.31"
   resolved "https://registry.yarnpkg.com/merkletreejs/-/merkletreejs-0.2.31.tgz#c8ae7bebf1678c0f92d6d8266aeddd3d97cc0c37"
   integrity sha512-dnK2sE43OebmMe5Qnq1wXvvMIjZjm1u6CcB2KeW6cghlN4p21OpCUr2p56KTVf20KJItNChVsGnimcscp9f+yw==
@@ -6347,14 +6423,22 @@ scrypt-js@3.0.1, scrypt-js@^3.0.0, scrypt-js@^3.0.1:
   resolved "https://registry.yarnpkg.com/scrypt-js/-/scrypt-js-3.0.1.tgz#d314a57c2aef69d1ad98a138a21fe9eafa9ee312"
   integrity sha512-cdwTTnqPu0Hyvf5in5asVdZocVDTNRmR7XEcJuIzMjJeSHybHl7vpB66AzwTaIg6CLSbtjcxc8fqcySfnTkccA==
 
-"seaport-js@git+ssh://git@github.com:ProjectOpenSea/seaport-js.git#188f2144a06d867fcf0e175c69cad3f8fad9f367":
+"seaport-js@git+https://github.com/ProjectOpenSea/seaport-js.git#1f285ec3594446f5fb1754bed0bd056037b812fd":
   version "0.0.1"
-  resolved "git+ssh://git@github.com:ProjectOpenSea/seaport-js.git#188f2144a06d867fcf0e175c69cad3f8fad9f367"
+  resolved "git+https://github.com/ProjectOpenSea/seaport-js.git#1f285ec3594446f5fb1754bed0bd056037b812fd"
   dependencies:
-    "@0xsequence/multicall" "^0.36.7"
-    consideration "git+ssh://git@github.com/ProjectOpenSea/consideration.git#b6fd1b34879a1d8436375df58e83c7fedbfcc7ff"
-    ethers "^5.6.0"
-    merkletreejs "^0.2.31"
+    "@0xsequence/multicall" "0.39.0"
+    ethers "5.6.7"
+    merkletreejs "0.2.31"
+    seaport "https://github.com/ProjectOpenSea/seaport.git#b28bfb064ffbe5dd45edf4237485c6e412c10234"
+
+"seaport@https://github.com/ProjectOpenSea/seaport.git#b28bfb064ffbe5dd45edf4237485c6e412c10234":
+  version "0.0.1"
+  resolved "https://github.com/ProjectOpenSea/seaport.git#b28bfb064ffbe5dd45edf4237485c6e412c10234"
+  dependencies:
+    ethers "^5.5.3"
+    ethers-eip712 "^0.2.0"
+    hardhat "https://github.com/0age/hardhat/releases/download/viaIR-2.9.3/hardhat-v2.9.3.tgz"
 
 secp256k1@^4.0.1:
   version "4.0.2"
