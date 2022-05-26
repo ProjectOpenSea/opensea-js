@@ -419,8 +419,8 @@ suite("seaport: orders", () => {
       buy.takerProtocolFee.toNumber(),
       sell.takerProtocolFee.toNumber()
     );
-    const sellPrice = await rinkebyClient.getCurrentPrice(sell);
-    const buyPrice = await rinkebyClient.getCurrentPrice(buy);
+    const sellPrice = await rinkebyClient.getCurrentPriceLegacyWyvern(sell);
+    const buyPrice = await rinkebyClient.getCurrentPriceLegacyWyvern(buy);
     assert.isAtLeast(buyPrice.toNumber(), sellPrice.toNumber());
     console.info(
       `Matching two orders that differ in price by ${

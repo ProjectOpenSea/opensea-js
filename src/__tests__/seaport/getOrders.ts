@@ -17,7 +17,7 @@ const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
   apiBaseUrl: "https://testnet-api.staging.openseabeta.com",
 });
 
-suite.only("Getting orders", () => {
+suite("Getting orders", () => {
   ["ask", "bid"].forEach((side) => {
     test(`getOrder should return a single order > ${side}`, async () => {
       const order = await rinkebyClient.api.getOrder({

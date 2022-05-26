@@ -1747,10 +1747,21 @@ export class OpenSeaPort {
   }
 
   /**
+   * Gets the current price for the order.
+   */
+  public async getCurrentPrice({
+    order,
+  }: {
+    order: OrderV2;
+  }): Promise<BigNumber> {
+    return new BigNumber(order.currentPrice);
+  }
+
+  /**
    * Gets the price for the order using the contract
    * @param order The order to calculate the price for
    */
-  public async getCurrentPrice(order: Order) {
+  public async getCurrentPriceLegacyWyvern(order: Order) {
     const currentPrice = await this._wyvernProtocolReadOnly.wyvernExchange
       .calculateCurrentPrice_(
         [
@@ -3579,7 +3590,38 @@ export class OpenSeaPort {
    * @param order Order to approve
    * @returns Transaction hash of the approval transaction
    */
-  public async approveOrder(order: UnsignedOrder) {
+  public async approveOrder(order: OrderV2) {
+    // this._dispatch(EventType.ApproveOrder, { order, accountAddress });
+
+    let transactionHash: string;
+    switch (order.protocolAddress) {
+      case CROSS_CHAIN_SEAPORT_ADDRESS: {
+        const transaction = await this.seaport
+          .validate([order.protocolData], order.maker.address)
+          .transact();
+        transactionHash = transaction.hash;
+        break;
+      }
+      default:
+        throw new Error("Unsupported protocol");
+    }
+
+    await this._confirmTransaction(
+      transactionHash,
+      EventType.ApproveOrder,
+      "Approving order"
+    );
+
+    return transactionHash;
+  }
+
+  /**
+   * Instead of signing an off-chain order, you can approve an order
+   * with on on-chain transaction using this method
+   * @param order Order to approve
+   * @returns Transaction hash of the approval transaction
+   */
+  public async approveOrderLegacyWyvern(order: UnsignedOrder) {
     const accountAddress = order.maker;
     const includeInOrderBook = true;
 
@@ -4372,7 +4414,7 @@ export class OpenSeaPort {
   }
 
   private async _getRequiredAmountForTakingSellOrder(sell: Order) {
-    const currentPrice = await this.getCurrentPrice(sell);
+    const currentPrice = await this.getCurrentPriceLegacyWyvern(sell);
     const estimatedPrice = estimateCurrentPrice(sell);
 
     const maxPrice = BigNumber.max(currentPrice, estimatedPrice);
