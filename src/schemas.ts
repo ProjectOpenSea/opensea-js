@@ -32,10 +32,10 @@ export type PartialAssetBundleType = Omit<
 export const assetBundleSchema: JSONSchemaType<PartialAssetBundleType> = {
   type: "object",
   properties: {
-    maker: accountSchema,
+    maker: { ...accountSchema, nullable: true },
     assets: { type: "array", items: { type: "object" } },
-    name: { type: "string" },
-    slug: { type: "string" },
+    name: { type: "string", nullable: true },
+    slug: { type: "string", nullable: true },
     permalink: { type: "string", nullable: false },
 
     sellOrders: {
