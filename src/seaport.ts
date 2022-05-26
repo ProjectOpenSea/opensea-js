@@ -1,16 +1,12 @@
 import { BigNumber } from "bignumber.js";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
-import { providers, BigNumber as EthersBigNumber } from "ethers";
+import { providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import { Seaport } from "seaport-js";
 import { CROSS_CHAIN_SEAPORT_ADDRESS } from "seaport-js/lib/constants";
 import { OrderComponents } from "seaport-js/lib/types";
-import {
-  getSummedTokenAndIdentifierAmounts,
-  TimeBasedItemParams,
-} from "seaport-js/lib/utils/item";
 import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
 import * as WyvernSchemas from "wyvern-schemas";
@@ -1751,46 +1747,14 @@ export class OpenSeaPort {
   }
 
   /**
-   * Gets the current price for the order in each token and identifier.
-   * If timeBasedOptions is not supplied then the larger of endAmount and startAmount is used.
-   * @returns Map of token address to map of token identifier to summed price
+   * Gets the current price for the order.
    */
   public async getCurrentPrice({
     order,
-    timeBasedOptions,
   }: {
     order: OrderV2;
-    timeBasedOptions?: Omit<TimeBasedItemParams, "isConsideration">;
-  }): Promise<Record<string, Record<string, EthersBigNumber>>> {
-    let summedTokenAndIdentifierAmounts: Record<
-      string,
-      Record<string, EthersBigNumber>
-    >;
-    switch (order.protocolAddress) {
-      case CROSS_CHAIN_SEAPORT_ADDRESS: {
-        const items =
-          order.side === "ask"
-            ? order.protocolData.parameters.consideration
-            : order.protocolData.parameters.offer;
-        const timeBasedItemParams: TimeBasedItemParams | undefined =
-          timeBasedOptions
-            ? {
-                isConsiderationItem: order.side === "ask",
-                ...timeBasedOptions,
-              }
-            : undefined;
-        summedTokenAndIdentifierAmounts = getSummedTokenAndIdentifierAmounts({
-          items,
-          criterias: [],
-          timeBasedItemParams,
-        });
-        break;
-      }
-      default:
-        throw new Error("Unsupported protocol");
-    }
-
-    return summedTokenAndIdentifierAmounts;
+  }): Promise<BigNumber> {
+    return new BigNumber(order.currentPrice);
   }
 
   /**
