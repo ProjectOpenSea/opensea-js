@@ -1008,8 +1008,7 @@ export class OpenSeaPort {
 
   /**
    * Create a sell order to auction an asset.
-   * Will throw a 'You do not own enough of this asset' error if the maker doesn't have the asset or not enough of it to sell the specific `quantity`.
-   * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
+   * NOTE: English auctions, multiple quantities and private listings are not yet supported.
    * @param options Options for creating the sell order
    * @param options.asset The asset to trade
    * @param options.accountAddress Address of the maker's wallet
@@ -1437,20 +1436,22 @@ export class OpenSeaPort {
 
   /**
    * Fullfill or "take" an order for an asset, either a buy or sell order
-   * @param param0 __namedParamaters Object
-   * @param order The order to fulfill, a.k.a. "take"
-   * @param accountAddress The taker's wallet address
-   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
+   * NOTE: "Gifting" (fulfilling with recipient address) is not yet supported
+   * NOTE: Fulfilling private listings is not yet supported
+   * @param options fullfillment options
+   * @param options.order The order to fulfill, a.k.a. "take"
+   * @param options.accountAddress The taker's wallet address
+   * @param options.recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
    * @returns Transaction hash for fulfilling the order
    */
   public async fulfillOrder({
     order,
-    accountAddress, //TODO: Implement recipientAddress
+    accountAddress,
   }: {
     order: OrderV2;
     accountAddress: string;
+    // TODO: Implement recipientAddress
     recipientAddress?: string;
-    referrerAddress?: string;
   }): Promise<string> {
     let transactionHash: string;
     switch (order.protocolAddress) {
@@ -2095,7 +2096,6 @@ export class OpenSeaPort {
           }
           throw error;
         }
-        break;
       }
       default:
         throw new Error("Unsupported protocol");
