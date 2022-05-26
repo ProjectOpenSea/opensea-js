@@ -10,6 +10,21 @@
 
 <!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
 
+## v4.0.0-beta.0
+
+This is a beta release of opensea-js supporting querying for, creating, cancelling and fulfilling orders on the new seaport protocol.
+
+### Currently unsupported features
+
+- Creating and fulfilling private listings
+- Creating and fulfilling bundle orders
+- Creating orders with non-single quantities for ERC1155s
+- Fulfilling orders for different recipient addresses (gifting)
+
+Support for these features will come in a future release.
+
+---
+
 A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don't have to deploy your own smart contracts or backend orderbooks.
 
 Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](https://www.npmjs.com/package/opensea-js)
