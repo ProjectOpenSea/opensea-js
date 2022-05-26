@@ -12,14 +12,14 @@
 
 ## v4.0.0-beta.0
 
-This is a beta release of opensea-js supporting querying for, creating, cancelling and fulfilling orders on the new seaport protocol.
+This is a beta release of opensea-js supporting querying for, creating, cancelling and fulfilling listings and offers on the new Seaport Protocol.
 
 ### Currently unsupported features
 
 - Creating and fulfilling private listings
-- Creating and fulfilling bundle orders
-- Creating orders with non-single quantities for ERC1155s
-- Fulfilling orders for different recipient addresses (gifting)
+- Creating and fulfilling bundle listings and offers
+- Creating listings and offers with non-single quantities for ERC1155s
+- Fulfilling listings for different recipient addresses (gifting)
 
 Support for these features will come in a future release.
 
