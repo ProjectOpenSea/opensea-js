@@ -13,8 +13,6 @@ const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL);
 const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
   networkName: Network.Rinkeby,
   apiKey: RINKEBY_API_KEY,
-  // TODO: Remove once regular testnets (production unleash flags) supports seaport orders
-  apiBaseUrl: "https://testnet-api.staging.openseabeta.com",
 });
 
 suite("Getting orders", () => {
