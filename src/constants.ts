@@ -1,4 +1,5 @@
 import { WyvernProtocol } from "wyvern-js";
+import { Network } from "./types";
 
 export const DEFAULT_GAS_INCREASE_FACTOR = 1.01;
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS;
@@ -117,4 +118,7 @@ export const CONDUIT_KEYS_TO_CONDUIT = {
 };
 
 export const OPENSEA_ZONE = "0x9B814233894Cd227f561B78Cc65891AA55C62Ad2";
-export const WETH_ADDRESS = "0xc778417E063141139Fce010982780140Aa0cD5Ab";
+export const WETH_ADDRESS_BY_NETWORK = {
+  [Network.Main]: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  [Network.Rinkeby]: "0xc778417E063141139Fce010982780140Aa0cD5Ab",
+} as const;

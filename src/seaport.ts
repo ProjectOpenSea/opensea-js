@@ -54,7 +54,7 @@ import {
   STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS,
   UNISWAP_FACTORY_ADDRESS_MAINNET,
   UNISWAP_FACTORY_ADDRESS_RINKEBY,
-  WETH_ADDRESS,
+  WETH_ADDRESS_BY_NETWORK,
   WRAPPED_NFT_FACTORY_ADDRESS_MAINNET,
   WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
@@ -876,7 +876,7 @@ export class OpenSeaPort {
     startAmount,
     quantity = 1,
     expirationTime,
-    paymentTokenAddress = WETH_ADDRESS,
+    paymentTokenAddress,
   }: {
     asset: Asset;
     accountAddress: string;
@@ -888,6 +888,8 @@ export class OpenSeaPort {
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
     }
+    paymentTokenAddress =
+      paymentTokenAddress ?? WETH_ADDRESS_BY_NETWORK[this._networkName];
 
     const openseaAsset = await this.api.getAsset(asset);
     const considerationAssetItems = this.getAssetItems(
