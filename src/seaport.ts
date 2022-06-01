@@ -1023,9 +1023,6 @@ export class OpenSeaPort {
    * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
-   * @param options.waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
-   * @param options.englishAuctionReservePrice Optional price level, below which orders may be placed but will not be matched.  Orders below the reserve can be manually accepted but will not be automatically matched.
-   * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    */
   public async createSellOrder({
     asset,
@@ -1046,9 +1043,9 @@ export class OpenSeaPort {
     expirationTime?: BigNumberInput;
     paymentTokenAddress?: string;
     // TODO: Implement the following options
-    waitForHighestBid?: boolean;
-    englishAuctionReservePrice?: string;
-    buyerAddress?: string;
+    // waitForHighestBid?: boolean;
+    // englishAuctionReservePrice?: string;
+    // buyerAddress?: string;
   }): Promise<OrderV2> {
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
@@ -1449,7 +1446,6 @@ export class OpenSeaPort {
    * @param options fullfillment options
    * @param options.order The order to fulfill, a.k.a. "take"
    * @param options.accountAddress The taker's wallet address
-   * @param options.recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
    * @returns Transaction hash for fulfilling the order
    */
   public async fulfillOrder({
@@ -1459,7 +1455,7 @@ export class OpenSeaPort {
     order: OrderV2;
     accountAddress: string;
     // TODO: Implement recipientAddress
-    recipientAddress?: string;
+    // recipientAddress?: string;
   }): Promise<string> {
     let transactionHash: string;
     switch (order.protocolAddress) {
