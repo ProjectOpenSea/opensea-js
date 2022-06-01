@@ -862,7 +862,6 @@ export class OpenSeaPort {
 
   /**
    * Create a buy order to make an offer on an asset.
-   * NOTE: Creating orders with non-single quantity is currently not supported.
    * @param options Options for creating the buy order
    * @param options.asset The asset to trade
    * @param options.accountAddress Address of the maker's wallet
@@ -1012,7 +1011,6 @@ export class OpenSeaPort {
 
   /**
    * Create a sell order to auction an asset.
-   * NOTE: Creating orders with non-single quantity is currently not supported.
    * NOTE: English auctions, multiple quantities and private listings are not yet supported.
    * @param options Options for creating the sell order
    * @param options.asset The asset to trade
