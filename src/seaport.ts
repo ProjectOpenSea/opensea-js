@@ -1554,7 +1554,7 @@ export class OpenSeaPort {
     order: OrderV2;
     accountAddress: string;
   }) {
-    // this._dispatch(EventType.CancelOrder, { order, accountAddress });
+    this._dispatch(EventType.CancelOrder, { orderV2: order, accountAddress });
 
     // Transact and get the transaction hash
     let transactionHash: string;
@@ -3862,7 +3862,10 @@ export class OpenSeaPort {
    * @returns Transaction hash of the approval transaction
    */
   public async approveOrder(order: OrderV2) {
-    // this._dispatch(EventType.ApproveOrder, { order, accountAddress });
+    this._dispatch(EventType.ApproveOrder, {
+      orderV2: order,
+      accountAddress: order.maker.address,
+    });
 
     let transactionHash: string;
     switch (order.protocolAddress) {

@@ -9,6 +9,7 @@ import {
   WyvernProtocolConfig,
 } from "wyvern-js/lib/types";
 import type { Token } from "wyvern-schemas/dist/types";
+import type { OrderV2 } from "./orders/types";
 
 export { HowToCall, Network };
 export type { ECSignature };
@@ -81,6 +82,7 @@ export interface EventData {
   error?: unknown;
 
   order?: Order | UnsignedOrder;
+  orderV2?: OrderV2;
   buy?: Order;
   sell?: Order;
   matchMetadata?: string;
