@@ -151,6 +151,7 @@ import {
   getMaxOrderExpirationTimestamp,
   hasErrorCode,
   getAssetItemType,
+  BigNumberInput,
 } from "./utils/utils";
 
 export class OpenSeaPort {
@@ -766,7 +767,7 @@ export class OpenSeaPort {
 
   private getAssetItems(
     assets: Asset[],
-    quantities: number[] = [],
+    quantities: BigNumber[] = [],
     fallbackSchema?: WyvernSchemaName
   ): CreateInputItem[] {
     return assets.map((asset, index) => ({
@@ -880,9 +881,9 @@ export class OpenSeaPort {
   }: {
     asset: Asset;
     accountAddress: string;
-    startAmount: number;
-    quantity?: number;
-    expirationTime?: number;
+    startAmount: BigNumberInput;
+    quantity?: BigNumberInput;
+    expirationTime?: BigNumberInput;
     paymentTokenAddress?: string;
   }): Promise<OrderV2> {
     if (!asset.tokenId) {
@@ -894,14 +895,14 @@ export class OpenSeaPort {
     const openseaAsset = await this.api.getAsset(asset);
     const considerationAssetItems = this.getAssetItems(
       [openseaAsset],
-      [quantity]
+      [makeBigNumber(quantity)]
     );
 
     const { basePrice } = await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
-      expirationTime ?? getMaxOrderExpirationTimestamp(),
-      startAmount
+      makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
+      makeBigNumber(startAmount)
     );
 
     const { openseaSellerFee, collectionSellerFee } = await this.getFees({
@@ -1038,11 +1039,11 @@ export class OpenSeaPort {
   }: {
     asset: Asset;
     accountAddress: string;
-    startAmount: number;
-    endAmount?: number;
-    quantity?: number;
+    startAmount: BigNumberInput;
+    endAmount?: BigNumberInput;
+    quantity?: BigNumberInput;
     listingTime?: string;
-    expirationTime?: number;
+    expirationTime?: BigNumberInput;
     paymentTokenAddress?: string;
     // TODO: Implement the following options
     waitForHighestBid?: boolean;
@@ -1054,14 +1055,17 @@ export class OpenSeaPort {
     }
 
     const openseaAsset = await this.api.getAsset(asset);
-    const offerAssetItems = this.getAssetItems([openseaAsset], [quantity]);
+    const offerAssetItems = this.getAssetItems(
+      [openseaAsset],
+      [makeBigNumber(quantity)]
+    );
 
     const { basePrice, endPrice } = await this._getPriceParameters(
       OrderSide.Sell,
       paymentTokenAddress,
-      expirationTime ?? getMaxOrderExpirationTimestamp(),
-      startAmount,
-      endAmount
+      makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
+      makeBigNumber(startAmount),
+      endAmount ? makeBigNumber(endAmount) : undefined
     );
 
     const { sellerFee, openseaSellerFee, collectionSellerFee } =
@@ -3007,8 +3011,8 @@ export class OpenSeaPort {
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
-      expirationTime,
-      startAmount
+      makeBigNumber(expirationTime),
+      makeBigNumber(startAmount)
     );
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
@@ -3124,11 +3128,11 @@ export class OpenSeaPort {
       await this._getPriceParameters(
         OrderSide.Sell,
         paymentTokenAddress,
-        expirationTime,
-        startAmount,
-        endAmount,
+        makeBigNumber(expirationTime),
+        makeBigNumber(startAmount),
+        endAmount ? makeBigNumber(endAmount) : undefined,
         waitForHighestBid,
-        englishAuctionReservePrice
+        makeBigNumber(englishAuctionReservePrice)
       );
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
@@ -3371,8 +3375,8 @@ export class OpenSeaPort {
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
-      expirationTime,
-      startAmount
+      makeBigNumber(expirationTime),
+      makeBigNumber(startAmount)
     );
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
@@ -3490,11 +3494,11 @@ export class OpenSeaPort {
       await this._getPriceParameters(
         OrderSide.Sell,
         paymentTokenAddress,
-        expirationTime,
-        startAmount,
-        endAmount,
+        makeBigNumber(expirationTime),
+        makeBigNumber(startAmount),
+        endAmount ? makeBigNumber(endAmount) : undefined,
         waitForHighestBid,
-        englishAuctionReservePrice
+        makeBigNumber(englishAuctionReservePrice)
       );
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
@@ -4396,13 +4400,14 @@ export class OpenSeaPort {
   private async _getPriceParameters(
     orderSide: OrderSide,
     tokenAddress: string,
-    expirationTime: number,
-    startAmount: number,
-    endAmount?: number,
+    expirationTime: BigNumber,
+    startAmount: BigNumber,
+    endAmount?: BigNumber,
     waitingForBestCounterOrder = false,
-    englishAuctionReservePrice?: number
+    englishAuctionReservePrice?: BigNumber
   ) {
-    const priceDiff = endAmount != null ? startAmount - endAmount : 0;
+    const priceDiff =
+      endAmount != null ? startAmount.minus(endAmount) : new BigNumber(0);
     const paymentToken = tokenAddress.toLowerCase();
     const isEther = tokenAddress == NULL_ADDRESS;
     const { tokens } = await this.api.getPaymentTokens({
@@ -4411,7 +4416,7 @@ export class OpenSeaPort {
     const token = tokens[0];
 
     // Validation
-    if (isNaN(startAmount) || startAmount == null || startAmount < 0) {
+    if (startAmount.isNaN() || startAmount == null || startAmount.lt(0)) {
       throw new Error(`Starting price must be a number >= 0`);
     }
     if (!isEther && !token) {
@@ -4425,12 +4430,12 @@ export class OpenSeaPort {
     if (isEther && orderSide === OrderSide.Buy) {
       throw new Error(`Offers must use wrapped ETH or an ERC-20 token.`);
     }
-    if (priceDiff < 0) {
+    if (priceDiff.lt(0)) {
       throw new Error(
         "End price must be less than or equal to the start price."
       );
     }
-    if (priceDiff > 0 && expirationTime == 0) {
+    if (priceDiff.gt(0) && expirationTime.eq(0)) {
       throw new Error(
         "Expiration time must be set if order will change in price."
       );
@@ -4453,30 +4458,21 @@ export class OpenSeaPort {
       ? makeBigNumber(
           this.web3.utils.toWei(startAmount.toString(), "ether")
         ).integerValue()
-      : WyvernProtocol.toBaseUnitAmount(
-          makeBigNumber(startAmount),
-          token.decimals
-        );
+      : WyvernProtocol.toBaseUnitAmount(startAmount, token.decimals);
 
     const endPrice = endAmount
       ? isEther
         ? makeBigNumber(
             this.web3.utils.toWei(endAmount.toString(), "ether")
           ).integerValue()
-        : WyvernProtocol.toBaseUnitAmount(
-            makeBigNumber(endAmount),
-            token.decimals
-          )
+        : WyvernProtocol.toBaseUnitAmount(endAmount, token.decimals)
       : undefined;
 
     const extra = isEther
       ? makeBigNumber(
           this.web3.utils.toWei(priceDiff.toString(), "ether")
         ).integerValue()
-      : WyvernProtocol.toBaseUnitAmount(
-          makeBigNumber(priceDiff),
-          token.decimals
-        );
+      : WyvernProtocol.toBaseUnitAmount(priceDiff, token.decimals);
 
     const reservePrice = englishAuctionReservePrice
       ? isEther
@@ -4487,7 +4483,7 @@ export class OpenSeaPort {
             )
           ).integerValue()
         : WyvernProtocol.toBaseUnitAmount(
-            makeBigNumber(englishAuctionReservePrice),
+            englishAuctionReservePrice,
             token.decimals
           )
       : undefined;
