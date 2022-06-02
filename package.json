@@ -33,7 +33,7 @@
   "types": "lib/index.d.ts",
   "dependencies": {
     "ajv": "^8.11.0",
-    "bignumber.js": "9.0.1",
+    "bignumber.js": "9.0.2",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
     "ethereumjs-util": "^5.2.0",
     "ethers": "^5.6.6",
