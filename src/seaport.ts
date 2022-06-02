@@ -4437,11 +4437,16 @@ export class OpenSeaPort {
         "Expiration time must be set if order will change in price."
       );
     }
-    if (englishAuctionReservePrice && !waitingForBestCounterOrder) {
+    if (
+      englishAuctionReservePrice &&
+      !englishAuctionReservePrice.isZero() &&
+      !waitingForBestCounterOrder
+    ) {
       throw new Error("Reserve prices may only be set on English auctions.");
     }
     if (
       englishAuctionReservePrice &&
+      !englishAuctionReservePrice.isZero() &&
       englishAuctionReservePrice < startAmount
     ) {
       throw new Error(
