@@ -52,7 +52,7 @@ const client = new OpenSeaPort(
 let asset: OpenSeaAsset;
 const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
 
-suite("seaport: fees", () => {
+suite("SDK: fees", () => {
   before(async () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString();
     const tokenAddress = MYTHEREUM_ADDRESS;

@@ -96,7 +96,7 @@ const assetsForBulkTransfer = assetsForBundleOrder;
 let manaAddress: string;
 let daiAddress: string;
 
-suite("seaport: orders", () => {
+suite("SDK: orders", () => {
   before(async () => {
     daiAddress = (await client.api.getPaymentTokens({ symbol: "DAI" }))
       .tokens[0].address;

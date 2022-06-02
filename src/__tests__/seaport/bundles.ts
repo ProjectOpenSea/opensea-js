@@ -123,7 +123,7 @@ const homogenousSemiFungibleAssetsForBundleOrder = [
 
 let manaAddress: string;
 
-suite("seaport: bundles", () => {
+suite("SDK: bundles", () => {
   before(async () => {
     manaAddress = (await client.api.getPaymentTokens({ symbol: "MANA" }))
       .tokens[0].address;

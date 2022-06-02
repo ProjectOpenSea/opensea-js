@@ -63,7 +63,7 @@ const rinkebyClient = new OpenSeaPort(
 
 let manaAddress: string;
 
-suite("seaport: owners and transfers", () => {
+suite("SDK: owners and transfers", () => {
   before(async () => {
     manaAddress = (await client.api.getPaymentTokens({ symbol: "MANA" }))
       .tokens[0].address;

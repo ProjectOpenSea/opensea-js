@@ -34,7 +34,7 @@ const client = new OpenSeaPort(
   (line) => console.info(`MAINNET: ${line}`)
 );
 
-suite("seaport: misc", () => {
+suite("SDK: misc", () => {
   test("Instance has public methods", () => {
     assert.equal(typeof client.getCurrentPriceLegacyWyvern, "function");
     assert.equal(typeof client.wrapEth, "function");
