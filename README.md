@@ -10,7 +10,7 @@
 
 <!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
 
-## v4.0.0-beta.0
+## v4.0.0-beta
 
 This is a beta release of opensea-js supporting querying for, creating, cancelling and fulfilling listings and offers on the new Seaport Protocol.
 
