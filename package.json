@@ -41,7 +41,7 @@
     "isomorphic-unfetch": "^2.1.1",
     "lodash": "^4.17.21",
     "query-string": "^6.11.1",
-    "seaport-js": "git+https://github.com/ProjectOpenSea/seaport-js.git#7c2e9e4253f716d14484d478c7bda1a1b4790185",
+    "seaport-js": "git+https://github.com/ProjectOpenSea/seaport-js.git#831389373ed435fdf45d892c7cafa66215b423ce",
     "web3": "1.7.0",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#55b5438d2c13290ac7ab7988a8362495a726ee89",
     "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#8bfb564458e8dfef08a9e1e839a4a3adeece0e83"
