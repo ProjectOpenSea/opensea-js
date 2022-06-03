@@ -44,7 +44,7 @@
     "seaport-js": "git+https://github.com/ProjectOpenSea/seaport-js.git#189ed57ea392ecc81fa80cf5cde8599130a30dda",
     "web3": "1.7.0",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#55b5438d2c13290ac7ab7988a8362495a726ee89",
-    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#12a9babcc6e969d9cebd5e9d291bc40fc8b9c629"
+    "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#8bfb564458e8dfef08a9e1e839a4a3adeece0e83"
   },
   "devDependencies": {
     "@typechain/web3-v1": "^5.0.0",
