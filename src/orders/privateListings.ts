@@ -1,11 +1,22 @@
 import { BigNumber } from "ethers";
 import {
+  ConsiderationInputItem,
+  CreateInputItem,
   MatchOrdersFulfillment,
   Order,
   OrderWithCounter,
 } from "seaport-js/lib/types";
 import { isCurrencyItem } from "seaport-js/lib/utils/item";
 import { generateRandomSalt } from "seaport-js/lib/utils/order";
+
+export const getPrivateListingConsiderations = (
+  offer: CreateInputItem[],
+  privateSaleRecipient: string
+): ConsiderationInputItem[] => {
+  return offer.map((item) => {
+    return { ...item, recipient: privateSaleRecipient };
+  });
+};
 
 export const constructPrivateListingCounterOrder = (
   order: OrderWithCounter,

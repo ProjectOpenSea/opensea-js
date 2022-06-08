@@ -83,6 +83,7 @@ import {
 } from "./debugging";
 import {
   constructPrivateListingCounterOrder,
+  getPrivateListingConsiderations,
   getPrivateListingFulfillments,
 } from "./orders/privateListings";
 import { OrderV2 } from "./orders/types";
@@ -1015,7 +1016,7 @@ export class OpenSeaPort {
 
   /**
    * Create a sell order to auction an asset.
-   * NOTE: English auctions, multiple quantities and private listings are not yet supported.
+   * NOTE: English auctions are not yet supported.
    * @param options Options for creating the sell order
    * @param options.asset The asset to trade
    * @param options.accountAddress Address of the maker's wallet
@@ -1025,6 +1026,8 @@ export class OpenSeaPort {
    * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
+   * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
+
    */
   public async createSellOrder({
     asset,
@@ -1035,6 +1038,7 @@ export class OpenSeaPort {
     listingTime,
     expirationTime,
     paymentTokenAddress = NULL_ADDRESS,
+    buyerAddress,
   }: {
     asset: Asset;
     accountAddress: string;
@@ -1044,10 +1048,10 @@ export class OpenSeaPort {
     listingTime?: string;
     expirationTime?: BigNumberInput;
     paymentTokenAddress?: string;
+    buyerAddress?: string;
     // TODO: Implement the following options
     // waitForHighestBid?: boolean;
     // englishAuctionReservePrice?: string;
-    // buyerAddress?: string;
   }): Promise<OrderV2> {
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
@@ -1079,6 +1083,12 @@ export class OpenSeaPort {
       openseaSellerFee,
       collectionSellerFee,
     ].filter((item): item is ConsiderationInputItem => item !== undefined);
+
+    if (buyerAddress) {
+      considerationFeeItems.push(
+        ...getPrivateListingConsiderations(offerAssetItems, buyerAddress)
+      );
+    }
 
     const { executeAllActions } = await this.seaport.createOrder(
       {
