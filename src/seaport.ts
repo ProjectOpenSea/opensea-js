@@ -1063,7 +1063,7 @@ export class OpenSeaPort {
       paymentTokenAddress,
       makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
       makeBigNumber(startAmount),
-      endAmount ? makeBigNumber(endAmount) : undefined
+      endAmount !== undefined ? makeBigNumber(endAmount) : undefined
     );
 
     const { sellerFee, openseaSellerFee, collectionSellerFee } =
@@ -3192,7 +3192,7 @@ export class OpenSeaPort {
         paymentTokenAddress,
         makeBigNumber(expirationTime),
         makeBigNumber(startAmount),
-        endAmount ? makeBigNumber(endAmount) : undefined,
+        endAmount !== undefined ? makeBigNumber(endAmount) : undefined,
         waitForHighestBid,
         makeBigNumber(englishAuctionReservePrice)
       );
@@ -3558,7 +3558,7 @@ export class OpenSeaPort {
         paymentTokenAddress,
         makeBigNumber(expirationTime),
         makeBigNumber(startAmount),
-        endAmount ? makeBigNumber(endAmount) : undefined,
+        endAmount !== undefined ? makeBigNumber(endAmount) : undefined,
         waitForHighestBid,
         makeBigNumber(englishAuctionReservePrice)
       );

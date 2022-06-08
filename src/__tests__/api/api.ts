@@ -151,7 +151,7 @@ suite("api", () => {
     if (!order.asset) {
       return;
     }
-    const url = `https://testnets.opensea.io/assets/${order.asset.assetContract.address}/${order.asset.tokenId}`;
+    const url = `https://testnets.opensea.io/assets/rinkeby/${order.asset.assetContract.address}/${order.asset.tokenId}`;
     assert.equal(order.asset.openseaLink, url);
   });
 
@@ -160,7 +160,7 @@ suite("api", () => {
     if (!order.asset) {
       return;
     }
-    const url = `https://opensea.io/assets/${order.asset.assetContract.address}/${order.asset.tokenId}`;
+    const url = `https://opensea.io/assets/ethereum/${order.asset.assetContract.address}/${order.asset.tokenId}`;
     assert.equal(order.asset.openseaLink, url);
   });
 
