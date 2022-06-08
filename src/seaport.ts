@@ -1016,7 +1016,6 @@ export class OpenSeaPort {
 
   /**
    * Create a sell order to auction an asset.
-   * NOTE: English auctions are not yet supported.
    * @param options Options for creating the sell order
    * @param options.asset The asset to trade
    * @param options.accountAddress Address of the maker's wallet
@@ -1027,7 +1026,6 @@ export class OpenSeaPort {
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
-
    */
   public async createSellOrder({
     asset,
@@ -1049,9 +1047,6 @@ export class OpenSeaPort {
     expirationTime?: BigNumberInput;
     paymentTokenAddress?: string;
     buyerAddress?: string;
-    // TODO: Implement the following options
-    // waitForHighestBid?: boolean;
-    // englishAuctionReservePrice?: string;
   }): Promise<OrderV2> {
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
@@ -1499,7 +1494,6 @@ export class OpenSeaPort {
 
   /**
    * Fullfill or "take" an order for an asset, either a buy or sell order
-   * NOTE: Fulfilling private listings is not yet supported
    * @param options fullfillment options
    * @param options.order The order to fulfill, a.k.a. "take"
    * @param options.accountAddress The taker's wallet address
