@@ -81,6 +81,10 @@ import {
   requireOrderCalldataCanMatch,
   requireOrdersCanMatch,
 } from "./debugging";
+import {
+  constructPrivateListingCounterOrder,
+  getPrivateListingFulfillments,
+} from "./orders/privateListings";
 import { OrderV2 } from "./orders/types";
 import { CheezeWizardsBasicTournamentAbi } from "./typechain/contracts/CheezeWizardsBasicTournamentAbi";
 import { DecentralandEstatesAbi } from "./typechain/contracts/DecentralandEstatesAbi";
@@ -1437,6 +1441,52 @@ export class OpenSeaPort {
     return this.validateAndPostOrder(orderWithSignature);
   }
 
+  private async fulfillPrivateOrder({
+    order,
+    accountAddress,
+  }: {
+    order: OrderV2;
+    accountAddress: string;
+  }): Promise<string> {
+    let transactionHash: string;
+    switch (order.protocolAddress) {
+      case CROSS_CHAIN_SEAPORT_ADDRESS: {
+        if (!order.taker?.address) {
+          throw new Error(
+            "Order is not a private listing must have a taker address"
+          );
+        }
+        const counterOrder = constructPrivateListingCounterOrder(
+          order.protocolData,
+          order.taker.address
+        );
+        const fulfillments = getPrivateListingFulfillments(order.protocolData);
+        const transaction = await this.seaport
+          .matchOrders({
+            orders: [order.protocolData, counterOrder],
+            fulfillments,
+            overrides: {
+              value: counterOrder.parameters.offer[0].startAmount,
+            },
+            accountAddress,
+          })
+          .transact();
+        const transactionReceipt = await transaction.wait();
+        transactionHash = transactionReceipt.transactionHash;
+        break;
+      }
+      default:
+        throw new Error("Unsupported protocol");
+    }
+
+    await this._confirmTransaction(
+      transactionHash,
+      EventType.MatchOrders,
+      "Fulfilling order"
+    );
+    return transactionHash;
+  }
+
   /**
    * Fullfill or "take" an order for an asset, either a buy or sell order
    * NOTE: Fulfilling private listings is not yet supported
@@ -1455,6 +1505,19 @@ export class OpenSeaPort {
     accountAddress: string;
     recipientAddress?: string;
   }): Promise<string> {
+    const isPrivateListing = !!order.taker;
+    if (isPrivateListing) {
+      if (recipientAddress) {
+        throw new Error(
+          "Private listings cannot be fulfilled with a recipient address"
+        );
+      }
+      return this.fulfillPrivateOrder({
+        order,
+        accountAddress,
+      });
+    }
+
     let transactionHash: string;
     switch (order.protocolAddress) {
       case CROSS_CHAIN_SEAPORT_ADDRESS: {
