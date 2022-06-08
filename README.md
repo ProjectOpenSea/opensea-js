@@ -16,7 +16,7 @@ This is a beta release of opensea-js supporting querying for, creating, cancelli
 
 ### Unsupported features
 
-- Creating and fulfilling bundle listings and offers
+- Creating and fulfilling bundle listings and offers`
 
 ---
 
@@ -30,7 +30,6 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Fetching Assets](#fetching-assets)
     - [Checking Balances and Ownerships](#checking-balances-and-ownerships)
   - [Making Offers](#making-offers)
-    - [Bidding on Multiple Assets](#bidding-on-multiple-assets)
     - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
     - [Offer Limits](#offer-limits)
   - [Making Listings / Selling Items](#making-listings--selling-items)
@@ -44,7 +43,6 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Scheduling Future Listings](#scheduling-future-listings)
   - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
   - [Bulk Transfers](#bulk-transfers)
-  - [Creating Bundles](#creating-bundles)
   - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
   - [Private Auctions](#private-auctions)
   - [Sharing Sale Fees with OpenSea](#sharing-sale-fees-with-opensea)
@@ -60,7 +58,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
 
 This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs.
 
-It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**auctions**), create collections of assets to sell at once (**bundles**), and complete trades programmatically.
+It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**auctions**), and complete trades programmatically.
 
 Get started by [requesting an API key](https://docs.opensea.io/reference) and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEth`) in the process.
 
@@ -199,23 +197,6 @@ const offer = await openseaSDK.createBuyOrder({
 ```
 
 When you make an offer on an item owned by an OpenSea user, **that user will automatically get an email notifying them with the offer amount**, if it's above their desired threshold.
-
-#### Bidding on Multiple Assets
-
-You can also make an offer on a bundle of assets. This could also be used for creating a bounty for whoever can acquire a list of items. Here's how you do it:
-
-```JavaScript
-const assets = YOUR_ASSETS
-const offer = await openseaSDK.createBundleBuyOrder({
-  assets,
-  accountAddress,
-  startAmount: 2.4,
-  // Optional expiration time for the order, in Unix time (seconds):
-  expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24) // One day from now
-})
-```
-
-When you bid on multiple assets, an email will be sent to the owner if a bundle exists on OpenSea that contains the assets. In the future, OpenSea will send emails to multiple owners if the assets aren't all owned by the same wallet.
 
 #### Bidding on ENS Short Name Auctions
 
@@ -513,28 +494,6 @@ const transactionHash = await openseaSDK.transferAll({
 ```
 
 This will automatically approve the assets for trading and confirm the transaction for sending them.
-
-### Creating Bundles
-
-You can also create bundles of assets to sell at the same time! If the owner has approved all the assets in the bundle already, only a signature is needed to create it.
-
-To make a bundle, it's just one call:
-
-```JavaScript
-const assets: Array<{tokenId: string; tokenAddress: string}> = [...]
-
-const bundle = await openseaSDK.createBundleSellOrder({
-  bundleName, bundleDescription, bundleExternalLink,
-  assets, accountAddress, startAmount, endAmount,
-  expirationTime, paymentTokenAddress
-})
-```
-
-The parameters `bundleDescription`, `bundleExternalLink`, and `expirationTime` are optional, and `endAmount` can equal `startAmount`, similar to the normal `createSellOrder` functionality.
-
-The parameter `paymentTokenAddress` is the address of the ERC-20 token to accept in return. If it's `undefined` or `null`, the amount is assumed to be in Ether.
-
-Wait what, you can use other currencies than ETH?
 
 ### Using ERC-20 Tokens Instead of Ether
 
