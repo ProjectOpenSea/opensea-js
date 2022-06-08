@@ -1,9 +1,9 @@
-import { OrderWithNonce } from "seaport-js/lib/types";
+import { OrderWithCounter } from "seaport-js/lib/types";
 import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
 
 // Protocol data
 type OrderProtocolToProtocolData = {
-  seaport: OrderWithNonce;
+  seaport: OrderWithCounter;
 };
 export type OrderProtocol = keyof OrderProtocolToProtocolData;
 export type ProtocolData =

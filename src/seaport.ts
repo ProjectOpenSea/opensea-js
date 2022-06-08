@@ -1439,21 +1439,21 @@ export class OpenSeaPort {
 
   /**
    * Fullfill or "take" an order for an asset, either a buy or sell order
-   * NOTE: "Gifting" (fulfilling with recipient address) is not yet supported
    * NOTE: Fulfilling private listings is not yet supported
    * @param options fullfillment options
    * @param options.order The order to fulfill, a.k.a. "take"
    * @param options.accountAddress The taker's wallet address
+   * @param options.recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress
    * @returns Transaction hash for fulfilling the order
    */
   public async fulfillOrder({
     order,
     accountAddress,
+    recipientAddress,
   }: {
     order: OrderV2;
     accountAddress: string;
-    // TODO: Implement recipientAddress
-    // recipientAddress?: string;
+    recipientAddress?: string;
   }): Promise<string> {
     let transactionHash: string;
     switch (order.protocolAddress) {
@@ -1461,6 +1461,7 @@ export class OpenSeaPort {
         const { executeAllActions } = await this.seaport.fulfillOrder({
           order: order.protocolData,
           accountAddress,
+          recipientAddress,
         });
         const transaction = await executeAllActions();
         transactionHash = transaction.hash;
