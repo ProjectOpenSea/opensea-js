@@ -12,7 +12,7 @@ import {
   OPENSEA_FEE_RECIPIENT,
   RINKEBY_PROVIDER_URL,
 } from "../../../src/constants";
-import { OpenSeaPort } from "../../index";
+import { OpenSeaSDK } from "../../index";
 import {
   Asset,
   Network,
@@ -65,7 +65,7 @@ const englishSellOrderJSON = ordersJSON[0] as OrderJSON;
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL);
 
-const client = new OpenSeaPort(
+const client = new OpenSeaSDK(
   provider,
   {
     networkName: Network.Main,
@@ -74,7 +74,7 @@ const client = new OpenSeaPort(
   (line) => console.info(`MAINNET: ${line}`)
 );
 
-const rinkebyClient = new OpenSeaPort(
+const rinkebyClient = new OpenSeaSDK(
   rinkebyProvider,
   {
     networkName: Network.Rinkeby,

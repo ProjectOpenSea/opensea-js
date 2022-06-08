@@ -9,7 +9,7 @@ import {
   ORDERBOOK_VERSION,
   ORDER_MATCHING_LATENCY_SECONDS,
 } from "../../constants";
-import { orderToJSON, OpenSeaPort } from "../../index";
+import { orderToJSON, OpenSeaSDK } from "../../index";
 import { Network, OrderSide } from "../../types";
 import { getOrderHash, makeBigNumber } from "../../utils/utils";
 import {
@@ -30,7 +30,7 @@ import {
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 
-const client = new OpenSeaPort(
+const client = new OpenSeaSDK(
   provider,
   {
     networkName: Network.Main,

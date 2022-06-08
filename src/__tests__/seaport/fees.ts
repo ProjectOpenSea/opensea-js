@@ -13,7 +13,7 @@ import {
   OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
 } from "../../constants";
-import { OpenSeaPort } from "../../index";
+import { OpenSeaSDK } from "../../index";
 import {
   FeeMethod,
   Network,
@@ -40,7 +40,7 @@ import {
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 
-const client = new OpenSeaPort(
+const client = new OpenSeaSDK(
   provider,
   {
     networkName: Network.Main,

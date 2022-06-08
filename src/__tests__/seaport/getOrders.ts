@@ -3,14 +3,14 @@ import { expect } from "chai";
 import { suite, test } from "mocha";
 import Web3 from "web3";
 import { RINKEBY_PROVIDER_URL } from "../../constants";
-import { OpenSeaPort } from "../../index";
+import { OpenSeaSDK } from "../../index";
 import { Network } from "../../types";
 import { RINKEBY_API_KEY } from "../constants";
 import { expectValidOrder } from "../utils";
 
 // Client setup
 const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL);
-const rinkebyClient = new OpenSeaPort(rinkebyProvider, {
+const rinkebyClient = new OpenSeaSDK(rinkebyProvider, {
   networkName: Network.Rinkeby,
   apiKey: RINKEBY_API_KEY,
 });

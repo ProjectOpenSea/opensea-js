@@ -159,7 +159,7 @@ import {
   BigNumberInput,
 } from "./utils/utils";
 
-export class OpenSeaPort {
+export class OpenSeaSDK {
   // Web3 instance to use
   public web3: Web3;
   public web3ReadOnly: Web3;

@@ -95,16 +95,16 @@ sudo npm explore npm -g -- npm install node-gyp@latest # (Optional) update node-
 
 To get started, first request an API key [here](https://docs.opensea.io/reference). Note the terms of use for using API data.
 
-Then, create a new OpenSeaJS client, called an OpenSeaPort 🚢, using your Web3 provider:
+Then, create a new OpenSeaJS client, called an OpenSeaSDK 🚢, using your Web3 provider:
 
 ```JavaScript
 import * as Web3 from 'web3'
-import { OpenSeaPort, Network } from 'opensea-js'
+import { OpenSeaSDK, Network } from 'opensea-js'
 
 // This example provider won't let you make transactions, only read-only calls:
 const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
 
-const openseaSDK = new OpenSeaPort(provider, {
+const openseaSDK = new OpenSeaSDK(provider, {
   networkName: Network.Main,
   apiKey: YOUR_API_KEY
 })
@@ -612,68 +612,68 @@ Our recommendation is that you "forward" OpenSea events to your own store or sta
 ```JavaScript
 import { EventType } from 'opensea-js'
 import * as ActionTypes from './index'
-import { openSeaPort } from '../globalSingletons'
+import { openSeaSDK } from '../globalSingletons'
 
 // ...
 
-handleSeaportEvents() {
+handleSDKEvents() {
   return async function(dispatch, getState) {
-    openSeaPort.addListener(EventType.TransactionCreated, ({ transactionHash, event }) => {
+    openSeaSDK.addListener(EventType.TransactionCreated, ({ transactionHash, event }) => {
       console.info({ transactionHash, event })
       dispatch({ type: ActionTypes.SET_PENDING_TRANSACTION_HASH, hash: transactionHash })
     })
-    openSeaPort.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) => {
+    openSeaSDK.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) => {
       console.info({ transactionHash, event })
       // Only reset your exchange UI if we're finishing an order fulfillment or cancellation
       if (event == EventType.MatchOrders || event == EventType.CancelOrder) {
         dispatch({ type: ActionTypes.RESET_EXCHANGE })
       }
     })
-    openSeaPort.addListener(EventType.TransactionDenied, ({ transactionHash, event }) => {
+    openSeaSDK.addListener(EventType.TransactionDenied, ({ transactionHash, event }) => {
       console.info({ transactionHash, event })
       dispatch({ type: ActionTypes.RESET_EXCHANGE })
     })
-    openSeaPort.addListener(EventType.TransactionFailed, ({ transactionHash, event }) => {
+    openSeaSDK.addListener(EventType.TransactionFailed, ({ transactionHash, event }) => {
       console.info({ transactionHash, event })
       dispatch({ type: ActionTypes.RESET_EXCHANGE })
     })
-    openSeaPort.addListener(EventType.InitializeAccount, ({ accountAddress }) => {
+    openSeaSDK.addListener(EventType.InitializeAccount, ({ accountAddress }) => {
       console.info({ accountAddress })
       dispatch({ type: ActionTypes.INITIALIZE_PROXY })
     })
-    openSeaPort.addListener(EventType.WrapEth, ({ accountAddress, amount }) => {
+    openSeaSDK.addListener(EventType.WrapEth, ({ accountAddress, amount }) => {
       console.info({ accountAddress, amount })
       dispatch({ type: ActionTypes.WRAP_ETH })
     })
-    openSeaPort.addListener(EventType.UnwrapWeth, ({ accountAddress, amount }) => {
+    openSeaSDK.addListener(EventType.UnwrapWeth, ({ accountAddress, amount }) => {
       console.info({ accountAddress, amount })
       dispatch({ type: ActionTypes.UNWRAP_WETH })
     })
-    openSeaPort.addListener(EventType.ApproveCurrency, ({ accountAddress, tokenAddress }) => {
+    openSeaSDK.addListener(EventType.ApproveCurrency, ({ accountAddress, tokenAddress }) => {
       console.info({ accountAddress, tokenAddress })
       dispatch({ type: ActionTypes.APPROVE_WETH })
     })
-    openSeaPort.addListener(EventType.ApproveAllAssets, ({ accountAddress, proxyAddress, tokenAddress }) => {
+    openSeaSDK.addListener(EventType.ApproveAllAssets, ({ accountAddress, proxyAddress, tokenAddress }) => {
       console.info({ accountAddress, proxyAddress, tokenAddress })
       dispatch({ type: ActionTypes.APPROVE_ALL_ASSETS })
     })
-    openSeaPort.addListener(EventType.ApproveAsset, ({ accountAddress, proxyAddress, tokenAddress, tokenId }) => {
+    openSeaSDK.addListener(EventType.ApproveAsset, ({ accountAddress, proxyAddress, tokenAddress, tokenId }) => {
       console.info({ accountAddress, proxyAddress, tokenAddress, tokenId })
       dispatch({ type: ActionTypes.APPROVE_ASSET })
     })
-    openSeaPort.addListener(EventType.CreateOrder, ({ order, accountAddress }) => {
+    openSeaSDK.addListener(EventType.CreateOrder, ({ order, accountAddress }) => {
       console.info({ order, accountAddress })
       dispatch({ type: ActionTypes.CREATE_ORDER })
     })
-    openSeaPort.addListener(EventType.OrderDenied, ({ order, accountAddress }) => {
+    openSeaSDK.addListener(EventType.OrderDenied, ({ order, accountAddress }) => {
       console.info({ order, accountAddress })
       dispatch({ type: ActionTypes.RESET_EXCHANGE })
     })
-    openSeaPort.addListener(EventType.MatchOrders, ({ buy, sell, accountAddress }) => {
+    openSeaSDK.addListener(EventType.MatchOrders, ({ buy, sell, accountAddress }) => {
       console.info({ buy, sell, accountAddress })
       dispatch({ type: ActionTypes.FULFILL_ORDER })
     })
-    openSeaPort.addListener(EventType.CancelOrder, ({ order, accountAddress }) => {
+    openSeaSDK.addListener(EventType.CancelOrder, ({ order, accountAddress }) => {
       console.info({ order, accountAddress })
       dispatch({ type: ActionTypes.CANCEL_ORDER })
     })

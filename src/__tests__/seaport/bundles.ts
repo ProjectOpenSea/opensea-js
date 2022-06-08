@@ -7,7 +7,7 @@ import {
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
 } from "../../constants";
-import { OpenSeaPort } from "../../index";
+import { OpenSeaSDK } from "../../index";
 import { Network, UnhashedOrder, WyvernSchemaName } from "../../types";
 import {
   AGE_OF_RUST_TOKEN_ID,
@@ -33,7 +33,7 @@ import { testMatchingNewOrder } from "./orders";
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 
-const client = new OpenSeaPort(
+const client = new OpenSeaSDK(
   provider,
   {
     networkName: Network.Main,
