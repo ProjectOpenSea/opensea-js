@@ -1,7 +1,6 @@
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
 import Web3 from "web3";
-import { getMaxOrderExpirationTimestamp } from "../../../src/utils";
 import {
   ENJIN_ADDRESS,
   MAINNET_PROVIDER_URL,
@@ -9,6 +8,7 @@ import {
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
 import { Network, UnhashedOrder, WyvernSchemaName } from "../../types";
+import { getMaxOrderExpirationTimestamp } from "../../utils";
 import {
   AGE_OF_RUST_TOKEN_ID,
   ALEX_ADDRESS,

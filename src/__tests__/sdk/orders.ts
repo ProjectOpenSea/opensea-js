@@ -11,7 +11,7 @@ import {
   NULL_ADDRESS,
   OPENSEA_FEE_RECIPIENT,
   RINKEBY_PROVIDER_URL,
-} from "../../../src/constants";
+} from "../../constants";
 import { OpenSeaSDK } from "../../index";
 import {
   Asset,
