@@ -23,6 +23,7 @@ import {
   OrderbookResponse,
   OrderJSON,
   OrderQuery,
+  OrderSide,
 } from "./types";
 import {
   assetBundleFromJSON,
@@ -171,7 +172,7 @@ export class OpenSeaAPI {
    * `limit` and `offset` attributes from OrderQuery
    */
   public async getOrders(
-    query: OrderQuery = {},
+    query: OrderQuery = { side: OrderSide.Sell },
     page = 1
   ): Promise<{ orders: Order[]; count: number }> {
     const result = await this.get(`${ORDERBOOK_PATH}/orders/`, {
