@@ -1156,6 +1156,7 @@ export class OpenSeaPort {
    * @param accountAddress The taker's wallet address
    * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
    * @param referrerAddress The optional address that referred the order
+   * @param gasMultiplier An option for submitting transaction with higher or lower than estimated gwei
    * @returns Transaction hash for fulfilling the order
    */
   public async fulfillOrder({
@@ -1163,11 +1164,13 @@ export class OpenSeaPort {
     accountAddress,
     recipientAddress,
     referrerAddress,
+    gasMultiplier,
   }: {
     order: Order;
     accountAddress: string;
     recipientAddress?: string;
     referrerAddress?: string;
+    gasMultiplier?: number;
   }): Promise<string> {
     const matchingOrder = this._makeMatchingOrder({
       order,
@@ -1183,6 +1186,7 @@ export class OpenSeaPort {
       sell,
       accountAddress,
       metadata,
+      gasMultiplier,
     });
 
     await this._confirmTransaction(
@@ -4035,11 +4039,13 @@ export class OpenSeaPort {
     sell,
     accountAddress,
     metadata = NULL_BLOCK_HASH,
+    gasMultiplier,
   }: {
     buy: Order;
     sell: Order;
     accountAddress: string;
     metadata?: string;
+    gasMultiplier?: number;
   }) {
     let value;
     let shouldValidateBuy = true;
@@ -4171,6 +4177,10 @@ export class OpenSeaPort {
         .estimateGasAsync(txnData);
 
       txnData.gas = this._correctGasAmount(gasEstimate);
+      if (gasMultiplier) {
+        const gasPrice = await this._computeGasPrice();
+        txnData.gasPrice = gasPrice.multipliedBy(gasMultiplier);
+      }
     } catch (error) {
       console.error(`Failed atomic match with args: `, args, error);
       throw new Error(
