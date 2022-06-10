@@ -18,10 +18,15 @@ jobs:
           node-version: "16.11.0"
           cache: npm
 
+      - name: Upgrade npm
+        run: npm install -g npm
+
       - name: Install dependencies
         run: npm install --immutable --ignore-scripts
+
       - name: Gen ABI
         run: npm run abi-type-gen
+
       - name: Run linters
         run: npm run lint:check
 
@@ -34,10 +39,15 @@ jobs:
           node-version: "16.11.0"
           cache: npm
 
+      - name: Upgrade npm
+        run: npm install -g npm
+
       - name: Install dependencies
         run: npm install --immutable --ignore-scripts
+
       - name: Gen ABI
         run: npm run abi-type-gen
+
       - name: Run tests
         env:
           API_KEY: ${{ secrets.API_KEY }}
