@@ -669,6 +669,7 @@ export type RawWyvernOrderJSON = Omit<
 export interface OrderQuery extends Partial<OrderJSON> {
   owner?: string;
   sale_kind?: SaleKind;
+  side: OrderSide;
   asset_contract_address?: string;
   payment_token_address?: string;
   is_english?: boolean;
