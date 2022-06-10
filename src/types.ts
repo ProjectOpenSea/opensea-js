@@ -518,7 +518,6 @@ export interface OpenSeaAssetBundleQuery
   owner?: string;
   offset?: number;
   limit?: number;
-  search?: string;
 }
 
 /**
@@ -693,7 +692,6 @@ export interface OpenSeaAssetQuery {
   owner?: string;
   asset_contract_address?: string;
   token_ids?: Array<number | string>;
-  search?: string;
   order_by?: string;
   order_direction?: string;
   limit?: number;
