@@ -11,8 +11,8 @@ import {
   NULL_ADDRESS,
   OPENSEA_FEE_RECIPIENT,
   RINKEBY_PROVIDER_URL,
-} from "../../../src/constants";
-import { OpenSeaPort } from "../../index";
+} from "../../constants";
+import { OpenSeaSDK } from "../../index";
 import {
   Asset,
   Network,
@@ -65,7 +65,7 @@ const englishSellOrderJSON = ordersJSON[0] as OrderJSON;
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL);
 
-const client = new OpenSeaPort(
+const client = new OpenSeaSDK(
   provider,
   {
     networkName: Network.Main,
@@ -74,7 +74,7 @@ const client = new OpenSeaPort(
   (line) => console.info(`MAINNET: ${line}`)
 );
 
-const rinkebyClient = new OpenSeaPort(
+const rinkebyClient = new OpenSeaSDK(
   rinkebyProvider,
   {
     networkName: Network.Rinkeby,
@@ -96,7 +96,7 @@ const assetsForBulkTransfer = assetsForBundleOrder;
 let manaAddress: string;
 let daiAddress: string;
 
-suite("seaport: orders", () => {
+suite("SDK: orders", () => {
   before(async () => {
     daiAddress = (await client.api.getPaymentTokens({ symbol: "DAI" }))
       .tokens[0].address;
@@ -312,7 +312,8 @@ suite("seaport: orders", () => {
 
   test("Correctly errors for invalid buy order price parameters", async () => {
     const accountAddress = ALEX_ADDRESS_2;
-    const expirationTime = Math.round(Date.now() / 1000 + 60); // one minute from now
+    const currentSeconds = Math.round(Date.now() / 1000);
+    const expirationTime = currentSeconds + 20 * 60; // 20 minutes from now
     const tokenId = MYTHEREUM_TOKEN_ID.toString();
     const tokenAddress = MYTHEREUM_ADDRESS;
 
@@ -340,7 +341,8 @@ suite("seaport: orders", () => {
     const takerAddress = ALEX_ADDRESS_2;
     const amountInToken = 1.2;
     const paymentTokenAddress = WETH_ADDRESS;
-    const expirationTime = Math.round(Date.now() / 1000 + 900); // one minute from now
+    const currentSeconds = Math.round(Date.now() / 1000);
+    const expirationTime = currentSeconds + 20 * 60; // 20 minutes from now
     const bountyPercent = 1.1;
 
     const tokenId = MYTHEREUM_TOKEN_ID.toString();
@@ -388,7 +390,7 @@ suite("seaport: orders", () => {
     const now = Math.round(Date.now() / 1000);
     // Get bid from server
     const paymentTokenAddress = WETH_ADDRESS;
-    const { orders } = await rinkebyClient.api.getOrders({
+    const { orders } = await rinkebyClient.api.getOrdersLegacyWyvern({
       side: OrderSide.Buy,
       asset_contract_address: CK_RINKEBY_ADDRESS,
       token_id: CK_RINKEBY_TOKEN_ID,
@@ -419,8 +421,8 @@ suite("seaport: orders", () => {
       buy.takerProtocolFee.toNumber(),
       sell.takerProtocolFee.toNumber()
     );
-    const sellPrice = await rinkebyClient.getCurrentPrice(sell);
-    const buyPrice = await rinkebyClient.getCurrentPrice(buy);
+    const sellPrice = await rinkebyClient.getCurrentPriceLegacyWyvern(sell);
+    const buyPrice = await rinkebyClient.getCurrentPriceLegacyWyvern(buy);
     assert.isAtLeast(buyPrice.toNumber(), sellPrice.toNumber());
     console.info(
       `Matching two orders that differ in price by ${
@@ -903,9 +905,10 @@ suite("seaport: orders", () => {
   test("Serializes payment token and matches most recent ERC-20 sell order", async () => {
     const takerAddress = ALEX_ADDRESS;
 
-    const order = await client.api.getOrder({
+    const order = await client.api.getOrderLegacyWyvern({
       side: OrderSide.Sell,
       payment_token_address: manaAddress,
+      taker: NULL_ADDRESS,
     });
 
     assert.isNotNull(order.paymentTokenContract);
@@ -953,7 +956,7 @@ suite("seaport: orders", () => {
 
   // Temp skip due to migration
   test.skip("orderToJSON computes correct current price for Dutch auctions", async () => {
-    const { orders } = await client.api.getOrders({
+    const { orders } = await client.api.getOrdersLegacyWyvern({
       sale_kind: SaleKind.DutchAuction,
       side: OrderSide.Sell,
     });
@@ -987,7 +990,7 @@ suite("seaport: orders", () => {
 
   // Skipping brittle test, due to token id dependency
   test.skip("orderToJSON current price includes buyer fee", async () => {
-    const { orders } = await client.api.getOrders({
+    const { orders } = await client.api.getOrdersLegacyWyvern({
       sale_kind: SaleKind.FixedPrice,
       asset_contract_address: CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE,
       token_id: 8645,
@@ -1011,8 +1014,9 @@ suite("seaport: orders", () => {
     });
   });
 
-  test("orderToJSON current price does not include buyer fee for English auctions", async () => {
-    const { orders } = await client.api.getOrders({
+  // Flaky due to DB statement timeout
+  test.skip("orderToJSON current price does not include buyer fee for English auctions", async () => {
+    const { orders } = await client.api.getOrdersLegacyWyvern({
       side: OrderSide.Sell,
       is_english: true,
     });
@@ -1031,7 +1035,9 @@ suite("seaport: orders", () => {
   });
 
   test.skip("Matches first buy order in book", async () => {
-    const order = await client.api.getOrder({ side: OrderSide.Buy });
+    const order = await client.api.getOrderLegacyWyvern({
+      side: OrderSide.Buy,
+    });
     assert.isNotNull(order);
     if (!order) {
       return;
@@ -1050,7 +1056,7 @@ suite("seaport: orders", () => {
     // Need to use a taker who has created a proxy and approved W-ETH already
     const takerAddress = ALEX_ADDRESS;
 
-    const order = await client.api.getOrder({
+    const order = await client.api.getOrderLegacyWyvern({
       side: OrderSide.Buy,
       owner: takerAddress,
       // Use a token that has already been approved via approve-all
@@ -1436,7 +1442,7 @@ async function testMatchingOrder(
   if (testAtomicMatch && !order.waitingForBestCounterOrder) {
     const isValid = await client._validateOrder(order);
     assert.isTrue(isValid);
-    const isFulfillable = await client.isOrderFulfillable({
+    const isFulfillable = await client.isOrderFulfillableLegacyWyvern({
       order,
       accountAddress,
       recipientAddress,

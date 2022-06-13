@@ -1,6 +1,14 @@
+import { Seaport } from "@opensea/seaport-js";
+import { CROSS_CHAIN_SEAPORT_ADDRESS } from "@opensea/seaport-js/lib/constants";
+import {
+  ConsiderationInputItem,
+  CreateInputItem,
+  OrderComponents,
+} from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "bignumber.js";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
+import { providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import Web3 from "web3";
@@ -15,6 +23,7 @@ import {
   CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS,
   CK_ADDRESS,
   CK_RINKEBY_ADDRESS,
+  CONDUIT_KEYS_TO_CONDUIT,
   DECENTRALAND_ESTATE_ADDRESS,
   DEFAULT_BUYER_FEE_BASIS_POINTS,
   DEFAULT_GAS_INCREASE_FACTOR,
@@ -31,8 +40,10 @@ import {
   MIN_EXPIRATION_MINUTES,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
+  CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
   OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
+  DEFAULT_ZONE,
   ORDER_MATCHING_LATENCY_SECONDS,
   RPC_URL_PATH,
   SELL_ORDER_BATCH_SIZE,
@@ -43,6 +54,7 @@ import {
   STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS,
   UNISWAP_FACTORY_ADDRESS_MAINNET,
   UNISWAP_FACTORY_ADDRESS_RINKEBY,
+  WETH_ADDRESS_BY_NETWORK,
   WRAPPED_NFT_FACTORY_ADDRESS_MAINNET,
   WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
@@ -69,6 +81,12 @@ import {
   requireOrderCalldataCanMatch,
   requireOrdersCanMatch,
 } from "./debugging";
+import {
+  constructPrivateListingCounterOrder,
+  getPrivateListingConsiderations,
+  getPrivateListingFulfillments,
+} from "./orders/privateListings";
+import { OrderV2 } from "./orders/types";
 import { CheezeWizardsBasicTournamentAbi } from "./typechain/contracts/CheezeWizardsBasicTournamentAbi";
 import { DecentralandEstatesAbi } from "./typechain/contracts/DecentralandEstatesAbi";
 import { ERC1155Abi } from "./typechain/contracts/ERC1155Abi";
@@ -136,12 +154,19 @@ import {
   signTypedDataAsync,
   validateAndFormatWalletAddress,
   getMaxOrderExpirationTimestamp,
+  hasErrorCode,
+  getAssetItemType,
+  BigNumberInput,
 } from "./utils/utils";
 
-export class OpenSeaPort {
+export class OpenSeaSDK {
   // Web3 instance to use
   public web3: Web3;
   public web3ReadOnly: Web3;
+  // Ethers provider
+  public ethersProvider: providers.Web3Provider;
+  // Seaport client
+  public seaport: Seaport;
   // Logger function to use when debugging
   public logger: (arg: string) => void;
   // API instance on this seaport
@@ -192,6 +217,17 @@ export class OpenSeaPort {
     this.web3ReadOnly = useReadOnlyProvider
       ? new Web3(readonlyProvider)
       : this.web3;
+
+    // Ethers Config
+    this.ethersProvider = new providers.Web3Provider(
+      provider as providers.ExternalProvider
+    );
+    this.seaport = new Seaport(this.ethersProvider, {
+      conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
+      overrides: {
+        defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
+      },
+    });
 
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider as Web3JsProvider, {
@@ -649,6 +685,104 @@ export class OpenSeaPort {
     );
   }
 
+  private getAmountWithBasisPointsApplied = (
+    amount: BigNumber,
+    basisPoints: number
+  ) => {
+    return amount
+      .multipliedBy(basisPoints)
+      .dividedBy(INVERSE_BASIS_POINT)
+      .toString();
+  };
+
+  private async getFees({
+    openseaAsset: asset,
+    paymentTokenAddress,
+    startAmount,
+    endAmount,
+  }: {
+    openseaAsset: OpenSeaAsset;
+    paymentTokenAddress: string;
+    startAmount: BigNumber;
+    endAmount?: BigNumber;
+  }): Promise<{
+    sellerFee: ConsiderationInputItem;
+    openseaSellerFee: ConsiderationInputItem;
+    collectionSellerFee?: ConsiderationInputItem;
+    openseaBuyerFee?: ConsiderationInputItem;
+    collectionBuyerFee?: ConsiderationInputItem;
+  }> {
+    // Seller fee basis points
+    const openseaSellerFeeBasisPoints = DEFAULT_SELLER_FEE_BASIS_POINTS;
+    const collectionSellerFeeBasisPoints =
+      asset.collection.devSellerFeeBasisPoints;
+
+    // Buyer fee basis points
+    const openseaBuyerFeeBasisPoints = DEFAULT_BUYER_FEE_BASIS_POINTS;
+    const collectionBuyerFeeBasisPoints =
+      asset.collection.devBuyerFeeBasisPoints;
+
+    // Seller basis points
+    const sellerBasisPoints =
+      INVERSE_BASIS_POINT -
+      openseaSellerFeeBasisPoints -
+      collectionSellerFeeBasisPoints;
+
+    const getConsiderationItem = (basisPoints: number, recipient?: string) => {
+      return {
+        token: paymentTokenAddress,
+        amount: this.getAmountWithBasisPointsApplied(startAmount, basisPoints),
+        endAmount: this.getAmountWithBasisPointsApplied(
+          endAmount ?? startAmount,
+          basisPoints
+        ),
+        recipient,
+      };
+    };
+
+    return {
+      sellerFee: getConsiderationItem(sellerBasisPoints),
+      openseaSellerFee: getConsiderationItem(
+        openseaSellerFeeBasisPoints,
+        OPENSEA_FEE_RECIPIENT
+      ),
+      collectionSellerFee:
+        collectionSellerFeeBasisPoints > 0 && asset.collection.payoutAddress
+          ? getConsiderationItem(
+              collectionSellerFeeBasisPoints,
+              asset.collection.payoutAddress
+            )
+          : undefined,
+      openseaBuyerFee:
+        openseaBuyerFeeBasisPoints > 0
+          ? getConsiderationItem(
+              openseaBuyerFeeBasisPoints,
+              OPENSEA_FEE_RECIPIENT
+            )
+          : undefined,
+      collectionBuyerFee:
+        collectionBuyerFeeBasisPoints > 0 && asset.collection.payoutAddress
+          ? getConsiderationItem(
+              collectionBuyerFeeBasisPoints,
+              asset.collection.payoutAddress
+            )
+          : undefined,
+    };
+  }
+
+  private getAssetItems(
+    assets: Asset[],
+    quantities: BigNumber[] = [],
+    fallbackSchema?: WyvernSchemaName
+  ): CreateInputItem[] {
+    return assets.map((asset, index) => ({
+      itemType: getAssetItemType(this._getSchemaName(asset) ?? fallbackSchema),
+      token: asset.tokenAddress,
+      identifier: asset.tokenId ?? undefined,
+      amount: quantities[index].toString() ?? "1",
+    }));
+  }
+
   /**
    * Create a buy order to make an offer on a bundle or group of assets.
    * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
@@ -663,7 +797,7 @@ export class OpenSeaPort {
    * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
    * @param referrerAddress The optional address that referred the order
    */
-  public async createBundleBuyOrder({
+  public async createBundleBuyOrderLegacyWyvern({
     assets,
     collection,
     quantities,
@@ -733,6 +867,81 @@ export class OpenSeaPort {
 
   /**
    * Create a buy order to make an offer on an asset.
+   * @param options Options for creating the buy order
+   * @param options.asset The asset to trade
+   * @param options.accountAddress Address of the maker's wallet
+   * @param options.startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
+   * @param options.quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei
+   * @param options.expirationTime Expiration time for the order, in seconds
+   * @param options.paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to WETH
+   */
+  public async createBuyOrder({
+    asset,
+    accountAddress,
+    startAmount,
+    quantity = 1,
+    expirationTime,
+    paymentTokenAddress,
+  }: {
+    asset: Asset;
+    accountAddress: string;
+    startAmount: BigNumberInput;
+    quantity?: BigNumberInput;
+    expirationTime?: BigNumberInput;
+    paymentTokenAddress?: string;
+  }): Promise<OrderV2> {
+    if (!asset.tokenId) {
+      throw new Error("Asset must have a tokenId");
+    }
+    paymentTokenAddress =
+      paymentTokenAddress ?? WETH_ADDRESS_BY_NETWORK[this._networkName];
+
+    const openseaAsset = await this.api.getAsset(asset);
+    const considerationAssetItems = this.getAssetItems(
+      [openseaAsset],
+      [makeBigNumber(quantity)]
+    );
+
+    const { basePrice } = await this._getPriceParameters(
+      OrderSide.Buy,
+      paymentTokenAddress,
+      makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
+      makeBigNumber(startAmount)
+    );
+
+    const { openseaSellerFee, collectionSellerFee } = await this.getFees({
+      openseaAsset,
+      paymentTokenAddress,
+      startAmount: basePrice,
+    });
+    const considerationFeeItems = [
+      openseaSellerFee,
+      collectionSellerFee,
+    ].filter((item): item is ConsiderationInputItem => item !== undefined);
+
+    const { executeAllActions } = await this.seaport.createOrder(
+      {
+        offer: [
+          {
+            token: paymentTokenAddress,
+            amount: basePrice.toString(),
+          },
+        ],
+        consideration: [...considerationAssetItems, ...considerationFeeItems],
+        endTime:
+          expirationTime?.toString() ??
+          getMaxOrderExpirationTimestamp().toString(),
+        zone: DEFAULT_ZONE,
+      },
+      accountAddress
+    );
+    const order = await executeAllActions();
+
+    return this.api.postOrder(order, { protocol: "seaport", side: "bid" });
+  }
+
+  /**
+   * Create a buy order to make an offer on an asset.
    * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
    * @param param0 __namedParameters Object
    * @param asset The asset to trade
@@ -744,7 +953,7 @@ export class OpenSeaPort {
    * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
    * @param referrerAddress The optional address that referred the order
    */
-  public async createBuyOrder({
+  public async createBuyOrderLegacyWyvern({
     asset,
     accountAddress,
     startAmount,
@@ -807,6 +1016,94 @@ export class OpenSeaPort {
 
   /**
    * Create a sell order to auction an asset.
+   * @param options Options for creating the sell order
+   * @param options.asset The asset to trade
+   * @param options.accountAddress Address of the maker's wallet
+   * @param options.startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+   * @param options.endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
+   * @param options.quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
+   * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
+   * @param options.expirationTime Expiration time for the order, in UTC seconds.
+   * @param options.paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
+   * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
+   */
+  public async createSellOrder({
+    asset,
+    accountAddress,
+    startAmount,
+    endAmount,
+    quantity = 1,
+    listingTime,
+    expirationTime,
+    paymentTokenAddress = NULL_ADDRESS,
+    buyerAddress,
+  }: {
+    asset: Asset;
+    accountAddress: string;
+    startAmount: BigNumberInput;
+    endAmount?: BigNumberInput;
+    quantity?: BigNumberInput;
+    listingTime?: string;
+    expirationTime?: BigNumberInput;
+    paymentTokenAddress?: string;
+    buyerAddress?: string;
+  }): Promise<OrderV2> {
+    if (!asset.tokenId) {
+      throw new Error("Asset must have a tokenId");
+    }
+
+    const openseaAsset = await this.api.getAsset(asset);
+    const offerAssetItems = this.getAssetItems(
+      [openseaAsset],
+      [makeBigNumber(quantity)]
+    );
+
+    const { basePrice, endPrice } = await this._getPriceParameters(
+      OrderSide.Sell,
+      paymentTokenAddress,
+      makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
+      makeBigNumber(startAmount),
+      endAmount !== undefined ? makeBigNumber(endAmount) : undefined
+    );
+
+    const { sellerFee, openseaSellerFee, collectionSellerFee } =
+      await this.getFees({
+        openseaAsset,
+        paymentTokenAddress,
+        startAmount: basePrice,
+        endAmount: endPrice,
+      });
+    const considerationFeeItems = [
+      sellerFee,
+      openseaSellerFee,
+      collectionSellerFee,
+    ].filter((item): item is ConsiderationInputItem => item !== undefined);
+
+    if (buyerAddress) {
+      considerationFeeItems.push(
+        ...getPrivateListingConsiderations(offerAssetItems, buyerAddress)
+      );
+    }
+
+    const { executeAllActions } = await this.seaport.createOrder(
+      {
+        offer: offerAssetItems,
+        consideration: considerationFeeItems,
+        startTime: listingTime,
+        endTime:
+          expirationTime?.toString() ??
+          getMaxOrderExpirationTimestamp().toString(),
+        zone: DEFAULT_ZONE,
+      },
+      accountAddress
+    );
+    const order = await executeAllActions();
+
+    return this.api.postOrder(order, { protocol: "seaport", side: "ask" });
+  }
+
+  /**
+   * Create a sell order to auction an asset.
    * Will throw a 'You do not own enough of this asset' error if the maker doesn't have the asset or not enough of it to sell the specific `quantity`.
    * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
    * @param param0 __namedParameters Object
@@ -826,7 +1123,7 @@ export class OpenSeaPort {
    * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
    */
-  public async createSellOrder({
+  public async createSellOrderLegacyWyvern({
     asset,
     accountAddress,
     startAmount,
@@ -1070,7 +1367,7 @@ export class OpenSeaPort {
    * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
    * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
    */
-  public async createBundleSellOrder({
+  public async createBundleSellOrderLegacyWyvern({
     bundleName,
     bundleDescription,
     bundleExternalLink,
@@ -1149,6 +1446,106 @@ export class OpenSeaPort {
     return this.validateAndPostOrder(orderWithSignature);
   }
 
+  private async fulfillPrivateOrder({
+    order,
+    accountAddress,
+  }: {
+    order: OrderV2;
+    accountAddress: string;
+  }): Promise<string> {
+    let transactionHash: string;
+    switch (order.protocolAddress) {
+      case CROSS_CHAIN_SEAPORT_ADDRESS: {
+        if (!order.taker?.address) {
+          throw new Error(
+            "Order is not a private listing must have a taker address"
+          );
+        }
+        const counterOrder = constructPrivateListingCounterOrder(
+          order.protocolData,
+          order.taker.address
+        );
+        const fulfillments = getPrivateListingFulfillments(order.protocolData);
+        const transaction = await this.seaport
+          .matchOrders({
+            orders: [order.protocolData, counterOrder],
+            fulfillments,
+            overrides: {
+              value: counterOrder.parameters.offer[0].startAmount,
+            },
+            accountAddress,
+          })
+          .transact();
+        const transactionReceipt = await transaction.wait();
+        transactionHash = transactionReceipt.transactionHash;
+        break;
+      }
+      default:
+        throw new Error("Unsupported protocol");
+    }
+
+    await this._confirmTransaction(
+      transactionHash,
+      EventType.MatchOrders,
+      "Fulfilling order"
+    );
+    return transactionHash;
+  }
+
+  /**
+   * Fullfill or "take" an order for an asset, either a buy or sell order
+   * @param options fullfillment options
+   * @param options.order The order to fulfill, a.k.a. "take"
+   * @param options.accountAddress The taker's wallet address
+   * @param options.recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress
+   * @returns Transaction hash for fulfilling the order
+   */
+  public async fulfillOrder({
+    order,
+    accountAddress,
+    recipientAddress,
+  }: {
+    order: OrderV2;
+    accountAddress: string;
+    recipientAddress?: string;
+  }): Promise<string> {
+    const isPrivateListing = !!order.taker;
+    if (isPrivateListing) {
+      if (recipientAddress) {
+        throw new Error(
+          "Private listings cannot be fulfilled with a recipient address"
+        );
+      }
+      return this.fulfillPrivateOrder({
+        order,
+        accountAddress,
+      });
+    }
+
+    let transactionHash: string;
+    switch (order.protocolAddress) {
+      case CROSS_CHAIN_SEAPORT_ADDRESS: {
+        const { executeAllActions } = await this.seaport.fulfillOrder({
+          order: order.protocolData,
+          accountAddress,
+          recipientAddress,
+        });
+        const transaction = await executeAllActions();
+        transactionHash = transaction.hash;
+        break;
+      }
+      default:
+        throw new Error("Unsupported protocol");
+    }
+
+    await this._confirmTransaction(
+      transactionHash,
+      EventType.MatchOrders,
+      "Fulfilling order"
+    );
+    return transactionHash;
+  }
+
   /**
    * Fullfill or "take" an order for an asset, either a buy or sell order
    * @param param0 __namedParamaters Object
@@ -1158,7 +1555,7 @@ export class OpenSeaPort {
    * @param referrerAddress The optional address that referred the order
    * @returns Transaction hash for fulfilling the order
    */
-  public async fulfillOrder({
+  public async fulfillOrderLegacyWyvern({
     order,
     accountAddress,
     recipientAddress,
@@ -1197,6 +1594,19 @@ export class OpenSeaPort {
     return transactionHash;
   }
 
+  private async cancelSeaportOrders({
+    orders,
+    accountAddress,
+  }: {
+    orders: OrderComponents[];
+    accountAddress: string;
+  }): Promise<string> {
+    const transaction = await this.seaport
+      .cancelOrders(orders, accountAddress)
+      .transact();
+    return transaction.hash;
+  }
+
   /**
    * Cancel an order on-chain, preventing it from ever being fulfilled.
    * @param param0 __namedParameters Object
@@ -1204,6 +1614,43 @@ export class OpenSeaPort {
    * @param accountAddress The order maker's wallet address
    */
   public async cancelOrder({
+    order,
+    accountAddress,
+  }: {
+    order: OrderV2;
+    accountAddress: string;
+  }) {
+    this._dispatch(EventType.CancelOrder, { orderV2: order, accountAddress });
+
+    // Transact and get the transaction hash
+    let transactionHash: string;
+    switch (order.protocolAddress) {
+      case CROSS_CHAIN_SEAPORT_ADDRESS: {
+        transactionHash = await this.cancelSeaportOrders({
+          orders: [order.protocolData.parameters],
+          accountAddress,
+        });
+        break;
+      }
+      default:
+        throw new Error("Unsupported protocol");
+    }
+
+    // Await transaction confirmation
+    await this._confirmTransaction(
+      transactionHash,
+      EventType.CancelOrder,
+      "Cancelling order"
+    );
+  }
+
+  /**
+   * Cancel an order on-chain, preventing it from ever being fulfilled.
+   * @param param0 __namedParameters Object
+   * @param order The order to cancel
+   * @param accountAddress The order maker's wallet address
+   */
+  public async cancelOrderLegacyWyvern({
     order,
     accountAddress,
   }: {
@@ -1638,10 +2085,21 @@ export class OpenSeaPort {
   }
 
   /**
+   * Gets the current price for the order.
+   */
+  public async getCurrentPrice({
+    order,
+  }: {
+    order: OrderV2;
+  }): Promise<BigNumber> {
+    return new BigNumber(order.currentPrice);
+  }
+
+  /**
    * Gets the price for the order using the contract
    * @param order The order to calculate the price for
    */
-  public async getCurrentPrice(order: Order) {
+  public async getCurrentPriceLegacyWyvern(order: Order) {
     const currentPrice = await this._wyvernProtocolReadOnly.wyvernExchange
       .calculateCurrentPrice_(
         [
@@ -1689,6 +2147,43 @@ export class OpenSeaPort {
    * @param referrerAddress The optional address that referred the order
    */
   public async isOrderFulfillable({
+    order,
+    accountAddress,
+  }: {
+    order: OrderV2;
+    accountAddress: string;
+  }): Promise<boolean> {
+    switch (order.protocolAddress) {
+      case CROSS_CHAIN_SEAPORT_ADDRESS: {
+        try {
+          const isValid = await this.seaport
+            .validate([order.protocolData], accountAddress)
+            .callStatic();
+          return !!isValid;
+        } catch (error) {
+          if (hasErrorCode(error) && error.code === "CALL_EXCEPTION") {
+            return false;
+          }
+          throw error;
+        }
+      }
+      default:
+        throw new Error("Unsupported protocol");
+    }
+  }
+
+  /**
+   * Returns whether an order is fulfillable.
+   * An order may not be fulfillable if a target item's transfer function
+   * is locked for some reason, e.g. an item is being rented within a game
+   * or trading has been locked for an item type.
+   * @param param0 __namedParameters Object
+   * @param order Order to check
+   * @param accountAddress The account address that will be fulfilling the order
+   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
+   * @param referrerAddress The optional address that referred the order
+   */
+  public async isOrderFulfillableLegacyWyvern({
     order,
     accountAddress,
     recipientAddress,
@@ -2209,7 +2704,9 @@ export class OpenSeaPort {
    */
   public async validateAndPostOrder(order: Order): Promise<Order> {
     // Validation is called server-side
-    const confirmedOrder = await this.api.postOrder(orderToJSON(order));
+    const confirmedOrder = await this.api.postOrderLegacyWyvern(
+      orderToJSON(order)
+    );
     return confirmedOrder;
   }
 
@@ -2576,8 +3073,8 @@ export class OpenSeaPort {
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
-      expirationTime,
-      startAmount
+      makeBigNumber(expirationTime),
+      makeBigNumber(startAmount)
     );
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
@@ -2693,11 +3190,11 @@ export class OpenSeaPort {
       await this._getPriceParameters(
         OrderSide.Sell,
         paymentTokenAddress,
-        expirationTime,
-        startAmount,
-        endAmount,
+        makeBigNumber(expirationTime),
+        makeBigNumber(startAmount),
+        endAmount !== undefined ? makeBigNumber(endAmount) : undefined,
         waitForHighestBid,
-        englishAuctionReservePrice
+        makeBigNumber(englishAuctionReservePrice)
       );
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
@@ -2940,8 +3437,8 @@ export class OpenSeaPort {
     const { basePrice, extra, paymentToken } = await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
-      expirationTime,
-      startAmount
+      makeBigNumber(expirationTime),
+      makeBigNumber(startAmount)
     );
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
@@ -3059,11 +3556,11 @@ export class OpenSeaPort {
       await this._getPriceParameters(
         OrderSide.Sell,
         paymentTokenAddress,
-        expirationTime,
-        startAmount,
-        endAmount,
+        makeBigNumber(expirationTime),
+        makeBigNumber(startAmount),
+        endAmount !== undefined ? makeBigNumber(endAmount) : undefined,
         waitForHighestBid,
-        englishAuctionReservePrice
+        makeBigNumber(englishAuctionReservePrice)
       );
     const times = this._getTimeParameters({
       expirationTimestamp: expirationTime,
@@ -3430,7 +3927,41 @@ export class OpenSeaPort {
    * @param order Order to approve
    * @returns Transaction hash of the approval transaction
    */
-  public async approveOrder(order: UnsignedOrder) {
+  public async approveOrder(order: OrderV2) {
+    this._dispatch(EventType.ApproveOrder, {
+      orderV2: order,
+      accountAddress: order.maker.address,
+    });
+
+    let transactionHash: string;
+    switch (order.protocolAddress) {
+      case CROSS_CHAIN_SEAPORT_ADDRESS: {
+        const transaction = await this.seaport
+          .validate([order.protocolData], order.maker.address)
+          .transact();
+        transactionHash = transaction.hash;
+        break;
+      }
+      default:
+        throw new Error("Unsupported protocol");
+    }
+
+    await this._confirmTransaction(
+      transactionHash,
+      EventType.ApproveOrder,
+      "Approving order"
+    );
+
+    return transactionHash;
+  }
+
+  /**
+   * Instead of signing an off-chain order, you can approve an order
+   * with on on-chain transaction using this method
+   * @param order Order to approve
+   * @returns Transaction hash of the approval transaction
+   */
+  public async approveOrderLegacyWyvern(order: UnsignedOrder) {
     const accountAddress = order.maker;
     const includeInOrderBook = true;
 
@@ -3934,13 +4465,14 @@ export class OpenSeaPort {
   private async _getPriceParameters(
     orderSide: OrderSide,
     tokenAddress: string,
-    expirationTime: number,
-    startAmount: number,
-    endAmount?: number,
+    expirationTime: BigNumber,
+    startAmount: BigNumber,
+    endAmount?: BigNumber,
     waitingForBestCounterOrder = false,
-    englishAuctionReservePrice?: number
+    englishAuctionReservePrice?: BigNumber
   ) {
-    const priceDiff = endAmount != null ? startAmount - endAmount : 0;
+    const priceDiff =
+      endAmount != null ? startAmount.minus(endAmount) : new BigNumber(0);
     const paymentToken = tokenAddress.toLowerCase();
     const isEther = tokenAddress == NULL_ADDRESS;
     const { tokens } = await this.api.getPaymentTokens({
@@ -3949,7 +4481,7 @@ export class OpenSeaPort {
     const token = tokens[0];
 
     // Validation
-    if (isNaN(startAmount) || startAmount == null || startAmount < 0) {
+    if (startAmount.isNaN() || startAmount == null || startAmount.lt(0)) {
       throw new Error(`Starting price must be a number >= 0`);
     }
     if (!isEther && !token) {
@@ -3963,21 +4495,26 @@ export class OpenSeaPort {
     if (isEther && orderSide === OrderSide.Buy) {
       throw new Error(`Offers must use wrapped ETH or an ERC-20 token.`);
     }
-    if (priceDiff < 0) {
+    if (priceDiff.lt(0)) {
       throw new Error(
         "End price must be less than or equal to the start price."
       );
     }
-    if (priceDiff > 0 && expirationTime == 0) {
+    if (priceDiff.gt(0) && expirationTime.eq(0)) {
       throw new Error(
         "Expiration time must be set if order will change in price."
       );
     }
-    if (englishAuctionReservePrice && !waitingForBestCounterOrder) {
+    if (
+      englishAuctionReservePrice &&
+      !englishAuctionReservePrice.isZero() &&
+      !waitingForBestCounterOrder
+    ) {
       throw new Error("Reserve prices may only be set on English auctions.");
     }
     if (
       englishAuctionReservePrice &&
+      !englishAuctionReservePrice.isZero() &&
       englishAuctionReservePrice < startAmount
     ) {
       throw new Error(
@@ -3991,19 +4528,21 @@ export class OpenSeaPort {
       ? makeBigNumber(
           this.web3.utils.toWei(startAmount.toString(), "ether")
         ).integerValue()
-      : WyvernProtocol.toBaseUnitAmount(
-          makeBigNumber(startAmount),
-          token.decimals
-        );
+      : WyvernProtocol.toBaseUnitAmount(startAmount, token.decimals);
+
+    const endPrice = endAmount
+      ? isEther
+        ? makeBigNumber(
+            this.web3.utils.toWei(endAmount.toString(), "ether")
+          ).integerValue()
+        : WyvernProtocol.toBaseUnitAmount(endAmount, token.decimals)
+      : undefined;
 
     const extra = isEther
       ? makeBigNumber(
           this.web3.utils.toWei(priceDiff.toString(), "ether")
         ).integerValue()
-      : WyvernProtocol.toBaseUnitAmount(
-          makeBigNumber(priceDiff),
-          token.decimals
-        );
+      : WyvernProtocol.toBaseUnitAmount(priceDiff, token.decimals);
 
     const reservePrice = englishAuctionReservePrice
       ? isEther
@@ -4014,12 +4553,12 @@ export class OpenSeaPort {
             )
           ).integerValue()
         : WyvernProtocol.toBaseUnitAmount(
-            makeBigNumber(englishAuctionReservePrice),
+            englishAuctionReservePrice,
             token.decimals
           )
       : undefined;
 
-    return { basePrice, extra, paymentToken, reservePrice };
+    return { basePrice, extra, paymentToken, reservePrice, endPrice };
   }
 
   private _getMetadata(order: Order, referrerAddress?: string) {
@@ -4223,7 +4762,7 @@ export class OpenSeaPort {
   }
 
   private async _getRequiredAmountForTakingSellOrder(sell: Order) {
-    const currentPrice = await this.getCurrentPrice(sell);
+    const currentPrice = await this.getCurrentPriceLegacyWyvern(sell);
     const estimatedPrice = estimateCurrentPrice(sell);
 
     const maxPrice = BigNumber.max(currentPrice, estimatedPrice);

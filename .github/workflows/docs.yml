@@ -14,16 +14,19 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "16.11.0"
-          cache: yarn
+          cache: npm
+
+      - name: Upgrade npm
+        run: npm install -g npm
 
       - name: Install dependencies
-        run: yarn install --immutable --ignore-scripts
+        run: npm install --immutable --ignore-scripts
 
       - name: Gen ABI
-        run: yarn abi-type-gen
+        run: npm run abi-type-gen
 
       - name: Build
-        run: yarn docs-build
+        run: npm run docs-build
 
       - name: Deploy 🚀
         if: github.ref == 'refs/heads/master'

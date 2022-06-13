@@ -13,7 +13,7 @@ import {
   OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
 } from "../../constants";
-import { OpenSeaPort } from "../../index";
+import { OpenSeaSDK } from "../../index";
 import {
   FeeMethod,
   Network,
@@ -40,7 +40,7 @@ import {
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 
-const client = new OpenSeaPort(
+const client = new OpenSeaSDK(
   provider,
   {
     networkName: Network.Main,
@@ -52,7 +52,7 @@ const client = new OpenSeaPort(
 let asset: OpenSeaAsset;
 const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
 
-suite("seaport: fees", () => {
+suite("SDK: fees", () => {
   before(async () => {
     const tokenId = MYTHEREUM_TOKEN_ID.toString();
     const tokenAddress = MYTHEREUM_ADDRESS;
@@ -203,7 +203,7 @@ suite("seaport: fees", () => {
   });
 
   test("First page of orders have valid fees", async () => {
-    const { orders } = await client.api.getOrders();
+    const { orders } = await client.api.getOrdersLegacyWyvern();
     assert.isNotEmpty(orders);
 
     orders.forEach((order) => {

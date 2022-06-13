@@ -8,7 +8,7 @@ import {
   MAX_UINT_256,
   RINKEBY_PROVIDER_URL,
 } from "../../constants";
-import { OpenSeaPort } from "../../index";
+import { OpenSeaSDK } from "../../index";
 import {
   Network,
   WyvernSchemaName,
@@ -43,7 +43,7 @@ import {
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL);
 
-const client = new OpenSeaPort(
+const client = new OpenSeaSDK(
   provider,
   {
     networkName: Network.Main,
@@ -52,7 +52,7 @@ const client = new OpenSeaPort(
   (line) => console.info(`MAINNET: ${line}`)
 );
 
-const rinkebyClient = new OpenSeaPort(
+const rinkebyClient = new OpenSeaSDK(
   rinkebyProvider,
   {
     networkName: Network.Rinkeby,
@@ -63,7 +63,7 @@ const rinkebyClient = new OpenSeaPort(
 
 let manaAddress: string;
 
-suite("seaport: owners and transfers", () => {
+suite("SDK: owners and transfers", () => {
   before(async () => {
     manaAddress = (await client.api.getPaymentTokens({ symbol: "MANA" }))
       .tokens[0].address;

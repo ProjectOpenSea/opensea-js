@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "3.0.4",
+  "version": "4.0.0-beta.2",
   "description": "JavaScript SDK for the OpenSea marketplace. Let users buy or sell crypto collectibles and other cryptogoods, all on your own site!",
   "license": "MIT",
   "author": "OpenSea Developers",
@@ -32,9 +32,12 @@
   },
   "types": "lib/index.d.ts",
   "dependencies": {
-    "bignumber.js": "9.0.1",
+    "@opensea/seaport-js": "^1.0.0",
+    "ajv": "^8.11.0",
+    "bignumber.js": "9.0.2",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
     "ethereumjs-util": "^5.2.0",
+    "ethers": "^5.6.6",
     "fbemitter": "2.1.1",
     "isomorphic-unfetch": "^2.1.1",
     "lodash": "^4.17.21",
@@ -46,6 +49,7 @@
   "devDependencies": {
     "@typechain/web3-v1": "^5.0.0",
     "@types/chai": "4.3.0",
+    "@types/chai-as-promised": "^7.1.5",
     "@types/fbemitter": "^2.0.32",
     "@types/lodash": "^4.14.178",
     "@types/mocha": "^9.0.0",
@@ -54,6 +58,7 @@
     "@typescript-eslint/eslint-plugin": "^5.7.0",
     "@typescript-eslint/parser": "^5.7.0",
     "chai": "4.3.4",
+    "chai-as-promised": "^7.1.1",
     "concurrently": "6.5.1",
     "confusing-browser-globals": "^1.0.11",
     "coveralls": "^3.1.1",

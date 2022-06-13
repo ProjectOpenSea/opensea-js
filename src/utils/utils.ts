@@ -1,3 +1,4 @@
+import { ItemType } from "@opensea/seaport-js/lib/constants";
 import BigNumber from "bignumber.js";
 import { AbiType, CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
@@ -308,7 +309,7 @@ export const userFromJSON = (user: any): OpenSeaUser => {
 export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
   const fromJSON: OpenSeaAssetBundle = {
     maker: asset_bundle.maker,
-    assets: asset_bundle.assets.map(assetFromJSON),
+    assets: asset_bundle.assets ? asset_bundle.assets.map(assetFromJSON) : [],
     assetContract: asset_bundle.asset_contract
       ? assetContractFromJSON(asset_bundle.asset_contract)
       : undefined,
@@ -604,11 +605,13 @@ export async function isContractAddress(
   return code !== "0x";
 }
 
+export type BigNumberInput = number | string | BigNumber;
+
 /**
  * Special fixes for making BigNumbers using web3 results
  * @param arg An arg or the result of a web3 call to turn into a BigNumber
  */
-export function makeBigNumber(arg: number | string | BigNumber): BigNumber {
+export function makeBigNumber(arg: BigNumberInput): BigNumber {
   // Zero sometimes returned as 0x from contracts
   if (arg === "0x") {
     arg = 0;
@@ -1063,4 +1066,26 @@ export const getMaxOrderExpirationTimestamp = () => {
   );
 
   return Math.round(maxExpirationDate.getTime() / 1000);
+};
+
+interface ErrorWithCode extends Error {
+  code: string;
+}
+
+export const hasErrorCode = (error: unknown): error is ErrorWithCode => {
+  const untypedError = error as Partial<ErrorWithCode>;
+  return !!untypedError.code;
+};
+
+export const getAssetItemType = (schemaName?: WyvernSchemaName) => {
+  switch (schemaName) {
+    case "ERC20":
+      return ItemType.ERC20;
+    case "ERC721":
+      return ItemType.ERC721;
+    case "ERC1155":
+      return ItemType.ERC1155;
+    default:
+      throw new Error(`Unknown schema name: ${schemaName}`);
+  }
 };

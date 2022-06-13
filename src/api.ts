@@ -11,6 +11,20 @@ import {
   SITE_HOST_RINKEBY,
 } from "./constants";
 import {
+  OrderAPIOptions,
+  OrdersPostQueryResponse,
+  OrdersQueryOptions,
+  OrdersQueryResponse,
+  OrderV2,
+  ProtocolData,
+  QueryCursors,
+} from "./orders/types";
+import {
+  serializeOrdersQueryOptions,
+  getOrdersAPIPath,
+  deserializeOrder,
+} from "./orders/utils";
+import {
   Network,
   OpenSeaAPIConfig,
   OpenSeaAsset,
@@ -52,6 +66,8 @@ export class OpenSeaAPI {
   public logger: (arg: string) => void;
 
   private apiKey: string | undefined;
+  private networkName: Network;
+  private retryDelay = 3000;
 
   /**
    * Create an instance of the OpenSea API
@@ -60,6 +76,7 @@ export class OpenSeaAPI {
    */
   constructor(config: OpenSeaAPIConfig, logger?: (arg: string) => void) {
     this.apiKey = config.apiKey;
+    this.networkName = config.networkName ?? Network.Main;
 
     switch (config.networkName) {
       case Network.Rinkeby:
@@ -78,13 +95,95 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Gets an order from API based on query options. Throws when no order is found.
+   */
+  public async getOrder({
+    protocol,
+    side,
+    orderDirection = "desc",
+    orderBy = "created_date",
+    ...restOptions
+  }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
+    const { orders } = await this.get<OrdersQueryResponse>(
+      getOrdersAPIPath(this.networkName, protocol, side),
+      serializeOrdersQueryOptions({
+        limit: 1,
+        orderBy,
+        orderDirection,
+        ...restOptions,
+      })
+    );
+    if (orders.length === 0) {
+      throw new Error("Not found: no matching order found");
+    }
+    return deserializeOrder(orders[0]);
+  }
+
+  /**
+   * Gets a list of orders from API based on query options and returns orders
+   * with next and previous cursors.
+   */
+  public async getOrders({
+    protocol,
+    side,
+    orderDirection = "desc",
+    orderBy = "created_date",
+    ...restOptions
+  }: Omit<OrdersQueryOptions, "limit">): Promise<
+    QueryCursors & {
+      orders: OrderV2[];
+    }
+  > {
+    const response = await this.get<OrdersQueryResponse>(
+      getOrdersAPIPath(this.networkName, protocol, side),
+      serializeOrdersQueryOptions({
+        limit: this.pageSize,
+        orderBy,
+        orderDirection,
+        ...restOptions,
+      })
+    );
+    return {
+      ...response,
+      orders: response.orders.map(deserializeOrder),
+    };
+  }
+
+  /**
+   * Send an order to be posted. Throws when the order is invalid.
+   */
+  public async postOrder(
+    order: ProtocolData,
+    apiOptions: OrderAPIOptions,
+    { retries = 2 }: { retries?: number } = {}
+  ): Promise<OrderV2> {
+    let response: OrdersPostQueryResponse;
+    // TODO: Validate apiOptions. Avoid API calls that will definitely fail
+    const { protocol, side } = apiOptions;
+    try {
+      response = await this.post<OrdersPostQueryResponse>(
+        getOrdersAPIPath(this.networkName, protocol, side),
+        order
+      );
+    } catch (error) {
+      _throwOrContinue(error, retries);
+      await delay(this.retryDelay);
+      return this.postOrder(order, apiOptions, { retries: retries - 1 });
+    }
+    return deserializeOrder(response.order);
+  }
+
+  /**
    * Send an order to the orderbook.
    * Throws when the order is invalid.
    * IN NEXT VERSION: change order input to Order type
    * @param order Order JSON to post to the orderbook
    * @param retries Number of times to retry if the service is unavailable for any reason
    */
-  public async postOrder(order: OrderJSON, retries = 2): Promise<Order> {
+  public async postOrderLegacyWyvern(
+    order: OrderJSON,
+    retries = 2
+  ): Promise<Order> {
     let json;
     try {
       json = (await this.post(
@@ -94,7 +193,7 @@ export class OpenSeaAPI {
     } catch (error) {
       _throwOrContinue(error, retries);
       await delay(3000);
-      return this.postOrder(order, retries - 1);
+      return this.postOrderLegacyWyvern(order, retries - 1);
     }
     return orderFromJSON(json);
   }
@@ -138,14 +237,16 @@ export class OpenSeaAPI {
       return null;
     }
   }
+
   /**
-   * Get an order from the orderbook, throwing if none is found.
+   * Get an order from the orderbook using the legacy wyvern API, throwing if none is found.
    * @param query Query to use for getting orders. A subset of parameters
    *  on the `OrderJSON` type is supported
    */
-  public async getOrder(query: OrderQuery): Promise<Order> {
+  public async getOrderLegacyWyvern(query: OrderQuery): Promise<Order> {
     const result = await this.get(`${ORDERBOOK_PATH}/orders/`, {
       limit: 1,
+      side: OrderSide.Sell,
       ...query,
     });
 
@@ -171,13 +272,14 @@ export class OpenSeaAPI {
    * @param page Page number, defaults to 1. Can be overridden by
    * `limit` and `offset` attributes from OrderQuery
    */
-  public async getOrders(
-    query: OrderQuery = { side: OrderSide.Sell },
+  public async getOrdersLegacyWyvern(
+    query: OrderQuery = {},
     page = 1
   ): Promise<{ orders: Order[]; count: number }> {
     const result = await this.get(`${ORDERBOOK_PATH}/orders/`, {
       limit: this.pageSize,
       offset: (page - 1) * this.pageSize,
+      side: OrderSide.Sell,
       ...query,
     });
 

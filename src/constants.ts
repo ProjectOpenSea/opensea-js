@@ -1,4 +1,5 @@
 import { WyvernProtocol } from "wyvern-js";
+import { Network } from "./types";
 
 export const DEFAULT_GAS_INCREASE_FACTOR = 1.01;
 export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS;
@@ -6,7 +7,7 @@ export const NULL_BLOCK_HASH =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 export const OPENSEA_FEE_RECIPIENT =
   "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
-export const INVERSE_BASIS_POINT = 10000;
+export const INVERSE_BASIS_POINT = 10_000; // 100 basis points per 1%
 export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256;
 export const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";
 export const MANA_ADDRESS = "0x0f5d2fb29fb7d3cfee444a200298f468908cc942";
@@ -106,3 +107,18 @@ export const MERKLE_VALIDATOR_MAINNET =
   "0xbaf2127b49fc93cbca6269fade0f7f31df4c88a7";
 export const MERKLE_VALIDATOR_RINKEBY =
   "0x45b594792a5cdc008d0de1c1d69faa3d16b3ddc1";
+
+export const CROSS_CHAIN_DEFAULT_CONDUIT_KEY =
+  "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000";
+const CROSS_CHAIN_DEFAULT_CONDUIT =
+  "0x1e0049783f008a0085193e00003d00cd54003c71";
+
+export const CONDUIT_KEYS_TO_CONDUIT = {
+  [CROSS_CHAIN_DEFAULT_CONDUIT_KEY]: CROSS_CHAIN_DEFAULT_CONDUIT,
+};
+
+export const DEFAULT_ZONE = "0x9b814233894cd227f561b78cc65891aa55c62ad2";
+export const WETH_ADDRESS_BY_NETWORK = {
+  [Network.Main]: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  [Network.Rinkeby]: "0xc778417e063141139fce010982780140aa0cd5ab",
+} as const;

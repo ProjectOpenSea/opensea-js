@@ -16,14 +16,19 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "16.11.0"
-          cache: yarn
+          cache: npm
+
+      - name: Upgrade npm
+        run: npm install -g npm
 
       - name: Install dependencies
-        run: yarn install --immutable --ignore-scripts
+        run: npm install --immutable --ignore-scripts
+
       - name: Gen ABI
-        run: yarn abi-type-gen
+        run: npm run abi-type-gen
+
       - name: Run linters
-        run: yarn lint:check
+        run: npm run lint:check
 
   test:
     runs-on: ubuntu-latest
@@ -32,16 +37,21 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "16.11.0"
-          cache: yarn
+          cache: npm
+
+      - name: Upgrade npm
+        run: npm install -g npm
 
       - name: Install dependencies
-        run: yarn install --immutable --ignore-scripts
+        run: npm install --immutable --ignore-scripts
+
       - name: Gen ABI
-        run: yarn abi-type-gen
+        run: npm run abi-type-gen
+
       - name: Run tests
         env:
           API_KEY: ${{ secrets.API_KEY }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
-          yarn test
-          yarn coverage-report
+          npm run test
+          npm run coverage-report

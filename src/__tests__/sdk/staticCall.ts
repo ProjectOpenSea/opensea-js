@@ -8,7 +8,7 @@ import {
   STATIC_CALL_TX_ORIGIN_ADDRESS,
 } from "../../constants";
 import { getMethod, StaticCheckTxOrigin } from "../../contracts";
-import { OpenSeaPort } from "../../index";
+import { OpenSeaSDK } from "../../index";
 import { Network } from "../../types";
 import { encodeCall } from "../../utils/schema";
 import {
@@ -25,7 +25,7 @@ import { testMatchingNewOrder } from "./orders";
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL);
 
-const client = new OpenSeaPort(
+const client = new OpenSeaSDK(
   provider,
   {
     networkName: Network.Main,
@@ -34,7 +34,7 @@ const client = new OpenSeaPort(
   (line) => console.info(`MAINNET: ${line}`)
 );
 
-const rinkebyClient = new OpenSeaPort(
+const rinkebyClient = new OpenSeaSDK(
   rinkebyProvider,
   {
     networkName: Network.Rinkeby,
@@ -43,7 +43,7 @@ const rinkebyClient = new OpenSeaPort(
   (line) => console.info(`RINKEBY: ${line}`)
 );
 
-suite("seaport: static calls", () => {
+suite("SDK: static calls", () => {
   test("Mainnet staticCall tx.origin can be applied to arbitrary order", async () => {
     const accountAddress = ALEX_ADDRESS;
     const takerAddress = ALEX_ADDRESS_2;
