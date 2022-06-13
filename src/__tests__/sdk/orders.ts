@@ -958,6 +958,7 @@ suite("SDK: orders", () => {
   test.skip("orderToJSON computes correct current price for Dutch auctions", async () => {
     const { orders } = await client.api.getOrdersLegacyWyvern({
       sale_kind: SaleKind.DutchAuction,
+      side: OrderSide.Sell,
     });
     assert.equal(orders.length, client.api.pageSize);
     orders.map((order) => {

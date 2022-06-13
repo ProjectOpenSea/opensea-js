@@ -520,7 +520,6 @@ export interface OpenSeaAssetBundleQuery
   owner?: string;
   offset?: number;
   limit?: number;
-  search?: string;
 }
 
 /**
@@ -672,6 +671,7 @@ export type RawWyvernOrderJSON = Omit<
 export interface OrderQuery extends Partial<OrderJSON> {
   owner?: string;
   sale_kind?: SaleKind;
+  side?: OrderSide;
   asset_contract_address?: string;
   payment_token_address?: string;
   is_english?: boolean;
@@ -695,7 +695,6 @@ export interface OpenSeaAssetQuery {
   owner?: string;
   asset_contract_address?: string;
   token_ids?: Array<number | string>;
-  search?: string;
   order_by?: string;
   order_direction?: string;
   limit?: number;

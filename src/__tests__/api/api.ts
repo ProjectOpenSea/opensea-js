@@ -194,6 +194,7 @@ suite("api", () => {
     const forKitty = await apiToTest.getOrdersLegacyWyvern({
       asset_contract_address: CK_RINKEBY_ADDRESS,
       token_id: CK_RINKEBY_TOKEN_ID,
+      side: OrderSide.Buy,
     });
     assert.isArray(forKitty.orders);
   });
@@ -279,6 +280,7 @@ suite("api", () => {
     const res = await apiToTest.getOrdersLegacyWyvern({
       // Get an old order to make sure listing time is too early
       listed_before: Math.round(Date.now() / 1000 - 3600),
+      side: OrderSide.Sell,
     });
     const order = res.orders[0];
     assert.isNotNull(order);
