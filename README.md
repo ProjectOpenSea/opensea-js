@@ -10,16 +10,6 @@
 
 <!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
 
-## v4.0.0-beta
-
-This is a beta release of opensea-js supporting querying for, creating, cancelling and fulfilling listings and offers on the new Seaport Protocol.
-
-### Unsupported features
-
-- Creating and fulfilling bundle listings and offers`
-
----
-
 A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don't have to deploy your own smart contracts or backend orderbooks.
 
 Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](https://www.npmjs.com/package/opensea-js)
@@ -33,7 +23,6 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
     - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
     - [Offer Limits](#offer-limits)
   - [Making Listings / Selling Items](#making-listings--selling-items)
-    - [Creating English Auctions](#creating-english-auctions)
   - [Running Crowdsales](#running-crowdsales)
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
@@ -446,7 +435,7 @@ For more information, check out the documentation for WyvernSchemas on https://p
 
 ## Advanced
 
-Interested in purchasing for users server-side or with a bot, making bundling items together, scheduling future orders, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+Interested in purchasing for users server-side or with a bot, scheduling future orders, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
 
 ### Scheduling Future Listings
 
