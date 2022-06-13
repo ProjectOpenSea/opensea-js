@@ -40,10 +40,10 @@ import {
   MIN_EXPIRATION_MINUTES,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
-  OPENSEA_CROSS_CHAIN_CONDUIT_KEY,
+  CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
   OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
-  OPENSEA_ZONE,
+  DEFAULT_ZONE,
   ORDER_MATCHING_LATENCY_SECONDS,
   RPC_URL_PATH,
   SELL_ORDER_BATCH_SIZE,
@@ -225,7 +225,7 @@ export class OpenSeaSDK {
     this.seaport = new Seaport(this.ethersProvider, {
       conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
       overrides: {
-        defaultConduitKey: OPENSEA_CROSS_CHAIN_CONDUIT_KEY,
+        defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
       },
     });
 
@@ -931,7 +931,7 @@ export class OpenSeaSDK {
         endTime:
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
-        zone: OPENSEA_ZONE,
+        zone: DEFAULT_ZONE,
       },
       accountAddress
     );
@@ -1093,7 +1093,7 @@ export class OpenSeaSDK {
         endTime:
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
-        zone: OPENSEA_ZONE,
+        zone: DEFAULT_ZONE,
       },
       accountAddress
     );
