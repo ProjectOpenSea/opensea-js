@@ -147,20 +147,20 @@ suite("api", () => {
   });
 
   test("Rinkeby API orders have correct OpenSea url", async () => {
-    const order = await rinkebyApi.getOrder({});
+    const order = await rinkebyApi.getOrder({ side: OrderSide.Buy });
     if (!order.asset) {
       return;
     }
-    const url = `https://testnets.opensea.io/assets/${order.asset.assetContract.address}/${order.asset.tokenId}`;
+    const url = `https://testnets.opensea.io/assets/rinkeby/${order.asset.assetContract.address}/${order.asset.tokenId}`;
     assert.equal(order.asset.openseaLink, url);
   });
 
   test("Mainnet API orders have correct OpenSea url", async () => {
-    const order = await mainApi.getOrder({});
+    const order = await mainApi.getOrder({ side: OrderSide.Sell });
     if (!order.asset) {
       return;
     }
-    const url = `https://opensea.io/assets/${order.asset.assetContract.address}/${order.asset.tokenId}`;
+    const url = `https://opensea.io/assets/ethereum/${order.asset.assetContract.address}/${order.asset.tokenId}`;
     assert.equal(order.asset.openseaLink, url);
   });
 
@@ -183,7 +183,7 @@ suite("api", () => {
   if (ORDERBOOK_VERSION > 0) {
     test("API orderbook paginates", async () => {
       const { orders, count } = await apiToTest.getOrders();
-      const pagination = await apiToTest.getOrders({}, 2);
+      const pagination = await apiToTest.getOrders({ side: OrderSide.Buy }, 2);
       assert.equal(pagination.orders.length, apiToTest.pageSize);
       assert.notDeepEqual(pagination.orders[0], orders[0]);
       assert.equal(pagination.count, count);
@@ -194,13 +194,17 @@ suite("api", () => {
     const forKitty = await apiToTest.getOrders({
       asset_contract_address: CK_RINKEBY_ADDRESS,
       token_id: CK_RINKEBY_TOKEN_ID,
+      side: OrderSide.Buy,
     });
     assert.isArray(forKitty.orders);
   });
 
   // Temp skip due to migration
   test.skip("API fetches orders for asset owner", async () => {
-    const forOwner = await apiToTest.getOrders({ owner: ALEX_ADDRESS });
+    const forOwner = await apiToTest.getOrders({
+      owner: ALEX_ADDRESS,
+      side: OrderSide.Buy,
+    });
     assert.isAbove(forOwner.orders.length, 0);
     assert.isAbove(forOwner.count, 0);
     const owners = forOwner.orders.map(
@@ -226,7 +230,10 @@ suite("api", () => {
   });
 
   test("API excludes cancelledOrFinalized and markedInvalid orders", async () => {
-    const { orders } = await apiToTest.getOrders({ limit: 50 });
+    const { orders } = await apiToTest.getOrders({
+      side: OrderSide.Sell,
+      limit: 50,
+    });
     const finishedOrders = orders.filter((o) => o.cancelledOrFinalized);
     assert.isEmpty(finishedOrders);
     const invalidOrders = orders.filter((o) => o.markedInvalid);
@@ -277,6 +284,7 @@ suite("api", () => {
     const res = await apiToTest.getOrders({
       // Get an old order to make sure listing time is too early
       listed_before: Math.round(Date.now() / 1000 - 3600),
+      side: OrderSide.Sell,
     });
     const order = res.orders[0];
     assert.isNotNull(order);
