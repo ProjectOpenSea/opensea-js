@@ -1,16 +1,16 @@
+import { Seaport } from "@opensea/seaport-js";
+import { CROSS_CHAIN_SEAPORT_ADDRESS } from "@opensea/seaport-js/lib/constants";
+import {
+  ConsiderationInputItem,
+  CreateInputItem,
+  OrderComponents,
+} from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "bignumber.js";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
 import { providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
-import { Seaport } from "seaport-js";
-import { CROSS_CHAIN_SEAPORT_ADDRESS } from "seaport-js/lib/constants";
-import {
-  ConsiderationInputItem,
-  CreateInputItem,
-  OrderComponents,
-} from "seaport-js/lib/types";
 import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
 import * as WyvernSchemas from "wyvern-schemas";

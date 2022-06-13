@@ -1,8 +1,8 @@
+import { ItemType } from "@opensea/seaport-js/lib/constants";
 import BigNumber from "bignumber.js";
 import { AbiType, CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
-import { ItemType } from "seaport-js/lib/constants";
 import Web3 from "web3";
 import { JsonRpcResponse } from "web3-core-helpers/types";
 import { AbstractProvider } from "web3-core/types";
