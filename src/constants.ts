@@ -122,3 +122,8 @@ export const WETH_ADDRESS_BY_NETWORK = {
   [Network.Main]: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
   [Network.Rinkeby]: "0xc778417e063141139fce010982780140aa0cd5ab",
 } as const;
+
+export const DEFAULT_ZONE_BY_NETWORK = {
+  [Network.Main]: "0x004c00500000ad104d7dbd00e3ae0a5c00560c00",
+  [Network.Rinkeby]: "0x9b814233894cd227f561b78cc65891aa55c62ad2",
+} as const;

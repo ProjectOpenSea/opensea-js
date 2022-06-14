@@ -43,7 +43,7 @@ import {
   CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
   OPENSEA_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
-  DEFAULT_ZONE,
+  DEFAULT_ZONE_BY_NETWORK,
   ORDER_MATCHING_LATENCY_SECONDS,
   RPC_URL_PATH,
   SELL_ORDER_BATCH_SIZE,
@@ -931,7 +931,7 @@ export class OpenSeaSDK {
         endTime:
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
-        zone: DEFAULT_ZONE,
+        zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
       },
       accountAddress
     );
@@ -1093,7 +1093,7 @@ export class OpenSeaSDK {
         endTime:
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
-        zone: DEFAULT_ZONE,
+        zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
       },
       accountAddress
     );
