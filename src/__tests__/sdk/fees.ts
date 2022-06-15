@@ -10,7 +10,7 @@ import {
   ENJIN_COIN_ADDRESS,
   MAINNET_PROVIDER_URL,
   NULL_ADDRESS,
-  OPENSEA_FEE_RECIPIENT,
+  OPENSEA_LEGACY_FEE_RECIPIENT,
   OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
@@ -390,7 +390,7 @@ function unitTestFeesBuyOrder({
   assert.equal(+makerProtocolFee, 0);
   assert.equal(+takerProtocolFee, 0);
   assert.equal(+makerReferrerFee, 0);
-  assert.equal(feeRecipient, OPENSEA_FEE_RECIPIENT);
+  assert.equal(feeRecipient, OPENSEA_LEGACY_FEE_RECIPIENT);
   assert.equal(feeMethod, FeeMethod.SplitFee);
 }
 
@@ -404,7 +404,7 @@ export function testFeesMakerOrder(
   if (order.waitingForBestCounterOrder) {
     assert.equal(order.feeRecipient, NULL_ADDRESS);
   } else {
-    assert.equal(order.feeRecipient, OPENSEA_FEE_RECIPIENT);
+    assert.equal(order.feeRecipient, OPENSEA_LEGACY_FEE_RECIPIENT);
   }
   // Public order
   if (makerBountyBPS != null) {

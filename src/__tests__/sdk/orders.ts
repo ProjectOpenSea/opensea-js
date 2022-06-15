@@ -9,7 +9,7 @@ import {
   MAINNET_PROVIDER_URL,
   MERKLE_VALIDATOR_MAINNET,
   NULL_ADDRESS,
-  OPENSEA_FEE_RECIPIENT,
+  OPENSEA_LEGACY_FEE_RECIPIENT,
   RINKEBY_PROVIDER_URL,
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
@@ -1470,7 +1470,7 @@ export async function testMatchingNewOrder(
   assert.equal(matchingOrder.makerProtocolFee.toNumber(), 0);
   assert.equal(matchingOrder.takerProtocolFee.toNumber(), 0);
   if (order.waitingForBestCounterOrder) {
-    assert.equal(matchingOrder.feeRecipient, OPENSEA_FEE_RECIPIENT);
+    assert.equal(matchingOrder.feeRecipient, OPENSEA_LEGACY_FEE_RECIPIENT);
   } else {
     assert.equal(matchingOrder.feeRecipient, NULL_ADDRESS);
   }

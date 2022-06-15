@@ -60,7 +60,7 @@ We recommend switching to Node.js version 16 to make sure common crypto dependen
 Then, in your project, run:
 
 ```bash
-npm install --save opensea-js@beta
+npm install --save opensea-js
 ```
 
 Install [web3](https://github.com/ethereum/web3.js) too if you haven't already.
