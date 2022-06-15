@@ -59,6 +59,7 @@ import {
   WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY,
+  OPENSEA_LEGACY_FEE_RECIPIENT,
 } from "./constants";
 import {
   CanonicalWETH,
@@ -3705,7 +3706,9 @@ export class OpenSeaSDK {
     });
     // Compat for matching buy orders that have fee recipient still on them
     const feeRecipient =
-      order.feeRecipient == NULL_ADDRESS ? OPENSEA_FEE_RECIPIENT : NULL_ADDRESS;
+      order.feeRecipient == NULL_ADDRESS
+        ? OPENSEA_LEGACY_FEE_RECIPIENT
+        : NULL_ADDRESS;
 
     const matchingOrder: UnhashedOrder = {
       exchange: order.exchange,
@@ -4301,7 +4304,7 @@ export class OpenSeaSDK {
       makerProtocolFee: makeBigNumber(0),
       takerProtocolFee: makeBigNumber(0),
       makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
-      feeRecipient: OPENSEA_FEE_RECIPIENT,
+      feeRecipient: OPENSEA_LEGACY_FEE_RECIPIENT,
       feeMethod: FeeMethod.SplitFee,
     };
   }
@@ -4316,7 +4319,7 @@ export class OpenSeaSDK {
     // Use buyer as the maker when it's an English auction, so Wyvern sets prices correctly
     const feeRecipient = waitForHighestBid
       ? NULL_ADDRESS
-      : OPENSEA_FEE_RECIPIENT;
+      : OPENSEA_LEGACY_FEE_RECIPIENT;
 
     // Swap maker/taker fees when it's an English auction,
     // since these sell orders are takers not makers
