@@ -36,7 +36,6 @@ import {
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
   MANA_ADDRESS,
-  MAX_EXPIRATION_MONTHS,
   MIN_EXPIRATION_MINUTES,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
@@ -4383,15 +4382,7 @@ export class OpenSeaSDK {
     waitingForBestCounterOrder?: boolean;
     isMatchingOrder?: boolean;
   }) {
-    const maxExpirationDate = new Date();
-
-    maxExpirationDate.setMonth(
-      maxExpirationDate.getMonth() + MAX_EXPIRATION_MONTHS
-    );
-
-    const maxExpirationTimeStamp = Math.round(
-      maxExpirationDate.getTime() / 1000
-    );
+    const maxExpirationTimeStamp = getMaxOrderExpirationTimestamp();
 
     const minListingTimestamp = Math.round(Date.now() / 1000);
 
