@@ -4,10 +4,10 @@ import { before, suite, test } from "mocha";
 import Web3 from "web3";
 import { HowToCall } from "wyvern-js/lib/types";
 import {
-  MERKLE_VALIDATOR_MAINNET,
   ENJIN_ADDRESS,
   INVERSE_BASIS_POINT,
   MAINNET_PROVIDER_URL,
+  MERKLE_VALIDATOR_MAINNET,
   NULL_ADDRESS,
   OPENSEA_FEE_RECIPIENT,
   RINKEBY_PROVIDER_URL,
@@ -27,9 +27,9 @@ import {
 import {
   assignOrdersToSides,
   estimateCurrentPrice,
+  getMaxOrderExpirationTimestamp,
   makeBigNumber,
   orderFromJSON,
-  getMaxOrderExpirationTimestamp,
 } from "../../utils/utils";
 import {
   AGE_OF_RUST_TOKEN_ID,
