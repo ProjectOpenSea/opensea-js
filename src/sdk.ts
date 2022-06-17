@@ -1504,10 +1504,12 @@ export class OpenSeaSDK {
     order,
     accountAddress,
     recipientAddress,
+    dryRun = false,
   }: {
     order: OrderV2;
     accountAddress: string;
     recipientAddress?: string;
+    dryRun?: boolean;
   }): Promise<string> {
     const isPrivateListing = !!order.taker;
     if (isPrivateListing) {
@@ -1522,16 +1524,20 @@ export class OpenSeaSDK {
       });
     }
 
-    let transactionHash: string;
+    let transactionHash = "";
     switch (order.protocolAddress) {
       case CROSS_CHAIN_SEAPORT_ADDRESS: {
-        const { executeAllActions } = await this.seaport.fulfillOrder({
+        const { executeAllActions, actions } = await this.seaport.fulfillOrder({
           order: order.protocolData,
           accountAddress,
           recipientAddress,
         });
-        const transaction = await executeAllActions();
-        transactionHash = transaction.hash;
+
+        console.log("actions are", actions);
+        if (!dryRun) {
+          const transaction = await executeAllActions();
+          transactionHash = transaction.hash;
+        }
         break;
       }
       default:
