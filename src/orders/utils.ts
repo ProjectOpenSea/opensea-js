@@ -20,7 +20,7 @@ export const getOrdersAPIPath = (
 ) => {
   const chain = NETWORK_TO_CHAIN[network];
   const sidePath = side === "ask" ? "listings" : "offers";
-  return `/api/v2/orders/${chain}/${protocol}/${sidePath}`;
+  return `/v2/orders/${chain}/${protocol}/${sidePath}`;
 };
 
 type OrdersQueryPathOptions = "protocol" | "side";
