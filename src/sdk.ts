@@ -932,6 +932,8 @@ export class OpenSeaSDK {
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+        restrictedByZone: true,
+        allowPartialFills: true,
       },
       accountAddress
     );
@@ -1094,6 +1096,8 @@ export class OpenSeaSDK {
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+        restrictedByZone: true,
+        allowPartialFills: true,
       },
       accountAddress
     );
