@@ -311,20 +311,18 @@ Games using this method include [Coins & Steel](https://opensea.io/assets/coins&
 To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are underscored instead of camel-cased, similar to the main [OpenSea API parameters](https://docs.opensea.io/v1.0/reference):
 
 ```JavaScript
-import { OrderSide } from 'opensea-js/lib/types'
-
 // Get offers (bids), a.k.a. orders where `side == 0`
 const { orders, count } = await openseaSDK.api.getOrders({
   asset_contract_address: tokenAddress,
   token_id: token_id,
-  side: OrderSide.Buy
+  side: "bid"
 })
 
 // Get page 2 of all auctions, a.k.a. orders where `side == 1`
 const { orders, count } = await openseaSDK.api.getOrders({
   asset_contract_address: tokenAddress,
   token_id: token_id,
-  side: OrderSide.Sell
+  side: "ask"
 }, 2)
 ```
 
@@ -341,7 +339,7 @@ The available API filters for the orders endpoint is documented in the `OrderJSO
    */
   maker?: string, // Address of the order's creator
   taker?: string, // The null address if anyone is allowed to take the order
-  side?: OrderSide, // 0 for offers, 1 for auctions
+  side?: "bid" | "ask", // "bid" for buy orders, "ask" for sell orders
   owner?: string, // Address of owner of the order's asset
   sale_kind?: SaleKind, // 0 for fixed-price, 1 for Dutch auctions
   asset_contract_address?: string, // Contract address for order's asset
@@ -360,26 +358,26 @@ The available API filters for the orders endpoint is documented in the `OrderJSO
 To buy an item , you need to **fulfill a sell order**. To do that, it's just one call:
 
 ```JavaScript
-const order = await openseaSDK.api.getOrder({ side: OrderSide.Sell, ... })
+const order = await openseaSDK.api.getOrder({ side: "ask", ... })
 const accountAddress = "0x..." // The buyer's wallet address, also the taker
 const transactionHash = await this.props.openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
 Note that the `fulfillOrder` promise resolves when the transaction has been confirmed and mined to the blockchain. To get the transaction hash before this happens, add an event listener (see [Listening to Events](#listening-to-events)) for the `TransactionCreated` event.
 
-If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s).
+If the order is a sell order (`order.side === "ask"`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s).
 
 ### Accepting Offers
 
 Similar to fulfilling sell orders above, you need to fulfill a buy order on an item you own to receive the tokens in the offer.
 
 ```JavaScript
-const order = await openseaSDK.api.getOrder({ side: OrderSide.Buy, ... })
+const order = await openseaSDK.api.getOrder({ side: "bid", ... })
 const accountAddress = "0x..." // The owner's wallet address, also the taker
 await this.props.openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
-If the order is a buy order (`order.side === OrderSide.Buy`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
+If the order is a buy order (`order.side === "bid"`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
 
 ### Transferring Items or Coins (Gifting)
 
@@ -456,7 +454,7 @@ const auction = await openseaSDK.createSellOrder({
 You can buy and transfer an item to someone else in one step! Just pass the `recipientAddress` parameter:
 
 ```JavaScript
-const order = await openseaSDK.api.getOrder({ side: OrderSide.Sell, ... })
+const order = await openseaSDK.api.getOrder({ side: "ask", ... })
 await this.props.openseaSDK.fulfillOrder({
   order,
   accountAddress, // The address of your wallet, which will sign the transaction
@@ -464,7 +462,7 @@ await this.props.openseaSDK.fulfillOrder({
 })
 ```
 
-If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is a buy order ( `OrderSide.Buy`), the taker is the _seller_ but the bid amount be sent to the `recipientAddress`.
+If the order is a sell order (`order.side === "ask"`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is a buy order ( `"bid"`), the taker is the _seller_ but the bid amount be sent to the `recipientAddress`.
 
 ### Bulk Transfers
 
@@ -508,7 +506,7 @@ You can use `getPaymentTokens` to search for tokens by symbol name. And you can 
 const token = (await openseaSDK.api.getPaymentTokens({ symbol: 'MANA'})).tokens[0]
 
 const order = await openseaSDK.api.getOrders({
-  side: OrderSide.Sell,
+  side: "ask",
   payment_token_address: token.address
 })
 ```
