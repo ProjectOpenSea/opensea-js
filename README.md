@@ -62,6 +62,19 @@ Then, in your project, run:
 npm install --save opensea-js
 ```
 
+> **Warning**
+> Due to the use of git-url dependencies, versions of `npm` below 8.5.2 are incompatible with this package due to broken integrity checksum validation.
+> Above version 8.5.2, `npm` will no longer validate integrity checksums for git-url dependencies.
+
+> **Warning**
+> To use `yarn` the following resolution is required to be added to your package.json:
+>
+> ```
+> "resolutions": {
+>    "@0x/utils": "https://github.com/ProjectOpensea/0x-tools/raw/provider-patch/utils/0x-utils-6.5.0.tgz",
+>  }
+> ```
+
 Install [web3](https://github.com/ethereum/web3.js) too if you haven't already.
 
 If you run into an error while building the dependencies and you're on a Mac, run this:
