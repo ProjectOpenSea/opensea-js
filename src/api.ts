@@ -98,8 +98,8 @@ export class OpenSeaAPI {
    * Gets an order from API based on query options. Throws when no order is found.
    */
   public async getOrder({
-    protocol,
     side,
+    protocol = "seaport",
     orderDirection = "desc",
     orderBy = "created_date",
     ...restOptions
@@ -124,8 +124,8 @@ export class OpenSeaAPI {
    * with next and previous cursors.
    */
   public async getOrders({
-    protocol,
     side,
+    protocol = "seaport",
     orderDirection = "desc",
     orderBy = "created_date",
     ...restOptions
@@ -159,7 +159,7 @@ export class OpenSeaAPI {
   ): Promise<OrderV2> {
     let response: OrdersPostQueryResponse;
     // TODO: Validate apiOptions. Avoid API calls that will definitely fail
-    const { protocol, side } = apiOptions;
+    const { protocol = "seaport", side } = apiOptions;
     try {
       response = await this.post<OrdersPostQueryResponse>(
         getOrdersAPIPath(this.networkName, protocol, side),

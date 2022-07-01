@@ -45,7 +45,7 @@ type OpenOrderOrderingOption = "created_date" | "eth_price";
 type OrderByDirection = "asc" | "desc";
 
 export type OrderAPIOptions = {
-  protocol: OrderProtocol;
+  protocol?: OrderProtocol;
   side: OrderSide;
 };
 
