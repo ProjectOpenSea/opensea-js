@@ -320,7 +320,7 @@ Games using this method include [Coins & Steel](https://opensea.io/assets/coins&
 
 ### Fetching Orders
 
-To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v1.0/reference):
+To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v2.0/reference):
 
 ```JavaScript
 // Get offers (bids), a.k.a. orders where `side == 0`
