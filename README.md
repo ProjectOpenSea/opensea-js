@@ -320,20 +320,20 @@ Games using this method include [Coins & Steel](https://opensea.io/assets/coins&
 
 ### Fetching Orders
 
-To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are underscored instead of camel-cased, similar to the main [OpenSea API parameters](https://docs.opensea.io/v1.0/reference):
+To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v1.0/reference):
 
 ```JavaScript
 // Get offers (bids), a.k.a. orders where `side == 0`
 const { orders, count } = await openseaSDK.api.getOrders({
-  asset_contract_address: tokenAddress,
-  token_id: token_id,
+  assetContractAddress: tokenAddress,
+  tokenId,
   side: "bid"
 })
 
 // Get page 2 of all auctions, a.k.a. orders where `side == 1`
 const { orders, count } = await openseaSDK.api.getOrders({
-  asset_contract_address: tokenAddress,
-  token_id: token_id,
+  assetContractAddress: tokenAddress,
+  tokenId,
   side: "ask"
 }, 2)
 ```
@@ -342,23 +342,28 @@ Note that the listing price of an asset is equal to the `currentPrice` of the **
 
 To learn more about signatures, makers, takers, listingTime vs createdTime and other kinds of order terminology, please read the [**Terminology Section**](https://docs.opensea.io/reference#terminology) of the API Docs.
 
-The available API filters for the orders endpoint is documented in the `OrderJSON` interface below, but see the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanantions.
+The available API filters for the orders endpoint is documented in the `OrdersQueryOptions` interface below, but see the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanantions.
 
 ```TypeScript
 /**
    * Attrs used by orderbook to make queries easier
    * More to come soon!
    */
+  side: "bid" | "ask", // "bid" for buy orders, "ask" for sell orders
+  protocol?: "seaport"; // Protocol of the order (more options may be added in future)
   maker?: string, // Address of the order's creator
   taker?: string, // The null address if anyone is allowed to take the order
-  side?: "bid" | "ask", // "bid" for buy orders, "ask" for sell orders
-  owner?: string, // Address of owner of the order's asset
+  owner?: string, // Address of owner of the order's item
   sale_kind?: SaleKind, // 0 for fixed-price, 1 for Dutch auctions
-  asset_contract_address?: string, // Contract address for order's asset
-  token_id?: number | string,
-  token_ids?: Array<number | string>,
-  listed_after?: number | string, // This means listing_time > value in seconds
-  listed_before?: number | string, // This means listing_time <= value in seconds
+  assetContractAddress?: string, // Contract address for order's item
+  paymentTokenAddress?: string; // Contract address for order's payment token
+  tokenId?: number | string,
+  tokenIds?: Array<number | string>,
+  listedAfter?: number | string, // This means listing_time > value in seconds
+  listedBefore?: number | string, // This means listing_time <= value in seconds
+  orderBy?: "created_date" | "eth_price", // Field to sort results by
+  orderDirection?: "asc" | "desc", // Sort direction of orderBy sorting of results
+  onlyEnglish?: boolean, // Only return english auction orders
 
   // For pagination
   limit?: number,

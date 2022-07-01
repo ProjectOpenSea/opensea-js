@@ -45,7 +45,7 @@ type OpenOrderOrderingOption = "created_date" | "eth_price";
 type OrderByDirection = "asc" | "desc";
 
 export type OrderAPIOptions = {
-  protocol: OrderProtocol;
+  protocol?: OrderProtocol;
   side: OrderSide;
 };
 
@@ -61,6 +61,7 @@ export type OrdersQueryOptions = OrderAPIOptions & {
   includeBundled?: boolean;
   listedAfter?: number | string;
   listedBefore?: number | string;
+  tokenId?: string;
   tokenIds?: string[];
   assetContractAddress?: string;
   orderBy?: OpenOrderOrderingOption;
