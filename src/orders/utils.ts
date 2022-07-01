@@ -39,7 +39,7 @@ export const serializeOrdersQueryOptions = (
     include_bundled: options.includeBundled,
     listed_after: options.listedAfter,
     listed_before: options.listedBefore,
-    token_ids: options.tokenIds,
+    token_ids: options.tokenIds ?? [options.tokenId],
     asset_contract_address: options.assetContractAddress,
     order_by: options.orderBy,
     order_direction: options.orderDirection,
