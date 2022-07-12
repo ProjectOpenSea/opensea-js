@@ -220,7 +220,8 @@ export class OpenSeaSDK {
 
     // Ethers Config
     this.ethersProvider = new providers.Web3Provider(
-      provider as providers.ExternalProvider
+      provider as providers.ExternalProvider,
+      "any"
     );
     this.seaport = new Seaport(this.ethersProvider, {
       conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
