@@ -218,7 +218,7 @@ export class OpenSeaSDK {
       ? new Web3(readonlyProvider)
       : this.web3;
 
-    // Ethers Config
+    // Ethers Config with any provider
     this.ethersProvider = new providers.Web3Provider(
       provider as providers.ExternalProvider,
       "any"
