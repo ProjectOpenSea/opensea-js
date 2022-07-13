@@ -133,7 +133,7 @@ suite("SDK: misc", () => {
   test("Checks that upper case shared storefront addresses are remapped to lazy mint adapter address", async () => {
     assert.equal(
       getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STORE_FRONT_ADDRESS_MAINNET.toUpperCase()
+        SHARED_STORE_FRONT_ADDRESS_RINKEBY.toUpperCase()
       ),
       SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS
     );
