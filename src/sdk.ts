@@ -157,6 +157,7 @@ import {
   hasErrorCode,
   getAssetItemType,
   BigNumberInput,
+  getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
 } from "./utils/utils";
 
 export class OpenSeaSDK {
@@ -777,7 +778,10 @@ export class OpenSeaSDK {
   ): CreateInputItem[] {
     return assets.map((asset, index) => ({
       itemType: getAssetItemType(this._getSchemaName(asset) ?? fallbackSchema),
-      token: asset.tokenAddress,
+      token:
+        getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
+          asset.tokenAddress
+        ),
       identifier: asset.tokenId ?? undefined,
       amount: quantities[index].toString() ?? "1",
     }));
