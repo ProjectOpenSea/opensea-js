@@ -1094,18 +1094,20 @@ export const getAssetItemType = (schemaName?: WyvernSchemaName) => {
   }
 };
 
-// Shared Storefront Lazy Mint Adapter helper functions
-
 const SHARED_STOREFRONT_ADDRESSES = new Set([
   SHARED_STORE_FRONT_ADDRESS_MAINNET,
   SHARED_STORE_FRONT_ADDRESS_RINKEBY,
 ]);
 
+/**
+ * Checks if the token address is the shared storefront address and if so replaces
+ * that address with the lazy mint adapter addres. Otherwise, returns the input token address
+ * @param tokenAddress token address
+ * @returns input token address or lazy mint adapter address
+ */
 export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress =
   (tokenAddress: string): string => {
     return SHARED_STOREFRONT_ADDRESSES.has(tokenAddress)
-      ? // Replace shared storefront address with lazy mint adapter address
-        SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS
-      : // Return existing token address otherwise
-        tokenAddress;
+      ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS
+      : tokenAddress;
   };
