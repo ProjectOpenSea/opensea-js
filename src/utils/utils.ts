@@ -1095,8 +1095,8 @@ export const getAssetItemType = (schemaName?: WyvernSchemaName) => {
 };
 
 const SHARED_STOREFRONT_ADDRESSES = new Set([
-  SHARED_STORE_FRONT_ADDRESS_MAINNET,
-  SHARED_STORE_FRONT_ADDRESS_RINKEBY,
+  SHARED_STORE_FRONT_ADDRESS_MAINNET.toLowerCase(),
+  SHARED_STORE_FRONT_ADDRESS_RINKEBY.toLowerCase(),
 ]);
 
 /**
@@ -1107,7 +1107,7 @@ const SHARED_STOREFRONT_ADDRESSES = new Set([
  */
 export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress =
   (tokenAddress: string): string => {
-    return SHARED_STOREFRONT_ADDRESSES.has(tokenAddress)
+    return SHARED_STOREFRONT_ADDRESSES.has(tokenAddress.toLowerCase())
       ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS
       : tokenAddress;
   };
