@@ -1,0 +1,23 @@
+import { Network } from "../types";
+import { OrderProtocol, OrdersQueryOptions, OrderSide, OrderV2, SerializedOrderV2 } from "./types";
+export declare const getOrdersAPIPath: (network: Network, protocol: OrderProtocol, side: OrderSide) => string;
+declare type OrdersQueryPathOptions = "protocol" | "side";
+export declare const serializeOrdersQueryOptions: (options: Omit<OrdersQueryOptions, OrdersQueryPathOptions>) => {
+    limit: number;
+    cursor: string | undefined;
+    payment_token_address: string | undefined;
+    maker: string | undefined;
+    taker: string | undefined;
+    owner: string | undefined;
+    bundled: boolean | undefined;
+    include_bundled: boolean | undefined;
+    listed_after: string | number | undefined;
+    listed_before: string | number | undefined;
+    token_ids: string[] | undefined;
+    asset_contract_address: string | undefined;
+    order_by: ("created_date" | "eth_price") | undefined;
+    order_direction: ("asc" | "desc") | undefined;
+    only_english: boolean | undefined;
+};
+export declare const deserializeOrder: (order: SerializedOrderV2) => OrderV2;
+export {};
