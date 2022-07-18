@@ -1512,7 +1512,7 @@ export class OpenSeaSDK {
     order: OrderV2;
     accountAddress: string;
     recipientAddress?: string;
-  }): Promise<string> {
+  }): Promise<any> {
     const isPrivateListing = !!order.taker;
     if (isPrivateListing) {
       if (recipientAddress) {
@@ -1529,13 +1529,12 @@ export class OpenSeaSDK {
     let transactionHash: string;
     switch (order.protocolAddress) {
       case CROSS_CHAIN_SEAPORT_ADDRESS: {
-        const { executeAllActions } = await this.seaport.fulfillOrder({
+        const data = await this.seaport.fulfillOrder({
           order: order.protocolData,
           accountAddress,
           recipientAddress,
         });
-        const transaction = await executeAllActions();
-        transactionHash = transaction.hash;
+        return data;
         break;
       }
       default:
