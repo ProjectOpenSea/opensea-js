@@ -25,6 +25,9 @@ import {
   MERKLE_VALIDATOR_RINKEBY,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
+  SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS,
+  SHARED_STORE_FRONT_ADDRESS_MAINNET,
+  SHARED_STORE_FRONT_ADDRESS_RINKEBY,
 } from "../constants";
 import { ERC1155 } from "../contracts";
 import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
@@ -1090,3 +1093,21 @@ export const getAssetItemType = (schemaName?: WyvernSchemaName) => {
       throw new Error(`Unknown schema name: ${schemaName}`);
   }
 };
+
+const SHARED_STOREFRONT_ADDRESSES = new Set([
+  SHARED_STORE_FRONT_ADDRESS_MAINNET.toLowerCase(),
+  SHARED_STORE_FRONT_ADDRESS_RINKEBY.toLowerCase(),
+]);
+
+/**
+ * Checks if the token address is the shared storefront address and if so replaces
+ * that address with the lazy mint adapter addres. Otherwise, returns the input token address
+ * @param tokenAddress token address
+ * @returns input token address or lazy mint adapter address
+ */
+export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress =
+  (tokenAddress: string): string => {
+    return SHARED_STOREFRONT_ADDRESSES.has(tokenAddress.toLowerCase())
+      ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS
+      : tokenAddress;
+  };
