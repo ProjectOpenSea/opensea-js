@@ -12,7 +12,7 @@ export const OPENSEA_FEE_RECIPIENT =
 export const INVERSE_BASIS_POINT = 10_000; // 100 basis points per 1%
 export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256;
 export const SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS =
-  "0xde575850a9978d61094cbd1f8a897783d6d06084"; // Same address on mainnet and Rinkeby
+  "0xa604060890923ff400e8c6f5290461a83aedacec"; // Same address on mainnet and Rinkeby
 export const SHARED_STORE_FRONT_ADDRESS_MAINNET =
   "0x495f947276749ce646f68ac8c248420045cb7b5e";
 export const SHARED_STORE_FRONT_ADDRESS_RINKEBY =
