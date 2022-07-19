@@ -32,7 +32,7 @@
   },
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@opensea/seaport-js": "^1.0.2",
+    "@opensea/seaport-js": "git+https://github.com/GarvMaggu/seaport-js.git",
     "ajv": "^8.11.0",
     "bignumber.js": "9.0.2",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
