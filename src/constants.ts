@@ -62,7 +62,6 @@ export const DEFAULT_MAX_BOUNTY = DEFAULT_SELLER_FEE_BASIS_POINTS;
 export const MIN_EXPIRATION_MINUTES = 15;
 export const MAX_EXPIRATION_MONTHS = 3;
 export const ORDER_MATCHING_LATENCY_SECONDS = 60 * 60 * 24 * 7;
-export const SELL_ORDER_BATCH_SIZE = 3;
 export const ORDERBOOK_VERSION = 1 as number;
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_RINKEBY = "https://testnets-api.opensea.io";
