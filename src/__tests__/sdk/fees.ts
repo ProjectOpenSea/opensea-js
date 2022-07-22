@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js";
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
 import Web3 from "web3";
@@ -15,7 +14,6 @@ import {
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
 import {
-  FeeMethod,
   Network,
   OpenSeaAsset,
   OpenSeaCollection,
@@ -24,7 +22,6 @@ import {
   UnhashedOrder,
 } from "../../types";
 import {
-  ALEX_ADDRESS,
   CATS_IN_MECHS_ID,
   CK_ADDRESS,
   CK_TOKEN_ID,
@@ -35,7 +32,6 @@ import {
   MYTHEREUM_TOKEN_ID,
   SPIRIT_CLASH_OWNER,
   SPIRIT_CLASH_TOKEN_ID,
-  WETH_ADDRESS,
 } from "../constants";
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
@@ -50,7 +46,6 @@ const client = new OpenSeaSDK(
 );
 
 let asset: OpenSeaAsset;
-const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
 
 suite("SDK: fees", () => {
   before(async () => {
@@ -261,138 +256,7 @@ suite("SDK: fees", () => {
     assert.equal(sellerZeroFees.transferFee.toString(), "0");
     assert.equal(sellerZeroFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS);
   });
-
-  test("_getBuyFeeParameters works for assets", async () => {
-    const accountAddress = ALEX_ADDRESS;
-    const extraBountyBasisPoints = 0;
-    const sellOrder = await client._makeSellOrder({
-      asset,
-      quantity: 1,
-      accountAddress,
-      startAmount: 1,
-      paymentTokenAddress: NULL_ADDRESS,
-      extraBountyBasisPoints,
-      buyerAddress: NULL_ADDRESS,
-      waitForHighestBid: false,
-    });
-
-    const { totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints } =
-      await client.computeFees({
-        asset,
-        extraBountyBasisPoints,
-        side: OrderSide.Buy,
-      });
-
-    const {
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee,
-      takerProtocolFee,
-      makerReferrerFee,
-      feeRecipient,
-      feeMethod,
-    } = client._getBuyFeeParameters(
-      totalBuyerFeeBasisPoints,
-      totalSellerFeeBasisPoints,
-      sellOrder
-    );
-
-    assert.isAbove(totalSellerFeeBasisPoints, 0);
-
-    unitTestFeesBuyOrder({
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee,
-      takerProtocolFee,
-      makerReferrerFee,
-      feeRecipient,
-      feeMethod,
-    });
-  });
-
-  test("_getBuyFeeParameters works for English auction assets", async () => {
-    const accountAddress = ALEX_ADDRESS;
-    const extraBountyBasisPoints = 0;
-    const sellOrder = await client._makeSellOrder({
-      asset,
-      quantity: 1,
-      accountAddress,
-      startAmount: 1,
-      paymentTokenAddress: WETH_ADDRESS,
-      extraBountyBasisPoints,
-      buyerAddress: NULL_ADDRESS,
-      expirationTime,
-      waitForHighestBid: true,
-    });
-
-    const { totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints } =
-      await client.computeFees({
-        asset,
-        extraBountyBasisPoints,
-        side: OrderSide.Buy,
-      });
-
-    const {
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee,
-      takerProtocolFee,
-      makerReferrerFee,
-      feeRecipient,
-      feeMethod,
-    } = client._getBuyFeeParameters(
-      totalBuyerFeeBasisPoints,
-      totalSellerFeeBasisPoints,
-      sellOrder
-    );
-
-    assert.isAbove(totalSellerFeeBasisPoints, 0);
-
-    unitTestFeesBuyOrder({
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee,
-      takerProtocolFee,
-      makerReferrerFee,
-      feeRecipient,
-      feeMethod,
-    });
-  });
 });
-
-function unitTestFeesBuyOrder({
-  makerRelayerFee,
-  takerRelayerFee,
-  makerProtocolFee,
-  takerProtocolFee,
-  makerReferrerFee,
-  feeRecipient,
-  feeMethod,
-}: {
-  makerRelayerFee: BigNumber;
-  takerRelayerFee: BigNumber;
-  makerProtocolFee: BigNumber;
-  takerProtocolFee: BigNumber;
-  makerReferrerFee: BigNumber;
-  feeRecipient: string;
-  feeMethod: FeeMethod;
-}) {
-  assert.equal(
-    +makerRelayerFee,
-    asset.collection.openseaBuyerFeeBasisPoints +
-      asset.collection.devBuyerFeeBasisPoints
-  );
-  assert.equal(
-    +takerRelayerFee,
-    asset.collection.openseaSellerFeeBasisPoints +
-      asset.collection.devSellerFeeBasisPoints
-  );
-  assert.equal(+makerProtocolFee, 0);
-  assert.equal(+takerProtocolFee, 0);
-  assert.equal(+makerReferrerFee, 0);
-  assert.equal(feeRecipient, OPENSEA_LEGACY_FEE_RECIPIENT);
-  assert.equal(feeMethod, FeeMethod.SplitFee);
-}
 
 export function testFeesMakerOrder(
   order: Order | UnhashedOrder,

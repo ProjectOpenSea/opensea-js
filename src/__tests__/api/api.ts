@@ -1,17 +1,8 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import Web3 from "web3";
-import { WyvernProtocol } from "wyvern-js";
-import {
-  MAINNET_PROVIDER_URL,
-  MIN_EXPIRATION_MINUTES,
-  NULL_ADDRESS,
-  ORDERBOOK_VERSION,
-  ORDER_MATCHING_LATENCY_SECONDS,
-} from "../../constants";
-import { orderToJSON, OpenSeaSDK } from "../../index";
-import { Network, OrderSide } from "../../types";
-import { getOrderHash, makeBigNumber } from "../../utils/utils";
+import { NULL_ADDRESS, ORDERBOOK_VERSION } from "../../constants";
+import { orderToJSON } from "../../index";
+import { OrderSide } from "../../types";
 import {
   ALEX_ADDRESS,
   ALEX_ADDRESS_2,
@@ -20,24 +11,9 @@ import {
   CK_RINKEBY_SELLER_FEE,
   CK_RINKEBY_TOKEN_ID,
   mainApi,
-  MAINNET_API_KEY,
-  MYTHEREUM_ADDRESS,
-  MYTHEREUM_TOKEN_ID,
   rinkebyApi,
   RINKEBY_API_KEY,
-  WETH_ADDRESS,
 } from "../constants";
-
-const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
-
-const client = new OpenSeaSDK(
-  provider,
-  {
-    networkName: Network.Main,
-    apiKey: MAINNET_API_KEY,
-  },
-  (line) => console.info(`MAINNET: ${line}`)
-);
 
 suite("api", () => {
   test("API has correct base url", () => {
@@ -80,63 +56,6 @@ suite("api", () => {
     });
 
     await logPromise;
-  });
-
-  test("orderToJSON is correct", async () => {
-    const accountAddress = ALEX_ADDRESS;
-    const quantity = 1;
-    const amountInToken = 1.2;
-    const paymentTokenAddress = WETH_ADDRESS;
-    const extraBountyBasisPoints = 0;
-    const expirationTime = Math.round(
-      Date.now() / 1000 + (MIN_EXPIRATION_MINUTES + 1) * 60
-    ); // sixteen minutes from now
-    const englishAuctionReservePrice = 2;
-
-    const tokenId = MYTHEREUM_TOKEN_ID.toString();
-    const tokenAddress = MYTHEREUM_ADDRESS;
-    const order = await client._makeSellOrder({
-      asset: { tokenAddress, tokenId },
-      quantity,
-      accountAddress,
-      startAmount: amountInToken,
-      paymentTokenAddress,
-      extraBountyBasisPoints,
-      buyerAddress: NULL_ADDRESS,
-      expirationTime,
-      waitForHighestBid: true,
-      englishAuctionReservePrice,
-    });
-
-    const hashedOrder = {
-      ...order,
-      hash: getOrderHash(order),
-    };
-
-    const orderData = orderToJSON(hashedOrder);
-    assert.equal(orderData.quantity, quantity.toString());
-    assert.equal(orderData.maker, accountAddress);
-    assert.equal(orderData.taker, NULL_ADDRESS);
-    assert.equal(
-      orderData.basePrice,
-      WyvernProtocol.toBaseUnitAmount(
-        makeBigNumber(amountInToken),
-        18
-      ).toString()
-    );
-    assert.equal(orderData.paymentToken, paymentTokenAddress);
-    assert.equal(orderData.extra, extraBountyBasisPoints.toString());
-    assert.equal(
-      orderData.expirationTime,
-      expirationTime + ORDER_MATCHING_LATENCY_SECONDS
-    );
-    assert.equal(
-      orderData.englishAuctionReservePrice,
-      WyvernProtocol.toBaseUnitAmount(
-        makeBigNumber(englishAuctionReservePrice),
-        18
-      ).toString()
-    );
   });
 
   test("API fetches tokens", async () => {
