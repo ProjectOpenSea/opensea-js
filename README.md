@@ -494,7 +494,7 @@ const token = (await openseaSDK.api.getPaymentTokens({ symbol: 'MANA'})).tokens[
 
 const order = await openseaSDK.api.getOrders({
   side: "ask",
-  payment_token_address: token.address
+  paymentTokenAddress: token.address
 })
 ```
 
