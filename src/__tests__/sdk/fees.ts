@@ -1,30 +1,16 @@
-import BigNumber from "bignumber.js";
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
 import Web3 from "web3";
 import {
   DEFAULT_BUYER_FEE_BASIS_POINTS,
-  DEFAULT_MAX_BOUNTY,
   DEFAULT_SELLER_FEE_BASIS_POINTS,
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
   MAINNET_PROVIDER_URL,
-  NULL_ADDRESS,
-  OPENSEA_LEGACY_FEE_RECIPIENT,
-  OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
+import { Network, OpenSeaAsset, OrderSide } from "../../types";
 import {
-  FeeMethod,
-  Network,
-  OpenSeaAsset,
-  OpenSeaCollection,
-  Order,
-  OrderSide,
-  UnhashedOrder,
-} from "../../types";
-import {
-  ALEX_ADDRESS,
   CATS_IN_MECHS_ID,
   CK_ADDRESS,
   CK_TOKEN_ID,
@@ -35,7 +21,6 @@ import {
   MYTHEREUM_TOKEN_ID,
   SPIRIT_CLASH_OWNER,
   SPIRIT_CLASH_TOKEN_ID,
-  WETH_ADDRESS,
 } from "../constants";
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
@@ -50,7 +35,6 @@ const client = new OpenSeaSDK(
 );
 
 let asset: OpenSeaAsset;
-const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // one day from now
 
 suite("SDK: fees", () => {
   before(async () => {
@@ -202,20 +186,6 @@ suite("SDK: fees", () => {
     }
   });
 
-  test("First page of orders have valid fees", async () => {
-    const { orders } = await client.api.getOrdersLegacyWyvern();
-    assert.isNotEmpty(orders);
-
-    orders.forEach((order) => {
-      if (order.asset) {
-        assert.isNotEmpty(order.asset.assetContract);
-        assert.isNotEmpty(order.asset.tokenId);
-        testFeesMakerOrder(order, order.asset.collection);
-      }
-      assert.isNotEmpty(order.paymentTokenContract);
-    });
-  });
-
   test("Computes per-transfer fees correctly, Enjin and CK", async () => {
     const asset = await client.api.getAsset({
       tokenAddress: ENJIN_ADDRESS,
@@ -261,221 +231,4 @@ suite("SDK: fees", () => {
     assert.equal(sellerZeroFees.transferFee.toString(), "0");
     assert.equal(sellerZeroFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS);
   });
-
-  test("_getBuyFeeParameters works for assets", async () => {
-    const accountAddress = ALEX_ADDRESS;
-    const extraBountyBasisPoints = 0;
-    const sellOrder = await client._makeSellOrder({
-      asset,
-      quantity: 1,
-      accountAddress,
-      startAmount: 1,
-      paymentTokenAddress: NULL_ADDRESS,
-      extraBountyBasisPoints,
-      buyerAddress: NULL_ADDRESS,
-      waitForHighestBid: false,
-    });
-
-    const { totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints } =
-      await client.computeFees({
-        asset,
-        extraBountyBasisPoints,
-        side: OrderSide.Buy,
-      });
-
-    const {
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee,
-      takerProtocolFee,
-      makerReferrerFee,
-      feeRecipient,
-      feeMethod,
-    } = client._getBuyFeeParameters(
-      totalBuyerFeeBasisPoints,
-      totalSellerFeeBasisPoints,
-      sellOrder
-    );
-
-    assert.isAbove(totalSellerFeeBasisPoints, 0);
-
-    unitTestFeesBuyOrder({
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee,
-      takerProtocolFee,
-      makerReferrerFee,
-      feeRecipient,
-      feeMethod,
-    });
-  });
-
-  test("_getBuyFeeParameters works for English auction assets", async () => {
-    const accountAddress = ALEX_ADDRESS;
-    const extraBountyBasisPoints = 0;
-    const sellOrder = await client._makeSellOrder({
-      asset,
-      quantity: 1,
-      accountAddress,
-      startAmount: 1,
-      paymentTokenAddress: WETH_ADDRESS,
-      extraBountyBasisPoints,
-      buyerAddress: NULL_ADDRESS,
-      expirationTime,
-      waitForHighestBid: true,
-    });
-
-    const { totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints } =
-      await client.computeFees({
-        asset,
-        extraBountyBasisPoints,
-        side: OrderSide.Buy,
-      });
-
-    const {
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee,
-      takerProtocolFee,
-      makerReferrerFee,
-      feeRecipient,
-      feeMethod,
-    } = client._getBuyFeeParameters(
-      totalBuyerFeeBasisPoints,
-      totalSellerFeeBasisPoints,
-      sellOrder
-    );
-
-    assert.isAbove(totalSellerFeeBasisPoints, 0);
-
-    unitTestFeesBuyOrder({
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee,
-      takerProtocolFee,
-      makerReferrerFee,
-      feeRecipient,
-      feeMethod,
-    });
-  });
 });
-
-function unitTestFeesBuyOrder({
-  makerRelayerFee,
-  takerRelayerFee,
-  makerProtocolFee,
-  takerProtocolFee,
-  makerReferrerFee,
-  feeRecipient,
-  feeMethod,
-}: {
-  makerRelayerFee: BigNumber;
-  takerRelayerFee: BigNumber;
-  makerProtocolFee: BigNumber;
-  takerProtocolFee: BigNumber;
-  makerReferrerFee: BigNumber;
-  feeRecipient: string;
-  feeMethod: FeeMethod;
-}) {
-  assert.equal(
-    +makerRelayerFee,
-    asset.collection.openseaBuyerFeeBasisPoints +
-      asset.collection.devBuyerFeeBasisPoints
-  );
-  assert.equal(
-    +takerRelayerFee,
-    asset.collection.openseaSellerFeeBasisPoints +
-      asset.collection.devSellerFeeBasisPoints
-  );
-  assert.equal(+makerProtocolFee, 0);
-  assert.equal(+takerProtocolFee, 0);
-  assert.equal(+makerReferrerFee, 0);
-  assert.equal(feeRecipient, OPENSEA_LEGACY_FEE_RECIPIENT);
-  assert.equal(feeMethod, FeeMethod.SplitFee);
-}
-
-export function testFeesMakerOrder(
-  order: Order | UnhashedOrder,
-  collection?: OpenSeaCollection,
-  makerBountyBPS?: number
-) {
-  assert.equal(order.makerProtocolFee.toNumber(), 0);
-  assert.equal(order.takerProtocolFee.toNumber(), 0);
-  if (order.waitingForBestCounterOrder) {
-    assert.equal(order.feeRecipient, NULL_ADDRESS);
-  } else {
-    assert.equal(order.feeRecipient, OPENSEA_LEGACY_FEE_RECIPIENT);
-  }
-  // Public order
-  if (makerBountyBPS != null) {
-    assert.equal(order.makerReferrerFee.toNumber(), makerBountyBPS);
-  }
-  if (collection) {
-    const totalSellerFee =
-      collection.devSellerFeeBasisPoints +
-      collection.openseaSellerFeeBasisPoints;
-    const totalBuyerFeeBasisPoints =
-      collection.devBuyerFeeBasisPoints + collection.openseaBuyerFeeBasisPoints;
-    // Homogenous sale
-    if (order.side == OrderSide.Sell && order.waitingForBestCounterOrder) {
-      // Fees may not match the contract's fees, which are changeable.
-    } else if (order.side == OrderSide.Sell) {
-      assert.equal(order.makerRelayerFee.toNumber(), totalSellerFee);
-      assert.equal(order.takerRelayerFee.toNumber(), totalBuyerFeeBasisPoints);
-
-      assert.equal(
-        order.makerRelayerFee.toNumber(),
-        collection.devSellerFeeBasisPoints +
-          collection.openseaSellerFeeBasisPoints
-      );
-      // Check bounty
-      if (
-        collection.openseaSellerFeeBasisPoints >=
-        OPENSEA_SELLER_BOUNTY_BASIS_POINTS
-      ) {
-        assert.isAtMost(
-          OPENSEA_SELLER_BOUNTY_BASIS_POINTS +
-            order.makerReferrerFee.toNumber(),
-          collection.openseaSellerFeeBasisPoints
-        );
-      } else {
-        // No extra bounty allowed if < 1%
-        assert.equal(order.makerReferrerFee.toNumber(), 0);
-      }
-    } else {
-      assert.equal(order.makerRelayerFee.toNumber(), totalBuyerFeeBasisPoints);
-      assert.equal(order.takerRelayerFee.toNumber(), totalSellerFee);
-
-      assert.equal(
-        order.makerRelayerFee.toNumber(),
-        collection.devBuyerFeeBasisPoints +
-          collection.openseaBuyerFeeBasisPoints
-      );
-    }
-  } else {
-    // Heterogenous
-    if (order.side == OrderSide.Sell) {
-      assert.equal(
-        order.makerRelayerFee.toNumber(),
-        DEFAULT_SELLER_FEE_BASIS_POINTS
-      );
-      assert.equal(
-        order.takerRelayerFee.toNumber(),
-        DEFAULT_BUYER_FEE_BASIS_POINTS
-      );
-      assert.isAtMost(
-        OPENSEA_SELLER_BOUNTY_BASIS_POINTS + order.makerReferrerFee.toNumber(),
-        DEFAULT_MAX_BOUNTY
-      );
-    } else {
-      assert.equal(
-        order.makerRelayerFee.toNumber(),
-        DEFAULT_BUYER_FEE_BASIS_POINTS
-      );
-      assert.equal(
-        order.takerRelayerFee.toNumber(),
-        DEFAULT_SELLER_FEE_BASIS_POINTS
-      );
-    }
-  }
-}
