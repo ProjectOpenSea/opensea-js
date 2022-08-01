@@ -11,6 +11,12 @@ export const OPENSEA_FEE_RECIPIENT =
   "0x8de9c5a032463c561423387a9648c5c7bcc5bc90";
 export const INVERSE_BASIS_POINT = 10_000; // 100 basis points per 1%
 export const MAX_UINT_256 = WyvernProtocol.MAX_UINT_256;
+export const SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS =
+  "0xa604060890923ff400e8c6f5290461a83aedacec"; // Same address on mainnet and Rinkeby
+export const SHARED_STORE_FRONT_ADDRESS_MAINNET =
+  "0x495f947276749ce646f68ac8c248420045cb7b5e";
+export const SHARED_STORE_FRONT_ADDRESS_RINKEBY =
+  "0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656";
 export const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";
 export const MANA_ADDRESS = "0x0f5d2fb29fb7d3cfee444a200298f468908cc942";
 export const ENJIN_ADDRESS = "0xfaaFDc07907ff5120a76b34b731b278c38d6043C";
@@ -31,24 +37,6 @@ export const UNISWAP_FACTORY_ADDRESS_MAINNET =
 export const UNISWAP_FACTORY_ADDRESS_RINKEBY =
   "0xf5D915570BC477f9B8D6C0E980aA81757A3AaC36";
 export const DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS = 1000;
-export const CHEEZE_WIZARDS_GUILD_ADDRESS = WyvernProtocol.NULL_ADDRESS; // TODO: Update this address once Dapper has deployed their mainnet contracts
-export const CHEEZE_WIZARDS_GUILD_RINKEBY_ADDRESS =
-  "0x095731b672b76b00A0b5cb9D8258CD3F6E976cB2";
-export const CHEEZE_WIZARDS_BASIC_TOURNAMENT_ADDRESS =
-  WyvernProtocol.NULL_ADDRESS; // TODO: Update this address once Dapper has deployed their mainnet contracts
-export const CHEEZE_WIZARDS_BASIC_TOURNAMENT_RINKEBY_ADDRESS =
-  "0x8852f5F7d1BB867AAf8fdBB0851Aa431d1df5ca1";
-export const DECENTRALAND_ESTATE_ADDRESS =
-  "0x959e104e1a4db6317fa58f8295f586e1a978c297";
-export const STATIC_CALL_TX_ORIGIN_ADDRESS =
-  "0xbff6ade67e3717101dd8d0a7f3de1bf6623a2ba8";
-export const STATIC_CALL_TX_ORIGIN_RINKEBY_ADDRESS =
-  "0xe291abab95677bc652a44f973a8e06d48464e11c";
-export const STATIC_CALL_CHEEZE_WIZARDS_ADDRESS = WyvernProtocol.NULL_ADDRESS; // TODO: Deploy this address once Dapper has deployed their mainnet contracts
-export const STATIC_CALL_CHEEZE_WIZARDS_RINKEBY_ADDRESS =
-  "0x8a640bdf8886dd6ca1fad9f22382b50deeacde08";
-export const STATIC_CALL_DECENTRALAND_ESTATES_ADDRESS =
-  "0x93c3cd7ba04556d2e3d7b8106ce0f83e24a87a7e";
 export const DEFAULT_BUYER_FEE_BASIS_POINTS = 0;
 export const DEFAULT_SELLER_FEE_BASIS_POINTS = 250;
 export const OPENSEA_SELLER_BOUNTY_BASIS_POINTS = 100;
@@ -56,8 +44,7 @@ export const DEFAULT_MAX_BOUNTY = DEFAULT_SELLER_FEE_BASIS_POINTS;
 export const MIN_EXPIRATION_MINUTES = 15;
 export const MAX_EXPIRATION_MONTHS = 3;
 export const ORDER_MATCHING_LATENCY_SECONDS = 60 * 60 * 24 * 7;
-export const SELL_ORDER_BATCH_SIZE = 3;
-export const ORDERBOOK_VERSION = 1 as number;
+const ORDERBOOK_VERSION = 1 as number;
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_RINKEBY = "https://testnets-api.opensea.io";
 export const SITE_HOST_MAINNET = "https://opensea.io";
