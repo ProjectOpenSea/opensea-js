@@ -1,11 +1,6 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { NULL_ADDRESS, ORDERBOOK_VERSION } from "../../constants";
-import { orderToJSON } from "../../index";
-import { OrderSide } from "../../types";
 import {
-  ALEX_ADDRESS,
-  ALEX_ADDRESS_2,
   apiToTest,
   CK_RINKEBY_ADDRESS,
   CK_RINKEBY_SELLER_FEE,
@@ -65,96 +60,6 @@ suite("api", () => {
     assert.equal(tokens[0].name, "Decentraland MANA");
   });
 
-  test("Rinkeby API orders have correct OpenSea url", async () => {
-    const order = await rinkebyApi.getOrderLegacyWyvern({});
-    if (!order.asset) {
-      return;
-    }
-    const url = `https://testnets.opensea.io/assets/rinkeby/${order.asset.assetContract.address}/${order.asset.tokenId}`;
-    assert.equal(order.asset.openseaLink, url);
-  });
-
-  test("Mainnet API orders have correct OpenSea url", async () => {
-    const order = await mainApi.getOrderLegacyWyvern({});
-    if (!order.asset) {
-      return;
-    }
-    const url = `https://opensea.io/assets/ethereum/${order.asset.assetContract.address}/${order.asset.tokenId}`;
-    assert.equal(order.asset.openseaLink, url);
-  });
-
-  test("API fetches orderbook", async () => {
-    const { orders, count } = await apiToTest.getOrdersLegacyWyvern();
-    assert.isArray(orders);
-    assert.isNumber(count);
-    assert.equal(orders.length, apiToTest.pageSize);
-    // assert.isAtLeast(count, orders.length)
-  });
-
-  test("API can change page size", async () => {
-    const defaultPageSize = apiToTest.pageSize;
-    apiToTest.pageSize = 7;
-    const { orders } = await apiToTest.getOrdersLegacyWyvern();
-    assert.equal(orders.length, 7);
-    apiToTest.pageSize = defaultPageSize;
-  });
-
-  if (ORDERBOOK_VERSION > 0) {
-    test("API orderbook paginates", async () => {
-      const { orders, count } = await apiToTest.getOrdersLegacyWyvern();
-      const pagination = await apiToTest.getOrdersLegacyWyvern({}, 2);
-      assert.equal(pagination.orders.length, apiToTest.pageSize);
-      assert.notDeepEqual(pagination.orders[0], orders[0]);
-      assert.equal(pagination.count, count);
-    });
-  }
-
-  test("API fetches orders for asset", async () => {
-    const forKitty = await apiToTest.getOrdersLegacyWyvern({
-      asset_contract_address: CK_RINKEBY_ADDRESS,
-      token_id: CK_RINKEBY_TOKEN_ID,
-      side: OrderSide.Buy,
-    });
-    assert.isArray(forKitty.orders);
-  });
-
-  // Temp skip due to migration
-  test.skip("API fetches orders for asset owner", async () => {
-    const forOwner = await apiToTest.getOrdersLegacyWyvern({
-      owner: ALEX_ADDRESS,
-    });
-    assert.isAbove(forOwner.orders.length, 0);
-    assert.isAbove(forOwner.count, 0);
-    const owners = forOwner.orders.map(
-      (o) => o.asset && o.asset.owner && o.asset.owner.address
-    );
-    owners.forEach((owner) => {
-      assert.include([ALEX_ADDRESS, NULL_ADDRESS], owner);
-    });
-  });
-
-  // Temp skip due to migration
-  test.skip("API fetches buy orders for maker", async () => {
-    const forMaker = await apiToTest.getOrdersLegacyWyvern({
-      maker: ALEX_ADDRESS_2,
-      side: OrderSide.Buy,
-    });
-    assert.isAbove(forMaker.orders.length, 0);
-    assert.isAbove(forMaker.count, 0);
-    forMaker.orders.forEach((order) => {
-      assert.equal(ALEX_ADDRESS_2, order.maker);
-      assert.equal(OrderSide.Buy, order.side);
-    });
-  });
-
-  test("API excludes cancelledOrFinalized and markedInvalid orders", async () => {
-    const { orders } = await apiToTest.getOrdersLegacyWyvern({ limit: 50 });
-    const finishedOrders = orders.filter((o) => o.cancelledOrFinalized);
-    assert.isEmpty(finishedOrders);
-    const invalidOrders = orders.filter((o) => o.markedInvalid);
-    assert.isEmpty(invalidOrders);
-  });
-
   test("API fetches fees for an asset", async () => {
     const asset = await apiToTest.getAsset({
       tokenAddress: CK_RINKEBY_ADDRESS,
@@ -193,28 +98,6 @@ suite("api", () => {
       await apiToTest.get(`/asset/${CK_RINKEBY_ADDRESS}/0`);
     } catch (error) {
       assert.include((error as Error).message, "Not found");
-    }
-
-    // 400 malformed
-    const res = await apiToTest.getOrdersLegacyWyvern({
-      // Get an old order to make sure listing time is too early
-      listed_before: Math.round(Date.now() / 1000 - 3600),
-      side: OrderSide.Sell,
-    });
-    const order = res.orders[0];
-    assert.isNotNull(order);
-
-    try {
-      const newOrder = {
-        ...orderToJSON(order),
-        v: 1,
-        r: "",
-        s: "",
-      };
-      await apiToTest.postOrderLegacyWyvern(newOrder);
-    } catch (error) {
-      // TODO sometimes the error is "Expected the listing time to be at or past the current time"
-      // assert.include(error.message, "Order failed exchange validation")
     }
   });
 });

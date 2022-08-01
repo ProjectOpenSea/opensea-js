@@ -3,24 +3,13 @@ import { before, suite, test } from "mocha";
 import Web3 from "web3";
 import {
   DEFAULT_BUYER_FEE_BASIS_POINTS,
-  DEFAULT_MAX_BOUNTY,
   DEFAULT_SELLER_FEE_BASIS_POINTS,
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
   MAINNET_PROVIDER_URL,
-  NULL_ADDRESS,
-  OPENSEA_LEGACY_FEE_RECIPIENT,
-  OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
-import {
-  Network,
-  OpenSeaAsset,
-  OpenSeaCollection,
-  Order,
-  OrderSide,
-  UnhashedOrder,
-} from "../../types";
+import { Network, OpenSeaAsset, OrderSide } from "../../types";
 import {
   CATS_IN_MECHS_ID,
   CK_ADDRESS,
@@ -197,20 +186,6 @@ suite("SDK: fees", () => {
     }
   });
 
-  test("First page of orders have valid fees", async () => {
-    const { orders } = await client.api.getOrdersLegacyWyvern();
-    assert.isNotEmpty(orders);
-
-    orders.forEach((order) => {
-      if (order.asset) {
-        assert.isNotEmpty(order.asset.assetContract);
-        assert.isNotEmpty(order.asset.tokenId);
-        testFeesMakerOrder(order, order.asset.collection);
-      }
-      assert.isNotEmpty(order.paymentTokenContract);
-    });
-  });
-
   test("Computes per-transfer fees correctly, Enjin and CK", async () => {
     const asset = await client.api.getAsset({
       tokenAddress: ENJIN_ADDRESS,
@@ -257,89 +232,3 @@ suite("SDK: fees", () => {
     assert.equal(sellerZeroFees.transferFeeTokenAddress, ENJIN_COIN_ADDRESS);
   });
 });
-
-export function testFeesMakerOrder(
-  order: Order | UnhashedOrder,
-  collection?: OpenSeaCollection,
-  makerBountyBPS?: number
-) {
-  assert.equal(order.makerProtocolFee.toNumber(), 0);
-  assert.equal(order.takerProtocolFee.toNumber(), 0);
-  if (order.waitingForBestCounterOrder) {
-    assert.equal(order.feeRecipient, NULL_ADDRESS);
-  } else {
-    assert.equal(order.feeRecipient, OPENSEA_LEGACY_FEE_RECIPIENT);
-  }
-  // Public order
-  if (makerBountyBPS != null) {
-    assert.equal(order.makerReferrerFee.toNumber(), makerBountyBPS);
-  }
-  if (collection) {
-    const totalSellerFee =
-      collection.devSellerFeeBasisPoints +
-      collection.openseaSellerFeeBasisPoints;
-    const totalBuyerFeeBasisPoints =
-      collection.devBuyerFeeBasisPoints + collection.openseaBuyerFeeBasisPoints;
-    // Homogenous sale
-    if (order.side == OrderSide.Sell && order.waitingForBestCounterOrder) {
-      // Fees may not match the contract's fees, which are changeable.
-    } else if (order.side == OrderSide.Sell) {
-      assert.equal(order.makerRelayerFee.toNumber(), totalSellerFee);
-      assert.equal(order.takerRelayerFee.toNumber(), totalBuyerFeeBasisPoints);
-
-      assert.equal(
-        order.makerRelayerFee.toNumber(),
-        collection.devSellerFeeBasisPoints +
-          collection.openseaSellerFeeBasisPoints
-      );
-      // Check bounty
-      if (
-        collection.openseaSellerFeeBasisPoints >=
-        OPENSEA_SELLER_BOUNTY_BASIS_POINTS
-      ) {
-        assert.isAtMost(
-          OPENSEA_SELLER_BOUNTY_BASIS_POINTS +
-            order.makerReferrerFee.toNumber(),
-          collection.openseaSellerFeeBasisPoints
-        );
-      } else {
-        // No extra bounty allowed if < 1%
-        assert.equal(order.makerReferrerFee.toNumber(), 0);
-      }
-    } else {
-      assert.equal(order.makerRelayerFee.toNumber(), totalBuyerFeeBasisPoints);
-      assert.equal(order.takerRelayerFee.toNumber(), totalSellerFee);
-
-      assert.equal(
-        order.makerRelayerFee.toNumber(),
-        collection.devBuyerFeeBasisPoints +
-          collection.openseaBuyerFeeBasisPoints
-      );
-    }
-  } else {
-    // Heterogenous
-    if (order.side == OrderSide.Sell) {
-      assert.equal(
-        order.makerRelayerFee.toNumber(),
-        DEFAULT_SELLER_FEE_BASIS_POINTS
-      );
-      assert.equal(
-        order.takerRelayerFee.toNumber(),
-        DEFAULT_BUYER_FEE_BASIS_POINTS
-      );
-      assert.isAtMost(
-        OPENSEA_SELLER_BOUNTY_BASIS_POINTS + order.makerReferrerFee.toNumber(),
-        DEFAULT_MAX_BOUNTY
-      );
-    } else {
-      assert.equal(
-        order.makerRelayerFee.toNumber(),
-        DEFAULT_BUYER_FEE_BASIS_POINTS
-      );
-      assert.equal(
-        order.takerRelayerFee.toNumber(),
-        DEFAULT_SELLER_FEE_BASIS_POINTS
-      );
-    }
-  }
-}
