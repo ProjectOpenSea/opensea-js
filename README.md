@@ -502,7 +502,6 @@ const order = await openseaSDK.api.getOrders({
 
 - MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942
 - DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
-- And tons more! See the "Currencies" list in the sidebar on https://opensea.io/assets for a full list, or contact us to add yours: [Discord](https://discord.gg/ga8EJbv)
 
 ### Private Auctions
 
@@ -607,8 +606,6 @@ To remove all listeners and start over, just call `openseaSDK.removeAllListeners
 
 Auto-generated documentation for each export is available [here](https://projectopensea.github.io/opensea-js/).
 
-If you need extra help, support is free! Contact the OpenSea devs. They're available every day on [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel.
-
 ### Example Code
 
 Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
@@ -670,8 +667,7 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 - Are the input addresses all strings? If not, convert them to strings.
 
 - Is your computer's internal clock accurate? If not, try enabling automatic clock adjustment locally or following [this tutorial](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html) to update an Amazon EC2 instance.
-
-- Are you attempting to purchase a token that's unpurchasable on [OpenSea](https://opensea.io/)? If so, contact us [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel and we'll help diagnose the issue.
+- 
 
 ## Testing your branch locally
 
