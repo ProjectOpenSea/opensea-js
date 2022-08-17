@@ -667,7 +667,7 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 - Are the input addresses all strings? If not, convert them to strings.
 
 - Is your computer's internal clock accurate? If not, try enabling automatic clock adjustment locally or following [this tutorial](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html) to update an Amazon EC2 instance.
-- 
+-
 
 ## Testing your branch locally
 
