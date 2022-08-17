@@ -451,12 +451,12 @@ export class OpenSeaAPI {
         )}'`;
         break;
       case 500:
-        errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(
+        errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/opensea - full message was ${JSON.stringify(
           result
         )}`;
         break;
       case 503:
-        errorMessage = `Service unavailable. Please try again in a few minutes. If the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(
+        errorMessage = `Service unavailable. Please try again in a few minutes. If the problem persists please contact us via Discord: https://discord.gg/opensea - full message was ${JSON.stringify(
           result
         )}`;
         break;
