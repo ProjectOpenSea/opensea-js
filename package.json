@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "description": "JavaScript SDK for the OpenSea marketplace. Let users buy or sell crypto collectibles and other cryptogoods, all on your own site!",
   "license": "MIT",
   "author": "OpenSea Developers",
