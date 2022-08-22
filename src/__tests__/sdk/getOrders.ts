@@ -20,7 +20,7 @@ suite("Getting orders", () => {
     test(`getOrder should return a single order > ${side}`, async () => {
       const order = await rinkebyClient.api.getOrder({
         protocol: "seaport",
-        side: "ask",
+        side,
       });
       expectValidOrder(order);
     });
@@ -42,7 +42,7 @@ suite("Getting orders", () => {
     test(`getOrders should return a list of orders > ${side}`, async () => {
       const { orders, next, previous } = await rinkebyClient.api.getOrders({
         protocol: "seaport",
-        side: "ask",
+        side,
       });
       orders.map((order) => expectValidOrder(order));
       expect(next).to.not.be.undefined;
