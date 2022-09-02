@@ -1,7 +1,6 @@
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
 import Web3 from "web3";
-import { feeBasisPointsReducer } from "src/utils";
 import {
   DEFAULT_BUYER_FEE_BASIS_POINTS,
   DEFAULT_SELLER_FEE_BASIS_POINTS,
@@ -11,6 +10,7 @@ import {
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
 import { Network, OpenSeaAsset, OrderSide } from "../../types";
+import { feeBasisPointsReducer } from "../../utils/utils";
 import {
   CATS_IN_MECHS_ID,
   CK_ADDRESS,
