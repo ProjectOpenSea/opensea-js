@@ -380,6 +380,10 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     traitStats: collection.traits as OpenSeaTraitStats,
     externalLink: collection.external_url,
     wikiLink: collection.wiki_url,
+    fees: {
+      openseaFees: collection.fees.opensea_fees || {},
+      sellerFees: collection.fees.seller_fees || {},
+    },
   };
 };
 
@@ -1111,3 +1115,20 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
       ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS
       : tokenAddress;
   };
+
+/**
+ * Sums up the basis points for an Opensea or seller fee map and returns the
+ * single numeric value if the map is not empty. Otherwise, it returns 0
+ * @param fees a `Fees` submap holding fees (either Fees.openseaFees
+ *  or Fees.sellerFees)
+ * @returns sum of basis points in a fee map
+ */
+export const feesToBasisPoints = (
+  fees: Map<string, number> | undefined
+): number => {
+  if (!fees) {
+    return 0;
+  }
+
+  return Object.values(fees).reduce((sum, basisPoints) => basisPoints + sum, 0);
+};

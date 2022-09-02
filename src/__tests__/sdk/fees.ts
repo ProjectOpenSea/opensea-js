@@ -10,6 +10,7 @@ import {
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
 import { Network, OpenSeaAsset, OrderSide } from "../../types";
+import { feesToBasisPoints } from "../../utils/utils";
 import {
   CATS_IN_MECHS_ID,
   CK_ADDRESS,
@@ -51,9 +52,14 @@ suite("SDK: fees", () => {
     const collection = asset.collection;
     const buyerFeeBasisPoints =
       collection.openseaBuyerFeeBasisPoints + collection.devBuyerFeeBasisPoints;
+    const openseaSellerFeeBasisPoints = feesToBasisPoints(
+      collection.fees?.openseaFees
+    );
+    const devSellerFeeBasisPoints = feesToBasisPoints(
+      collection.fees?.sellerFees
+    );
     const sellerFeeBasisPoints =
-      collection.openseaSellerFeeBasisPoints +
-      collection.devSellerFeeBasisPoints;
+      openseaSellerFeeBasisPoints + devSellerFeeBasisPoints;
 
     const buyerFees = await client.computeFees({
       asset,
@@ -62,6 +68,11 @@ suite("SDK: fees", () => {
     });
     assert.equal(buyerFees.totalBuyerFeeBasisPoints, buyerFeeBasisPoints);
     assert.equal(buyerFees.totalSellerFeeBasisPoints, sellerFeeBasisPoints);
+    assert.equal(
+      buyerFees.openseaSellerFeeBasisPoints,
+      openseaSellerFeeBasisPoints
+    );
+    assert.equal(buyerFees.devSellerFeeBasisPoints, devSellerFeeBasisPoints);
     assert.equal(
       buyerFees.devBuyerFeeBasisPoints,
       collection.devBuyerFeeBasisPoints

@@ -83,6 +83,7 @@ import {
   ECSignature,
   EventData,
   EventType,
+  Fees,
   FeeMethod,
   HowToCall,
   Network,
@@ -137,6 +138,7 @@ import {
   getAssetItemType,
   BigNumberInput,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
+  feesToBasisPoints,
 } from "./utils/utils";
 
 export class OpenSeaSDK {
@@ -688,14 +690,15 @@ export class OpenSeaSDK {
   }): Promise<{
     sellerFee: ConsiderationInputItem;
     openseaSellerFee: ConsiderationInputItem;
-    collectionSellerFee?: ConsiderationInputItem;
+    collectionSellerFees?: ConsiderationInputItem[];
     openseaBuyerFee?: ConsiderationInputItem;
     collectionBuyerFee?: ConsiderationInputItem;
   }> {
     // Seller fee basis points
     const openseaSellerFeeBasisPoints = DEFAULT_SELLER_FEE_BASIS_POINTS;
-    const collectionSellerFeeBasisPoints =
-      asset.collection.devSellerFeeBasisPoints;
+    const collectionSellerFeeBasisPoints = feesToBasisPoints(
+      asset.collection.fees?.sellerFees
+    );
 
     // Buyer fee basis points
     const openseaBuyerFeeBasisPoints = DEFAULT_BUYER_FEE_BASIS_POINTS;
@@ -720,18 +723,26 @@ export class OpenSeaSDK {
       };
     };
 
+    const getConsiderationItemsFromSellerFees = (
+      fees: Fees
+    ): ConsiderationInputItem[] => {
+      const considerationItems: ConsiderationInputItem[] = [];
+      fees?.sellerFees.forEach((basisPoints, recipient) =>
+        considerationItems.push(getConsiderationItem(basisPoints, recipient))
+      );
+
+      return considerationItems;
+    };
+
     return {
       sellerFee: getConsiderationItem(sellerBasisPoints),
       openseaSellerFee: getConsiderationItem(
         openseaSellerFeeBasisPoints,
         OPENSEA_FEE_RECIPIENT
       ),
-      collectionSellerFee:
-        collectionSellerFeeBasisPoints > 0 && asset.collection.payoutAddress
-          ? getConsiderationItem(
-              collectionSellerFeeBasisPoints,
-              asset.collection.payoutAddress
-            )
+      collectionSellerFees:
+        collectionSellerFeeBasisPoints > 0 && asset.collection.fees
+          ? getConsiderationItemsFromSellerFees(asset.collection.fees)
           : undefined,
       openseaBuyerFee:
         openseaBuyerFeeBasisPoints > 0
@@ -810,14 +821,15 @@ export class OpenSeaSDK {
       makeBigNumber(startAmount)
     );
 
-    const { openseaSellerFee, collectionSellerFee } = await this.getFees({
-      openseaAsset,
-      paymentTokenAddress,
-      startAmount: basePrice,
-    });
+    const { openseaSellerFee, collectionSellerFees: collectionSellerFees } =
+      await this.getFees({
+        openseaAsset,
+        paymentTokenAddress,
+        startAmount: basePrice,
+      });
     const considerationFeeItems = [
       openseaSellerFee,
-      collectionSellerFee,
+      collectionSellerFees,
     ].filter((item): item is ConsiderationInputItem => item !== undefined);
 
     const { executeAllActions } = await this.seaport.createOrder(
@@ -895,17 +907,20 @@ export class OpenSeaSDK {
       endAmount !== undefined ? makeBigNumber(endAmount) : undefined
     );
 
-    const { sellerFee, openseaSellerFee, collectionSellerFee } =
-      await this.getFees({
-        openseaAsset,
-        paymentTokenAddress,
-        startAmount: basePrice,
-        endAmount: endPrice,
-      });
+    const {
+      sellerFee,
+      openseaSellerFee,
+      collectionSellerFees: collectionSellerFees,
+    } = await this.getFees({
+      openseaAsset,
+      paymentTokenAddress,
+      startAmount: basePrice,
+      endAmount: endPrice,
+    });
     const considerationFeeItems = [
       sellerFee,
       openseaSellerFee,
-      collectionSellerFee,
+      collectionSellerFees,
     ].filter((item): item is ConsiderationInputItem => item !== undefined);
 
     if (buyerAddress) {
@@ -2114,11 +2129,11 @@ export class OpenSeaSDK {
     let maxTotalBountyBPS = DEFAULT_MAX_BOUNTY;
 
     if (asset) {
+      const fees = asset.collection.fees;
       openseaBuyerFeeBasisPoints = +asset.collection.openseaBuyerFeeBasisPoints;
-      openseaSellerFeeBasisPoints =
-        +asset.collection.openseaSellerFeeBasisPoints;
+      openseaSellerFeeBasisPoints = +feesToBasisPoints(fees?.openseaFees);
       devBuyerFeeBasisPoints = +asset.collection.devBuyerFeeBasisPoints;
-      devSellerFeeBasisPoints = +asset.collection.devSellerFeeBasisPoints;
+      devSellerFeeBasisPoints = +feesToBasisPoints(fees?.sellerFees);
 
       maxTotalBountyBPS = openseaSellerFeeBasisPoints;
     }
