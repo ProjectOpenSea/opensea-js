@@ -3,7 +3,6 @@ import { CROSS_CHAIN_SEAPORT_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import {
   ConsiderationInputItem,
   CreateInputItem,
-  Fees,
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "bignumber.js";
@@ -84,6 +83,7 @@ import {
   ECSignature,
   EventData,
   EventType,
+  Fees,
   FeeMethod,
   HowToCall,
   Network,
@@ -727,7 +727,7 @@ export class OpenSeaSDK {
       fees: Fees
     ): ConsiderationInputItem[] => {
       const considerationItems: ConsiderationInputItem[] = [];
-      fees?.sellerFees.forEach((recipient, basisPoints) =>
+      fees?.sellerFees.forEach((basisPoints, recipient) =>
         considerationItems.push(getConsiderationItem(basisPoints, recipient))
       );
 
