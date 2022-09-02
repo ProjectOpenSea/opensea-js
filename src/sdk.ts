@@ -690,7 +690,7 @@ export class OpenSeaSDK {
   }): Promise<{
     sellerFee: ConsiderationInputItem;
     openseaSellerFee: ConsiderationInputItem;
-    collectionSellerFee?: ConsiderationInputItem[];
+    collectionSellerFees?: ConsiderationInputItem[];
     openseaBuyerFee?: ConsiderationInputItem;
     collectionBuyerFee?: ConsiderationInputItem;
   }> {
@@ -740,7 +740,7 @@ export class OpenSeaSDK {
         openseaSellerFeeBasisPoints,
         OPENSEA_FEE_RECIPIENT
       ),
-      collectionSellerFee:
+      collectionSellerFees:
         collectionSellerFeeBasisPoints > 0 && asset.collection.fees
           ? getConsiderationItemsFromSellerFees(asset.collection.fees)
           : undefined,
@@ -821,14 +821,15 @@ export class OpenSeaSDK {
       makeBigNumber(startAmount)
     );
 
-    const { openseaSellerFee, collectionSellerFee } = await this.getFees({
-      openseaAsset,
-      paymentTokenAddress,
-      startAmount: basePrice,
-    });
+    const { openseaSellerFee, collectionSellerFees: collectionSellerFees } =
+      await this.getFees({
+        openseaAsset,
+        paymentTokenAddress,
+        startAmount: basePrice,
+      });
     const considerationFeeItems = [
       openseaSellerFee,
-      collectionSellerFee,
+      collectionSellerFees,
     ].filter((item): item is ConsiderationInputItem => item !== undefined);
 
     const { executeAllActions } = await this.seaport.createOrder(
@@ -906,17 +907,20 @@ export class OpenSeaSDK {
       endAmount !== undefined ? makeBigNumber(endAmount) : undefined
     );
 
-    const { sellerFee, openseaSellerFee, collectionSellerFee } =
-      await this.getFees({
-        openseaAsset,
-        paymentTokenAddress,
-        startAmount: basePrice,
-        endAmount: endPrice,
-      });
+    const {
+      sellerFee,
+      openseaSellerFee,
+      collectionSellerFees: collectionSellerFees,
+    } = await this.getFees({
+      openseaAsset,
+      paymentTokenAddress,
+      startAmount: basePrice,
+      endAmount: endPrice,
+    });
     const considerationFeeItems = [
       sellerFee,
       openseaSellerFee,
-      collectionSellerFee,
+      collectionSellerFees,
     ].filter((item): item is ConsiderationInputItem => item !== undefined);
 
     if (buyerAddress) {
