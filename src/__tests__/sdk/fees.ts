@@ -1,6 +1,7 @@
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
 import Web3 from "web3";
+import { feeBasisPointsReducer } from "src/utils";
 import {
   DEFAULT_BUYER_FEE_BASIS_POINTS,
   DEFAULT_SELLER_FEE_BASIS_POINTS,
@@ -51,12 +52,12 @@ suite("SDK: fees", () => {
     const collection = asset.collection;
     const buyerFeeBasisPoints =
       collection.openseaBuyerFeeBasisPoints + collection.devBuyerFeeBasisPoints;
-    const openseaSellerFeeBasisPoints = Object.values(
-      collection.fees?.openseaFees || []
-    ).reduce((sum, basisPoints) => basisPoints + sum, 0);
-    const devSellerFeeBasisPoints = Object.values(
-      collection.fees?.sellerFees || []
-    ).reduce((sum, basisPoints) => basisPoints + sum, 0);
+    const openseaSellerFeeBasisPoints = feeBasisPointsReducer(
+      collection.fees?.openseaFees
+    );
+    const devSellerFeeBasisPoints = feeBasisPointsReducer(
+      collection.fees?.sellerFees
+    );
     const sellerFeeBasisPoints =
       openseaSellerFeeBasisPoints + devSellerFeeBasisPoints;
 
