@@ -10,7 +10,7 @@ import {
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
 import { Network, OpenSeaAsset, OrderSide } from "../../types";
-import { feeBasisPointsReducer } from "../../utils/utils";
+import { feesToBasisPoints } from "../../utils/utils";
 import {
   CATS_IN_MECHS_ID,
   CK_ADDRESS,
@@ -52,10 +52,10 @@ suite("SDK: fees", () => {
     const collection = asset.collection;
     const buyerFeeBasisPoints =
       collection.openseaBuyerFeeBasisPoints + collection.devBuyerFeeBasisPoints;
-    const openseaSellerFeeBasisPoints = feeBasisPointsReducer(
+    const openseaSellerFeeBasisPoints = feesToBasisPoints(
       collection.fees?.openseaFees
     );
-    const devSellerFeeBasisPoints = feeBasisPointsReducer(
+    const devSellerFeeBasisPoints = feesToBasisPoints(
       collection.fees?.sellerFees
     );
     const sellerFeeBasisPoints =

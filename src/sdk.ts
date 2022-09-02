@@ -138,7 +138,7 @@ import {
   getAssetItemType,
   BigNumberInput,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
-  feeBasisPointsReducer,
+  feesToBasisPoints,
 } from "./utils/utils";
 
 export class OpenSeaSDK {
@@ -696,7 +696,7 @@ export class OpenSeaSDK {
   }> {
     // Seller fee basis points
     const openseaSellerFeeBasisPoints = DEFAULT_SELLER_FEE_BASIS_POINTS;
-    const collectionSellerFeeBasisPoints = feeBasisPointsReducer(
+    const collectionSellerFeeBasisPoints = feesToBasisPoints(
       asset.collection.fees?.sellerFees
     );
 
@@ -2127,9 +2127,9 @@ export class OpenSeaSDK {
     if (asset) {
       const fees = asset.collection.fees;
       openseaBuyerFeeBasisPoints = +asset.collection.openseaBuyerFeeBasisPoints;
-      openseaSellerFeeBasisPoints = +feeBasisPointsReducer(fees?.openseaFees);
+      openseaSellerFeeBasisPoints = +feesToBasisPoints(fees?.openseaFees);
       devBuyerFeeBasisPoints = +asset.collection.devBuyerFeeBasisPoints;
-      devSellerFeeBasisPoints = +feeBasisPointsReducer(fees?.sellerFees);
+      devSellerFeeBasisPoints = +feesToBasisPoints(fees?.sellerFees);
 
       maxTotalBountyBPS = openseaSellerFeeBasisPoints;
     }

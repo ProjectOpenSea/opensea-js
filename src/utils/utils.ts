@@ -1123,7 +1123,7 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
  *  or Fees.sellerFees)
  * @returns sum of basis points in a fee map
  */
-export const feeBasisPointsReducer = (
+export const feesToBasisPoints = (
   fees: Map<string, number> | undefined
 ): number => {
   if (!fees) {
