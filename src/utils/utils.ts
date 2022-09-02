@@ -1119,8 +1119,8 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
 /**
  * Sums up the basis points for an Opensea or seller fee map and returns the
  * single numeric value if the map is not empty. Otherwise, it returns 0
- * @param fees fee map, which is generally the value of either Fees.openseaFees
- *  or Fees.sellerFees
+ * @param fees a `Fees` submap holding fees (either Fees.openseaFees
+ *  or Fees.sellerFees)
  * @returns sum of basis points in a fee map
  */
 export const feeBasisPointsReducer = (

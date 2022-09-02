@@ -2129,7 +2129,7 @@ export class OpenSeaSDK {
       openseaBuyerFeeBasisPoints = +asset.collection.openseaBuyerFeeBasisPoints;
       openseaSellerFeeBasisPoints = +feeBasisPointsReducer(fees?.openseaFees);
       devBuyerFeeBasisPoints = +asset.collection.devBuyerFeeBasisPoints;
-      devSellerFeeBasisPoints = feeBasisPointsReducer(fees?.sellerFees);
+      devSellerFeeBasisPoints = +feeBasisPointsReducer(fees?.sellerFees);
 
       maxTotalBountyBPS = openseaSellerFeeBasisPoints;
     }
