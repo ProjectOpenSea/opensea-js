@@ -1,4 +1,5 @@
 /* eslint-disable import/no-unused-modules */
+import { Fees } from "@opensea/seaport-js/lib/types";
 import BigNumber from "bignumber.js";
 import { AbiItem } from "web3-utils";
 import {
@@ -336,6 +337,8 @@ export interface OpenSeaCollection extends OpenSeaFees {
   externalLink?: string;
   // Link to the collection's wiki, if available
   wikiLink?: string;
+  // Map of collection fees, holding Opensea and seller fees
+  fees?: Fees | null;
 }
 
 export interface OpenSeaTraitStats {

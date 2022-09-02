@@ -380,6 +380,10 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     traitStats: collection.traits as OpenSeaTraitStats,
     externalLink: collection.external_url,
     wikiLink: collection.wiki_url,
+    fees: {
+      openSeaFees: collection.fees.opensea_fees,
+      sellerFees: collection.fees.seller_fees,
+    },
   };
 };
 

@@ -51,9 +51,14 @@ suite("SDK: fees", () => {
     const collection = asset.collection;
     const buyerFeeBasisPoints =
       collection.openseaBuyerFeeBasisPoints + collection.devBuyerFeeBasisPoints;
+    const openseaSellerFeeBasisPoints = Object.values(
+      collection.fees?.openseaFees || []
+    ).reduce((sum, basisPoints) => basisPoints + sum, 0);
+    const devSellerFeeBasisPoints = Object.values(
+      collection.fees?.sellerFees || []
+    ).reduce((sum, basisPoints) => basisPoints + sum, 0);
     const sellerFeeBasisPoints =
-      collection.openseaSellerFeeBasisPoints +
-      collection.devSellerFeeBasisPoints;
+      openseaSellerFeeBasisPoints + devSellerFeeBasisPoints;
 
     const buyerFees = await client.computeFees({
       asset,
@@ -62,6 +67,11 @@ suite("SDK: fees", () => {
     });
     assert.equal(buyerFees.totalBuyerFeeBasisPoints, buyerFeeBasisPoints);
     assert.equal(buyerFees.totalSellerFeeBasisPoints, sellerFeeBasisPoints);
+    assert.equal(
+      buyerFees.openseaSellerFeeBasisPoints,
+      openseaSellerFeeBasisPoints
+    );
+    assert.equal(buyerFees.devSellerFeeBasisPoints, devSellerFeeBasisPoints);
     assert.equal(
       buyerFees.devBuyerFeeBasisPoints,
       collection.devBuyerFeeBasisPoints
