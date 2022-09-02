@@ -2,7 +2,7 @@ import { OpenSeaAPI } from "../api";
 import { CK_ADDRESS, CK_RINKEBY_ADDRESS } from "../constants";
 import { Network } from "../types";
 
-export const MAINNET_API_KEY = process.env.API_KEY;
+export const MAINNET_API_KEY = "822732a10f0c493b866f4db049b2ceec";
 export const RINKEBY_API_KEY = process.env.API_KEY;
 
 export const mainApi = new OpenSeaAPI(

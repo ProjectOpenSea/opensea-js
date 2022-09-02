@@ -381,7 +381,7 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     externalLink: collection.external_url,
     wikiLink: collection.wiki_url,
     fees: {
-      openSeaFees: collection.fees.opensea_fees,
+      openseaFees: collection.fees.opensea_fees,
       sellerFees: collection.fees.seller_fees,
     },
   };
