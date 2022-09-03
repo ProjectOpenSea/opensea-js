@@ -889,7 +889,7 @@ export class OpenSeaSDK {
     quantity?: BigNumberInput;
     expirationTime?: BigNumberInput;
     paymentTokenAddress?: string;
-  }): Promise<OrderV2> {
+  }): Promise<any> {
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
     }
@@ -919,7 +919,7 @@ export class OpenSeaSDK {
       collectionSellerFee,
     ].filter((item): item is ConsiderationInputItem => item !== undefined);
 
-    const { executeAllActions } = await this.seaport.createOrder(
+    const data = await this.seaport.createOrder(
       {
         offer: [
           {
@@ -937,9 +937,11 @@ export class OpenSeaSDK {
       },
       accountAddress
     );
-    const order = await executeAllActions();
+    // const order = await executeAllActions();
 
-    return this.api.postOrder(order, { protocol: "seaport", side: "bid" });
+    // return this.api.postOrder(order, { protocol: "seaport", side: "bid" });
+
+    return data;
   }
 
   /**
