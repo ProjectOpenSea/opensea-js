@@ -727,9 +727,12 @@ export class OpenSeaSDK {
       fees: Fees
     ): ConsiderationInputItem[] => {
       const considerationItems: ConsiderationInputItem[] = [];
-      fees?.sellerFees.forEach((basisPoints, recipient) =>
-        considerationItems.push(getConsiderationItem(basisPoints, recipient))
-      );
+
+      Object.entries(fees.sellerFees).map(([recipient, basisPoints]) => {
+        return considerationItems.push(
+          getConsiderationItem(basisPoints, recipient)
+        );
+      });
 
       return considerationItems;
     };
@@ -827,10 +830,11 @@ export class OpenSeaSDK {
         paymentTokenAddress,
         startAmount: basePrice,
       });
+
     const considerationFeeItems = [
       openseaSellerFee,
-      collectionSellerFees,
-    ].filter((item): item is ConsiderationInputItem => item !== undefined);
+      ...(collectionSellerFees ? collectionSellerFees : []),
+    ];
 
     const { executeAllActions } = await this.seaport.createOrder(
       {
