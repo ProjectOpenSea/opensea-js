@@ -726,7 +726,7 @@ export class OpenSeaSDK {
     const getConsiderationItemsFromSellerFees = (
       fees: Fees
     ): ConsiderationInputItem[] => {
-      const sellerFees = new Map(Object.entries(fees?.sellerFees));
+      const sellerFees = fees?.sellerFees as Map<string, number>;
       return Object.keys(sellerFees).map((recipient) =>
         getConsiderationItem(sellerFees.get(recipient) || 0, recipient)
       );
