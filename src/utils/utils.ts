@@ -381,10 +381,8 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     externalLink: collection.external_url,
     wikiLink: collection.wiki_url,
     fees: {
-      openseaFees:
-        new Map(Object.entries(collection.fees.opensea_fees)) || new Map(),
-      sellerFees:
-        new Map(Object.entries(collection.fees.seller_fees)) || new Map(),
+      openseaFees: new Map(Object.entries(collection.fees.opensea_fees || {})),
+      sellerFees: new Map(Object.entries(collection.fees.seller_fees || {})),
     },
   };
 };
