@@ -381,8 +381,10 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     externalLink: collection.external_url,
     wikiLink: collection.wiki_url,
     fees: {
-      openseaFees: collection.fees.opensea_fees || {},
-      sellerFees: collection.fees.seller_fees || {},
+      openseaFees:
+        new Map(Object.entries(collection.fees.opensea_fees)) || new Map(),
+      sellerFees:
+        new Map(Object.entries(collection.fees.seller_fees)) || new Map(),
     },
   };
 };
@@ -1130,5 +1132,8 @@ export const feesToBasisPoints = (
     return 0;
   }
 
-  return Object.values(fees).reduce((sum, basisPoints) => basisPoints + sum, 0);
+  return Array.from(fees.values()).reduce(
+    (sum, basisPoints) => basisPoints + sum,
+    0
+  );
 };
