@@ -25,6 +25,9 @@ import {
   MERKLE_VALIDATOR_RINKEBY,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
+  SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS,
+  SHARED_STORE_FRONT_ADDRESS_MAINNET,
+  SHARED_STORE_FRONT_ADDRESS_RINKEBY,
 } from "../constants";
 import { ERC1155 } from "../contracts";
 import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
@@ -377,6 +380,10 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     traitStats: collection.traits as OpenSeaTraitStats,
     externalLink: collection.external_url,
     wikiLink: collection.wiki_url,
+    fees: {
+      openseaFees: new Map(Object.entries(collection.fees.opensea_fees || {})),
+      sellerFees: new Map(Object.entries(collection.fees.seller_fees || {})),
+    },
   };
 };
 
@@ -1089,4 +1096,42 @@ export const getAssetItemType = (schemaName?: WyvernSchemaName) => {
     default:
       throw new Error(`Unknown schema name: ${schemaName}`);
   }
+};
+
+const SHARED_STOREFRONT_ADDRESSES = new Set([
+  SHARED_STORE_FRONT_ADDRESS_MAINNET.toLowerCase(),
+  SHARED_STORE_FRONT_ADDRESS_RINKEBY.toLowerCase(),
+]);
+
+/**
+ * Checks if the token address is the shared storefront address and if so replaces
+ * that address with the lazy mint adapter addres. Otherwise, returns the input token address
+ * @param tokenAddress token address
+ * @returns input token address or lazy mint adapter address
+ */
+export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress =
+  (tokenAddress: string): string => {
+    return SHARED_STOREFRONT_ADDRESSES.has(tokenAddress.toLowerCase())
+      ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS
+      : tokenAddress;
+  };
+
+/**
+ * Sums up the basis points for an Opensea or seller fee map and returns the
+ * single numeric value if the map is not empty. Otherwise, it returns 0
+ * @param fees a `Fees` submap holding fees (either Fees.openseaFees
+ *  or Fees.sellerFees)
+ * @returns sum of basis points in a fee map
+ */
+export const feesToBasisPoints = (
+  fees: Map<string, number> | undefined
+): number => {
+  if (!fees) {
+    return 0;
+  }
+
+  return Array.from(fees.values()).reduce(
+    (sum, basisPoints) => basisPoints + sum,
+    0
+  );
 };

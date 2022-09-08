@@ -6,7 +6,6 @@ import {
   API_BASE_RINKEBY,
   API_PATH,
   ORDERBOOK_PATH,
-  ORDERBOOK_VERSION,
   SITE_HOST_MAINNET,
   SITE_HOST_RINKEBY,
 } from "./constants";
@@ -33,17 +32,11 @@ import {
   OpenSeaAssetQuery,
   OpenSeaFungibleToken,
   OpenSeaFungibleTokenQuery,
-  Order,
-  OrderbookResponse,
-  OrderJSON,
-  OrderQuery,
-  OrderSide,
 } from "./types";
 import {
   assetBundleFromJSON,
   assetFromJSON,
   delay,
-  orderFromJSON,
   tokenFromJSON,
 } from "./utils/utils";
 
@@ -174,31 +167,6 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Send an order to the orderbook.
-   * Throws when the order is invalid.
-   * IN NEXT VERSION: change order input to Order type
-   * @param order Order JSON to post to the orderbook
-   * @param retries Number of times to retry if the service is unavailable for any reason
-   */
-  public async postOrderLegacyWyvern(
-    order: OrderJSON,
-    retries = 2
-  ): Promise<Order> {
-    let json;
-    try {
-      json = (await this.post(
-        `${ORDERBOOK_PATH}/orders/post/`,
-        order
-      )) as OrderJSON;
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(3000);
-      return this.postOrderLegacyWyvern(order, retries - 1);
-    }
-    return orderFromJSON(json);
-  }
-
-  /**
    * Create a whitelist entry for an asset to prevent others from buying.
    * Buyers will have to have verified at least one of the emails
    * on an asset in order to buy.
@@ -235,66 +203,6 @@ export class OpenSeaAPI {
         "Couldn't retrieve Wyvern exchange address for order creation"
       );
       return null;
-    }
-  }
-
-  /**
-   * Get an order from the orderbook using the legacy wyvern API, throwing if none is found.
-   * @param query Query to use for getting orders. A subset of parameters
-   *  on the `OrderJSON` type is supported
-   */
-  public async getOrderLegacyWyvern(query: OrderQuery): Promise<Order> {
-    const result = await this.get(`${ORDERBOOK_PATH}/orders/`, {
-      limit: 1,
-      side: OrderSide.Sell,
-      ...query,
-    });
-
-    let orderJSON;
-    if (ORDERBOOK_VERSION == 0) {
-      const json = result as OrderJSON[];
-      orderJSON = json[0];
-    } else {
-      const json = result as OrderbookResponse;
-      orderJSON = json.orders[0];
-    }
-    if (!orderJSON) {
-      throw new Error(`Not found: no matching order found`);
-    }
-    return orderFromJSON(orderJSON);
-  }
-
-  /**
-   * Get a list of orders from the orderbook, returning the page of orders
-   *  and the count of total orders found.
-   * @param query Query to use for getting orders. A subset of parameters
-   *  on the `OrderJSON` type is supported
-   * @param page Page number, defaults to 1. Can be overridden by
-   * `limit` and `offset` attributes from OrderQuery
-   */
-  public async getOrdersLegacyWyvern(
-    query: OrderQuery = {},
-    page = 1
-  ): Promise<{ orders: Order[]; count: number }> {
-    const result = await this.get(`${ORDERBOOK_PATH}/orders/`, {
-      limit: this.pageSize,
-      offset: (page - 1) * this.pageSize,
-      side: OrderSide.Sell,
-      ...query,
-    });
-
-    if (ORDERBOOK_VERSION == 0) {
-      const json = result as OrderJSON[];
-      return {
-        orders: json.map((j) => orderFromJSON(j)),
-        count: json.length,
-      };
-    } else {
-      const json = result as OrderbookResponse;
-      return {
-        orders: json.orders.map((j) => orderFromJSON(j)),
-        count: json.count,
-      };
     }
   }
 
@@ -543,12 +451,12 @@ export class OpenSeaAPI {
         )}'`;
         break;
       case 500:
-        errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(
+        errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/opensea - full message was ${JSON.stringify(
           result
         )}`;
         break;
       case 503:
-        errorMessage = `Service unavailable. Please try again in a few minutes. If the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(
+        errorMessage = `Service unavailable. Please try again in a few minutes. If the problem persists please contact us via Discord: https://discord.gg/opensea - full message was ${JSON.stringify(
           result
         )}`;
         break;

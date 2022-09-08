@@ -288,39 +288,9 @@ const auction = await openseaSDK.createSellOrder({
 
 Note that auctions aren't supported with Ether directly due to limitations in Ethereum, so you have to use an ERC20 token, like Wrapped Ether (WETH), a stablecoin like DAI, etc. See [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether) for more info.
 
-### Running Crowdsales
-
-You can now sell items to users **without having to pay gas to mint them**!
-
-To create a presale or crowdsale and create batches of sell orders for a single asset factory, first follow the [tutorial](https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial) for creating your crowdsale contract.
-
-Then call `createFactorySellOrders` with your factory contract address and asset option identifier, and set `numberOfOrders` to the number of assets you'd like to let users buy and mint:
-
-```JavaScript
-// Expire these auctions one day from now
-const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24)
-
-const sellOrders = await openseaSDK.createFactorySellOrders({
-  assetId: ASSET_OPTION_ID,
-  factoryAddress: FACTORY_CONTRACT_ADDRESS,
-  accountAddress,
-  startAmount,
-  endAmount,
-  expirationTime,
-  // Will create 100 sell orders in parallel batches of 10, to speed things up:
-  numberOfOrders: 100
-})
-```
-
-Here's an [example script](https://github.com/ProjectOpenSea/opensea-creatures/blob/master/scripts/sell.js) you can use to mint items.
-
-**NOTE:** If `numberOfOrders` is greater than 5, we will automatically batch them in groups of 5 so you can post orders in parallel. Requires an `apiKey` to be set during SDK initialization in order to not be throttled by the API.
-
-Games using this method include [Coins & Steel](https://opensea.io/assets/coins&steelfounderssale) and a couple in stealth :) If you have questions or want support, contact us at contact@opensea.io (or in [Discord](https://discord.gg/ga8EJbv)).
-
 ### Fetching Orders
 
-To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v1.0/reference):
+To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v2.0/reference):
 
 ```JavaScript
 // Get offers (bids), a.k.a. orders where `side == 0`
@@ -524,7 +494,7 @@ const token = (await openseaSDK.api.getPaymentTokens({ symbol: 'MANA'})).tokens[
 
 const order = await openseaSDK.api.getOrders({
   side: "ask",
-  payment_token_address: token.address
+  paymentTokenAddress: token.address
 })
 ```
 
@@ -532,7 +502,6 @@ const order = await openseaSDK.api.getOrders({
 
 - MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942
 - DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
-- And tons more! See the "Currencies" list in the sidebar on https://opensea.io/assets for a full list, or contact us to add yours: [Discord](https://discord.gg/ga8EJbv)
 
 ### Private Auctions
 
@@ -637,13 +606,11 @@ To remove all listeners and start over, just call `openseaSDK.removeAllListeners
 
 Auto-generated documentation for each export is available [here](https://projectopensea.github.io/opensea-js/).
 
-If you need extra help, support is free! Contact the OpenSea devs. They're available every day on [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel.
-
 ### Example Code
 
 Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
 
-You can view a live demo [here](https://ships-log.herokuapp.com/)! Also check out the [Mythereum marketplace](https://mythereum.io/marketplace), which is entirely powered by OpenSea.js.
+Also check out the [Mythereum marketplace](https://mythereum.io/marketplace), which is entirely powered by OpenSea.js.
 
 ## Migrating to version 1.0
 
@@ -700,8 +667,6 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 - Are the input addresses all strings? If not, convert them to strings.
 
 - Is your computer's internal clock accurate? If not, try enabling automatic clock adjustment locally or following [this tutorial](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html) to update an Amazon EC2 instance.
-
-- Are you attempting to purchase a token that's unpurchasable on [OpenSea](https://opensea.io/)? If so, contact us [Discord](https://discord.gg/XjwWYgU) in the `#developers` channel and we'll help diagnose the issue.
 
 ## Testing your branch locally
 
