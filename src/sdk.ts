@@ -727,8 +727,8 @@ export class OpenSeaSDK {
       fees: Fees
     ): ConsiderationInputItem[] => {
       const sellerFees = fees.sellerFees;
-      return Array.from(sellerFees.entries()).map(([recipient, _]) => {
-        return getConsiderationItem(sellerFees.get(recipient) || 0, recipient);
+      return Array.from(sellerFees.entries()).map(([recipient, basisPoints]) => {
+        return getConsiderationItem(basisPoints, recipient);
       });
     };
 
