@@ -3,7 +3,7 @@ import _ from "lodash";
 import * as QueryString from "query-string";
 import {
   API_BASE_MAINNET,
-  API_BASE_RINKEBY,
+  API_BASE_TESTNET,
   API_PATH,
   ORDERBOOK_PATH,
   SITE_HOST_MAINNET,
@@ -42,10 +42,6 @@ import {
 
 export class OpenSeaAPI {
   /**
-   * Host url for OpenSea
-   */
-  public readonly hostUrl: string;
-  /**
    * Base url for the API
    */
   public readonly apiBaseUrl: string;
@@ -73,13 +69,14 @@ export class OpenSeaAPI {
 
     switch (config.networkName) {
       case Network.Rinkeby:
-        this.apiBaseUrl = config.apiBaseUrl || API_BASE_RINKEBY;
-        this.hostUrl = SITE_HOST_RINKEBY;
+        this.apiBaseUrl = config.apiBaseUrl || API_BASE_TESTNET;
+        break;
+      case Network.Goelri:
+        this.apiBaseUrl = config.apiBaseUrl || API_BASE_TESTNET;
         break;
       case Network.Main:
       default:
         this.apiBaseUrl = config.apiBaseUrl || API_BASE_MAINNET;
-        this.hostUrl = SITE_HOST_MAINNET;
         break;
     }
 

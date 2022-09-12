@@ -46,12 +46,12 @@ export const MAX_EXPIRATION_MONTHS = 3;
 export const ORDER_MATCHING_LATENCY_SECONDS = 60 * 60 * 24 * 7;
 const ORDERBOOK_VERSION = 1 as number;
 export const API_BASE_MAINNET = "https://api.opensea.io";
-export const API_BASE_RINKEBY = "https://testnets-api.opensea.io";
+export const API_BASE_TESTNET = "https://testnets-api.opensea.io";
 export const SITE_HOST_MAINNET = "https://opensea.io";
 export const SITE_HOST_RINKEBY = "https://rinkeby.opensea.io";
 export const RPC_URL_PATH = "jsonrpc/v1/";
 export const MAINNET_PROVIDER_URL = `${API_BASE_MAINNET}/${RPC_URL_PATH}`;
-export const RINKEBY_PROVIDER_URL = `${API_BASE_RINKEBY}/${RPC_URL_PATH}`;
+export const TESTNET_PROVIDER_URL = `${API_BASE_TESTNET}/${RPC_URL_PATH}`;
 export const ORDERBOOK_PATH = `/wyvern/v${ORDERBOOK_VERSION}`;
 export const API_PATH = `/api/v${ORDERBOOK_VERSION}`;
 
@@ -109,9 +109,11 @@ export const CONDUIT_KEYS_TO_CONDUIT = {
 export const WETH_ADDRESS_BY_NETWORK = {
   [Network.Main]: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
   [Network.Rinkeby]: "0xc778417e063141139fce010982780140aa0cd5ab",
+  [Network.Goerli]: "0xc778417e063141139fce010982780140aa0cd5ab",
 } as const;
 
 export const DEFAULT_ZONE_BY_NETWORK = {
   [Network.Main]: "0x004c00500000ad104d7dbd00e3ae0a5c00560c00",
   [Network.Rinkeby]: "0x00000000e88fe2628ebc5da81d2b3cead633e89e",
+  [Network.Goerli]: "0x00000000e88fe2628ebc5da81d2b3cead633e89e",
 } as const;
