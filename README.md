@@ -104,6 +104,8 @@ const openseaSDK = new OpenSeaSDK(provider, {
 })
 ```
 
+**NOTE:** for testnet, please use `Network.Goerli` as the `networkName` - Rinkeby was deprecated in 2022.
+
 **NOTE:** Using the sample Infura provider above won't let you authorize transactions, which are needed when approving and trading assets and currency. To make transactions, you need a provider with a private key or mnemonic set.
 
 In a browser with web3 or an extension like [MetaMask](https://metamask.io/) or [Dapper](http://www.meetdapper.com/), you can use `window.ethereum` (or `window.web3.currentProvider` for legacy mobile web3 browsers) to access the native provider. In a Node.js script, you can follow [this example](https://github.com/ProjectOpenSea/opensea-creatures/blob/master/scripts/sell.js) to use a custom mnemonic.
