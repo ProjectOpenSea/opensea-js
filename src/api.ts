@@ -6,8 +6,6 @@ import {
   API_BASE_TESTNET,
   API_PATH,
   ORDERBOOK_PATH,
-  SITE_HOST_MAINNET,
-  SITE_HOST_RINKEBY,
 } from "./constants";
 import {
   OrderAPIOptions,
@@ -71,7 +69,7 @@ export class OpenSeaAPI {
       case Network.Rinkeby:
         this.apiBaseUrl = config.apiBaseUrl || API_BASE_TESTNET;
         break;
-      case Network.Goelri:
+      case Network.Goerli:
         this.apiBaseUrl = config.apiBaseUrl || API_BASE_TESTNET;
         break;
       case Network.Main:
