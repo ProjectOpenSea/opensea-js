@@ -6,7 +6,6 @@ import {
   ENJIN_LEGACY_ADDRESS,
   MAINNET_PROVIDER_URL,
   MAX_UINT_256,
-  RINKEBY_PROVIDER_URL,
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
 import {
@@ -28,20 +27,16 @@ import {
   GODS_UNCHAINED_TOKEN_ID,
   CK_TOKEN_ID,
   MAINNET_API_KEY,
-  RINKEBY_API_KEY,
-  CK_RINKEBY_ADDRESS,
-  CK_RINKEBY_TOKEN_ID,
   CATS_IN_MECHS_ID,
   RANDOM_ADDRESS,
   DISSOLUTION_TOKEN_ID,
-  SANDBOX_RINKEBY_ID,
-  SANDBOX_RINKEBY_ADDRESS,
   AGE_OF_RUST_TOKEN_ID,
   WETH_ADDRESS,
+  TESTNET_ASSET_ADDRESS,
+  TESTNET_TOKEN_ID,
 } from "../constants";
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
-const rinkebyProvider = new Web3.providers.HttpProvider(RINKEBY_PROVIDER_URL);
 
 const client = new OpenSeaSDK(
   provider,
@@ -50,15 +45,6 @@ const client = new OpenSeaSDK(
     apiKey: MAINNET_API_KEY,
   },
   (line) => console.info(`MAINNET: ${line}`)
-);
-
-const rinkebyClient = new OpenSeaSDK(
-  rinkebyProvider,
-  {
-    networkName: Network.Rinkeby,
-    apiKey: RINKEBY_API_KEY,
-  },
-  (line) => console.info(`RINKEBY: ${line}`)
 );
 
 let manaAddress: string;
@@ -73,11 +59,11 @@ suite("SDK: owners and transfers", () => {
     const accountAddress = ALEX_ADDRESS;
     const schemaName = WyvernSchemaName.ERC721;
     const wyAssetRinkeby: WyvernNFTAsset = {
-      id: CK_RINKEBY_TOKEN_ID.toString(),
-      address: CK_RINKEBY_ADDRESS,
+      id: TESTNET_TOKEN_ID.toString(),
+      address: TESTNET_ASSET_ADDRESS,
     };
     try {
-      // Use mainnet client with rinkeby asset
+      // Use mainnet client with testnet asset
       const _isOwner = await client._ownsAssetOnChain({
         accountAddress,
         wyAsset: wyAssetRinkeby,
@@ -328,18 +314,5 @@ suite("SDK: owners and transfers", () => {
       toAddress: ALEX_ADDRESS_2,
     });
     assert.isNotTrue(isTransferrable);
-  });
-
-  test("Rinkeby ERC-1155 asset owned by fromAddress is transferrable", async () => {
-    const isTransferrable = await rinkebyClient.isAssetTransferrable({
-      asset: {
-        tokenAddress: SANDBOX_RINKEBY_ADDRESS,
-        tokenId: SANDBOX_RINKEBY_ID,
-        schemaName: WyvernSchemaName.ERC1155,
-      },
-      fromAddress: "0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20",
-      toAddress: ALEX_ADDRESS,
-    });
-    assert.isTrue(isTransferrable);
   });
 });

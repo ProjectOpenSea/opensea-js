@@ -2,87 +2,62 @@ import { assert } from "chai";
 import { suite, test } from "mocha";
 import {
   apiToTest,
-  CK_RINKEBY_ADDRESS,
-  CK_RINKEBY_SELLER_FEE,
-  CK_RINKEBY_TOKEN_ID,
+  TESTNET_ASSET_ADDRESS,
+  TESTNET_SELLER_FEE,
+  TESTNET_TOKEN_ID,
   mainApi,
-  rinkebyApi,
-  RINKEBY_API_KEY,
+  testnetApi,
+  TESTNET_API_KEY,
+  TESTNET_WALLET_ADDRESS,
 } from "../constants";
 
 suite("api", () => {
   test("API has correct base url", () => {
     assert.equal(mainApi.apiBaseUrl, "https://api.opensea.io");
-    assert.equal(rinkebyApi.apiBaseUrl, "https://testnets-api.opensea.io");
-  });
-
-  test("API fetches bundles and prefetches sell orders", async () => {
-    const { bundles } = await apiToTest.getBundles({
-      asset_contract_address: CK_RINKEBY_ADDRESS,
-    });
-    assert.isArray(bundles);
-
-    const bundle = bundles[0];
-    assert.isNotNull(bundle);
-    if (!bundle) {
-      return;
-    }
-    assert.include(
-      bundle.assets.map((a) => a.assetContract.name),
-      "CryptoKittiesRinkeby"
-    );
+    assert.equal(testnetApi.apiBaseUrl, "https://testnets-api.opensea.io");
   });
 
   test("Includes API key in token request", async () => {
-    const oldLogger = rinkebyApi.logger;
+    const oldLogger = testnetApi.logger;
 
     const logPromise = new Promise<void>((resolve, reject) => {
-      rinkebyApi.logger = (log) => {
+      testnetApi.logger = (log) => {
         try {
-          assert.include(log, `"X-API-KEY":"${RINKEBY_API_KEY}"`);
+          assert.include(log, `"X-API-KEY":"${TESTNET_API_KEY}"`);
           resolve();
         } catch (e) {
           reject(e);
         } finally {
-          rinkebyApi.logger = oldLogger;
+          testnetApi.logger = oldLogger;
         }
       };
-      rinkebyApi.getPaymentTokens({ symbol: "WETH" });
+      testnetApi.getPaymentTokens({ symbol: "WETH" });
     });
 
     await logPromise;
   });
 
-  test("API fetches tokens", async () => {
-    const { tokens } = await apiToTest.getPaymentTokens({ symbol: "MANA" });
-    assert.isArray(tokens);
-    assert.equal(tokens.length, 1);
-    assert.equal(tokens[0].name, "Decentraland MANA");
-  });
-
   test("API fetches fees for an asset", async () => {
     const asset = await apiToTest.getAsset({
-      tokenAddress: CK_RINKEBY_ADDRESS,
-      tokenId: CK_RINKEBY_TOKEN_ID,
+      tokenAddress: TESTNET_ASSET_ADDRESS,
+      tokenId: TESTNET_TOKEN_ID,
     });
-    assert.equal(asset.tokenId, CK_RINKEBY_TOKEN_ID.toString());
-    assert.equal(asset.assetContract.name, "CryptoKittiesRinkeby");
+    assert.exists(asset);
+    assert.equal(asset.tokenId, TESTNET_TOKEN_ID.toString());
     assert.equal(
-      asset.assetContract.sellerFeeBasisPoints,
-      CK_RINKEBY_SELLER_FEE
+      asset.collection.fees?.openseaFees.get(TESTNET_WALLET_ADDRESS),
+      TESTNET_SELLER_FEE
     );
   });
 
   test("API fetches assets", async () => {
     const { assets } = await apiToTest.getAssets({
-      asset_contract_address: CK_RINKEBY_ADDRESS,
+      asset_contract_address: TESTNET_ASSET_ADDRESS,
       order_by: "sale_date",
     });
     assert.isArray(assets);
-    assert.equal(assets.length, apiToTest.pageSize);
-
     const asset = assets[0];
-    assert.equal(asset.assetContract.name, "CryptoKittiesRinkeby");
+    assert.exists(asset);
   });
 
   test("API handles errors", async () => {
@@ -93,9 +68,9 @@ suite("api", () => {
       assert.include((error as Error).message, "Unauthorized");
     }
 
-    // 404 Not found
+    // 404 Not found for random token id
     try {
-      await apiToTest.get(`/asset/${CK_RINKEBY_ADDRESS}/0`);
+      await apiToTest.get(`/asset/${TESTNET_ASSET_ADDRESS}/72`);
     } catch (error) {
       assert.include((error as Error).message, "Not found");
     }

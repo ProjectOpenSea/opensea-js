@@ -1,9 +1,9 @@
 import { OpenSeaAPI } from "../api";
-import { CK_ADDRESS, CK_RINKEBY_ADDRESS } from "../constants";
+import { CK_ADDRESS, TESTNET_ASSET_ADDRESS } from "../constants";
 import { Network } from "../types";
 
 export const MAINNET_API_KEY = process.env.API_KEY;
-export const RINKEBY_API_KEY = process.env.API_KEY;
+export const TESTNET_API_KEY = process.env.API_KEY;
 
 export const mainApi = new OpenSeaAPI(
   {
@@ -13,17 +13,17 @@ export const mainApi = new OpenSeaAPI(
   console.info
 );
 
-export const rinkebyApi = new OpenSeaAPI(
+export const testnetApi = new OpenSeaAPI(
   {
-    apiKey: RINKEBY_API_KEY,
-    networkName: Network.Rinkeby,
+    apiKey: TESTNET_API_KEY,
+    networkName: Network.Goerli,
   },
   console.info
 );
 
-export const apiToTest = rinkebyApi;
+export const apiToTest = testnetApi;
 
-export { CK_ADDRESS, CK_RINKEBY_ADDRESS };
+export { CK_ADDRESS, TESTNET_ASSET_ADDRESS };
 export const GODS_UNCHAINED_ADDRESS =
   "0x6ebeaf8e8e946f0716e6533a6f2cefc83f60e8ab";
 export const DIGITAL_ART_CHAIN_ADDRESS =
@@ -34,9 +34,11 @@ export const GODS_UNCHAINED_TOKEN_ID = 76719;
 export const MYTHEREUM_TOKEN_ID = 4367;
 export const WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 
-export const CK_RINKEBY_TOKEN_ID = 1068;
+export const TESTNET_TOKEN_ID = 0;
 export const CK_TOKEN_ID = 637488;
-export const CK_RINKEBY_SELLER_FEE = 250;
+export const TESTNET_SELLER_FEE = 250;
+export const TESTNET_WALLET_ADDRESS =
+  "0x0000a26b00c1f0df003000390027140000faa719";
 
 // Toasta Gun, NFT
 export const CATS_IN_MECHS_ID =
@@ -50,10 +52,6 @@ export const DECENTRALAND_ID =
   "115792089237316195423570985008687907840339254722644902427849348925505937604680";
 export const DISSOLUTION_TOKEN_ID =
   "39803530675327460487158288219684256433559304725576879659134376004308812431360";
-export const SANDBOX_RINKEBY_ADDRESS =
-  "0xcdeadfb2caa81d8c16d2935f3e379dda61242be9";
-export const SANDBOX_RINKEBY_ID =
-  "44221324190444972628403853229966997983936414854632412290085204005353951330306";
 export const SPIRIT_CLASH_TOKEN_ID =
   "10855508365998412378240648478527290366700749920879042165450277893550637056000";
 export const SPIRIT_CLASH_OWNER = "0x6a846239658f5a16a0b5977e1c0d007bc13267f0";

@@ -18,7 +18,6 @@ import { Schema } from "wyvern-schemas/dist/types";
 import { OpenSeaAPI } from "./api";
 import {
   CK_ADDRESS,
-  CK_RINKEBY_ADDRESS,
   CONDUIT_KEYS_TO_CONDUIT,
   DEFAULT_BUYER_FEE_BASIS_POINTS,
   DEFAULT_GAS_INCREASE_FACTOR,
@@ -211,16 +210,21 @@ export class OpenSeaSDK {
       },
     });
 
+    let networkForWyvernConfig = this._networkName;
+    if (this._networkName == Network.Goerli) {
+      networkForWyvernConfig = Network.Rinkeby;
+    }
+
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider as Web3JsProvider, {
-      network: this._networkName,
+      network: networkForWyvernConfig,
       ...apiConfig.wyvernConfig,
     });
 
     // WyvernJS config for readonly (optimization for infura calls)
     this._wyvernProtocolReadOnly = useReadOnlyProvider
       ? new WyvernProtocol(readonlyProvider as Web3JsProvider, {
-          network: this._networkName,
+          network: networkForWyvernConfig,
           ...apiConfig.wyvernConfig,
         })
       : this._wyvernProtocol;
@@ -1823,9 +1827,7 @@ export class OpenSeaSDK {
       asset.decimals || 0
     );
     const wyAsset = getWyvernAsset(schema, asset, quantityBN);
-    const isCryptoKitties = [CK_ADDRESS, CK_RINKEBY_ADDRESS].includes(
-      wyAsset.address
-    );
+    const isCryptoKitties = [CK_ADDRESS].includes(wyAsset.address);
     // Since CK is common, infer isOldNFT from it in case user
     // didn't pass in `version`
     const isOldNFT =
@@ -3705,6 +3707,7 @@ export class OpenSeaSDK {
 
   private _getSchema(schemaName?: WyvernSchemaName): Schema<WyvernAsset> {
     const schemaName_ = schemaName || WyvernSchemaName.ERC721;
+
     const schema = WyvernSchemas.schemas[this._networkName].filter(
       (s) => s.name == schemaName_
     )[0];
