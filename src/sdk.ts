@@ -210,16 +210,21 @@ export class OpenSeaSDK {
       },
     });
 
+    let networkForWyvernConfig = this._networkName;
+    if (this._networkName == Network.Goerli) {
+      networkForWyvernConfig = Network.Rinkeby;
+    }
+
     // WyvernJS config
     this._wyvernProtocol = new WyvernProtocol(provider as Web3JsProvider, {
-      network: this._networkName,
+      network: networkForWyvernConfig,
       ...apiConfig.wyvernConfig,
     });
 
     // WyvernJS config for readonly (optimization for infura calls)
     this._wyvernProtocolReadOnly = useReadOnlyProvider
       ? new WyvernProtocol(readonlyProvider as Web3JsProvider, {
-          network: this._networkName,
+          network: networkForWyvernConfig,
           ...apiConfig.wyvernConfig,
         })
       : this._wyvernProtocol;
