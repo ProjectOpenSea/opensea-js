@@ -66,9 +66,6 @@ export class OpenSeaAPI {
     this.networkName = config.networkName ?? Network.Main;
 
     switch (config.networkName) {
-      case Network.Rinkeby:
-        this.apiBaseUrl = config.apiBaseUrl || API_BASE_TESTNET;
-        break;
       case Network.Goerli:
         this.apiBaseUrl = config.apiBaseUrl || API_BASE_TESTNET;
         break;
