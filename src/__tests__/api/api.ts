@@ -36,13 +36,6 @@ suite("api", () => {
     await logPromise;
   });
 
-  test("API fetches tokens", async () => {
-    const { tokens } = await apiToTest.getPaymentTokens({ symbol: "MANA" });
-    assert.isArray(tokens);
-    assert.equal(tokens.length, 1);
-    assert.equal(tokens[0].name, "Decentraland MANA");
-  });
-
   test("API fetches fees for an asset", async () => {
     const asset = await apiToTest.getAsset({
       tokenAddress: TESTNET_ASSET_ADDRESS,
