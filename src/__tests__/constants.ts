@@ -37,6 +37,8 @@ export const WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 export const TESTNET_TOKEN_ID = 0;
 export const CK_TOKEN_ID = 637488;
 export const TESTNET_SELLER_FEE = 250;
+export const TESTNET_WALLET_ADDRESS =
+  "0x0000a26b00c1f0df003000390027140000faa719";
 
 // Toasta Gun, NFT
 export const CATS_IN_MECHS_ID =

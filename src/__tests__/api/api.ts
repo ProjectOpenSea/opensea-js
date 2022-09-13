@@ -8,6 +8,7 @@ import {
   mainApi,
   testnetApi,
   TESTNET_API_KEY,
+  TESTNET_WALLET_ADDRESS,
 } from "../constants";
 
 suite("api", () => {
@@ -43,7 +44,10 @@ suite("api", () => {
     });
     assert.exists(asset);
     assert.equal(asset.tokenId, TESTNET_TOKEN_ID.toString());
-    assert.equal(asset.assetContract.sellerFeeBasisPoints, TESTNET_SELLER_FEE);
+    assert.equal(
+      asset.collection.fees?.openseaFees.get(TESTNET_WALLET_ADDRESS),
+      TESTNET_SELLER_FEE
+    );
   });
 
   test("API fetches assets", async () => {
