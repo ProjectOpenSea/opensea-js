@@ -11,7 +11,7 @@ import { expectValidOrder } from "../utils";
 // Client setup
 const testnetProvider = new Web3.providers.HttpProvider(TESTNET_PROVIDER_URL);
 const testnetClient = new OpenSeaSDK(testnetProvider, {
-  networkName: Network.Goerli,
+  networkName: Network.Rinkeby,
   apiKey: TESTNET_API_KEY,
 });
 
