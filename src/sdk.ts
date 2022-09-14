@@ -833,7 +833,7 @@ export class OpenSeaSDK {
       });
     const considerationFeeItems = [
       openseaSellerFee,
-      collectionSellerFees,
+      ...collectionSellerFees,
     ].filter((item): item is ConsiderationInputItem => item !== undefined);
 
     const { executeAllActions } = await this.seaport.createOrder(
