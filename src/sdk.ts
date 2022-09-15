@@ -11,6 +11,7 @@ import { isValidAddress } from "ethereumjs-util";
 import { providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
+import { domain } from "process";
 import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
 import * as WyvernSchemas from "wyvern-schemas";
@@ -788,6 +789,8 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the maker's wallet
    * @param options.startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
    * @param options.quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei
+   * @param input.domain An optional domain to be hashed and included in the first four bytes of the random salt.
+   * @param input.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.expirationTime Expiration time for the order, in seconds
    * @param options.paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to WETH
    */
@@ -803,6 +806,8 @@ export class OpenSeaSDK {
     accountAddress: string;
     startAmount: BigNumberInput;
     quantity?: BigNumberInput;
+    domain?: string;
+    salt?: string;
     expirationTime?: BigNumberInput;
     paymentTokenAddress?: string;
   }): Promise<OrderV2> {
@@ -849,6 +854,8 @@ export class OpenSeaSDK {
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+        domain: domain,
+        salt: salt,
         restrictedByZone: true,
         allowPartialFills: true,
       },
