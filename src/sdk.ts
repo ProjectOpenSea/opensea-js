@@ -788,6 +788,8 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the maker's wallet
    * @param options.startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
    * @param options.quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei
+   * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt.
+   * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.expirationTime Expiration time for the order, in seconds
    * @param options.paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to WETH
    */
@@ -796,6 +798,8 @@ export class OpenSeaSDK {
     accountAddress,
     startAmount,
     quantity = 1,
+    domain = "",
+    salt = "",
     expirationTime,
     paymentTokenAddress,
   }: {
@@ -803,6 +807,8 @@ export class OpenSeaSDK {
     accountAddress: string;
     startAmount: BigNumberInput;
     quantity?: BigNumberInput;
+    domain?: string;
+    salt?: string;
     expirationTime?: BigNumberInput;
     paymentTokenAddress?: string;
   }): Promise<OrderV2> {
@@ -849,6 +855,8 @@ export class OpenSeaSDK {
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+        domain,
+        salt,
         restrictedByZone: true,
         allowPartialFills: true,
       },
@@ -867,6 +875,8 @@ export class OpenSeaSDK {
    * @param options.startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param options.endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
    * @param options.quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
+   * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt.
+   * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
@@ -878,6 +888,8 @@ export class OpenSeaSDK {
     startAmount,
     endAmount,
     quantity = 1,
+    domain = "",
+    salt = "",
     listingTime,
     expirationTime,
     paymentTokenAddress = NULL_ADDRESS,
@@ -888,6 +900,8 @@ export class OpenSeaSDK {
     startAmount: BigNumberInput;
     endAmount?: BigNumberInput;
     quantity?: BigNumberInput;
+    domain?: string;
+    salt?: string;
     listingTime?: string;
     expirationTime?: BigNumberInput;
     paymentTokenAddress?: string;
@@ -942,6 +956,8 @@ export class OpenSeaSDK {
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+        domain,
+        salt,
         restrictedByZone: true,
         allowPartialFills: true,
       },
