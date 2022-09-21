@@ -914,8 +914,8 @@ export class OpenSeaSDK {
     const considerationFeeItems = [
       sellerFee,
       openseaSellerFee,
-      collectionSellerFees,
-    ].filter((item): item is ConsiderationInputItem => item !== undefined);
+      ...collectionSellerFees,
+    ];
 
     if (buyerAddress) {
       considerationFeeItems.push(
