@@ -146,6 +146,10 @@ export declare enum TokenStandardVersion {
     ERC721v2 = "2.0",
     ERC721v3 = "3.0"
 }
+export interface Fees {
+    openseaFees: Map<string, number>;
+    sellerFees: Map<string, number>;
+}
 export interface WyvernNFTAsset {
     id: string;
     address: string;
@@ -245,6 +249,7 @@ export interface OpenSeaCollection extends OpenSeaFees {
     traitStats: OpenSeaTraitStats;
     externalLink?: string;
     wikiLink?: string;
+    fees?: Fees | null;
 }
 export interface OpenSeaTraitStats {
     [traitName: string]: NumericalTraitStats | StringTraitStats;

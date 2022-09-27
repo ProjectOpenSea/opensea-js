@@ -174,6 +174,7 @@ export declare function getNonCompliantApprovalAddress(erc721Contract: Contract,
 export declare const merkleValidatorByNetwork: {
     main: string;
     rinkeby: string;
+    goerli: null;
 };
 /**
  * The longest time that an order is valid for is six months from the current date
@@ -185,3 +186,18 @@ interface ErrorWithCode extends Error {
 }
 export declare const hasErrorCode: (error: unknown) => error is ErrorWithCode;
 export declare const getAssetItemType: (schemaName?: WyvernSchemaName | undefined) => ItemType.ERC20 | ItemType.ERC721 | ItemType.ERC1155;
+/**
+ * Checks if the token address is the shared storefront address and if so replaces
+ * that address with the lazy mint adapter addres. Otherwise, returns the input token address
+ * @param tokenAddress token address
+ * @returns input token address or lazy mint adapter address
+ */
+export declare const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress: (tokenAddress: string) => string;
+/**
+ * Sums up the basis points for an Opensea or seller fee map and returns the
+ * single numeric value if the map is not empty. Otherwise, it returns 0
+ * @param fees a `Fees` submap holding fees (either Fees.openseaFees
+ *  or Fees.sellerFees)
+ * @returns sum of basis points in a fee map
+ */
+export declare const feesToBasisPoints: (fees: Map<string, number> | undefined) => number;

@@ -36,7 +36,7 @@ export declare type OrderV2 = {
 declare type OpenOrderOrderingOption = "created_date" | "eth_price";
 declare type OrderByDirection = "asc" | "desc";
 export declare type OrderAPIOptions = {
-    protocol: OrderProtocol;
+    protocol?: OrderProtocol;
     side: OrderSide;
 };
 export declare type OrdersQueryOptions = OrderAPIOptions & {
@@ -50,6 +50,7 @@ export declare type OrdersQueryOptions = OrderAPIOptions & {
     includeBundled?: boolean;
     listedAfter?: number | string;
     listedBefore?: number | string;
+    tokenId?: string;
     tokenIds?: string[];
     assetContractAddress?: string;
     orderBy?: OpenOrderOrderingOption;

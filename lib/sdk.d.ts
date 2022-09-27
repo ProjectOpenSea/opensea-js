@@ -146,73 +146,27 @@ export declare class OpenSeaSDK {
     private getFees;
     private getAssetItems;
     /**
-     * Create a buy order to make an offer on a bundle or group of assets.
-     * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
-     * @param param0 __namedParameters Object
-     * @param assets Array of Asset objects to bid on
-     * @param collection Optional collection for computing fees, required only if all assets belong to the same collection
-     * @param quantities The quantity of each asset to sell. Defaults to 1 for each.
-     * @param accountAddress Address of the maker's wallet
-     * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
-     * @param expirationTime Expiration time for the order, in seconds.
-     * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
-     * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
-     * @param referrerAddress The optional address that referred the order
-     */
-    createBundleBuyOrderLegacyWyvern({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, sellOrder, referrerAddress, }: {
-        assets: Asset[];
-        collection?: {
-            slug: string;
-        };
-        quantities?: number[];
-        accountAddress: string;
-        startAmount: number;
-        expirationTime?: number;
-        paymentTokenAddress?: string;
-        sellOrder?: Order;
-        referrerAddress?: string;
-    }): Promise<Order>;
-    /**
      * Create a buy order to make an offer on an asset.
      * @param options Options for creating the buy order
      * @param options.asset The asset to trade
      * @param options.accountAddress Address of the maker's wallet
      * @param options.startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
      * @param options.quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei
+     * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt.
+     * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
      * @param options.expirationTime Expiration time for the order, in seconds
      * @param options.paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to WETH
      */
-    createBuyOrder({ asset, accountAddress, startAmount, quantity, expirationTime, paymentTokenAddress, }: {
+    createBuyOrder({ asset, accountAddress, startAmount, quantity, domain, salt, expirationTime, paymentTokenAddress, }: {
         asset: Asset;
         accountAddress: string;
         startAmount: BigNumberInput;
         quantity?: BigNumberInput;
+        domain?: string;
+        salt?: string;
         expirationTime?: BigNumberInput;
         paymentTokenAddress?: string;
     }): Promise<OrderV2>;
-    /**
-     * Create a buy order to make an offer on an asset.
-     * If the user hasn't approved W-ETH access yet, this will emit `ApproveCurrency` before asking for approval.
-     * @param param0 __namedParameters Object
-     * @param asset The asset to trade
-     * @param accountAddress Address of the maker's wallet
-     * @param startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
-     * @param quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
-     * @param expirationTime Expiration time for the order, in seconds.
-     * @param paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to W-ETH
-     * @param sellOrder Optional sell order (like an English auction) to ensure fee and schema compatibility
-     * @param referrerAddress The optional address that referred the order
-     */
-    createBuyOrderLegacyWyvern({ asset, accountAddress, startAmount, quantity, expirationTime, paymentTokenAddress, sellOrder, referrerAddress, }: {
-        asset: Asset;
-        accountAddress: string;
-        startAmount: number;
-        quantity?: number;
-        expirationTime?: number;
-        paymentTokenAddress?: string;
-        sellOrder?: Order;
-        referrerAddress?: string;
-    }): Promise<Order>;
     /**
      * Create a sell order to auction an asset.
      * @param options Options for creating the sell order
@@ -221,136 +175,26 @@ export declare class OpenSeaSDK {
      * @param options.startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param options.endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
      * @param options.quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
+     * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt.
+     * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
      * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
      * @param options.expirationTime Expiration time for the order, in UTC seconds.
      * @param options.paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
      * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
      */
-    createSellOrder({ asset, accountAddress, startAmount, endAmount, quantity, listingTime, expirationTime, paymentTokenAddress, buyerAddress, }: {
+    createSellOrder({ asset, accountAddress, startAmount, endAmount, quantity, domain, salt, listingTime, expirationTime, paymentTokenAddress, buyerAddress, }: {
         asset: Asset;
         accountAddress: string;
         startAmount: BigNumberInput;
         endAmount?: BigNumberInput;
         quantity?: BigNumberInput;
+        domain?: string;
+        salt?: string;
         listingTime?: string;
         expirationTime?: BigNumberInput;
         paymentTokenAddress?: string;
         buyerAddress?: string;
     }): Promise<OrderV2>;
-    /**
-     * Create a sell order to auction an asset.
-     * Will throw a 'You do not own enough of this asset' error if the maker doesn't have the asset or not enough of it to sell the specific `quantity`.
-     * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
-     * @param param0 __namedParameters Object
-     * @param tokenId DEPRECATED: Token ID. Use `asset` instead.
-     * @param tokenAddress DEPRECATED: Address of the token's contract. Use `asset` instead.
-     * @param asset The asset to trade
-     * @param accountAddress Address of the maker's wallet
-     * @param startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-     * @param endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-     * @param quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
-     * @param listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
-     * @param expirationTime Expiration time for the order, in UTC seconds.
-     * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
-     * @param englishAuctionReservePrice Optional price level, below which orders may be placed but will not be matched.  Orders below the reserve can be manually accepted but will not be automatically matched.
-     * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
-     * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
-     * @param buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
-     * @param buyerEmail Optional email of the user that's allowed to purchase this item. If specified, a user will have to verify this email before being able to take the order.
-     */
-    createSellOrderLegacyWyvern({ asset, accountAddress, startAmount, endAmount, quantity, listingTime, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, }: {
-        asset: Asset;
-        accountAddress: string;
-        startAmount: number;
-        endAmount?: number;
-        quantity?: number;
-        listingTime?: number;
-        expirationTime?: number;
-        waitForHighestBid?: boolean;
-        englishAuctionReservePrice?: number;
-        paymentTokenAddress?: string;
-        extraBountyBasisPoints?: number;
-        buyerAddress?: string;
-        buyerEmail?: string;
-    }): Promise<Order>;
-    /**
-     * Create multiple sell orders in bulk to auction assets out of an asset factory.
-     * Will throw a 'You do not own this asset' error if the maker doesn't own the factory.
-     * Items will mint to users' wallets only when they buy them. See https://docs.opensea.io/docs/opensea-initial-item-sale-tutorial for more info.
-     * If the user hasn't approved access to the token yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval.
-     * @param param0 __namedParameters Object
-     * @param assets Which assets you want to post orders for. Use the tokenAddress of your factory contract
-     * @param accountAddress Address of the factory owner's wallet
-     * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-     * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-     * @param quantity The number of assets to sell at one time (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
-     * @param listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
-     * @param expirationTime Expiration time for the order, in seconds.
-     * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
-     * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
-     * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of each order
-     * @param buyerAddress Optional address that's allowed to purchase each item. If specified, no other address will be able to take each order.
-     * @param buyerEmail Optional email of the user that's allowed to purchase each item. If specified, a user will have to verify this email before being able to take each order.
-     * @param numberOfOrders Number of times to repeat creating the same order for each asset. If greater than 5, creates them in batches of 5. Requires an `apiKey` to be set during seaport initialization in order to not be throttled by the API.
-     * @returns The number of orders created in total
-     */
-    createFactorySellOrders({ assets, accountAddress, startAmount, endAmount, quantity, listingTime, expirationTime, waitForHighestBid, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, buyerEmail, numberOfOrders, }: {
-        assets: Asset[];
-        accountAddress: string;
-        startAmount: number;
-        endAmount?: number;
-        quantity?: number;
-        listingTime?: number;
-        expirationTime?: number;
-        waitForHighestBid?: boolean;
-        paymentTokenAddress?: string;
-        extraBountyBasisPoints?: number;
-        buyerAddress?: string;
-        buyerEmail?: string;
-        numberOfOrders?: number;
-    }): Promise<number>;
-    /**
-     * Create a sell order to auction a bundle of assets.
-     * Will throw a 'You do not own this asset' error if the maker doesn't have one of the assets.
-     * If the user hasn't approved access to any of the assets yet, this will emit `ApproveAllAssets` (or `ApproveAsset` if the contract doesn't support approve-all) before asking for approval for each asset.
-     * @param param0 __namedParameters Object
-     * @param bundleName Name of the bundle
-     * @param bundleDescription Optional description of the bundle. Markdown is allowed.
-     * @param bundleExternalLink Optional link to a page that adds context to the bundle.
-     * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
-     * @param collection Optional collection for computing fees, required only if all assets belong to the same collection
-     * @param quantities The quantity of each asset to sell. Defaults to 1 for each.
-     * @param accountAddress The address of the maker of the bundle and the owner of all the assets.
-     * @param startAmount Price of the asset at the start of the auction, or minimum acceptable bid if it's an English auction.
-     * @param endAmount Optional price of the asset at the end of its expiration time. If not specified, will be set to `startAmount`.
-     * @param listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
-     * @param expirationTime Expiration time for the order, in seconds.
-     * @param waitForHighestBid If set to true, this becomes an English auction that increases in price for every bid. The highest bid wins when the auction expires, as long as it's at least `startAmount`. `expirationTime` must be > 0.
-     * @param englishAuctionReservePrice Optional price level, below which orders may be placed but will not be matched.  Orders below the reserve can be manually accepted but will not be automatically matched.
-     * @param paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
-     * @param extraBountyBasisPoints Optional basis points (1/100th of a percent) to reward someone for referring the fulfillment of this order
-     * @param buyerAddress Optional address that's allowed to purchase this bundle. If specified, no other address will be able to take the order, unless it's the null address.
-     */
-    createBundleSellOrderLegacyWyvern({ bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, expirationTime, listingTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, }: {
-        bundleName: string;
-        bundleDescription?: string;
-        bundleExternalLink?: string;
-        assets: Asset[];
-        collection?: {
-            slug: string;
-        };
-        quantities?: number[];
-        accountAddress: string;
-        startAmount: number;
-        endAmount?: number;
-        listingTime?: number;
-        expirationTime?: number;
-        waitForHighestBid?: boolean;
-        englishAuctionReservePrice?: number;
-        paymentTokenAddress?: string;
-        extraBountyBasisPoints?: number;
-        buyerAddress?: string;
-    }): Promise<Order>;
     private fulfillPrivateOrder;
     /**
      * Fullfill or "take" an order for an asset, either a buy or sell order
@@ -407,7 +251,7 @@ export declare class OpenSeaSDK {
      * @param param0 __namedParameters Object
      * @param accountAddress The order maker's wallet address
      */
-    bulkCancelExistingOrders({ accountAddress, }: {
+    bulkCancelExistingOrdersLegacyWyvern({ accountAddress, }: {
         accountAddress: string;
     }): Promise<void>;
     /**
@@ -624,12 +468,6 @@ export declare class OpenSeaSDK {
         extraBountyBasisPoints?: number;
     }): Promise<ComputedFees>;
     /**
-     * Post an order to the OpenSea orderbook.
-     * @param order The order to post. Can either be signed by the maker or pre-approved on the Wyvern contract using approveOrder. See https://github.com/ProjectWyvern/wyvern-ethereum/blob/master/contracts/exchange/Exchange.sol#L178
-     * @returns The order as stored by the orderbook
-     */
-    validateAndPostOrder(order: Order): Promise<Order>;
-    /**
      * DEPRECATED: ERC-1559
      * https://eips.ethereum.org/EIPS/eip-1559
      * Compute the gas price for sending a txn, in wei
@@ -703,72 +541,6 @@ export declare class OpenSeaSDK {
         tokenAddress?: string;
         proxyAddress?: string;
     }): Promise<BigNumber>;
-    _makeBuyOrder({ asset, quantity, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, referrerAddress, }: {
-        asset: Asset;
-        quantity: number;
-        accountAddress: string;
-        startAmount: number;
-        expirationTime?: number;
-        paymentTokenAddress: string;
-        extraBountyBasisPoints: number;
-        sellOrder?: UnhashedOrder;
-        referrerAddress?: string;
-    }): Promise<UnhashedOrder>;
-    _makeSellOrder({ asset, quantity, accountAddress, startAmount, endAmount, listingTime, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, }: {
-        asset: Asset;
-        quantity: number;
-        accountAddress: string;
-        startAmount: number;
-        endAmount?: number;
-        waitForHighestBid: boolean;
-        englishAuctionReservePrice?: number;
-        listingTime?: number;
-        expirationTime?: number;
-        paymentTokenAddress: string;
-        extraBountyBasisPoints: number;
-        buyerAddress: string;
-    }): Promise<UnhashedOrder>;
-    _getStaticCallTargetAndExtraData({ asset, useTxnOriginStaticCall, }: {
-        asset: OpenSeaAsset;
-        useTxnOriginStaticCall: boolean;
-    }): Promise<{
-        staticTarget: string;
-        staticExtradata: string;
-    }>;
-    _makeBundleBuyOrder({ assets, collection, quantities, accountAddress, startAmount, expirationTime, paymentTokenAddress, extraBountyBasisPoints, sellOrder, referrerAddress, }: {
-        assets: Asset[];
-        collection?: {
-            slug: string;
-        };
-        quantities: number[];
-        accountAddress: string;
-        startAmount: number;
-        expirationTime?: number;
-        paymentTokenAddress: string;
-        extraBountyBasisPoints: number;
-        sellOrder?: UnhashedOrder;
-        referrerAddress?: string;
-    }): Promise<UnhashedOrder>;
-    _makeBundleSellOrder({ bundleName, bundleDescription, bundleExternalLink, assets, collection, quantities, accountAddress, startAmount, endAmount, listingTime, expirationTime, waitForHighestBid, englishAuctionReservePrice, paymentTokenAddress, extraBountyBasisPoints, buyerAddress, }: {
-        bundleName: string;
-        bundleDescription?: string;
-        bundleExternalLink?: string;
-        assets: Asset[];
-        collection?: {
-            slug: string;
-        };
-        quantities: number[];
-        accountAddress: string;
-        startAmount: number;
-        endAmount?: number;
-        listingTime?: number;
-        expirationTime?: number;
-        waitForHighestBid: boolean;
-        englishAuctionReservePrice?: number;
-        paymentTokenAddress: string;
-        extraBountyBasisPoints: number;
-        buyerAddress: string;
-    }): Promise<UnhashedOrder>;
     _makeMatchingOrder({ order, accountAddress, recipientAddress, }: {
         order: UnsignedOrder;
         accountAddress: string;
@@ -839,15 +611,6 @@ export declare class OpenSeaSDK {
         schemaName: WyvernSchemaName;
     }): Promise<boolean>;
     _getBuyFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, sellOrder?: UnhashedOrder): {
-        makerRelayerFee: BigNumber;
-        takerRelayerFee: BigNumber;
-        makerProtocolFee: BigNumber;
-        takerProtocolFee: BigNumber;
-        makerReferrerFee: BigNumber;
-        feeRecipient: string;
-        feeMethod: FeeMethod;
-    };
-    _getSellFeeParameters(totalBuyerFeeBasisPoints: number, totalSellerFeeBasisPoints: number, waitForHighestBid: boolean, sellerBountyBasisPoints?: number): {
         makerRelayerFee: BigNumber;
         takerRelayerFee: BigNumber;
         makerProtocolFee: BigNumber;

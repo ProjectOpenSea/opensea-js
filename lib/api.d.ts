@@ -1,11 +1,7 @@
 import "isomorphic-unfetch";
 import { OrderAPIOptions, OrdersQueryOptions, OrderV2, ProtocolData, QueryCursors } from "./orders/types";
-import { OpenSeaAPIConfig, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaAssetBundleQuery, OpenSeaAssetQuery, OpenSeaFungibleToken, OpenSeaFungibleTokenQuery, Order, OrderJSON, OrderQuery } from "./types";
+import { OpenSeaAPIConfig, OpenSeaAsset, OpenSeaAssetBundle, OpenSeaAssetBundleQuery, OpenSeaAssetQuery, OpenSeaFungibleToken, OpenSeaFungibleTokenQuery } from "./types";
 export declare class OpenSeaAPI {
-    /**
-     * Host url for OpenSea
-     */
-    readonly hostUrl: string;
     /**
      * Base url for the API
      */
@@ -30,12 +26,12 @@ export declare class OpenSeaAPI {
     /**
      * Gets an order from API based on query options. Throws when no order is found.
      */
-    getOrder({ protocol, side, orderDirection, orderBy, ...restOptions }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2>;
+    getOrder({ side, protocol, orderDirection, orderBy, ...restOptions }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2>;
     /**
      * Gets a list of orders from API based on query options and returns orders
      * with next and previous cursors.
      */
-    getOrders({ protocol, side, orderDirection, orderBy, ...restOptions }: Omit<OrdersQueryOptions, "limit">): Promise<QueryCursors & {
+    getOrders({ side, protocol, orderDirection, orderBy, ...restOptions }: Omit<OrdersQueryOptions, "limit">): Promise<QueryCursors & {
         orders: OrderV2[];
     }>;
     /**
@@ -44,14 +40,6 @@ export declare class OpenSeaAPI {
     postOrder(order: ProtocolData, apiOptions: OrderAPIOptions, { retries }?: {
         retries?: number;
     }): Promise<OrderV2>;
-    /**
-     * Send an order to the orderbook.
-     * Throws when the order is invalid.
-     * IN NEXT VERSION: change order input to Order type
-     * @param order Order JSON to post to the orderbook
-     * @param retries Number of times to retry if the service is unavailable for any reason
-     */
-    postOrderLegacyWyvern(order: OrderJSON, retries?: number): Promise<Order>;
     /**
      * Create a whitelist entry for an asset to prevent others from buying.
      * Buyers will have to have verified at least one of the emails
@@ -67,24 +55,6 @@ export declare class OpenSeaAPI {
      * Simply return null in case API doesn't give us a good response
      */
     getOrderCreateWyvernExchangeAddress(): Promise<string | null>;
-    /**
-     * Get an order from the orderbook using the legacy wyvern API, throwing if none is found.
-     * @param query Query to use for getting orders. A subset of parameters
-     *  on the `OrderJSON` type is supported
-     */
-    getOrderLegacyWyvern(query: OrderQuery): Promise<Order>;
-    /**
-     * Get a list of orders from the orderbook, returning the page of orders
-     *  and the count of total orders found.
-     * @param query Query to use for getting orders. A subset of parameters
-     *  on the `OrderJSON` type is supported
-     * @param page Page number, defaults to 1. Can be overridden by
-     * `limit` and `offset` attributes from OrderQuery
-     */
-    getOrdersLegacyWyvern(query?: OrderQuery, page?: number): Promise<{
-        orders: Order[];
-        count: number;
-    }>;
     /**
      * Fetch an asset from the API, throwing if none is found
      * @param tokenAddress Address of the asset's contract

@@ -3,12 +3,9 @@ import _ from "lodash";
 import * as QueryString from "query-string";
 import {
   API_BASE_MAINNET,
-  API_BASE_RINKEBY,
+  API_BASE_TESTNET,
   API_PATH,
   ORDERBOOK_PATH,
-  ORDERBOOK_VERSION,
-  SITE_HOST_MAINNET,
-  SITE_HOST_RINKEBY,
 } from "./constants";
 import {
   OrderAPIOptions,
@@ -33,25 +30,15 @@ import {
   OpenSeaAssetQuery,
   OpenSeaFungibleToken,
   OpenSeaFungibleTokenQuery,
-  Order,
-  OrderbookResponse,
-  OrderJSON,
-  OrderQuery,
-  OrderSide,
 } from "./types";
 import {
   assetBundleFromJSON,
   assetFromJSON,
   delay,
-  orderFromJSON,
   tokenFromJSON,
 } from "./utils/utils";
 
 export class OpenSeaAPI {
-  /**
-   * Host url for OpenSea
-   */
-  public readonly hostUrl: string;
   /**
    * Base url for the API
    */
@@ -79,14 +66,12 @@ export class OpenSeaAPI {
     this.networkName = config.networkName ?? Network.Main;
 
     switch (config.networkName) {
-      case Network.Rinkeby:
-        this.apiBaseUrl = config.apiBaseUrl || API_BASE_RINKEBY;
-        this.hostUrl = SITE_HOST_RINKEBY;
+      case Network.Goerli:
+        this.apiBaseUrl = config.apiBaseUrl || API_BASE_TESTNET;
         break;
       case Network.Main:
       default:
         this.apiBaseUrl = config.apiBaseUrl || API_BASE_MAINNET;
-        this.hostUrl = SITE_HOST_MAINNET;
         break;
     }
 
@@ -98,8 +83,8 @@ export class OpenSeaAPI {
    * Gets an order from API based on query options. Throws when no order is found.
    */
   public async getOrder({
-    protocol,
     side,
+    protocol = "seaport",
     orderDirection = "desc",
     orderBy = "created_date",
     ...restOptions
@@ -124,8 +109,8 @@ export class OpenSeaAPI {
    * with next and previous cursors.
    */
   public async getOrders({
-    protocol,
     side,
+    protocol = "seaport",
     orderDirection = "desc",
     orderBy = "created_date",
     ...restOptions
@@ -159,7 +144,7 @@ export class OpenSeaAPI {
   ): Promise<OrderV2> {
     let response: OrdersPostQueryResponse;
     // TODO: Validate apiOptions. Avoid API calls that will definitely fail
-    const { protocol, side } = apiOptions;
+    const { protocol = "seaport", side } = apiOptions;
     try {
       response = await this.post<OrdersPostQueryResponse>(
         getOrdersAPIPath(this.networkName, protocol, side),
@@ -171,31 +156,6 @@ export class OpenSeaAPI {
       return this.postOrder(order, apiOptions, { retries: retries - 1 });
     }
     return deserializeOrder(response.order);
-  }
-
-  /**
-   * Send an order to the orderbook.
-   * Throws when the order is invalid.
-   * IN NEXT VERSION: change order input to Order type
-   * @param order Order JSON to post to the orderbook
-   * @param retries Number of times to retry if the service is unavailable for any reason
-   */
-  public async postOrderLegacyWyvern(
-    order: OrderJSON,
-    retries = 2
-  ): Promise<Order> {
-    let json;
-    try {
-      json = (await this.post(
-        `${ORDERBOOK_PATH}/orders/post/`,
-        order
-      )) as OrderJSON;
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(3000);
-      return this.postOrderLegacyWyvern(order, retries - 1);
-    }
-    return orderFromJSON(json);
   }
 
   /**
@@ -235,66 +195,6 @@ export class OpenSeaAPI {
         "Couldn't retrieve Wyvern exchange address for order creation"
       );
       return null;
-    }
-  }
-
-  /**
-   * Get an order from the orderbook using the legacy wyvern API, throwing if none is found.
-   * @param query Query to use for getting orders. A subset of parameters
-   *  on the `OrderJSON` type is supported
-   */
-  public async getOrderLegacyWyvern(query: OrderQuery): Promise<Order> {
-    const result = await this.get(`${ORDERBOOK_PATH}/orders/`, {
-      limit: 1,
-      side: OrderSide.Sell,
-      ...query,
-    });
-
-    let orderJSON;
-    if (ORDERBOOK_VERSION == 0) {
-      const json = result as OrderJSON[];
-      orderJSON = json[0];
-    } else {
-      const json = result as OrderbookResponse;
-      orderJSON = json.orders[0];
-    }
-    if (!orderJSON) {
-      throw new Error(`Not found: no matching order found`);
-    }
-    return orderFromJSON(orderJSON);
-  }
-
-  /**
-   * Get a list of orders from the orderbook, returning the page of orders
-   *  and the count of total orders found.
-   * @param query Query to use for getting orders. A subset of parameters
-   *  on the `OrderJSON` type is supported
-   * @param page Page number, defaults to 1. Can be overridden by
-   * `limit` and `offset` attributes from OrderQuery
-   */
-  public async getOrdersLegacyWyvern(
-    query: OrderQuery = {},
-    page = 1
-  ): Promise<{ orders: Order[]; count: number }> {
-    const result = await this.get(`${ORDERBOOK_PATH}/orders/`, {
-      limit: this.pageSize,
-      offset: (page - 1) * this.pageSize,
-      side: OrderSide.Sell,
-      ...query,
-    });
-
-    if (ORDERBOOK_VERSION == 0) {
-      const json = result as OrderJSON[];
-      return {
-        orders: json.map((j) => orderFromJSON(j)),
-        count: json.length,
-      };
-    } else {
-      const json = result as OrderbookResponse;
-      return {
-        orders: json.orders.map((j) => orderFromJSON(j)),
-        count: json.count,
-      };
     }
   }
 
@@ -543,12 +443,12 @@ export class OpenSeaAPI {
         )}'`;
         break;
       case 500:
-        errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(
+        errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/opensea - full message was ${JSON.stringify(
           result
         )}`;
         break;
       case 503:
-        errorMessage = `Service unavailable. Please try again in a few minutes. If the problem persists please contact us via Discord: https://discord.gg/ga8EJbv - full message was ${JSON.stringify(
+        errorMessage = `Service unavailable. Please try again in a few minutes. If the problem persists please contact us via Discord: https://discord.gg/opensea - full message was ${JSON.stringify(
           result
         )}`;
         break;

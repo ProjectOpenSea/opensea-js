@@ -13,7 +13,7 @@ export declare const serializeOrdersQueryOptions: (options: Omit<OrdersQueryOpti
     include_bundled: boolean | undefined;
     listed_after: string | number | undefined;
     listed_before: string | number | undefined;
-    token_ids: string[] | undefined;
+    token_ids: (string | undefined)[];
     asset_contract_address: string | undefined;
     order_by: ("created_date" | "eth_price") | undefined;
     order_direction: ("asc" | "desc") | undefined;
