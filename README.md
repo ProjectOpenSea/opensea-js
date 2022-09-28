@@ -292,7 +292,7 @@ Note that auctions aren't supported with Ether directly due to limitations in Et
 
 ### Fetching Orders
 
-To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v2.0/reference):
+To retrieve a list of offers and auctions on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v2.0/reference):
 
 ```JavaScript
 // Get offers (bids), a.k.a. orders where `side == 0`
@@ -344,7 +344,7 @@ The available API filters for the orders endpoint is documented in the `OrdersQu
 
 ### Buying Items
 
-To buy an item , you need to **fulfill a sell order**. To do that, it's just one call:
+To buy an item, you need to **fulfill a sell order**. To do that, it's just one call:
 
 ```JavaScript
 const order = await openseaSDK.api.getOrder({ side: "ask", ... })
@@ -401,7 +401,7 @@ const transactionHash = await openseaSDK.transfer({
 
 To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` in base units (e.g. wei) to indicate how many.
 
-Example for transfering 2 DAI ($2) to another address:
+Example for transferring 2 DAI ($2) to another address:
 
 ```JavaScript
 const paymentToken = (await openseaSDK.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0]
