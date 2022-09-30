@@ -2806,7 +2806,7 @@ export class OpenSeaSDK {
    * @param order Order to approve
    * @returns Transaction hash of the approval transaction
    */
-  public async approveOrder(order: OrderV2, domain: string = "") {
+  public async approveOrder(order: OrderV2, domain = "") {
     this._dispatch(EventType.ApproveOrder, {
       orderV2: order,
       accountAddress: order.maker.address,
