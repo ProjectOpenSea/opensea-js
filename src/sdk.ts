@@ -999,7 +999,7 @@ export class OpenSeaSDK {
    * @param options.order The order to fulfill, a.k.a. "take"
    * @param options.accountAddress The taker's wallet address
    * @param options.recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress
-   * @param options.domain
+   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata
    * @returns Transaction hash for fulfilling the order
    */
   public async fulfillOrder({
@@ -1119,6 +1119,7 @@ export class OpenSeaSDK {
    * @param param0 __namedParameters Object
    * @param order The order to cancel
    * @param accountAddress The order maker's wallet address
+   * @param domain An optional domain to be hashed and included at the end of fulfillment calldata
    */
   public async cancelOrder({
     order,
@@ -2804,6 +2805,7 @@ export class OpenSeaSDK {
    * Instead of signing an off-chain order, you can approve an order
    * with on on-chain transaction using this method
    * @param order Order to approve
+   * @param domain An optional domain to be hashed and included at the end of fulfillment calldata
    * @returns Transaction hash of the approval transaction
    */
   public async approveOrder(order: OrderV2, domain = "") {
