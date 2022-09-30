@@ -947,7 +947,7 @@ export class OpenSeaSDK {
   private async fulfillPrivateOrder({
     order,
     accountAddress,
-    domain = "",
+    domain,
   }: {
     order: OrderV2;
     accountAddress: string;
