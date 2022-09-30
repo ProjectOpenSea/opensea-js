@@ -974,7 +974,7 @@ export class OpenSeaSDK {
               value: counterOrder.parameters.offer[0].startAmount,
             },
             accountAddress,
-            domain
+            domain,
           })
           .transact();
         const transactionReceipt = await transaction.wait();
@@ -1033,7 +1033,7 @@ export class OpenSeaSDK {
           order: order.protocolData,
           accountAddress,
           recipientAddress,
-          domain
+          domain,
         });
         const transaction = await executeAllActions();
         transactionHash = transaction.hash;
@@ -1138,7 +1138,7 @@ export class OpenSeaSDK {
         transactionHash = await this.cancelSeaportOrders({
           orders: [order.protocolData.parameters],
           accountAddress,
-          domain
+          domain,
         });
         break;
       }
