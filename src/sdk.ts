@@ -1023,6 +1023,7 @@ export class OpenSeaSDK {
       return this.fulfillPrivateOrder({
         order,
         accountAddress,
+        domain,
       });
     }
 
