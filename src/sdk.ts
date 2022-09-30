@@ -777,8 +777,8 @@ export class OpenSeaSDK {
     accountAddress,
     startAmount,
     quantity = 1,
-    domain = "",
-    salt = "",
+    domain,
+    salt,
     expirationTime,
     paymentTokenAddress,
   }: {
@@ -864,8 +864,8 @@ export class OpenSeaSDK {
     startAmount,
     endAmount,
     quantity = 1,
-    domain = "",
-    salt = "",
+    domain,
+    salt,
     listingTime,
     expirationTime,
     paymentTokenAddress = NULL_ADDRESS,
@@ -1006,7 +1006,7 @@ export class OpenSeaSDK {
     order,
     accountAddress,
     recipientAddress,
-    domain = "",
+    domain,
   }: {
     order: OrderV2;
     accountAddress: string;
@@ -1103,7 +1103,7 @@ export class OpenSeaSDK {
   private async cancelSeaportOrders({
     orders,
     accountAddress,
-    domain = "",
+    domain,
   }: {
     orders: OrderComponents[];
     accountAddress: string;
@@ -1125,7 +1125,7 @@ export class OpenSeaSDK {
   public async cancelOrder({
     order,
     accountAddress,
-    domain = "",
+    domain,
   }: {
     order: OrderV2;
     accountAddress: string;
@@ -2809,7 +2809,7 @@ export class OpenSeaSDK {
    * @param domain An optional domain to be hashed and included at the end of fulfillment calldata
    * @returns Transaction hash of the approval transaction
    */
-  public async approveOrder(order: OrderV2, domain = "") {
+  public async approveOrder(order: OrderV2, domain?: string) {
     this._dispatch(EventType.ApproveOrder, {
       orderV2: order,
       accountAddress: order.maker.address,
