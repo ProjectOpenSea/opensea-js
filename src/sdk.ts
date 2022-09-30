@@ -947,9 +947,11 @@ export class OpenSeaSDK {
   private async fulfillPrivateOrder({
     order,
     accountAddress,
+    domain = "",
   }: {
     order: OrderV2;
     accountAddress: string;
+    domain?: string;
   }): Promise<string> {
     let transactionHash: string;
     switch (order.protocolAddress) {
@@ -972,6 +974,7 @@ export class OpenSeaSDK {
               value: counterOrder.parameters.offer[0].startAmount,
             },
             accountAddress,
+            domain
           })
           .transact();
         const transactionReceipt = await transaction.wait();
@@ -996,16 +999,19 @@ export class OpenSeaSDK {
    * @param options.order The order to fulfill, a.k.a. "take"
    * @param options.accountAddress The taker's wallet address
    * @param options.recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress
+   * @param options.domain
    * @returns Transaction hash for fulfilling the order
    */
   public async fulfillOrder({
     order,
     accountAddress,
     recipientAddress,
+    domain = "",
   }: {
     order: OrderV2;
     accountAddress: string;
     recipientAddress?: string;
+    domain?: string;
   }): Promise<string> {
     const isPrivateListing = !!order.taker;
     if (isPrivateListing) {
@@ -1027,6 +1033,7 @@ export class OpenSeaSDK {
           order: order.protocolData,
           accountAddress,
           recipientAddress,
+          domain
         });
         const transaction = await executeAllActions();
         transactionHash = transaction.hash;
@@ -1095,12 +1102,14 @@ export class OpenSeaSDK {
   private async cancelSeaportOrders({
     orders,
     accountAddress,
+    domain = "",
   }: {
     orders: OrderComponents[];
     accountAddress: string;
+    domain?: string;
   }): Promise<string> {
     const transaction = await this.seaport
-      .cancelOrders(orders, accountAddress)
+      .cancelOrders(orders, accountAddress, domain)
       .transact();
     return transaction.hash;
   }
@@ -1114,9 +1123,11 @@ export class OpenSeaSDK {
   public async cancelOrder({
     order,
     accountAddress,
+    domain = "",
   }: {
     order: OrderV2;
     accountAddress: string;
+    domain?: string;
   }) {
     this._dispatch(EventType.CancelOrder, { orderV2: order, accountAddress });
 
@@ -1127,6 +1138,7 @@ export class OpenSeaSDK {
         transactionHash = await this.cancelSeaportOrders({
           orders: [order.protocolData.parameters],
           accountAddress,
+          domain
         });
         break;
       }
@@ -2794,7 +2806,7 @@ export class OpenSeaSDK {
    * @param order Order to approve
    * @returns Transaction hash of the approval transaction
    */
-  public async approveOrder(order: OrderV2) {
+  public async approveOrder(order: OrderV2, domain: string = "") {
     this._dispatch(EventType.ApproveOrder, {
       orderV2: order,
       accountAddress: order.maker.address,
@@ -2804,7 +2816,7 @@ export class OpenSeaSDK {
     switch (order.protocolAddress) {
       case CROSS_CHAIN_SEAPORT_ADDRESS: {
         const transaction = await this.seaport
-          .validate([order.protocolData], order.maker.address)
+          .validate([order.protocolData], order.maker.address, domain)
           .transact();
         transactionHash = transaction.hash;
         break;
