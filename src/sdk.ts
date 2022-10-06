@@ -6,6 +6,7 @@ import {
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "bignumber.js";
+import { BigNumber as EthersBigNumber } from "ethers";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
 import { providers } from "ethers";
@@ -1594,6 +1595,47 @@ export class OpenSeaSDK {
       }
     );
     return txHash;
+  }
+
+  /**
+   * Register a domain on the Domain Registry contract.
+   * @param domain The string domain to be hashed and registered on the Registry.
+   * @returns Transaction hash
+   */
+  public async setDomain(domain: string): Promise<string> {
+    const transaction = await this.seaport.setDomain(domain).transact();
+
+    await transaction.wait();
+
+    return transaction.hash;
+  }
+
+  /**
+   * Get the domain for a specific tag at a given index.
+   * @param tag The tag to look up.
+   * @param index The index of the domain to return.
+   * @returns Domain
+   */
+  public async getDomain(tag: string, index: number): Promise<string> {
+    return this.seaport.getDomain(tag, index);
+  }
+
+  /**
+   * Get the full array of domains for a specific tag.
+   * @param tag The tag to look up.
+   * @returns Array of domains
+   */
+  public async getDomains(tag: string): Promise<string[]> {
+    return this.seaport.getDomains(tag);
+  }
+
+  /**
+   * Get the number of registered domains for a specific tag.
+   * @param tag The tag to look up.
+   * @returns Number of registered domains for input tag.
+   */
+  public async getNumberOfDomains(tag: string): Promise<EthersBigNumber> {
+    return this.seaport.getNumberOfDomains(tag);
   }
 
   /**
