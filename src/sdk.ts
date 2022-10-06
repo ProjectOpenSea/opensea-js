@@ -8,7 +8,7 @@ import {
 import { BigNumber } from "bignumber.js";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
-import { BigNumber as EthersBigNumber, providers } from "ethers";
+import { providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import Web3 from "web3";
@@ -1633,8 +1633,8 @@ export class OpenSeaSDK {
    * @param tag The tag to look up.
    * @returns Number of registered domains for input tag.
    */
-  public async getNumberOfDomains(tag: string): Promise<EthersBigNumber> {
-    return this.seaport.getNumberOfDomains(tag);
+  public async getNumberOfDomains(tag: string): Promise<BigNumber> {
+    return new BigNumber(this.seaport.getNumberOfDomains(tag).toString());
   }
 
   /**
