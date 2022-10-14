@@ -266,29 +266,9 @@ See [Listening to Events](#listening-to-events) to respond to the setup transact
 
 English Auctions are auctions that start at a small amount (we recommend even doing 0!) and increase with every bid. At expiration time, the item sells to the highest bidder.
 
-To create an English Auction, create a listing that waits for the highest bid by setting `waitForHighestBid` to `true`:
-
-```JavaScript
-
-// Create an auction to receive Wrapped Ether (WETH). See note below.
-const paymentTokenAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-
-const startAmount = 0 // The minimum amount to sell for, in normal units (e.g. ETH)
-
-const auction = await openseaSDK.createSellOrder({
-  asset: {
-    tokenId,
-    tokenAddress,
-  },
-  accountAddress,
-  startAmount,
-  expirationTime,
-  paymentTokenAddress,
-  waitForHighestBid: true
-})
-```
-
 Note that auctions aren't supported with Ether directly due to limitations in Ethereum, so you have to use an ERC20 token, like Wrapped Ether (WETH), a stablecoin like DAI, etc. See [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether) for more info.
+
+English Auction creation is currently not supported yet. Stay tuned for more updates!
 
 ### Fetching Orders
 

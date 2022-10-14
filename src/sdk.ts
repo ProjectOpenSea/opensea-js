@@ -93,7 +93,6 @@ import {
   OrderSide,
   PartialReadonlyContractAbi,
   RawWyvernOrderJSON,
-  SaleKind,
   TokenStandardVersion,
   UnhashedOrder,
   UnsignedOrder,
@@ -104,19 +103,14 @@ import {
   WyvernSchemaName,
 } from "./types";
 import {
-  encodeAtomicizedBuy,
-  encodeAtomicizedSell,
   encodeAtomicizedTransfer,
-  encodeBuy,
   encodeCall,
   encodeProxyCall,
-  encodeSell,
   encodeTransferCall,
 } from "./utils/schema";
 import {
   annotateERC20TransferABI,
   annotateERC721TransferABI,
-  assignOrdersToSides,
   confirmTransaction,
   delay,
   estimateCurrentPrice,
@@ -126,7 +120,6 @@ import {
   getTransferFeeSettings,
   getWyvernAsset,
   makeBigNumber,
-  merkleValidatorByNetwork,
   onDeprecated,
   rawCall,
   sendRawTransaction,
@@ -1052,54 +1045,6 @@ export class OpenSeaSDK {
     return transactionHash;
   }
 
-  /**
-   * Fullfill or "take" an order for an asset, either a buy or sell order
-   * @param param0 __namedParamaters Object
-   * @param order The order to fulfill, a.k.a. "take"
-   * @param accountAddress The taker's wallet address
-   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
-   * @param referrerAddress The optional address that referred the order
-   * @returns Transaction hash for fulfilling the order
-   */
-  public async fulfillOrderLegacyWyvern({
-    order,
-    accountAddress,
-    recipientAddress,
-    referrerAddress,
-  }: {
-    order: Order;
-    accountAddress: string;
-    recipientAddress?: string;
-    referrerAddress?: string;
-  }): Promise<string> {
-    const matchingOrder = this._makeMatchingOrder({
-      order,
-      accountAddress,
-      recipientAddress: recipientAddress || accountAddress,
-    });
-
-    const { buy, sell } = assignOrdersToSides(order, matchingOrder);
-
-    const metadata = this._getMetadata(order, referrerAddress);
-    const transactionHash = await this._atomicMatch({
-      buy,
-      sell,
-      accountAddress,
-      metadata,
-    });
-
-    await this._confirmTransaction(
-      transactionHash,
-      EventType.MatchOrders,
-      "Fulfilling order",
-      async () => {
-        const isOpen = await this._validateOrder(order);
-        return !isOpen;
-      }
-    );
-    return transactionHash;
-  }
-
   private async cancelSeaportOrders({
     orders,
     accountAddress,
@@ -1723,53 +1668,6 @@ export class OpenSeaSDK {
       default:
         throw new Error("Unsupported protocol");
     }
-  }
-
-  /**
-   * Returns whether an order is fulfillable.
-   * An order may not be fulfillable if a target item's transfer function
-   * is locked for some reason, e.g. an item is being rented within a game
-   * or trading has been locked for an item type.
-   * @param param0 __namedParameters Object
-   * @param order Order to check
-   * @param accountAddress The account address that will be fulfilling the order
-   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
-   * @param referrerAddress The optional address that referred the order
-   */
-  public async isOrderFulfillableLegacyWyvern({
-    order,
-    accountAddress,
-    recipientAddress,
-    referrerAddress,
-  }: {
-    order: Order;
-    accountAddress: string;
-    recipientAddress?: string;
-    referrerAddress?: string;
-  }): Promise<boolean> {
-    const matchingOrder = this._makeMatchingOrder({
-      order,
-      accountAddress,
-      recipientAddress: recipientAddress || accountAddress,
-    });
-
-    const { buy, sell } = assignOrdersToSides(order, matchingOrder);
-
-    const metadata = this._getMetadata(order, referrerAddress);
-    const gas = await this._estimateGasForMatch({
-      buy,
-      sell,
-      accountAddress,
-      metadata,
-    });
-
-    this.logger(
-      `Gas estimate for ${
-        order.side == OrderSide.Sell ? "sell" : "buy"
-      } order: ${gas}`
-    );
-
-    return gas != null && gas > 0;
   }
 
   /**
@@ -2543,123 +2441,6 @@ export class OpenSeaSDK {
       ]),
     });
     return makeBigNumber(approved);
-  }
-
-  public _makeMatchingOrder({
-    order,
-    accountAddress,
-    recipientAddress,
-  }: {
-    order: UnsignedOrder;
-    accountAddress: string;
-    recipientAddress: string;
-  }): UnsignedOrder {
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
-    recipientAddress = validateAndFormatWalletAddress(
-      this.web3,
-      recipientAddress
-    );
-
-    const computeOrderParams = () => {
-      const shouldValidate =
-        order.target === merkleValidatorByNetwork[this._networkName];
-
-      if ("asset" in order.metadata) {
-        const schema = this._getSchema(order.metadata.schema);
-        return order.side == OrderSide.Buy
-          ? encodeSell(
-              schema,
-              order.metadata.asset,
-              recipientAddress,
-              shouldValidate ? order.target : undefined
-            )
-          : encodeBuy(
-              schema,
-              order.metadata.asset,
-              recipientAddress,
-              shouldValidate ? order.target : undefined
-            );
-      } else if ("bundle" in order.metadata) {
-        // We're matching a bundle order
-        const bundle = order.metadata.bundle;
-        const orderedSchemas = bundle.schemas
-          ? bundle.schemas.map((schemaName) => this._getSchema(schemaName))
-          : // Backwards compat:
-            bundle.assets.map(() =>
-              this._getSchema(
-                "schema" in order.metadata ? order.metadata.schema : undefined
-              )
-            );
-        const atomicized =
-          order.side == OrderSide.Buy
-            ? encodeAtomicizedSell(
-                orderedSchemas,
-                order.metadata.bundle.assets,
-                recipientAddress,
-                this._wyvernProtocol,
-                this._networkName
-              )
-            : encodeAtomicizedBuy(
-                orderedSchemas,
-                order.metadata.bundle.assets,
-                recipientAddress,
-                this._wyvernProtocol,
-                this._networkName
-              );
-        return {
-          target: WyvernProtocol.getAtomicizerContractAddress(
-            this._networkName
-          ),
-          calldata: atomicized.calldata,
-          replacementPattern: atomicized.replacementPattern,
-        };
-      } else {
-        throw new Error("Invalid order metadata");
-      }
-    };
-
-    const { target, calldata, replacementPattern } = computeOrderParams();
-    const times = this._getTimeParameters({
-      expirationTimestamp: 0,
-      isMatchingOrder: true,
-    });
-    // Compat for matching buy orders that have fee recipient still on them
-    const feeRecipient =
-      order.feeRecipient == NULL_ADDRESS
-        ? OPENSEA_LEGACY_FEE_RECIPIENT
-        : NULL_ADDRESS;
-
-    const matchingOrder: UnhashedOrder = {
-      exchange: order.exchange,
-      maker: accountAddress,
-      taker: order.maker,
-      quantity: order.quantity,
-      makerRelayerFee: order.makerRelayerFee,
-      takerRelayerFee: order.takerRelayerFee,
-      makerProtocolFee: order.makerProtocolFee,
-      takerProtocolFee: order.takerProtocolFee,
-      makerReferrerFee: order.makerReferrerFee,
-      waitingForBestCounterOrder: false,
-      feeMethod: order.feeMethod,
-      feeRecipient,
-      side: (order.side + 1) % 2,
-      saleKind: SaleKind.FixedPrice,
-      target,
-      howToCall: order.howToCall,
-      calldata,
-      replacementPattern,
-      staticTarget: NULL_ADDRESS,
-      staticExtradata: "0x",
-      paymentToken: order.paymentToken,
-      basePrice: order.basePrice,
-      extra: makeBigNumber(0),
-      listingTime: times.listingTime,
-      expirationTime: times.expirationTime,
-      salt: WyvernProtocol.generatePseudoRandomSalt(),
-      metadata: order.metadata,
-    };
-
-    return matchingOrder;
   }
 
   /**

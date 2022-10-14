@@ -50,7 +50,6 @@ import {
   Transaction,
   TxnCallback,
   UnhashedOrder,
-  UnsignedOrder,
   Web3Callback,
   WyvernAsset,
   WyvernBundle,
@@ -964,40 +963,6 @@ export function getOrderHash(order: UnhashedOrder) {
   };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return WyvernProtocol.getOrderHashHex(orderWithStringTypes as any);
-}
-
-/**
- * Assign an order and a new matching order to their buy/sell sides
- * @param order Original order
- * @param matchingOrder The result of _makeMatchingOrder
- */
-export function assignOrdersToSides(
-  order: Order,
-  matchingOrder: UnsignedOrder
-): { buy: Order; sell: Order } {
-  const isSellOrder = order.side == OrderSide.Sell;
-
-  let buy: Order;
-  let sell: Order;
-  if (!isSellOrder) {
-    buy = order;
-    sell = {
-      ...matchingOrder,
-      v: buy.v,
-      r: buy.r,
-      s: buy.s,
-    };
-  } else {
-    sell = order;
-    buy = {
-      ...matchingOrder,
-      v: sell.v,
-      r: sell.r,
-      s: sell.s,
-    };
-  }
-
-  return { buy, sell };
 }
 
 /**
