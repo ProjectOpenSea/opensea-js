@@ -635,7 +635,7 @@ Note that the tests require access to both Infura and the OpenSea API. The timeo
 Generate html docs, also available for browsing [here](https://projectopensea.github.io/opensea-js/):
 
 ```bash
-yarn docs-build
+npm run docs-build
 ```
 
 **Contributing**
