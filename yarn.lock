@@ -795,10 +795,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     "fastq" "^1.6.0"
 
-"@opensea/seaport-js@^1.0.6":
-  "integrity" "sha512-XHVNjlr3UOJbX64MoxcztUSEbYtl5x33wuby+ysQKGJUyAfsO7ZdLgwyE/lK7nwIWmxJ0zSy3I4+NJWh0DyOEQ=="
-  "resolved" "https://registry.npmjs.org/@opensea/seaport-js/-/seaport-js-1.0.6.tgz"
-  "version" "1.0.6"
+"@opensea/seaport-js@^1.0.8":
+  "integrity" "sha512-xug0bTfHbu/Oz78hg0cXOPk12yW8EhvXzlqXBrrFkQCzk/6xU245+3oTVg/kHt2oToym0OYUTgREdxU998zRxA=="
+  "resolved" "https://registry.npmjs.org/@opensea/seaport-js/-/seaport-js-1.0.8.tgz"
+  "version" "1.0.8"
   dependencies:
     "@0xsequence/multicall" "^0.39.0"
     "ethers" "^5.6.7"
