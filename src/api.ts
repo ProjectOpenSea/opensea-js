@@ -392,6 +392,7 @@ export class OpenSeaAPI {
       headers: {
         ...(apiKey ? { "X-API-KEY": apiKey } : {}),
         ...(opts.headers || {}),
+        ...{ "X-ORIGIN": "opensea-js" },
       },
     };
 
