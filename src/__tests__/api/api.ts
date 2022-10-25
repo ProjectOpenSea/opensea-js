@@ -17,13 +17,14 @@ suite("api", () => {
     assert.equal(testnetApi.apiBaseUrl, "https://testnets-api.opensea.io");
   });
 
-  test("Includes API key in token request", async () => {
+  test("Includes API key and origin in token request", async () => {
     const oldLogger = testnetApi.logger;
 
     const logPromise = new Promise<void>((resolve, reject) => {
       testnetApi.logger = (log) => {
         try {
           assert.include(log, `"X-API-KEY":"${TESTNET_API_KEY}"`);
+          assert.include(log, `"X-ORIGIN":"opensea-js"`);
           resolve();
         } catch (e) {
           reject(e);
