@@ -26,6 +26,7 @@ export {
 
 export {
   // Main SDK export:
+  // hello
   OpenSeaSDK,
   // Legacy SDK export:
   OpenSeaSDK as OpenSeaPort,
