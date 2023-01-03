@@ -50,7 +50,7 @@ jobs:
 
       - name: Run tests
         env:
-          API_KEY: ${{ secrets.API_KEY }}
+          API_KEY: 2b7c894987ce47308dc27b1d30440686
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           npm run test
