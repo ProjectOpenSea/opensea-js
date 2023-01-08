@@ -6,7 +6,7 @@ import { TESTNET_PROVIDER_URL } from "../../constants";
 import { OpenSeaSDK } from "../../index";
 import { Network } from "../../types";
 import { TESTNET_API_KEY } from "../constants";
-import { expectValidOrder } from "../utils";
+import { expectValidOrder, delay } from "../utils";
 
 // Client setup
 const testnetProvider = new Web3.providers.HttpProvider(TESTNET_PROVIDER_URL);
@@ -23,6 +23,7 @@ suite("Getting orders", () => {
         side: "ask",
       });
       expectValidOrder(order);
+      await delay(10000);
     });
   });
 
@@ -36,6 +37,7 @@ suite("Getting orders", () => {
     )
       .to.eventually.be.rejected.and.be.an.instanceOf(Error)
       .and.have.property("message", "Not found: no matching order found");
+    await delay(10000);
   });
 
   ["ask", "bid"].forEach((side) => {
@@ -47,6 +49,7 @@ suite("Getting orders", () => {
       orders.map((order) => expectValidOrder(order));
       expect(next).to.not.be.undefined;
       expect(previous).to.not.be.undefined;
+      await delay(10000);
     });
   });
 });

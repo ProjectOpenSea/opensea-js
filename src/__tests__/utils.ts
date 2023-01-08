@@ -9,3 +9,7 @@ export const expectValidOrder = (order: OrderV2) => {
     `Order type is invalid: ${JSON.stringify(validateOrder.errors)}`
   ).to.be.true;
 };
+
+export function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

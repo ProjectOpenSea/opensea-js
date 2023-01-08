@@ -10,6 +10,7 @@ import {
   TESTNET_API_KEY,
   TESTNET_WALLET_ADDRESS,
 } from "../constants";
+import { delay } from "../utils";
 
 suite("api", () => {
   test("API has correct base url", () => {
@@ -35,6 +36,7 @@ suite("api", () => {
     });
 
     await logPromise;
+    await delay(10000);
   });
 
   test("API fetches fees for an asset", async () => {
@@ -48,6 +50,7 @@ suite("api", () => {
       asset.collection.fees?.openseaFees.get(TESTNET_WALLET_ADDRESS),
       TESTNET_SELLER_FEE
     );
+    await delay(10000);
   });
 
   test("API fetches assets", async () => {
@@ -58,6 +61,7 @@ suite("api", () => {
     assert.isArray(assets);
     const asset = assets[0];
     assert.exists(asset);
+    await delay(10000);
   });
 
   test("API handles errors", async () => {
@@ -74,5 +78,6 @@ suite("api", () => {
     } catch (error) {
       assert.include((error as Error).message, "Not found");
     }
+    await delay(10000);
   });
 });

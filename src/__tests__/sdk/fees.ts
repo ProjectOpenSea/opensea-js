@@ -23,6 +23,7 @@ import {
   SPIRIT_CLASH_OWNER,
   SPIRIT_CLASH_TOKEN_ID,
 } from "../constants";
+import { delay } from "../utils";
 
 const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
 
@@ -43,6 +44,7 @@ suite("SDK: fees", () => {
     const tokenAddress = MYTHEREUM_ADDRESS;
     asset = await client.api.getAsset({ tokenAddress, tokenId });
     assert.isNotNull(asset);
+    await delay(10000);
   });
 
   test("Computes fees correctly for non-zero-fee asset", async () => {
@@ -142,6 +144,7 @@ suite("SDK: fees", () => {
       heterogenousBundleSellerFees.sellerBountyBasisPoints,
       extraBountyBasisPoints
     );
+    await delay(10000);
   });
 
   test.skip("Computes fees correctly for zero-fee asset", async () => {
@@ -202,11 +205,13 @@ suite("SDK: fees", () => {
       tokenAddress: ENJIN_ADDRESS,
       tokenId: CATS_IN_MECHS_ID,
     });
+    await delay(10000);
 
     const zeroTransferFeeAsset = await client.api.getAsset({
       tokenAddress: CK_ADDRESS,
       tokenId: CK_TOKEN_ID,
     });
+    await delay(10000);
 
     const sellerFees = await client.computeFees({
       asset,
