@@ -21,6 +21,7 @@ suite("api", () => {
   test("Includes API key in token request", async () => {
     const oldLogger = testnetApi.logger;
 
+    await delay(10000);
     const logPromise = new Promise<void>((resolve, reject) => {
       testnetApi.logger = (log) => {
         try {
@@ -40,6 +41,7 @@ suite("api", () => {
   });
 
   test("API fetches fees for an asset", async () => {
+    await delay(10000);
     const asset = await apiToTest.getAsset({
       tokenAddress: TESTNET_ASSET_ADDRESS,
       tokenId: TESTNET_TOKEN_ID,
@@ -54,6 +56,7 @@ suite("api", () => {
   });
 
   test("API fetches assets", async () => {
+    await delay(10000);
     const { assets } = await apiToTest.getAssets({
       asset_contract_address: TESTNET_ASSET_ADDRESS,
       order_by: "sale_date",
@@ -66,6 +69,7 @@ suite("api", () => {
 
   test("API handles errors", async () => {
     // 401 Unauthorized
+    await delay(10000);
     try {
       await apiToTest.get("/user");
     } catch (error) {
