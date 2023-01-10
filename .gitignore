@@ -71,3 +71,6 @@ docs
 
 # Auto generated typechain contracts
 src/typechain/contracts/
+
+# Yarn
+yarn.lock
