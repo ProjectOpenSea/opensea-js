@@ -42,7 +42,7 @@
     "isomorphic-unfetch": "^2.1.1",
     "lodash": "^4.17.21",
     "query-string": "^6.11.1",
-    "web3": "1.7.0",
+    "web3": "^1.8.1",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#7429b1f2dd123f012cae1f3144a069e91ecd0682",
     "wyvern-schemas": "git+https://github.com/ProjectOpenSea/wyvern-schemas.git#af1fc62dd58144b60487df690c77dcf8daa45669"
   },
@@ -77,7 +77,7 @@
     "prettier-package-json": "2.6.0",
     "ts-node": "10.4.0",
     "typechain": "^7.0.0",
-    "typedoc": "0.22.10",
+    "typedoc": "^0.22.18",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "0.0.8",
     "typescript": "4.5.4"
