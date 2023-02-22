@@ -1,4 +1,5 @@
-import "isomorphic-unfetch";
+import fetchRetry from "fetch-retry";
+import originalFetch from "isomorphic-unfetch";
 import _ from "lodash";
 import * as QueryString from "query-string";
 import {
@@ -402,7 +403,21 @@ export class OpenSeaAPI {
       )}...`
     );
 
-    return fetch(finalUrl, finalOpts).then(async (res) =>
+    const retriedFetch = fetchRetry(originalFetch, {
+      retryOn: (attempt: number, _error: unknown, response: Response) => {
+        return response.status === 429 && attempt < 3;
+      },
+      retryDelay: (attempt: number, _error: unknown, response: Response) => {
+        const retryAfter = response.headers.get("retry-after");
+        if (retryAfter) {
+          return parseInt(retryAfter, 10) * 1000;
+        }
+
+        return attempt * 1000;
+      },
+    });
+
+    return retriedFetch(finalUrl, finalOpts).then(async (res) =>
       this._handleApiResponse(res)
     );
   }
