@@ -693,11 +693,13 @@ export class OpenSeaSDK {
     endAmount?: BigNumber;
   }): Promise<{
     sellerFee: ConsiderationInputItem;
-    openseaSellerFee: ConsiderationInputItem;
+    openseaSellerFees: ConsiderationInputItem[];
     collectionSellerFees: ConsiderationInputItem[];
   }> {
     // Seller fee basis points
-    const openseaSellerFeeBasisPoints = DEFAULT_SELLER_FEE_BASIS_POINTS;
+    const openseaSellerFeeBasisPoints = feesToBasisPoints(
+      asset.collection.fees?.openseaFees
+    );
     const collectionSellerFeeBasisPoints = feesToBasisPoints(
       asset.collection.fees?.sellerFees
     );
@@ -720,11 +722,10 @@ export class OpenSeaSDK {
       };
     };
 
-    const getConsiderationItemsFromSellerFees = (
-      fees: Fees
+    const getConsiderationItemsFromFeeCategory = (
+      feeCategory: Map<string, number>
     ): ConsiderationInputItem[] => {
-      const sellerFees = fees.sellerFees;
-      return Array.from(sellerFees.entries()).map(
+      return Array.from(feeCategory.entries()).map(
         ([recipient, basisPoints]) => {
           return getConsiderationItem(basisPoints, recipient);
         }
@@ -733,13 +734,17 @@ export class OpenSeaSDK {
 
     return {
       sellerFee: getConsiderationItem(sellerBasisPoints),
-      openseaSellerFee: getConsiderationItem(
-        openseaSellerFeeBasisPoints,
-        OPENSEA_FEE_RECIPIENT
-      ),
+      openseaSellerFees:
+        openseaSellerFeeBasisPoints > 0 && asset.collection.fees
+          ? getConsiderationItemsFromFeeCategory(
+              asset.collection.fees.openseaFees
+            )
+          : [],
       collectionSellerFees:
         collectionSellerFeeBasisPoints > 0 && asset.collection.fees
-          ? getConsiderationItemsFromSellerFees(asset.collection.fees)
+          ? getConsiderationItemsFromFeeCategory(
+              asset.collection.fees.sellerFees
+            )
           : [],
     };
   }
@@ -810,13 +815,16 @@ export class OpenSeaSDK {
       makeBigNumber(startAmount)
     );
 
-    const { openseaSellerFee, collectionSellerFees: collectionSellerFees } =
+    const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
       await this.getFees({
         openseaAsset,
         paymentTokenAddress,
         startAmount: basePrice,
       });
-    const considerationFeeItems = [openseaSellerFee, ...collectionSellerFees];
+    const considerationFeeItems = [
+      ...openseaSellerFees,
+      ...collectionSellerFees,
+    ];
 
     const { executeAllActions } = await this.seaport.createOrder(
       {
@@ -903,7 +911,7 @@ export class OpenSeaSDK {
 
     const {
       sellerFee,
-      openseaSellerFee,
+      openseaSellerFees,
       collectionSellerFees: collectionSellerFees,
     } = await this.getFees({
       openseaAsset,
@@ -913,7 +921,7 @@ export class OpenSeaSDK {
     });
     const considerationFeeItems = [
       sellerFee,
-      openseaSellerFee,
+      ...openseaSellerFees,
       ...collectionSellerFees,
     ];
 
