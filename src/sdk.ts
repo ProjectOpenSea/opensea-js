@@ -1,5 +1,8 @@
 import { Seaport } from "@opensea/seaport-js";
-import { CROSS_CHAIN_SEAPORT_ADDRESS } from "@opensea/seaport-js/lib/constants";
+import {
+  CROSS_CHAIN_SEAPORT_ADDRESS,
+  CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
+} from "@opensea/seaport-js/lib/constants";
 import {
   ConsiderationInputItem,
   CreateInputItem,
@@ -146,8 +149,10 @@ export class OpenSeaSDK {
   public web3ReadOnly: Web3;
   // Ethers provider
   public ethersProvider: providers.Web3Provider;
-  // Seaport client
+  // Seaport v1.1 client
   public seaport: Seaport;
+  // Seaport v1.4 client
+  public seaport_v1_4: Seaport;
   // Logger function to use when debugging
   public logger: (arg: string) => void;
   // API instance on this seaport
@@ -208,6 +213,14 @@ export class OpenSeaSDK {
       overrides: {
         defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
       },
+      seaportVersion: "1.1",
+    });
+    this.seaport_v1_4 = new Seaport(this.ethersProvider, {
+      conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
+      overrides: {
+        defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
+      },
+      seaportVersion: "1.4",
     });
 
     let networkForWyvernConfig = this._networkName;
@@ -818,7 +831,7 @@ export class OpenSeaSDK {
       });
     const considerationFeeItems = [openseaSellerFee, ...collectionSellerFees];
 
-    const { executeAllActions } = await this.seaport.createOrder(
+    const { executeAllActions } = await this.seaport_v1_4.createOrder(
       {
         offer: [
           {
@@ -923,7 +936,7 @@ export class OpenSeaSDK {
       );
     }
 
-    const { executeAllActions } = await this.seaport.createOrder(
+    const { executeAllActions } = await this.seaport_v1_4.createOrder(
       {
         offer: offerAssetItems,
         consideration: considerationFeeItems,
@@ -953,44 +966,48 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
   }): Promise<string> {
-    let transactionHash: string;
-    switch (order.protocolAddress) {
-      case CROSS_CHAIN_SEAPORT_ADDRESS: {
-        if (!order.taker?.address) {
-          throw new Error(
-            "Order is not a private listing must have a taker address"
-          );
-        }
-        const counterOrder = constructPrivateListingCounterOrder(
-          order.protocolData,
-          order.taker.address
-        );
-        const fulfillments = getPrivateListingFulfillments(order.protocolData);
-        const transaction = await this.seaport
-          .matchOrders({
-            orders: [order.protocolData, counterOrder],
-            fulfillments,
-            overrides: {
-              value: counterOrder.parameters.offer[0].startAmount,
-            },
-            accountAddress,
-            domain,
-          })
-          .transact();
-        const transactionReceipt = await transaction.wait();
-        transactionHash = transactionReceipt.transactionHash;
-        break;
-      }
-      default:
-        throw new Error("Unsupported protocol");
+    if (
+      !(
+        order.protocolAddress in
+        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
+      )
+    ) {
+      throw new Error("Unsupported protocol");
     }
 
+    if (!order.taker?.address) {
+      throw new Error(
+        "Order is not a private listing must have a taker address"
+      );
+    }
+    const counterOrder = constructPrivateListingCounterOrder(
+      order.protocolData,
+      order.taker.address
+    );
+    const fulfillments = getPrivateListingFulfillments(order.protocolData);
+    const seaport =
+      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
+        ? this.seaport
+        : this.seaport_v1_4;
+    const transaction = await seaport
+      .matchOrders({
+        orders: [order.protocolData, counterOrder],
+        fulfillments,
+        overrides: {
+          value: counterOrder.parameters.offer[0].startAmount,
+        },
+        accountAddress,
+        domain,
+      })
+      .transact();
+    const transactionReceipt = await transaction.wait();
+
     await this._confirmTransaction(
-      transactionHash,
+      transactionReceipt.transactionHash,
       EventType.MatchOrders,
       "Fulfilling order"
     );
-    return transactionHash;
+    return transactionReceipt.transactionHash;
   }
 
   /**
@@ -1013,6 +1030,15 @@ export class OpenSeaSDK {
     recipientAddress?: string;
     domain?: string;
   }): Promise<string> {
+    if (
+      !(
+        order.protocolAddress in
+        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
+      )
+    ) {
+      throw new Error("Unsupported protocol");
+    }
+
     const isPrivateListing = !!order.taker;
     if (isPrivateListing) {
       if (recipientAddress) {
@@ -1027,29 +1053,24 @@ export class OpenSeaSDK {
       });
     }
 
-    let transactionHash: string;
-    switch (order.protocolAddress) {
-      case CROSS_CHAIN_SEAPORT_ADDRESS: {
-        const { executeAllActions } = await this.seaport.fulfillOrder({
-          order: order.protocolData,
-          accountAddress,
-          recipientAddress,
-          domain,
-        });
-        const transaction = await executeAllActions();
-        transactionHash = transaction.hash;
-        break;
-      }
-      default:
-        throw new Error("Unsupported protocol");
-    }
+    const seaport =
+      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
+        ? this.seaport
+        : this.seaport_v1_4;
+    const { executeAllActions } = await seaport.fulfillOrder({
+      order: order.protocolData,
+      accountAddress,
+      recipientAddress,
+      domain,
+    });
+    const transaction = await executeAllActions();
 
     await this._confirmTransaction(
-      transactionHash,
+      transaction.hash,
       EventType.MatchOrders,
       "Fulfilling order"
     );
-    return transactionHash;
+    return transaction.hash;
   }
 
   /**
@@ -1104,14 +1125,25 @@ export class OpenSeaSDK {
     orders,
     accountAddress,
     domain,
+    protocolAddress,
   }: {
     orders: OrderComponents[];
     accountAddress: string;
     domain?: string;
+    protocolAddress?: string;
   }): Promise<string> {
-    const transaction = await this.seaport
+    if (!protocolAddress) {
+      protocolAddress = CROSS_CHAIN_SEAPORT_ADDRESS;
+    }
+
+    const seaport =
+      protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
+        ? this.seaport
+        : this.seaport_v1_4;
+    const transaction = await seaport
       .cancelOrders(orders, accountAddress, domain)
       .transact();
+
     return transaction.hash;
   }
 
@@ -1131,22 +1163,24 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
   }) {
+    if (
+      !(
+        order.protocolAddress in
+        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
+      )
+    ) {
+      throw new Error("Unsupported protocol");
+    }
+
     this._dispatch(EventType.CancelOrder, { orderV2: order, accountAddress });
 
     // Transact and get the transaction hash
-    let transactionHash: string;
-    switch (order.protocolAddress) {
-      case CROSS_CHAIN_SEAPORT_ADDRESS: {
-        transactionHash = await this.cancelSeaportOrders({
-          orders: [order.protocolData.parameters],
-          accountAddress,
-          domain,
-        });
-        break;
-      }
-      default:
-        throw new Error("Unsupported protocol");
-    }
+    const transactionHash = await this.cancelSeaportOrders({
+      orders: [order.protocolData.parameters],
+      accountAddress,
+      domain,
+      protocolAddress: order.protocolAddress,
+    });
 
     // Await transaction confirmation
     await this._confirmTransaction(
@@ -1706,22 +1740,29 @@ export class OpenSeaSDK {
     order: OrderV2;
     accountAddress: string;
   }): Promise<boolean> {
-    switch (order.protocolAddress) {
-      case CROSS_CHAIN_SEAPORT_ADDRESS: {
-        try {
-          const isValid = await this.seaport
-            .validate([order.protocolData], accountAddress)
-            .callStatic();
-          return !!isValid;
-        } catch (error) {
-          if (hasErrorCode(error) && error.code === "CALL_EXCEPTION") {
-            return false;
-          }
-          throw error;
-        }
+    if (
+      !(
+        order.protocolAddress in
+        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
+      )
+    ) {
+      throw new Error("Unsupported protocol");
+    }
+
+    const seaport =
+      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
+        ? this.seaport
+        : this.seaport_v1_4;
+    try {
+      const isValid = await seaport
+        .validate([order.protocolData], accountAddress)
+        .callStatic();
+      return !!isValid;
+    } catch (error) {
+      if (hasErrorCode(error) && error.code === "CALL_EXCEPTION") {
+        return false;
       }
-      default:
-        throw new Error("Unsupported protocol");
+      throw error;
     }
   }
 
@@ -2851,31 +2892,35 @@ export class OpenSeaSDK {
    * @returns Transaction hash of the approval transaction
    */
   public async approveOrder(order: OrderV2, domain?: string) {
+    if (
+      !(
+        order.protocolAddress in
+        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
+      )
+    ) {
+      throw new Error("Unsupported protocol");
+    }
+
     this._dispatch(EventType.ApproveOrder, {
       orderV2: order,
       accountAddress: order.maker.address,
     });
 
-    let transactionHash: string;
-    switch (order.protocolAddress) {
-      case CROSS_CHAIN_SEAPORT_ADDRESS: {
-        const transaction = await this.seaport
-          .validate([order.protocolData], order.maker.address, domain)
-          .transact();
-        transactionHash = transaction.hash;
-        break;
-      }
-      default:
-        throw new Error("Unsupported protocol");
-    }
+    const seaport =
+      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
+        ? this.seaport
+        : this.seaport_v1_4;
+    const transaction = await seaport
+      .validate([order.protocolData], order.maker.address, domain)
+      .transact();
 
     await this._confirmTransaction(
-      transactionHash,
+      transaction.hash,
       EventType.ApproveOrder,
       "Approving order"
     );
 
-    return transactionHash;
+    return transaction.hash;
   }
 
   /**
