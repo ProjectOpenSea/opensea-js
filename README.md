@@ -10,8 +10,6 @@
 [![Coverage Status][coverage-badge]][coverage-link]
 [![styled with prettier][prettier-badge]][prettier-link]
 
-<!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
-
 A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don't have to deploy your own smart contracts or backend orderbooks.
 
 Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](https://www.npmjs.com/package/opensea-js)
@@ -66,15 +64,6 @@ npm install --save opensea-js
 > **Warning**
 > Due to the use of git-url dependencies, versions of `npm` below 8.5.2 are incompatible with this package due to broken integrity checksum validation.
 > Above version 8.5.2, `npm` will no longer validate integrity checksums for git-url dependencies.
-
-> **Warning**
-> To use `yarn` the following resolution is required to be added to your package.json:
->
-> ```
-> "resolutions": {
->    "@0x/utils": "https://github.com/ProjectOpensea/0x-tools/raw/provider-patch/utils/0x-utils-6.5.0.tgz",
->  }
-> ```
 
 Install [web3](https://github.com/ethereum/web3.js) too if you haven't already.
 
@@ -315,7 +304,7 @@ Note that the listing price of an asset is equal to the `currentPrice` of the **
 
 To learn more about signatures, makers, takers, listingTime vs createdTime and other kinds of order terminology, please read the [**Terminology Section**](https://docs.opensea.io/reference#terminology) of the API Docs.
 
-The available API filters for the orders endpoint is documented in the `OrdersQueryOptions` interface below, but see the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanantions.
+The available API filters for the orders endpoint is documented in the `OrdersQueryOptions` interface below, but see the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanations.
 
 ```TypeScript
 /**
@@ -402,7 +391,7 @@ const transactionHash = await openseaSDK.transfer({
 
 To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` in base units (e.g. wei) to indicate how many.
 
-Example for transfering 2 DAI ($2) to another address:
+Example for transferring 2 DAI ($2) to another address:
 
 ```JavaScript
 const paymentToken = (await openseaSDK.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0]
@@ -608,12 +597,6 @@ To remove all listeners and start over, just call `openseaSDK.removeAllListeners
 ## Learning More
 
 Auto-generated documentation for each export is available [here](https://projectopensea.github.io/opensea-js/).
-
-### Example Code
-
-Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
-
-Also check out the [Mythereum marketplace](https://mythereum.io/marketplace), which is entirely powered by OpenSea.js.
 
 ## Migrating to version 1.0
 
