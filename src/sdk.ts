@@ -846,7 +846,7 @@ export class OpenSeaSDK {
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
         domain,
         salt,
-        restrictedByZone: true,
+        restrictedByZone: false,
         allowPartialFills: true,
       },
       accountAddress
@@ -947,7 +947,7 @@ export class OpenSeaSDK {
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
         domain,
         salt,
-        restrictedByZone: true,
+        restrictedByZone: false,
         allowPartialFills: true,
       },
       accountAddress
