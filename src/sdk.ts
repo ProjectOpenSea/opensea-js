@@ -19,10 +19,7 @@ import { OpenSeaAPI } from "./api";
 import {
   CK_ADDRESS,
   CONDUIT_KEYS_TO_CONDUIT,
-  DEFAULT_BUYER_FEE_BASIS_POINTS,
   DEFAULT_GAS_INCREASE_FACTOR,
-  DEFAULT_MAX_BOUNTY,
-  DEFAULT_SELLER_FEE_BASIS_POINTS,
   DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS,
   EIP_712_ORDER_TYPES,
   EIP_712_WYVERN_DOMAIN_NAME,
@@ -34,8 +31,6 @@ import {
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
   CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
-  OPENSEA_FEE_RECIPIENT,
-  OPENSEA_SELLER_BOUNTY_BASIS_POINTS,
   DEFAULT_ZONE_BY_NETWORK,
   ORDER_MATCHING_LATENCY_SECONDS,
   RPC_URL_PATH,
@@ -82,7 +77,6 @@ import {
   ECSignature,
   EventData,
   EventType,
-  Fees,
   FeeMethod,
   HowToCall,
   Network,
@@ -123,7 +117,6 @@ import {
   estimateGas,
   getCurrentGasPrice,
   getNonCompliantApprovalAddress,
-  getTransferFeeSettings,
   getWyvernAsset,
   makeBigNumber,
   merkleValidatorByNetwork,
@@ -693,11 +686,13 @@ export class OpenSeaSDK {
     endAmount?: BigNumber;
   }): Promise<{
     sellerFee: ConsiderationInputItem;
-    openseaSellerFee: ConsiderationInputItem;
+    openseaSellerFees: ConsiderationInputItem[];
     collectionSellerFees: ConsiderationInputItem[];
   }> {
     // Seller fee basis points
-    const openseaSellerFeeBasisPoints = DEFAULT_SELLER_FEE_BASIS_POINTS;
+    const openseaSellerFeeBasisPoints = feesToBasisPoints(
+      asset.collection.fees?.openseaFees
+    );
     const collectionSellerFeeBasisPoints = feesToBasisPoints(
       asset.collection.fees?.sellerFees
     );
@@ -720,11 +715,10 @@ export class OpenSeaSDK {
       };
     };
 
-    const getConsiderationItemsFromSellerFees = (
-      fees: Fees
+    const getConsiderationItemsFromFeeCategory = (
+      feeCategory: Map<string, number>
     ): ConsiderationInputItem[] => {
-      const sellerFees = fees.sellerFees;
-      return Array.from(sellerFees.entries()).map(
+      return Array.from(feeCategory.entries()).map(
         ([recipient, basisPoints]) => {
           return getConsiderationItem(basisPoints, recipient);
         }
@@ -733,13 +727,17 @@ export class OpenSeaSDK {
 
     return {
       sellerFee: getConsiderationItem(sellerBasisPoints),
-      openseaSellerFee: getConsiderationItem(
-        openseaSellerFeeBasisPoints,
-        OPENSEA_FEE_RECIPIENT
-      ),
+      openseaSellerFees:
+        openseaSellerFeeBasisPoints > 0 && asset.collection.fees
+          ? getConsiderationItemsFromFeeCategory(
+              asset.collection.fees.openseaFees
+            )
+          : [],
       collectionSellerFees:
         collectionSellerFeeBasisPoints > 0 && asset.collection.fees
-          ? getConsiderationItemsFromSellerFees(asset.collection.fees)
+          ? getConsiderationItemsFromFeeCategory(
+              asset.collection.fees.sellerFees
+            )
           : [],
     };
   }
@@ -810,13 +808,16 @@ export class OpenSeaSDK {
       makeBigNumber(startAmount)
     );
 
-    const { openseaSellerFee, collectionSellerFees: collectionSellerFees } =
+    const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
       await this.getFees({
         openseaAsset,
         paymentTokenAddress,
         startAmount: basePrice,
       });
-    const considerationFeeItems = [openseaSellerFee, ...collectionSellerFees];
+    const considerationFeeItems = [
+      ...openseaSellerFees,
+      ...collectionSellerFees,
+    ];
 
     const { executeAllActions } = await this.seaport.createOrder(
       {
@@ -903,7 +904,7 @@ export class OpenSeaSDK {
 
     const {
       sellerFee,
-      openseaSellerFee,
+      openseaSellerFees,
       collectionSellerFees: collectionSellerFees,
     } = await this.getFees({
       openseaAsset,
@@ -913,7 +914,7 @@ export class OpenSeaSDK {
     });
     const considerationFeeItems = [
       sellerFee,
-      openseaSellerFee,
+      ...openseaSellerFees,
       ...collectionSellerFees,
     ];
 
@@ -2156,81 +2157,22 @@ export class OpenSeaSDK {
    * @param asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
    * @param side The side of the order (buy or sell)
    * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
-   * @param extraBountyBasisPoints The basis points to add for the bounty. Will throw if it exceeds the assets' contract's OpenSea fee.
    */
   public async computeFees({
     asset,
-    side,
-    accountAddress,
-    extraBountyBasisPoints = 0,
   }: {
     asset?: OpenSeaAsset;
     side: OrderSide;
-    accountAddress?: string;
-    extraBountyBasisPoints?: number;
   }): Promise<ComputedFees> {
-    let openseaBuyerFeeBasisPoints = DEFAULT_BUYER_FEE_BASIS_POINTS;
-    let openseaSellerFeeBasisPoints = DEFAULT_SELLER_FEE_BASIS_POINTS;
-    let devBuyerFeeBasisPoints = 0;
+    const openseaBuyerFeeBasisPoints = 0;
+    let openseaSellerFeeBasisPoints = 0;
+    const devBuyerFeeBasisPoints = 0;
     let devSellerFeeBasisPoints = 0;
-    let transferFee = makeBigNumber(0);
-    let transferFeeTokenAddress = null;
-    let maxTotalBountyBPS = DEFAULT_MAX_BOUNTY;
 
     if (asset) {
       const fees = asset.collection.fees;
-      openseaBuyerFeeBasisPoints = +asset.collection.openseaBuyerFeeBasisPoints;
       openseaSellerFeeBasisPoints = +feesToBasisPoints(fees?.openseaFees);
-      devBuyerFeeBasisPoints = +asset.collection.devBuyerFeeBasisPoints;
       devSellerFeeBasisPoints = +feesToBasisPoints(fees?.sellerFees);
-
-      maxTotalBountyBPS = openseaSellerFeeBasisPoints;
-    }
-
-    // Compute transferFrom fees
-    if (side == OrderSide.Sell && asset) {
-      // Server-side knowledge
-      transferFee = asset.transferFee
-        ? makeBigNumber(asset.transferFee)
-        : transferFee;
-      transferFeeTokenAddress = asset.transferFeePaymentToken
-        ? asset.transferFeePaymentToken.address
-        : transferFeeTokenAddress;
-
-      try {
-        // web3 call to update it
-        const result = await getTransferFeeSettings(this.web3, {
-          asset,
-          accountAddress,
-        });
-        transferFee =
-          result.transferFee != null ? result.transferFee : transferFee;
-        transferFeeTokenAddress =
-          result.transferFeeTokenAddress || transferFeeTokenAddress;
-      } catch (error) {
-        // Use server defaults
-        console.error(error);
-      }
-    }
-
-    // Compute bounty
-    const sellerBountyBasisPoints =
-      side == OrderSide.Sell ? extraBountyBasisPoints : 0;
-
-    // Check that bounty is in range of the opensea fee
-    const bountyTooLarge =
-      sellerBountyBasisPoints + OPENSEA_SELLER_BOUNTY_BASIS_POINTS >
-      maxTotalBountyBPS;
-    if (sellerBountyBasisPoints > 0 && bountyTooLarge) {
-      let errorMessage = `Total bounty exceeds the maximum for this asset type (${
-        maxTotalBountyBPS / 100
-      }%).`;
-      if (maxTotalBountyBPS >= OPENSEA_SELLER_BOUNTY_BASIS_POINTS) {
-        errorMessage += ` Remember that OpenSea will add ${
-          OPENSEA_SELLER_BOUNTY_BASIS_POINTS / 100
-        }% for referrers with OpenSea accounts!`;
-      }
-      throw new Error(errorMessage);
     }
 
     return {
@@ -2242,9 +2184,6 @@ export class OpenSeaSDK {
       openseaSellerFeeBasisPoints,
       devBuyerFeeBasisPoints,
       devSellerFeeBasisPoints,
-      sellerBountyBasisPoints,
-      transferFee,
-      transferFeeTokenAddress,
     };
   }
 
@@ -2376,61 +2315,6 @@ export class OpenSeaSDK {
         retries - 1
       );
     }
-  }
-
-  /**
-   * Estimate the gas needed to transfer assets in bulk
-   * Used for tests
-   * @param param0 __namedParamaters Object
-   * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
-   * @param fromAddress The owner's wallet address
-   * @param toAddress The recipient's wallet address
-   * @param schemaName The Wyvern schema name corresponding to the asset type, if not in each asset
-   */
-  public async _estimateGasForTransfer({
-    assets,
-    fromAddress,
-    toAddress,
-    schemaName = WyvernSchemaName.ERC721,
-  }: {
-    assets: Asset[];
-    fromAddress: string;
-    toAddress: string;
-    schemaName?: WyvernSchemaName;
-  }): Promise<number> {
-    const schemaNames = assets.map(
-      (asset) => this._getSchemaName(asset) || schemaName
-    );
-    const wyAssets = assets.map((asset) =>
-      getWyvernAsset(this._getSchema(this._getSchemaName(asset)), asset)
-    );
-
-    const proxyAddress = await this._getProxy(fromAddress);
-    if (!proxyAddress) {
-      throw new Error("Uninitialized proxy address");
-    }
-
-    await this._approveAll({
-      schemaNames,
-      wyAssets,
-      accountAddress: fromAddress,
-      proxyAddress,
-    });
-
-    const { calldata, target } = encodeAtomicizedTransfer(
-      schemaNames.map((name) => this._getSchema(name)),
-      wyAssets,
-      fromAddress,
-      toAddress,
-      this._wyvernProtocol,
-      this._networkName
-    );
-
-    return estimateGas(this.web3, {
-      from: fromAddress,
-      to: proxyAddress,
-      data: encodeProxyCall(target, HowToCall.DelegateCall, calldata),
-    });
   }
 
   /**
