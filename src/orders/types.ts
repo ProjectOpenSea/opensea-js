@@ -46,6 +46,7 @@ type OrderByDirection = "asc" | "desc";
 
 export type OrderAPIOptions = {
   protocol?: OrderProtocol;
+  protocolAddress?: string;
   side: OrderSide;
 };
 

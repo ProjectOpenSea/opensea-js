@@ -854,7 +854,11 @@ export class OpenSeaSDK {
     );
     const order = await executeAllActions();
 
-    return this.api.postOrder(order, { protocol: "seaport", side: "bid" });
+    return this.api.postOrder(order, {
+      protocol: "seaport",
+      protocolAddress: CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
+      side: "bid",
+    });
   }
 
   /**
@@ -955,7 +959,11 @@ export class OpenSeaSDK {
     );
     const order = await executeAllActions();
 
-    return this.api.postOrder(order, { protocol: "seaport", side: "ask" });
+    return this.api.postOrder(order, {
+      protocol: "seaport",
+      protocolAddress: CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
+      side: "ask",
+    });
   }
 
   private async fulfillPrivateOrder({
