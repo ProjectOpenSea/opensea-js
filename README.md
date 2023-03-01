@@ -4,9 +4,11 @@
 
 # OpenSea.js <!-- omit in toc -->
 
-[![https://badges.frapsoft.com/os/mit/mit.svg?v=102](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://opensource.org/licenses/MIT)
-[![Coverage Status](https://coveralls.io/repos/github/ProjectOpenSea/opensea-js/badge.svg?branch=master)](https://coveralls.io/github/ProjectOpenSea/opensea-js?branch=master)
-[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+[![Version][version-badge]][version-link]
+[![npm][npm-badge]][npm-link]
+[![License][license-badge]][license-link]
+[![Coverage Status][coverage-badge]][coverage-link]
+[![styled with prettier][prettier-badge]][prettier-link]
 
 <!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
 
@@ -23,7 +25,6 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
     - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
     - [Offer Limits](#offer-limits)
   - [Making Listings / Selling Items](#making-listings--selling-items)
-  - [Running Crowdsales](#running-crowdsales)
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
@@ -676,3 +677,14 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 yarn link # in opensea-js repo
 yarn link opensea-js # in repo you're working on
 ```
+
+[version-badge]: https://img.shields.io/github/package-json/v/ProjectOpenSea/opensea-js
+[version-link]: https://github.com/ProjectOpenSea/opensea-js/releases
+[npm-badge]: https://img.shields.io/npm/v/opensea-js?color=red
+[npm-link]: https://www.npmjs.com/package/opensea-js
+[license-badge]: https://img.shields.io/github/license/ProjectOpenSea/opensea-js
+[license-link]: https://github.com/ProjectOpenSea/opensea-js/blob/main/LICENSE
+[coverage-badge]: https://coveralls.io/repos/github/ProjectOpenSea/opensea-js/badge.svg?branch=master
+[coverage-link]: https://coveralls.io/github/ProjectOpenSea/opensea-js?branch=master
+[prettier-badge]: https://img.shields.io/badge/styled_with-prettier-ff69b4.svg
+[prettier-link]: https://github.com/prettier/prettier
