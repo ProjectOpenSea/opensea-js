@@ -35,7 +35,6 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Private Auctions](#private-auctions)
   - [Listening to Events](#listening-to-events)
 - [Learning More](#learning-more)
-  - [Example Code](#example-code)
 - [Migrating to version 1.0](#migrating-to-version-10)
 - [Development Information](#development-information)
 - [Diagnosing Common Issues](#diagnosing-common-issues)
