@@ -1,6 +1,0 @@
-[submodule "examples/ships-log"]
-	path = examples/ships-log
-	url = https://github.com/ProjectOpenSea/ships-log
-[submodule "examples/opensea-creatures"]
-	path = examples/opensea-creatures
-	url = https://github.com/ProjectOpenSea/opensea-creatures
