@@ -392,10 +392,6 @@ export interface OpenSeaAsset extends Asset {
   lastSale: AssetEvent | null;
   // The suggested background color for the image url
   backgroundColor: string | null;
-  // The per-transfer fee, in base units, for this asset in its transfer method
-  transferFee: BigNumber | string | null;
-  // The transfer fee token for this asset in its transfer method
-  transferFeePaymentToken: OpenSeaFungibleToken | null;
 }
 
 /**
@@ -551,14 +547,6 @@ export interface ComputedFees extends OpenSeaFees {
   // Total fees. dev + opensea
   totalBuyerFeeBasisPoints: number;
   totalSellerFeeBasisPoints: number;
-
-  // Fees that the item's creator takes on every transfer
-  transferFee: BigNumber;
-  transferFeeTokenAddress: string | null;
-
-  // Fees that go to whoever refers the order to the taker.
-  // Comes out of OpenSea fees
-  sellerBountyBasisPoints: number;
 }
 
 interface ExchangeMetadataForAsset {

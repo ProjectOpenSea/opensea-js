@@ -6,15 +6,7 @@ import { MAINNET_PROVIDER_URL } from "../../constants";
 import { OpenSeaSDK } from "../../index";
 import { Network, OrderJSON } from "../../types";
 import { orderFromJSON } from "../../utils/utils";
-import {
-  ALEX_ADDRESS,
-  ALEX_ADDRESS_2,
-  DIGITAL_ART_CHAIN_ADDRESS,
-  DIGITAL_ART_CHAIN_TOKEN_ID,
-  MAINNET_API_KEY,
-  MYTHEREUM_ADDRESS,
-  MYTHEREUM_TOKEN_ID,
-} from "../constants";
+import { MAINNET_API_KEY } from "../constants";
 import ordersJSONFixture from "../fixtures/orders.json";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,16 +23,6 @@ const client = new OpenSeaSDK(
   (line) => console.info(`MAINNET: ${line}`)
 );
 
-const assetsForBundleOrder = [
-  { tokenId: MYTHEREUM_TOKEN_ID.toString(), tokenAddress: MYTHEREUM_ADDRESS },
-  {
-    tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
-    tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
-  },
-];
-
-const assetsForBulkTransfer = assetsForBundleOrder;
-
 suite("SDK: orders", () => {
   ordersJSON.map((orderJSON: OrderJSON, index: number) => {
     test("Order #" + index + " has correct types", () => {
@@ -49,19 +31,6 @@ suite("SDK: orders", () => {
       assert.typeOf(order.maker, "string");
       assert.equal(+order.quantity, 1);
     });
-  });
-
-  test("Bulk transfer", async () => {
-    const accountAddress = ALEX_ADDRESS;
-    const takerAddress = ALEX_ADDRESS_2;
-
-    const gas = await client._estimateGasForTransfer({
-      assets: assetsForBulkTransfer,
-      fromAddress: accountAddress,
-      toAddress: takerAddress,
-    });
-
-    assert.isAbove(gas, 0);
   });
 
   test("Fungible tokens filter", async () => {
