@@ -32,7 +32,7 @@ suite("Getting orders", () => {
       const { orders, next, previous } = await mainApi.getOrders({
         protocol: "seaport",
         side: "ask",
-        tokenIds: [BAYC_TOKEN_IDS],
+        tokenIds: BAYC_TOKEN_IDS,
         assetContractAddress: BAYC_CONTRACT_ADDRESS,
       });
       orders.map((order) => expectValidOrder(order));
