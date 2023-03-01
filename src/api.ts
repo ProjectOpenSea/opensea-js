@@ -144,11 +144,11 @@ export class OpenSeaAPI {
   ): Promise<OrderV2> {
     let response: OrdersPostQueryResponse;
     // TODO: Validate apiOptions. Avoid API calls that will definitely fail
-    const { protocol = "seaport", side } = apiOptions;
+    const { protocol = "seaport", side, protocolAddress } = apiOptions;
     try {
       response = await this.post<OrdersPostQueryResponse>(
         getOrdersAPIPath(this.networkName, protocol, side),
-        order
+        { ...order, protocol_address: protocolAddress }
       );
     } catch (error) {
       _throwOrContinue(error, retries);
