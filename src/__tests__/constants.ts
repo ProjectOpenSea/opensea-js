@@ -18,11 +18,6 @@ export const testnetApi = new OpenSeaAPI(
   console.info
 );
 
-export const DIGITAL_ART_CHAIN_ADDRESS =
-  "0x323a3e1693e7a0959f65972f3bf2dfcb93239dfe";
-export const MYTHEREUM_ADDRESS = "0xc70be5b7c19529ef642d16c10dfe91c58b5c3bf0";
-export const MYTHEREUM_TOKEN_ID = 4367;
-
 export const DAPPER_ADDRESS = "0x4819352bd7fadcCFAA8A2cDA4b2825a9ec51417c";
 
 export const BAYC_CONTRACT_ADDRESS =
