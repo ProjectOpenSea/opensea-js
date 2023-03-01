@@ -242,11 +242,6 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     backgroundColor: asset.background_color
       ? `#${asset.background_color}`
       : null,
-
-    transferFee: asset.transfer_fee ? makeBigNumber(asset.transfer_fee) : null,
-    transferFeePaymentToken: asset.transfer_fee_payment_token
-      ? tokenFromJSON(asset.transfer_fee_payment_token)
-      : null,
   };
   // If orders were included, put them in sell/buy order groups
   if (fromJSON.orders && !fromJSON.sellOrders) {

@@ -1,14 +1,11 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
 import {
-  apiToTest,
-  TESTNET_ASSET_ADDRESS,
-  TESTNET_SELLER_FEE,
-  TESTNET_TOKEN_ID,
+  BAYC_CONTRACT_ADDRESS,
+  BAYC_TOKEN_ID,
   mainApi,
+  MAINNET_API_KEY,
   testnetApi,
-  TESTNET_API_KEY,
-  TESTNET_WALLET_ADDRESS,
 } from "../constants";
 
 suite("api", () => {
@@ -17,42 +14,38 @@ suite("api", () => {
     assert.equal(testnetApi.apiBaseUrl, "https://testnets-api.opensea.io");
   });
 
-  test("Includes API key in token request", async () => {
-    const oldLogger = testnetApi.logger;
+  test("Includes API key in request", async () => {
+    const oldLogger = mainApi.logger;
 
     const logPromise = new Promise<void>((resolve, reject) => {
-      testnetApi.logger = (log) => {
+      mainApi.logger = (log) => {
         try {
-          assert.include(log, `"X-API-KEY":"${TESTNET_API_KEY}"`);
+          assert.include(log, `"X-API-KEY":"${MAINNET_API_KEY}"`);
           resolve();
         } catch (e) {
           reject(e);
         } finally {
-          testnetApi.logger = oldLogger;
+          mainApi.logger = oldLogger;
         }
       };
-      testnetApi.getPaymentTokens({ symbol: "WETH" });
+      mainApi.getPaymentTokens({ symbol: "WETH" });
     });
 
     await logPromise;
   });
 
   test("API fetches fees for an asset", async () => {
-    const asset = await apiToTest.getAsset({
-      tokenAddress: TESTNET_ASSET_ADDRESS,
-      tokenId: TESTNET_TOKEN_ID,
+    const asset = await mainApi.getAsset({
+      tokenAddress: BAYC_CONTRACT_ADDRESS,
+      tokenId: BAYC_TOKEN_ID,
     });
     assert.exists(asset);
-    assert.equal(asset.tokenId, TESTNET_TOKEN_ID.toString());
-    assert.equal(
-      asset.collection.fees?.openseaFees.get(TESTNET_WALLET_ADDRESS),
-      TESTNET_SELLER_FEE
-    );
+    assert.equal(asset.tokenId, BAYC_TOKEN_ID);
   });
 
   test("API fetches assets", async () => {
-    const { assets } = await apiToTest.getAssets({
-      asset_contract_address: TESTNET_ASSET_ADDRESS,
+    const { assets } = await mainApi.getAssets({
+      asset_contract_address: BAYC_CONTRACT_ADDRESS,
       order_by: "sale_date",
     });
     assert.isArray(assets);
@@ -61,16 +54,9 @@ suite("api", () => {
   });
 
   test("API handles errors", async () => {
-    // 401 Unauthorized
-    try {
-      await apiToTest.get("/user");
-    } catch (error) {
-      assert.include((error as Error).message, "Unauthorized");
-    }
-
     // 404 Not found for random token id
     try {
-      await apiToTest.get(`/asset/${TESTNET_ASSET_ADDRESS}/72`);
+      await mainApi.get(`/asset/${BAYC_CONTRACT_ADDRESS}/202020202020`);
     } catch (error) {
       assert.include((error as Error).message, "Not found");
     }

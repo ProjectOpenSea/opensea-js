@@ -36,7 +36,7 @@ export const assetBundleSchema: JSONSchemaType<PartialAssetBundleType> = {
     assets: { type: "array", items: { type: "object" } },
     name: { type: "string", nullable: true },
     slug: { type: "string", nullable: true },
-    permalink: { type: "string", nullable: false },
+    permalink: { type: "string", nullable: true },
 
     sellOrders: {
       type: "array",
