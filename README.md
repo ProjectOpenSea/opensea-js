@@ -52,7 +52,7 @@ Happy seafaring! ⛵️
 
 ## Installation
 
-We recommend switching to Node.js version 16 to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
+Switching to Node.js version 16 is required for SDK Version 3.0+ and to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
 
 Then, in your project, run:
 
@@ -281,7 +281,7 @@ Note that auctions aren't supported with Ether directly due to limitations in Et
 
 ### Fetching Orders
 
-To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v2.0/reference):
+To retrieve a list of offers and auctions on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v2.0/reference):
 
 ```JavaScript
 // Get offers (bids), a.k.a. orders where `side == 0`
@@ -333,12 +333,12 @@ The available API filters for the orders endpoint is documented in the `OrdersQu
 
 ### Buying Items
 
-To buy an item , you need to **fulfill a sell order**. To do that, it's just one call:
+To buy an item, you need to **fulfill a sell order**. To do that, it's just one call:
 
 ```JavaScript
 const order = await openseaSDK.api.getOrder({ side: "ask", ... })
 const accountAddress = "0x..." // The buyer's wallet address, also the taker
-const transactionHash = await this.props.openseaSDK.fulfillOrder({ order, accountAddress })
+const transactionHash = await openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
 Note that the `fulfillOrder` promise resolves when the transaction has been confirmed and mined to the blockchain. To get the transaction hash before this happens, add an event listener (see [Listening to Events](#listening-to-events)) for the `TransactionCreated` event.
@@ -352,7 +352,7 @@ Similar to fulfilling sell orders above, you need to fulfill a buy order on an i
 ```JavaScript
 const order = await openseaSDK.api.getOrder({ side: "bid", ... })
 const accountAddress = "0x..." // The owner's wallet address, also the taker
-await this.props.openseaSDK.fulfillOrder({ order, accountAddress })
+await openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
 If the order is a buy order (`order.side === "bid"`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
@@ -433,7 +433,7 @@ You can buy and transfer an item to someone else in one step! Just pass the `rec
 
 ```JavaScript
 const order = await openseaSDK.api.getOrder({ side: "ask", ... })
-await this.props.openseaSDK.fulfillOrder({
+await openseaSDK.fulfillOrder({
   order,
   accountAddress, // The address of your wallet, which will sign the transaction
   recipientAddress // The address of the recipient, i.e. the wallet you're purchasing on behalf of
