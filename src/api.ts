@@ -392,7 +392,7 @@ export class OpenSeaAPI {
       ...opts,
       headers: {
         ...(apiKey ? { "X-API-KEY": apiKey } : {}),
-        ...{ "sdk-version": sdkVersion },
+        ...{ "SDK-Version": sdkVersion },
         ...(opts.headers || {}),
       },
     };
