@@ -1,6 +1,7 @@
 import "isomorphic-unfetch";
 import _ from "lodash";
 import * as QueryString from "query-string";
+import { version as sdkVersion } from "../package.json";
 import {
   API_BASE_MAINNET,
   API_BASE_TESTNET,
@@ -391,6 +392,7 @@ export class OpenSeaAPI {
       ...opts,
       headers: {
         ...(apiKey ? { "X-API-KEY": apiKey } : {}),
+        ...{ "sdk-version": sdkVersion },
         ...(opts.headers || {}),
       },
     };
