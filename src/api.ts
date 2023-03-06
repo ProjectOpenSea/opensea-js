@@ -9,7 +9,9 @@ import {
   ORDERBOOK_PATH,
 } from "./constants";
 import {
+  FulfillmentDataResponse,
   OrderAPIOptions,
+  OrderSide,
   OrdersPostQueryResponse,
   OrdersQueryOptions,
   OrdersQueryResponse,
@@ -21,6 +23,9 @@ import {
   serializeOrdersQueryOptions,
   getOrdersAPIPath,
   deserializeOrder,
+  getFulfillmentDataPath,
+  getFulfillListingPayload,
+  getFulfillOfferPayload,
 } from "./orders/utils";
 import {
   Network,
@@ -133,6 +138,38 @@ export class OpenSeaAPI {
       ...response,
       orders: response.orders.map(deserializeOrder),
     };
+  }
+
+  /**
+   * oi
+   */
+  public async generateFulfillmentData(
+    fulfillerAddress: string,
+    orderHash: string,
+    protocolAddress: string,
+    side: OrderSide
+  ): Promise<FulfillmentDataResponse> {
+    let payload = null;
+    if (side === "ask") {
+      payload = getFulfillListingPayload(
+        fulfillerAddress,
+        orderHash,
+        protocolAddress,
+        this.networkName
+      );
+    } else {
+      payload = getFulfillOfferPayload(
+        fulfillerAddress,
+        orderHash,
+        protocolAddress,
+        this.networkName
+      );
+    }
+    const response = await this.post<FulfillmentDataResponse>(
+      getFulfillmentDataPath(side),
+      payload
+    );
+    return response;
   }
 
   /**
