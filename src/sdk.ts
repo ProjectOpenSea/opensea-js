@@ -976,10 +976,12 @@ export class OpenSeaSDK {
     domain?: string;
   }): Promise<string> {
     if (
-      !(
-        order.protocolAddress in
-        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
-      )
+        !(
+          order.protocolAddress.toLowerCase() ===
+          CROSS_CHAIN_SEAPORT_ADDRESS.toLowerCase() ||
+          order.protocolAddress.toLowerCase() ===
+          CROSS_CHAIN_SEAPORT_V1_4_ADDRESS.toLowerCase()
+        )
     ) {
       throw new Error("Unsupported protocol");
     }
@@ -995,7 +997,7 @@ export class OpenSeaSDK {
     );
     const fulfillments = getPrivateListingFulfillments(order.protocolData);
     const seaport =
-      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
+      order.protocolAddress.toLowerCase() === CROSS_CHAIN_SEAPORT_ADDRESS.toLowerCase()
         ? this.seaport
         : this.seaport_v1_4;
     const transaction = await seaport
@@ -1040,10 +1042,12 @@ export class OpenSeaSDK {
     domain?: string;
   }): Promise<string> {
     if (
-      !(
-        order.protocolAddress in
-        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
-      )
+        !(
+            order.protocolAddress.toLowerCase() ===
+            CROSS_CHAIN_SEAPORT_ADDRESS.toLowerCase() ||
+            order.protocolAddress.toLowerCase() ===
+            CROSS_CHAIN_SEAPORT_V1_4_ADDRESS.toLowerCase()
+        )
     ) {
       throw new Error("Unsupported protocol");
     }
@@ -1073,7 +1077,7 @@ export class OpenSeaSDK {
     }
 
     const seaport =
-      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
+      order.protocolAddress.toLowerCase() === CROSS_CHAIN_SEAPORT_ADDRESS.toLowerCase()
         ? this.seaport
         : this.seaport_v1_4;
     const { executeAllActions } = await seaport.fulfillOrder({
@@ -1156,7 +1160,7 @@ export class OpenSeaSDK {
     }
 
     const seaport =
-      protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
+      protocolAddress?.toLowerCase() === CROSS_CHAIN_SEAPORT_ADDRESS.toLowerCase()
         ? this.seaport
         : this.seaport_v1_4;
     const transaction = await seaport
@@ -1183,10 +1187,12 @@ export class OpenSeaSDK {
     domain?: string;
   }) {
     if (
-      !(
-        order.protocolAddress in
-        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
-      )
+        !(
+            order.protocolAddress.toLowerCase() ===
+            CROSS_CHAIN_SEAPORT_ADDRESS.toLowerCase() ||
+            order.protocolAddress.toLowerCase() ===
+            CROSS_CHAIN_SEAPORT_V1_4_ADDRESS.toLowerCase()
+        )
     ) {
       throw new Error("Unsupported protocol");
     }
@@ -1760,16 +1766,18 @@ export class OpenSeaSDK {
     accountAddress: string;
   }): Promise<boolean> {
     if (
-      !(
-        order.protocolAddress in
-        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
-      )
+        !(
+            order.protocolAddress.toLowerCase() ===
+            CROSS_CHAIN_SEAPORT_ADDRESS.toLowerCase() ||
+            order.protocolAddress.toLowerCase() ===
+            CROSS_CHAIN_SEAPORT_V1_4_ADDRESS.toLowerCase()
+        )
     ) {
       throw new Error("Unsupported protocol");
     }
 
     const seaport =
-      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
+      order.protocolAddress.toLowerCase() === CROSS_CHAIN_SEAPORT_ADDRESS.toLowerCase()
         ? this.seaport
         : this.seaport_v1_4;
     try {
@@ -2811,7 +2819,7 @@ export class OpenSeaSDK {
     });
 
     const seaport =
-      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
+      order.protocolAddress.toLowerCase() === CROSS_CHAIN_SEAPORT_ADDRESS.toLowerCase()
         ? this.seaport
         : this.seaport_v1_4;
     const transaction = await seaport
