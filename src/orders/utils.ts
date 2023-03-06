@@ -29,16 +29,34 @@ export const getFulfillmentDataPath = (side: OrderSide) => {
   return `/v2/${sidePath}/fulfillment_data`;
 };
 
-export const getFulfillmentDataPayload = (
+export const getFulfillListingPayload = (
   fulfillerAddress: string,
   order_hash: string,
   protocolAddress: string,
   network: Network
 ) => {
   const chain = NETWORK_TO_CHAIN[network];
-
   return {
     listing: {
+      hash: order_hash,
+      chain,
+      protocol_address: protocolAddress,
+    },
+    fulfiller: {
+      address: fulfillerAddress,
+    },
+  };
+};
+
+export const getFulfillOfferPayload = (
+  fulfillerAddress: string,
+  order_hash: string,
+  protocolAddress: string,
+  network: Network
+) => {
+  const chain = NETWORK_TO_CHAIN[network];
+  return {
+    offer: {
       hash: order_hash,
       chain,
       protocol_address: protocolAddress,

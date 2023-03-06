@@ -24,7 +24,8 @@ import {
   getOrdersAPIPath,
   deserializeOrder,
   getFulfillmentDataPath,
-  getFulfillmentDataPayload,
+  getFulfillListingPayload,
+  getFulfillOfferPayload,
 } from "./orders/utils";
 import {
   Network,
@@ -148,14 +149,25 @@ export class OpenSeaAPI {
     protocolAddress: string,
     side: OrderSide
   ): Promise<FulfillmentDataResponse> {
-    const response = await this.post<FulfillmentDataResponse>(
-      getFulfillmentDataPath(side),
-      getFulfillmentDataPayload(
+    let payload = null;
+    if (side === "ask") {
+      payload = getFulfillListingPayload(
         fulfillerAddress,
         orderHash,
         protocolAddress,
         this.networkName
-      )
+      );
+    } else {
+      payload = getFulfillOfferPayload(
+        fulfillerAddress,
+        orderHash,
+        protocolAddress,
+        this.networkName
+      );
+    }
+    const response = await this.post<FulfillmentDataResponse>(
+      getFulfillmentDataPath(side),
+      payload
     );
     return response;
   }
