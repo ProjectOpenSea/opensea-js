@@ -1145,6 +1145,6 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
   const validProtocolAddresses = [
     CROSS_CHAIN_SEAPORT_ADDRESS,
     CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
-  ];
+  ].map((address) => Web3.utils.toChecksumAddress(address));
   return validProtocolAddresses.includes(checkSumAddress);
 };
