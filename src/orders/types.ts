@@ -40,6 +40,24 @@ export type OrderV2 = {
   takerAssetBundle: OpenSeaAssetBundle;
 };
 
+export type FulfillmentDataResponse = {
+  protocol: string;
+  fulfillment_data: FulfillmentData;
+};
+
+type FulfillmentData = {
+  transaction: Transaction;
+  orders: ProtocolData[];
+};
+
+type Transaction = {
+  function: string;
+  chain: number;
+  to: string;
+  value: number;
+  input_data: object;
+};
+
 // API query types
 type OpenOrderOrderingOption = "created_date" | "eth_price";
 type OrderByDirection = "asc" | "desc";

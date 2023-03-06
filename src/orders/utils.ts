@@ -24,6 +24,31 @@ export const getOrdersAPIPath = (
   return `/v2/orders/${chain}/${protocol}/${sidePath}`;
 };
 
+export const getFulfillmentDataPath = (side: OrderSide) => {
+  const sidePath = side === "ask" ? "listings" : "offers";
+  return `/v2/${sidePath}/fulfillment_data`;
+};
+
+export const getFulfillmentDataPayload = (
+  fulfillerAddress: string,
+  order_hash: string,
+  protocolAddress: string,
+  network: Network
+) => {
+  const chain = NETWORK_TO_CHAIN[network];
+
+  return {
+    listing: {
+      hash: order_hash,
+      chain,
+      protocol_address: protocolAddress,
+    },
+    fulfiller: {
+      address: fulfillerAddress,
+    },
+  };
+};
+
 type OrdersQueryPathOptions = "protocol" | "side";
 export const serializeOrdersQueryOptions = (
   options: Omit<OrdersQueryOptions, OrdersQueryPathOptions>
