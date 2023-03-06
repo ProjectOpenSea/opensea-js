@@ -9,6 +9,7 @@ import {
   ORDERBOOK_PATH,
 } from "./constants";
 import {
+  BuildOfferResponse,
   FulfillmentDataResponse,
   OrderAPIOptions,
   OrderSide,
@@ -16,6 +17,7 @@ import {
   OrdersQueryOptions,
   OrdersQueryResponse,
   OrderV2,
+  PostOfferResponse,
   ProtocolData,
   QueryCursors,
 } from "./orders/types";
@@ -26,6 +28,11 @@ import {
   getFulfillmentDataPath,
   getFulfillListingPayload,
   getFulfillOfferPayload,
+  getBuildOfferPath,
+  getBuildCollectionOfferPayload,
+  getCollectionPath,
+  getPostCollectionOfferPath,
+  getPostCollectionOfferPayload,
 } from "./orders/utils";
 import {
   Network,
@@ -34,6 +41,7 @@ import {
   OpenSeaAssetBundle,
   OpenSeaAssetBundleQuery,
   OpenSeaAssetQuery,
+  OpenSeaCollection,
   OpenSeaFungibleToken,
   OpenSeaFungibleTokenQuery,
 } from "./types";
@@ -197,6 +205,33 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Build an offer
+   */
+  public async buildOffer(
+    offererAddress: string,
+    quantity: number,
+    collectionSlug: string
+  ): Promise<BuildOfferResponse> {
+    return await this.post<BuildOfferResponse>(
+      getBuildOfferPath(),
+      getBuildCollectionOfferPayload(offererAddress, quantity, collectionSlug)
+    );
+  }
+
+  /**
+   * Post collection offer
+   */
+  public async postCollectionOffer(
+    order: ProtocolData,
+    slug: string
+  ): Promise<PostOfferResponse> {
+    return await this.post<PostOfferResponse>(
+      getPostCollectionOfferPath(),
+      getPostCollectionOfferPayload(slug, order)
+    );
+  }
+
+  /**
    * Create a whitelist entry for an asset to prevent others from buying.
    * Buyers will have to have verified at least one of the emails
    * on an asset in order to buy.
@@ -292,6 +327,13 @@ export class OpenSeaAPI {
       previous: json.previous,
       estimatedCount: json.estimated_count,
     };
+  }
+
+  /**
+   * Fetch a collection through the API
+   */
+  public async getCollection(slug: string): Promise<OpenSeaCollection> {
+    return await this.get<OpenSeaCollection>(getCollectionPath(slug));
   }
 
   /**

@@ -67,7 +67,7 @@ import {
   getPrivateListingConsiderations,
   getPrivateListingFulfillments,
 } from "./orders/privateListings";
-import { OrderV2 } from "./orders/types";
+import { OrderV2, PostOfferResponse } from "./orders/types";
 import { ERC1155Abi } from "./typechain/contracts/ERC1155Abi";
 import { ERC721v3Abi } from "./typechain/contracts/ERC721v3Abi";
 import { UniswapExchangeAbi } from "./typechain/contracts/UniswapExchangeAbi";
@@ -85,6 +85,7 @@ import {
   Network,
   OpenSeaAPIConfig,
   OpenSeaAsset,
+  OpenSeaCollection,
   OpenSeaFungibleToken,
   Order,
   OrderSide,
@@ -688,12 +689,12 @@ export class OpenSeaSDK {
   };
 
   private async getFees({
-    openseaAsset: asset,
+    collection,
     paymentTokenAddress,
     startAmount,
     endAmount,
   }: {
-    openseaAsset: OpenSeaAsset;
+    collection: OpenSeaCollection;
     paymentTokenAddress: string;
     startAmount: BigNumber;
     endAmount?: BigNumber;
@@ -704,10 +705,10 @@ export class OpenSeaSDK {
   }> {
     // Seller fee basis points
     const openseaSellerFeeBasisPoints = feesToBasisPoints(
-      asset.collection.fees?.openseaFees
+      collection.fees?.openseaFees
     );
     const collectionSellerFeeBasisPoints = feesToBasisPoints(
-      asset.collection.fees?.sellerFees
+      collection.fees?.sellerFees
     );
 
     // Seller basis points
@@ -741,16 +742,12 @@ export class OpenSeaSDK {
     return {
       sellerFee: getConsiderationItem(sellerBasisPoints),
       openseaSellerFees:
-        openseaSellerFeeBasisPoints > 0 && asset.collection.fees
-          ? getConsiderationItemsFromFeeCategory(
-              asset.collection.fees.openseaFees
-            )
+        openseaSellerFeeBasisPoints > 0 && collection.fees
+          ? getConsiderationItemsFromFeeCategory(collection.fees.openseaFees)
           : [],
       collectionSellerFees:
-        collectionSellerFeeBasisPoints > 0 && asset.collection.fees
-          ? getConsiderationItemsFromFeeCategory(
-              asset.collection.fees.sellerFees
-            )
+        collectionSellerFeeBasisPoints > 0 && collection.fees
+          ? getConsiderationItemsFromFeeCategory(collection.fees.sellerFees)
           : [],
     };
   }
@@ -809,6 +806,7 @@ export class OpenSeaSDK {
       paymentTokenAddress ?? WETH_ADDRESS_BY_NETWORK[this._networkName];
 
     const openseaAsset = await this.api.getAsset(asset);
+    const collection = openseaAsset.collection;
     const considerationAssetItems = this.getAssetItems(
       [openseaAsset],
       [makeBigNumber(quantity)]
@@ -823,7 +821,7 @@ export class OpenSeaSDK {
 
     const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
       await this.getFees({
-        openseaAsset,
+        collection,
         paymentTokenAddress,
         startAmount: basePrice,
       });
@@ -964,6 +962,82 @@ export class OpenSeaSDK {
       protocolAddress: CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
       side: "ask",
     });
+  }
+
+  /**
+   * Create a collection offer
+   */
+  public async createCollectionOffer({
+    collectionSlug,
+    accountAddress,
+    amount,
+    quantity,
+    domain,
+    salt,
+    expirationTime,
+    paymentTokenAddress,
+  }: {
+    collectionSlug: string;
+    accountAddress: string;
+    amount: string;
+    quantity: number;
+    domain?: string;
+    salt?: string;
+    expirationTime?: BigNumberInput;
+    paymentTokenAddress: string;
+  }): Promise<PostOfferResponse> {
+    const collection = await this.api.getCollection(collectionSlug);
+    const buildOfferResult = await this.api.buildOffer(
+      accountAddress,
+      quantity,
+      collectionSlug
+    );
+    const considerationCollectionOfferItem =
+      buildOfferResult.partialParameters.consideration[0];
+
+    const { basePrice } = await this._getPriceParameters(
+      OrderSide.Buy,
+      paymentTokenAddress,
+      makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
+      makeBigNumber(amount)
+    );
+
+    const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
+      await this.getFees({
+        collection,
+        paymentTokenAddress,
+        startAmount: basePrice,
+      });
+
+    const considerationItems = [
+      considerationCollectionOfferItem,
+      ...openseaSellerFees,
+      ...collectionSellerFees,
+    ];
+
+    const { executeAllActions } = await this.seaport_v1_4.createOrder(
+      {
+        offer: [
+          {
+            token: paymentTokenAddress,
+            amount: basePrice.toString(),
+          },
+        ],
+        consideration: considerationItems,
+        endTime:
+          expirationTime?.toString() ??
+          getMaxOrderExpirationTimestamp().toString(),
+        zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+        domain,
+        salt,
+        restrictedByZone: false,
+        allowPartialFills: true,
+      },
+      accountAddress
+    );
+    const order = await executeAllActions();
+
+    return this.api.postCollectionOffer(order, collectionSlug);
   }
 
   private async fulfillPrivateOrder({
