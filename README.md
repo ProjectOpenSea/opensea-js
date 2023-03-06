@@ -4,11 +4,11 @@
 
 # OpenSea.js <!-- omit in toc -->
 
-[![https://badges.frapsoft.com/os/mit/mit.svg?v=102](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://opensource.org/licenses/MIT)
-[![Coverage Status](https://coveralls.io/repos/github/ProjectOpenSea/opensea-js/badge.svg?branch=master)](https://coveralls.io/github/ProjectOpenSea/opensea-js?branch=master)
-[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-
-<!-- [![npm](https://img.shields.io/npm/v/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) [![npm](https://img.shields.io/npm/dt/wyvern-js.svg)](https://www.npmjs.com/package/wyvern-js) -->
+[![Version][version-badge]][version-link]
+[![npm][npm-badge]][npm-link]
+[![License][license-badge]][license-link]
+[![Coverage Status][coverage-badge]][coverage-link]
+[![styled with prettier][prettier-badge]][prettier-link]
 
 A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don't have to deploy your own smart contracts or backend orderbooks.
 
@@ -23,7 +23,6 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
     - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
     - [Offer Limits](#offer-limits)
   - [Making Listings / Selling Items](#making-listings--selling-items)
-  - [Running Crowdsales](#running-crowdsales)
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
@@ -36,7 +35,6 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Private Auctions](#private-auctions)
   - [Listening to Events](#listening-to-events)
 - [Learning More](#learning-more)
-  - [Example Code](#example-code)
 - [Migrating to version 1.0](#migrating-to-version-10)
 - [Development Information](#development-information)
 - [Diagnosing Common Issues](#diagnosing-common-issues)
@@ -54,7 +52,7 @@ Happy seafaring! ⛵️
 
 ## Installation
 
-We recommend switching to Node.js version 16 to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
+Switching to Node.js version 16 is required for SDK Version 3.0+ and to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
 
 Then, in your project, run:
 
@@ -65,15 +63,6 @@ npm install --save opensea-js
 > **Warning**
 > Due to the use of git-url dependencies, versions of `npm` below 8.5.2 are incompatible with this package due to broken integrity checksum validation.
 > Above version 8.5.2, `npm` will no longer validate integrity checksums for git-url dependencies.
-
-> **Warning**
-> To use `yarn` the following resolution is required to be added to your package.json:
->
-> ```
-> "resolutions": {
->    "@0x/utils": "https://github.com/ProjectOpensea/0x-tools/raw/provider-patch/utils/0x-utils-6.5.0.tgz",
->  }
-> ```
 
 Install [web3](https://github.com/ethereum/web3.js) too if you haven't already.
 
@@ -292,7 +281,7 @@ Note that auctions aren't supported with Ether directly due to limitations in Et
 
 ### Fetching Orders
 
-To retrieve a list of offers and auction on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v2.0/reference):
+To retrieve a list of offers and auctions on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v2.0/reference):
 
 ```JavaScript
 // Get offers (bids), a.k.a. orders where `side == 0`
@@ -314,7 +303,7 @@ Note that the listing price of an asset is equal to the `currentPrice` of the **
 
 To learn more about signatures, makers, takers, listingTime vs createdTime and other kinds of order terminology, please read the [**Terminology Section**](https://docs.opensea.io/reference#terminology) of the API Docs.
 
-The available API filters for the orders endpoint is documented in the `OrdersQueryOptions` interface below, but see the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanantions.
+The available API filters for the orders endpoint is documented in the `OrdersQueryOptions` interface below, but see the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanations.
 
 ```TypeScript
 /**
@@ -344,12 +333,12 @@ The available API filters for the orders endpoint is documented in the `OrdersQu
 
 ### Buying Items
 
-To buy an item , you need to **fulfill a sell order**. To do that, it's just one call:
+To buy an item, you need to **fulfill a sell order**. To do that, it's just one call:
 
 ```JavaScript
 const order = await openseaSDK.api.getOrder({ side: "ask", ... })
 const accountAddress = "0x..." // The buyer's wallet address, also the taker
-const transactionHash = await this.props.openseaSDK.fulfillOrder({ order, accountAddress })
+const transactionHash = await openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
 Note that the `fulfillOrder` promise resolves when the transaction has been confirmed and mined to the blockchain. To get the transaction hash before this happens, add an event listener (see [Listening to Events](#listening-to-events)) for the `TransactionCreated` event.
@@ -363,7 +352,7 @@ Similar to fulfilling sell orders above, you need to fulfill a buy order on an i
 ```JavaScript
 const order = await openseaSDK.api.getOrder({ side: "bid", ... })
 const accountAddress = "0x..." // The owner's wallet address, also the taker
-await this.props.openseaSDK.fulfillOrder({ order, accountAddress })
+await openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
 If the order is a buy order (`order.side === "bid"`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
@@ -401,7 +390,7 @@ const transactionHash = await openseaSDK.transfer({
 
 To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` in base units (e.g. wei) to indicate how many.
 
-Example for transfering 2 DAI ($2) to another address:
+Example for transferring 2 DAI ($2) to another address:
 
 ```JavaScript
 const paymentToken = (await openseaSDK.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0]
@@ -444,7 +433,7 @@ You can buy and transfer an item to someone else in one step! Just pass the `rec
 
 ```JavaScript
 const order = await openseaSDK.api.getOrder({ side: "ask", ... })
-await this.props.openseaSDK.fulfillOrder({
+await openseaSDK.fulfillOrder({
   order,
   accountAddress, // The address of your wallet, which will sign the transaction
   recipientAddress // The address of the recipient, i.e. the wallet you're purchasing on behalf of
@@ -608,12 +597,6 @@ To remove all listeners and start over, just call `openseaSDK.removeAllListeners
 
 Auto-generated documentation for each export is available [here](https://projectopensea.github.io/opensea-js/).
 
-### Example Code
-
-Check out the [Ship's Log](https://github.com/ProjectOpenSea/ships-log), built with the SDK, which shows the recent orders in the OpenSea orderbook.
-
-Also check out the [Mythereum marketplace](https://mythereum.io/marketplace), which is entirely powered by OpenSea.js.
-
 ## Migrating to version 1.0
 
 See the [Changelog](CHANGELOG.md).
@@ -676,3 +659,14 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 yarn link # in opensea-js repo
 yarn link opensea-js # in repo you're working on
 ```
+
+[version-badge]: https://img.shields.io/github/package-json/v/ProjectOpenSea/opensea-js
+[version-link]: https://github.com/ProjectOpenSea/opensea-js/releases
+[npm-badge]: https://img.shields.io/npm/v/opensea-js?color=red
+[npm-link]: https://www.npmjs.com/package/opensea-js
+[license-badge]: https://img.shields.io/github/license/ProjectOpenSea/opensea-js
+[license-link]: https://github.com/ProjectOpenSea/opensea-js/blob/main/LICENSE
+[coverage-badge]: https://coveralls.io/repos/github/ProjectOpenSea/opensea-js/badge.svg?branch=master
+[coverage-link]: https://coveralls.io/github/ProjectOpenSea/opensea-js?branch=master
+[prettier-badge]: https://img.shields.io/badge/styled_with-prettier-ff69b4.svg
+[prettier-link]: https://github.com/prettier/prettier

@@ -1,6 +1,7 @@
 import "isomorphic-unfetch";
 import _ from "lodash";
 import * as QueryString from "query-string";
+import { version as sdkVersion } from "../package.json";
 import {
   API_BASE_MAINNET,
   API_BASE_TESTNET,
@@ -169,11 +170,11 @@ export class OpenSeaAPI {
   ): Promise<OrderV2> {
     let response: OrdersPostQueryResponse;
     // TODO: Validate apiOptions. Avoid API calls that will definitely fail
-    const { protocol = "seaport", side } = apiOptions;
+    const { protocol = "seaport", side, protocolAddress } = apiOptions;
     try {
       response = await this.post<OrdersPostQueryResponse>(
         getOrdersAPIPath(this.networkName, protocol, side),
-        order
+        { ...order, protocol_address: protocolAddress }
       );
     } catch (error) {
       _throwOrContinue(error, retries);
@@ -416,6 +417,7 @@ export class OpenSeaAPI {
       ...opts,
       headers: {
         ...(apiKey ? { "X-API-KEY": apiKey } : {}),
+        ...{ "SDK-Version": sdkVersion },
         ...(opts.headers || {}),
       },
     };
