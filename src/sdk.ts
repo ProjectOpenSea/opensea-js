@@ -2786,8 +2786,8 @@ export class OpenSeaSDK {
   public async approveOrder(order: OrderV2, domain?: string) {
     if (
       !(
-        order.protocolAddress in
-        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
+        order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS ||
+        order.protocolAddress === CROSS_CHAIN_SEAPORT_V1_4_ADDRESS
       )
     ) {
       throw new Error("Unsupported protocol");
