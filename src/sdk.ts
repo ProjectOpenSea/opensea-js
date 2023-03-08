@@ -136,6 +136,7 @@ import {
   BigNumberInput,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
   feesToBasisPoints,
+  isValidProtocol,
 } from "./utils/utils";
 
 export class OpenSeaSDK {
@@ -1062,12 +1063,7 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
   }): Promise<string> {
-    if (
-      !(
-        order.protocolAddress in
-        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
-      )
-    ) {
+    if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
 
@@ -1126,12 +1122,7 @@ export class OpenSeaSDK {
     recipientAddress?: string;
     domain?: string;
   }): Promise<string> {
-    if (
-      !(
-        order.protocolAddress in
-        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
-      )
-    ) {
+    if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
 
@@ -1269,12 +1260,7 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
   }) {
-    if (
-      !(
-        order.protocolAddress in
-        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
-      )
-    ) {
+    if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
 
@@ -1846,12 +1832,7 @@ export class OpenSeaSDK {
     order: OrderV2;
     accountAddress: string;
   }): Promise<boolean> {
-    if (
-      !(
-        order.protocolAddress in
-        [CROSS_CHAIN_SEAPORT_ADDRESS, CROSS_CHAIN_SEAPORT_V1_4_ADDRESS]
-      )
-    ) {
+    if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
 
@@ -2881,14 +2862,7 @@ export class OpenSeaSDK {
    * @returns Transaction hash of the approval transaction
    */
   public async approveOrder(order: OrderV2, domain?: string) {
-    if (
-      !(
-        order.protocolAddress.toLowerCase() ===
-          CROSS_CHAIN_SEAPORT_ADDRESS.toLowerCase() ||
-        order.protocolAddress.toLowerCase() ===
-          CROSS_CHAIN_SEAPORT_V1_4_ADDRESS.toLowerCase()
-      )
-    ) {
+    if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
 

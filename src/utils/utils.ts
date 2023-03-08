@@ -1,4 +1,8 @@
-import { ItemType } from "@opensea/seaport-js/lib/constants";
+import {
+  CROSS_CHAIN_SEAPORT_ADDRESS,
+  CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
+  ItemType,
+} from "@opensea/seaport-js/lib/constants";
 import BigNumber from "bignumber.js";
 import { AbiType, CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
@@ -1130,4 +1134,17 @@ export const feesToBasisPoints = (
     (sum, basisPoints) => basisPoints + sum,
     0
   );
+};
+
+/**
+ * checks protocol address
+ * @param protocolAddress a protocol address
+ */
+export const isValidProtocol = (protocolAddress: string): boolean => {
+  const checkSumAddress = Web3.utils.toChecksumAddress(protocolAddress);
+  const validProtocolAddresses = [
+    CROSS_CHAIN_SEAPORT_ADDRESS,
+    CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
+  ].map((address) => Web3.utils.toChecksumAddress(address));
+  return validProtocolAddresses.includes(checkSumAddress);
 };

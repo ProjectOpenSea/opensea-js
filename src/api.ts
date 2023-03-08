@@ -149,7 +149,7 @@ export class OpenSeaAPI {
   }
 
   /**
-   * oi
+   * Generate the data needed to fulfill a listing or an offer
    */
   public async generateFulfillmentData(
     fulfillerAddress: string,
