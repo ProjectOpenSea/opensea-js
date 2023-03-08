@@ -9,9 +9,10 @@ import {
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "bignumber.js";
+import * as dotenv from "dotenv";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
-import { providers } from "ethers";
+import { ethers, providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import Web3 from "web3";
@@ -172,13 +173,16 @@ export class OpenSeaSDK {
    *  `const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')`
    * @param apiConfig configuration options, including `networkName`
    * @param logger logger, optional, a function that will be called with debugging
+   * @param wallet optional, if you'd like to use an ethers wallet for order posting
    *  information
    */
   constructor(
     provider: Web3["currentProvider"],
     apiConfig: OpenSeaAPIConfig = {},
-    logger?: (arg: string) => void
+    logger?: (arg: string) => void,
+    wallet?: ethers.Wallet
   ) {
+    dotenv.config();
     // API config
     apiConfig.networkName = apiConfig.networkName || Network.Main;
     this.api = new OpenSeaAPI(apiConfig);
@@ -202,14 +206,17 @@ export class OpenSeaSDK {
     this.ethersProvider = new providers.Web3Provider(
       provider as providers.ExternalProvider
     );
-    this.seaport = new Seaport(this.ethersProvider, {
+
+    const providerOrSinger = wallet ? wallet : this.ethersProvider;
+    this.seaport = new Seaport(providerOrSinger, {
       conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
       overrides: {
         defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
       },
       seaportVersion: "1.1",
     });
-    this.seaport_v1_4 = new Seaport(this.ethersProvider, {
+
+    this.seaport_v1_4 = new Seaport(providerOrSinger, {
       conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
       overrides: {
         defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
@@ -806,7 +813,6 @@ export class OpenSeaSDK {
       paymentTokenAddress ?? WETH_ADDRESS_BY_NETWORK[this._networkName];
 
     const openseaAsset = await this.api.getAsset(asset);
-    const collection = openseaAsset.collection;
     const considerationAssetItems = this.getAssetItems(
       [openseaAsset],
       [makeBigNumber(quantity)]
@@ -821,7 +827,7 @@ export class OpenSeaSDK {
 
     const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
       await this.getFees({
-        collection,
+        collection: openseaAsset.collection,
         paymentTokenAddress,
         startAmount: basePrice,
       });
@@ -922,7 +928,7 @@ export class OpenSeaSDK {
       openseaSellerFees,
       collectionSellerFees: collectionSellerFees,
     } = await this.getFees({
-      openseaAsset,
+      collection: openseaAsset.collection,
       paymentTokenAddress,
       startAmount: basePrice,
       endAmount: endPrice,
@@ -985,15 +991,21 @@ export class OpenSeaSDK {
     salt?: string;
     expirationTime?: BigNumberInput;
     paymentTokenAddress: string;
-  }): Promise<PostOfferResponse> {
+  }): Promise<PostOfferResponse | null> {
     const collection = await this.api.getCollection(collectionSlug);
     const buildOfferResult = await this.api.buildOffer(
       accountAddress,
       quantity,
       collectionSlug
     );
-    const considerationCollectionOfferItem =
-      buildOfferResult.partialParameters.consideration[0];
+    const item = buildOfferResult.partialParameters.consideration[0];
+
+    const convertedConsiderationItem = {
+      itemType: item.itemType,
+      token: item.token,
+      identifiers: [item.identifierOrCriteria],
+      amount: item.startAmount,
+    };
 
     const { basePrice } = await this._getPriceParameters(
       OrderSide.Buy,
@@ -1010,33 +1022,34 @@ export class OpenSeaSDK {
       });
 
     const considerationItems = [
-      considerationCollectionOfferItem,
+      convertedConsiderationItem,
       ...openseaSellerFees,
       ...collectionSellerFees,
     ];
 
+    const payload = {
+      offer: [
+        {
+          token: paymentTokenAddress,
+          amount: basePrice.toString(),
+        },
+      ],
+      consideration: considerationItems,
+      endTime:
+        expirationTime?.toString() ??
+        getMaxOrderExpirationTimestamp().toString(),
+      zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+      domain,
+      salt,
+      restrictedByZone: false,
+      allowPartialFills: true,
+    };
+
     const { executeAllActions } = await this.seaport_v1_4.createOrder(
-      {
-        offer: [
-          {
-            token: paymentTokenAddress,
-            amount: basePrice.toString(),
-          },
-        ],
-        consideration: considerationItems,
-        endTime:
-          expirationTime?.toString() ??
-          getMaxOrderExpirationTimestamp().toString(),
-        zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
-        domain,
-        salt,
-        restrictedByZone: false,
-        allowPartialFills: true,
-      },
+      payload,
       accountAddress
     );
     const order = await executeAllActions();
-
     return this.api.postCollectionOffer(order, collectionSlug);
   }
 

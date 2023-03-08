@@ -1,5 +1,5 @@
 import {
-  ConsiderationInputItem,
+  ConsiderationItem,
   OrderWithCounter,
 } from "@opensea/seaport-js/lib/types";
 import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
@@ -87,7 +87,7 @@ type ContractCriteria = {
 };
 
 type PartialParameters = {
-  consideration: ConsiderationInputItem[];
+  consideration: ConsiderationItem[];
   zone: string;
   zoneHash: string;
 };

@@ -212,10 +212,12 @@ export class OpenSeaAPI {
     quantity: number,
     collectionSlug: string
   ): Promise<BuildOfferResponse> {
-    return await this.post<BuildOfferResponse>(
-      getBuildOfferPath(),
-      getBuildCollectionOfferPayload(offererAddress, quantity, collectionSlug)
+    const payload = getBuildCollectionOfferPayload(
+      offererAddress,
+      quantity,
+      collectionSlug
     );
+    return await this.post<BuildOfferResponse>(getBuildOfferPath(), payload);
   }
 
   /**
@@ -223,12 +225,22 @@ export class OpenSeaAPI {
    */
   public async postCollectionOffer(
     order: ProtocolData,
-    slug: string
-  ): Promise<PostOfferResponse> {
-    return await this.post<PostOfferResponse>(
-      getPostCollectionOfferPath(),
-      getPostCollectionOfferPayload(slug, order)
-    );
+    slug: string,
+    retries = 0
+  ): Promise<PostOfferResponse | null> {
+    const payload = getPostCollectionOfferPayload(slug, order);
+    console.log(JSON.stringify(payload, null, 4));
+
+    try {
+      return await this.post<PostOfferResponse>(
+        getPostCollectionOfferPath(),
+        payload
+      );
+    } catch (error) {
+      _throwOrContinue(error, retries);
+      await delay(1000);
+      return this.postCollectionOffer(order, slug, retries - 1);
+    }
   }
 
   /**
@@ -333,7 +345,8 @@ export class OpenSeaAPI {
    * Fetch a collection through the API
    */
   public async getCollection(slug: string): Promise<OpenSeaCollection> {
-    return await this.get<OpenSeaCollection>(getCollectionPath(slug));
+    const path = getCollectionPath(slug);
+    return await this.get<OpenSeaCollection>(path);
   }
 
   /**
@@ -503,6 +516,8 @@ export class OpenSeaAPI {
       // Result will be undefined or text
     }
 
+    console.log(JSON.stringify(response, null, 4));
+
     this.logger(`Got error ${response.status}: ${JSON.stringify(result)}`);
 
     switch (response.status) {
@@ -545,8 +560,9 @@ export class OpenSeaAPI {
 function _throwOrContinue(error: unknown, retries: number) {
   const isUnavailable =
     error instanceof Error &&
-    !!error.message &&
-    (error.message.includes("503") || error.message.includes("429"));
+    (error.message.includes("503") ||
+      error.message.includes("429") ||
+      error.message.includes("400"));
 
   if (retries <= 0 || !isUnavailable) {
     throw error;

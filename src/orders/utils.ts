@@ -26,7 +26,7 @@ export const getOrdersAPIPath = (
 };
 
 export const getCollectionPath = (slug: string) => {
-  return `/v1/collection/${slug}`;
+  return `/api/v1/collection/${slug}`;
 };
 
 export const getBuildOfferPath = () => {
@@ -38,12 +38,12 @@ export const getPostCollectionOfferPath = () => {
 };
 
 export const getPostCollectionOfferPayload = (
-  slug: string,
+  collectionSlug: string,
   protocol_data: ProtocolData
 ) => {
   return {
     criteria: {
-      collection: { slug },
+      collection: { slug: collectionSlug },
     },
     protocol_data,
   };
