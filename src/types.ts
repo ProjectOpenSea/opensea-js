@@ -8,7 +8,6 @@ import {
   Order as WyvernOrder,
   WyvernProtocolConfig,
 } from "wyvern-js/lib/types";
-import type { Token } from "wyvern-schemas/dist/types";
 import type { OrderV2 } from "./orders/types";
 
 export { HowToCall, Network };
@@ -478,7 +477,11 @@ export interface Transaction {
 /**
  * Full annotated Fungible Token spec with OpenSea metadata
  */
-export interface OpenSeaFungibleToken extends Token {
+export interface OpenSeaFungibleToken {
+  name: string;
+  symbol: string;
+  decimals: number;
+  address: string;
   imageUrl?: string;
   ethPrice?: string;
   usdPrice?: string;

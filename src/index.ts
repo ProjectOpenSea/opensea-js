@@ -11,7 +11,7 @@ export {
   encodeDefaultCall,
   encodeReplacementPattern,
   AbiType,
-} from "./utils/schema";
+} from "./utils/schemas/schema";
 
 /**
  * Example setup:

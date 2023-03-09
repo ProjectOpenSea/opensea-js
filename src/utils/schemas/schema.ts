@@ -1,16 +1,22 @@
 import { BigNumber } from "bignumber.js";
+import { AbiType } from "ethereum-types";
 import * as ethABI from "ethereumjs-abi";
 import { WyvernProtocol } from "wyvern-js";
 import { WyvernAtomicizerContract } from "wyvern-js/lib/abi_gen/wyvern_atomicizer";
-import { HowToCall, Network, ReplacementEncoder } from "wyvern-js/lib/types";
 import {
+  HowToCall,
+  Network,
+  ReplacementEncoder,
   AnnotatedFunctionABI,
   FunctionInputKind,
-  Schema,
-} from "wyvern-schemas/dist/types";
-import { proxyABI, proxyAssertABI } from "../abi/Proxy";
-import { OrderSide, WyvernAsset } from "../types";
-export { AbiType } from "wyvern-schemas";
+} from "wyvern-js/lib/types";
+import { proxyABI, proxyAssertABI } from "../../abi/Proxy";
+import { OrderSide, WyvernAsset } from "../../types";
+import { goerliSchemas } from "./goerli/index";
+import { mainSchemas } from "./main/index";
+import { rinkebySchemas } from "./rinkeby/index";
+import { EventInputKind } from "./types";
+export { AbiType } from "ethereum-types";
 
 export interface LimitedCallSpec {
   target: string;
@@ -21,6 +27,88 @@ export interface CallSpec {
   target: string;
   calldata: string;
   replacementPattern: string;
+}
+
+export interface MerkleProof {
+  root: string;
+  proof: string[];
+}
+
+export interface AnnotatedFunctionABIReturning<T> extends AnnotatedFunctionABI {
+  assetFromOutputs: (outputs: any) => T;
+}
+
+export interface SchemaFunctions<T> {
+  transfer: (asset: T) => AnnotatedFunctionABI;
+  checkAndTransfer?: (
+    asset: T,
+    validatorAddress: string,
+    proof?: MerkleProof
+  ) => AnnotatedFunctionABI;
+  ownerOf?: (asset: T) => AnnotatedFunctionABI;
+  countOf?: (asset: T) => AnnotatedFunctionABIReturning<number>;
+  assetsOfOwnerByIndex: Array<AnnotatedFunctionABIReturning<T | null>>;
+  initializeProxy?: (owner: string) => AnnotatedFunctionABI;
+}
+
+export interface SchemaField {
+  name: string;
+  type: string;
+  description: string;
+  values?: any[];
+  readOnly?: boolean;
+}
+
+export interface AnnotatedEventInput {
+  name: string;
+  type: string;
+  indexed: boolean;
+  kind: EventInputKind;
+}
+
+export interface AnnotatedEventABI<T> {
+  type: AbiType.Event;
+  name: string;
+  target: string;
+  anonymous: boolean;
+  inputs: AnnotatedEventInput[];
+  assetFromInputs: (inputs: any, web3: any) => Promise<T>;
+}
+
+export interface SchemaEvents<T> {
+  transfer: Array<AnnotatedEventABI<T>>;
+}
+
+export interface Property {
+  key: string;
+  kind: string;
+  value: any;
+}
+
+export interface FormatInfo {
+  thumbnail: string;
+  title: string;
+  description: string;
+  url: string;
+  properties: Property[];
+}
+
+export interface Schema<T> {
+  version: number;
+  deploymentBlock: number;
+  name: string;
+  description: string;
+  thumbnail: string;
+  website: string;
+  fields: SchemaField[];
+  checkAsset?: (asset: T) => boolean;
+  assetFromFields: (fields: any) => T;
+  assetToFields?: (asset: T) => any;
+  allAssets?: (web3: any) => Promise<T[]>;
+  functions: SchemaFunctions<T>;
+  events: SchemaEvents<T>;
+  formatter: (obj: T, web3: any) => Promise<FormatInfo>;
+  hash: (obj: T) => any;
 }
 
 export const encodeReplacementPattern: ReplacementEncoder =
@@ -362,3 +450,9 @@ function encodeAtomicizedCalldata(
     );
   }
 }
+
+export const schemas = {
+  goerli: goerliSchemas,
+  rinkeby: rinkebySchemas,
+  main: mainSchemas,
+};

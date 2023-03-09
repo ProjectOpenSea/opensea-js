@@ -17,9 +17,8 @@ import {
   FunctionInputKind,
   FunctionOutputKind,
   Network,
-  Schema,
   StateMutability,
-} from "wyvern-schemas/dist/types";
+} from "wyvern-js/lib/types";
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
@@ -62,6 +61,7 @@ import {
   WyvernNFTAsset,
   WyvernSchemaName,
 } from "../types";
+import { Schema } from "./schemas/schema";
 
 export { WyvernProtocol };
 
