@@ -565,6 +565,7 @@ export class OpenSeaAPI {
 function _throwOrContinue(error: unknown, retries: number) {
   const isUnavailable =
     error instanceof Error &&
+    !!error.message &&
     (error.message.includes("503") || error.message.includes("429"));
 
   if (retries <= 0 || !isUnavailable) {

@@ -37,7 +37,6 @@ const sdk = new OpenSeaSDK(
 suite("SDK: order posting", () => {
   test("Post collection offer", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
-    console.log(collection);
     const postOrderRequest = {
       collectionSlug: collection.slug,
       accountAddress: WALLET_ADDRESS ? WALLET_ADDRESS : "",

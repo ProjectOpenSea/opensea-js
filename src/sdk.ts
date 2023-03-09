@@ -1024,9 +1024,6 @@ export class OpenSeaSDK {
       ...collectionSellerFees,
     ];
 
-    console.log("Consideration");
-    console.log(considerationItems);
-
     const payload = {
       offerer: accountAddress,
       offer: [
