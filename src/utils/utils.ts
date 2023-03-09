@@ -1130,7 +1130,6 @@ export const feesToBasisPoints = (
     return 0;
   }
 
-  console.log(fees);
   return Array.from(fees.values()).reduce(
     (sum, basisPoints) => basisPoints + sum,
     0

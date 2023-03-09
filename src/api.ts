@@ -523,8 +523,6 @@ export class OpenSeaAPI {
       // Result will be undefined or text
     }
 
-    console.log(JSON.stringify(response, null, 4));
-
     this.logger(`Got error ${response.status}: ${JSON.stringify(result)}`);
 
     switch (response.status) {
@@ -567,9 +565,7 @@ export class OpenSeaAPI {
 function _throwOrContinue(error: unknown, retries: number) {
   const isUnavailable =
     error instanceof Error &&
-    (error.message.includes("503") ||
-      error.message.includes("429") ||
-      error.message.includes("400"));
+    (error.message.includes("503") || error.message.includes("429"));
 
   if (retries <= 0 || !isUnavailable) {
     throw error;
