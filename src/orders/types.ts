@@ -2,7 +2,11 @@ import {
   ConsiderationItem,
   OrderWithCounter,
 } from "@opensea/seaport-js/lib/types";
-import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
+import {
+  OpenSeaAccount,
+  OpenSeaAssetBundle,
+  OpenSeaCollection,
+} from "../types";
 
 // Protocol data
 type OrderProtocolToProtocolData = {
@@ -63,6 +67,10 @@ type Transaction = {
 
 export type BuildOfferResponse = {
   partialParameters: PartialParameters;
+};
+
+export type GetCollectionResponse = {
+  collection: OpenSeaCollection;
 };
 
 export type PostOfferResponse = {

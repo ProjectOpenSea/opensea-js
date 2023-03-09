@@ -712,12 +712,11 @@ export class OpenSeaSDK {
     collectionSellerFees: ConsiderationInputItem[];
   }> {
     // Seller fee basis points
-    const openseaSellerFeeBasisPoints = feesToBasisPoints(
-      collection.fees?.openseaFees
-    );
-    const collectionSellerFeeBasisPoints = feesToBasisPoints(
-      collection.fees?.sellerFees
-    );
+    const osFees = collection.fees?.opensea_fees;
+    const creatorFees = collection.fees?.seller_fees;
+
+    const openseaSellerFeeBasisPoints = feesToBasisPoints(osFees);
+    const collectionSellerFeeBasisPoints = feesToBasisPoints(creatorFees);
 
     // Seller basis points
     const sellerBasisPoints =
@@ -740,22 +739,21 @@ export class OpenSeaSDK {
     const getConsiderationItemsFromFeeCategory = (
       feeCategory: Map<string, number>
     ): ConsiderationInputItem[] => {
-      return Array.from(feeCategory.entries()).map(
-        ([recipient, basisPoints]) => {
-          return getConsiderationItem(basisPoints, recipient);
-        }
-      );
+      const map = new Map(Object.entries(feeCategory));
+      return Array.from(map.entries()).map(([recipient, basisPoints]) => {
+        return getConsiderationItem(basisPoints, recipient);
+      });
     };
 
     return {
       sellerFee: getConsiderationItem(sellerBasisPoints),
       openseaSellerFees:
         openseaSellerFeeBasisPoints > 0 && collection.fees
-          ? getConsiderationItemsFromFeeCategory(collection.fees.openseaFees)
+          ? getConsiderationItemsFromFeeCategory(osFees)
           : [],
       collectionSellerFees:
         collectionSellerFeeBasisPoints > 0 && collection.fees
-          ? getConsiderationItemsFromFeeCategory(collection.fees.sellerFees)
+          ? getConsiderationItemsFromFeeCategory(creatorFees)
           : [],
     };
   }
@@ -1000,11 +998,10 @@ export class OpenSeaSDK {
       collectionSlug
     );
     const item = buildOfferResult.partialParameters.consideration[0];
-
     const convertedConsiderationItem = {
       itemType: item.itemType,
       token: item.token,
-      identifiers: [item.identifierOrCriteria],
+      identifier: item.identifierOrCriteria,
       amount: item.startAmount,
     };
 
@@ -1014,12 +1011,12 @@ export class OpenSeaSDK {
       makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
       makeBigNumber(amount)
     );
-
     const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
       await this.getFees({
         collection,
         paymentTokenAddress,
         startAmount: basePrice,
+        endAmount: basePrice,
       });
 
     const considerationItems = [
@@ -1029,6 +1026,7 @@ export class OpenSeaSDK {
     ];
 
     const payload = {
+      offerer: accountAddress,
       offer: [
         {
           token: paymentTokenAddress,
@@ -1051,6 +1049,7 @@ export class OpenSeaSDK {
       accountAddress
     );
     const order = await executeAllActions();
+
     return this.api.postCollectionOffer(order, collectionSlug);
   }
 

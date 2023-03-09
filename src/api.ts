@@ -11,6 +11,7 @@ import {
 import {
   BuildOfferResponse,
   FulfillmentDataResponse,
+  GetCollectionResponse,
   OrderAPIOptions,
   OrderSide,
   OrdersPostQueryResponse,
@@ -217,7 +218,11 @@ export class OpenSeaAPI {
       quantity,
       collectionSlug
     );
-    return await this.post<BuildOfferResponse>(getBuildOfferPath(), payload);
+    const response = await this.post<BuildOfferResponse>(
+      getBuildOfferPath(),
+      payload
+    );
+    return response;
   }
 
   /**
@@ -229,8 +234,8 @@ export class OpenSeaAPI {
     retries = 0
   ): Promise<PostOfferResponse | null> {
     const payload = getPostCollectionOfferPayload(slug, order);
+    console.log("Post Order Payload");
     console.log(JSON.stringify(payload, null, 4));
-
     try {
       return await this.post<PostOfferResponse>(
         getPostCollectionOfferPath(),
@@ -346,7 +351,7 @@ export class OpenSeaAPI {
    */
   public async getCollection(slug: string): Promise<OpenSeaCollection> {
     const path = getCollectionPath(slug);
-    return await this.get<OpenSeaCollection>(path);
+    return (await this.get<GetCollectionResponse>(path)).collection;
   }
 
   /**
