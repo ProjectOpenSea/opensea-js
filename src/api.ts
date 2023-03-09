@@ -9,13 +9,16 @@ import {
   ORDERBOOK_PATH,
 } from "./constants";
 import {
+  BuildOfferResponse,
   FulfillmentDataResponse,
+  GetCollectionResponse,
   OrderAPIOptions,
   OrderSide,
   OrdersPostQueryResponse,
   OrdersQueryOptions,
   OrdersQueryResponse,
   OrderV2,
+  PostOfferResponse,
   ProtocolData,
   QueryCursors,
 } from "./orders/types";
@@ -26,6 +29,11 @@ import {
   getFulfillmentDataPath,
   getFulfillListingPayload,
   getFulfillOfferPayload,
+  getBuildOfferPath,
+  getBuildCollectionOfferPayload,
+  getCollectionPath,
+  getPostCollectionOfferPath,
+  getPostCollectionOfferPayload,
 } from "./orders/utils";
 import {
   Network,
@@ -34,6 +42,7 @@ import {
   OpenSeaAssetBundle,
   OpenSeaAssetBundleQuery,
   OpenSeaAssetQuery,
+  OpenSeaCollection,
   OpenSeaFungibleToken,
   OpenSeaFungibleTokenQuery,
 } from "./types";
@@ -42,6 +51,7 @@ import {
   assetFromJSON,
   delay,
   tokenFromJSON,
+  collectionFromJSON,
 } from "./utils/utils";
 
 export class OpenSeaAPI {
@@ -197,6 +207,49 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Build an offer
+   */
+  public async buildOffer(
+    offererAddress: string,
+    quantity: number,
+    collectionSlug: string
+  ): Promise<BuildOfferResponse> {
+    const payload = getBuildCollectionOfferPayload(
+      offererAddress,
+      quantity,
+      collectionSlug
+    );
+    const response = await this.post<BuildOfferResponse>(
+      getBuildOfferPath(),
+      payload
+    );
+    return response;
+  }
+
+  /**
+   * Post collection offer
+   */
+  public async postCollectionOffer(
+    order: ProtocolData,
+    slug: string,
+    retries = 0
+  ): Promise<PostOfferResponse | null> {
+    const payload = getPostCollectionOfferPayload(slug, order);
+    console.log("Post Order Payload");
+    console.log(JSON.stringify(payload, null, 4));
+    try {
+      return await this.post<PostOfferResponse>(
+        getPostCollectionOfferPath(),
+        payload
+      );
+    } catch (error) {
+      _throwOrContinue(error, retries);
+      await delay(1000);
+      return this.postCollectionOffer(order, slug, retries - 1);
+    }
+  }
+
+  /**
    * Create a whitelist entry for an asset to prevent others from buying.
    * Buyers will have to have verified at least one of the emails
    * on an asset in order to buy.
@@ -292,6 +345,15 @@ export class OpenSeaAPI {
       previous: json.previous,
       estimatedCount: json.estimated_count,
     };
+  }
+
+  /**
+   * Fetch a collection through the API
+   */
+  public async getCollection(slug: string): Promise<OpenSeaCollection> {
+    const path = getCollectionPath(slug);
+    const response = await this.get<GetCollectionResponse>(path);
+    return collectionFromJSON(response.collection);
   }
 
   /**
