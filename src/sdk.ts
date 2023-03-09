@@ -9,7 +9,6 @@ import {
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "bignumber.js";
-import * as dotenv from "dotenv";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
 import { ethers, providers } from "ethers";
@@ -183,7 +182,6 @@ export class OpenSeaSDK {
     logger?: (arg: string) => void,
     wallet?: ethers.Wallet
   ) {
-    dotenv.config();
     // API config
     apiConfig.networkName = apiConfig.networkName || Network.Main;
     this.api = new OpenSeaAPI(apiConfig);
