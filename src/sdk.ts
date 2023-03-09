@@ -1039,14 +1039,16 @@ export class OpenSeaSDK {
       throw new Error("Unsupported protocol");
     }
 
-    if (!order.clientSignature && order.orderHash) {
+    if (order.orderHash) {
       const result = await this.api.generateFulfillmentData(
         accountAddress,
         order.orderHash,
         order.protocolAddress,
         order.side
       );
-      order.clientSignature = result.fulfillment_data.orders[0].signature;
+      const signature = result.fulfillment_data.orders[0].signature;
+      order.clientSignature = signature;
+      order.protocolData.signature = signature;
     }
 
     const isPrivateListing = !!order.taker;
