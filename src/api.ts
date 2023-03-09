@@ -51,6 +51,7 @@ import {
   assetFromJSON,
   delay,
   tokenFromJSON,
+  collectionFromJSON,
 } from "./utils/utils";
 
 export class OpenSeaAPI {
@@ -351,7 +352,8 @@ export class OpenSeaAPI {
    */
   public async getCollection(slug: string): Promise<OpenSeaCollection> {
     const path = getCollectionPath(slug);
-    return (await this.get<GetCollectionResponse>(path)).collection;
+    const response = await this.get<GetCollectionResponse>(path);
+    return collectionFromJSON(response.collection);
   }
 
   /**

@@ -183,8 +183,8 @@ export enum TokenStandardVersion {
 
 // Collection fees mapping recipient address to basis points
 export interface Fees {
-  opensea_fees: Map<string, number>;
-  seller_fees: Map<string, number>;
+  openseaFees: Map<string, number>;
+  sellerFees: Map<string, number>;
 }
 
 export interface WyvernNFTAsset {

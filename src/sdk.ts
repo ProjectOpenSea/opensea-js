@@ -712,8 +712,8 @@ export class OpenSeaSDK {
     collectionSellerFees: ConsiderationInputItem[];
   }> {
     // Seller fee basis points
-    const osFees = collection.fees?.opensea_fees;
-    const creatorFees = collection.fees?.seller_fees;
+    const osFees = collection.fees?.openseaFees;
+    const creatorFees = collection.fees?.sellerFees;
 
     const openseaSellerFeeBasisPoints = feesToBasisPoints(osFees);
     const collectionSellerFeeBasisPoints = feesToBasisPoints(creatorFees);
@@ -739,10 +739,11 @@ export class OpenSeaSDK {
     const getConsiderationItemsFromFeeCategory = (
       feeCategory: Map<string, number>
     ): ConsiderationInputItem[] => {
-      const map = new Map(Object.entries(feeCategory));
-      return Array.from(map.entries()).map(([recipient, basisPoints]) => {
-        return getConsiderationItem(basisPoints, recipient);
-      });
+      return Array.from(feeCategory.entries()).map(
+        ([recipient, basisPoints]) => {
+          return getConsiderationItem(basisPoints, recipient);
+        }
+      );
     };
 
     return {
@@ -1024,6 +1025,9 @@ export class OpenSeaSDK {
       ...openseaSellerFees,
       ...collectionSellerFees,
     ];
+
+    console.log("Consideration");
+    console.log(considerationItems);
 
     const payload = {
       offerer: accountAddress,

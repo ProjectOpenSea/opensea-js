@@ -1129,9 +1129,9 @@ export const feesToBasisPoints = (
   if (!fees) {
     return 0;
   }
-  const map = new Map(Object.entries(fees));
 
-  return Array.from(map.values()).reduce(
+  console.log(fees);
+  return Array.from(fees.values()).reduce(
     (sum, basisPoints) => basisPoints + sum,
     0
   );
