@@ -16,8 +16,6 @@ import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import Web3 from "web3";
 import { WyvernProtocol } from "wyvern-js";
-import * as WyvernSchemas from "wyvern-schemas";
-import { Schema } from "wyvern-schemas/dist/types";
 import { OpenSeaAPI } from "./api";
 import {
   CK_ADDRESS,
@@ -110,7 +108,10 @@ import {
   encodeProxyCall,
   encodeSell,
   encodeTransferCall,
-} from "./utils/schema";
+  schemas,
+  Schema,
+} from "./utils/schemas/schema";
+import { getCanonicalWrappedEther, getTokens } from "./utils/tokens";
 import {
   annotateERC20TransferABI,
   annotateERC721TransferABI,
@@ -614,7 +615,7 @@ export class OpenSeaSDK {
     amountInEth: number;
     accountAddress: string;
   }) {
-    const token = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther;
+    const token = getCanonicalWrappedEther(this._networkName);
 
     const amount = WyvernProtocol.toBaseUnitAmount(
       makeBigNumber(amountInEth),
@@ -653,7 +654,7 @@ export class OpenSeaSDK {
     amountInEth: number;
     accountAddress: string;
   }) {
-    const token = WyvernSchemas.tokens[this._networkName].canonicalWrappedEther;
+    const token = getCanonicalWrappedEther(this._networkName);
 
     const amount = WyvernProtocol.toBaseUnitAmount(
       makeBigNumber(amountInEth),
@@ -2151,7 +2152,7 @@ export class OpenSeaSDK {
   > {
     onDeprecated("Use `api.getPaymentTokens` instead");
 
-    const tokenSettings = WyvernSchemas.tokens[this._networkName];
+    const tokenSettings = getTokens(this._networkName);
 
     const { tokens } = await this.api.getPaymentTokens({
       symbol,
@@ -2538,8 +2539,7 @@ export class OpenSeaSDK {
     proxyAddress?: string;
   }) {
     if (!tokenAddress) {
-      tokenAddress =
-        WyvernSchemas.tokens[this._networkName].canonicalWrappedEther.address;
+      tokenAddress = getCanonicalWrappedEther(this._networkName).address;
     }
     const addressToApprove =
       proxyAddress ||
@@ -3766,7 +3766,7 @@ export class OpenSeaSDK {
   private _getSchema(schemaName?: WyvernSchemaName): Schema<WyvernAsset> {
     const schemaName_ = schemaName || WyvernSchemaName.ERC721;
 
-    const schema = WyvernSchemas.schemas[this._networkName].filter(
+    const schema = schemas[this._networkName].filter(
       (s) => s.name == schemaName_
     )[0];
 

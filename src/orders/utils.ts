@@ -1,5 +1,3 @@
-import { Network } from "../types";
-import { accountFromJSON, assetBundleFromJSON } from "../utils";
 import {
   OrderProtocol,
   OrdersQueryOptions,
@@ -8,6 +6,8 @@ import {
   SerializedOrderV2,
   ProtocolData,
 } from "./types";
+import { Network } from "../types";
+import { accountFromJSON, assetBundleFromJSON } from "../utils";
 
 const NETWORK_TO_CHAIN = {
   [Network.Main]: "ethereum",
