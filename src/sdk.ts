@@ -11,7 +11,7 @@ import {
 import { BigNumber } from "bignumber.js";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
-import { providers } from "ethers";
+import { ethers, providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import Web3 from "web3";
@@ -65,7 +65,7 @@ import {
   getPrivateListingConsiderations,
   getPrivateListingFulfillments,
 } from "./orders/privateListings";
-import { OrderV2 } from "./orders/types";
+import { OrderV2, PostOfferResponse } from "./orders/types";
 import { ERC1155Abi } from "./typechain/contracts/ERC1155Abi";
 import { ERC721v3Abi } from "./typechain/contracts/ERC721v3Abi";
 import { UniswapExchangeAbi } from "./typechain/contracts/UniswapExchangeAbi";
@@ -83,6 +83,7 @@ import {
   Network,
   OpenSeaAPIConfig,
   OpenSeaAsset,
+  OpenSeaCollection,
   OpenSeaFungibleToken,
   Order,
   OrderSide,
@@ -173,12 +174,14 @@ export class OpenSeaSDK {
    *  `const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')`
    * @param apiConfig configuration options, including `networkName`
    * @param logger logger, optional, a function that will be called with debugging
+   * @param wallet optional, if you'd like to use an ethers wallet for order posting
    *  information
    */
   constructor(
     provider: Web3["currentProvider"],
     apiConfig: OpenSeaAPIConfig = {},
-    logger?: (arg: string) => void
+    logger?: (arg: string) => void,
+    wallet?: ethers.Wallet
   ) {
     // API config
     apiConfig.networkName = apiConfig.networkName || Network.Main;
@@ -203,14 +206,17 @@ export class OpenSeaSDK {
     this.ethersProvider = new providers.Web3Provider(
       provider as providers.ExternalProvider
     );
-    this.seaport = new Seaport(this.ethersProvider, {
+
+    const providerOrSinger = wallet ? wallet : this.ethersProvider;
+    this.seaport = new Seaport(providerOrSinger, {
       conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
       overrides: {
         defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
       },
       seaportVersion: "1.1",
     });
-    this.seaport_v1_4 = new Seaport(this.ethersProvider, {
+
+    this.seaport_v1_4 = new Seaport(providerOrSinger, {
       conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
       overrides: {
         defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
@@ -690,12 +696,12 @@ export class OpenSeaSDK {
   };
 
   private async getFees({
-    openseaAsset: asset,
+    collection,
     paymentTokenAddress,
     startAmount,
     endAmount,
   }: {
-    openseaAsset: OpenSeaAsset;
+    collection: OpenSeaCollection;
     paymentTokenAddress: string;
     startAmount: BigNumber;
     endAmount?: BigNumber;
@@ -705,12 +711,11 @@ export class OpenSeaSDK {
     collectionSellerFees: ConsiderationInputItem[];
   }> {
     // Seller fee basis points
-    const openseaSellerFeeBasisPoints = feesToBasisPoints(
-      asset.collection.fees?.openseaFees
-    );
-    const collectionSellerFeeBasisPoints = feesToBasisPoints(
-      asset.collection.fees?.sellerFees
-    );
+    const osFees = collection.fees?.openseaFees;
+    const creatorFees = collection.fees?.sellerFees;
+
+    const openseaSellerFeeBasisPoints = feesToBasisPoints(osFees);
+    const collectionSellerFeeBasisPoints = feesToBasisPoints(creatorFees);
 
     // Seller basis points
     const sellerBasisPoints =
@@ -743,16 +748,12 @@ export class OpenSeaSDK {
     return {
       sellerFee: getConsiderationItem(sellerBasisPoints),
       openseaSellerFees:
-        openseaSellerFeeBasisPoints > 0 && asset.collection.fees
-          ? getConsiderationItemsFromFeeCategory(
-              asset.collection.fees.openseaFees
-            )
+        openseaSellerFeeBasisPoints > 0 && collection.fees
+          ? getConsiderationItemsFromFeeCategory(osFees)
           : [],
       collectionSellerFees:
-        collectionSellerFeeBasisPoints > 0 && asset.collection.fees
-          ? getConsiderationItemsFromFeeCategory(
-              asset.collection.fees.sellerFees
-            )
+        collectionSellerFeeBasisPoints > 0 && collection.fees
+          ? getConsiderationItemsFromFeeCategory(creatorFees)
           : [],
     };
   }
@@ -825,7 +826,7 @@ export class OpenSeaSDK {
 
     const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
       await this.getFees({
-        openseaAsset,
+        collection: openseaAsset.collection,
         paymentTokenAddress,
         startAmount: basePrice,
       });
@@ -926,7 +927,7 @@ export class OpenSeaSDK {
       openseaSellerFees,
       collectionSellerFees: collectionSellerFees,
     } = await this.getFees({
-      openseaAsset,
+      collection: openseaAsset.collection,
       paymentTokenAddress,
       startAmount: basePrice,
       endAmount: endPrice,
@@ -966,6 +967,90 @@ export class OpenSeaSDK {
       protocolAddress: CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
       side: "ask",
     });
+  }
+
+  /**
+   * Create a collection offer
+   */
+  public async createCollectionOffer({
+    collectionSlug,
+    accountAddress,
+    amount,
+    quantity,
+    domain,
+    salt,
+    expirationTime,
+    paymentTokenAddress,
+  }: {
+    collectionSlug: string;
+    accountAddress: string;
+    amount: string;
+    quantity: number;
+    domain?: string;
+    salt?: string;
+    expirationTime?: BigNumberInput;
+    paymentTokenAddress: string;
+  }): Promise<PostOfferResponse | null> {
+    const collection = await this.api.getCollection(collectionSlug);
+    const buildOfferResult = await this.api.buildOffer(
+      accountAddress,
+      quantity,
+      collectionSlug
+    );
+    const item = buildOfferResult.partialParameters.consideration[0];
+    const convertedConsiderationItem = {
+      itemType: item.itemType,
+      token: item.token,
+      identifier: item.identifierOrCriteria,
+      amount: item.startAmount,
+    };
+
+    const { basePrice } = await this._getPriceParameters(
+      OrderSide.Buy,
+      paymentTokenAddress,
+      makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
+      makeBigNumber(amount)
+    );
+    const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
+      await this.getFees({
+        collection,
+        paymentTokenAddress,
+        startAmount: basePrice,
+        endAmount: basePrice,
+      });
+
+    const considerationItems = [
+      convertedConsiderationItem,
+      ...openseaSellerFees,
+      ...collectionSellerFees,
+    ];
+
+    const payload = {
+      offerer: accountAddress,
+      offer: [
+        {
+          token: paymentTokenAddress,
+          amount: basePrice.toString(),
+        },
+      ],
+      consideration: considerationItems,
+      endTime:
+        expirationTime?.toString() ??
+        getMaxOrderExpirationTimestamp().toString(),
+      zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+      domain,
+      salt,
+      restrictedByZone: false,
+      allowPartialFills: true,
+    };
+
+    const { executeAllActions } = await this.seaport_v1_4.createOrder(
+      payload,
+      accountAddress
+    );
+    const order = await executeAllActions();
+
+    return this.api.postCollectionOffer(order, collectionSlug);
   }
 
   private async fulfillPrivateOrder({
@@ -1040,14 +1125,16 @@ export class OpenSeaSDK {
       throw new Error("Unsupported protocol");
     }
 
-    if (!order.clientSignature && order.orderHash) {
+    if (order.orderHash) {
       const result = await this.api.generateFulfillmentData(
         accountAddress,
         order.orderHash,
         order.protocolAddress,
         order.side
       );
-      order.clientSignature = result.fulfillment_data.orders[0].signature;
+      const signature = result.fulfillment_data.orders[0].signature;
+      order.clientSignature = signature;
+      order.protocolData.signature = signature;
     }
 
     const isPrivateListing = !!order.taker;

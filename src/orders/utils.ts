@@ -6,6 +6,7 @@ import {
   OrderSide,
   OrderV2,
   SerializedOrderV2,
+  ProtocolData,
 } from "./types";
 
 const NETWORK_TO_CHAIN = {
@@ -22,6 +23,46 @@ export const getOrdersAPIPath = (
   const chain = NETWORK_TO_CHAIN[network];
   const sidePath = side === "ask" ? "listings" : "offers";
   return `/v2/orders/${chain}/${protocol}/${sidePath}`;
+};
+
+export const getCollectionPath = (slug: string) => {
+  return `/api/v1/collection/${slug}`;
+};
+
+export const getBuildOfferPath = () => {
+  return `/v2/offers/build`;
+};
+
+export const getPostCollectionOfferPath = () => {
+  return `/v2/offers`;
+};
+
+export const getPostCollectionOfferPayload = (
+  collectionSlug: string,
+  protocol_data: ProtocolData
+) => {
+  return {
+    criteria: {
+      collection: { slug: collectionSlug },
+    },
+    protocol_data,
+  };
+};
+
+export const getBuildCollectionOfferPayload = (
+  offererAddress: string,
+  quantity: number,
+  collectionSlug: string
+) => {
+  return {
+    offerer: offererAddress,
+    quantity,
+    criteria: {
+      collection: {
+        slug: collectionSlug,
+      },
+    },
+  };
 };
 
 export const getFulfillmentDataPath = (side: OrderSide) => {

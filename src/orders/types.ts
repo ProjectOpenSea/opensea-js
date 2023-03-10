@@ -1,4 +1,7 @@
-import { OrderWithCounter } from "@opensea/seaport-js/lib/types";
+import {
+  ConsiderationItem,
+  OrderWithCounter,
+} from "@opensea/seaport-js/lib/types";
 import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
 
 // Protocol data
@@ -56,6 +59,41 @@ type Transaction = {
   to: string;
   value: number;
   input_data: object;
+};
+
+export type BuildOfferResponse = {
+  partialParameters: PartialParameters;
+};
+
+export type GetCollectionResponse = {
+  collection: object;
+};
+
+export type PostOfferResponse = {
+  order_hash: string;
+  chain: string;
+  criteria: Criteria;
+  protocol_data: ProtocolData;
+  protocol_address: string;
+};
+
+type Criteria = {
+  collection: CollectionCriteria;
+  contract?: ContractCriteria;
+};
+
+type CollectionCriteria = {
+  slug: string;
+};
+
+type ContractCriteria = {
+  address: string;
+};
+
+type PartialParameters = {
+  consideration: ConsiderationItem[];
+  zone: string;
+  zoneHash: string;
 };
 
 // API query types
