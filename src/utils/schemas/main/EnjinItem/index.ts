@@ -7,6 +7,7 @@ import {
 import { SemiFungibleTradeType, ERC1155Schema } from "../../ERC1155";
 import { Schema } from "../../schema";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const EnjinItemSchema: Schema<SemiFungibleTradeType> = {
   ...ERC1155Schema,
   version: 1,
@@ -61,3 +62,5 @@ export const EnjinItemSchema: Schema<SemiFungibleTradeType> = {
     assetsOfOwnerByIndex: [],
   },
 };
+
+/* eslint-enable @typescript-eslint/no-explicit-any */

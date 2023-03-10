@@ -6,7 +6,7 @@ import {
 } from "wyvern-js/lib/types";
 import { Schema } from "../schema";
 
-export interface FungibleTradeType {
+interface FungibleTradeType {
   address: string;
   quantity: string;
 }
@@ -22,6 +22,7 @@ export const ERC20Schema: Schema<FungibleTradeType> = {
     { name: "Address", type: "address", description: "Asset Contract Address" },
     { name: "Quantity", type: "uint256", description: "Quantity to transfer" },
   ],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assetFromFields: (fields: any) => ({
     address: fields.Address,
     quantity: fields.Quantity,
@@ -72,6 +73,7 @@ export const ERC20Schema: Schema<FungibleTradeType> = {
       outputs: [
         { kind: FunctionOutputKind.Count, name: "balance", type: "uint" },
       ],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       assetFromOutputs: (outputs: any) => outputs.balance,
     }),
     assetsOfOwnerByIndex: [],

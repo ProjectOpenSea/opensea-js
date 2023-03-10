@@ -24,6 +24,7 @@ export const ERC1155Schema: Schema<SemiFungibleTradeType> = {
     { name: "Address", type: "address", description: "Asset Contract Address" },
     { name: "Quantity", type: "uint256", description: "Quantity to transfer" },
   ],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assetFromFields: (fields: any) => ({
     id: fields.ID,
     address: fields.Address,
@@ -137,6 +138,7 @@ export const ERC1155Schema: Schema<SemiFungibleTradeType> = {
       outputs: [
         { kind: FunctionOutputKind.Count, name: "balance", type: "uint" },
       ],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       assetFromOutputs: (outputs: any) => outputs.balance,
     }),
     assetsOfOwnerByIndex: [],

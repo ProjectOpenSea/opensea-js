@@ -10,6 +10,7 @@ import { rinkebyENSShortNameAuctionSchema } from "./rinkebyENSShortNameAuction/i
 import { rinkebyOwnableContractSchema } from "./rinkebyOwnableContract/index";
 import { testRinkebyNFTSchema } from "./testRinkebyNFT/index";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const rinkebySchemas: Array<Schema<any>> = [
   rinkebyCryptoKittiesSchema,
   rinkebyCustomSchema,

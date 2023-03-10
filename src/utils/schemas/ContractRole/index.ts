@@ -44,6 +44,7 @@ export const ContractRoleSchema: Schema<ContractRoleType> = {
         "Name of method to set value of role. Should take one argument, an address.",
     },
   ],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assetFromFields: (fields: any) => ({
     name: fields.Name,
     address: fields.Address,

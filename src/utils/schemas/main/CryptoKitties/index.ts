@@ -8,7 +8,7 @@ import {
 import { Schema } from "../../schema";
 import { EventInputKind } from "../../types";
 
-export type CryptoKittiesType = string;
+type CryptoKittiesType = string;
 
 export const CryptoKittiesSchema: Schema<CryptoKittiesType> = {
   version: 1,
@@ -18,6 +18,7 @@ export const CryptoKittiesSchema: Schema<CryptoKittiesType> = {
   thumbnail: "https://www.cryptokitties.co/images/kitty-eth.svg",
   website: "https://cryptokitties.co",
   fields: [{ name: "ID", type: "uint256", description: "CryptoKitty number." }],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assetFromFields: (fields: any) => fields.ID,
   assetToFields: (asset) => ({ ID: asset }),
   formatter: async (asset) => {
@@ -49,6 +50,7 @@ export const CryptoKittiesSchema: Schema<CryptoKittiesType> = {
         title: "CryptoKitty #" + asset,
         description: data.bio,
         url: "https://www.cryptokitties.co/kitty/" + asset,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         properties: attrs.map((c: any) => ({
           key: c.type,
           kind: "string",
@@ -124,6 +126,7 @@ export const CryptoKittiesSchema: Schema<CryptoKittiesType> = {
             type: "uint256",
           },
         ],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         assetFromInputs: async (inputs: any) => inputs.tokenId,
       },
     ],

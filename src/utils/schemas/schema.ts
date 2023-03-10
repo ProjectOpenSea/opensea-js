@@ -35,7 +35,7 @@ export interface MerkleProof {
 }
 
 export interface AnnotatedFunctionABIReturning<T> extends AnnotatedFunctionABI {
-  assetFromOutputs: (outputs: any) => T;
+  assetFromOutputs: (outputs: any) => T; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export interface SchemaFunctions<T> {
@@ -55,7 +55,7 @@ export interface SchemaField {
   name: string;
   type: string;
   description: string;
-  values?: any[];
+  values?: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
   readOnly?: boolean;
 }
 
@@ -72,7 +72,7 @@ export interface AnnotatedEventABI<T> {
   target: string;
   anonymous: boolean;
   inputs: AnnotatedEventInput[];
-  assetFromInputs: (inputs: any, web3: any) => Promise<T>;
+  assetFromInputs: (inputs: any, web3: any) => Promise<T>; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export interface SchemaEvents<T> {
@@ -82,7 +82,7 @@ export interface SchemaEvents<T> {
 export interface Property {
   key: string;
   kind: string;
-  value: any;
+  value: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export interface FormatInfo {
@@ -93,6 +93,7 @@ export interface FormatInfo {
   properties: Property[];
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Schema<T> {
   version: number;
   deploymentBlock: number;
@@ -110,6 +111,7 @@ export interface Schema<T> {
   formatter: (obj: T, web3: any) => Promise<FormatInfo>;
   hash: (obj: T) => any;
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export const encodeReplacementPattern: ReplacementEncoder =
   WyvernProtocol.encodeReplacementPattern;

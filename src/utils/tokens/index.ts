@@ -3,7 +3,7 @@ import { tokens as goerliTokens } from "./goerli";
 import { tokens as mainTokens } from "./main";
 import { tokens as rinkebyTokens } from "./rinkeby";
 
-export interface Token {
+interface Token {
   name: string;
   symbol: string;
   decimals: number;
@@ -15,7 +15,6 @@ export interface NetworkTokens {
   otherTokens: Token[];
 }
 
-// TODO: Add Tests
 export const getCanonicalWrappedEther = function (network: Network): Token {
   switch (network) {
     case Network.Main:

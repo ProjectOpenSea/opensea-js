@@ -9,6 +9,7 @@ interface RinkebyCustomType {
   transfer: AnnotatedFunctionABI;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const rinkebyCustomSchema: Schema<RinkebyCustomType> = {
   version: 1,
   deploymentBlock: 0,
@@ -56,3 +57,5 @@ export const rinkebyCustomSchema: Schema<RinkebyCustomType> = {
   },
   hash: (a) => JSON.stringify(a),
 };
+
+/* eslint-enable @typescript-eslint/no-explicit-any */

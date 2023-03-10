@@ -48,6 +48,7 @@ export const ENSNameBaseSchema: Required<
       readOnly: true,
     },
   ],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assetFromFields: (fields: any) => ({
     id: fields.ID,
     address: fields.Address,

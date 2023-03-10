@@ -10,6 +10,7 @@ import { ENSNameSchema } from "./ENSName/index";
 import { ENSShortNameAuctionSchema } from "./ENSShortNameAuction/index";
 import { OwnableContractSchema } from "./OwnableContract/index";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const mainSchemas: Array<Schema<any>> = [
   CryptoKittiesSchema,
   CryptoPunksSchema,

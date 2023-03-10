@@ -7,8 +7,9 @@ import {
 import { Schema } from "../../schema";
 import { EventInputKind } from "../../types";
 
-export type CryptoPunksType = string;
+type CryptoPunksType = string;
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const CryptoPunksSchema: Schema<CryptoPunksType> = {
   version: 1,
   deploymentBlock: 3914495,
@@ -101,3 +102,5 @@ export const CryptoPunksSchema: Schema<CryptoPunksType> = {
   },
   hash: (a) => a,
 };
+
+/* eslint-enable @typescript-eslint/no-explicit-any */

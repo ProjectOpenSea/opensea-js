@@ -6,7 +6,7 @@ import {
 } from "wyvern-js/lib/types";
 import { Schema } from "../schema";
 
-export interface NonFungibleContractType {
+interface NonFungibleContractType {
   id: string;
   address: string;
 }
@@ -22,6 +22,7 @@ export const ERC721Schema: Schema<NonFungibleContractType> = {
     { name: "ID", type: "uint256", description: "Asset Token ID" },
     { name: "Address", type: "address", description: "Asset Contract Address" },
   ],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assetFromFields: (fields: any) => ({
     id: fields.ID,
     address: fields.Address,

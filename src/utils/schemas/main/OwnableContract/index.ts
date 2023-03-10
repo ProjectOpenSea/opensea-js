@@ -12,6 +12,7 @@ interface OwnableContractType {
   address: string;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const OwnableContractSchema: Schema<OwnableContractType> = {
   version: 1,
   deploymentBlock: 0, // Not indexed (for now; need asset-specific indexing strategy)
@@ -82,3 +83,4 @@ export const OwnableContractSchema: Schema<OwnableContractType> = {
   },
   hash: (a) => a.address,
 };
+/* eslint-enable @typescript-eslint/no-explicit-any */

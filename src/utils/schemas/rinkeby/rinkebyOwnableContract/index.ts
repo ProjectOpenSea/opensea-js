@@ -11,6 +11,7 @@ interface RinkebyOwnableContractType {
   address: string;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const rinkebyOwnableContractSchema: Schema<RinkebyOwnableContractType> =
   {
     version: 1,
@@ -75,3 +76,5 @@ export const rinkebyOwnableContractSchema: Schema<RinkebyOwnableContractType> =
     },
     hash: (a) => a.address,
   };
+
+/* eslint-enable @typescript-eslint/no-explicit-any */

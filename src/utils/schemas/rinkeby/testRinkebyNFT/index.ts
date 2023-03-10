@@ -24,7 +24,7 @@ export const testRinkebyNFTSchema: Schema<TestRinkebyNFTType> = {
       description: "Token identification number.",
     },
   ],
-  assetFromFields: (fields: any) => fields.ID,
+  assetFromFields: (fields: any) => fields.ID, // eslint-disable-line @typescript-eslint/no-explicit-any
   assetToFields: (asset) => ({ ID: asset }),
   formatter: async (asset) => {
     return {
@@ -103,7 +103,7 @@ export const testRinkebyNFTSchema: Schema<TestRinkebyNFTType> = {
             type: "uint256",
           },
         ],
-        assetFromInputs: async (inputs: any) => inputs._tokenId.toString(),
+        assetFromInputs: async (inputs: any) => inputs._tokenId.toString(), // eslint-disable-line @typescript-eslint/no-explicit-any
       },
     ],
   },

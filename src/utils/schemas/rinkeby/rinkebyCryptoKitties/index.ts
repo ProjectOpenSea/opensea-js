@@ -9,6 +9,7 @@ import { EventInputKind } from "../../types";
 
 type RinkebyCryptoKittiesType = string;
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const rinkebyCryptoKittiesSchema: Schema<RinkebyCryptoKittiesType> = {
   version: 1,
   deploymentBlock: 0,
@@ -124,3 +125,5 @@ export const rinkebyCryptoKittiesSchema: Schema<RinkebyCryptoKittiesType> = {
   },
   hash: (a) => a,
 };
+
+/* eslint-enable @typescript-eslint/no-explicit-any */
