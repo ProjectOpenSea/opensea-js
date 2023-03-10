@@ -145,8 +145,6 @@ export class OpenSeaSDK {
   public web3ReadOnly: Web3;
   // Ethers provider
   public ethersProvider: providers.Web3Provider;
-  // Seaport v1.1 client
-  public seaport: Seaport;
   // Seaport v1.4 client
   public seaport_v1_4: Seaport;
   // Logger function to use when debugging
@@ -208,13 +206,6 @@ export class OpenSeaSDK {
     );
 
     const providerOrSinger = wallet ? wallet : this.ethersProvider;
-    this.seaport = new Seaport(providerOrSinger, {
-      conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
-      overrides: {
-        defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
-      },
-      seaportVersion: "1.1",
-    });
 
     this.seaport_v1_4 = new Seaport(providerOrSinger, {
       conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
@@ -1076,11 +1067,7 @@ export class OpenSeaSDK {
       order.taker.address
     );
     const fulfillments = getPrivateListingFulfillments(order.protocolData);
-    const seaport =
-      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
-        ? this.seaport
-        : this.seaport_v1_4;
-    const transaction = await seaport
+    const transaction = await this.seaport_v1_4
       .matchOrders({
         orders: [order.protocolData, counterOrder],
         fulfillments,
@@ -1151,11 +1138,7 @@ export class OpenSeaSDK {
       });
     }
 
-    const seaport =
-      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
-        ? this.seaport
-        : this.seaport_v1_4;
-    const { executeAllActions } = await seaport.fulfillOrder({
+    const { executeAllActions } = await this.seaport_v1_4.fulfillOrder({
       order: order.protocolData,
       accountAddress,
       recipientAddress,
@@ -1234,11 +1217,7 @@ export class OpenSeaSDK {
       protocolAddress = CROSS_CHAIN_SEAPORT_ADDRESS;
     }
 
-    const seaport =
-      protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
-        ? this.seaport
-        : this.seaport_v1_4;
-    const transaction = await seaport
+    const transaction = await this.seaport_v1_4
       .cancelOrders(orders, accountAddress, domain)
       .transact();
 
@@ -1729,7 +1708,7 @@ export class OpenSeaSDK {
    * @returns Transaction hash
    */
   public async setDomain(domain: string): Promise<string> {
-    const transaction = await this.seaport.setDomain(domain).transact();
+    const transaction = await this.seaport_v1_4.setDomain(domain).transact();
 
     await transaction.wait();
 
@@ -1743,7 +1722,7 @@ export class OpenSeaSDK {
    * @returns Domain
    */
   public async getDomain(tag: string, index: number): Promise<string> {
-    return this.seaport.getDomain(tag, index);
+    return this.seaport_v1_4.getDomain(tag, index);
   }
 
   /**
@@ -1752,7 +1731,7 @@ export class OpenSeaSDK {
    * @returns Array of domains
    */
   public async getDomains(tag: string): Promise<string[]> {
-    return this.seaport.getDomains(tag);
+    return this.seaport_v1_4.getDomains(tag);
   }
 
   /**
@@ -1761,7 +1740,7 @@ export class OpenSeaSDK {
    * @returns Number of registered domains for input tag.
    */
   public async getNumberOfDomains(tag: string): Promise<BigNumber> {
-    return new BigNumber(this.seaport.getNumberOfDomains(tag).toString());
+    return new BigNumber(this.seaport_v1_4.getNumberOfDomains(tag).toString());
   }
 
   /**
@@ -1837,12 +1816,8 @@ export class OpenSeaSDK {
       throw new Error("Unsupported protocol");
     }
 
-    const seaport =
-      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
-        ? this.seaport
-        : this.seaport_v1_4;
     try {
-      const isValid = await seaport
+      const isValid = await this.seaport_v1_4
         .validate([order.protocolData], accountAddress)
         .callStatic();
       return !!isValid;
@@ -2871,11 +2846,7 @@ export class OpenSeaSDK {
       accountAddress: order.maker.address,
     });
 
-    const seaport =
-      order.protocolAddress === CROSS_CHAIN_SEAPORT_ADDRESS
-        ? this.seaport
-        : this.seaport_v1_4;
-    const transaction = await seaport
+    const transaction = await this.seaport_v1_4
       .validate([order.protocolData], order.maker.address, domain)
       .transact();
 
