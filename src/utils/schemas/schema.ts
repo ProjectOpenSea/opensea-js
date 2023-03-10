@@ -10,12 +10,12 @@ import {
   AnnotatedFunctionABI,
   FunctionInputKind,
 } from "wyvern-js/lib/types";
-import { proxyABI, proxyAssertABI } from "../../abi/Proxy";
-import { OrderSide, WyvernAsset } from "../../types";
 import { goerliSchemas } from "./goerli/index";
 import { mainSchemas } from "./main/index";
 import { rinkebySchemas } from "./rinkeby/index";
 import { EventInputKind } from "./types";
+import { proxyABI, proxyAssertABI } from "../../abi/Proxy";
+import { OrderSide, WyvernAsset } from "../../types";
 export { AbiType } from "ethereum-types";
 
 export interface LimitedCallSpec {

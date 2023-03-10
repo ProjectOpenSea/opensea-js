@@ -8,8 +8,8 @@ import { AbiType, CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
 import Web3 from "web3";
-import { JsonRpcResponse } from "web3-core-helpers/types";
 import { AbstractProvider } from "web3-core/types";
+import { JsonRpcResponse } from "web3-core-helpers/types";
 import { Contract } from "web3-eth-contract";
 import { WyvernProtocol } from "wyvern-js";
 import {
@@ -19,6 +19,7 @@ import {
   Network,
   StateMutability,
 } from "wyvern-js/lib/types";
+import { Schema } from "./schemas/schema";
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
@@ -61,7 +62,6 @@ import {
   WyvernNFTAsset,
   WyvernSchemaName,
 } from "../types";
-import { Schema } from "./schemas/schema";
 
 export { WyvernProtocol };
 
