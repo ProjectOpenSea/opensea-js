@@ -14,7 +14,7 @@ import Web3 from "web3";
 import { AbstractProvider } from "web3-core/types";
 import { JsonRpcResponse } from "web3-core-helpers/types";
 import { Contract } from "web3-eth-contract";
-import { AbiType, Schema } from "./schemas/schema";
+import { Schema } from "./schemas/schema";
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
@@ -31,6 +31,7 @@ import {
 import { ERC1155 } from "../contracts";
 import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
 import {
+  AbiType,
   AnnotatedFunctionABI,
   Asset,
   AssetEvent,
@@ -964,6 +965,7 @@ export function getOrderHash(order: UnhashedOrder) {
   return getOrderHashHex(orderWithStringTypes as any);
 }
 
+// Copied from: https://github.com/ProjectOpenSea/wyvern-js/blob/master/src/utils/utils.ts#L39
 function getOrderHashHex(order: UnhashedOrder): string {
   const orderParts = [
     { value: order.exchange, type: SolidityTypes.Address },

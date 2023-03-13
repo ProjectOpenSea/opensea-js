@@ -1,8 +1,12 @@
 import { namehash } from "ethers/lib/utils";
-import { AbiType, FunctionInputKind, StateMutability } from "../../../../types";
 import { ENSName, ENSNameBaseSchema, nodehash } from "../../ens";
 import { Schema } from "../../schema";
-import { EventInputKind } from "../../types";
+import {
+  AbiType,
+  EventInputKind,
+  FunctionInputKind,
+  StateMutability,
+} from "../../types";
 
 const RINKEBY_ENS_SHORT_NAME_AUCTION_ADDRESS =
   "0x76b6481a334783be36f2fc35b8f0b9bc7835d57b";

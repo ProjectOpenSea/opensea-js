@@ -1,9 +1,10 @@
+import { Schema } from "../schema";
 import {
+  AbiType,
+  StateMutability,
   FunctionInputKind,
   FunctionOutputKind,
-  StateMutability,
-} from "../../../types";
-import { AbiType, Schema } from "../schema";
+} from "../types";
 
 export interface SemiFungibleTradeType {
   id: string;

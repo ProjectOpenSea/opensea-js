@@ -10,7 +10,6 @@ export {
   encodeAtomicizedSell,
   encodeDefaultCall,
   encodeReplacementPattern,
-  AbiType,
 } from "./utils/schemas/schema";
 export { WyvernProtocol };
 

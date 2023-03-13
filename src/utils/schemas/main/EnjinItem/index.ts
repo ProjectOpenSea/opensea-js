@@ -1,10 +1,11 @@
+import { SemiFungibleTradeType, ERC1155Schema } from "../../ERC1155";
+import { Schema } from "../../schema";
 import {
+  AbiType,
+  StateMutability,
   FunctionInputKind,
   FunctionOutputKind,
-  StateMutability,
-} from "../../../../types";
-import { SemiFungibleTradeType, ERC1155Schema } from "../../ERC1155";
-import { AbiType, Schema } from "../../schema";
+} from "../../types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const EnjinItemSchema: Schema<SemiFungibleTradeType> = {

@@ -138,6 +138,7 @@ import {
   feesToBasisPoints,
   isValidProtocol,
 } from "./utils/utils";
+
 export { WyvernProtocol };
 
 export class OpenSeaSDK {

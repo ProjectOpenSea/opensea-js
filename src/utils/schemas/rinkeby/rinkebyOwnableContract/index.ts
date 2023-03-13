@@ -1,10 +1,10 @@
+import { Schema } from "../../schema";
 import {
   AbiType,
+  StateMutability,
   FunctionInputKind,
   FunctionOutputKind,
-  StateMutability,
-} from "../../../../types";
-import { Schema } from "../../schema";
+} from "../../types";
 
 interface RinkebyOwnableContractType {
   name?: string;

@@ -1,12 +1,12 @@
 import axios from "axios";
+import { Schema } from "../../schema";
 import {
   AbiType,
+  EventInputKind,
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
-} from "../../../../types";
-import { Schema } from "../../schema";
-import { EventInputKind } from "../../types";
+} from "../../types";
 
 type CryptoKittiesType = string;
 

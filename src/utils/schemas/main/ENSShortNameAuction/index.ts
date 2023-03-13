@@ -1,8 +1,12 @@
 import { namehash } from "ethers/lib/utils";
-import { AbiType, FunctionInputKind, StateMutability } from "../../../../types";
 import { ENSName, ENSNameBaseSchema, nodehash } from "../../ens";
 import { Schema } from "../../schema";
-import { EventInputKind } from "../../types";
+import {
+  AbiType,
+  EventInputKind,
+  FunctionInputKind,
+  StateMutability,
+} from "../../types";
 
 const ENS_SHORT_NAME_AUCTION_ADDRESS =
   "0x699c7f511c9e2182e89f29b3bfb68bd327919d17";

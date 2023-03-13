@@ -1,9 +1,10 @@
+import { Schema } from "../schema";
 import {
+  AbiType,
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
-} from "../../../types";
-import { AbiType, Schema } from "../schema";
+} from "../types";
 
 interface ContractRoleType {
   roleGetter: string;

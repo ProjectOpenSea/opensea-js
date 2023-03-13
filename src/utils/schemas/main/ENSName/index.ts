@@ -1,10 +1,11 @@
+import { ENSName, ENSNameBaseSchema } from "../../ens";
+import { Schema } from "../../schema";
 import {
+  AbiType,
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
-} from "../../../../types";
-import { ENSName, ENSNameBaseSchema } from "../../ens";
-import { AbiType, Schema } from "../../schema";
+} from "../../types";
 
 export const ENSNameSchema: Schema<ENSName> = {
   ...ENSNameBaseSchema,

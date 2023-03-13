@@ -16,7 +16,6 @@ import {
   OrderSide,
   WyvernAsset,
 } from "../../types";
-export { AbiType } from "../../types";
 
 export interface LimitedCallSpec {
   target: string;

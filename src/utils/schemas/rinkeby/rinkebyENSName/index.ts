@@ -1,11 +1,11 @@
-import {
-  AbiType,
-  FunctionInputKind,
-  FunctionOutputKind,
-  StateMutability,
-} from "../../../../types";
 import { ENSName, ENSNameBaseSchema } from "../../ens";
 import { Schema } from "../../schema";
+import {
+  AbiType,
+  StateMutability,
+  FunctionInputKind,
+  FunctionOutputKind,
+} from "../../types";
 
 export const rinkebyENSNameSchema: Schema<ENSName> = {
   ...ENSNameBaseSchema,
