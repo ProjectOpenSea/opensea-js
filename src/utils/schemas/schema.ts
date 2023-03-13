@@ -11,6 +11,7 @@ import { proxyABI, proxyAssertABI } from "../../abi/Proxy";
 import {
   AbiType,
   AnnotatedFunctionABI,
+  FunctionInputKind,
   OrderSide,
   WyvernAsset,
 } from "../../types";

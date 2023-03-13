@@ -35,6 +35,7 @@ import {
   ECSignature,
   FunctionInputKind,
   FunctionOutputKind,
+  Network,
   OpenSeaAccount,
   OpenSeaAsset,
   OpenSeaAssetBundle,
