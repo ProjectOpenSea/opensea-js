@@ -1,4 +1,4 @@
-import { AnnotatedFunctionABI } from "src/types";
+import { AnnotatedFunctionABI } from "../../../../types";
 import { Schema } from "../../schema";
 
 interface RinkebyCustomType {

@@ -2,7 +2,7 @@ import {
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
-} from "src/types";
+} from "../../../types";
 import { AbiType, Schema } from "../schema";
 
 interface FungibleTradeType {

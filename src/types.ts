@@ -782,7 +782,7 @@ export interface AnnotatedFunctionInput {
   name: string;
   type: string;
   kind: FunctionInputKind;
-  value?: any;
+  value?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export interface AnnotatedFunctionOutput {

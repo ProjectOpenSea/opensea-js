@@ -1,9 +1,10 @@
 import {
+  AbiType,
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
-} from "src/types";
-import { AbiType, Schema } from "../../schema";
+} from "../../../../types";
+import { Schema } from "../../schema";
 import { EventInputKind } from "../../types";
 
 type CryptoPunksType = string;

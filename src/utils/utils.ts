@@ -64,8 +64,6 @@ import {
   WyvernSchemaName,
 } from "../types";
 
-export { WyvernProtocol };
-
 export const annotateERC721TransferABI = (
   asset: WyvernNFTAsset
 ): AnnotatedFunctionABI => ({
