@@ -1,4 +1,4 @@
-import { Network } from "wyvern-js/lib/types";
+import { Network } from "src/types";
 import { tokens as goerliTokens } from "./goerli";
 import { tokens as mainTokens } from "./main";
 import { tokens as rinkebyTokens } from "./rinkeby";
