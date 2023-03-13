@@ -1,6 +1,5 @@
 /* eslint-disable import/no-unused-modules */
 import BigNumber from "bignumber.js";
-import { StateMutability } from "ethereum-types";
 import { AbiItem } from "web3-utils";
 import {
   ECSignature,
@@ -756,7 +755,7 @@ export interface AnnotatedFunctionOutput {
   kind: FunctionOutputKind;
 }
 
-enum FunctionInputKind {
+export enum FunctionInputKind {
   Replaceable = "replaceable",
   Asset = "asset",
   Owner = "owner",
@@ -765,9 +764,16 @@ enum FunctionInputKind {
   Data = "data",
 }
 
-enum FunctionOutputKind {
+export enum FunctionOutputKind {
   Owner = "owner",
   Asset = "asset",
   Count = "count",
   Other = "other",
+}
+
+export enum StateMutability {
+  Pure = "pure",
+  View = "view",
+  Payable = "payable",
+  Nonpayable = "nonpayable",
 }

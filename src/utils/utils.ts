@@ -12,13 +12,6 @@ import { AbstractProvider } from "web3-core/types";
 import { JsonRpcResponse } from "web3-core-helpers/types";
 import { Contract } from "web3-eth-contract";
 import { WyvernProtocol } from "wyvern-js";
-import {
-  AnnotatedFunctionABI,
-  FunctionInputKind,
-  FunctionOutputKind,
-  Network,
-  StateMutability,
-} from "wyvern-js/lib/types";
 import { AbiType, Schema } from "./schemas/schema";
 import {
   ENJIN_ADDRESS,
@@ -36,9 +29,12 @@ import {
 import { ERC1155 } from "../contracts";
 import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
 import {
+  AnnotatedFunctionABI,
   Asset,
   AssetEvent,
   ECSignature,
+  FunctionInputKind,
+  FunctionOutputKind,
   OpenSeaAccount,
   OpenSeaAsset,
   OpenSeaAssetBundle,
@@ -51,6 +47,7 @@ import {
   OrderJSON,
   OrderSide,
   SaleKind,
+  StateMutability,
   Transaction,
   TxnCallback,
   UnhashedOrder,

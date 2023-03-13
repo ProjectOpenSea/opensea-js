@@ -2,7 +2,7 @@ import {
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
-} from "wyvern-js/lib/types";
+} from "src/types";
 import { ENSName, ENSNameBaseSchema } from "../../ens";
 import { AbiType, Schema } from "../../schema";
 

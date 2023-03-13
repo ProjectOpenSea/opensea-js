@@ -3,7 +3,7 @@ import {
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
-} from "wyvern-js/lib/types";
+} from "src/types";
 import { AbiType, Schema } from "../../schema";
 import { EventInputKind } from "../../types";
 

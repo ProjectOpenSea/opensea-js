@@ -2,7 +2,7 @@ import {
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
-} from "wyvern-js/lib/types";
+} from "src/types";
 import { SemiFungibleTradeType, ERC1155Schema } from "../../ERC1155";
 import { AbiType, Schema } from "../../schema";
 

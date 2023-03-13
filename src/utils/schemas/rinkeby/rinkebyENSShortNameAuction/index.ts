@@ -1,5 +1,5 @@
 import { namehash } from "ethers/lib/utils";
-import { StateMutability, FunctionInputKind } from "wyvern-js/lib/types";
+import { FunctionInputKind, StateMutability } from "src/types";
 import { ENSName, ENSNameBaseSchema, nodehash } from "../../ens";
 import { AbiType, Schema } from "../../schema";
 import { EventInputKind } from "../../types";

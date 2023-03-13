@@ -1,5 +1,4 @@
-import type { AnnotatedFunctionABI } from "wyvern-js/lib/types";
-import type { PartialReadonlyContractAbi } from "./types";
+import type { AnnotatedFunctionABI, PartialReadonlyContractAbi } from "./types";
 
 export const getMethod = (
   abi: PartialReadonlyContractAbi,
