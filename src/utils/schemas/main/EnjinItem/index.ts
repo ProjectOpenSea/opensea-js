@@ -1,11 +1,10 @@
-import { AbiType } from "ethereum-types";
 import {
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
 } from "wyvern-js/lib/types";
 import { SemiFungibleTradeType, ERC1155Schema } from "../../ERC1155";
-import { Schema } from "../../schema";
+import { AbiType, Schema } from "../../schema";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const EnjinItemSchema: Schema<SemiFungibleTradeType> = {

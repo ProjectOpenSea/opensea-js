@@ -1,5 +1,4 @@
 import { BigNumber } from "bignumber.js";
-import { AbiType } from "ethereum-types";
 import * as ethABI from "ethereumjs-abi";
 import { WyvernProtocol } from "wyvern-js";
 import { WyvernAtomicizerContract } from "wyvern-js/lib/abi_gen/wyvern_atomicizer";
@@ -15,8 +14,8 @@ import { mainSchemas } from "./main/index";
 import { rinkebySchemas } from "./rinkeby/index";
 import { EventInputKind } from "./types";
 import { proxyABI, proxyAssertABI } from "../../abi/Proxy";
-import { OrderSide, WyvernAsset } from "../../types";
-export { AbiType } from "ethereum-types";
+import { AbiType, OrderSide, WyvernAsset } from "../../types";
+export { AbiType } from "../../types";
 
 export interface LimitedCallSpec {
   target: string;

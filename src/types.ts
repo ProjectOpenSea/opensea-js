@@ -1,5 +1,6 @@
 /* eslint-disable import/no-unused-modules */
 import BigNumber from "bignumber.js";
+import { StateMutability } from "ethereum-types";
 import { AbiItem } from "web3-utils";
 import {
   ECSignature,
@@ -722,3 +723,51 @@ export type Web3Callback<T> = (err: Error | null, result: T) => void;
 export type TxnCallback = (result: boolean) => void;
 
 export type PartialReadonlyContractAbi = AbiItem[];
+
+// Types extracted from wyvern-js: https://github.com/ProjectOpenSea/wyvern-js#7429b1f2dd123f012cae1f3144a069e91ecd0682
+export interface AnnotatedFunctionABI {
+  type: AbiType;
+  name: string;
+  target: string;
+  inputs: AnnotatedFunctionInput[];
+  outputs: AnnotatedFunctionOutput[];
+  constant: boolean;
+  stateMutability: StateMutability;
+  payable: boolean;
+}
+
+export enum AbiType {
+  Function = "function",
+  Constructor = "constructor",
+  Event = "event",
+  Fallback = "fallback",
+}
+
+export interface AnnotatedFunctionInput {
+  name: string;
+  type: string;
+  kind: FunctionInputKind;
+  value?: any;
+}
+
+export interface AnnotatedFunctionOutput {
+  name: string;
+  type: string;
+  kind: FunctionOutputKind;
+}
+
+enum FunctionInputKind {
+  Replaceable = "replaceable",
+  Asset = "asset",
+  Owner = "owner",
+  Index = "index",
+  Count = "count",
+  Data = "data",
+}
+
+enum FunctionOutputKind {
+  Owner = "owner",
+  Asset = "asset",
+  Count = "count",
+  Other = "other",
+}

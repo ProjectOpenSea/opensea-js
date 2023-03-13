@@ -4,7 +4,7 @@ import {
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
 import BigNumber from "bignumber.js";
-import { AbiType, CallData, TxData } from "ethereum-types";
+import { CallData, TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
 import Web3 from "web3";
@@ -19,7 +19,7 @@ import {
   Network,
   StateMutability,
 } from "wyvern-js/lib/types";
-import { Schema } from "./schemas/schema";
+import { AbiType, Schema } from "./schemas/schema";
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,

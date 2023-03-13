@@ -1,8 +1,7 @@
-import { AbiType } from "ethereum-types";
 import { namehash } from "ethers/lib/utils";
 import { StateMutability, FunctionInputKind } from "wyvern-js/lib/types";
 import { ENSName, ENSNameBaseSchema, nodehash } from "../../ens";
-import { Schema } from "../../schema";
+import { AbiType, Schema } from "../../schema";
 import { EventInputKind } from "../../types";
 
 const RINKEBY_ENS_SHORT_NAME_AUCTION_ADDRESS =
