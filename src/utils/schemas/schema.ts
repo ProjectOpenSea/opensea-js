@@ -2,7 +2,6 @@ import { BigNumber } from "bignumber.js";
 import * as ethABI from "ethereumjs-abi";
 import { WyvernProtocol } from "wyvern-js";
 import { WyvernAtomicizerContract } from "wyvern-js/lib/abi_gen/wyvern_atomicizer";
-import { HowToCall, Network, ReplacementEncoder } from "wyvern-js/lib/types";
 import { goerliSchemas } from "./goerli/index";
 import { mainSchemas } from "./main/index";
 import { rinkebySchemas } from "./rinkeby/index";
@@ -12,6 +11,8 @@ import {
   AbiType,
   AnnotatedFunctionABI,
   FunctionInputKind,
+  HowToCall,
+  Network,
   OrderSide,
   WyvernAsset,
 } from "../../types";
@@ -111,6 +112,12 @@ export interface Schema<T> {
   hash: (obj: T) => any;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+type ReplacementEncoder = (
+  abi: AnnotatedFunctionABI,
+  kind?: FunctionInputKind,
+  encodeToBytes?: boolean
+) => string;
 
 export const encodeReplacementPattern: ReplacementEncoder =
   WyvernProtocol.encodeReplacementPattern;
