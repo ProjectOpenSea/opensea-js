@@ -69,7 +69,6 @@ const orderSchema: JSONSchemaType<PartialOrderV2Type> = {
     "cancelled",
     "finalized",
     "markedInvalid",
-    "clientSignature",
     "makerAssetBundle",
     "takerAssetBundle",
   ],
