@@ -1,5 +1,5 @@
-import { AnnotatedFunctionABI } from "wyvern-js/lib/types";
 import { Schema } from "../../schema";
+import { AnnotatedFunctionABI } from "../../types";
 
 interface RinkebyCustomType {
   name: string;

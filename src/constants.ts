@@ -1,8 +1,7 @@
-import { WyvernProtocol } from "wyvern-js";
 import { Network } from "./types";
 
 export const DEFAULT_GAS_INCREASE_FACTOR = 1.01;
-export const NULL_ADDRESS = WyvernProtocol.NULL_ADDRESS;
+export const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 export const NULL_BLOCK_HASH =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 export const OPENSEA_LEGACY_FEE_RECIPIENT =

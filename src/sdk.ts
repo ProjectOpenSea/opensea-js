@@ -139,6 +139,8 @@ import {
   isValidProtocol,
 } from "./utils/utils";
 
+export { WyvernProtocol };
+
 export class OpenSeaSDK {
   // Web3 instance to use
   public web3: Web3;

@@ -1,17 +1,7 @@
 /* eslint-disable import/no-unused-modules */
 import BigNumber from "bignumber.js";
 import { AbiItem } from "web3-utils";
-import {
-  ECSignature,
-  HowToCall,
-  Network,
-  Order as WyvernOrder,
-  WyvernProtocolConfig,
-} from "wyvern-js/lib/types";
 import type { OrderV2 } from "./orders/types";
-
-export { HowToCall, Network };
-export type { ECSignature };
 
 /**
  * Events emitted by the SDK. There are five types:
@@ -105,7 +95,20 @@ export interface OpenSeaAPIConfig {
   wyvernConfig?: WyvernConfig;
 }
 
-export type WyvernConfig = WyvernProtocolConfig & {
+export enum Network {
+  Main = "main",
+  Goerli = "goerli",
+  Rinkeby = "rinkeby",
+}
+
+export type WyvernConfig = {
+  network: Network;
+  gasPrice?: BigNumber;
+  wyvernExchangeContractAddress?: string;
+  wyvernProxyRegistryContractAddress?: string;
+  wyvernDAOContractAddress?: string;
+  wyvernTokenContractAddress?: string;
+  wyvernAtomicizerContractAddress?: string;
   wyvernTokenTransferProxyContractAddress?: string;
 };
 
@@ -567,7 +570,27 @@ export type ExchangeMetadata =
   | ExchangeMetadataForAsset
   | ExchangeMetadataForBundle;
 
-export interface UnhashedOrder extends WyvernOrder {
+export interface UnhashedOrder {
+  exchange: string;
+  maker: string;
+  taker: string;
+  makerRelayerFee: BigNumber;
+  takerRelayerFee: BigNumber;
+  makerProtocolFee: BigNumber;
+  takerProtocolFee: BigNumber;
+  feeRecipient: string;
+  target: string;
+  calldata: string;
+  replacementPattern: string;
+  staticTarget: string;
+  staticExtradata: string;
+  paymentToken: string;
+  basePrice: BigNumber;
+  extra: BigNumber;
+  listingTime: BigNumber;
+  expirationTime: BigNumber;
+  salt: BigNumber;
+
   feeMethod: FeeMethod;
   side: OrderSide;
   saleKind: SaleKind;
@@ -582,8 +605,21 @@ export interface UnhashedOrder extends WyvernOrder {
   metadata: ExchangeMetadata;
 }
 
+export enum HowToCall {
+  Call = 0,
+  DelegateCall = 1,
+  StaticCall = 2,
+  Create = 3,
+}
+
 export interface UnsignedOrder extends UnhashedOrder {
   hash?: string;
+}
+
+export interface ECSignature {
+  v: number;
+  r: string;
+  s: string;
 }
 
 /**
@@ -722,3 +758,67 @@ export type Web3Callback<T> = (err: Error | null, result: T) => void;
 export type TxnCallback = (result: boolean) => void;
 
 export type PartialReadonlyContractAbi = AbiItem[];
+
+// Types extracted from wyvern-js: https://github.com/ProjectOpenSea/wyvern-js#7429b1f2dd123f012cae1f3144a069e91ecd0682
+export interface AnnotatedFunctionABI {
+  type: AbiType;
+  name: string;
+  target: string;
+  inputs: AnnotatedFunctionInput[];
+  outputs: AnnotatedFunctionOutput[];
+  constant: boolean;
+  stateMutability: StateMutability;
+  payable: boolean;
+}
+
+export enum AbiType {
+  Function = "function",
+  Constructor = "constructor",
+  Event = "event",
+  Fallback = "fallback",
+}
+
+export interface AnnotatedFunctionInput {
+  name: string;
+  type: string;
+  kind: FunctionInputKind;
+  value?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
+export interface AnnotatedFunctionOutput {
+  name: string;
+  type: string;
+  kind: FunctionOutputKind;
+}
+
+export enum FunctionInputKind {
+  Replaceable = "replaceable",
+  Asset = "asset",
+  Owner = "owner",
+  Index = "index",
+  Count = "count",
+  Data = "data",
+}
+
+export enum FunctionOutputKind {
+  Owner = "owner",
+  Asset = "asset",
+  Count = "count",
+  Other = "other",
+}
+
+export enum StateMutability {
+  Pure = "pure",
+  View = "view",
+  Payable = "payable",
+  Nonpayable = "nonpayable",
+}
+
+export enum SolidityTypes {
+  Address = "address",
+  Uint256 = "uint256",
+  Uint8 = "uint8",
+  Uint = "uint",
+  Bytes = "bytes",
+  String = "string",
+}

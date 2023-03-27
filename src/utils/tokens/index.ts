@@ -1,7 +1,7 @@
-import { Network } from "wyvern-js/lib/types";
 import { tokens as goerliTokens } from "./goerli";
 import { tokens as mainTokens } from "./main";
 import { tokens as rinkebyTokens } from "./rinkeby";
+import { Network } from "../../types";
 
 interface Token {
   name: string;

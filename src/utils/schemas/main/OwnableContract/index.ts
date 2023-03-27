@@ -1,10 +1,10 @@
-import { AbiType } from "ethereum-types";
+import { Schema } from "../../schema";
 import {
+  AbiType,
+  StateMutability,
   FunctionInputKind,
   FunctionOutputKind,
-  StateMutability,
-} from "wyvern-js/lib/types";
-import { Schema } from "../../schema";
+} from "../../types";
 
 interface OwnableContractType {
   name?: string;

@@ -1,11 +1,11 @@
-import { AbiType } from "ethereum-types";
+import { Schema } from "../../schema";
 import {
+  AbiType,
+  EventInputKind,
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
-} from "wyvern-js/lib/types";
-import { Schema } from "../../schema";
-import { EventInputKind } from "../../types";
+} from "../../types";
 
 type TestRinkebyNFTType = string;
 

@@ -1,11 +1,11 @@
-import { AbiType } from "ethereum-types";
-import {
-  FunctionInputKind,
-  FunctionOutputKind,
-  StateMutability,
-} from "wyvern-js/lib/types";
 import { ENSName, ENSNameBaseSchema } from "../../ens";
 import { Schema } from "../../schema";
+import {
+  AbiType,
+  StateMutability,
+  FunctionInputKind,
+  FunctionOutputKind,
+} from "../../types";
 
 export const rinkebyENSNameSchema: Schema<ENSName> = {
   ...ENSNameBaseSchema,

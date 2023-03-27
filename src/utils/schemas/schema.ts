@@ -1,22 +1,21 @@
 import { BigNumber } from "bignumber.js";
-import { AbiType } from "ethereum-types";
 import * as ethABI from "ethereumjs-abi";
 import { WyvernProtocol } from "wyvern-js";
 import { WyvernAtomicizerContract } from "wyvern-js/lib/abi_gen/wyvern_atomicizer";
-import {
-  HowToCall,
-  Network,
-  ReplacementEncoder,
-  AnnotatedFunctionABI,
-  FunctionInputKind,
-} from "wyvern-js/lib/types";
 import { goerliSchemas } from "./goerli/index";
 import { mainSchemas } from "./main/index";
 import { rinkebySchemas } from "./rinkeby/index";
 import { EventInputKind } from "./types";
 import { proxyABI, proxyAssertABI } from "../../abi/Proxy";
-import { OrderSide, WyvernAsset } from "../../types";
-export { AbiType } from "ethereum-types";
+import {
+  AbiType,
+  AnnotatedFunctionABI,
+  FunctionInputKind,
+  HowToCall,
+  Network,
+  OrderSide,
+  WyvernAsset,
+} from "../../types";
 
 export interface LimitedCallSpec {
   target: string;
@@ -112,6 +111,12 @@ export interface Schema<T> {
   hash: (obj: T) => any;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+type ReplacementEncoder = (
+  abi: AnnotatedFunctionABI,
+  kind?: FunctionInputKind,
+  encodeToBytes?: boolean
+) => string;
 
 export const encodeReplacementPattern: ReplacementEncoder =
   WyvernProtocol.encodeReplacementPattern;

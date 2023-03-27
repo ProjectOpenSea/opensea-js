@@ -1,8 +1,8 @@
 /* eslint-disable import/no-unused-modules */
 import { OpenSeaAPI } from "./api";
-import { OpenSeaSDK } from "./sdk";
+import { OpenSeaSDK, WyvernProtocol } from "./sdk";
 import { Network, EventData, EventType } from "./types";
-export { orderToJSON, orderFromJSON, WyvernProtocol } from "./utils/utils";
+export { orderToJSON, orderFromJSON } from "./utils/utils";
 export {
   encodeCall,
   encodeSell,
@@ -10,8 +10,8 @@ export {
   encodeAtomicizedSell,
   encodeDefaultCall,
   encodeReplacementPattern,
-  AbiType,
 } from "./utils/schemas/schema";
+export { WyvernProtocol };
 
 /**
  * Example setup:
