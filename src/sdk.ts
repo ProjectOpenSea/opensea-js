@@ -8,6 +8,7 @@ import {
   CreateInputItem,
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
+import { generateRandomSalt } from "@opensea/seaport-js/lib/utils/order";
 import { BigNumber } from "bignumber.js";
 import { Web3JsProvider } from "ethereum-types";
 import { isValidAddress } from "ethereumjs-util";
@@ -43,6 +44,7 @@ import {
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY,
   OPENSEA_LEGACY_FEE_RECIPIENT,
+  MAX_UINT_256,
 } from "./constants";
 import {
   CanonicalWETH,
@@ -137,6 +139,7 @@ import {
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
   feesToBasisPoints,
   isValidProtocol,
+  toBaseUnitAmount,
 } from "./utils/utils";
 
 export { WyvernProtocol };
@@ -186,7 +189,6 @@ export class OpenSeaSDK {
     // API config
     apiConfig.networkName = apiConfig.networkName || Network.Main;
     this.api = new OpenSeaAPI(apiConfig);
-    this._wyvernConfigOverride = apiConfig.wyvernConfig;
 
     this._networkName = apiConfig.networkName;
 
@@ -572,7 +574,7 @@ export class OpenSeaSDK {
     ) as unknown as UniswapExchangeAbi;
 
     // Convert desired WNFT to wei
-    const amount = WyvernProtocol.toBaseUnitAmount(
+    const amount = toBaseUnitAmount(
       makeBigNumber(numTokens),
       Number(wrappedNFT.methods.decimals().call())
     );
@@ -610,10 +612,7 @@ export class OpenSeaSDK {
   }) {
     const token = getCanonicalWrappedEther(this._networkName);
 
-    const amount = WyvernProtocol.toBaseUnitAmount(
-      makeBigNumber(amountInEth),
-      token.decimals
-    );
+    const amount = toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals);
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount });
 
@@ -649,10 +648,7 @@ export class OpenSeaSDK {
   }) {
     const token = getCanonicalWrappedEther(this._networkName);
 
-    const amount = WyvernProtocol.toBaseUnitAmount(
-      makeBigNumber(amountInEth),
-      token.decimals
-    );
+    const amount = toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals);
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
 
@@ -1265,90 +1261,6 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Cancel an order on-chain, preventing it from ever being fulfilled.
-   * @param param0 __namedParameters Object
-   * @param order The order to cancel
-   * @param accountAddress The order maker's wallet address
-   */
-  public async cancelOrderLegacyWyvern({
-    order,
-    accountAddress,
-  }: {
-    order: Order;
-    accountAddress: string;
-  }) {
-    this._dispatch(EventType.CancelOrder, { order, accountAddress });
-
-    const transactionHash = await this._wyvernProtocol.wyvernExchange
-      .cancelOrder_(
-        [
-          order.exchange,
-          order.maker,
-          order.taker,
-          order.feeRecipient,
-          order.target,
-          order.staticTarget,
-          order.paymentToken,
-        ],
-        [
-          order.makerRelayerFee,
-          order.takerRelayerFee,
-          order.makerProtocolFee,
-          order.takerProtocolFee,
-          order.basePrice,
-          order.extra,
-          order.listingTime,
-          order.expirationTime,
-          order.salt,
-        ],
-        order.feeMethod,
-        order.side,
-        order.saleKind,
-        order.howToCall,
-        order.calldata,
-        order.replacementPattern,
-        order.staticExtradata,
-        order.v || 0,
-        order.r || NULL_BLOCK_HASH,
-        order.s || NULL_BLOCK_HASH
-      )
-      .sendTransactionAsync({ from: accountAddress });
-
-    await this._confirmTransaction(
-      transactionHash,
-      EventType.CancelOrder,
-      "Cancelling order",
-      async () => {
-        const isOpen = await this._validateOrder(order);
-        return !isOpen;
-      }
-    );
-  }
-
-  /**
-   * Cancel all existing orders with a lower nonce on-chain, preventing them from ever being fulfilled.
-   * @param param0 __namedParameters Object
-   * @param accountAddress The order maker's wallet address
-   */
-  public async bulkCancelExistingOrdersLegacyWyvern({
-    accountAddress,
-  }: {
-    accountAddress: string;
-  }) {
-    this._dispatch(EventType.BulkCancelExistingOrders, { accountAddress });
-
-    const transactionHash = await this._wyvernProtocol.wyvernExchange
-      .incrementNonce()
-      .sendTransactionAsync({ from: accountAddress });
-
-    await this._confirmTransaction(
-      transactionHash.toString(),
-      EventType.BulkCancelExistingOrders,
-      "Bulk cancelling existing orders"
-    );
-  }
-
-  /**
    * Approve a non-fungible token for use in trades.
    * Requires an account to be initialized first.
    * Called internally, but exposed for dev flexibility.
@@ -1572,7 +1484,7 @@ export class OpenSeaSDK {
     accountAddress,
     tokenAddress,
     proxyAddress,
-    minimumAmount = WyvernProtocol.MAX_UINT_256,
+    minimumAmount = MAX_UINT_256,
   }: {
     accountAddress: string;
     tokenAddress: string;
@@ -1627,7 +1539,7 @@ export class OpenSeaSDK {
           getMethod(ERC20, "approve"),
           // Always approve maximum amount, to prevent the need for followup
           // transactions (and because old ERC20s like MANA/ENJ are non-compliant)
-          [proxyAddress, WyvernProtocol.MAX_UINT_256.toString()]
+          [proxyAddress, MAX_UINT_256.toString()]
         ),
       },
       (error) => {
@@ -1911,10 +1823,7 @@ export class OpenSeaSDK {
   ): Promise<boolean> {
     const schema = this._getSchema(this._getSchemaName(asset));
     const quantityBN = quantity
-      ? WyvernProtocol.toBaseUnitAmount(
-          makeBigNumber(quantity),
-          asset.decimals || 0
-        )
+      ? toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
       : makeBigNumber(1);
     const wyAsset = getWyvernAsset(schema, asset, quantityBN);
     const abi = schema.functions.transfer(wyAsset);
@@ -1975,7 +1884,7 @@ export class OpenSeaSDK {
     quantity?: number | BigNumber;
   }): Promise<string> {
     const schema = this._getSchema(this._getSchemaName(asset));
-    const quantityBN = WyvernProtocol.toBaseUnitAmount(
+    const quantityBN = toBaseUnitAmount(
       makeBigNumber(quantity),
       asset.decimals || 0
     );
@@ -2643,7 +2552,7 @@ export class OpenSeaSDK {
       extra: makeBigNumber(0),
       listingTime: times.listingTime,
       expirationTime: times.expirationTime,
-      salt: WyvernProtocol.generatePseudoRandomSalt(),
+      salt: new BigNumber(generateRandomSalt()),
       metadata: order.metadata,
     };
 
@@ -3394,21 +3303,21 @@ export class OpenSeaSDK {
       ? makeBigNumber(
           this.web3.utils.toWei(startAmount.toString(), "ether")
         ).integerValue()
-      : WyvernProtocol.toBaseUnitAmount(startAmount, token.decimals);
+      : toBaseUnitAmount(startAmount, token.decimals);
 
     const endPrice = endAmount
       ? isEther
         ? makeBigNumber(
             this.web3.utils.toWei(endAmount.toString(), "ether")
           ).integerValue()
-        : WyvernProtocol.toBaseUnitAmount(endAmount, token.decimals)
+        : toBaseUnitAmount(endAmount, token.decimals)
       : undefined;
 
     const extra = isEther
       ? makeBigNumber(
           this.web3.utils.toWei(priceDiff.toString(), "ether")
         ).integerValue()
-      : WyvernProtocol.toBaseUnitAmount(priceDiff, token.decimals);
+      : toBaseUnitAmount(priceDiff, token.decimals);
 
     const reservePrice = englishAuctionReservePrice
       ? isEther
@@ -3418,10 +3327,7 @@ export class OpenSeaSDK {
               "ether"
             )
           ).integerValue()
-        : WyvernProtocol.toBaseUnitAmount(
-            englishAuctionReservePrice,
-            token.decimals
-          )
+        : toBaseUnitAmount(englishAuctionReservePrice, token.decimals)
       : undefined;
 
     return { basePrice, extra, paymentToken, reservePrice, endPrice };

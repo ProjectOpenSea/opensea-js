@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import { Network } from "./types";
 
 export const DEFAULT_GAS_INCREASE_FACTOR = 1.01;
@@ -40,6 +41,7 @@ export const RPC_URL_PATH = "jsonrpc/v1/";
 export const MAINNET_PROVIDER_URL = `${API_BASE_MAINNET}/${RPC_URL_PATH}`;
 export const ORDERBOOK_PATH = `/wyvern/v${ORDERBOOK_VERSION}`;
 export const API_PATH = `/api/v${ORDERBOOK_VERSION}`;
+export const MAX_UINT_256 = new BigNumber(2).pow(256).minus(1);
 
 export const EIP_712_ORDER_TYPES = {
   EIP712Domain: [

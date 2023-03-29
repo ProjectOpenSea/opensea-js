@@ -14,6 +14,7 @@ import Web3 from "web3";
 import { AbstractProvider } from "web3-core/types";
 import { JsonRpcResponse } from "web3-core-helpers/types";
 import { Contract } from "web3-eth-contract";
+import { assert } from "./assert";
 import { Schema } from "./schemas/schema";
 import {
   ENJIN_ADDRESS,
@@ -965,7 +966,7 @@ export function getOrderHash(order: UnhashedOrder) {
   return getOrderHashHex(orderWithStringTypes as any);
 }
 
-// Copied from: https://github.com/ProjectOpenSea/wyvern-js/blob/master/src/utils/utils.ts#L39
+// sourced from: https://github.com/ProjectOpenSea/wyvern-js/blob/master/src/utils/utils.ts#L39
 function getOrderHashHex(order: UnhashedOrder): string {
   const orderParts = [
     { value: order.exchange, type: SolidityTypes.Address },
@@ -1021,6 +1022,24 @@ function getOrderHashHex(order: UnhashedOrder): string {
 
 function bigNumberToBN(value: BigNumber) {
   return new BN(value.toString(), 10);
+}
+
+// Sourced from: https://github.com/ProjectOpenSea/wyvern-js/blob/master/src/wyvernProtocol.ts#L170
+export function toBaseUnitAmount(
+  amount: BigNumber,
+  decimals: number
+): BigNumber {
+  assert.isBigNumber("amount", amount);
+  assert.isNumber("decimals", decimals);
+  const unit = new BigNumber(10).pow(decimals);
+  const baseUnitAmount = amount.times(unit);
+  const hasDecimals = baseUnitAmount.decimalPlaces() !== 0;
+  if (hasDecimals) {
+    throw new Error(
+      `Invalid unit amount: ${amount.toString()} - Too many decimal places`
+    );
+  }
+  return baseUnitAmount;
 }
 
 /**
