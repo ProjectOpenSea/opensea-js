@@ -58,11 +58,6 @@ import {
   UniswapExchange,
 } from "./contracts";
 import {
-  MAX_ERROR_LENGTH,
-  requireOrderCalldataCanMatch,
-  requireOrdersCanMatch,
-} from "./debugging";
-import {
   constructPrivateListingCounterOrder,
   getPrivateListingConsiderations,
   getPrivateListingFulfillments,
@@ -96,7 +91,6 @@ import {
   UnhashedOrder,
   UnsignedOrder,
   WyvernAsset,
-  WyvernAtomicMatchParameters,
   WyvernFTAsset,
   WyvernNFTAsset,
   WyvernSchemaName,
@@ -117,10 +111,8 @@ import { getCanonicalWrappedEther, getTokens } from "./utils/tokens";
 import {
   annotateERC20TransferABI,
   annotateERC721TransferABI,
-  assignOrdersToSides,
   confirmTransaction,
   delay,
-  estimateCurrentPrice,
   estimateGas,
   getCurrentGasPrice,
   getNonCompliantApprovalAddress,
@@ -1152,54 +1144,6 @@ export class OpenSeaSDK {
     return transaction.hash;
   }
 
-  /**
-   * Fullfill or "take" an order for an asset, either a buy or sell order
-   * @param param0 __namedParamaters Object
-   * @param order The order to fulfill, a.k.a. "take"
-   * @param accountAddress The taker's wallet address
-   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
-   * @param referrerAddress The optional address that referred the order
-   * @returns Transaction hash for fulfilling the order
-   */
-  public async fulfillOrderLegacyWyvern({
-    order,
-    accountAddress,
-    recipientAddress,
-    referrerAddress,
-  }: {
-    order: Order;
-    accountAddress: string;
-    recipientAddress?: string;
-    referrerAddress?: string;
-  }): Promise<string> {
-    const matchingOrder = this._makeMatchingOrder({
-      order,
-      accountAddress,
-      recipientAddress: recipientAddress || accountAddress,
-    });
-
-    const { buy, sell } = assignOrdersToSides(order, matchingOrder);
-
-    const metadata = this._getMetadata(order, referrerAddress);
-    const transactionHash = await this._atomicMatch({
-      buy,
-      sell,
-      accountAddress,
-      metadata,
-    });
-
-    await this._confirmTransaction(
-      transactionHash,
-      EventType.MatchOrders,
-      "Fulfilling order",
-      async () => {
-        const isOpen = await this._validateOrder(order);
-        return !isOpen;
-      }
-    );
-    return transactionHash;
-  }
-
   private async cancelSeaportOrders({
     orders,
     accountAddress,
@@ -1669,46 +1613,6 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Gets the price for the order using the contract
-   * @param order The order to calculate the price for
-   */
-  public async getCurrentPriceLegacyWyvern(order: Order) {
-    const currentPrice = await this._wyvernProtocolReadOnly.wyvernExchange
-      .calculateCurrentPrice_(
-        [
-          order.exchange,
-          order.maker,
-          order.taker,
-          order.feeRecipient,
-          order.target,
-          order.staticTarget,
-          order.paymentToken,
-        ],
-        [
-          order.makerRelayerFee,
-          order.takerRelayerFee,
-          order.makerProtocolFee,
-          order.takerProtocolFee,
-          order.basePrice,
-          order.extra,
-          order.listingTime,
-          order.expirationTime,
-          order.salt,
-        ],
-        order.feeMethod,
-        order.side,
-        order.saleKind,
-        order.howToCall,
-        order.calldata,
-        order.replacementPattern,
-        order.staticExtradata
-      )
-      .callAsync();
-
-    return currentPrice;
-  }
-
-  /**
    * Returns whether an order is fulfillable.
    * An order may not be fulfillable if a target item's transfer function
    * is locked for some reason, e.g. an item is being rented within a game
@@ -1741,53 +1645,6 @@ export class OpenSeaSDK {
       }
       throw error;
     }
-  }
-
-  /**
-   * Returns whether an order is fulfillable.
-   * An order may not be fulfillable if a target item's transfer function
-   * is locked for some reason, e.g. an item is being rented within a game
-   * or trading has been locked for an item type.
-   * @param param0 __namedParameters Object
-   * @param order Order to check
-   * @param accountAddress The account address that will be fulfilling the order
-   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
-   * @param referrerAddress The optional address that referred the order
-   */
-  public async isOrderFulfillableLegacyWyvern({
-    order,
-    accountAddress,
-    recipientAddress,
-    referrerAddress,
-  }: {
-    order: Order;
-    accountAddress: string;
-    recipientAddress?: string;
-    referrerAddress?: string;
-  }): Promise<boolean> {
-    const matchingOrder = this._makeMatchingOrder({
-      order,
-      accountAddress,
-      recipientAddress: recipientAddress || accountAddress,
-    });
-
-    const { buy, sell } = assignOrdersToSides(order, matchingOrder);
-
-    const metadata = this._getMetadata(order, referrerAddress);
-    const gas = await this._estimateGasForMatch({
-      buy,
-      sell,
-      accountAddress,
-      metadata,
-    });
-
-    this.logger(
-      `Gas estimate for ${
-        order.side == OrderSide.Sell ? "sell" : "buy"
-      } order: ${gas}`
-    );
-
-    return gas != null && gas > 0;
   }
 
   /**
@@ -2226,112 +2083,6 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Estimate the gas needed to match two orders. Returns undefined if tx errors
-   * @param param0 __namedParamaters Object
-   * @param buy The buy order to match
-   * @param sell The sell order to match
-   * @param accountAddress The taker's wallet address
-   * @param metadata Metadata bytes32 to send with the match
-   * @param retries Number of times to retry if false
-   */
-  public async _estimateGasForMatch(
-    {
-      buy,
-      sell,
-      accountAddress,
-      metadata = NULL_BLOCK_HASH,
-    }: { buy: Order; sell: Order; accountAddress: string; metadata?: string },
-    retries = 1
-  ): Promise<number | undefined> {
-    let value: BigNumber | undefined;
-    if (
-      buy.maker.toLowerCase() == accountAddress.toLowerCase() &&
-      buy.paymentToken == NULL_ADDRESS
-    ) {
-      value = await this._getRequiredAmountForTakingSellOrder(sell);
-    }
-
-    try {
-      return await this._getClientsForRead({
-        retries,
-      })
-        .wyvernProtocol.wyvernExchange.atomicMatch_(
-          [
-            buy.exchange,
-            buy.maker,
-            buy.taker,
-            buy.feeRecipient,
-            buy.target,
-            buy.staticTarget,
-            buy.paymentToken,
-            sell.exchange,
-            sell.maker,
-            sell.taker,
-            sell.feeRecipient,
-            sell.target,
-            sell.staticTarget,
-            sell.paymentToken,
-          ],
-          [
-            buy.makerRelayerFee,
-            buy.takerRelayerFee,
-            buy.makerProtocolFee,
-            buy.takerProtocolFee,
-            buy.basePrice,
-            buy.extra,
-            buy.listingTime,
-            buy.expirationTime,
-            buy.salt,
-            sell.makerRelayerFee,
-            sell.takerRelayerFee,
-            sell.makerProtocolFee,
-            sell.takerProtocolFee,
-            sell.basePrice,
-            sell.extra,
-            sell.listingTime,
-            sell.expirationTime,
-            sell.salt,
-          ],
-          [
-            buy.feeMethod,
-            buy.side,
-            buy.saleKind,
-            buy.howToCall,
-            sell.feeMethod,
-            sell.side,
-            sell.saleKind,
-            sell.howToCall,
-          ],
-          buy.calldata,
-          sell.calldata,
-          buy.replacementPattern,
-          sell.replacementPattern,
-          buy.staticExtradata,
-          sell.staticExtradata,
-          [buy.v || 0, sell.v || 0],
-          [
-            buy.r || NULL_BLOCK_HASH,
-            buy.s || NULL_BLOCK_HASH,
-            sell.r || NULL_BLOCK_HASH,
-            sell.s || NULL_BLOCK_HASH,
-            metadata,
-          ]
-        )
-        .estimateGasAsync({ from: accountAddress, value });
-    } catch (error) {
-      if (retries <= 0) {
-        console.error(error);
-        return undefined;
-      }
-      await delay(200);
-      return await this._estimateGasForMatch(
-        { buy, sell, accountAddress, metadata },
-        retries - 1
-      );
-    }
-  }
-
-  /**
    * Get the proxy address for a user's wallet.
    * Internal method exposed for dev flexibility.
    * @param accountAddress The user's wallet address
@@ -2559,88 +2310,6 @@ export class OpenSeaSDK {
     return matchingOrder;
   }
 
-  /**
-   * Validate against Wyvern that a buy and sell order can match
-   * @param param0 __namedParameters Object
-   * @param buy The buy order to validate
-   * @param sell The sell order to validate
-   * @param accountAddress Address for the user's wallet
-   * @param shouldValidateBuy Whether to validate the buy order individually.
-   * @param shouldValidateSell Whether to validate the sell order individually.
-   * @param retries How many times to retry if validation fails
-   */
-  public async _validateMatch(
-    {
-      buy,
-      sell,
-      accountAddress,
-      shouldValidateBuy = false,
-      shouldValidateSell = false,
-    }: {
-      buy: Order;
-      sell: Order;
-      accountAddress: string;
-      shouldValidateBuy?: boolean;
-      shouldValidateSell?: boolean;
-    },
-    retries = 1
-  ): Promise<boolean> {
-    try {
-      if (shouldValidateBuy) {
-        const buyValid = await this._validateOrder(buy);
-        this.logger(`Buy order is valid: ${buyValid}`);
-
-        if (!buyValid) {
-          throw new Error(
-            "Invalid buy order. It may have recently been removed. Please refresh the page and try again!"
-          );
-        }
-      }
-
-      if (shouldValidateSell) {
-        const sellValid = await this._validateOrder(sell);
-        this.logger(`Sell order is valid: ${sellValid}`);
-
-        if (!sellValid) {
-          throw new Error(
-            "Invalid sell order. It may have recently been removed. Please refresh the page and try again!"
-          );
-        }
-      }
-
-      const canMatch = await requireOrdersCanMatch(
-        this._getClientsForRead({
-          retries,
-        }).wyvernProtocol,
-        { buy, sell, accountAddress }
-      );
-      this.logger(`Orders matching: ${canMatch}`);
-
-      const calldataCanMatch = await requireOrderCalldataCanMatch(
-        this._getClientsForRead({
-          retries,
-        }).wyvernProtocol,
-        { buy, sell }
-      );
-      this.logger(`Order calldata matching: ${calldataCanMatch}`);
-
-      return true;
-    } catch (error) {
-      if (retries <= 0) {
-        throw new Error(
-          `Error matching this listing: ${
-            error instanceof Error ? error.message : ""
-          }. Please contact the maker or try again later!`
-        );
-      }
-      await delay(500);
-      return await this._validateMatch(
-        { buy, sell, accountAddress, shouldValidateBuy, shouldValidateSell },
-        retries - 1
-      );
-    }
-  }
-
   // For creating email whitelists on order takers
   public async _createEmailWhitelistEntry({
     order,
@@ -2768,64 +2437,6 @@ export class OpenSeaSDK {
     );
 
     return transaction.hash;
-  }
-
-  /**
-   * Instead of signing an off-chain order, you can approve an order
-   * with on on-chain transaction using this method
-   * @param order Order to approve
-   * @returns Transaction hash of the approval transaction
-   */
-  public async approveOrderLegacyWyvern(order: UnsignedOrder) {
-    const accountAddress = order.maker;
-    const includeInOrderBook = true;
-
-    this._dispatch(EventType.ApproveOrder, { order, accountAddress });
-
-    const transactionHash = await this._wyvernProtocol.wyvernExchange
-      .approveOrder_(
-        [
-          order.exchange,
-          order.maker,
-          order.taker,
-          order.feeRecipient,
-          order.target,
-          order.staticTarget,
-          order.paymentToken,
-        ],
-        [
-          order.makerRelayerFee,
-          order.takerRelayerFee,
-          order.makerProtocolFee,
-          order.takerProtocolFee,
-          order.basePrice,
-          order.extra,
-          order.listingTime,
-          order.expirationTime,
-          order.salt,
-        ],
-        order.feeMethod,
-        order.side,
-        order.saleKind,
-        order.howToCall,
-        order.calldata,
-        order.replacementPattern,
-        order.staticExtradata,
-        includeInOrderBook
-      )
-      .sendTransactionAsync({ from: accountAddress });
-
-    await this._confirmTransaction(
-      transactionHash.toString(),
-      EventType.ApproveOrder,
-      "Approving order",
-      async () => {
-        const isApproved = await this._validateOrder(order);
-        return isApproved;
-      }
-    );
-
-    return transactionHash;
   }
 
   public async _validateOrder(order: Order): Promise<boolean> {
@@ -2959,79 +2570,6 @@ export class OpenSeaSDK {
         }
       })
     );
-  }
-
-  // Throws
-  public async _buyOrderValidationAndApprovals({
-    order,
-    counterOrder,
-    accountAddress,
-  }: {
-    order: UnhashedOrder;
-    counterOrder?: Order;
-    accountAddress: string;
-  }) {
-    const tokenAddress = order.paymentToken;
-
-    if (tokenAddress != NULL_ADDRESS) {
-      /* NOTE: no buy-side auctions for now, so sell.saleKind === 0 */
-      let minimumAmount = makeBigNumber(order.basePrice);
-      if (counterOrder) {
-        minimumAmount = await this._getRequiredAmountForTakingSellOrder(
-          counterOrder
-        );
-      }
-
-      // Check token approval
-      // This can be done at a higher level to show UI
-      await this.approveFungibleToken({
-        accountAddress,
-        tokenAddress,
-        minimumAmount,
-        proxyAddress:
-          this._wyvernConfigOverride?.wyvernTokenTransferProxyContractAddress ||
-          WyvernProtocol.getTokenTransferProxyAddress(this._networkName),
-      });
-    }
-
-    // Check order formation
-    const buyValid = await this._wyvernProtocolReadOnly.wyvernExchange
-      .validateOrderParameters_(
-        [
-          order.exchange,
-          order.maker,
-          order.taker,
-          order.feeRecipient,
-          order.target,
-          order.staticTarget,
-          order.paymentToken,
-        ],
-        [
-          order.makerRelayerFee,
-          order.takerRelayerFee,
-          order.makerProtocolFee,
-          order.takerProtocolFee,
-          order.basePrice,
-          order.extra,
-          order.listingTime,
-          order.expirationTime,
-          order.salt,
-        ],
-        order.feeMethod,
-        order.side,
-        order.saleKind,
-        order.howToCall,
-        order.calldata,
-        order.replacementPattern,
-        order.staticExtradata
-      )
-      .callAsync({ from: accountAddress });
-    if (!buyValid) {
-      console.error(order);
-      throw new Error(
-        `Failed to validate buy order parameters. Make sure you're on the right network!`
-      );
-    }
   }
 
   /**
@@ -3339,211 +2877,6 @@ export class OpenSeaSDK {
       return referrer;
     }
     return undefined;
-  }
-
-  private async _atomicMatch({
-    buy,
-    sell,
-    accountAddress,
-    metadata = NULL_BLOCK_HASH,
-  }: {
-    buy: Order;
-    sell: Order;
-    accountAddress: string;
-    metadata?: string;
-  }) {
-    let value;
-    let shouldValidateBuy = true;
-    let shouldValidateSell = true;
-
-    // Only check buy, but shouldn't matter as they should always be equal
-    if (sell.maker.toLowerCase() == accountAddress.toLowerCase()) {
-      // USER IS THE SELLER, only validate the buy order
-      await this._sellOrderValidationAndApprovals({
-        order: sell,
-        accountAddress,
-      });
-      shouldValidateSell = false;
-    } else if (buy.maker.toLowerCase() == accountAddress.toLowerCase()) {
-      // USER IS THE BUYER, only validate the sell order
-      await this._buyOrderValidationAndApprovals({
-        order: buy,
-        counterOrder: sell,
-        accountAddress,
-      });
-      shouldValidateBuy = false;
-
-      // If using ETH to pay, set the value of the transaction to the current price
-      if (buy.paymentToken == NULL_ADDRESS) {
-        value = await this._getRequiredAmountForTakingSellOrder(sell);
-      }
-    } else {
-      // User is neither - matching service
-    }
-
-    await this._validateMatch({
-      buy,
-      sell,
-      accountAddress,
-      shouldValidateBuy,
-      shouldValidateSell,
-    });
-
-    this._dispatch(EventType.MatchOrders, {
-      buy,
-      sell,
-      accountAddress,
-      matchMetadata: metadata,
-    });
-
-    let txHash;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const txnData: any = { from: accountAddress, value };
-    const args: WyvernAtomicMatchParameters = [
-      [
-        buy.exchange,
-        buy.maker,
-        buy.taker,
-        buy.feeRecipient,
-        buy.target,
-        buy.staticTarget,
-        buy.paymentToken,
-        sell.exchange,
-        sell.maker,
-        sell.taker,
-        sell.feeRecipient,
-        sell.target,
-        sell.staticTarget,
-        sell.paymentToken,
-      ],
-      [
-        buy.makerRelayerFee,
-        buy.takerRelayerFee,
-        buy.makerProtocolFee,
-        buy.takerProtocolFee,
-        buy.basePrice,
-        buy.extra,
-        buy.listingTime,
-        buy.expirationTime,
-        buy.salt,
-        sell.makerRelayerFee,
-        sell.takerRelayerFee,
-        sell.makerProtocolFee,
-        sell.takerProtocolFee,
-        sell.basePrice,
-        sell.extra,
-        sell.listingTime,
-        sell.expirationTime,
-        sell.salt,
-      ],
-      [
-        buy.feeMethod,
-        buy.side,
-        buy.saleKind,
-        buy.howToCall,
-        sell.feeMethod,
-        sell.side,
-        sell.saleKind,
-        sell.howToCall,
-      ],
-      buy.calldata,
-      sell.calldata,
-      buy.replacementPattern,
-      sell.replacementPattern,
-      buy.staticExtradata,
-      sell.staticExtradata,
-      [buy.v || 0, sell.v || 0],
-      [
-        buy.r || NULL_BLOCK_HASH,
-        buy.s || NULL_BLOCK_HASH,
-        sell.r || NULL_BLOCK_HASH,
-        sell.s || NULL_BLOCK_HASH,
-        metadata,
-      ],
-    ];
-
-    // Estimate gas first
-    try {
-      // Typescript splat doesn't typecheck
-      const gasEstimate = await this._wyvernProtocolReadOnly.wyvernExchange
-        .atomicMatch_(
-          args[0],
-          args[1],
-          args[2],
-          args[3],
-          args[4],
-          args[5],
-          args[6],
-          args[7],
-          args[8],
-          args[9],
-          args[10]
-        )
-        .estimateGasAsync(txnData);
-
-      txnData.gas = this._correctGasAmount(gasEstimate);
-    } catch (error) {
-      console.error(`Failed atomic match with args: `, args, error);
-      throw new Error(
-        `Oops, the Ethereum network rejected this transaction :( The OpenSea devs have been alerted, but this problem is typically due an item being locked or untransferrable. The exact error was "${
-          error instanceof Error
-            ? error.message.substr(0, MAX_ERROR_LENGTH)
-            : "unknown"
-        }..."`
-      );
-    }
-
-    // Then do the transaction
-    try {
-      this.logger(`Fulfilling order with gas set to ${txnData.gas}`);
-      txHash = await this._wyvernProtocol.wyvernExchange
-        .atomicMatch_(
-          args[0],
-          args[1],
-          args[2],
-          args[3],
-          args[4],
-          args[5],
-          args[6],
-          args[7],
-          args[8],
-          args[9],
-          args[10]
-        )
-        .sendTransactionAsync(txnData);
-    } catch (error) {
-      console.error(error);
-
-      this._dispatch(EventType.TransactionDenied, {
-        error,
-        buy,
-        sell,
-        accountAddress,
-        matchMetadata: metadata,
-      });
-
-      throw new Error(
-        `Failed to authorize transaction: "${
-          error instanceof Error && error.message
-            ? error.message
-            : "user denied"
-        }..."`
-      );
-    }
-    return txHash;
-  }
-
-  private async _getRequiredAmountForTakingSellOrder(sell: Order) {
-    const currentPrice = await this.getCurrentPriceLegacyWyvern(sell);
-    const estimatedPrice = estimateCurrentPrice(sell);
-
-    const maxPrice = BigNumber.max(currentPrice, estimatedPrice);
-
-    // TODO Why is this not always a big number?
-    sell.takerRelayerFee = makeBigNumber(sell.takerRelayerFee);
-    const feePercentage = sell.takerRelayerFee.div(INVERSE_BASIS_POINT);
-    const fee = feePercentage.times(maxPrice);
-    return fee.plus(maxPrice).integerValue(BigNumber.ROUND_CEIL);
   }
 
   /**
