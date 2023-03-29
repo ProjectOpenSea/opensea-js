@@ -17,7 +17,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      
+
       - name: Upgrade npm
         run: npm install -g npm
 
@@ -39,6 +39,9 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      - name: Upgrade npm
+        run: npm install -g npm
+
       - name: Install dependencies
         run: npm install --immutable --ignore-scripts
 
@@ -49,15 +52,18 @@ jobs:
         env:
           API_KEY: ${{ secrets.API_KEY }}
         run: npm run test
-  
+
   test-earliest-node-engine-support:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.0.0' # specified in the package.json engines.node field
+          node-version: "16.0.0" # specified in the package.json engines.node field
           cache: npm
+
+      - name: Upgrade npm
+        run: npm install -g npm
 
       - name: Install dependencies
         run: npm install --immutable --ignore-scripts

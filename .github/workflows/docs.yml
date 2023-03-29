@@ -15,7 +15,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      
+
       - name: Upgrade npm
         run: npm install -g npm
 
