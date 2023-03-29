@@ -12,14 +12,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: "16.13.0"
+          node-version-file: .nvmrc
           cache: npm
-
-      - name: Upgrade npm
-        run: npm install -g npm
 
       - name: Install dependencies
         run: npm install --immutable --ignore-scripts
@@ -33,14 +30,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: "16.13.0"
+          node-version-file: .nvmrc
           cache: npm
-
-      - name: Upgrade npm
-        run: npm install -g npm
 
       - name: Install dependencies
         run: npm install --immutable --ignore-scripts
@@ -51,7 +45,24 @@ jobs:
       - name: Run tests
         env:
           API_KEY: ${{ secrets.API_KEY }}
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: |
-          npm run test
-          npm run coverage-report
+        run: npm run test
+  
+  test-earliest-node-engine-support:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.0.0' # specified in the package.json engines.node field
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --immutable --ignore-scripts
+
+      - name: Gen ABI
+        run: npm run abi-type-gen
+
+      - name: Run tests
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+        run: npm run test
