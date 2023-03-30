@@ -21,9 +21,6 @@ import {
   CONDUIT_KEYS_TO_CONDUIT,
   DEFAULT_GAS_INCREASE_FACTOR,
   DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS,
-  EIP_712_ORDER_TYPES,
-  EIP_712_WYVERN_DOMAIN_NAME,
-  EIP_712_WYVERN_DOMAIN_VERSION,
   ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
   MANA_ADDRESS,
@@ -70,7 +67,6 @@ import { WrappedNFTFactoryAbi } from "./typechain/contracts/WrappedNFTFactoryAbi
 import {
   Asset,
   ComputedFees,
-  ECSignature,
   EventData,
   EventType,
   FeeMethod,
@@ -82,10 +78,8 @@ import {
   OpenSeaFungibleToken,
   OrderSide,
   PartialReadonlyContractAbi,
-  RawWyvernOrderJSON,
   TokenStandardVersion,
   UnhashedOrder,
-  UnsignedOrder,
   WyvernAsset,
   WyvernFTAsset,
   WyvernNFTAsset,
@@ -113,7 +107,6 @@ import {
   onDeprecated,
   rawCall,
   sendRawTransaction,
-  signTypedDataAsync,
   validateAndFormatWalletAddress,
   getMaxOrderExpirationTimestamp,
   hasErrorCode,
@@ -2618,92 +2611,6 @@ export class OpenSeaSDK {
       : undefined;
 
     return { basePrice, extra, paymentToken, reservePrice, endPrice };
-  }
-
-  /**
-   * Gets the current order nonce for an account
-   * @param accountAddress account to check the nonce for
-   * @returns nonce
-   */
-  public getNonce(accountAddress: string) {
-    return this._wyvernProtocol.wyvernExchange
-      .nonces(accountAddress)
-      .callAsync();
-  }
-
-  /**
-   * Generate the signature for authorizing an order
-   * @param order Unsigned wyvern order
-   * @returns order signature in the form of v, r, s, also an optional nonce
-   */
-  public async authorizeOrder(
-    order: UnsignedOrder
-  ): Promise<(ECSignature & { nonce?: number }) | null> {
-    const signerAddress = order.maker;
-
-    this._dispatch(EventType.CreateOrder, {
-      order,
-      accountAddress: order.maker,
-    });
-
-    try {
-      // 2.3 Sign order flow using EIP-712
-      const signerOrderNonce = await this.getNonce(signerAddress);
-
-      // We need to manually specify each field because OS orders can contain unrelated data
-      const orderForSigning: RawWyvernOrderJSON = {
-        maker: order.maker,
-        exchange: order.exchange,
-        taker: order.taker,
-        makerRelayerFee: order.makerRelayerFee.toString(),
-        takerRelayerFee: order.takerRelayerFee.toString(),
-        makerProtocolFee: order.makerProtocolFee.toString(),
-        takerProtocolFee: order.takerProtocolFee.toString(),
-        feeRecipient: order.feeRecipient,
-        feeMethod: order.feeMethod,
-        side: order.side,
-        saleKind: order.saleKind,
-        target: order.target,
-        howToCall: order.howToCall,
-        calldata: order.calldata,
-        replacementPattern: order.replacementPattern,
-        staticTarget: order.staticTarget,
-        staticExtradata: order.staticExtradata,
-        paymentToken: order.paymentToken,
-        basePrice: order.basePrice.toString(),
-        extra: order.extra.toString(),
-        listingTime: order.listingTime.toString(),
-        expirationTime: order.expirationTime.toString(),
-        salt: order.salt.toString(),
-      };
-
-      // We don't JSON.stringify as certain wallet providers sanitize this data
-      // https://github.com/coinbase/coinbase-wallet-sdk/issues/60
-      const message = {
-        types: EIP_712_ORDER_TYPES,
-        domain: {
-          name: EIP_712_WYVERN_DOMAIN_NAME,
-          version: EIP_712_WYVERN_DOMAIN_VERSION,
-          chainId: this._networkName == Network.Main ? 1 : 4,
-          verifyingContract: order.exchange,
-        },
-        primaryType: "Order",
-        message: { ...orderForSigning, nonce: signerOrderNonce.toNumber() },
-      };
-
-      const ecSignature = await signTypedDataAsync(
-        this.web3,
-        message,
-        signerAddress
-      );
-      return { ...ecSignature, nonce: signerOrderNonce.toNumber() };
-    } catch (error) {
-      this._dispatch(EventType.OrderDenied, {
-        order,
-        accountAddress: signerAddress,
-      });
-      throw error;
-    }
   }
 
   private _getSchemaName(asset: Asset | OpenSeaAsset) {
