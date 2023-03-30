@@ -8,10 +8,8 @@ import {
   CreateInputItem,
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
-import { generateRandomSalt } from "@opensea/seaport-js/lib/utils/order";
 import { BigNumber } from "bignumber.js";
 import { Web3JsProvider } from "ethereum-types";
-import { isValidAddress } from "ethereumjs-util";
 import { ethers, providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
@@ -82,11 +80,9 @@ import {
   OpenSeaAsset,
   OpenSeaCollection,
   OpenSeaFungibleToken,
-  Order,
   OrderSide,
   PartialReadonlyContractAbi,
   RawWyvernOrderJSON,
-  SaleKind,
   TokenStandardVersion,
   UnhashedOrder,
   UnsignedOrder,
@@ -96,13 +92,9 @@ import {
   WyvernSchemaName,
 } from "./types";
 import {
-  encodeAtomicizedBuy,
-  encodeAtomicizedSell,
   encodeAtomicizedTransfer,
-  encodeBuy,
   encodeCall,
   encodeProxyCall,
-  encodeSell,
   encodeTransferCall,
   schemas,
   Schema,
@@ -118,7 +110,6 @@ import {
   getNonCompliantApprovalAddress,
   getWyvernAsset,
   makeBigNumber,
-  merkleValidatorByNetwork,
   onDeprecated,
   rawCall,
   sendRawTransaction,
@@ -133,8 +124,6 @@ import {
   isValidProtocol,
   toBaseUnitAmount,
 } from "./utils/utils";
-
-export { WyvernProtocol };
 
 export class OpenSeaSDK {
   // Web3 instance to use
@@ -2193,123 +2182,6 @@ export class OpenSeaSDK {
     return makeBigNumber(approved);
   }
 
-  public _makeMatchingOrder({
-    order,
-    accountAddress,
-    recipientAddress,
-  }: {
-    order: UnsignedOrder;
-    accountAddress: string;
-    recipientAddress: string;
-  }): UnsignedOrder {
-    accountAddress = validateAndFormatWalletAddress(this.web3, accountAddress);
-    recipientAddress = validateAndFormatWalletAddress(
-      this.web3,
-      recipientAddress
-    );
-
-    const computeOrderParams = () => {
-      const shouldValidate =
-        order.target === merkleValidatorByNetwork[this._networkName];
-
-      if ("asset" in order.metadata) {
-        const schema = this._getSchema(order.metadata.schema);
-        return order.side == OrderSide.Buy
-          ? encodeSell(
-              schema,
-              order.metadata.asset,
-              recipientAddress,
-              shouldValidate ? order.target : undefined
-            )
-          : encodeBuy(
-              schema,
-              order.metadata.asset,
-              recipientAddress,
-              shouldValidate ? order.target : undefined
-            );
-      } else if ("bundle" in order.metadata) {
-        // We're matching a bundle order
-        const bundle = order.metadata.bundle;
-        const orderedSchemas = bundle.schemas
-          ? bundle.schemas.map((schemaName) => this._getSchema(schemaName))
-          : // Backwards compat:
-            bundle.assets.map(() =>
-              this._getSchema(
-                "schema" in order.metadata ? order.metadata.schema : undefined
-              )
-            );
-        const atomicized =
-          order.side == OrderSide.Buy
-            ? encodeAtomicizedSell(
-                orderedSchemas,
-                order.metadata.bundle.assets,
-                recipientAddress,
-                this._wyvernProtocol,
-                this._networkName
-              )
-            : encodeAtomicizedBuy(
-                orderedSchemas,
-                order.metadata.bundle.assets,
-                recipientAddress,
-                this._wyvernProtocol,
-                this._networkName
-              );
-        return {
-          target: WyvernProtocol.getAtomicizerContractAddress(
-            this._networkName
-          ),
-          calldata: atomicized.calldata,
-          replacementPattern: atomicized.replacementPattern,
-        };
-      } else {
-        throw new Error("Invalid order metadata");
-      }
-    };
-
-    const { target, calldata, replacementPattern } = computeOrderParams();
-    const times = this._getTimeParameters({
-      expirationTimestamp: 0,
-      isMatchingOrder: true,
-    });
-    // Compat for matching buy orders that have fee recipient still on them
-    const feeRecipient =
-      order.feeRecipient == NULL_ADDRESS
-        ? OPENSEA_LEGACY_FEE_RECIPIENT
-        : NULL_ADDRESS;
-
-    const matchingOrder: UnhashedOrder = {
-      exchange: order.exchange,
-      maker: accountAddress,
-      taker: order.maker,
-      quantity: order.quantity,
-      makerRelayerFee: order.makerRelayerFee,
-      takerRelayerFee: order.takerRelayerFee,
-      makerProtocolFee: order.makerProtocolFee,
-      takerProtocolFee: order.takerProtocolFee,
-      makerReferrerFee: order.makerReferrerFee,
-      waitingForBestCounterOrder: false,
-      feeMethod: order.feeMethod,
-      feeRecipient,
-      side: (order.side + 1) % 2,
-      saleKind: SaleKind.FixedPrice,
-      target,
-      howToCall: order.howToCall,
-      calldata,
-      replacementPattern,
-      staticTarget: NULL_ADDRESS,
-      staticExtradata: "0x",
-      paymentToken: order.paymentToken,
-      basePrice: order.basePrice,
-      extra: makeBigNumber(0),
-      listingTime: times.listingTime,
-      expirationTime: times.expirationTime,
-      salt: new BigNumber(generateRandomSalt()),
-      metadata: order.metadata,
-    };
-
-    return matchingOrder;
-  }
-
   // For creating email whitelists on order takers
   public async _createEmailWhitelistEntry({
     order,
@@ -2323,90 +2195,6 @@ export class OpenSeaSDK {
       throw new Error("Whitelisting only available for non-fungible assets.");
     }
     await this.api.postAssetWhitelist(asset.address, asset.id, buyerEmail);
-  }
-
-  // Throws
-  public async _sellOrderValidationAndApprovals({
-    order,
-    accountAddress,
-  }: {
-    order: UnhashedOrder;
-    accountAddress: string;
-  }) {
-    const wyAssets =
-      "bundle" in order.metadata
-        ? order.metadata.bundle.assets
-        : order.metadata.asset
-        ? [order.metadata.asset]
-        : [];
-    const schemaNames =
-      "bundle" in order.metadata && "schemas" in order.metadata.bundle
-        ? order.metadata.bundle.schemas
-        : "schema" in order.metadata
-        ? [order.metadata.schema]
-        : [];
-    const tokenAddress = order.paymentToken;
-
-    await this._approveAll({
-      schemaNames,
-      wyAssets,
-      accountAddress,
-    });
-
-    // For fulfilling bids,
-    // need to approve access to fungible token because of the way fees are paid
-    // This can be done at a higher level to show UI
-    if (tokenAddress != NULL_ADDRESS) {
-      const minimumAmount = makeBigNumber(order.basePrice);
-      const tokenTransferProxyAddress =
-        this._wyvernConfigOverride?.wyvernTokenTransferProxyContractAddress ||
-        WyvernProtocol.getTokenTransferProxyAddress(this._networkName);
-      await this.approveFungibleToken({
-        accountAddress,
-        tokenAddress,
-        minimumAmount,
-        proxyAddress: tokenTransferProxyAddress,
-      });
-    }
-
-    // Check sell parameters
-    const sellValid = await this._wyvernProtocol.wyvernExchange
-      .validateOrderParameters_(
-        [
-          order.exchange,
-          order.maker,
-          order.taker,
-          order.feeRecipient,
-          order.target,
-          order.staticTarget,
-          order.paymentToken,
-        ],
-        [
-          order.makerRelayerFee,
-          order.takerRelayerFee,
-          order.makerProtocolFee,
-          order.takerProtocolFee,
-          order.basePrice,
-          order.extra,
-          order.listingTime,
-          order.expirationTime,
-          order.salt,
-        ],
-        order.feeMethod,
-        order.side,
-        order.saleKind,
-        order.howToCall,
-        order.calldata,
-        order.replacementPattern,
-        order.staticExtradata
-      )
-      .callAsync({ from: accountAddress });
-    if (!sellValid) {
-      console.error(order);
-      throw new Error(
-        `Failed to validate sell order parameters. Make sure you're on the right network!`
-      );
-    }
   }
 
   /**
@@ -2437,45 +2225,6 @@ export class OpenSeaSDK {
     );
 
     return transaction.hash;
-  }
-
-  public async _validateOrder(order: Order): Promise<boolean> {
-    const isValid = await this._wyvernProtocolReadOnly.wyvernExchange
-      .validateOrder_(
-        [
-          order.exchange,
-          order.maker,
-          order.taker,
-          order.feeRecipient,
-          order.target,
-          order.staticTarget,
-          order.paymentToken,
-        ],
-        [
-          order.makerRelayerFee,
-          order.takerRelayerFee,
-          order.makerProtocolFee,
-          order.takerProtocolFee,
-          order.basePrice,
-          order.extra,
-          order.listingTime,
-          order.expirationTime,
-          order.salt,
-        ],
-        order.feeMethod,
-        order.side,
-        order.saleKind,
-        order.howToCall,
-        order.calldata,
-        order.replacementPattern,
-        order.staticExtradata,
-        order.v || 0,
-        order.r || NULL_BLOCK_HASH,
-        order.s || NULL_BLOCK_HASH
-      )
-      .callAsync();
-
-    return isValid;
   }
 
   public async _approveAll({
@@ -2835,7 +2584,7 @@ export class OpenSeaSDK {
       );
     }
 
-    // Note: WyvernProtocol.toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
+    // Note: toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
     // will fail if too many decimal places, so special-case ether
     const basePrice = isEther
       ? makeBigNumber(
@@ -2869,14 +2618,6 @@ export class OpenSeaSDK {
       : undefined;
 
     return { basePrice, extra, paymentToken, reservePrice, endPrice };
-  }
-
-  private _getMetadata(order: Order, referrerAddress?: string) {
-    const referrer = referrerAddress || order.metadata.referrerAddress;
-    if (referrer && isValidAddress(referrer)) {
-      return referrer;
-    }
-    return undefined;
   }
 
   /**
@@ -3002,19 +2743,16 @@ export class OpenSeaSDK {
    */
   private _getClientsForRead({ retries }: { retries: number }): {
     web3: Web3;
-    wyvernProtocol: WyvernProtocol;
   } {
     if (retries > 0) {
       // Use injected provider by default
       return {
         web3: this.web3,
-        wyvernProtocol: this._wyvernProtocol,
       };
     } else {
       // Use provided provider as fallback
       return {
         web3: this.web3ReadOnly,
-        wyvernProtocol: this._wyvernProtocolReadOnly,
       };
     }
   }
