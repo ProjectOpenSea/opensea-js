@@ -24,7 +24,6 @@ const client = new OpenSeaSDK(
 
 suite("SDK: misc", () => {
   test("Instance has public methods", () => {
-    assert.equal(typeof client.getCurrentPriceLegacyWyvern, "function");
     assert.equal(typeof client.wrapEth, "function");
   });
 
