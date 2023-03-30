@@ -110,22 +110,6 @@ export interface Schema<T> {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-type ReplacementEncoder = (
-  abi: AnnotatedFunctionABI,
-  kind?: FunctionInputKind,
-  encodeToBytes?: boolean
-) => string;
-
-export const encodeReplacementPattern: ReplacementEncoder =
-  WyvernProtocol.encodeReplacementPattern;
-
-export type Encoder = (
-  schema: Schema<WyvernAsset>,
-  asset: WyvernAsset,
-  address: string,
-  validatorAddress?: string
-) => CallSpec;
-
 export const encodeCall = (
   abi: AnnotatedFunctionABI,
   parameters: unknown[]
@@ -138,23 +122,6 @@ export const encodeCall = (
       ethABI.rawEncode(inputTypes, parameters),
     ]).toString("hex")
   );
-};
-
-export const encodeSell: Encoder = (
-  schema,
-  asset,
-  address,
-  validatorAddress?: string
-) => {
-  const transfer =
-    validatorAddress && schema.functions.checkAndTransfer
-      ? schema.functions.checkAndTransfer(asset, validatorAddress)
-      : schema.functions.transfer(asset);
-  return {
-    target: transfer.target,
-    calldata: encodeDefaultCall(transfer, address),
-    replacementPattern: encodeReplacementPattern(transfer),
-  };
 };
 
 export type DefaultCallEncoder = (
