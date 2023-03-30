@@ -98,6 +98,9 @@
     "sdk",
     "smart-contracts"
   ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "lint-staged": {
     "package.json": [
       "prettier-package-json --write"
