@@ -3,13 +3,14 @@ import { expect } from "chai";
 import { suite, test } from "mocha";
 import { BAYC_CONTRACT_ADDRESS, BAYC_TOKEN_IDS, mainApi } from "../constants";
 import { expectValidOrder } from "../utils";
+import { OrderSide } from "src/orders/types";
 
 suite("Getting orders", () => {
-  ["ask", "bid"].forEach((side) => {
+  [<OrderSide>"ask", <OrderSide>"bid"].forEach((side) => {
     test(`getOrder should return a single order > ${side}`, async () => {
       const order = await mainApi.getOrder({
         protocol: "seaport",
-        side: "ask",
+        side,
       });
       expectValidOrder(order);
     });
@@ -27,11 +28,11 @@ suite("Getting orders", () => {
       .and.have.property("message", "Not found: no matching order found");
   });
 
-  ["ask", "bid"].forEach((side) => {
+  [<OrderSide>"ask", <OrderSide>"bid"].forEach((side) => {
     test(`getOrders should return a list of orders > ${side}`, async () => {
       const { orders, next, previous } = await mainApi.getOrders({
         protocol: "seaport",
-        side: "ask",
+        side,
         tokenIds: BAYC_TOKEN_IDS,
         assetContractAddress: BAYC_CONTRACT_ADDRESS,
       });
