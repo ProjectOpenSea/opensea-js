@@ -80,10 +80,10 @@
     "prettier-package-json": "2.8.0",
     "ts-node": "10.9.1",
     "typechain": "^7.0.0",
-    "typedoc": "^0.22.18",
+    "typedoc": "^0.23.0",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "0.0.8",
-    "typescript": "4.5.4"
+    "typescript": "4.9.5"
   },
   "keywords": [
     "collectibles",
