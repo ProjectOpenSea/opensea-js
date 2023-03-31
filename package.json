@@ -78,7 +78,7 @@
     "nyc": "^15.1.0",
     "prettier": "2.5.1",
     "prettier-package-json": "2.6.0",
-    "ts-node": "10.4.0",
+    "ts-node": "10.9.1",
     "typechain": "^7.0.0",
     "typedoc": "^0.22.18",
     "types-bn": "^0.0.1",
