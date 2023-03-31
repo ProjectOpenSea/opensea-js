@@ -1,9 +1,9 @@
 import "../support/setup";
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { OrderSide } from "src/orders/types";
 import { BAYC_CONTRACT_ADDRESS, BAYC_TOKEN_IDS, mainApi } from "../constants";
 import { expectValidOrder } from "../utils";
-import { OrderSide } from "src/orders/types";
 
 suite("Getting orders", () => {
   [<OrderSide>"ask", <OrderSide>"bid"].forEach((side) => {
