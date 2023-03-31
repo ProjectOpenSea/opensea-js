@@ -113,7 +113,7 @@ export type WyvernConfig = {
 };
 
 /**
- * Wyvern order side: buy or sell.
+ * Seaport order side: buy or sell.
  */
 export enum OrderSide {
   Buy = 0,
