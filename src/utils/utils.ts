@@ -1,3 +1,4 @@
+import { assert } from "@0x/assert";
 import {
   CROSS_CHAIN_SEAPORT_ADDRESS,
   CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
@@ -14,7 +15,6 @@ import Web3 from "web3";
 import { AbstractProvider } from "web3-core/types";
 import { JsonRpcResponse } from "web3-core-helpers/types";
 import { Contract } from "web3-eth-contract";
-import { assert } from "./assert";
 import { Schema } from "./schemas/schema";
 import {
   ENJIN_ADDRESS,
