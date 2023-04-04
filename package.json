@@ -46,8 +46,7 @@
     "lodash": "^4.17.21",
     "query-string": "^6.11.1",
     "safe-buffer": "^5.2.1",
-    "web3": "^1.8.1",
-    "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#7429b1f2dd123f012cae1f3144a069e91ecd0682"
+    "web3": "^1.8.1"
   },
   "devDependencies": {
     "@typechain/web3-v1": "^5.0.0",

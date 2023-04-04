@@ -442,22 +442,6 @@ await openseaSDK.fulfillOrder({
 
 If the order is a sell order (`order.side === "ask"`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is a buy order ( `"bid"`), the taker is the _seller_ but the bid amount be sent to the `recipientAddress`.
 
-### Bulk Transfers
-
-A handy feature in OpenSea.js is the ability to transfer multiple items at once in a single transaction. This works by grouping together as many `transferFrom` calls as the Ethereum gas limit allows, which is usually under 30 items, for most item contracts.
-
-To make a bulk transfer, it's just one call:
-
-```JavaScript
-const assets: Array<{tokenId: string; tokenAddress: string}> = [...]
-
-const transactionHash = await openseaSDK.transferAll({
-  assets,
-  fromAddress, // Must own all the assets
-  toAddress
-})
-```
-
 This will automatically approve the assets for trading and confirm the transaction for sending them.
 
 ### Using ERC-20 Tokens Instead of Ether

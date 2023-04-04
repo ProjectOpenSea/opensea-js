@@ -5,7 +5,7 @@ import {
 } from "@opensea/seaport-js/lib/constants";
 import BigNumber from "bignumber.js";
 import BN from "bn.js";
-import { CallData, TxData } from "ethereum-types";
+import { TxData } from "ethereum-types";
 import * as ethABI from "ethereumjs-abi";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
@@ -671,38 +671,6 @@ export async function sendRawTransaction(
 }
 
 /**
- * Call a method on a contract, sending arbitrary data and
- * handling Parity errors. Returns '0x' if error.
- * @param web3 Web3 instance
- * @param param0 __namedParameters
- * @param from address sending call
- * @param to destination contract address
- * @param data data to send to contract
- * @param onError callback when user denies transaction
- */
-export async function rawCall(
-  web3: Web3,
-  { from, to, data }: CallData,
-  onError?: (error: unknown) => void
-): Promise<string> {
-  try {
-    const result = await web3.eth.call({
-      from,
-      to,
-      data,
-    });
-    return result;
-  } catch (error) {
-    // Probably method not found, and web3 is a Parity node
-    if (onError) {
-      onError(error);
-    }
-    // Backwards compatibility with Geth nodes
-    return "0x";
-  }
-}
-
-/**
  * Estimate Gas usage for a transaction
  * @param web3 Web3 instance
  * @param from address sending transaction
@@ -1085,27 +1053,6 @@ export async function delay(ms: number) {
 }
 
 /**
- * Validates that an address exists, isn't null, and is properly
- * formatted for Wyvern and OpenSea
- * @param address input address
- */
-export function validateAndFormatWalletAddress(
-  web3: Web3,
-  address: string
-): string {
-  if (!address) {
-    throw new Error("No wallet address found");
-  }
-  if (!web3.utils.isAddress(address)) {
-    throw new Error("Invalid wallet address");
-  }
-  if (address == NULL_ADDRESS) {
-    throw new Error("Wallet cannot be the null address");
-  }
-  return address.toLowerCase();
-}
-
-/**
  * Notify developer when a pattern will be deprecated
  * @param msg message to log to console
  */
@@ -1224,4 +1171,30 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
     CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
   ].map((address) => Web3.utils.toChecksumAddress(address));
   return validProtocolAddresses.includes(checkSumAddress);
+};
+
+export const generateDefaultValue = (
+  type: string
+): number | string | boolean => {
+  switch (type) {
+    case "address":
+    case "bytes20":
+      /* Null address is sometimes checked in transfer calls. */
+      // But we need to use 0x000 because bitwise XOR won't work if there's a 0 in the actual address, since it will be replaced as 1 OR 0 = 1
+      return "0x0000000000000000000000000000000000000000";
+    case "bytes32":
+      return "0x0000000000000000000000000000000000000000000000000000000000000000";
+    case "bool":
+      return false;
+    case "int":
+    case "uint":
+    case "uint8":
+    case "uint16":
+    case "uint32":
+    case "uint64":
+    case "uint256":
+      return 0;
+    default:
+      throw new Error("Default value not yet implemented for type: " + type);
+  }
 };
