@@ -47,6 +47,7 @@ export const getPostCollectionOfferPayload = (
       collection: { slug: collectionSlug },
     },
     protocol_data,
+    protocol_address: SEAPORT_CONTRACT_VERSION_V1_5,
   };
 };
 
