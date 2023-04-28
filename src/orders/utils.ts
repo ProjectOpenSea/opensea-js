@@ -50,7 +50,7 @@ export const getPostCollectionOfferPayload = (
       collection: { slug: collectionSlug },
     },
     protocol_data,
-    protocol_address: CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
+    protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
   };
 };
 
@@ -67,7 +67,7 @@ export const getBuildCollectionOfferPayload = (
         slug: collectionSlug,
       },
     },
-    protocol_address: CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
+    protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
   };
 };
 
