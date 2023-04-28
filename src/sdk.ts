@@ -1,5 +1,4 @@
 import { Seaport } from "@opensea/seaport-js";
-import { CROSS_CHAIN_SEAPORT_V1_5_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import {
   ConsiderationInputItem,
   CreateInputItem,
@@ -55,6 +54,7 @@ import {
   getPrivateListingFulfillments,
 } from "./orders/privateListings";
 import { OrderV2, PostOfferResponse } from "./orders/types";
+import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "./orders/utils";
 import { ERC1155Abi } from "./typechain/contracts/ERC1155Abi";
 import { ERC721v3Abi } from "./typechain/contracts/ERC721v3Abi";
 import { UniswapExchangeAbi } from "./typechain/contracts/UniswapExchangeAbi";
@@ -829,7 +829,7 @@ export class OpenSeaSDK {
 
     return this.api.postOrder(order, {
       protocol: "seaport",
-      protocolAddress: CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
+      protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
       side: "bid",
     });
   }
@@ -934,7 +934,7 @@ export class OpenSeaSDK {
 
     return this.api.postOrder(order, {
       protocol: "seaport",
-      protocolAddress: CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
+      protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
       side: "ask",
     });
   }
@@ -1145,7 +1145,7 @@ export class OpenSeaSDK {
     protocolAddress?: string;
   }): Promise<string> {
     if (!protocolAddress) {
-      protocolAddress = CROSS_CHAIN_SEAPORT_V1_5_ADDRESS;
+      protocolAddress = DEFAULT_SEAPORT_CONTRACT_ADDRESS;
     }
 
     const transaction = await this.seaport_v1_5

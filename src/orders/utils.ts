@@ -1,4 +1,4 @@
-import { SEAPORT_CONTRACT_VERSION_V1_5 } from "@opensea/seaport-js/lib/constants";
+import { CROSS_CHAIN_SEAPORT_V1_5_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import {
   OrderProtocol,
   OrdersQueryOptions,
@@ -15,6 +15,9 @@ const NETWORK_TO_CHAIN = {
   [Network.Rinkeby]: "rinkeby",
   [Network.Goerli]: "goerli",
 };
+
+export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
+  CROSS_CHAIN_SEAPORT_V1_5_ADDRESS;
 
 export const getOrdersAPIPath = (
   network: Network,
@@ -47,7 +50,7 @@ export const getPostCollectionOfferPayload = (
       collection: { slug: collectionSlug },
     },
     protocol_data,
-    protocol_address: SEAPORT_CONTRACT_VERSION_V1_5,
+    protocol_address: CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   };
 };
 
@@ -64,7 +67,7 @@ export const getBuildCollectionOfferPayload = (
         slug: collectionSlug,
       },
     },
-    protocol_address: SEAPORT_CONTRACT_VERSION_V1_5,
+    protocol_address: CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   };
 };
 
