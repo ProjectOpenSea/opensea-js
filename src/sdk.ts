@@ -1,8 +1,5 @@
 import { Seaport } from "@opensea/seaport-js";
-import {
-  CROSS_CHAIN_SEAPORT_ADDRESS,
-  CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
-} from "@opensea/seaport-js/lib/constants";
+import { CROSS_CHAIN_SEAPORT_V1_5_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import {
   ConsiderationInputItem,
   CreateInputItem,
@@ -126,6 +123,8 @@ export class OpenSeaSDK {
   public ethersProvider: providers.Web3Provider;
   // Seaport v1.4 client
   public seaport_v1_4: Seaport;
+  // Seaport v1.5 client
+  public seaport_v1_5: Seaport;
   // Logger function to use when debugging
   public logger: (arg: string) => void;
   // API instance on this seaport
@@ -191,6 +190,14 @@ export class OpenSeaSDK {
         defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
       },
       seaportVersion: "1.4",
+    });
+
+    this.seaport_v1_5 = new Seaport(providerOrSinger, {
+      conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
+      overrides: {
+        defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
+      },
+      seaportVersion: "1.5",
     });
 
     let networkForWyvernConfig = this._networkName;
@@ -798,7 +805,7 @@ export class OpenSeaSDK {
       ...collectionSellerFees,
     ];
 
-    const { executeAllActions } = await this.seaport_v1_4.createOrder(
+    const { executeAllActions } = await this.seaport_v1_5.createOrder(
       {
         offer: [
           {
@@ -822,7 +829,7 @@ export class OpenSeaSDK {
 
     return this.api.postOrder(order, {
       protocol: "seaport",
-      protocolAddress: CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
+      protocolAddress: CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
       side: "bid",
     });
   }
@@ -907,7 +914,7 @@ export class OpenSeaSDK {
       );
     }
 
-    const { executeAllActions } = await this.seaport_v1_4.createOrder(
+    const { executeAllActions } = await this.seaport_v1_5.createOrder(
       {
         offer: offerAssetItems,
         consideration: considerationFeeItems,
@@ -927,7 +934,7 @@ export class OpenSeaSDK {
 
     return this.api.postOrder(order, {
       protocol: "seaport",
-      protocolAddress: CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
+      protocolAddress: CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
       side: "ask",
     });
   }
@@ -1007,7 +1014,7 @@ export class OpenSeaSDK {
       allowPartialFills: true,
     };
 
-    const { executeAllActions } = await this.seaport_v1_4.createOrder(
+    const { executeAllActions } = await this.seaport_v1_5.createOrder(
       payload,
       accountAddress
     );
@@ -1039,7 +1046,7 @@ export class OpenSeaSDK {
       order.taker.address
     );
     const fulfillments = getPrivateListingFulfillments(order.protocolData);
-    const transaction = await this.seaport_v1_4
+    const transaction = await this.seaport_v1_5
       .matchOrders({
         orders: [order.protocolData, counterOrder],
         fulfillments,
@@ -1110,7 +1117,7 @@ export class OpenSeaSDK {
       });
     }
 
-    const { executeAllActions } = await this.seaport_v1_4.fulfillOrder({
+    const { executeAllActions } = await this.seaport_v1_5.fulfillOrder({
       order: order.protocolData,
       accountAddress,
       recipientAddress,
@@ -1138,10 +1145,10 @@ export class OpenSeaSDK {
     protocolAddress?: string;
   }): Promise<string> {
     if (!protocolAddress) {
-      protocolAddress = CROSS_CHAIN_SEAPORT_ADDRESS;
+      protocolAddress = CROSS_CHAIN_SEAPORT_V1_5_ADDRESS;
     }
 
-    const transaction = await this.seaport_v1_4
+    const transaction = await this.seaport_v1_5
       .cancelOrders(orders, accountAddress, domain)
       .transact();
 
@@ -1548,7 +1555,7 @@ export class OpenSeaSDK {
    * @returns Transaction hash
    */
   public async setDomain(domain: string): Promise<string> {
-    const transaction = await this.seaport_v1_4.setDomain(domain).transact();
+    const transaction = await this.seaport_v1_5.setDomain(domain).transact();
 
     await transaction.wait();
 
@@ -1562,7 +1569,7 @@ export class OpenSeaSDK {
    * @returns Domain
    */
   public async getDomain(tag: string, index: number): Promise<string> {
-    return this.seaport_v1_4.getDomain(tag, index);
+    return this.seaport_v1_5.getDomain(tag, index);
   }
 
   /**
@@ -1571,7 +1578,7 @@ export class OpenSeaSDK {
    * @returns Array of domains
    */
   public async getDomains(tag: string): Promise<string[]> {
-    return this.seaport_v1_4.getDomains(tag);
+    return this.seaport_v1_5.getDomains(tag);
   }
 
   /**
@@ -1580,7 +1587,7 @@ export class OpenSeaSDK {
    * @returns Number of registered domains for input tag.
    */
   public async getNumberOfDomains(tag: string): Promise<BigNumber> {
-    return new BigNumber(this.seaport_v1_4.getNumberOfDomains(tag).toString());
+    return new BigNumber(this.seaport_v1_5.getNumberOfDomains(tag).toString());
   }
 
   /**
@@ -1617,7 +1624,7 @@ export class OpenSeaSDK {
     }
 
     try {
-      const isValid = await this.seaport_v1_4
+      const isValid = await this.seaport_v1_5
         .validate([order.protocolData], accountAddress)
         .callStatic();
       return !!isValid;
@@ -2207,7 +2214,7 @@ export class OpenSeaSDK {
       accountAddress: order.maker.address,
     });
 
-    const transaction = await this.seaport_v1_4
+    const transaction = await this.seaport_v1_5
       .validate([order.protocolData], order.maker.address, domain)
       .transact();
 

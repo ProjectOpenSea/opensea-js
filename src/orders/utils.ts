@@ -1,3 +1,4 @@
+import { SEAPORT_CONTRACT_VERSION_V1_5 } from "@opensea/seaport-js/lib/constants";
 import {
   OrderProtocol,
   OrdersQueryOptions,
@@ -62,6 +63,7 @@ export const getBuildCollectionOfferPayload = (
         slug: collectionSlug,
       },
     },
+    protocol_address: SEAPORT_CONTRACT_VERSION_V1_5,
   };
 };
 
