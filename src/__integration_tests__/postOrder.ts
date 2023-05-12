@@ -1,3 +1,4 @@
+import { expect } from "chai";
 import { ethers } from "ethers";
 import { suite, test } from "mocha";
 import Web3 from "web3";
@@ -7,7 +8,9 @@ import {
   WALLET_PRIV_KEY,
   ALCHEMY_API_KEY,
   WETH_ADDRESS,
+  OFFER_AMOUNT,
 } from "../__tests__/constants";
+import { expectValidOrder } from "../__tests__/utils";
 import { OpenSeaSDK } from "../index";
 import { Network } from "../types";
 
@@ -38,15 +41,18 @@ suite("SDK: order posting", () => {
   test("Post Buy Order", async () => {
     const postBuyOrder = {
       accountAddress: WALLET_ADDRESS ? WALLET_ADDRESS : "",
-      startAmount: "0.004",
+      startAmount: OFFER_AMOUNT ? OFFER_AMOUNT : "0.004",
       asset: {
         tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
         tokenId: "2288",
       },
     };
 
-    await sdk.createBuyOrder(postBuyOrder);
+    const order = await sdk.createBuyOrder(postBuyOrder);
+
+    expectValidOrder(order);
   });
+
   test("Post collection offer", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
 
@@ -58,6 +64,9 @@ suite("SDK: order posting", () => {
       paymentTokenAddress: WETH_ADDRESS,
     };
 
-    await sdk.createCollectionOffer(postOrderRequest);
+    const offerResponse = await sdk.createCollectionOffer(postOrderRequest);
+
+    expect(offerResponse).to.exist;
+    expect(offerResponse).to.exist.and.to.have.property("protocol_data");
   });
 });
