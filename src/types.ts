@@ -396,7 +396,7 @@ export interface OpenSeaCollection extends OpenSeaFees {
   // Image for the collection when featured
   featuredImageUrl: string;
   // Object with stats about the collection
-  stats: object;
+  stats: OpenSeaCollectionStats;
   // Data about displaying cards
   displayData: object;
   // Tokens allowed for this collection
