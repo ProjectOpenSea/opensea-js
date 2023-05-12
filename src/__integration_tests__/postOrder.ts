@@ -35,8 +35,21 @@ const sdk = new OpenSeaSDK(
 );
 
 suite("SDK: order posting", () => {
+  test("Post Buy Order", async () => {
+    const postBuyOrder = {
+      accountAddress: WALLET_ADDRESS ? WALLET_ADDRESS : "",
+      startAmount: "0.004",
+      asset: {
+        tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
+        tokenId: "2288",
+      },
+    };
+
+    await sdk.createBuyOrder(postBuyOrder);
+  });
   test("Post collection offer", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
+
     const postOrderRequest = {
       collectionSlug: collection.slug,
       accountAddress: WALLET_ADDRESS ? WALLET_ADDRESS : "",
@@ -44,6 +57,7 @@ suite("SDK: order posting", () => {
       quantity: 1,
       paymentTokenAddress: WETH_ADDRESS,
     };
+
     await sdk.createCollectionOffer(postOrderRequest);
   });
 });
