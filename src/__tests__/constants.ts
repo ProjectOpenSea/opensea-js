@@ -5,6 +5,7 @@ export const MAINNET_API_KEY = process.env.API_KEY;
 export const WALLET_ADDRESS = process.env.WALLET_ADDRESS;
 export const WALLET_PRIV_KEY = process.env.WALLET_PRIV_KEY;
 export const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
+export const OFFER_AMOUNT = process.env.OFFER_AMOUNT;
 
 export const mainApi = new OpenSeaAPI(
   {
