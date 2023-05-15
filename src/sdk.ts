@@ -121,8 +121,6 @@ export class OpenSeaSDK {
   public web3ReadOnly: Web3;
   // Ethers provider
   public ethersProvider: providers.Web3Provider;
-  // Seaport v1.4 client
-  public seaport_v1_4: Seaport;
   // Seaport v1.5 client
   public seaport_v1_5: Seaport;
   // Logger function to use when debugging
@@ -183,14 +181,6 @@ export class OpenSeaSDK {
     );
 
     const providerOrSinger = wallet ? wallet : this.ethersProvider;
-
-    this.seaport_v1_4 = new Seaport(providerOrSinger, {
-      conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
-      overrides: {
-        defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
-      },
-      seaportVersion: "1.4",
-    });
 
     this.seaport_v1_5 = new Seaport(providerOrSinger, {
       conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
