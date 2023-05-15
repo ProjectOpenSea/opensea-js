@@ -1,10 +1,10 @@
 {
   "name": "opensea-js",
   "version": "5.0.1",
-  "description": "JavaScript SDK for the OpenSea marketplace. Let users buy or sell crypto collectibles and other cryptogoods, all on your own site!",
+  "description": "JavaScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data!",
   "license": "MIT",
   "author": "OpenSea Developers",
-  "homepage": "https://docs.opensea.io/v1.0/reference",
+  "homepage": "https://docs.opensea.io/reference/api-overview",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ProjectOpenSea/opensea-js.git"
