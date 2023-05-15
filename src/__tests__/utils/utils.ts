@@ -14,15 +14,17 @@ suite("Utils: utils", () => {
     const randomAddress = "0x1F7Cf51573Bf5270323a395F0bb5Fd3c3a4DB867";
 
     assert.isTrue(isValidProtocol(seaport_v1_5));
-    assert.isTrue(isValidProtocol(seaport_v_1_4));
+    assert.isFalse(isValidProtocol(seaport_v_1_4));
     assert.isFalse(isValidProtocol(randomAddress));
 
     assert.isTrue(isValidProtocol(seaport_v1_5.toLowerCase()));
-    assert.isTrue(isValidProtocol(seaport_v_1_4.toLowerCase()));
+    assert.isFalse(isValidProtocol(seaport_v_1_4.toLowerCase()));
     assert.isFalse(isValidProtocol(randomAddress.toLowerCase()));
 
     assert.isTrue(isValidProtocol(Web3.utils.toChecksumAddress(seaport_v1_5)));
-    assert.isTrue(isValidProtocol(Web3.utils.toChecksumAddress(seaport_v_1_4)));
+    assert.isFalse(
+      isValidProtocol(Web3.utils.toChecksumAddress(seaport_v_1_4))
+    );
     assert.isFalse(
       isValidProtocol(Web3.utils.toChecksumAddress(randomAddress))
     );
