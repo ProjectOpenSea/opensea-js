@@ -469,7 +469,7 @@ export class OpenSeaAPI {
       ...opts,
       headers: {
         ...(apiKey ? { "X-API-KEY": apiKey } : {}),
-        ...{ "X-Requested-With": "Opensea-JS" },
+        "x-app-id": "opensea-js",
         ...(opts.headers || {}),
       },
     };
