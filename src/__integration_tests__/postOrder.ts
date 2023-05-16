@@ -18,7 +18,7 @@ const TOKEN_ADDRESS = process.env.SELL_ORDER_CONTRACT_ADDRESS;
 const TOKEN_ID = process.env.SELL_ORDER_TOKEN_ID;
 const LISTING_AMOUNT = process.env.LISTING_AMOUNT;
 
-const walletAddress: string = WALLET_ADDRESS ?? "";
+const walletAddress = WALLET_ADDRESS ?? "";
 
 const webProvider = new Web3.providers.HttpProvider(
   `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
@@ -28,10 +28,7 @@ const rpcProvider = new ethers.providers.JsonRpcProvider(
   `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
 );
 
-const wallet = new ethers.Wallet(
-  WALLET_PRIV_KEY ? WALLET_PRIV_KEY : "",
-  rpcProvider
-);
+const wallet = new ethers.Wallet(WALLET_PRIV_KEY ?? "", rpcProvider);
 
 const sdk = new OpenSeaSDK(
   webProvider,
@@ -47,7 +44,7 @@ suite("SDK: order posting", () => {
   test("Post Buy Order", async () => {
     const buyOrder = {
       accountAddress: walletAddress,
-      startAmount: OFFER_AMOUNT ? OFFER_AMOUNT : "0.004",
+      startAmount: OFFER_AMOUNT ?? "0.004",
       asset: {
         tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
         tokenId: "2288",
