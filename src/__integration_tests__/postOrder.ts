@@ -14,6 +14,12 @@ import { expectValidOrder } from "../__tests__/utils";
 import { OpenSeaSDK } from "../index";
 import { Network } from "../types";
 
+const TOKEN_ADDRESS = process.env.SELL_ORDER_CONTRACT_ADDRESS;
+const TOKEN_ID = process.env.SELL_ORDER_TOKEN_ID;
+const LISTING_AMOUNT = process.env.LISTING_AMOUNT;
+
+const walletAddress = WALLET_ADDRESS ?? "";
+
 const webProvider = new Web3.providers.HttpProvider(
   `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
 );
@@ -22,10 +28,7 @@ const rpcProvider = new ethers.providers.JsonRpcProvider(
   `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
 );
 
-const wallet = new ethers.Wallet(
-  WALLET_PRIV_KEY ? WALLET_PRIV_KEY : "",
-  rpcProvider
-);
+const wallet = new ethers.Wallet(WALLET_PRIV_KEY ?? "", rpcProvider);
 
 const sdk = new OpenSeaSDK(
   webProvider,
@@ -39,16 +42,31 @@ const sdk = new OpenSeaSDK(
 
 suite("SDK: order posting", () => {
   test("Post Buy Order", async () => {
-    const postBuyOrder = {
-      accountAddress: WALLET_ADDRESS ? WALLET_ADDRESS : "",
-      startAmount: OFFER_AMOUNT ? OFFER_AMOUNT : "0.004",
+    const buyOrder = {
+      accountAddress: walletAddress,
+      startAmount: OFFER_AMOUNT ?? "0.004",
       asset: {
         tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
         tokenId: "2288",
       },
     };
 
-    const order = await sdk.createBuyOrder(postBuyOrder);
+    const order = await sdk.createBuyOrder(buyOrder);
+
+    expectValidOrder(order);
+  });
+
+  test("Post Sell Order", async () => {
+    const sellOrder = {
+      accountAddress: walletAddress,
+      startAmount: LISTING_AMOUNT ?? "40",
+      asset: {
+        tokenAddress: TOKEN_ADDRESS ?? "",
+        tokenId: TOKEN_ID ?? "",
+      },
+    };
+
+    const order = await sdk.createSellOrder(sellOrder);
 
     expectValidOrder(order);
   });
@@ -58,8 +76,8 @@ suite("SDK: order posting", () => {
 
     const postOrderRequest = {
       collectionSlug: collection.slug,
-      accountAddress: WALLET_ADDRESS ? WALLET_ADDRESS : "",
-      amount: "0.004",
+      accountAddress: walletAddress,
+      amount: OFFER_AMOUNT ?? "0.004",
       quantity: 1,
       paymentTokenAddress: WETH_ADDRESS,
     };
