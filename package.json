@@ -84,7 +84,7 @@
     "typedoc": "^0.23.0",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "0.0.8",
-    "typescript": "5.0.3"
+    "typescript": "5.0.4"
   },
   "keywords": [
     "collectibles",
