@@ -80,7 +80,7 @@
     "prettier": "2.8.7",
     "prettier-package-json": "2.8.0",
     "ts-node": "10.9.1",
-    "typechain": "^7.0.0",
+    "typechain": "^8.0.0",
     "typedoc": "^0.23.0",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "0.0.8",
