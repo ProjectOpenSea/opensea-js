@@ -6,9 +6,11 @@
 
 [![Version][version-badge]][version-link]
 [![npm][npm-badge]][npm-link]
-[![License][license-badge]][license-link]
+[![Test CI][ci-badge]][ci-link]
 [![Coverage Status][coverage-badge]][coverage-link]
-[![styled with prettier][prettier-badge]][prettier-link]
+[![License][license-badge]][license-link]
+[![Docs][docs-badge]][docs-link]
+[![Discussions][discussions-badge]][discussions-link]
 
 A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don't have to deploy your own smart contracts or backend orderbooks.
 
@@ -648,9 +650,13 @@ yarn link opensea-js # in repo you're working on
 [version-link]: https://github.com/ProjectOpenSea/opensea-js/releases
 [npm-badge]: https://img.shields.io/npm/v/opensea-js?color=red
 [npm-link]: https://www.npmjs.com/package/opensea-js
-[license-badge]: https://img.shields.io/github/license/ProjectOpenSea/opensea-js
-[license-link]: https://github.com/ProjectOpenSea/opensea-js/blob/main/LICENSE
+[ci-badge]: https://github.com/ProjectOpenSea/opensea-js/actions/workflows/code-quality.yml/badge.svg
+[ci-link]: https://github.com/ProjectOpenSea/opensea-js/actions/workflows/code-quality.yml
 [coverage-badge]: https://coveralls.io/repos/github/ProjectOpenSea/opensea-js/badge.svg?branch=master
 [coverage-link]: https://coveralls.io/github/ProjectOpenSea/opensea-js?branch=master
-[prettier-badge]: https://img.shields.io/badge/styled_with-prettier-ff69b4.svg
-[prettier-link]: https://github.com/prettier/prettier
+[license-badge]: https://img.shields.io/github/license/ProjectOpenSea/opensea-js
+[license-link]: https://github.com/ProjectOpenSea/opensea-js/blob/main/LICENSE
+[docs-badge]: https://img.shields.io/badge/OpenSea.js-documentation-informational
+[docs-link]: https://github.com/ProjectOpenSea/opensea-js#getting-started
+[discussions-badge]: https://img.shields.io/badge/OpenSea.js-discussions-blueviolet
+[discussions-link]: https://github.com/ProjectOpenSea/opensea-js/discussions
