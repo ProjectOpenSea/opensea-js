@@ -40,7 +40,7 @@
     "bignumber.js": "9.0.2",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
     "ethereumjs-util": "^7.0.0",
-    "ethers": "^5.6.6",
+    "ethers": "^6.0.0",
     "fbemitter": "^3.0.0",
     "isomorphic-unfetch": "^4.0.0",
     "lodash": "^4.17.21",
