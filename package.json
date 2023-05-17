@@ -44,13 +44,12 @@
     "fbemitter": "^3.0.0",
     "isomorphic-unfetch": "^4.0.0",
     "lodash": "^4.17.21",
-    "query-string": "^6.11.1",
     "safe-buffer": "^5.2.1",
     "web3": "^1.8.1",
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#7429b1f2dd123f012cae1f3144a069e91ecd0682"
   },
   "devDependencies": {
-    "@typechain/web3-v1": "^5.0.0",
+    "@typechain/web3-v1": "^6.0.0",
     "@types/chai": "4.3.5",
     "@types/chai-as-promised": "^7.1.5",
     "@types/fbemitter": "^2.0.32",
@@ -84,7 +83,7 @@
     "typedoc": "^0.23.0",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "0.0.8",
-    "typescript": "5.0.3"
+    "typescript": "5.0.4"
   },
   "keywords": [
     "collectibles",
