@@ -74,7 +74,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "ethereum-types": "^3.7.1",
     "husky": "8.0.3",
-    "lint-staged": "13.2.0",
+    "lint-staged": "13.2.2",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "prettier": "2.8.8",
