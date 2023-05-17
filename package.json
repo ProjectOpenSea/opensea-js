@@ -50,7 +50,7 @@
     "wyvern-js": "git+https://github.com/ProjectOpenSea/wyvern-js.git#7429b1f2dd123f012cae1f3144a069e91ecd0682"
   },
   "devDependencies": {
-    "@typechain/web3-v1": "^5.0.0",
+    "@typechain/web3-v1": "^6.0.0",
     "@types/chai": "4.3.5",
     "@types/chai-as-promised": "^7.1.5",
     "@types/fbemitter": "^2.0.32",
