@@ -1,6 +1,6 @@
 import "isomorphic-unfetch";
 import _ from "lodash";
-import * as QueryString from "query-string";
+import queryString from "query-string";
 import { API_BASE_MAINNET, API_BASE_TESTNET, API_PATH } from "./constants";
 import {
   BuildOfferResponse,
@@ -409,7 +409,7 @@ export class OpenSeaAPI {
    * @param query Data to send. Will be stringified using QueryString
    */
   public async get<T>(apiPath: string, query: object = {}): Promise<T> {
-    const qs = QueryString.stringify(query);
+    const qs = queryString.stringify(query);
     const url = `${apiPath}?${qs}`;
 
     const response = await this._fetch(url);
