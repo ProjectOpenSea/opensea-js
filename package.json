@@ -42,7 +42,7 @@
     "ethereumjs-util": "^5.2.0",
     "ethers": "^5.6.6",
     "fbemitter": "^3.0.0",
-    "isomorphic-unfetch": "^2.1.1",
+    "isomorphic-unfetch": "^4.0.0",
     "lodash": "^4.17.21",
     "query-string": "^6.11.1",
     "safe-buffer": "^5.2.1",
