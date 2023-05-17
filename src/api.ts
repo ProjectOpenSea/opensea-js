@@ -408,9 +408,10 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param query Data to send. Will be stringified using QueryString
    */
-  public async get<T>(apiPath: string, query = {}): Promise<T> {
-    const qs = new URLSearchParams(query).toString();
+  public async get<T>(apiPath: string, query: object = {}): Promise<T> {
+    const qs = this.objectToSearchParams(query);
     const url = `${apiPath}?${qs}`;
+    console.log(url);
 
     const response = await this._fetch(url);
     return response.json();
@@ -454,6 +455,20 @@ export class OpenSeaAPI {
       method: "PUT",
       ...opts,
     });
+  }
+
+  private objectToSearchParams(params: object = {}) {
+    const urlSearchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value && Array.isArray(value)) {
+        value.forEach((item) => item && urlSearchParams.append(key, item));
+      } else if (value) {
+        urlSearchParams.append(key, value);
+      }
+    });
+
+    return urlSearchParams.toString();
   }
 
   /**
