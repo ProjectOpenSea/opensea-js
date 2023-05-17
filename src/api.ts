@@ -1,6 +1,6 @@
 import "isomorphic-unfetch";
+import { URLSearchParams } from "url";
 import _ from "lodash";
-import queryString from "query-string";
 import { API_BASE_MAINNET, API_BASE_TESTNET, API_PATH } from "./constants";
 import {
   BuildOfferResponse,
@@ -153,7 +153,7 @@ export class OpenSeaAPI {
     protocolAddress: string,
     side: OrderSide
   ): Promise<FulfillmentDataResponse> {
-    let payload = null;
+    let payload: object | null = null;
     if (side === "ask") {
       payload = getFulfillListingPayload(
         fulfillerAddress,
@@ -408,8 +408,8 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param query Data to send. Will be stringified using QueryString
    */
-  public async get<T>(apiPath: string, query: object = {}): Promise<T> {
-    const qs = queryString.stringify(query);
+  public async get<T>(apiPath: string, query = {}): Promise<T> {
+    const qs = new URLSearchParams(query).toString();
     const url = `${apiPath}?${qs}`;
 
     const response = await this._fetch(url);
