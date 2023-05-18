@@ -8,7 +8,6 @@ Environment variables for integration tests are set using `.env`. This file is n
 
 ```
 API_KEY = "" # OpenSea API Key
-WALLET_ADDRESS = ""
 WALLET_PRIV_KEY = ""
 ALCHEMY_API_KEY = ""
 # The following needs to be an NFT owned by the WALLET_ADDRESS
