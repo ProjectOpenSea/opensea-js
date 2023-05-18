@@ -26,17 +26,6 @@ export const getCanonicalWrappedEther = function (network: Network): Token {
   }
 };
 
-export const getTokens = function (network: Network): NetworkTokens {
-  switch (network) {
-    case Network.Main:
-      return tokens.main;
-    case Network.Goerli:
-      return tokens.goerli;
-    case Network.Rinkeby:
-      return tokens.rinkeby;
-  }
-};
-
 const tokens = {
   goerli: goerliTokens,
   rinkeby: rinkebyTokens,

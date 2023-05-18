@@ -13,7 +13,6 @@ import { OpenSeaAPI } from "./api";
 import {
   CK_ADDRESS,
   CONDUIT_KEYS_TO_CONDUIT,
-  DEFAULT_GAS_INCREASE_FACTOR,
   DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS,
   INVERSE_BASIS_POINT,
   MIN_EXPIRATION_MINUTES,
@@ -62,7 +61,6 @@ import {
   OpenSeaAPIConfig,
   OpenSeaAsset,
   OpenSeaCollection,
-  OpenSeaFungibleToken,
   OrderSide,
   TokenStandardVersion,
   UnhashedOrder,
@@ -77,7 +75,7 @@ import {
   schemas,
   Schema,
 } from "./utils/schemas/schema";
-import { getCanonicalWrappedEther, getTokens } from "./utils/tokens";
+import { getCanonicalWrappedEther } from "./utils/tokens";
 import {
   annotateERC20TransferABI,
   annotateERC721TransferABI,
@@ -85,7 +83,6 @@ import {
   delay,
   getWyvernAsset,
   makeBigNumber,
-  onDeprecated,
   sendRawTransaction,
   getMaxOrderExpirationTimestamp,
   hasErrorCode,
@@ -109,10 +106,6 @@ export class OpenSeaSDK {
   public logger: (arg: string) => void;
   // API instance on this seaport
   public readonly api: OpenSeaAPI;
-  // Extra gwei to add to the mean gas price when making transactions
-  public gasPriceAddition = new BigNumber(3);
-  // Multiply gas estimate by this factor when making transactions
-  public gasIncreaseFactor = DEFAULT_GAS_INCREASE_FACTOR;
 
   private _networkName: Network;
   private _emitter: EventEmitter;
@@ -1304,55 +1297,6 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Get known payment tokens (ERC-20) that match your filters.
-   * @param param0 __namedParameters Object
-   * @param symbol Filter by the ERC-20 symbol for the token,
-   *    e.g. "DAI" for Dai stablecoin
-   * @param address Filter by the ERC-20 contract address for the token,
-   *    e.g. "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359" for Dai
-   * @param name Filter by the name of the ERC-20 contract.
-   *    Not guaranteed to exist or be unique for each token type.
-   *    e.g. '' for Dai and 'Decentraland' for MANA
-   * FUTURE: officiallySupported: Filter for tokens that are
-   *    officially supported and shown on opensea.io
-   */
-  public async getFungibleTokens({
-    symbol,
-    address,
-    name,
-  }: { symbol?: string; address?: string; name?: string } = {}): Promise<
-    OpenSeaFungibleToken[]
-  > {
-    onDeprecated("Use `api.getPaymentTokens` instead");
-
-    const tokenSettings = getTokens(this._networkName);
-
-    const { tokens } = await this.api.getPaymentTokens({
-      symbol,
-      address,
-      name,
-    });
-
-    const offlineTokens: OpenSeaFungibleToken[] = [
-      tokenSettings.canonicalWrappedEther,
-      ...tokenSettings.otherTokens,
-    ].filter((t) => {
-      if (symbol != null && t.symbol.toLowerCase() != symbol.toLowerCase()) {
-        return false;
-      }
-      if (address != null && t.address.toLowerCase() != address.toLowerCase()) {
-        return false;
-      }
-      if (name != null && t.name != name) {
-        return false;
-      }
-      return true;
-    });
-
-    return [...offlineTokens, ...tokens];
-  }
-
-  /**
    * Get an account's balance of any Asset.
    * @param param0 __namedParameters Object
    * @param accountAddress Account address to check
@@ -1486,30 +1430,6 @@ export class OpenSeaSDK {
       devBuyerFeeBasisPoints,
       devSellerFeeBasisPoints,
     };
-  }
-
-  /**
-   * Compute the gas amount for sending a txn
-   * Will be slightly above the result of estimateGas to make it more reliable
-   * @param estimation The result of estimateGas for a transaction
-   */
-  public _correctGasAmount(estimation: number): number {
-    return Math.ceil(estimation * this.gasIncreaseFactor);
-  }
-
-  // For creating email whitelists on order takers
-  public async _createEmailWhitelistEntry({
-    order,
-    buyerEmail,
-  }: {
-    order: UnhashedOrder;
-    buyerEmail: string;
-  }) {
-    const asset = "asset" in order.metadata ? order.metadata.asset : undefined;
-    if (!asset || !asset.id) {
-      throw new Error("Whitelisting only available for non-fungible assets.");
-    }
-    await this.api.postAssetWhitelist(asset.address, asset.id, buyerEmail);
   }
 
   /**
