@@ -183,6 +183,21 @@ export enum TokenStandardVersion {
   ERC721v3 = "3.0",
 }
 
+/**
+ * The collection's approval status within OpenSea. 
+ * Can be not_requested (brand new collections)
+ * requested (collections that requested safelisting on our site)
+ * approved (collections that are approved on our site and can be found in search results) 
+ * verified (verified collections)
+ */
+
+export enum SafelistStatus {
+  NotRequest,
+  Request,
+  approved,
+  verified
+}
+
 // Collection fees mapping recipient address to basis points
 export interface Fees {
   openseaFees: Map<string, number>;
@@ -334,6 +349,8 @@ export interface OpenSeaCollection extends OpenSeaFees {
   stats: object;
   // Data about displaying cards
   displayData: object;
+  // The collection's approval status
+  safelistRequestStatus: SafelistStatus;
   // Tokens allowed for this collection
   paymentTokens: OpenSeaFungibleToken[];
   // Address for dev fee payouts
