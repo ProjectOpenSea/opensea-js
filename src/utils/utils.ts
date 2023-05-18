@@ -370,6 +370,7 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     featured: collection.featured,
     featuredImageUrl: collection.featured_image_url,
     displayData: collection.display_data,
+    safelistRequestStatus: collection.safelist_request_status,
     paymentTokens: (collection.payment_tokens || []).map(tokenFromJSON),
     openseaBuyerFeeBasisPoints: +collection.opensea_buyer_fee_basis_points,
     openseaSellerFeeBasisPoints: +collection.opensea_seller_fee_basis_points,
