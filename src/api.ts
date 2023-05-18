@@ -244,30 +244,6 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Create a whitelist entry for an asset to prevent others from buying.
-   * Buyers will have to have verified at least one of the emails
-   * on an asset in order to buy.
-   * This will throw a 403 if the given API key isn't allowed to create whitelist entries for this contract or asset.
-   * @param tokenAddress Address of the asset's contract
-   * @param tokenId The asset's token ID
-   * @param email The email allowed to buy.
-   */
-  public async postAssetWhitelist(
-    tokenAddress: string,
-    tokenId: string | number,
-    email: string
-  ): Promise<boolean> {
-    const json = await this.post<{ success: boolean }>(
-      `${API_PATH}/asset/${tokenAddress}/${tokenId}/whitelist/`,
-      {
-        email,
-      }
-    );
-
-    return !!json.success;
-  }
-
-  /**
    * Fetch an asset from the API, throwing if none is found
    * @param tokenAddress Address of the asset's contract
    * @param tokenId The asset's token ID, or null if ERC-20
@@ -441,20 +417,6 @@ export class OpenSeaAPI {
 
     const response = await this._fetch(apiPath, fetchOpts);
     return response.json();
-  }
-
-  /**
-   * PUT JSON data to API, sending auth token in headers
-   * @param apiPath Path to URL endpoint under API
-   * @param body Data to send
-   * @param opts RequestInit opts, similar to Fetch API. If it contains
-   *  a body, it won't be stringified.
-   */
-  public async put(apiPath: string, body: object, opts: RequestInit = {}) {
-    return this.post(apiPath, body, {
-      method: "PUT",
-      ...opts,
-    });
   }
 
   private objectToSearchParams(params: object = {}) {
