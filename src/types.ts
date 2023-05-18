@@ -192,10 +192,11 @@ export enum TokenStandardVersion {
  */
 
 export enum SafelistStatus {
-  NotRequest,
-  Request,
-  approved,
-  verified,
+  NOT_REQUESTED = "not_requested",
+  REQUESTED = "requested",
+  APPROVED = "approved",
+  VERIFIED = "verified",
+  DISABLED_TOP_TRENDING = "disabled_top_trending",
 }
 
 // Collection fees mapping recipient address to basis points
