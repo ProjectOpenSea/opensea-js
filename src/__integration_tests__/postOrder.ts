@@ -1,44 +1,14 @@
 import { expect } from "chai";
-import { ethers } from "ethers";
 import { suite, test } from "mocha";
-import Web3 from "web3";
 import {
-  MAINNET_API_KEY,
-  WALLET_ADDRESS,
-  WALLET_PRIV_KEY,
-  ALCHEMY_API_KEY,
-  WETH_ADDRESS,
-  OFFER_AMOUNT,
-} from "../__tests__/constants";
+  LISTING_AMOUNT,
+  TOKEN_ADDRESS,
+  TOKEN_ID,
+  sdk,
+  walletAddress,
+} from "./init";
+import { WETH_ADDRESS, OFFER_AMOUNT } from "../__tests__/constants";
 import { expectValidOrder } from "../__tests__/utils";
-import { OpenSeaSDK } from "../index";
-import { Network } from "../types";
-
-const TOKEN_ADDRESS = process.env.SELL_ORDER_CONTRACT_ADDRESS;
-const TOKEN_ID = process.env.SELL_ORDER_TOKEN_ID;
-const LISTING_AMOUNT = process.env.LISTING_AMOUNT;
-
-const walletAddress = WALLET_ADDRESS ?? "";
-
-const webProvider = new Web3.providers.HttpProvider(
-  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-);
-
-const rpcProvider = new ethers.providers.JsonRpcProvider(
-  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-);
-
-const wallet = new ethers.Wallet(WALLET_PRIV_KEY ?? "", rpcProvider);
-
-const sdk = new OpenSeaSDK(
-  webProvider,
-  {
-    networkName: Network.Main,
-    apiKey: MAINNET_API_KEY,
-  },
-  (line) => console.info(`MAINNET: ${line}`),
-  wallet
-);
 
 suite("SDK: order posting", () => {
   test("Post Buy Order", async () => {
