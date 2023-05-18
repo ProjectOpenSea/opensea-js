@@ -184,10 +184,10 @@ export enum TokenStandardVersion {
 }
 
 /**
- * The collection's approval status within OpenSea. 
+ * The collection's approval status within OpenSea.
  * Can be not_requested (brand new collections)
  * requested (collections that requested safelisting on our site)
- * approved (collections that are approved on our site and can be found in search results) 
+ * approved (collections that are approved on our site and can be found in search results)
  * verified (verified collections)
  */
 
@@ -195,7 +195,7 @@ export enum SafelistStatus {
   NotRequest,
   Request,
   approved,
-  verified
+  verified,
 }
 
 // Collection fees mapping recipient address to basis points
