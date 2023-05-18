@@ -5,21 +5,17 @@ import {
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "bignumber.js";
-import { Web3JsProvider } from "ethereum-types";
 import { ethers, providers } from "ethers";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import Web3 from "web3";
-import { WyvernProtocol } from "wyvern-js";
 import { OpenSeaAPI } from "./api";
 import {
   CK_ADDRESS,
   CONDUIT_KEYS_TO_CONDUIT,
   DEFAULT_GAS_INCREASE_FACTOR,
   DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS,
-  ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
-  MANA_ADDRESS,
   MIN_EXPIRATION_MINUTES,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
@@ -35,12 +31,9 @@ import {
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
   WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY,
   OPENSEA_LEGACY_FEE_RECIPIENT,
-  MAX_UINT_256,
 } from "./constants";
 import {
   CanonicalWETH,
-  ERC20,
-  ERC721,
   getMethod,
   UniswapFactory,
   WrappedNFT,
@@ -55,8 +48,6 @@ import {
 } from "./orders/privateListings";
 import { OrderV2, PostOfferResponse } from "./orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "./orders/utils";
-import { ERC1155Abi } from "./typechain/contracts/ERC1155Abi";
-import { ERC721v3Abi } from "./typechain/contracts/ERC721v3Abi";
 import { UniswapExchangeAbi } from "./typechain/contracts/UniswapExchangeAbi";
 import { UniswapFactoryAbi } from "./typechain/contracts/UniswapFactoryAbi";
 import { WrappedNFTAbi } from "./typechain/contracts/WrappedNFTAbi";
@@ -67,14 +58,12 @@ import {
   EventData,
   EventType,
   FeeMethod,
-  HowToCall,
   Network,
   OpenSeaAPIConfig,
   OpenSeaAsset,
   OpenSeaCollection,
   OpenSeaFungibleToken,
   OrderSide,
-  PartialReadonlyContractAbi,
   TokenStandardVersion,
   UnhashedOrder,
   WyvernAsset,
@@ -83,9 +72,7 @@ import {
   WyvernSchemaName,
 } from "./types";
 import {
-  encodeAtomicizedTransfer,
   encodeCall,
-  encodeProxyCall,
   encodeTransferCall,
   schemas,
   Schema,
@@ -96,15 +83,10 @@ import {
   annotateERC721TransferABI,
   confirmTransaction,
   delay,
-  estimateGas,
-  getCurrentGasPrice,
-  getNonCompliantApprovalAddress,
   getWyvernAsset,
   makeBigNumber,
   onDeprecated,
-  rawCall,
   sendRawTransaction,
-  validateAndFormatWalletAddress,
   getMaxOrderExpirationTimestamp,
   hasErrorCode,
   getAssetItemType,
@@ -133,9 +115,6 @@ export class OpenSeaSDK {
   public gasIncreaseFactor = DEFAULT_GAS_INCREASE_FACTOR;
 
   private _networkName: Network;
-  private _wyvernProtocol: WyvernProtocol;
-  private _wyvernProtocolReadOnly: WyvernProtocol;
-  private _wyvernConfigOverride?: OpenSeaAPIConfig["wyvernConfig"];
   private _emitter: EventEmitter;
   private _wrappedNFTFactoryAddress: string;
   private _wrappedNFTLiquidationProxyAddress: string;
@@ -189,25 +168,6 @@ export class OpenSeaSDK {
       },
       seaportVersion: "1.5",
     });
-
-    let networkForWyvernConfig = this._networkName;
-    if (this._networkName == Network.Goerli) {
-      networkForWyvernConfig = Network.Rinkeby;
-    }
-
-    // WyvernJS config
-    this._wyvernProtocol = new WyvernProtocol(provider as Web3JsProvider, {
-      network: networkForWyvernConfig,
-      ...apiConfig.wyvernConfig,
-    });
-
-    // WyvernJS config for readonly (optimization for infura calls)
-    this._wyvernProtocolReadOnly = useReadOnlyProvider
-      ? new WyvernProtocol(readonlyProvider as Web3JsProvider, {
-          network: networkForWyvernConfig,
-          ...apiConfig.wyvernConfig,
-        })
-      : this._wyvernProtocol;
 
     // WrappedNFTLiquidationProxy Config
     this._wrappedNFTFactoryAddress =
@@ -1184,362 +1144,6 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Approve a non-fungible token for use in trades.
-   * Requires an account to be initialized first.
-   * Called internally, but exposed for dev flexibility.
-   * Checks to see if already approved, first. Then tries different approval methods from best to worst.
-   * @param param0 __namedParameters Object
-   * @param tokenId Token id to approve, but only used if approve-all isn't
-   *  supported by the token contract
-   * @param tokenAddress The contract address of the token being approved
-   * @param accountAddress The user's wallet address
-   * @param proxyAddress Address of the user's proxy contract. If not provided,
-   *  will attempt to fetch it from Wyvern.
-   * @param tokenAbi ABI of the token's contract. Defaults to a flexible ERC-721
-   *  contract.
-   * @param skipApproveAllIfTokenAddressIn an optional list of token addresses that, if a token is approve-all type, will skip approval
-   * @param schemaName The Wyvern schema name corresponding to the asset type
-   * @returns Transaction hash if a new transaction was created, otherwise null
-   */
-  public async approveSemiOrNonFungibleToken({
-    tokenId,
-    tokenAddress,
-    accountAddress,
-    proxyAddress,
-    tokenAbi = ERC721,
-    skipApproveAllIfTokenAddressIn = new Set(),
-    schemaName = WyvernSchemaName.ERC721,
-  }: {
-    tokenId: string;
-    tokenAddress: string;
-    accountAddress: string;
-    proxyAddress?: string;
-    tokenAbi?: PartialReadonlyContractAbi;
-    skipApproveAllIfTokenAddressIn?: Set<string>;
-    schemaName?: WyvernSchemaName;
-  }): Promise<string | null> {
-    const schema = this._getSchema(schemaName);
-    const tokenContract = new this.web3.eth.Contract(
-      tokenAbi,
-      tokenAddress
-    ) as unknown as ERC721v3Abi | ERC1155Abi;
-
-    if (!proxyAddress) {
-      proxyAddress = (await this._getProxy(accountAddress)) || undefined;
-      if (!proxyAddress) {
-        throw new Error("Uninitialized account");
-      }
-    }
-
-    const approvalAllCheck = async () => {
-      // NOTE:
-      // Use this long way of calling so we can check for method existence on a bool-returning method.
-      const isApprovedForAllRaw = await rawCall(this.web3ReadOnly, {
-        from: accountAddress,
-        to: tokenContract.options.address,
-        data: tokenContract.methods
-          .isApprovedForAll(accountAddress, proxyAddress as string)
-          .encodeABI(),
-      });
-      return parseInt(isApprovedForAllRaw);
-    };
-
-    const isApprovedForAll = await approvalAllCheck();
-
-    if (isApprovedForAll == 1) {
-      // Supports ApproveAll
-      this.logger("Already approved proxy for all tokens");
-      return null;
-    }
-
-    if (isApprovedForAll == 0) {
-      // Supports ApproveAll
-      //  not approved for all yet
-
-      if (skipApproveAllIfTokenAddressIn.has(tokenAddress)) {
-        this.logger(
-          "Already approving proxy for all tokens in another transaction"
-        );
-        return null;
-      }
-      skipApproveAllIfTokenAddressIn.add(tokenAddress);
-
-      try {
-        this._dispatch(EventType.ApproveAllAssets, {
-          accountAddress,
-          proxyAddress,
-          contractAddress: tokenAddress,
-        });
-
-        const txHash = await sendRawTransaction(
-          this.web3,
-          {
-            from: accountAddress,
-            to: tokenContract.options.address,
-            data: tokenContract.methods
-              .setApprovalForAll(proxyAddress, true)
-              .encodeABI(),
-          },
-          (error) => {
-            this._dispatch(EventType.TransactionDenied, {
-              error,
-              accountAddress,
-            });
-          }
-        );
-        await this._confirmTransaction(
-          txHash,
-          EventType.ApproveAllAssets,
-          "Approving all tokens of this type for trading",
-          async () => {
-            const result = await approvalAllCheck();
-            return result == 1;
-          }
-        );
-        return txHash;
-      } catch (error) {
-        console.error(error);
-        throw new Error(
-          "Couldn't get permission to approve these tokens for trading. Their contract might not be implemented correctly. Please contact the developer!"
-        );
-      }
-    }
-
-    // Does not support ApproveAll (ERC721 v1 or v2)
-    this.logger("Contract does not support Approve All");
-
-    const approvalOneCheck = async () => {
-      // Note: approvedAddr will be 'undefined' if not supported
-      let approvedAddr: string | undefined;
-      try {
-        approvedAddr = await (tokenContract as ERC721v3Abi).methods
-          .getApproved(tokenId)
-          .call();
-        if (typeof approvedAddr === "string" && approvedAddr == "0x") {
-          // Geth compatibility
-          approvedAddr = undefined;
-        }
-      } catch (error) {
-        console.error(error);
-      }
-
-      if (approvedAddr == proxyAddress) {
-        this.logger("Already approved proxy for this token");
-        return true;
-      }
-      this.logger(`Approve response: ${approvedAddr}`);
-
-      // SPECIAL CASING non-compliant contracts
-      if (!approvedAddr) {
-        approvedAddr = await getNonCompliantApprovalAddress(
-          // @ts-expect-error This is an actual contract instance
-          tokenContract,
-          tokenId,
-          accountAddress
-        );
-        if (approvedAddr == proxyAddress) {
-          this.logger("Already approved proxy for this item");
-          return true;
-        }
-        this.logger(`Special-case approve response: ${approvedAddr}`);
-      }
-      return false;
-    };
-
-    const isApprovedForOne = await approvalOneCheck();
-    if (isApprovedForOne) {
-      return null;
-    }
-
-    // Call `approve`
-
-    try {
-      this._dispatch(EventType.ApproveAsset, {
-        accountAddress,
-        proxyAddress,
-        asset: getWyvernAsset(schema, { tokenId, tokenAddress }),
-      });
-
-      const txHash = await sendRawTransaction(
-        this.web3,
-        {
-          from: accountAddress,
-          to: tokenContract.options.address,
-          data: (tokenContract as ERC721v3Abi).methods
-            .approve(proxyAddress, tokenId)
-            .encodeABI(),
-        },
-        (error) => {
-          this._dispatch(EventType.TransactionDenied, {
-            error,
-            accountAddress,
-          });
-        }
-      );
-
-      await this._confirmTransaction(
-        txHash,
-        EventType.ApproveAsset,
-        "Approving single token for trading",
-        approvalOneCheck
-      );
-      return txHash;
-    } catch (error) {
-      console.error(error);
-      throw new Error(
-        "Couldn't get permission to approve this token for trading. Its contract might not be implemented correctly. Please contact the developer!"
-      );
-    }
-  }
-
-  /**
-   * Approve a fungible token (e.g. W-ETH) for use in trades.
-   * Called internally, but exposed for dev flexibility.
-   * Checks to see if the minimum amount is already approved, first.
-   * @param param0 __namedParameters Object
-   * @param accountAddress The user's wallet address
-   * @param tokenAddress The contract address of the token being approved
-   * @param proxyAddress The user's proxy address. If unspecified, uses the Wyvern token transfer proxy address.
-   * @param minimumAmount The minimum amount needed to skip a transaction. Defaults to the max-integer.
-   * @returns Transaction hash if a new transaction occurred, otherwise null
-   */
-  public async approveFungibleToken({
-    accountAddress,
-    tokenAddress,
-    proxyAddress,
-    minimumAmount = MAX_UINT_256,
-  }: {
-    accountAddress: string;
-    tokenAddress: string;
-    proxyAddress?: string;
-    minimumAmount?: BigNumber;
-  }): Promise<string | null> {
-    proxyAddress =
-      proxyAddress ||
-      this._wyvernConfigOverride?.wyvernTokenTransferProxyContractAddress ||
-      WyvernProtocol.getTokenTransferProxyAddress(this._networkName);
-
-    const approvedAmount = await this._getApprovedTokenCount({
-      accountAddress,
-      tokenAddress,
-      proxyAddress,
-    });
-
-    if (approvedAmount.isGreaterThanOrEqualTo(minimumAmount)) {
-      this.logger("Already approved enough currency for trading");
-      return null;
-    }
-
-    this.logger(
-      `Not enough token approved for trade: ${approvedAmount} approved to transfer ${tokenAddress}`
-    );
-
-    this._dispatch(EventType.ApproveCurrency, {
-      accountAddress,
-      contractAddress: tokenAddress,
-      proxyAddress,
-    });
-
-    const hasOldApproveMethod = [ENJIN_COIN_ADDRESS, MANA_ADDRESS].includes(
-      tokenAddress.toLowerCase()
-    );
-
-    if (minimumAmount.isGreaterThan(0) && hasOldApproveMethod) {
-      // Older erc20s require initial approval to be 0
-      await this.unapproveFungibleToken({
-        accountAddress,
-        tokenAddress,
-        proxyAddress,
-      });
-    }
-
-    const txHash = await sendRawTransaction(
-      this.web3,
-      {
-        from: accountAddress,
-        to: tokenAddress,
-        data: encodeCall(
-          getMethod(ERC20, "approve"),
-          // Always approve maximum amount, to prevent the need for followup
-          // transactions (and because old ERC20s like MANA/ENJ are non-compliant)
-          [proxyAddress, MAX_UINT_256.toString()]
-        ),
-      },
-      (error) => {
-        this._dispatch(EventType.TransactionDenied, { error, accountAddress });
-      }
-    );
-
-    await this._confirmTransaction(
-      txHash,
-      EventType.ApproveCurrency,
-      "Approving currency for trading",
-      async () => {
-        const newlyApprovedAmount = await this._getApprovedTokenCount({
-          accountAddress,
-          tokenAddress,
-          proxyAddress,
-        });
-        return newlyApprovedAmount.isGreaterThanOrEqualTo(minimumAmount);
-      }
-    );
-    return txHash;
-  }
-
-  /**
-   * Un-approve a fungible token (e.g. W-ETH) for use in trades.
-   * Called internally, but exposed for dev flexibility.
-   * Useful for old ERC20s that require a 0 approval count before
-   * changing the count
-   * @param param0 __namedParameters Object
-   * @param accountAddress The user's wallet address
-   * @param tokenAddress The contract address of the token being approved
-   * @param proxyAddress The user's proxy address. If unspecified, uses the Wyvern token transfer proxy address.
-   * @returns Transaction hash
-   */
-  public async unapproveFungibleToken({
-    accountAddress,
-    tokenAddress,
-    proxyAddress,
-  }: {
-    accountAddress: string;
-    tokenAddress: string;
-    proxyAddress?: string;
-  }): Promise<string> {
-    proxyAddress =
-      proxyAddress ||
-      this._wyvernConfigOverride?.wyvernTokenTransferProxyContractAddress ||
-      WyvernProtocol.getTokenTransferProxyAddress(this._networkName);
-
-    const txHash = await sendRawTransaction(
-      this.web3,
-      {
-        from: accountAddress,
-        to: tokenAddress,
-        data: encodeCall(getMethod(ERC20, "approve"), [proxyAddress, 0]),
-      },
-      (error) => {
-        this._dispatch(EventType.TransactionDenied, { error, accountAddress });
-      }
-    );
-
-    await this._confirmTransaction(
-      txHash,
-      EventType.UnapproveCurrency,
-      "Resetting Currency Approval",
-      async () => {
-        const newlyApprovedAmount = await this._getApprovedTokenCount({
-          accountAddress,
-          tokenAddress,
-          proxyAddress,
-        });
-        return newlyApprovedAmount.isZero();
-      }
-    );
-    return txHash;
-  }
-
-  /**
    * Register a domain on the Domain Registry contract.
    * @param domain The string domain to be hashed and registered on the Registry.
    * @returns Transaction hash
@@ -1627,79 +1231,6 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Returns whether an asset is transferrable.
-   * An asset may not be transferrable if its transfer function
-   * is locked for some reason, e.g. an item is being rented within a game
-   * or trading has been locked for an item type.
-   * @param param0 __namedParameters Object
-   * @param tokenId DEPRECATED: Token ID. Use `asset` instead.
-   * @param tokenAddress DEPRECATED: Address of the token's contract. Use `asset` instead.
-   * @param asset The asset to trade
-   * @param fromAddress The account address that currently owns the asset
-   * @param toAddress The account address that will be acquiring the asset
-   * @param quantity The amount of the asset to transfer, if it's fungible (optional). In units (not base units), e.g. not wei.
-   * @param useProxy Use the `fromAddress`'s proxy contract only if the `fromAddress` has already approved the asset for sale. Required if checking an ERC-721 v1 asset (like CryptoKitties) that doesn't check if the transferFrom caller is the owner of the asset (only allowing it if it's an approved address).
-   * @param retries How many times to retry if false
-   */
-  public async isAssetTransferrable(
-    {
-      asset,
-      fromAddress,
-      toAddress,
-      quantity,
-      useProxy = false,
-    }: {
-      asset: Asset;
-      fromAddress: string;
-      toAddress: string;
-      quantity?: number | BigNumber;
-      useProxy?: boolean;
-    },
-    retries = 1
-  ): Promise<boolean> {
-    const schema = this._getSchema(this._getSchemaName(asset));
-    const quantityBN = quantity
-      ? toBaseUnitAmount(makeBigNumber(quantity), asset.decimals || 0)
-      : makeBigNumber(1);
-    const wyAsset = getWyvernAsset(schema, asset, quantityBN);
-    const abi = schema.functions.transfer(wyAsset);
-
-    let from = fromAddress;
-    if (useProxy) {
-      const proxyAddress = await this._getProxy(fromAddress);
-      if (!proxyAddress) {
-        console.error(
-          `This asset's owner (${fromAddress}) does not have a proxy!`
-        );
-        return false;
-      }
-      from = proxyAddress;
-    }
-
-    const data = encodeTransferCall(abi, fromAddress, toAddress);
-
-    try {
-      const gas = await estimateGas(this._getClientsForRead({ retries }).web3, {
-        from,
-        to: abi.target,
-        data,
-      });
-      return gas > 0;
-    } catch (error) {
-      if (retries <= 0) {
-        console.error(error);
-        console.error(from, abi.target, data);
-        return false;
-      }
-      await delay(500);
-      return await this.isAssetTransferrable(
-        { asset, fromAddress, toAddress, quantity, useProxy },
-        retries - 1
-      );
-    }
-  }
-
-  /**
    * Transfer a fungible or non-fungible asset to another address
    * @param param0 __namedParamaters Object
    * @param fromAddress The owner's wallet address
@@ -1768,86 +1299,6 @@ export class OpenSeaSDK {
       txHash,
       EventType.TransferOne,
       `Transferring asset`
-    );
-    return txHash;
-  }
-
-  /**
-   * Transfer one or more assets to another address.
-   * ERC-721 and ERC-1155 assets are supported
-   * @param param0 __namedParamaters Object
-   * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to transfer.
-   * @param fromAddress The owner's wallet address
-   * @param toAddress The recipient's wallet address
-   * @param schemaName The Wyvern schema name corresponding to the asset type, if not in each Asset definition
-   * @returns Transaction hash
-   */
-  public async transferAll({
-    assets,
-    fromAddress,
-    toAddress,
-    schemaName = WyvernSchemaName.ERC721,
-  }: {
-    assets: Asset[];
-    fromAddress: string;
-    toAddress: string;
-    schemaName?: WyvernSchemaName;
-  }): Promise<string> {
-    toAddress = validateAndFormatWalletAddress(this.web3, toAddress);
-
-    const schemaNames = assets.map(
-      (asset) => this._getSchemaName(asset) || schemaName
-    );
-    const wyAssets = assets.map((asset) =>
-      getWyvernAsset(this._getSchema(this._getSchemaName(asset)), asset)
-    );
-
-    const { calldata, target } = encodeAtomicizedTransfer(
-      schemaNames.map((name) => this._getSchema(name)),
-      wyAssets,
-      fromAddress,
-      toAddress,
-      this._wyvernProtocol,
-      this._networkName
-    );
-
-    let proxyAddress = await this._getProxy(fromAddress);
-    if (!proxyAddress) {
-      proxyAddress = await this._initializeProxy(fromAddress);
-    }
-
-    await this._approveAll({
-      schemaNames,
-      wyAssets,
-      accountAddress: fromAddress,
-      proxyAddress,
-    });
-
-    this._dispatch(EventType.TransferAll, {
-      accountAddress: fromAddress,
-      toAddress,
-      assets: wyAssets,
-    });
-
-    const txHash = await sendRawTransaction(
-      this.web3,
-      {
-        from: fromAddress,
-        to: proxyAddress,
-        data: encodeProxyCall(target, HowToCall.DelegateCall, calldata),
-      },
-      (error) => {
-        this._dispatch(EventType.TransactionDenied, {
-          error,
-          accountAddress: fromAddress,
-        });
-      }
-    );
-
-    await this._confirmTransaction(
-      txHash,
-      EventType.TransferAll,
-      `Transferring ${assets.length} asset${assets.length == 1 ? "" : "s"}`
     );
     return txHash;
   }
@@ -2038,138 +1489,12 @@ export class OpenSeaSDK {
   }
 
   /**
-   * DEPRECATED: ERC-1559
-   * https://eips.ethereum.org/EIPS/eip-1559
-   * Compute the gas price for sending a txn, in wei
-   * Will be slightly above the mean to make it faster
-   */
-  public async _computeGasPrice(): Promise<BigNumber> {
-    const meanGas = await getCurrentGasPrice(this.web3);
-    const weiToAdd = this.web3.utils.toWei(
-      this.gasPriceAddition.toString(),
-      "gwei"
-    );
-    return meanGas.plus(weiToAdd);
-  }
-
-  /**
    * Compute the gas amount for sending a txn
    * Will be slightly above the result of estimateGas to make it more reliable
    * @param estimation The result of estimateGas for a transaction
    */
   public _correctGasAmount(estimation: number): number {
     return Math.ceil(estimation * this.gasIncreaseFactor);
-  }
-
-  /**
-   * Get the proxy address for a user's wallet.
-   * Internal method exposed for dev flexibility.
-   * @param accountAddress The user's wallet address
-   * @param retries Optional number of retries to do
-   * @param wyvernProtocol optional wyvern protocol override
-   */
-  public async _getProxy(
-    accountAddress: string,
-    retries = 0
-  ): Promise<string | null> {
-    let proxyAddress: string | null =
-      await this._wyvernProtocolReadOnly.wyvernProxyRegistry
-        .proxies(accountAddress)
-        .callAsync();
-
-    if (proxyAddress == "0x") {
-      throw new Error(
-        "Couldn't retrieve your account from the blockchain - make sure you're on the correct Ethereum network!"
-      );
-    }
-
-    if (!proxyAddress || proxyAddress == NULL_ADDRESS) {
-      if (retries > 0) {
-        await delay(1000);
-        return await this._getProxy(accountAddress, retries - 1);
-      }
-      proxyAddress = null;
-    }
-    return proxyAddress;
-  }
-
-  /**
-   * Initialize the proxy for a user's wallet.
-   * Proxies are used to make trades on behalf of the order's maker so that
-   *  trades can happen when the maker isn't online.
-   * Internal method exposed for dev flexibility.
-   * @param accountAddress The user's wallet address
-   * @param wyvernProtocol optional wyvern protocol override
-   */
-  public async _initializeProxy(accountAddress: string): Promise<string> {
-    this._dispatch(EventType.InitializeAccount, { accountAddress });
-    this.logger(`Initializing proxy for account: ${accountAddress}`);
-
-    const txnData = { from: accountAddress };
-    const gasEstimate = await this._wyvernProtocol.wyvernProxyRegistry
-      .registerProxy()
-      .estimateGasAsync(txnData);
-    const transactionHash = await this._wyvernProtocol.wyvernProxyRegistry
-      .registerProxy()
-      .sendTransactionAsync({
-        ...txnData,
-        gas: this._correctGasAmount(gasEstimate),
-      });
-
-    await this._confirmTransaction(
-      transactionHash,
-      EventType.InitializeAccount,
-      "Initializing proxy for account",
-      async () => {
-        const polledProxy = await this._getProxy(accountAddress, 0);
-        return !!polledProxy;
-      }
-    );
-
-    const proxyAddress = await this._getProxy(accountAddress, 10);
-    if (!proxyAddress) {
-      throw new Error(
-        "Failed to initialize your account :( Please restart your wallet/browser and try again!"
-      );
-    }
-
-    return proxyAddress;
-  }
-
-  /**
-   * For a fungible token to use in trades (like W-ETH), get the amount
-   *  approved for use by the Wyvern transfer proxy.
-   * Internal method exposed for dev flexibility.
-   * @param param0 __namedParameters Object
-   * @param accountAddress Address for the user's wallet
-   * @param tokenAddress Address for the token's contract
-   * @param proxyAddress User's proxy address. If undefined, uses the token transfer proxy address
-   */
-  public async _getApprovedTokenCount({
-    accountAddress,
-    tokenAddress,
-    proxyAddress,
-  }: {
-    accountAddress: string;
-    tokenAddress?: string;
-    proxyAddress?: string;
-  }) {
-    if (!tokenAddress) {
-      tokenAddress = getCanonicalWrappedEther(this._networkName).address;
-    }
-    const addressToApprove =
-      proxyAddress ||
-      this._wyvernConfigOverride?.wyvernTokenTransferProxyContractAddress ||
-      WyvernProtocol.getTokenTransferProxyAddress(this._networkName);
-    const approved = await rawCall(this.web3, {
-      from: accountAddress,
-      to: tokenAddress,
-      data: encodeCall(getMethod(ERC20, "allowance"), [
-        accountAddress,
-        addressToApprove,
-      ]),
-    });
-    return makeBigNumber(approved);
   }
 
   // For creating email whitelists on order takers
@@ -2215,150 +1540,6 @@ export class OpenSeaSDK {
     );
 
     return transaction.hash;
-  }
-
-  public async _approveAll({
-    schemaNames,
-    wyAssets,
-    accountAddress,
-    proxyAddress,
-  }: {
-    schemaNames: WyvernSchemaName[];
-    wyAssets: WyvernAsset[];
-    accountAddress: string;
-    proxyAddress?: string;
-  }) {
-    proxyAddress =
-      proxyAddress || (await this._getProxy(accountAddress, 0)) || undefined;
-    if (!proxyAddress) {
-      proxyAddress = await this._initializeProxy(accountAddress);
-    }
-    const contractsWithApproveAll: Set<string> = new Set();
-
-    return Promise.all(
-      wyAssets.map(async (wyAsset, i) => {
-        const schemaName = schemaNames[i];
-        // Verify that the taker owns the asset
-        let isOwner;
-        try {
-          isOwner = await this._ownsAssetOnChain({
-            accountAddress,
-            proxyAddress,
-            wyAsset,
-            schemaName,
-          });
-        } catch (error) {
-          // let it through for assets we don't support yet
-          isOwner = true;
-        }
-        if (!isOwner) {
-          const minAmount = "quantity" in wyAsset ? wyAsset.quantity : 1;
-          console.error(
-            `Failed on-chain ownership check: ${accountAddress} on ${schemaName}:`,
-            wyAsset
-          );
-          throw new Error(
-            `You don't own enough to do that (${minAmount} base units of ${
-              wyAsset.address
-            }${wyAsset.id ? " token " + wyAsset.id : ""})`
-          );
-        }
-        switch (schemaName) {
-          case WyvernSchemaName.ERC721:
-          case WyvernSchemaName.ERC721v3:
-          case WyvernSchemaName.ERC1155:
-          case WyvernSchemaName.LegacyEnjin:
-          case WyvernSchemaName.ENSShortNameAuction:
-            // Handle NFTs and SFTs
-            // eslint-disable-next-line no-case-declarations
-            const wyNFTAsset = wyAsset as WyvernNFTAsset;
-            return await this.approveSemiOrNonFungibleToken({
-              tokenId: wyNFTAsset.id.toString(),
-              tokenAddress: wyNFTAsset.address,
-              accountAddress,
-              proxyAddress,
-              schemaName,
-              skipApproveAllIfTokenAddressIn: contractsWithApproveAll,
-            });
-          case WyvernSchemaName.ERC20:
-            // Handle FTs
-            // eslint-disable-next-line no-case-declarations
-            const wyFTAsset = wyAsset as WyvernFTAsset;
-            if (contractsWithApproveAll.has(wyFTAsset.address)) {
-              // Return null to indicate no tx occurred
-              return null;
-            }
-            contractsWithApproveAll.add(wyFTAsset.address);
-            return await this.approveFungibleToken({
-              tokenAddress: wyFTAsset.address,
-              accountAddress,
-              proxyAddress,
-            });
-          // For other assets, including contracts:
-          // Send them to the user's proxy
-          // if (where != WyvernAssetLocation.Proxy) {
-          //   return this.transferOne({
-          //     schemaName: schema.name,
-          //     asset: wyAsset,
-          //     isWyvernAsset: true,
-          //     fromAddress: accountAddress,
-          //     toAddress: proxy
-          //   })
-          // }
-          // return true
-        }
-      })
-    );
-  }
-
-  /**
-   * Check if an account, or its proxy, owns an asset on-chain
-   * @param accountAddress Account address for the wallet
-   * @param proxyAddress Proxy address for the account
-   * @param wyAsset asset to check. If fungible, the `quantity` attribute will be the minimum amount to own
-   * @param schemaName WyvernSchemaName for the asset
-   */
-  public async _ownsAssetOnChain({
-    accountAddress,
-    proxyAddress,
-    wyAsset,
-    schemaName,
-  }: {
-    accountAddress: string;
-    proxyAddress?: string | null;
-    wyAsset: WyvernAsset;
-    schemaName: WyvernSchemaName;
-  }): Promise<boolean> {
-    const asset: Asset = {
-      tokenId: wyAsset.id || null,
-      tokenAddress: wyAsset.address,
-      schemaName,
-    };
-
-    const minAmount = new BigNumber(
-      "quantity" in wyAsset ? wyAsset.quantity : 1
-    );
-
-    const accountBalance = await this.getAssetBalance({
-      accountAddress,
-      asset,
-    });
-    if (accountBalance.isGreaterThanOrEqualTo(minAmount)) {
-      return true;
-    }
-
-    proxyAddress = proxyAddress || (await this._getProxy(accountAddress));
-    if (proxyAddress) {
-      const proxyBalance = await this.getAssetBalance({
-        accountAddress: proxyAddress,
-        asset,
-      });
-      if (proxyBalance.isGreaterThanOrEqualTo(minAmount)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   public _getBuyFeeParameters(
@@ -2642,8 +1823,6 @@ export class OpenSeaSDK {
   /**
    * Get the clients to use for a read call
    * @param retries current retry value
-   * @param wyvernProtocol optional wyvern protocol to use, has default
-   * @param wyvernProtocol optional readonly wyvern protocol to use, has default
    */
   private _getClientsForRead({ retries }: { retries: number }): {
     web3: Web3;
@@ -2734,51 +1913,6 @@ export class OpenSeaSDK {
       };
 
       return testResolve(initialRetries);
-    });
-  }
-
-  /**
-   * Returns whether or not an authenticated proxy is revoked for a specific account address
-   * @param accountAddress
-   * @returns
-   */
-  public async isAuthenticatedProxyRevoked(
-    accountAddress: string
-  ): Promise<boolean> {
-    const proxy = await this._wyvernProtocol.getAuthenticatedProxy(
-      accountAddress
-    );
-
-    return proxy.revoked().callAsync();
-  }
-
-  /**
-   * Revokes an authenticated proxy's access i.e. for freezing listings
-   * @param accountAddress
-   * @returns transaction hash
-   */
-  public async revokeAuthenticatedProxyAccess(
-    accountAddress: string
-  ): Promise<string> {
-    const proxy = await this._wyvernProtocol.getAuthenticatedProxy(
-      accountAddress
-    );
-    return proxy.setRevoke(true).sendTransactionAsync({ from: accountAddress });
-  }
-
-  /**
-   * Unrevokes an authenticated proxy's access i.e. for unfreezing listings
-   * @param accountAddress
-   * @returns transaction hash
-   */
-  public async unrevokeAuthenticatedProxyAccess(
-    accountAddress: string
-  ): Promise<string> {
-    const proxy = await this._wyvernProtocol.getAuthenticatedProxy(
-      accountAddress
-    );
-    return proxy.setRevoke(false).sendTransactionAsync({
-      from: accountAddress,
     });
   }
 }

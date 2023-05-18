@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js";
 import { Network } from "./types";
 
 export const DEFAULT_GAS_INCREASE_FACTOR = 1.01;
@@ -15,7 +14,6 @@ export const SHARED_STORE_FRONT_ADDRESS_MAINNET =
 export const SHARED_STORE_FRONT_ADDRESS_RINKEBY =
   "0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656";
 export const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";
-export const MANA_ADDRESS = "0x0f5d2fb29fb7d3cfee444a200298f468908cc942";
 export const ENJIN_ADDRESS = "0xfaaFDc07907ff5120a76b34b731b278c38d6043C";
 export const CK_ADDRESS = "0x06012c8cf97bead5deae237070f9587f8e7a266d";
 export const WRAPPED_NFT_FACTORY_ADDRESS_MAINNET =
@@ -40,7 +38,6 @@ export const API_BASE_TESTNET = "https://testnets-api.opensea.io";
 export const RPC_URL_PATH = "jsonrpc/v1/";
 export const MAINNET_PROVIDER_URL = `${API_BASE_MAINNET}/${RPC_URL_PATH}`;
 export const API_PATH = `/api/v${ORDERBOOK_VERSION}`;
-export const MAX_UINT_256 = new BigNumber(2).pow(256).minus(1);
 
 export const MERKLE_VALIDATOR_MAINNET =
   "0xbaf2127b49fc93cbca6269fade0f7f31df4c88a7";
