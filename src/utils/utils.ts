@@ -1053,14 +1053,6 @@ export async function delay(ms: number) {
 }
 
 /**
- * Notify developer when a pattern will be deprecated
- * @param msg message to log to console
- */
-export function onDeprecated(msg: string) {
-  console.warn(`DEPRECATION NOTICE: ${msg}`);
-}
-
-/**
  * Get special-case approval addresses for an erc721 contract
  * @param erc721Contract contract to check
  */
@@ -1086,7 +1078,7 @@ export const merkleValidatorByNetwork = {
 };
 
 /**
- * The longest time that an order is valid for is six months from the current date
+ * The longest time that an order is valid for is one month from the current date
  * @returns unix timestamp
  */
 export const getMaxOrderExpirationTimestamp = () => {

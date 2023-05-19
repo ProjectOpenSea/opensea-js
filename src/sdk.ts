@@ -13,7 +13,6 @@ import { OpenSeaAPI } from "./api";
 import {
   CK_ADDRESS,
   CONDUIT_KEYS_TO_CONDUIT,
-  DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS,
   INVERSE_BASIS_POINT,
   MIN_EXPIRATION_MINUTES,
   NULL_ADDRESS,
@@ -22,24 +21,9 @@ import {
   DEFAULT_ZONE_BY_NETWORK,
   ORDER_MATCHING_LATENCY_SECONDS,
   RPC_URL_PATH,
-  UNISWAP_FACTORY_ADDRESS_MAINNET,
-  UNISWAP_FACTORY_ADDRESS_RINKEBY,
   WETH_ADDRESS_BY_NETWORK,
-  WRAPPED_NFT_FACTORY_ADDRESS_MAINNET,
-  WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY,
-  WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET,
-  WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY,
-  OPENSEA_LEGACY_FEE_RECIPIENT,
 } from "./constants";
-import {
-  CanonicalWETH,
-  getMethod,
-  UniswapFactory,
-  WrappedNFT,
-  WrappedNFTFactory,
-  WrappedNFTLiquidationProxy,
-  UniswapExchange,
-} from "./contracts";
+import { getMethod, CanonicalWETH } from "./contracts";
 import {
   constructPrivateListingCounterOrder,
   getPrivateListingConsiderations,
@@ -47,23 +31,17 @@ import {
 } from "./orders/privateListings";
 import { OrderV2, PostOfferResponse } from "./orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "./orders/utils";
-import { UniswapExchangeAbi } from "./typechain/contracts/UniswapExchangeAbi";
-import { UniswapFactoryAbi } from "./typechain/contracts/UniswapFactoryAbi";
-import { WrappedNFTAbi } from "./typechain/contracts/WrappedNFTAbi";
-import { WrappedNFTFactoryAbi } from "./typechain/contracts/WrappedNFTFactoryAbi";
 import {
   Asset,
   ComputedFees,
   EventData,
   EventType,
-  FeeMethod,
   Network,
   OpenSeaAPIConfig,
   OpenSeaAsset,
   OpenSeaCollection,
   OrderSide,
   TokenStandardVersion,
-  UnhashedOrder,
   WyvernAsset,
   WyvernFTAsset,
   WyvernNFTAsset,
@@ -109,9 +87,6 @@ export class OpenSeaSDK {
 
   private _networkName: Network;
   private _emitter: EventEmitter;
-  private _wrappedNFTFactoryAddress: string;
-  private _wrappedNFTLiquidationProxyAddress: string;
-  private _uniswapFactoryAddress: string;
 
   /**
    * Your very own seaport.
@@ -162,20 +137,6 @@ export class OpenSeaSDK {
       seaportVersion: "1.5",
     });
 
-    // WrappedNFTLiquidationProxy Config
-    this._wrappedNFTFactoryAddress =
-      this._networkName == Network.Main
-        ? WRAPPED_NFT_FACTORY_ADDRESS_MAINNET
-        : WRAPPED_NFT_FACTORY_ADDRESS_RINKEBY;
-    this._wrappedNFTLiquidationProxyAddress =
-      this._networkName == Network.Main
-        ? WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_MAINNET
-        : WRAPPED_NFT_LIQUIDATION_PROXY_ADDRESS_RINKEBY;
-    this._uniswapFactoryAddress =
-      this._networkName == Network.Main
-        ? UNISWAP_FACTORY_ADDRESS_MAINNET
-        : UNISWAP_FACTORY_ADDRESS_RINKEBY;
-
     // Emit events
     this._emitter = new EventEmitter();
 
@@ -216,307 +177,6 @@ export class OpenSeaSDK {
    */
   public removeAllListeners(event?: EventType) {
     this._emitter.removeAllListeners(event);
-  }
-
-  /**
-   * Wraps an arbitrary group of NFTs into their corresponding WrappedNFT ERC20 tokens.
-   * Emits the `WrapAssets` event when the transaction is prompted.
-   * @param param0 __namedParameters Object
-   * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
-   * @param accountAddress Address of the user's wallet
-   */
-  public async wrapAssets({
-    assets,
-    accountAddress,
-  }: {
-    assets: Asset[];
-    accountAddress: string;
-  }) {
-    const schema = this._getSchema(WyvernSchemaName.ERC721);
-    const wyAssets = assets.map((a) => getWyvernAsset(schema, a));
-
-    // Separate assets out into two arrays of tokenIds and tokenAddresses
-    const tokenIds = wyAssets.map((a) => a.id);
-    const tokenAddresses = wyAssets.map((a) => a.address);
-
-    // Check if all tokenAddresses match. If not, then we have a mixedBatch of
-    // NFTs from different NFT core contracts
-    const isMixedBatchOfAssets = !tokenAddresses.every(
-      (val, _i, arr) => val === arr[0]
-    );
-
-    this._dispatch(EventType.WrapAssets, { assets: wyAssets, accountAddress });
-
-    const txHash = await sendRawTransaction(
-      this.web3,
-      {
-        from: accountAddress,
-        to: this._wrappedNFTLiquidationProxyAddress,
-        value: 0,
-        data: encodeCall(getMethod(WrappedNFTLiquidationProxy, "wrapNFTs"), [
-          tokenIds,
-          tokenAddresses,
-          isMixedBatchOfAssets,
-        ]),
-      },
-      (error) => {
-        this._dispatch(EventType.TransactionDenied, { error, accountAddress });
-      }
-    );
-
-    await this._confirmTransaction(
-      txHash,
-      EventType.WrapAssets,
-      "Wrapping Assets"
-    );
-  }
-
-  /**
-   * Unwraps an arbitrary group of NFTs from their corresponding WrappedNFT ERC20 tokens back into ERC721 tokens.
-   * Emits the `UnwrapAssets` event when the transaction is prompted.
-   * @param param0 __namedParameters Object
-   * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
-   * @param destinationAddresses Addresses that each resulting ERC721 token will be sent to. Must be the same length as `tokenIds`. Each address corresponds with its respective token ID in the `tokenIds` array.
-   * @param accountAddress Address of the user's wallet
-   */
-  public async unwrapAssets({
-    assets,
-    destinationAddresses,
-    accountAddress,
-  }: {
-    assets: Asset[];
-    destinationAddresses: string[];
-    accountAddress: string;
-  }) {
-    if (
-      !assets ||
-      !destinationAddresses ||
-      assets.length != destinationAddresses.length
-    ) {
-      throw new Error(
-        "The 'assets' and 'destinationAddresses' arrays must exist and have the same length."
-      );
-    }
-
-    const schema = this._getSchema(WyvernSchemaName.ERC721);
-    const wyAssets = assets.map((a) => getWyvernAsset(schema, a));
-
-    // Separate assets out into two arrays of tokenIds and tokenAddresses
-    const tokenIds = wyAssets.map((a) => a.id);
-    const tokenAddresses = wyAssets.map((a) => a.address);
-
-    // Check if all tokenAddresses match. If not, then we have a mixedBatch of
-    // NFTs from different NFT core contracts
-    const isMixedBatchOfAssets = !tokenAddresses.every(
-      (val, _i, arr) => val === arr[0]
-    );
-
-    this._dispatch(EventType.UnwrapAssets, {
-      assets: wyAssets,
-      accountAddress,
-    });
-
-    const txHash = await sendRawTransaction(
-      this.web3,
-      {
-        from: accountAddress,
-        to: this._wrappedNFTLiquidationProxyAddress,
-        value: 0,
-        data: encodeCall(getMethod(WrappedNFTLiquidationProxy, "unwrapNFTs"), [
-          tokenIds,
-          tokenAddresses,
-          destinationAddresses,
-          isMixedBatchOfAssets,
-        ]),
-      },
-      (error) => {
-        this._dispatch(EventType.TransactionDenied, { error, accountAddress });
-      }
-    );
-
-    await this._confirmTransaction(
-      txHash,
-      EventType.UnwrapAssets,
-      "Unwrapping Assets"
-    );
-  }
-
-  /**
-   * Liquidates an arbitrary group of NFTs by atomically wrapping them into their
-   * corresponding WrappedNFT ERC20 tokens, and then immediately selling those
-   * ERC20 tokens on their corresponding Uniswap exchange.
-   * Emits the `LiquidateAssets` event when the transaction is prompted.
-   * @param param0 __namedParameters Object
-   * @param assets An array of objects with the tokenId and tokenAddress of each of the assets to bundle together.
-   * @param accountAddress Address of the user's wallet
-   * @param uniswapSlippageAllowedInBasisPoints The amount of slippage that a user will tolerate in their Uniswap trade; if Uniswap cannot fulfill the order without more slippage, the whole function will revert.
-   */
-  public async liquidateAssets({
-    assets,
-    accountAddress,
-    uniswapSlippageAllowedInBasisPoints,
-  }: {
-    assets: Asset[];
-    accountAddress: string;
-    uniswapSlippageAllowedInBasisPoints: number;
-  }) {
-    // If no slippage parameter is provided, use a sane default value
-    const uniswapSlippage =
-      uniswapSlippageAllowedInBasisPoints === 0
-        ? DEFAULT_WRAPPED_NFT_LIQUIDATION_UNISWAP_SLIPPAGE_IN_BASIS_POINTS
-        : uniswapSlippageAllowedInBasisPoints;
-
-    const schema = this._getSchema(WyvernSchemaName.ERC721);
-    const wyAssets = assets.map((a) => getWyvernAsset(schema, a));
-
-    // Separate assets out into two arrays of tokenIds and tokenAddresses
-    const tokenIds = wyAssets.map((a) => a.id);
-    const tokenAddresses = wyAssets.map((a) => a.address);
-
-    // Check if all tokenAddresses match. If not, then we have a mixedBatch of
-    // NFTs from different NFT core contracts
-    const isMixedBatchOfAssets = !tokenAddresses.every(
-      (val, _i, arr) => val === arr[0]
-    );
-
-    this._dispatch(EventType.LiquidateAssets, {
-      assets: wyAssets,
-      accountAddress,
-    });
-
-    const txHash = await sendRawTransaction(
-      this.web3,
-      {
-        from: accountAddress,
-        to: this._wrappedNFTLiquidationProxyAddress,
-        value: 0,
-        data: encodeCall(
-          getMethod(WrappedNFTLiquidationProxy, "liquidateNFTs"),
-          [tokenIds, tokenAddresses, isMixedBatchOfAssets, uniswapSlippage]
-        ),
-      },
-      (error) => {
-        this._dispatch(EventType.TransactionDenied, { error, accountAddress });
-      }
-    );
-
-    await this._confirmTransaction(
-      txHash,
-      EventType.LiquidateAssets,
-      "Liquidating Assets"
-    );
-  }
-
-  /**
-   * Purchases a bundle of WrappedNFT tokens from Uniswap and then unwraps them into ERC721 tokens.
-   * Emits the `PurchaseAssets` event when the transaction is prompted.
-   * @param param0 __namedParameters Object
-   * @param numTokensToBuy The number of WrappedNFT tokens to purchase and unwrap
-   * @param amount The estimated cost in wei for tokens (probably some ratio above the minimum amount to avoid the transaction failing due to frontrunning, minimum amount is found by calling UniswapExchange(uniswapAddress).getEthToTokenOutputPrice(numTokensToBuy.mul(10**18));
-   * @param contractAddress Address of the corresponding NFT core contract for these NFTs.
-   * @param accountAddress Address of the user's wallet
-   */
-  public async purchaseAssets({
-    numTokensToBuy,
-    amount,
-    contractAddress,
-    accountAddress,
-  }: {
-    numTokensToBuy: number;
-    amount: BigNumber;
-    contractAddress: string;
-    accountAddress: string;
-  }) {
-    this._dispatch(EventType.PurchaseAssets, {
-      amount,
-      contractAddress,
-      accountAddress,
-    });
-
-    const txHash = await sendRawTransaction(
-      this.web3,
-      {
-        from: accountAddress,
-        to: this._wrappedNFTLiquidationProxyAddress,
-        value: amount,
-        data: encodeCall(
-          getMethod(WrappedNFTLiquidationProxy, "purchaseNFTs"),
-          [numTokensToBuy, contractAddress]
-        ),
-      },
-      (error) => {
-        this._dispatch(EventType.TransactionDenied, { error, accountAddress });
-      }
-    );
-
-    await this._confirmTransaction(
-      txHash,
-      EventType.PurchaseAssets,
-      "Purchasing Assets"
-    );
-  }
-
-  /**
-   * Gets the estimated cost or payout of either buying or selling NFTs to Uniswap using either purchaseAssts() or liquidateAssets()
-   * @param param0 __namedParameters Object
-   * @param numTokens The number of WrappedNFT tokens to either purchase or sell
-   * @param isBuying A bool for whether the user is buying or selling
-   * @param contractAddress Address of the corresponding NFT core contract for these NFTs.
-   */
-  public async getQuoteFromUniswap({
-    numTokens,
-    isBuying,
-    contractAddress,
-  }: {
-    numTokens: number;
-    isBuying: boolean;
-    contractAddress: string;
-  }) {
-    // Get UniswapExchange for WrappedNFTContract for contractAddress
-    const wrappedNFTFactory = new this.web3.eth.Contract(
-      WrappedNFTFactory,
-      this._wrappedNFTFactoryAddress
-    ) as unknown as WrappedNFTFactoryAbi;
-
-    const wrappedNFTAddress: string = await wrappedNFTFactory.methods
-      .nftContractToWrapperContract(contractAddress)
-      .call();
-    const wrappedNFT = new this.web3.eth.Contract(
-      WrappedNFT,
-      wrappedNFTAddress
-    ) as unknown as WrappedNFTAbi;
-    const uniswapFactory = new this.web3.eth.Contract(
-      UniswapFactory,
-      this._uniswapFactoryAddress
-    ) as unknown as UniswapFactoryAbi;
-    const uniswapExchangeAddress = await uniswapFactory.methods
-      .getExchange(wrappedNFTAddress)
-      .call();
-    const uniswapExchange = new this.web3.eth.Contract(
-      UniswapExchange,
-      uniswapExchangeAddress
-    ) as unknown as UniswapExchangeAbi;
-
-    // Convert desired WNFT to wei
-    const amount = toBaseUnitAmount(
-      makeBigNumber(numTokens),
-      Number(wrappedNFT.methods.decimals().call())
-    );
-
-    // Return quote from Uniswap
-    if (isBuying) {
-      return parseInt(
-        await uniswapExchange.methods
-          .getEthToTokenOutputPrice(amount.toString())
-          .call()
-      );
-    } else {
-      return parseInt(
-        await uniswapExchange.methods
-          .getTokenToEthInputPrice(amount.toString())
-          .call()
-      );
-    }
   }
 
   /**
@@ -1137,58 +797,6 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Register a domain on the Domain Registry contract.
-   * @param domain The string domain to be hashed and registered on the Registry.
-   * @returns Transaction hash
-   */
-  public async setDomain(domain: string): Promise<string> {
-    const transaction = await this.seaport_v1_5.setDomain(domain).transact();
-
-    await transaction.wait();
-
-    return transaction.hash;
-  }
-
-  /**
-   * Get the domain for a specific tag at a given index.
-   * @param tag The tag to look up.
-   * @param index The index of the domain to return.
-   * @returns Domain
-   */
-  public async getDomain(tag: string, index: number): Promise<string> {
-    return this.seaport_v1_5.getDomain(tag, index);
-  }
-
-  /**
-   * Get the full array of domains for a specific tag.
-   * @param tag The tag to look up.
-   * @returns Array of domains
-   */
-  public async getDomains(tag: string): Promise<string[]> {
-    return this.seaport_v1_5.getDomains(tag);
-  }
-
-  /**
-   * Get the number of registered domains for a specific tag.
-   * @param tag The tag to look up.
-   * @returns Number of registered domains for input tag.
-   */
-  public async getNumberOfDomains(tag: string): Promise<BigNumber> {
-    return new BigNumber(this.seaport_v1_5.getNumberOfDomains(tag).toString());
-  }
-
-  /**
-   * Gets the current price for the order.
-   */
-  public async getCurrentPrice({
-    order,
-  }: {
-    order: OrderV2;
-  }): Promise<BigNumber> {
-    return new BigNumber(order.currentPrice);
-  }
-
-  /**
    * Returns whether an order is fulfillable.
    * An order may not be fulfillable if a target item's transfer function
    * is locked for some reason, e.g. an item is being rented within a game
@@ -1460,43 +1068,6 @@ export class OpenSeaSDK {
     );
 
     return transaction.hash;
-  }
-
-  public _getBuyFeeParameters(
-    totalBuyerFeeBasisPoints: number,
-    totalSellerFeeBasisPoints: number,
-    sellOrder?: UnhashedOrder
-  ) {
-    this._validateFees(totalBuyerFeeBasisPoints, totalSellerFeeBasisPoints);
-
-    let makerRelayerFee;
-    let takerRelayerFee;
-
-    if (sellOrder) {
-      // Use the sell order's fees to ensure compatiblity and force the order
-      // to only be acceptable by the sell order maker.
-      // Swap maker/taker depending on whether it's an English auction (taker)
-      // TODO add extraBountyBasisPoints when making bidder bounties
-      makerRelayerFee = sellOrder.waitingForBestCounterOrder
-        ? makeBigNumber(sellOrder.makerRelayerFee)
-        : makeBigNumber(sellOrder.takerRelayerFee);
-      takerRelayerFee = sellOrder.waitingForBestCounterOrder
-        ? makeBigNumber(sellOrder.takerRelayerFee)
-        : makeBigNumber(sellOrder.makerRelayerFee);
-    } else {
-      makerRelayerFee = makeBigNumber(totalBuyerFeeBasisPoints);
-      takerRelayerFee = makeBigNumber(totalSellerFeeBasisPoints);
-    }
-
-    return {
-      makerRelayerFee,
-      takerRelayerFee,
-      makerProtocolFee: makeBigNumber(0),
-      takerProtocolFee: makeBigNumber(0),
-      makerReferrerFee: makeBigNumber(0), // TODO use buyerBountyBPS
-      feeRecipient: OPENSEA_LEGACY_FEE_RECIPIENT,
-      feeMethod: FeeMethod.SplitFee,
-    };
   }
 
   /**
