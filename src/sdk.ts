@@ -909,7 +909,7 @@ export class OpenSeaSDK {
    * @param asset The Asset to check balance for
    * @param retries How many times to retry if balance is 0
    */
-  public async getAssetBalance(
+  public async getBalance(
     { accountAddress, asset }: { accountAddress: string; asset: Asset },
     retries = 1
   ): Promise<BigNumber> {
@@ -969,37 +969,8 @@ export class OpenSeaSDK {
     } else {
       await delay(500);
       // Recursively check owner again
-      return await this.getAssetBalance({ accountAddress, asset }, retries - 1);
+      return await this.getBalance({ accountAddress, asset }, retries - 1);
     }
-  }
-
-  /**
-   * Get the balance of a fungible token.
-   * Convenience method for getAssetBalance for fungibles
-   * @param param0 __namedParameters Object
-   * @param accountAddress Account address to check
-   * @param tokenAddress The address of the token to check balance for
-   * @param schemaName Optional schema name for the fungible token
-   * @param retries Number of times to retry if balance is undefined
-   */
-  public async getTokenBalance(
-    {
-      accountAddress,
-      tokenAddress,
-      schemaName = SchemaName.ERC20,
-    }: {
-      accountAddress: string;
-      tokenAddress: string;
-      schemaName?: SchemaName;
-    },
-    retries = 1
-  ) {
-    const asset: Asset = {
-      tokenId: null,
-      tokenAddress,
-      schemaName,
-    };
-    return this.getAssetBalance({ accountAddress, asset }, retries);
   }
 
   /**

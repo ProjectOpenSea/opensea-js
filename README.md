@@ -151,21 +151,12 @@ const asset = {
   tokenId: "1", // Token ID
 }
 
-const balance = await openseaSDK.getAssetBalance({
+const balance = await openseaSDK.getBalance({
   accountAddress, // string
   asset, // Asset
 })
 
 const ownsKitty = balance.greaterThan(0)
-```
-
-You can use this same method for fungible ERC-20 tokens like wrapped ETH (WETH). As a convenience, you can use this fungible wrapper for checking fungible balances:
-
-```JavaScript
-const balanceOfWETH = await openseaSDK.getTokenBalance({
-  accountAddress, // string
-  tokenAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-})
 ```
 
 ### Making Offers
