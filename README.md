@@ -116,8 +116,8 @@ export interface Asset {
   tokenId: string | null,
   // The asset's contract address
   tokenAddress: string,
-  // The Wyvern schema name (defaults to "ERC721") for this asset
-  schemaName?: WyvernSchemaName,
+  // The schema name (defaults to "ERC721") for this asset
+  schemaName?: SchemaName,
   // Optional for ENS names
   name?: string,
   // Optional for fungible items
@@ -125,7 +125,7 @@ export interface Asset {
 }
 ```
 
-The `Asset` type is the minimal type you need for most marketplace actions. `WyvernSchemaName` is optional. If omitted, most actions will assume you're referring to a non-fungible, ERC721 asset. Other options include 'ERC20' and 'ERC1155'. You can import `import { WyvernSchemaName } from "opensea-js/lib/types"` to get the full range of schemas supported.
+The `Asset` type is the minimal type you need for most marketplace actions. `SchemaName` is optional. If omitted, most actions will assume you're referring to a non-fungible, ERC721 asset. Other options include 'ERC20' and 'ERC1155'. You can import `import { SchemaName } from "opensea-js/lib/types"` to get the full range of schemas supported.
 
 You can fetch an asset using the `OpenSeaAPI`, which will return an `OpenSeaAsset` for you (`OpenSeaAsset` extends `Asset`):
 
@@ -182,7 +182,7 @@ const offer = await openseaSDK.createBuyOrder({
   asset: {
     tokenId,
     tokenAddress,
-    schemaName // WyvernSchemaName. If omitted, defaults to 'ERC721'. Other options include 'ERC20' and 'ERC1155'
+    schemaName // SchemaName. If omitted, defaults to 'ERC721'. Other options include 'ERC20' and 'ERC1155'
   },
   accountAddress,
   // Value of the offer, in units of the payment token (or wrapped ETH if none is specified):
@@ -409,7 +409,7 @@ const transactionHash = await openseaSDK.transfer({
 })
 ```
 
-For more information, check out the documentation for WyvernSchemas on https://projectopensea.github.io/opensea-js/.
+For more information, check out the documentation for Schemas on https://projectopensea.github.io/opensea-js/.
 
 ## Advanced
 

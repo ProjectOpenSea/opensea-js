@@ -58,15 +58,15 @@ import {
   UnhashedOrder,
   UnsignedOrder,
   Web3Callback,
-  WyvernAsset,
-  WyvernBundle,
-  WyvernFTAsset,
-  WyvernNFTAsset,
-  WyvernSchemaName,
+  AssetType,
+  Bundle,
+  FungibleAsset,
+  NFTAsset,
+  SchemaName,
 } from "../types";
 
 export const annotateERC721TransferABI = (
-  asset: WyvernNFTAsset
+  asset: NFTAsset
 ): AnnotatedFunctionABI => ({
   constant: false,
   inputs: [
@@ -91,7 +91,7 @@ export const annotateERC721TransferABI = (
 });
 
 export const annotateERC20TransferABI = (
-  asset: WyvernFTAsset
+  asset: FungibleAsset
 ): AnnotatedFunctionABI => ({
   constant: false,
   inputs: [
@@ -415,7 +415,7 @@ export const orderFromJSON = (order: any): Order => {
     exchange: order.exchange,
     makerAccount: order.maker,
     takerAccount: order.taker,
-    // Use string address to conform to Wyvern Order schema
+    // Use string address to conform to the Order schema
     maker: order.maker.address,
     taker: order.taker.address,
     makerRelayerFee: new BigNumber(order.maker_relayer_fee),
@@ -841,16 +841,16 @@ export function estimateCurrentPrice(
 }
 
 /**
- * Get the Wyvern representation of a fungible asset
- * @param schema The WyvernSchema needed to access this asset
+ * Get the representation of a fungible asset
+ * @param schema The Schema needed to access this asset
  * @param asset The asset to trade
  * @param quantity The number of items to trade
  */
-export function getWyvernAsset(
-  schema: Schema<WyvernAsset>,
+export function getAssetType(
+  schema: Schema<AssetType>,
   asset: Asset,
   quantity = new BigNumber(1)
-): WyvernAsset {
+): AssetType {
   const tokenId = asset.tokenId != null ? asset.tokenId.toString() : undefined;
 
   return schema.assetFromFields({
@@ -862,17 +862,17 @@ export function getWyvernAsset(
 }
 
 /**
- * Get the Wyvern representation of a group of assets
+ * Get the representation of a group of assets
  * Sort order is enforced here. Throws if there's a duplicate.
  * @param assets Assets to bundle
- * @param schemas The WyvernSchemas needed to access each asset, respectively
+ * @param schemas The Schema needed to access each asset, respectively
  * @param quantities The quantity of each asset to bundle, respectively
  */
-export function getWyvernBundle(
+export function getBundle(
   assets: Asset[],
-  schemas: Array<Schema<WyvernAsset>>,
+  schemas: Array<Schema<AssetType>>,
   quantities: BigNumber[]
-): WyvernBundle {
+): Bundle {
   if (assets.length != quantities.length) {
     throw new Error("Bundle must have a quantity for every asset");
   }
@@ -882,19 +882,19 @@ export function getWyvernBundle(
   }
 
   const wyAssets = assets.map((asset, i) =>
-    getWyvernAsset(schemas[i], asset, quantities[i])
+    getAssetType(schemas[i], asset, quantities[i])
   );
 
   const sorters = [
-    (assetAndSchema: { asset: WyvernAsset; schema: WyvernSchemaName }) =>
+    (assetAndSchema: { asset: AssetType; schema: SchemaName }) =>
       assetAndSchema.asset.address,
-    (assetAndSchema: { asset: WyvernAsset; schema: WyvernSchemaName }) =>
+    (assetAndSchema: { asset: AssetType; schema: SchemaName }) =>
       assetAndSchema.asset.id || 0,
   ];
 
   const wyAssetsAndSchemas = wyAssets.map((asset, i) => ({
     asset,
-    schema: schemas[i].name as WyvernSchemaName,
+    schema: schemas[i].name as SchemaName,
   }));
 
   const uniqueAssets = _.uniqBy(
@@ -1053,14 +1053,6 @@ export async function delay(ms: number) {
 }
 
 /**
- * Notify developer when a pattern will be deprecated
- * @param msg message to log to console
- */
-export function onDeprecated(msg: string) {
-  console.warn(`DEPRECATION NOTICE: ${msg}`);
-}
-
-/**
  * Get special-case approval addresses for an erc721 contract
  * @param erc721Contract contract to check
  */
@@ -1086,7 +1078,7 @@ export const merkleValidatorByNetwork = {
 };
 
 /**
- * The longest time that an order is valid for is six months from the current date
+ * The longest time that an order is valid for is one month from the current date
  * @returns unix timestamp
  */
 export const getMaxOrderExpirationTimestamp = () => {
@@ -1109,7 +1101,7 @@ export const hasErrorCode = (error: unknown): error is ErrorWithCode => {
   return !!untypedError.code;
 };
 
-export const getAssetItemType = (schemaName?: WyvernSchemaName) => {
+export const getAssetItemType = (schemaName?: SchemaName) => {
   switch (schemaName) {
     case "ERC20":
       return ItemType.ERC20;
