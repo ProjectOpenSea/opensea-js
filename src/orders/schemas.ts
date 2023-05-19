@@ -39,7 +39,7 @@ const orderSchema: JSONSchemaType<PartialOrderV2Type> = {
     taker: { ...accountSchema, nullable: true },
     protocolData: { type: "object" },
     protocolAddress: { type: "string" },
-    currentPrice: { type: "string" },
+    currentPrice: { type: "object", required: [] },
     makerFees: { type: "array", items: feeSchema },
     takerFees: { type: "array", items: feeSchema },
     side: { type: "string" },

@@ -15,8 +15,3 @@ export const getMethod = (
 
 export { ERC1155 } from "./abi/ERC1155";
 export { CanonicalWETH } from "./abi/CanonicalWETH";
-export { WrappedNFT } from "./abi/WrappedNFT";
-export { WrappedNFTFactory } from "./abi/WrappedNFTFactory";
-export { WrappedNFTLiquidationProxy } from "./abi/WrappedNFTLiquidationProxy";
-export { UniswapFactory } from "./abi/UniswapFactory";
-export { UniswapExchange } from "./abi/UniswapExchange";

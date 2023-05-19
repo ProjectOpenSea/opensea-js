@@ -1,4 +1,5 @@
 import { CROSS_CHAIN_SEAPORT_V1_5_ADDRESS } from "@opensea/seaport-js/lib/constants";
+import { BigNumber } from "ethers";
 import {
   OrderProtocol,
   OrdersQueryOptions,
@@ -149,7 +150,7 @@ export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
     taker: order.taker ? accountFromJSON(order.taker) : null,
     protocolData: order.protocol_data,
     protocolAddress: order.protocol_address,
-    currentPrice: order.current_price,
+    currentPrice: BigNumber.from(order.current_price),
     makerFees: order.maker_fees.map(({ account, basis_points }) => ({
       account: accountFromJSON(account),
       basisPoints: basis_points,
