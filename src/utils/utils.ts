@@ -33,6 +33,8 @@ import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
 import {
   Asset,
   AssetEvent,
+  AssetType,
+  Bundle,
   ECSignature,
   Network,
   OpenSeaAccount,
@@ -47,6 +49,7 @@ import {
   OrderJSON,
   OrderSide,
   SaleKind,
+  TokenStandard,
   SolidityTypes,
   Transaction,
   TxnCallback,
@@ -820,15 +823,15 @@ export function getBundle(
   );
 
   const sorters = [
-    (assetAndSchema: { asset: AssetType; schema: SchemaName }) =>
+    (assetAndSchema: { asset: AssetType; schema: TokenStandard }) =>
       assetAndSchema.asset.address,
-    (assetAndSchema: { asset: AssetType; schema: SchemaName }) =>
+    (assetAndSchema: { asset: AssetType; schema: TokenStandard }) =>
       assetAndSchema.asset.id || 0,
   ];
 
   const wyAssetsAndSchemas = wyAssets.map((asset, i) => ({
     asset,
-    schema: schemas[i].name as SchemaName,
+    schema: schemas[i].name as TokenStandard,
   }));
 
   const uniqueAssets = _.uniqBy(
@@ -1035,7 +1038,7 @@ export const hasErrorCode = (error: unknown): error is ErrorWithCode => {
   return !!untypedError.code;
 };
 
-export const getAssetItemType = (schemaName?: SchemaName) => {
+export const getAssetItemType = (schemaName?: TokenStandard) => {
   switch (schemaName) {
     case "ERC20":
       return ItemType.ERC20;

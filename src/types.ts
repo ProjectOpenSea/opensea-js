@@ -134,7 +134,7 @@ export enum AssetContractType {
 }
 
 // Constract Schemas.
-export enum SchemaName {
+export enum TokenStandard {
   ERC20 = "ERC20",
   ERC721 = "ERC721",
   ERC721v3 = "ERC721v3",
@@ -201,7 +201,7 @@ export type AssetType = NFTAsset | FungibleAsset;
 // Abstractions over assets for bundles
 export interface Bundle {
   assets: AssetType[];
-  schemas: SchemaName[];
+  schemas: TokenStandard[];
   name?: string;
   description?: string;
   external_link?: string;
@@ -237,7 +237,7 @@ export interface Asset {
   // The asset's contract address
   tokenAddress: string;
   // The schema name (e.g. "ERC721") for this asset
-  schemaName?: SchemaName;
+  schemaName?: TokenStandard;
   // The token standard version of this asset
   version?: TokenStandardVersion;
   // Optional for ENS names
@@ -257,7 +257,7 @@ export interface OpenSeaAssetContract extends OpenSeaFees {
   // Type of token (fungible/NFT)
   type: AssetContractType;
   // Schema Name for this contract
-  schemaName: SchemaName;
+  schemaName: TokenStandard;
 
   // Total fee levied on sellers by this contract, in basis points
   sellerFeeBasisPoints: number;
@@ -543,7 +543,7 @@ export interface ComputedFees extends OpenSeaFees {
 
 interface ExchangeMetadataForAsset {
   asset: AssetType;
-  schema: SchemaName;
+  schema: TokenStandard;
   referrerAddress?: string;
 }
 

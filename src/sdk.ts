@@ -39,7 +39,7 @@ import {
   OpenSeaCollection,
   OrderSide,
   AssetType,
-  SchemaName,
+  TokenStandard,
 } from "./types";
 import { encodeCall, schemas, Schema } from "./utils/schemas/schema";
 import { getCanonicalWrappedEther } from "./utils/tokens";
@@ -321,7 +321,7 @@ export class OpenSeaSDK {
   private getAssetItems(
     assets: Asset[],
     quantities: BigNumber[] = [],
-    fallbackSchema?: SchemaName
+    fallbackSchema?: TokenStandard
   ): CreateInputItem[] {
     return assets.map((asset, index) => ({
       itemType: getAssetItemType(this._getSchemaName(asset) ?? fallbackSchema),
@@ -1095,8 +1095,8 @@ export class OpenSeaSDK {
     return undefined;
   }
 
-  private _getSchema(schemaName?: SchemaName): Schema<AssetType> {
-    const schemaName_ = schemaName || SchemaName.ERC721;
+  private _getSchema(schemaName?: TokenStandard): Schema<AssetType> {
+    const schemaName_ = schemaName || TokenStandard.ERC721;
 
     const schema = schemas[this._networkName].filter(
       (s) => s.name == schemaName_
