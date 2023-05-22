@@ -34,7 +34,6 @@
   },
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@0x/assert": "^3.0.35",
     "@opensea/seaport-js": "^1.2.1",
     "ajv": "8.11.0",
     "bignumber.js": "9.0.2",
