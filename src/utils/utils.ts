@@ -4,12 +4,9 @@ import {
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
 import BigNumber from "bignumber.js";
-import BN from "bn.js";
 import { TxData } from "ethereum-types";
-import * as ethABI from "ethereumjs-abi";
 import * as ethUtil from "ethereumjs-util";
 import * as _ from "lodash";
-import { Buffer } from "safe-buffer";
 import Web3 from "web3";
 import { AbstractProvider } from "web3-core/types";
 import { JsonRpcResponse } from "web3-core-helpers/types";
@@ -50,10 +47,8 @@ import {
   OrderSide,
   SaleKind,
   TokenStandard,
-  SolidityTypes,
   Transaction,
   TxnCallback,
-  UnhashedOrder,
   UnsignedOrder,
   Web3Callback,
 } from "../types";
@@ -849,84 +844,6 @@ export function getBundle(
     assets: sortedWyAssetsAndSchemas.map((group) => group.asset),
     schemas: sortedWyAssetsAndSchemas.map((group) => group.schema),
   };
-}
-
-/**
- * Get the non-prefixed hash for the order
- * (Fixes a Wyvern typescript issue and casing issue)
- * @param order order to hash
- */
-export function getOrderHash(order: UnhashedOrder) {
-  const orderWithStringTypes = {
-    ...order,
-    maker: order.maker.toLowerCase(),
-    taker: order.taker.toLowerCase(),
-    feeRecipient: order.feeRecipient.toLowerCase(),
-    side: order.side.toString(),
-    saleKind: order.saleKind.toString(),
-    howToCall: order.howToCall.toString(),
-    feeMethod: order.feeMethod.toString(),
-  };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return getOrderHashHex(orderWithStringTypes as any);
-}
-
-// sourced from: https://github.com/ProjectOpenSea/wyvern-js/blob/master/src/utils/utils.ts#L39
-function getOrderHashHex(order: UnhashedOrder): string {
-  const orderParts = [
-    { value: order.exchange, type: SolidityTypes.Address },
-    { value: order.maker, type: SolidityTypes.Address },
-    { value: order.taker, type: SolidityTypes.Address },
-    {
-      value: bigNumberToBN(order.makerRelayerFee),
-      type: SolidityTypes.Uint256,
-    },
-    {
-      value: bigNumberToBN(order.takerRelayerFee),
-      type: SolidityTypes.Uint256,
-    },
-    {
-      value: bigNumberToBN(order.makerProtocolFee),
-      type: SolidityTypes.Uint256,
-    },
-    {
-      value: bigNumberToBN(order.takerProtocolFee),
-      type: SolidityTypes.Uint256,
-    },
-    { value: order.feeRecipient, type: SolidityTypes.Address },
-    { value: order.feeMethod, type: SolidityTypes.Uint8 },
-    { value: order.side, type: SolidityTypes.Uint8 },
-    { value: order.saleKind, type: SolidityTypes.Uint8 },
-    { value: order.target, type: SolidityTypes.Address },
-    { value: order.howToCall, type: SolidityTypes.Uint8 },
-    {
-      value: Buffer.from(order.calldata.slice(2), "hex"),
-      type: SolidityTypes.Bytes,
-    },
-    {
-      value: Buffer.from(order.replacementPattern.slice(2), "hex"),
-      type: SolidityTypes.Bytes,
-    },
-    { value: order.staticTarget, type: SolidityTypes.Address },
-    {
-      value: Buffer.from(order.staticExtradata.slice(2), "hex"),
-      type: SolidityTypes.Bytes,
-    },
-    { value: order.paymentToken, type: SolidityTypes.Address },
-    { value: bigNumberToBN(order.basePrice), type: SolidityTypes.Uint256 },
-    { value: bigNumberToBN(order.extra), type: SolidityTypes.Uint256 },
-    { value: bigNumberToBN(order.listingTime), type: SolidityTypes.Uint256 },
-    { value: bigNumberToBN(order.expirationTime), type: SolidityTypes.Uint256 },
-    { value: bigNumberToBN(order.salt), type: SolidityTypes.Uint256 },
-  ];
-  const types = _.map(orderParts, (o) => o.type);
-  const values = _.map(orderParts, (o) => o.value);
-  const hash = Buffer.from(ethABI.soliditySHA3(types, values));
-  return ethUtil.bufferToHex(hash);
-}
-
-function bigNumberToBN(value: BigNumber) {
-  return new BN(value.toString(), 10);
 }
 
 // Sourced from: https://github.com/ProjectOpenSea/wyvern-js/blob/master/src/wyvernProtocol.ts#L170

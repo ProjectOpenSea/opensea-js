@@ -556,7 +556,15 @@ export type ExchangeMetadata =
   | ExchangeMetadataForAsset
   | ExchangeMetadataForBundle;
 
-export interface UnhashedOrder {
+export enum HowToCall {
+  Call = 0,
+  DelegateCall = 1,
+  StaticCall = 2,
+  Create = 3,
+}
+
+export interface UnsignedOrder {
+  hash?: string;
   exchange: string;
   maker: string;
   taker: string;
@@ -589,17 +597,6 @@ export interface UnhashedOrder {
   englishAuctionReservePrice?: BigNumber;
 
   metadata: ExchangeMetadata;
-}
-
-export enum HowToCall {
-  Call = 0,
-  DelegateCall = 1,
-  StaticCall = 2,
-  Create = 3,
-}
-
-export interface UnsignedOrder extends UnhashedOrder {
-  hash?: string;
 }
 
 export interface ECSignature {
@@ -785,13 +782,4 @@ export enum StateMutability {
   View = "view",
   Payable = "payable",
   Nonpayable = "nonpayable",
-}
-
-export enum SolidityTypes {
-  Address = "address",
-  Uint256 = "uint256",
-  Uint8 = "uint8",
-  Uint = "uint",
-  Bytes = "bytes",
-  String = "string",
 }
