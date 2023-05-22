@@ -1,4 +1,3 @@
-import { assert } from "@0x/assert";
 import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   ItemType,
@@ -851,8 +850,6 @@ export function toBaseUnitAmount(
   amount: BigNumber,
   decimals: number
 ): BigNumber {
-  assert.isBigNumber("amount", amount);
-  assert.isNumber("decimals", decimals);
   const unit = new BigNumber(10).pow(decimals);
   const baseUnitAmount = amount.times(unit);
   const hasDecimals = baseUnitAmount.decimalPlaces() !== 0;
