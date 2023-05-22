@@ -31,13 +31,9 @@ import {
 import { ERC1155 } from "../contracts";
 import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
 import {
-  AbiType,
-  AnnotatedFunctionABI,
   Asset,
   AssetEvent,
   ECSignature,
-  FunctionInputKind,
-  FunctionOutputKind,
   Network,
   OpenSeaAccount,
   OpenSeaAsset,
@@ -52,74 +48,12 @@ import {
   OrderSide,
   SaleKind,
   SolidityTypes,
-  StateMutability,
   Transaction,
   TxnCallback,
   UnhashedOrder,
   UnsignedOrder,
   Web3Callback,
-  AssetType,
-  Bundle,
-  FungibleAsset,
-  NFTAsset,
-  SchemaName,
 } from "../types";
-
-export const annotateERC721TransferABI = (
-  asset: NFTAsset
-): AnnotatedFunctionABI => ({
-  constant: false,
-  inputs: [
-    {
-      name: "_to",
-      type: "address",
-      kind: FunctionInputKind.Replaceable,
-    },
-    {
-      name: "_tokenId",
-      type: "uint256",
-      kind: FunctionInputKind.Asset,
-      value: asset.id,
-    },
-  ],
-  target: asset.address,
-  name: "transfer",
-  outputs: [],
-  payable: false,
-  stateMutability: StateMutability.Nonpayable,
-  type: AbiType.Function,
-});
-
-export const annotateERC20TransferABI = (
-  asset: FungibleAsset
-): AnnotatedFunctionABI => ({
-  constant: false,
-  inputs: [
-    {
-      name: "_to",
-      type: "address",
-      kind: FunctionInputKind.Replaceable,
-    },
-    {
-      name: "_amount",
-      type: "uint256",
-      kind: FunctionInputKind.Count,
-      value: asset.quantity,
-    },
-  ],
-  target: asset.address,
-  name: "transfer",
-  outputs: [
-    {
-      name: "success",
-      type: "bool",
-      kind: FunctionOutputKind.Other,
-    },
-  ],
-  payable: false,
-  stateMutability: StateMutability.Nonpayable,
-  type: AbiType.Function,
-});
 
 // OTHER
 

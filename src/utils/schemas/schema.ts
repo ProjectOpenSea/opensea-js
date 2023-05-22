@@ -135,34 +135,6 @@ export const encodeDefaultCall: DefaultCallEncoder = (abi, address) => {
   return encodeCall(abi, parameters);
 };
 
-/**
- * Encode a transfer call for a Wyvern schema function
- * @param transferAbi Annotated Wyvern ABI
- * @param from From address
- * @param to To address
- */
-export function encodeTransferCall(
-  transferAbi: AnnotatedFunctionABI,
-  from: string,
-  to: string
-) {
-  const parameters = transferAbi.inputs.map((input) => {
-    switch (input.kind) {
-      case FunctionInputKind.Replaceable:
-        return to;
-      case FunctionInputKind.Owner:
-        return from;
-      case FunctionInputKind.Asset:
-      default:
-        if (input.value == null) {
-          throw new Error(`Unsupported function input kind: ${input.kind}`);
-        }
-        return input.value;
-    }
-  });
-  return encodeCall(transferAbi, parameters);
-}
-
 export const schemas = {
   goerli: goerliSchemas,
   rinkeby: rinkebySchemas,
