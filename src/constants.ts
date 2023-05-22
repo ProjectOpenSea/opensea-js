@@ -12,9 +12,7 @@ export const SHARED_STORE_FRONT_ADDRESS_RINKEBY =
   "0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656";
 export const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";
 export const ENJIN_ADDRESS = "0xfaaFDc07907ff5120a76b34b731b278c38d6043C";
-export const MIN_EXPIRATION_MINUTES = 15;
 export const MAX_EXPIRATION_MONTHS = 1;
-export const ORDER_MATCHING_LATENCY_SECONDS = 60 * 60 * 24 * 7;
 const ORDERBOOK_VERSION = 1 as number;
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_TESTNET = "https://testnets-api.opensea.io";

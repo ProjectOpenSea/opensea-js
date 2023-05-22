@@ -63,8 +63,8 @@ export interface EventData {
   proxyAddress?: string;
   amount?: BigNumber;
   contractAddress?: string;
-  assets?: WyvernAsset[];
-  asset?: WyvernAsset;
+  assets?: AssetType[];
+  asset?: AssetType;
 
   transactionHash?: string;
   event?: EventType;
@@ -81,7 +81,6 @@ export interface EventData {
  * OpenSea API configuration object
  * @param apiKey Optional key to use for API
  * @param networkName `Network` type to use. Defaults to `Network.Main` (mainnet)
- * @param gasPrice Default gas price to send to the Wyvern Protocol
  * @param apiBaseUrl Optional base URL to use for the API
  */
 export interface OpenSeaAPIConfig {
@@ -89,10 +88,6 @@ export interface OpenSeaAPIConfig {
   apiKey?: string;
   apiBaseUrl?: string;
   useReadOnlyProvider?: boolean;
-  // Sent to WyvernJS
-  gasPrice?: BigNumber;
-
-  wyvernConfig?: WyvernConfig;
 }
 
 export enum Network {
@@ -100,17 +95,6 @@ export enum Network {
   Goerli = "goerli",
   Rinkeby = "rinkeby",
 }
-
-export type WyvernConfig = {
-  network: Network;
-  gasPrice?: BigNumber;
-  wyvernExchangeContractAddress?: string;
-  wyvernProxyRegistryContractAddress?: string;
-  wyvernDAOContractAddress?: string;
-  wyvernTokenContractAddress?: string;
-  wyvernAtomicizerContractAddress?: string;
-  wyvernTokenTransferProxyContractAddress?: string;
-};
 
 /**
  * Seaport order side: buy or sell.
@@ -121,7 +105,7 @@ export enum OrderSide {
 }
 
 /**
- * Wyvern fee method
+ * Fee method
  * ProtocolFee: Charge maker fee to seller and charge taker fee to buyer.
  * SplitFee: Maker fees are deducted from the token amount that the maker receives. Taker fees are extra tokens that must be paid by the taker.
  */
@@ -131,9 +115,7 @@ export enum FeeMethod {
 }
 
 /**
- * Wyvern: type of sale. Fixed or Dutch auction
- * Note: not imported from wyvern.js because it uses
- * EnglishAuction as 1 and DutchAuction as 2
+ * Type of sale.
  */
 export enum SaleKind {
   FixedPrice = 0,
@@ -151,8 +133,8 @@ export enum AssetContractType {
   Unknown = "unknown",
 }
 
-// Wyvern Schemas (see https://github.com/ProjectOpenSea/wyvern-schemas)
-export enum WyvernSchemaName {
+// Constract Schemas.
+export enum TokenStandard {
   ERC20 = "ERC20",
   ERC721 = "ERC721",
   ERC721v3 = "ERC721v3",
@@ -205,39 +187,25 @@ export interface Fees {
   sellerFees: Map<string, number>;
 }
 
-export interface WyvernNFTAsset {
+export interface NFTAsset {
   id: string;
   address: string;
 }
-export interface WyvernFTAsset {
+export interface FungibleAsset {
   id?: string;
   address: string;
   quantity: string;
 }
-export type WyvernAsset = WyvernNFTAsset | WyvernFTAsset;
+export type AssetType = NFTAsset | FungibleAsset;
 
-// Abstractions over Wyvern assets for bundles
-export interface WyvernBundle {
-  assets: WyvernAsset[];
-  schemas: WyvernSchemaName[];
+// Abstractions over assets for bundles
+export interface Bundle {
+  assets: AssetType[];
+  schemas: TokenStandard[];
   name?: string;
   description?: string;
   external_link?: string;
 }
-
-export type WyvernAtomicMatchParameters = [
-  string[],
-  BigNumber[],
-  Array<number | BigNumber>,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  Array<number | BigNumber>,
-  string[]
-];
 
 /**
  * The OpenSea account object appended to orders, providing extra metadata, profile images and usernames
@@ -268,8 +236,8 @@ export interface Asset {
   tokenId: string | null;
   // The asset's contract address
   tokenAddress: string;
-  // The Wyvern schema name (e.g. "ERC721") for this asset
-  schemaName?: WyvernSchemaName;
+  // The token standard (e.g. "ERC721") for this asset
+  tokenStandard?: TokenStandard;
   // The token standard version of this asset
   version?: TokenStandardVersion;
   // Optional for ENS names
@@ -288,8 +256,8 @@ export interface OpenSeaAssetContract extends OpenSeaFees {
   address: string;
   // Type of token (fungible/NFT)
   type: AssetContractType;
-  // Wyvern Schema Name for this contract
-  schemaName: WyvernSchemaName;
+  // Token Standard for this contract
+  tokenStandard: TokenStandard;
 
   // Total fee levied on sellers by this contract, in basis points
   sellerFeeBasisPoints: number;
@@ -574,13 +542,13 @@ export interface ComputedFees extends OpenSeaFees {
 }
 
 interface ExchangeMetadataForAsset {
-  asset: WyvernAsset;
-  schema: WyvernSchemaName;
+  asset: AssetType;
+  schema: TokenStandard;
   referrerAddress?: string;
 }
 
 interface ExchangeMetadataForBundle {
-  bundle: WyvernBundle;
+  bundle: Bundle;
   referrerAddress?: string;
 }
 
@@ -666,7 +634,7 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
  * list of API query parameters and documentation.
  */
 export interface OrderJSON extends Partial<ECSignature> {
-  // Base wyvern fields
+  // Base fields
   exchange: string;
   maker: string;
   taker: string;
@@ -701,19 +669,6 @@ export interface OrderJSON extends Partial<ECSignature> {
 
   nonce?: number;
 }
-
-export type RawWyvernOrderJSON = Omit<
-  OrderJSON,
-  | "makerReferrerFee"
-  | "quantity"
-  | "englishAuctionReservePrice"
-  | "createdTime"
-  | "metadata"
-  | "hash"
-  | "v"
-  | "r"
-  | "s"
->;
 
 /**
  * Query interface for Orders

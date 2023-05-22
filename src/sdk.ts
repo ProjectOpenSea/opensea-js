@@ -13,12 +13,10 @@ import { OpenSeaAPI } from "./api";
 import {
   CONDUIT_KEYS_TO_CONDUIT,
   INVERSE_BASIS_POINT,
-  MIN_EXPIRATION_MINUTES,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
   CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
   DEFAULT_ZONE_BY_NETWORK,
-  ORDER_MATCHING_LATENCY_SECONDS,
   RPC_URL_PATH,
   WETH_ADDRESS_BY_NETWORK,
 } from "./constants";
@@ -40,15 +38,15 @@ import {
   OpenSeaAsset,
   OpenSeaCollection,
   OrderSide,
-  WyvernAsset,
-  WyvernSchemaName,
+  AssetType,
+  TokenStandard,
 } from "./types";
 import { encodeCall, schemas, Schema } from "./utils/schemas/schema";
 import { getCanonicalWrappedEther } from "./utils/tokens";
 import {
   confirmTransaction,
   delay,
-  getWyvernAsset,
+  getAssetType,
   makeBigNumber,
   sendRawTransaction,
   getMaxOrderExpirationTimestamp,
@@ -323,7 +321,7 @@ export class OpenSeaSDK {
   private getAssetItems(
     assets: Asset[],
     quantities: BigNumber[] = [],
-    fallbackSchema?: WyvernSchemaName
+    fallbackSchema?: TokenStandard
   ): CreateInputItem[] {
     return assets.map((asset, index) => ({
       itemType: getAssetItemType(this._getSchemaName(asset) ?? fallbackSchema),
@@ -832,7 +830,7 @@ export class OpenSeaSDK {
     retries = 1
   ): Promise<BigNumber> {
     const schema = this._getSchema(this._getSchemaName(asset));
-    const wyAsset = getWyvernAsset(schema, asset);
+    const wyAsset = getAssetType(schema, asset);
 
     if (schema.functions.countOf) {
       // ERC20 or ERC1155 (non-Enjin)
@@ -958,113 +956,6 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Validate fee parameters
-   * @param totalBuyerFeeBasisPoints Total buyer fees
-   * @param totalSellerFeeBasisPoints Total seller fees
-   */
-  private _validateFees(
-    totalBuyerFeeBasisPoints: number,
-    totalSellerFeeBasisPoints: number
-  ) {
-    const maxFeePercent = INVERSE_BASIS_POINT / 100;
-
-    if (
-      totalBuyerFeeBasisPoints > INVERSE_BASIS_POINT ||
-      totalSellerFeeBasisPoints > INVERSE_BASIS_POINT
-    ) {
-      throw new Error(
-        `Invalid buyer/seller fees: must be less than ${maxFeePercent}%`
-      );
-    }
-
-    if (totalBuyerFeeBasisPoints < 0 || totalSellerFeeBasisPoints < 0) {
-      throw new Error(`Invalid buyer/seller fees: must be at least 0%`);
-    }
-  }
-
-  /**
-   * Get the listing and expiration time parameters for a new order
-   * @param expirationTimestamp Timestamp to expire the order (in seconds), or 0 for non-expiring
-   * @param listingTimestamp Timestamp to start the order (in seconds), or undefined to start it now
-   * @param waitingForBestCounterOrder Whether this order should be hidden until the best match is found
-   */
-  private _getTimeParameters({
-    expirationTimestamp = getMaxOrderExpirationTimestamp(),
-    listingTimestamp,
-    waitingForBestCounterOrder = false,
-    isMatchingOrder = false,
-  }: {
-    expirationTimestamp?: number;
-    listingTimestamp?: number;
-    waitingForBestCounterOrder?: boolean;
-    isMatchingOrder?: boolean;
-  }) {
-    const maxExpirationTimeStamp = getMaxOrderExpirationTimestamp();
-
-    const minListingTimestamp = Math.round(Date.now() / 1000);
-
-    if (!isMatchingOrder && expirationTimestamp === 0) {
-      throw new Error("Expiration time cannot be 0");
-    }
-    if (listingTimestamp && listingTimestamp < minListingTimestamp) {
-      throw new Error("Listing time cannot be in the past.");
-    }
-    if (listingTimestamp && listingTimestamp >= expirationTimestamp) {
-      throw new Error("Listing time must be before the expiration time.");
-    }
-
-    if (waitingForBestCounterOrder && listingTimestamp) {
-      throw new Error(`Cannot schedule an English auction for the future.`);
-    }
-    if (parseInt(expirationTimestamp.toString()) != expirationTimestamp) {
-      throw new Error(`Expiration timestamp must be a whole number of seconds`);
-    }
-    if (expirationTimestamp > maxExpirationTimeStamp) {
-      throw new Error("Expiration time must not exceed six months from now");
-    }
-
-    if (waitingForBestCounterOrder) {
-      listingTimestamp = expirationTimestamp;
-      // Expire one week from now, to ensure server can match it
-      // Later, this will expire closer to the listingTime
-      expirationTimestamp =
-        expirationTimestamp + ORDER_MATCHING_LATENCY_SECONDS;
-
-      // The minimum expiration time has to be at least fifteen minutes from now
-      const minEnglishAuctionListingTimestamp =
-        minListingTimestamp + MIN_EXPIRATION_MINUTES * 60;
-
-      if (
-        !isMatchingOrder &&
-        listingTimestamp < minEnglishAuctionListingTimestamp
-      ) {
-        throw new Error(
-          `Expiration time must be at least ${MIN_EXPIRATION_MINUTES} minutes from now`
-        );
-      }
-    } else {
-      // Small offset to account for latency
-      listingTimestamp =
-        listingTimestamp || Math.round(Date.now() / 1000 - 100);
-
-      // The minimum expiration time has to be at least fifteen minutes from now
-      const minExpirationTimestamp =
-        listingTimestamp + MIN_EXPIRATION_MINUTES * 60;
-
-      if (!isMatchingOrder && expirationTimestamp < minExpirationTimestamp) {
-        throw new Error(
-          `Expiration time must be at least ${MIN_EXPIRATION_MINUTES} minutes from the listing date`
-        );
-      }
-    }
-
-    return {
-      listingTime: makeBigNumber(listingTimestamp),
-      expirationTime: makeBigNumber(expirationTimestamp),
-    };
-  }
-
-  /**
    * Compute the `basePrice` and `extra` parameters to be used to price an order.
    * Also validates the expiration time and auction type.
    * @param tokenAddress Address of the ERC-20 token to use for trading.
@@ -1170,25 +1061,25 @@ export class OpenSeaSDK {
   }
 
   private _getSchemaName(asset: Asset | OpenSeaAsset) {
-    if (asset.schemaName) {
-      return asset.schemaName;
+    if (asset.tokenStandard) {
+      return asset.tokenStandard;
     } else if ("assetContract" in asset) {
-      return asset.assetContract.schemaName;
+      return asset.assetContract.tokenStandard;
     }
 
     return undefined;
   }
 
-  private _getSchema(schemaName?: WyvernSchemaName): Schema<WyvernAsset> {
-    const schemaName_ = schemaName || WyvernSchemaName.ERC721;
+  private _getSchema(tokenStandard?: TokenStandard): Schema<AssetType> {
+    const tokenStandard_ = tokenStandard || TokenStandard.ERC721;
 
     const schema = schemas[this._networkName].filter(
-      (s) => s.name == schemaName_
+      (s) => s.name == tokenStandard_
     )[0];
 
     if (!schema) {
       throw new Error(
-        `Trading for this asset (${schemaName_}) is not yet supported. Please contact us or check back later!`
+        `Trading for this asset (${tokenStandard_}) is not yet supported. Please contact us or check back later!`
       );
     }
     return schema;
