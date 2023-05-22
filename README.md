@@ -117,7 +117,7 @@ export interface Asset {
   // The asset's contract address
   tokenAddress: string,
   // The schema name (defaults to "ERC721") for this asset
-  schemaName?: SchemaName,
+  tokenStandard?: TokenStandard,
   // Optional for ENS names
   name?: string,
   // Optional for fungible items
@@ -125,7 +125,7 @@ export interface Asset {
 }
 ```
 
-The `Asset` type is the minimal type you need for most marketplace actions. `SchemaName` is optional. If omitted, most actions will assume you're referring to a non-fungible, ERC721 asset. Other options include 'ERC20' and 'ERC1155'. You can import `import { SchemaName } from "opensea-js/lib/types"` to get the full range of schemas supported.
+The `Asset` type is the minimal type you need for most marketplace actions. `TokenStandard` is optional. If omitted, most actions will assume you're referring to a non-fungible, ERC721 asset. Other options include 'ERC20' and 'ERC1155'. You can import `import { TokenStandard } from "opensea-js/lib/types"` to get the full range of schemas supported.
 
 You can fetch an asset using the `OpenSeaAPI`, which will return an `OpenSeaAsset` for you (`OpenSeaAsset` extends `Asset`):
 
@@ -173,7 +173,7 @@ const offer = await openseaSDK.createBuyOrder({
   asset: {
     tokenId,
     tokenAddress,
-    schemaName // SchemaName. If omitted, defaults to 'ERC721'. Other options include 'ERC20' and 'ERC1155'
+    tokenStandard // TokenStandard. If omitted, defaults to 'ERC721'. Other options include 'ERC20' and 'ERC1155'
   },
   accountAddress,
   // Value of the offer, in units of the payment token (or wrapped ETH if none is specified):
@@ -205,7 +205,7 @@ const offer = await openseaSDK.createBuyOrder({
     name,
     // Only needed for the short-name auction, not ENS names
     // that have been sold once already:
-    schemaName: "ENSShortNameAuction"
+    tokenStandard: "ENSShortNameAuction"
   },
   // Your wallet address (the bidder's address):
   accountAddress: "0x1234..."
@@ -365,7 +365,7 @@ const transactionHash = await openseaSDK.transfer({
 })
 ```
 
-For fungible ERC-1155 assets, you can set `schemaName` to "ERC1155" and pass a `quantity` in to transfer multiple at once:
+For fungible ERC-1155 assets, you can set `tokenStandard` to "ERC1155" and pass a `quantity` in to transfer multiple at once:
 
 ```JavaScript
 
@@ -373,7 +373,7 @@ const transactionHash = await openseaSDK.transfer({
   asset: {
     tokenId,
     tokenAddress,
-    schemaName: "ERC1155"
+    tokenStandard: "ERC1155"
   },
   fromAddress, // Must own the asset
   toAddress,
@@ -381,7 +381,7 @@ const transactionHash = await openseaSDK.transfer({
 })
 ```
 
-To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` in base units (e.g. wei) to indicate how many.
+To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `tokenStandard` to "ERC20", and include `quantity` in base units (e.g. wei) to indicate how many.
 
 Example for transferring 2 DAI ($2) to another address:
 
@@ -392,7 +392,7 @@ const transactionHash = await openseaSDK.transfer({
   asset: {
     tokenId: null,
     tokenAddress: paymentToken.address,
-    schemaName: "ERC20"
+    tokenStandard: "ERC20"
   },
   fromAddress, // Must own the tokens
   toAddress,

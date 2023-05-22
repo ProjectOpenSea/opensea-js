@@ -956,31 +956,6 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Validate fee parameters
-   * @param totalBuyerFeeBasisPoints Total buyer fees
-   * @param totalSellerFeeBasisPoints Total seller fees
-   */
-  private _validateFees(
-    totalBuyerFeeBasisPoints: number,
-    totalSellerFeeBasisPoints: number
-  ) {
-    const maxFeePercent = INVERSE_BASIS_POINT / 100;
-
-    if (
-      totalBuyerFeeBasisPoints > INVERSE_BASIS_POINT ||
-      totalSellerFeeBasisPoints > INVERSE_BASIS_POINT
-    ) {
-      throw new Error(
-        `Invalid buyer/seller fees: must be less than ${maxFeePercent}%`
-      );
-    }
-
-    if (totalBuyerFeeBasisPoints < 0 || totalSellerFeeBasisPoints < 0) {
-      throw new Error(`Invalid buyer/seller fees: must be at least 0%`);
-    }
-  }
-
-  /**
    * Compute the `basePrice` and `extra` parameters to be used to price an order.
    * Also validates the expiration time and auction type.
    * @param tokenAddress Address of the ERC-20 token to use for trading.
@@ -1086,25 +1061,25 @@ export class OpenSeaSDK {
   }
 
   private _getSchemaName(asset: Asset | OpenSeaAsset) {
-    if (asset.schemaName) {
-      return asset.schemaName;
+    if (asset.tokenStandard) {
+      return asset.tokenStandard;
     } else if ("assetContract" in asset) {
-      return asset.assetContract.schemaName;
+      return asset.assetContract.tokenStandard;
     }
 
     return undefined;
   }
 
-  private _getSchema(schemaName?: TokenStandard): Schema<AssetType> {
-    const schemaName_ = schemaName || TokenStandard.ERC721;
+  private _getSchema(tokenStandard?: TokenStandard): Schema<AssetType> {
+    const tokenStandard_ = tokenStandard || TokenStandard.ERC721;
 
     const schema = schemas[this._networkName].filter(
-      (s) => s.name == schemaName_
+      (s) => s.name == tokenStandard_
     )[0];
 
     if (!schema) {
       throw new Error(
-        `Trading for this asset (${schemaName_}) is not yet supported. Please contact us or check back later!`
+        `Trading for this asset (${tokenStandard_}) is not yet supported. Please contact us or check back later!`
       );
     }
     return schema;

@@ -236,8 +236,8 @@ export interface Asset {
   tokenId: string | null;
   // The asset's contract address
   tokenAddress: string;
-  // The schema name (e.g. "ERC721") for this asset
-  schemaName?: TokenStandard;
+  // The token standard (e.g. "ERC721") for this asset
+  tokenStandard?: TokenStandard;
   // The token standard version of this asset
   version?: TokenStandardVersion;
   // Optional for ENS names
@@ -256,8 +256,8 @@ export interface OpenSeaAssetContract extends OpenSeaFees {
   address: string;
   // Type of token (fungible/NFT)
   type: AssetContractType;
-  // Schema Name for this contract
-  schemaName: TokenStandard;
+  // Token Standard for this contract
+  tokenStandard: TokenStandard;
 
   // Total fee levied on sellers by this contract, in basis points
   sellerFeeBasisPoints: number;

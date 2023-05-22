@@ -274,7 +274,7 @@ export const assetContractFromJSON = (
     name: asset_contract.name,
     description: asset_contract.description,
     type: asset_contract.asset_contract_type,
-    schemaName: asset_contract.schema_name,
+    tokenStandard: asset_contract.schema_name,
     address: asset_contract.address,
     tokenSymbol: asset_contract.symbol,
     buyerFeeBasisPoints: +asset_contract.buyer_fee_basis_points,
@@ -1038,8 +1038,8 @@ export const hasErrorCode = (error: unknown): error is ErrorWithCode => {
   return !!untypedError.code;
 };
 
-export const getAssetItemType = (schemaName?: TokenStandard) => {
-  switch (schemaName) {
+export const getAssetItemType = (tokenStandard?: TokenStandard) => {
+  switch (tokenStandard) {
     case "ERC20":
       return ItemType.ERC20;
     case "ERC721":
@@ -1047,7 +1047,7 @@ export const getAssetItemType = (schemaName?: TokenStandard) => {
     case "ERC1155":
       return ItemType.ERC1155;
     default:
-      throw new Error(`Unknown schema name: ${schemaName}`);
+      throw new Error(`Unknown schema name: ${tokenStandard}`);
   }
 };
 
