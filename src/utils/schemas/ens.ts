@@ -1,5 +1,5 @@
 import { sha3 } from "ethereumjs-util";
-import { Buffer } from "safe-buffer";
+import { namehash } from "ethers/lib/utils";
 import { Schema } from "./schema";
 
 export interface ENSName {
@@ -7,19 +7,6 @@ export interface ENSName {
   nameHash: string;
   name: string;
 }
-
-const namehash = (name: string) => {
-  let node = "0000000000000000000000000000000000000000000000000000000000000000";
-  if (name !== "") {
-    const labels = name.split(".");
-    for (let i = labels.length - 1; i >= 0; i--) {
-      const labelHash = sha3(labels[i]).toString("hex");
-      const buffer: Buffer = Buffer.from(node + labelHash, "hex");
-      node = sha3(buffer).toString("hex");
-    }
-  }
-  return "0x" + node.toString();
-};
 
 export const nodehash = (name: string) => {
   const label = name.split(".")[0];
