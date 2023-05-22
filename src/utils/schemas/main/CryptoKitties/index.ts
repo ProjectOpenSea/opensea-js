@@ -1,4 +1,3 @@
-import axios from "axios";
 import { Schema } from "../../schema";
 import {
   AbiType,
@@ -22,18 +21,18 @@ export const CryptoKittiesSchema: Schema<CryptoKittiesType> = {
   assetFromFields: (fields: any) => fields.ID,
   assetToFields: (asset) => ({ ID: asset }),
   formatter: async (asset) => {
-    const response = await axios
-      .get(`https://api.cryptokitties.co/kitties/${asset}`)
-      .catch((err) => {
-        if (
-          err.response &&
-          (err.response.status === 404 || err.response.status === 400)
-        ) {
-          return null;
-        } else {
-          throw err;
-        }
-      });
+    const response = await fetch(
+      `https://api.cryptokitties.co/kitties/${asset}`
+    ).catch((err) => {
+      if (
+        err.response &&
+        (err.response.status === 404 || err.response.status === 400)
+      ) {
+        return null;
+      } else {
+        throw err;
+      }
+    });
     if (response === null) {
       return {
         thumbnail: "https://www.cryptokitties.co/images/kitty-eth.svg",
@@ -43,7 +42,8 @@ export const CryptoKittiesSchema: Schema<CryptoKittiesType> = {
         properties: [],
       };
     } else {
-      const data = response.data;
+      const result = await response.text();
+      const data = JSON.parse(result);
       const attrs = data.enhanced_cattributes || data.cattributes || [];
       return {
         thumbnail: data.image_url_cdn,

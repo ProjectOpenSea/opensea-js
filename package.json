@@ -37,7 +37,6 @@
     "@0x/assert": "^3.0.35",
     "@opensea/seaport-js": "^1.2.1",
     "ajv": "8.11.0",
-    "axios": "^1.3.4",
     "bignumber.js": "9.0.2",
     "ethereumjs-abi": "git+https://github.com/ProjectWyvern/ethereumjs-abi.git",
     "ethereumjs-util": "^7.0.0",
