@@ -4,7 +4,7 @@ import Web3 from "web3";
 import {
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS,
   SHARED_STORE_FRONT_ADDRESS_MAINNET,
-  SHARED_STORE_FRONT_ADDRESS_RINKEBY,
+  SHARED_STORE_FRONT_ADDRESS_GOERLI,
 } from "../../constants";
 import { OpenSeaSDK } from "../../index";
 import { Network } from "../../types";
@@ -45,7 +45,7 @@ suite("SDK: misc", () => {
   test("Checks that shared storefront addresses are remapped to lazy mint adapter address", async () => {
     assert.equal(
       getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STORE_FRONT_ADDRESS_RINKEBY
+        SHARED_STORE_FRONT_ADDRESS_GOERLI
       ),
       SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS
     );
@@ -60,7 +60,7 @@ suite("SDK: misc", () => {
   test("Checks that upper case shared storefront addresses are remapped to lazy mint adapter address", async () => {
     assert.equal(
       getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STORE_FRONT_ADDRESS_RINKEBY.toUpperCase()
+        SHARED_STORE_FRONT_ADDRESS_GOERLI.toUpperCase()
       ),
       SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS
     );

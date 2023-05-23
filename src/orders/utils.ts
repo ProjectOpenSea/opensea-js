@@ -13,7 +13,6 @@ import { accountFromJSON, assetBundleFromJSON } from "../utils";
 
 const NETWORK_TO_CHAIN = {
   [Network.Main]: "ethereum",
-  [Network.Rinkeby]: "rinkeby",
   [Network.Goerli]: "goerli",
 };
 

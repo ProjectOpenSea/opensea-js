@@ -18,12 +18,11 @@ import {
   INVERSE_BASIS_POINT,
   MAX_EXPIRATION_MONTHS,
   MERKLE_VALIDATOR_MAINNET,
-  MERKLE_VALIDATOR_RINKEBY,
   NULL_ADDRESS,
   NULL_BLOCK_HASH,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS,
   SHARED_STORE_FRONT_ADDRESS_MAINNET,
-  SHARED_STORE_FRONT_ADDRESS_RINKEBY,
+  SHARED_STORE_FRONT_ADDRESS_GOERLI,
 } from "../constants";
 import { ERC1155 } from "../contracts";
 import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
@@ -925,7 +924,6 @@ export async function getNonCompliantApprovalAddress(
 
 export const merkleValidatorByNetwork = {
   [Network.Main]: MERKLE_VALIDATOR_MAINNET,
-  [Network.Rinkeby]: MERKLE_VALIDATOR_RINKEBY,
   [Network.Goerli]: null,
 };
 
@@ -968,7 +966,7 @@ export const getAssetItemType = (tokenStandard?: TokenStandard) => {
 
 const SHARED_STOREFRONT_ADDRESSES = new Set([
   SHARED_STORE_FRONT_ADDRESS_MAINNET.toLowerCase(),
-  SHARED_STORE_FRONT_ADDRESS_RINKEBY.toLowerCase(),
+  SHARED_STORE_FRONT_ADDRESS_GOERLI.toLowerCase(),
 ]);
 
 /**
