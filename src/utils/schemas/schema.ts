@@ -3,8 +3,7 @@ import { goerliSchemas } from "./goerli/index";
 import { mainSchemas } from "./main/index";
 import { rinkebySchemas } from "./rinkeby/index";
 import { EventInputKind } from "./types";
-import { AbiType, AnnotatedFunctionABI, FunctionInputKind } from "../../types";
-import { generateDefaultValue } from "../utils";
+import { AbiType, AnnotatedFunctionABI } from "../../types";
 
 export interface LimitedCallSpec {
   target: string;
@@ -119,21 +118,6 @@ export type DefaultCallEncoder = (
   abi: AnnotatedFunctionABI,
   address: string
 ) => string;
-
-export const encodeDefaultCall: DefaultCallEncoder = (abi, address) => {
-  const parameters = abi.inputs.map((input) => {
-    switch (input.kind) {
-      case FunctionInputKind.Replaceable:
-        return generateDefaultValue(input.type);
-      case FunctionInputKind.Owner:
-        return address;
-      case FunctionInputKind.Asset:
-      default:
-        return input.value;
-    }
-  });
-  return encodeCall(abi, parameters);
-};
 
 export const schemas = {
   goerli: goerliSchemas,

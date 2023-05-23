@@ -1,5 +1,6 @@
 /* eslint-disable import/no-unused-modules */
 import BigNumber from "bignumber.js";
+import { BigNumberish } from "ethers";
 import { AbiItem } from "web3-utils";
 import type { OrderV2 } from "./orders/types";
 
@@ -61,7 +62,7 @@ export interface EventData {
   accountAddress?: string;
   toAddress?: string;
   proxyAddress?: string;
-  amount?: BigNumber;
+  amount?: BigNumberish;
   contractAddress?: string;
   assets?: AssetType[];
   asset?: AssetType;
