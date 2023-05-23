@@ -1,6 +1,5 @@
 import "isomorphic-unfetch";
 import { URLSearchParams } from "url";
-import _ from "lodash";
 import { API_BASE_MAINNET, API_BASE_TESTNET, API_PATH } from "./constants";
 import {
   BuildOfferResponse,

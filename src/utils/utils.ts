@@ -12,6 +12,7 @@ import { AbstractProvider } from "web3-core/types";
 import { JsonRpcResponse } from "web3-core-helpers/types";
 import { Contract } from "web3-eth-contract";
 import { Schema } from "./schemas/schema";
+import { ERC1155 } from "../abi/ERC1155";
 import {
   ENJIN_ADDRESS,
   ENJIN_COIN_ADDRESS,
@@ -25,7 +26,6 @@ import {
   SHARED_STORE_FRONT_ADDRESS_MAINNET,
   SHARED_STORE_FRONT_ADDRESS_RINKEBY,
 } from "../constants";
-import { ERC1155 } from "../contracts";
 import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
 import {
   Asset,
@@ -558,48 +558,6 @@ export function makeBigNumber(arg: BigNumberInput): BigNumber {
   // fix "new BigNumber() number type has more than 15 significant digits"
   arg = arg.toString();
   return new BigNumber(arg);
-}
-
-/**
- * Send a transaction to the blockchain and optionally confirm it
- * @param web3 Web3 instance
- * @param param0 __namedParameters
- * @param from address sending transaction
- * @param to destination contract address
- * @param data data to send to contract
- * @param gasPrice gas price to use. If unspecified, uses web3 default (mean gas price)
- * @param value value in ETH to send with data. Defaults to 0
- * @param onError callback when user denies transaction
- */
-export async function sendRawTransaction(
-  web3: Web3,
-  { from, to, data, gasPrice, value = 0, gas }: TxData,
-  onError: (error: unknown) => void
-): Promise<string> {
-  if (gas == null) {
-    // This gas cannot be increased due to an ethjs error
-    gas = await estimateGas(web3, { from, to, data, value });
-  }
-
-  try {
-    const txHashRes = await promisify<string>((c) =>
-      web3.eth.sendTransaction(
-        {
-          from,
-          to,
-          value: value.toString(),
-          data,
-          gas: gas?.toString(),
-          gasPrice: gasPrice?.toString(),
-        },
-        c
-      )
-    );
-    return txHashRes;
-  } catch (error) {
-    onError(error);
-    throw error;
-  }
 }
 
 /**
