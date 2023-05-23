@@ -1,6 +1,5 @@
 import {
   AbiType,
-  AnnotatedFunctionABI,
   FunctionInputKind,
   FunctionOutputKind,
   StateMutability,
@@ -14,5 +13,3 @@ export enum EventInputKind {
 }
 
 export { AbiType, FunctionInputKind, FunctionOutputKind, StateMutability };
-
-export type { AnnotatedFunctionABI };

@@ -1,6 +1,5 @@
 import { tokens as goerliTokens } from "./goerli";
 import { tokens as mainTokens } from "./main";
-import { tokens as rinkebyTokens } from "./rinkeby";
 import { Network } from "../../types";
 
 interface Token {
@@ -21,13 +20,10 @@ export const getCanonicalWrappedEther = function (network: Network): Token {
       return tokens.main.canonicalWrappedEther;
     case Network.Goerli:
       return tokens.goerli.canonicalWrappedEther;
-    case Network.Rinkeby:
-      return tokens.rinkeby.canonicalWrappedEther;
   }
 };
 
 const tokens = {
   goerli: goerliTokens,
-  rinkeby: rinkebyTokens,
   main: mainTokens,
 };
