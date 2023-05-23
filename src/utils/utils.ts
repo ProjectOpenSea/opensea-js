@@ -5,6 +5,7 @@ import {
 import BigNumber from "bignumber.js";
 import { TxData } from "ethereum-types";
 import * as ethUtil from "ethereumjs-util";
+import { BigNumber as EthersBigNumber, FixedNumber } from "ethers";
 import * as _ from "lodash";
 import Web3 from "web3";
 import { AbstractProvider } from "web3-core/types";
@@ -845,20 +846,20 @@ export function getBundle(
   };
 }
 
-// Sourced from: https://github.com/ProjectOpenSea/wyvern-js/blob/master/src/wyvernProtocol.ts#L170
 export function toBaseUnitAmount(
-  amount: BigNumber,
+  amount: FixedNumber,
   decimals: number
 ): BigNumber {
-  const unit = new BigNumber(10).pow(decimals);
-  const baseUnitAmount = amount.times(unit);
-  const hasDecimals = baseUnitAmount.decimalPlaces() !== 0;
+  const unit = EthersBigNumber.from(10).pow(decimals);
+  const baseUnitAmount = amount.mulUnsafe(FixedNumber.from(unit));
+  console.log(baseUnitAmount);
+  const hasDecimals = baseUnitAmount !== baseUnitAmount.round(decimals);
   if (hasDecimals) {
     throw new Error(
       `Invalid unit amount: ${amount.toString()} - Too many decimal places`
     );
   }
-  return baseUnitAmount;
+  return new BigNumber(baseUnitAmount.toString());
 }
 
 /**
@@ -1013,30 +1014,4 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
     (address) => Web3.utils.toChecksumAddress(address)
   );
   return validProtocolAddresses.includes(checkSumAddress);
-};
-
-export const generateDefaultValue = (
-  type: string
-): number | string | boolean => {
-  switch (type) {
-    case "address":
-    case "bytes20":
-      /* Null address is sometimes checked in transfer calls. */
-      // But we need to use 0x000 because bitwise XOR won't work if there's a 0 in the actual address, since it will be replaced as 1 OR 0 = 1
-      return "0x0000000000000000000000000000000000000000";
-    case "bytes32":
-      return "0x0000000000000000000000000000000000000000000000000000000000000000";
-    case "bool":
-      return false;
-    case "int":
-    case "uint":
-    case "uint8":
-    case "uint16":
-    case "uint32":
-    case "uint64":
-    case "uint256":
-      return 0;
-    default:
-      throw new Error("Default value not yet implemented for type: " + type);
-  }
 };

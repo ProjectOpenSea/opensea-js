@@ -5,7 +5,8 @@ import {
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "bignumber.js";
-import { ethers, providers } from "ethers";
+import { FixedNumber, ethers, providers } from "ethers";
+import { parseEther } from "ethers/lib/utils";
 import { EventEmitter, EventSubscription } from "fbemitter";
 import * as _ from "lodash";
 import Web3 from "web3";
@@ -183,7 +184,7 @@ export class OpenSeaSDK {
   }) {
     const token = getCanonicalWrappedEther(this._networkName);
 
-    const amount = toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals);
+    const amount = parseEther(amountInEth.toString());
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount });
 
@@ -192,7 +193,7 @@ export class OpenSeaSDK {
       {
         from: accountAddress,
         to: token.address,
-        value: amount,
+        value: amount.toString(),
         data: encodeCall(getMethod(CanonicalWETH, "deposit"), []),
       },
       (error) => {
@@ -219,7 +220,7 @@ export class OpenSeaSDK {
   }) {
     const token = getCanonicalWrappedEther(this._networkName);
 
-    const amount = toBaseUnitAmount(makeBigNumber(amountInEth), token.decimals);
+    const amount = parseEther(amountInEth.toString());
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
 
@@ -1024,37 +1025,25 @@ export class OpenSeaSDK {
       );
     }
 
-    // Note: toBaseUnitAmount(makeBigNumber(startAmount), token.decimals)
-    // will fail if too many decimal places, so special-case ether
-    const basePrice = isEther
-      ? makeBigNumber(
-          this.web3.utils.toWei(startAmount.toString(), "ether")
-        ).integerValue()
-      : toBaseUnitAmount(startAmount, token.decimals);
+    const basePrice = toBaseUnitAmount(
+      FixedNumber.from(startAmount.toString()),
+      token.decimals
+    );
 
     const endPrice = endAmount
-      ? isEther
-        ? makeBigNumber(
-            this.web3.utils.toWei(endAmount.toString(), "ether")
-          ).integerValue()
-        : toBaseUnitAmount(endAmount, token.decimals)
+      ? toBaseUnitAmount(FixedNumber.from(endAmount.toString()), token.decimals)
       : undefined;
 
-    const extra = isEther
-      ? makeBigNumber(
-          this.web3.utils.toWei(priceDiff.toString(), "ether")
-        ).integerValue()
-      : toBaseUnitAmount(priceDiff, token.decimals);
+    const extra = toBaseUnitAmount(
+      FixedNumber.from(priceDiff.toString()),
+      token.decimals
+    );
 
     const reservePrice = englishAuctionReservePrice
-      ? isEther
-        ? makeBigNumber(
-            this.web3.utils.toWei(
-              englishAuctionReservePrice.toString(),
-              "ether"
-            )
-          ).integerValue()
-        : toBaseUnitAmount(englishAuctionReservePrice, token.decimals)
+      ? toBaseUnitAmount(
+          FixedNumber.from(englishAuctionReservePrice.toString()),
+          token.decimals
+        )
       : undefined;
 
     return { basePrice, extra, paymentToken, reservePrice, endPrice };
