@@ -20,13 +20,16 @@ Optional:
 ```
 OFFER_AMOUNT = "" # Defaults to 0.004
 LISTING_AMOUNT = "" # Defaults to 40
+```
+
+#### WETH Tests
+
+This test requires ETH and transaction fee to be in your wallet. For this reason, this test is skipped during normal integration
+test runs. If you would like to run this test, you need to add `ETH_TO_WRAP = ""` to your `.env` file. If the environment variable
+is set, only the eth wrap/unwrap test will be run
 
 ### How to run:
 
 ```
-
 npm run integration_tests
-
-```
-
 ```

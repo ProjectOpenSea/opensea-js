@@ -1,4 +1,3 @@
-import * as ethABI from "ethereumjs-abi";
 import { goerliSchemas } from "./goerli/index";
 import { mainSchemas } from "./main/index";
 import { EventInputKind } from "./types";
@@ -98,20 +97,6 @@ export interface Schema<T> {
   hash: (obj: T) => any;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
-
-export const encodeCall = (
-  abi: AnnotatedFunctionABI,
-  parameters: unknown[]
-): string => {
-  const inputTypes = abi.inputs.map((i) => i.type);
-  return (
-    "0x" +
-    Buffer.concat([
-      ethABI.methodID(abi.name, inputTypes),
-      ethABI.rawEncode(inputTypes, parameters),
-    ]).toString("hex")
-  );
-};
 
 export type DefaultCallEncoder = (
   abi: AnnotatedFunctionABI,

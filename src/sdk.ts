@@ -5,10 +5,9 @@ import {
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "bignumber.js";
-import { FixedNumber, ethers, providers } from "ethers";
+import { Contract, FixedNumber, Wallet, ethers, providers } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { EventEmitter, EventSubscription } from "fbemitter";
-import * as _ from "lodash";
 import Web3 from "web3";
 import { OpenSeaAPI } from "./api";
 import {
@@ -21,7 +20,6 @@ import {
   RPC_URL_PATH,
   WETH_ADDRESS_BY_NETWORK,
 } from "./constants";
-import { getMethod, CanonicalWETH } from "./contracts";
 import {
   constructPrivateListingCounterOrder,
   getPrivateListingConsiderations,
@@ -42,14 +40,13 @@ import {
   AssetType,
   TokenStandard,
 } from "./types";
-import { encodeCall, schemas, Schema } from "./utils/schemas/schema";
+import { schemas, Schema } from "./utils/schemas/schema";
 import { getCanonicalWrappedEther } from "./utils/tokens";
 import {
   confirmTransaction,
   delay,
   getAssetType,
   makeBigNumber,
-  sendRawTransaction,
   getMaxOrderExpirationTimestamp,
   hasErrorCode,
   getAssetItemType,
@@ -75,6 +72,7 @@ export class OpenSeaSDK {
 
   private _networkName: Network;
   private _emitter: EventEmitter;
+  private providerOrSigner: providers.Web3Provider | Wallet;
 
   /**
    * Your very own seaport.
@@ -115,9 +113,9 @@ export class OpenSeaSDK {
       provider as providers.ExternalProvider
     );
 
-    const providerOrSinger = wallet ? wallet : this.ethersProvider;
+    this.providerOrSigner = wallet ? wallet : this.ethersProvider;
 
-    this.seaport_v1_5 = new Seaport(providerOrSinger, {
+    this.seaport_v1_5 = new Seaport(this.providerOrSigner, {
       conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
       overrides: {
         defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
@@ -184,24 +182,28 @@ export class OpenSeaSDK {
   }) {
     const token = getCanonicalWrappedEther(this._networkName);
 
-    const amount = parseEther(amountInEth.toString());
+    const value = parseEther(amountInEth.toString());
 
-    this._dispatch(EventType.WrapEth, { accountAddress, amount });
+    this._dispatch(EventType.WrapEth, { accountAddress, amount: value });
 
-    const txHash = await sendRawTransaction(
-      this.web3,
-      {
-        from: accountAddress,
-        to: token.address,
-        value: amount.toString(),
-        data: encodeCall(getMethod(CanonicalWETH, "deposit"), []),
-      },
-      (error) => {
-        this._dispatch(EventType.TransactionDenied, { error, accountAddress });
-      }
+    const wethContract = new Contract(
+      token.address,
+      ["function deposit() payable"],
+      this.providerOrSigner
     );
 
-    await this._confirmTransaction(txHash, EventType.WrapEth, "Wrapping ETH");
+    wethContract.connect(this.ethersProvider);
+    try {
+      const transaction = await wethContract.deposit({ value });
+      await this._confirmTransaction(
+        transaction.hash,
+        EventType.WrapEth,
+        "Wrapping ETH"
+      );
+    } catch (error) {
+      console.error(error);
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress });
+    }
   }
 
   /**
@@ -224,26 +226,24 @@ export class OpenSeaSDK {
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
 
-    const txHash = await sendRawTransaction(
-      this.web3,
-      {
-        from: accountAddress,
-        to: token.address,
-        value: 0,
-        data: encodeCall(getMethod(CanonicalWETH, "withdraw"), [
-          amount.toString(),
-        ]),
-      },
-      (error) => {
-        this._dispatch(EventType.TransactionDenied, { error, accountAddress });
-      }
+    const wethContract = new Contract(
+      token.address,
+      ["function withdraw(uint wad) public"],
+      this.providerOrSigner
     );
 
-    await this._confirmTransaction(
-      txHash,
-      EventType.UnwrapWeth,
-      "Unwrapping W-ETH"
-    );
+    wethContract.connect(this.ethersProvider);
+    try {
+      const transaction = await wethContract.withdraw(amount);
+      await this._confirmTransaction(
+        transaction.hash,
+        EventType.UnwrapWeth,
+        "Unwrapping W-ETH"
+      );
+    } catch (error) {
+      console.error(error);
+      this._dispatch(EventType.TransactionDenied, { error, accountAddress });
+    }
   }
 
   private getAmountWithBasisPointsApplied = (
