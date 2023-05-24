@@ -4,8 +4,8 @@ import {
 } from "@opensea/seaport-js/lib/constants";
 import BigNumber from "bignumber.js";
 import { TxData } from "ethereum-types";
-import * as ethUtil from "ethereumjs-util";
 import { BigNumber as EthersBigNumber, FixedNumber } from "ethers";
+import { splitSignature } from "ethers/lib/utils";
 import * as _ from "lodash";
 import Web3 from "web3";
 import { AbstractProvider } from "web3-core/types";
@@ -474,7 +474,7 @@ export async function personalSignAsync(
     throw new Error(error);
   }
 
-  return parseSignatureHex(signature?.result);
+  return splitSignature(signature?.result);
 }
 
 /**
@@ -527,7 +527,7 @@ export async function signTypedDataAsync(
     throw new Error(error);
   }
 
-  return parseSignatureHex(signature?.result);
+  return splitSignature(signature?.result);
 }
 
 /**
@@ -626,56 +626,6 @@ export async function getTransferFeeSettings(
     }
   }
   return { transferFee, transferFeeTokenAddress };
-}
-
-// sourced from 0x.js:
-// https://github.com/ProjectWyvern/wyvern-js/blob/39999cb93ce5d80ea90b4382182d1bd4339a9c6c/src/utils/signature_utils.ts
-function parseSignatureHex(signature: string): ECSignature {
-  // HACK: There is no consensus on whether the signatureHex string should be formatted as
-  // v + r + s OR r + s + v, and different clients (even different versions of the same client)
-  // return the signature params in different orders. In order to support all client implementations,
-  // we parse the signature in both ways, and evaluate if either one is a valid signature.
-  const validVParamValues = [27, 28];
-
-  const ecSignatureRSV = _parseSignatureHexAsRSV(signature);
-  if (_.includes(validVParamValues, ecSignatureRSV.v)) {
-    return ecSignatureRSV;
-  }
-
-  // For older clients
-  const ecSignatureVRS = _parseSignatureHexAsVRS(signature);
-  if (_.includes(validVParamValues, ecSignatureVRS.v)) {
-    return ecSignatureVRS;
-  }
-
-  throw new Error("Invalid signature");
-
-  function _parseSignatureHexAsVRS(signatureHex: string) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const signatureBuffer: any = ethUtil.toBuffer(signatureHex);
-    let v = signatureBuffer[0];
-    if (v < 27) {
-      v += 27;
-    }
-    const r = signatureBuffer.slice(1, 33);
-    const s = signatureBuffer.slice(33, 65);
-    const ecSignature = {
-      v,
-      r: ethUtil.bufferToHex(r),
-      s: ethUtil.bufferToHex(s),
-    };
-    return ecSignature;
-  }
-
-  function _parseSignatureHexAsRSV(signatureHex: string) {
-    const { v, r, s } = ethUtil.fromRpcSig(signatureHex);
-    const ecSignature = {
-      v,
-      r: ethUtil.bufferToHex(r),
-      s: ethUtil.bufferToHex(s),
-    };
-    return ecSignature;
-  }
 }
 
 /**

@@ -1,5 +1,4 @@
-import { sha3 } from "ethereumjs-util";
-import { namehash } from "ethers/lib/utils";
+import { keccak256, namehash } from "ethers/lib/utils";
 import { Schema } from "./schema";
 
 export interface ENSName {
@@ -10,11 +9,7 @@ export interface ENSName {
 
 export const nodehash = (name: string) => {
   const label = name.split(".")[0];
-  if (label) {
-    return "0x" + sha3(label).toString("hex");
-  } else {
-    return "";
-  }
+  return label ? keccak256(label) : "";
 };
 
 export const ENSNameBaseSchema: Required<
