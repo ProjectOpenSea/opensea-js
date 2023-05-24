@@ -15,5 +15,6 @@ suite("SDK: getCollection", () => {
       collection.safelistRequestStatus === SafelistStatus.VERIFIED,
       "Collection should be verified."
     );
+    assert(collection.stats, "Collection stats should not be null");
   });
 });
