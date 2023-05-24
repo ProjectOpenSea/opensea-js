@@ -94,7 +94,6 @@ export interface OpenSeaAPIConfig {
 export enum Network {
   Main = "main",
   Goerli = "goerli",
-  Rinkeby = "rinkeby",
 }
 
 /**

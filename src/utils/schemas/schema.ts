@@ -1,6 +1,5 @@
 import { goerliSchemas } from "./goerli/index";
 import { mainSchemas } from "./main/index";
-import { rinkebySchemas } from "./rinkeby/index";
 import { EventInputKind } from "./types";
 import { AbiType, AnnotatedFunctionABI } from "../../types";
 
@@ -106,6 +105,5 @@ export type DefaultCallEncoder = (
 
 export const schemas = {
   goerli: goerliSchemas,
-  rinkeby: rinkebySchemas,
   main: mainSchemas,
 };
