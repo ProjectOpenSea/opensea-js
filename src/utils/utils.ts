@@ -810,7 +810,6 @@ export function toBaseUnitAmount(
 ): BigNumber {
   const unit = EthersBigNumber.from(10).pow(decimals);
   const baseUnitAmount = amount.mulUnsafe(FixedNumber.from(unit));
-  console.log(baseUnitAmount);
   const hasDecimals = baseUnitAmount !== baseUnitAmount.round(decimals);
   if (hasDecimals) {
     throw new Error(
