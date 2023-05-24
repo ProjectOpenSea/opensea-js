@@ -9,11 +9,7 @@ export interface ENSName {
 
 export const nodehash = (name: string) => {
   const label = name.split(".")[0];
-  if (label) {
-    return keccak256(label);
-  } else {
-    return "";
-  }
+  return label ? keccak256(label) : "";
 };
 
 export const ENSNameBaseSchema: Required<
