@@ -3,7 +3,7 @@ name: code-quality
 on:
   push:
     branches:
-      - main 
+      - main
   pull_request:
 env:
   CI: true
