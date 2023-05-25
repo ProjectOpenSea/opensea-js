@@ -3,7 +3,7 @@ name: Cancel Workflows
 on:
   push:
     branches-ignore:
-      - master
+      - main 
 
 jobs:
   cancel:
