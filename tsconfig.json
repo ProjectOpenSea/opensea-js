@@ -2,9 +2,8 @@
   "include": ["./src/**/*", "./node_modules/types-bn/index.d.ts"],
   "compilerOptions": {
     "outDir": "lib",
-    "target": "es5",
+    "target": "es6",
     "lib": ["dom", "esnext"],
-    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
@@ -18,7 +17,6 @@
     "sourceMap": true,
     "strict": true,
     "declaration": true,
-    "esModuleInterop": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "resolveJsonModule": true,
