@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "JavaScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data!",
   "license": "MIT",
   "author": "OpenSea Developers",
@@ -14,7 +14,8 @@
   },
   "main": "lib/index.js",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "scripts": {
     "abi-type-gen": "yarn run typechain --target=web3-v1 src/abi/*.json --out-dir=src/typechain/contracts",
