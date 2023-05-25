@@ -8,7 +8,7 @@ import {
   testnetApi,
 } from "../constants";
 
-suite("api", () => {
+suite("API", () => {
   test("API has correct base url", () => {
     assert.equal(mainApi.apiBaseUrl, "https://api.opensea.io");
     assert.equal(testnetApi.apiBaseUrl, "https://testnets-api.opensea.io");

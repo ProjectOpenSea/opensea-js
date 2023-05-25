@@ -76,16 +76,16 @@ export class OpenSeaAPI {
 
     switch (config.networkName) {
       case Network.Goerli:
-        this.apiBaseUrl = config.apiBaseUrl || API_BASE_TESTNET;
+        this.apiBaseUrl = config.apiBaseUrl ?? API_BASE_TESTNET;
         break;
       case Network.Main:
       default:
-        this.apiBaseUrl = config.apiBaseUrl || API_BASE_MAINNET;
+        this.apiBaseUrl = config.apiBaseUrl ?? API_BASE_MAINNET;
         break;
     }
 
     // Debugging: default to nothing
-    this.logger = logger || ((arg: string) => arg);
+    this.logger = logger ?? ((arg: string) => arg);
   }
 
   /**
@@ -228,8 +228,6 @@ export class OpenSeaAPI {
     retries = 0
   ): Promise<PostOfferResponse | null> {
     const payload = getPostCollectionOfferPayload(slug, order);
-    console.log("Post Order Payload");
-    console.log(JSON.stringify(payload, null, 4));
     try {
       return await this.post<PostOfferResponse>(
         getPostCollectionOfferPath(),
@@ -261,7 +259,7 @@ export class OpenSeaAPI {
     let json;
     try {
       json = await this.get(
-        `${API_PATH}/asset/${tokenAddress}/${tokenId || 0}/`
+        `${API_PATH}/asset/${tokenAddress}/${tokenId ?? 0}/`
       );
     } catch (error) {
       _throwOrContinue(error, retries);
@@ -386,7 +384,6 @@ export class OpenSeaAPI {
   public async get<T>(apiPath: string, query: object = {}): Promise<T> {
     const qs = this.objectToSearchParams(query);
     const url = `${apiPath}?${qs}`;
-    console.log(url);
 
     const response = await this._fetch(url);
     return response.json();
@@ -446,7 +443,7 @@ export class OpenSeaAPI {
       headers: {
         ...(apiKey ? { "X-API-KEY": apiKey } : {}),
         "x-app-id": "opensea-js",
-        ...(opts.headers || {}),
+        ...(opts.headers ?? {}),
       },
     };
 

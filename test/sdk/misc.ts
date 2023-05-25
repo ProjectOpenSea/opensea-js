@@ -1,17 +1,19 @@
 import { assert } from "chai";
+import { ethers } from "ethers";
 import { suite, test } from "mocha";
-import Web3 from "web3";
 import {
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS,
   SHARED_STORE_FRONT_ADDRESS_MAINNET,
   SHARED_STORE_FRONT_ADDRESS_GOERLI,
-} from "../../constants";
-import { OpenSeaSDK } from "../../index";
-import { Network } from "../../types";
-import { getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress } from "../../utils/utils";
-import { DAPPER_ADDRESS, MAINNET_API_KEY } from "../constants";
+} from "../../src/constants";
+import { OpenSeaSDK } from "../../src/index";
+import { Network } from "../../src/types";
+import { getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress } from "../../src/utils/utils";
+import { ALCHEMY_API_KEY, DAPPER_ADDRESS, MAINNET_API_KEY } from "../constants";
 
-const provider = new Web3.providers.HttpProvider("https://mainnet.infura.io");
+const provider = new ethers.providers.JsonRpcProvider(
+  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+);
 
 const client = new OpenSeaSDK(
   provider,

@@ -4,20 +4,24 @@ import {
   CreateInputItem,
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
-import { BigNumber } from "bignumber.js";
-import { Contract, FixedNumber, Wallet, ethers, providers } from "ethers";
+import {
+  BigNumber,
+  BigNumberish,
+  Contract,
+  FixedNumber,
+  Wallet,
+  ethers,
+  providers,
+} from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { EventEmitter, EventSubscription } from "fbemitter";
-import Web3 from "web3";
 import { OpenSeaAPI } from "./api";
 import {
   CONDUIT_KEYS_TO_CONDUIT,
   INVERSE_BASIS_POINT,
   NULL_ADDRESS,
-  NULL_BLOCK_HASH,
   CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
   DEFAULT_ZONE_BY_NETWORK,
-  RPC_URL_PATH,
   WETH_ADDRESS_BY_NETWORK,
 } from "./constants";
 import {
@@ -28,6 +32,11 @@ import {
 import { OrderV2, PostOfferResponse } from "./orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "./orders/utils";
 import {
+  ERC1155__factory,
+  ERC20__factory,
+  ERC721__factory,
+} from "./typechain/contracts";
+import {
   Asset,
   ComputedFees,
   EventData,
@@ -37,20 +46,14 @@ import {
   OpenSeaAsset,
   OpenSeaCollection,
   OrderSide,
-  AssetType,
   TokenStandard,
 } from "./types";
-import { schemas, Schema } from "./utils/schemas/schema";
 import { getCanonicalWrappedEther } from "./utils/tokens";
 import {
-  confirmTransaction,
   delay,
-  getAssetType,
-  makeBigNumber,
   getMaxOrderExpirationTimestamp,
   hasErrorCode,
   getAssetItemType,
-  BigNumberInput,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
   feesToBasisPoints,
   isValidProtocol,
@@ -58,11 +61,8 @@ import {
 } from "./utils/utils";
 
 export class OpenSeaSDK {
-  // Web3 instance to use
-  public web3: Web3;
-  public web3ReadOnly: Web3;
-  // Ethers provider
-  public ethersProvider: providers.Web3Provider;
+  // Provider
+  public provider: providers.Provider;
   // Seaport v1.5 client
   public seaport_v1_5: Seaport;
   // Logger function to use when debugging
@@ -72,62 +72,48 @@ export class OpenSeaSDK {
 
   private _networkName: Network;
   private _emitter: EventEmitter;
-  private providerOrSigner: providers.Web3Provider | Wallet;
+  private signerOrProvider: Wallet | providers.Provider;
 
   /**
    * Your very own seaport.
    * Create a new instance of OpenSeaJS.
-   * @param provider Web3 Provider to use for transactions. For example:
-   *  `const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')`
+   * @param provider Provider to use for transactions. For example:
+   *  `const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')`
    * @param apiConfig configuration options, including `networkName`
    * @param logger logger, optional, a function that will be called with debugging
    * @param wallet optional, if you'd like to use an ethers wallet for order posting
    *  information
    */
   constructor(
-    provider: Web3["currentProvider"],
+    provider: providers.Provider,
     apiConfig: OpenSeaAPIConfig = {},
     logger?: (arg: string) => void,
-    wallet?: ethers.Wallet
+    wallet?: Wallet
   ) {
     // API config
-    apiConfig.networkName = apiConfig.networkName || Network.Main;
+    apiConfig.networkName = apiConfig.networkName ?? Network.Main;
     this.api = new OpenSeaAPI(apiConfig);
-
     this._networkName = apiConfig.networkName;
 
-    const readonlyProvider = new Web3.providers.HttpProvider(
-      `${this.api.apiBaseUrl}/${RPC_URL_PATH}`
+    this.provider = provider;
+    this.signerOrProvider = wallet ?? this.provider;
+
+    this.seaport_v1_5 = new Seaport(
+      this.signerOrProvider as providers.JsonRpcProvider,
+      {
+        conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
+        overrides: {
+          defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
+        },
+        seaportVersion: "1.5",
+      }
     );
-
-    const useReadOnlyProvider = apiConfig.useReadOnlyProvider ?? true;
-
-    // Web3 Config
-    this.web3 = new Web3(provider);
-    this.web3ReadOnly = useReadOnlyProvider
-      ? new Web3(readonlyProvider)
-      : this.web3;
-
-    // Ethers Config
-    this.ethersProvider = new providers.Web3Provider(
-      provider as providers.ExternalProvider
-    );
-
-    this.providerOrSigner = wallet ? wallet : this.ethersProvider;
-
-    this.seaport_v1_5 = new Seaport(this.providerOrSigner, {
-      conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
-      overrides: {
-        defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
-      },
-      seaportVersion: "1.5",
-    });
 
     // Emit events
     this._emitter = new EventEmitter();
 
     // Debugging: default to nothing
-    this.logger = logger || ((arg: string) => arg);
+    this.logger = logger ?? ((arg: string) => arg);
   }
 
   /**
@@ -189,10 +175,10 @@ export class OpenSeaSDK {
     const wethContract = new Contract(
       token.address,
       ["function deposit() payable"],
-      this.providerOrSigner
+      this.signerOrProvider
     );
 
-    wethContract.connect(this.ethersProvider);
+    wethContract.connect(this.provider);
     try {
       const transaction = await wethContract.deposit({ value });
       await this._confirmTransaction(
@@ -229,10 +215,10 @@ export class OpenSeaSDK {
     const wethContract = new Contract(
       token.address,
       ["function withdraw(uint wad) public"],
-      this.providerOrSigner
+      this.signerOrProvider
     );
 
-    wethContract.connect(this.ethersProvider);
+    wethContract.connect(this.provider);
     try {
       const transaction = await wethContract.withdraw(amount);
       await this._confirmTransaction(
@@ -250,10 +236,7 @@ export class OpenSeaSDK {
     amount: BigNumber,
     basisPoints: number
   ) => {
-    return amount
-      .multipliedBy(basisPoints)
-      .dividedBy(INVERSE_BASIS_POINT)
-      .toString();
+    return amount.mul(basisPoints).div(INVERSE_BASIS_POINT).toString();
   };
 
   private async getFees({
@@ -321,11 +304,10 @@ export class OpenSeaSDK {
 
   private getAssetItems(
     assets: Asset[],
-    quantities: BigNumber[] = [],
-    fallbackSchema?: TokenStandard
+    quantities: BigNumber[] = []
   ): CreateInputItem[] {
     return assets.map((asset, index) => ({
-      itemType: getAssetItemType(this._getSchemaName(asset) ?? fallbackSchema),
+      itemType: getAssetItemType(asset.tokenStandard),
       token:
         getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
           asset.tokenAddress
@@ -359,11 +341,11 @@ export class OpenSeaSDK {
   }: {
     asset: Asset;
     accountAddress: string;
-    startAmount: BigNumberInput;
-    quantity?: BigNumberInput;
+    startAmount: BigNumberish;
+    quantity?: BigNumberish;
     domain?: string;
     salt?: string;
-    expirationTime?: BigNumberInput;
+    expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
   }): Promise<OrderV2> {
     if (!asset.tokenId) {
@@ -375,14 +357,14 @@ export class OpenSeaSDK {
     const openseaAsset = await this.api.getAsset(asset);
     const considerationAssetItems = this.getAssetItems(
       [openseaAsset],
-      [makeBigNumber(quantity)]
+      [BigNumber.from(quantity)]
     );
 
     const { basePrice } = await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
-      makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
-      makeBigNumber(startAmount)
+      BigNumber.from(expirationTime ?? getMaxOrderExpirationTimestamp()),
+      BigNumber.from(startAmount)
     );
 
     const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
@@ -455,13 +437,13 @@ export class OpenSeaSDK {
   }: {
     asset: Asset;
     accountAddress: string;
-    startAmount: BigNumberInput;
-    endAmount?: BigNumberInput;
-    quantity?: BigNumberInput;
+    startAmount: BigNumberish;
+    endAmount?: BigNumberish;
+    quantity?: BigNumberish;
     domain?: string;
     salt?: string;
     listingTime?: string;
-    expirationTime?: BigNumberInput;
+    expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
     buyerAddress?: string;
   }): Promise<OrderV2> {
@@ -472,15 +454,15 @@ export class OpenSeaSDK {
     const openseaAsset = await this.api.getAsset(asset);
     const offerAssetItems = this.getAssetItems(
       [openseaAsset],
-      [makeBigNumber(quantity)]
+      [BigNumber.from(quantity)]
     );
 
     const { basePrice, endPrice } = await this._getPriceParameters(
       OrderSide.Sell,
       paymentTokenAddress,
-      makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
-      makeBigNumber(startAmount),
-      endAmount !== undefined ? makeBigNumber(endAmount) : undefined
+      BigNumber.from(expirationTime ?? getMaxOrderExpirationTimestamp()),
+      BigNumber.from(startAmount),
+      endAmount !== undefined ? BigNumber.from(endAmount) : undefined
     );
 
     const {
@@ -549,7 +531,7 @@ export class OpenSeaSDK {
     quantity: number;
     domain?: string;
     salt?: string;
-    expirationTime?: BigNumberInput;
+    expirationTime?: BigNumberish;
     paymentTokenAddress: string;
   }): Promise<PostOfferResponse | null> {
     const collection = await this.api.getCollection(collectionSlug);
@@ -569,8 +551,8 @@ export class OpenSeaSDK {
     const { basePrice } = await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
-      makeBigNumber(expirationTime ?? getMaxOrderExpirationTimestamp()),
-      makeBigNumber(amount)
+      BigNumber.from(expirationTime ?? getMaxOrderExpirationTimestamp()),
+      BigNumber.from(amount)
     );
     const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
       await this.getFees({
@@ -821,7 +803,6 @@ export class OpenSeaSDK {
 
   /**
    * Get an account's balance of any Asset.
-   * @param param0 __namedParameters Object
    * @param accountAddress Account address to check
    * @param asset The Asset to check balance for
    * @param retries How many times to retry if balance is 0
@@ -830,48 +811,38 @@ export class OpenSeaSDK {
     { accountAddress, asset }: { accountAddress: string; asset: Asset },
     retries = 1
   ): Promise<BigNumber> {
-    const schema = this._getSchema(this._getSchemaName(asset));
-    const wyAsset = getAssetType(schema, asset);
+    if (
+      asset.tokenStandard == TokenStandard.ERC20 ||
+      asset.tokenStandard == TokenStandard.ERC1155
+    ) {
+      const contract = new ethers.Contract(
+        asset.tokenAddress,
+        asset.tokenStandard == TokenStandard.ERC20
+          ? ERC20__factory.createInterface()
+          : ERC1155__factory.createInterface(),
+        this.provider
+      );
 
-    if (schema.functions.countOf) {
-      // ERC20 or ERC1155 (non-Enjin)
-
-      const abi = schema.functions.countOf(wyAsset);
-      const contract = new (this._getClientsForRead({
-        retries,
-      }).web3.eth.Contract)([abi], abi.target);
-      const inputValues = abi.inputs
-        .filter((x) => x.value !== undefined)
-        .map((x) => x.value);
-
-      const count = await contract.methods[abi.name](
-        accountAddress,
-        ...inputValues
-      ).call();
+      const count = await contract.methods
+        .balanceOf(accountAddress, asset.tokenId ?? undefined)
+        .call();
 
       if (count !== undefined) {
-        return new BigNumber(count);
+        return BigNumber.from(count);
       }
-    } else if (schema.functions.ownerOf) {
-      // ERC721 asset
+    } else if (asset.tokenStandard == TokenStandard.ERC721) {
+      const contract = new ethers.Contract(
+        asset.tokenAddress,
+        ERC721__factory.createInterface(),
+        this.provider
+      );
 
-      const abi = schema.functions.ownerOf(wyAsset);
-      const contract = new (this._getClientsForRead({
-        retries,
-      }).web3.eth.Contract)([abi], abi.target);
-
-      if (abi.inputs.filter((x) => x.value === undefined)[0]) {
-        throw new Error(
-          "Missing an argument for finding the owner of this asset"
-        );
-      }
-      const inputValues = abi.inputs.map((i) => i.value.toString());
       try {
-        const owner = await contract.methods[abi.name](...inputValues).call();
+        const owner = await contract.methods.ownerOf(asset.tokenId).call();
         if (owner) {
           return owner.toLowerCase() == accountAddress.toLowerCase()
-            ? new BigNumber(1)
-            : new BigNumber(0);
+            ? BigNumber.from(1)
+            : BigNumber.from(0);
         }
         // eslint-disable-next-line no-empty
       } catch {}
@@ -975,7 +946,7 @@ export class OpenSeaSDK {
     englishAuctionReservePrice?: BigNumber
   ) {
     const priceDiff =
-      endAmount != null ? startAmount.minus(endAmount) : new BigNumber(0);
+      endAmount != null ? startAmount.sub(endAmount) : BigNumber.from(0);
     const paymentToken = tokenAddress.toLowerCase();
     const isEther = tokenAddress == NULL_ADDRESS;
     const { tokens } = await this.api.getPaymentTokens({
@@ -984,7 +955,7 @@ export class OpenSeaSDK {
     const token = tokens[0];
 
     // Validation
-    if (startAmount.isNaN() || startAmount == null || startAmount.lt(0)) {
+    if (startAmount == null || startAmount.lt(0)) {
       throw new Error(`Starting price must be a number >= 0`);
     }
     if (!isEther && !token) {
@@ -1049,86 +1020,21 @@ export class OpenSeaSDK {
     return { basePrice, extra, paymentToken, reservePrice, endPrice };
   }
 
-  private _getSchemaName(asset: Asset | OpenSeaAsset) {
-    if (asset.tokenStandard) {
-      return asset.tokenStandard;
-    } else if ("assetContract" in asset) {
-      return asset.assetContract.tokenStandard;
-    }
-
-    return undefined;
-  }
-
-  private _getSchema(tokenStandard?: TokenStandard): Schema<AssetType> {
-    const tokenStandard_ = tokenStandard || TokenStandard.ERC721;
-
-    const schema = schemas[this._networkName].filter(
-      (s) => s.name == tokenStandard_
-    )[0];
-
-    if (!schema) {
-      throw new Error(
-        `Trading for this asset (${tokenStandard_}) is not yet supported. Please contact us or check back later!`
-      );
-    }
-    return schema;
-  }
-
   private _dispatch(event: EventType, data: EventData) {
     this._emitter.emit(event, data);
-  }
-
-  /**
-   * Get the clients to use for a read call
-   * @param retries current retry value
-   */
-  private _getClientsForRead({ retries }: { retries: number }): {
-    web3: Web3;
-  } {
-    if (retries > 0) {
-      // Use injected provider by default
-      return {
-        web3: this.web3,
-      };
-    } else {
-      // Use provided provider as fallback
-      return {
-        web3: this.web3ReadOnly,
-      };
-    }
   }
 
   private async _confirmTransaction(
     transactionHash: string,
     event: EventType,
-    description: string,
-    testForSuccess?: () => Promise<boolean>
+    description: string
   ): Promise<void> {
     const transactionEventData = { transactionHash, event };
     this.logger(`Transaction started: ${description}`);
 
-    if (transactionHash == NULL_BLOCK_HASH) {
-      // This was a smart contract wallet that doesn't know the transaction
-      this._dispatch(EventType.TransactionCreated, { event });
-
-      if (!testForSuccess) {
-        // Wait if test not implemented
-        this.logger(`Unknown action, waiting 1 minute: ${description}`);
-        await delay(60 * 1000);
-        return;
-      }
-
-      return await this._pollCallbackForConfirmation(
-        event,
-        description,
-        testForSuccess
-      );
-    }
-
-    // Normal wallet
     try {
       this._dispatch(EventType.TransactionCreated, transactionEventData);
-      await confirmTransaction(this.web3, transactionHash);
+      await this.provider.waitForTransaction(transactionHash);
       this.logger(`Transaction succeeded: ${description}`);
       this._dispatch(EventType.TransactionConfirmed, transactionEventData);
     } catch (error) {
@@ -1139,38 +1045,5 @@ export class OpenSeaSDK {
       });
       throw error;
     }
-  }
-
-  private async _pollCallbackForConfirmation(
-    event: EventType,
-    description: string,
-    testForSuccess: () => Promise<boolean>
-  ): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const initialRetries = 60;
-
-      const testResolve: (r: number) => Promise<void> = async (retries) => {
-        const wasSuccessful = await testForSuccess();
-        if (wasSuccessful) {
-          this.logger(`Transaction succeeded: ${description}`);
-          this._dispatch(EventType.TransactionConfirmed, { event });
-          return resolve();
-        } else if (retries <= 0) {
-          return reject();
-        }
-
-        if (retries % 10 == 0) {
-          this.logger(
-            `Tested transaction ${
-              initialRetries - retries + 1
-            } times: ${description}`
-          );
-        }
-        await delay(5000);
-        return testResolve(retries - 1);
-      };
-
-      return testResolve(initialRetries);
-    });
   }
 }

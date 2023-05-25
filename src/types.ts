@@ -1,7 +1,5 @@
 /* eslint-disable import/no-unused-modules */
-import BigNumber from "bignumber.js";
-import { BigNumberish } from "ethers";
-import { AbiItem } from "web3-utils";
+import { BigNumber, BigNumberish } from "ethers";
 import type { OrderV2 } from "./orders/types";
 
 /**
@@ -9,7 +7,7 @@ import type { OrderV2 } from "./orders/types";
  * 1. Transaction events, which tell you when a new transaction was
  *    created, confirmed, denied, or failed.
  * 2. pre-transaction events, which are named (like "WrapEth") and indicate
- *    that Web3 is asking for a signature on a transaction that needs to occur before
+ *    that ethers is asking for a signature on a transaction that needs to occur before
  *    an order is made or fulfilled. This includes approval events and account
  *    initialization.
  * 3. Basic actions: matching, cancelling, and creating orders.
@@ -88,7 +86,6 @@ export interface OpenSeaAPIConfig {
   networkName?: Network;
   apiKey?: string;
   apiBaseUrl?: string;
-  useReadOnlyProvider?: boolean;
 }
 
 export enum Network {
@@ -133,36 +130,13 @@ export enum AssetContractType {
   Unknown = "unknown",
 }
 
-// Constract Schemas.
+/**
+ * Token standards
+ */
 export enum TokenStandard {
   ERC20 = "ERC20",
   ERC721 = "ERC721",
-  ERC721v3 = "ERC721v3",
   ERC1155 = "ERC1155",
-  LegacyEnjin = "Enjin",
-  ENSShortNameAuction = "ENSShortNameAuction",
-  // CryptoPunks = 'CryptoPunks'
-}
-
-/**
- * The NFT version that this contract uses.
- * ERC721 versions are:
- * 1.0: CryptoKitties and early 721s, which lack approve-all and
- *      have problems calling `transferFrom` from the owner's account.
- * 2.0: CryptoSaga and others that lack `transferFrom` and have
- *      `takeOwnership` instead
- * 3.0: The current OpenZeppelin standard:
- *      https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC721/ERC721.sol
- * Special cases:
- * locked: When the transfer function has been locked by the dev
- */
-export enum TokenStandardVersion {
-  Unsupported = "unsupported",
-  Locked = "locked",
-  Enjin = "1155-1.0",
-  ERC721v1 = "1.0",
-  ERC721v2 = "2.0",
-  ERC721v3 = "3.0",
 }
 
 /**
@@ -201,7 +175,7 @@ export type AssetType = NFTAsset | FungibleAsset;
 // Abstractions over assets for bundles
 export interface Bundle {
   assets: AssetType[];
-  schemas: TokenStandard[];
+  standards: TokenStandard[];
   name?: string;
   description?: string;
   external_link?: string;
@@ -238,8 +212,6 @@ export interface Asset {
   tokenAddress: string;
   // The token standard (e.g. "ERC721") for this asset
   tokenStandard?: TokenStandard;
-  // The token standard version of this asset
-  version?: TokenStandardVersion;
   // Optional for ENS names
   name?: string;
   // Optional for fungible items
@@ -810,65 +782,4 @@ export interface OpenSeaFungibleTokenQuery
 export interface OrderbookResponse {
   orders: OrderJSON[];
   count: number;
-}
-
-// Types related to Web3
-export type Web3Callback<T> = (err: Error | null, result: T) => void;
-export type TxnCallback = (result: boolean) => void;
-
-export type PartialReadonlyContractAbi = AbiItem[];
-
-// Types extracted from wyvern-js: https://github.com/ProjectOpenSea/wyvern-js#7429b1f2dd123f012cae1f3144a069e91ecd0682
-export interface AnnotatedFunctionABI {
-  type: AbiType;
-  name: string;
-  target: string;
-  inputs: AnnotatedFunctionInput[];
-  outputs: AnnotatedFunctionOutput[];
-  constant: boolean;
-  stateMutability: StateMutability;
-  payable: boolean;
-}
-
-export enum AbiType {
-  Function = "function",
-  Constructor = "constructor",
-  Event = "event",
-  Fallback = "fallback",
-}
-
-export interface AnnotatedFunctionInput {
-  name: string;
-  type: string;
-  kind: FunctionInputKind;
-  value?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-}
-
-export interface AnnotatedFunctionOutput {
-  name: string;
-  type: string;
-  kind: FunctionOutputKind;
-}
-
-export enum FunctionInputKind {
-  Replaceable = "replaceable",
-  Asset = "asset",
-  Owner = "owner",
-  Index = "index",
-  Count = "count",
-  Data = "data",
-}
-
-export enum FunctionOutputKind {
-  Owner = "owner",
-  Asset = "asset",
-  Count = "count",
-  Other = "other",
-}
-
-export enum StateMutability {
-  Pure = "pure",
-  View = "view",
-  Payable = "payable",
-  Nonpayable = "nonpayable",
 }

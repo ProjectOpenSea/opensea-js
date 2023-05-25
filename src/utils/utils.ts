@@ -2,36 +2,19 @@ import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
-import BigNumber from "bignumber.js";
 import { TxData } from "ethereum-types";
-import { BigNumber as EthersBigNumber, FixedNumber } from "ethers";
-import { splitSignature } from "ethers/lib/utils";
-import * as _ from "lodash";
-import Web3 from "web3";
-import { AbstractProvider } from "web3-core/types";
-import { JsonRpcResponse } from "web3-core-helpers/types";
-import { Contract } from "web3-eth-contract";
-import { Schema } from "./schemas/schema";
-import { ERC1155 } from "../abi/ERC1155";
+import { BigNumber, FixedNumber, ethers } from "ethers";
 import {
-  ENJIN_ADDRESS,
-  ENJIN_COIN_ADDRESS,
   INVERSE_BASIS_POINT,
   MAX_EXPIRATION_MONTHS,
   MERKLE_VALIDATOR_MAINNET,
   NULL_ADDRESS,
-  NULL_BLOCK_HASH,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS,
   SHARED_STORE_FRONT_ADDRESS_MAINNET,
   SHARED_STORE_FRONT_ADDRESS_GOERLI,
 } from "../constants";
-import { ERC1155Abi } from "../typechain/contracts/ERC1155Abi";
 import {
-  Asset,
   AssetEvent,
-  AssetType,
-  Bundle,
-  ECSignature,
   Network,
   OpenSeaAccount,
   OpenSeaAsset,
@@ -47,101 +30,8 @@ import {
   SaleKind,
   TokenStandard,
   Transaction,
-  TxnCallback,
   UnsignedOrder,
-  Web3Callback,
 } from "../types";
-
-// OTHER
-
-const txCallbacks: { [key: string]: TxnCallback[] } = {};
-
-/**
- * Promisify a callback-syntax web3 function
- * @param inner callback function that accepts a Web3 callback function and passes
- * it to the Web3 function
- */
-async function promisify<T>(inner: (fn: Web3Callback<T>) => void) {
-  return new Promise<T>((resolve, reject) =>
-    inner((err, res) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(res);
-    })
-  );
-}
-
-/**
- * Promisify a call a method on a contract,
- * handling Parity errors. Returns '0x' if error.
- * Note that if T is not "string", this may return a falsey
- * value when the contract doesn't support the method (e.g. `isApprovedForAll`).
- * @param callback An anonymous function that takes a web3 callback
- * and returns a Web3 Contract's call result, e.g. `c => erc721.ownerOf(3, c)`
- * @param onError callback when user denies transaction
- */
-export async function promisifyCall<T>(
-  callback: (fn: Web3Callback<T>) => T,
-  onError?: (error: unknown) => void
-): Promise<T | undefined> {
-  try {
-    const result = await promisify<T>(callback);
-    if (typeof result === "string" && result == "0x") {
-      // Geth compatibility
-      return undefined;
-    }
-    return result as T;
-  } catch (error) {
-    // Probably method not found, and web3 is a Parity node
-    if (onError) {
-      onError(error);
-    } else {
-      console.error(error);
-    }
-    return undefined;
-  }
-}
-
-const track = (web3: Web3, txHash: string, onFinalized: TxnCallback) => {
-  if (txCallbacks[txHash]) {
-    txCallbacks[txHash].push(onFinalized);
-  } else {
-    txCallbacks[txHash] = [onFinalized];
-    const poll = async () => {
-      const tx = await web3.eth.getTransaction(txHash);
-      if (tx && tx.blockHash && tx.blockHash !== NULL_BLOCK_HASH) {
-        const receipt = await web3.eth.getTransactionReceipt(txHash);
-        if (!receipt) {
-          // Hack: assume success if no receipt
-          console.warn("No receipt found for ", txHash);
-        }
-        const status = receipt.status;
-        txCallbacks[txHash].map((f) => f(status));
-        delete txCallbacks[txHash];
-      } else {
-        setTimeout(poll, 1000);
-      }
-    };
-    poll().catch();
-  }
-};
-
-export const confirmTransaction = async (web3: Web3, txHash: string) => {
-  return new Promise((resolve, reject) => {
-    track(web3, txHash, (didSucceed: boolean) => {
-      if (didSucceed) {
-        resolve("Transaction complete!");
-      } else {
-        reject(
-          new Error(
-            `Transaction failed :( You might have already completed this action. See more on the mainnet at etherscan.io/tx/${txHash}`
-          )
-        );
-      }
-    });
-  });
-};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const assetFromJSON = (asset: any): OpenSeaAsset => {
@@ -302,7 +192,7 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     featuredImageUrl: collection.featured_image_url,
     displayData: collection.display_data,
     safelistRequestStatus: collection.safelist_request_status,
-    paymentTokens: (collection.payment_tokens || []).map(tokenFromJSON),
+    paymentTokens: (collection.payment_tokens ?? []).map(tokenFromJSON),
     openseaBuyerFeeBasisPoints: +collection.opensea_buyer_fee_basis_points,
     openseaSellerFeeBasisPoints: +collection.opensea_seller_fee_basis_points,
     devBuyerFeeBasisPoints: +collection.dev_buyer_fee_basis_points,
@@ -315,8 +205,8 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     externalLink: collection.external_url,
     wikiLink: collection.wiki_url,
     fees: {
-      openseaFees: new Map(Object.entries(collection.fees.opensea_fees || {})),
-      sellerFees: new Map(Object.entries(collection.fees.seller_fees || {})),
+      openseaFees: new Map(Object.entries(collection.fees.opensea_fees ?? {})),
+      sellerFees: new Map(Object.entries(collection.fees.seller_fees ?? {})),
     },
   };
 };
@@ -338,25 +228,25 @@ export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const orderFromJSON = (order: any): Order => {
-  const createdDate = new Date(`${order.created_date}Z`);
+  const createdDate = new Date(`${order.created_date ?? 0}Z`);
 
   const fromJSON: Order = {
-    hash: order.order_hash || order.hash,
-    cancelledOrFinalized: order.cancelled || order.finalized,
+    hash: order.order_hash ?? order.hash,
+    cancelledOrFinalized: order.cancelled ?? order.finalized,
     markedInvalid: order.marked_invalid,
     metadata: order.metadata,
-    quantity: new BigNumber(order.quantity || 1),
+    quantity: BigNumber.from(order.quantity ?? 1),
     exchange: order.exchange,
     makerAccount: order.maker,
     takerAccount: order.taker,
     // Use string address to conform to the Order schema
     maker: order.maker.address,
     taker: order.taker.address,
-    makerRelayerFee: new BigNumber(order.maker_relayer_fee),
-    takerRelayerFee: new BigNumber(order.taker_relayer_fee),
-    makerProtocolFee: new BigNumber(order.maker_protocol_fee),
-    takerProtocolFee: new BigNumber(order.taker_protocol_fee),
-    makerReferrerFee: new BigNumber(order.maker_referrer_fee || 0),
+    makerRelayerFee: BigNumber.from(order.maker_relayer_fee ?? 0),
+    takerRelayerFee: BigNumber.from(order.taker_relayer_fee ?? 0),
+    makerProtocolFee: BigNumber.from(order.maker_protocol_fee ?? 0),
+    takerProtocolFee: BigNumber.from(order.taker_protocol_fee ?? 0),
+    makerReferrerFee: BigNumber.from(order.maker_referrer_fee ?? 0),
     waitingForBestCounterOrder: order.fee_recipient.address == NULL_ADDRESS,
     feeMethod: order.fee_method,
     feeRecipientAccount: order.fee_recipient,
@@ -370,16 +260,16 @@ export const orderFromJSON = (order: any): Order => {
     staticTarget: order.static_target,
     staticExtradata: order.static_extradata,
     paymentToken: order.payment_token,
-    basePrice: new BigNumber(order.base_price),
-    extra: new BigNumber(order.extra),
-    currentBounty: new BigNumber(order.current_bounty || 0),
-    currentPrice: new BigNumber(order.current_price || 0),
+    basePrice: BigNumber.from(order.base_price ?? 0),
+    extra: BigNumber.from(order.extra ?? 0),
+    currentBounty: BigNumber.from(order.current_bounty ?? 0),
+    currentPrice: BigNumber.from(order.current_price ?? 0),
 
-    createdTime: new BigNumber(Math.round(createdDate.getTime() / 1000)),
-    listingTime: new BigNumber(order.listing_time),
-    expirationTime: new BigNumber(order.expiration_time),
+    createdTime: BigNumber.from(Math.round(createdDate.getTime() / 1000)),
+    listingTime: BigNumber.from(order.listing_time ?? 0),
+    expirationTime: BigNumber.from(order.expiration_time ?? 0),
 
-    salt: new BigNumber(order.salt),
+    salt: BigNumber.from(order.salt ?? 0),
     v: parseInt(order.v),
     r: order.r,
     s: order.s,
@@ -447,188 +337,31 @@ export const orderToJSON = (order: Order): OrderJSON => {
 };
 
 /**
- * Sign messages using web3 personal signatures
- * @param web3 Web3 instance
- * @param message message to sign
- * @param signerAddress web3 address signing the message
- * @returns A signature if provider can sign, otherwise null
- */
-export async function personalSignAsync(
-  web3: Web3,
-  message: string,
-  signerAddress: string
-): Promise<ECSignature> {
-  const signature = await promisify<JsonRpcResponse | undefined>((c) =>
-    (web3.currentProvider as AbstractProvider).sendAsync(
-      {
-        method: "personal_sign",
-        params: [message, signerAddress],
-        from: signerAddress,
-        id: new Date().getTime(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-      c
-    )
-  );
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const error = (signature as any).error;
-  if (error) {
-    throw new Error(error);
-  }
-
-  return splitSignature(signature?.result);
-}
-
-/**
- * Sign messages using web3 signTypedData signatures
- * @param web3 Web3 instance
- * @param message message to sign
- * @param signerAddress web3 address signing the message
- * @returns A signature if provider can sign, otherwise null
- */
-export async function signTypedDataAsync(
-  web3: Web3,
-  message: object,
-  signerAddress: string
-): Promise<ECSignature> {
-  let signature: JsonRpcResponse | undefined;
-  try {
-    // Using sign typed data V4 works with a stringified message, used by browser providers i.e. Metamask
-    signature = await promisify<JsonRpcResponse | undefined>((c) =>
-      (web3.currentProvider as AbstractProvider).sendAsync(
-        {
-          method: "eth_signTypedData_v4",
-          params: [signerAddress, JSON.stringify(message)],
-          from: signerAddress,
-          id: new Date().getTime(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        c
-      )
-    );
-  } catch {
-    // Fallback to normal sign typed data for node providers, without using stringified message
-    // https://github.com/coinbase/coinbase-wallet-sdk/issues/60
-    signature = await promisify<JsonRpcResponse | undefined>((c) =>
-      (web3.currentProvider as AbstractProvider).sendAsync(
-        {
-          method: "eth_signTypedData",
-          params: [signerAddress, message],
-          from: signerAddress,
-          id: new Date().getTime(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        c
-      )
-    );
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const error = (signature as any).error;
-  if (error) {
-    throw new Error(error);
-  }
-
-  return splitSignature(signature?.result);
-}
-
-/**
- * Checks whether a given address contains any code
- * @param web3 Web3 instance
- * @param address input address
- */
-export async function isContractAddress(
-  web3: Web3,
-  address: string
-): Promise<boolean> {
-  const code = await web3.eth.getCode(address);
-  return code !== "0x";
-}
-
-export type BigNumberInput = number | string | BigNumber;
-
-/**
- * Special fixes for making BigNumbers using web3 results
- * @param arg An arg or the result of a web3 call to turn into a BigNumber
- */
-export function makeBigNumber(arg: BigNumberInput): BigNumber {
-  // Zero sometimes returned as 0x from contracts
-  if (arg === "0x") {
-    arg = 0;
-  }
-  // fix "new BigNumber() number type has more than 15 significant digits"
-  arg = arg.toString();
-  return new BigNumber(arg);
-}
-
-/**
- * Estimate Gas usage for a transaction
- * @param web3 Web3 instance
- * @param from address sending transaction
- * @param to destination contract address
- * @param data data to send to contract
- * @param value value in ETH to send with data
+ * Estimate gas usage for a transaction.
+ * @param provider The Provider
+ * @param from Address sending transaction
+ * @param to Destination contract address
+ * @param data Data to send to contract
+ * @param value Value in ETH to send with data
  */
 export async function estimateGas(
-  web3: Web3,
+  provider: ethers.providers.Provider,
   { from, to, data, value = 0 }: TxData
-): Promise<number> {
-  const amount = await web3.eth.estimateGas({
+) {
+  return await provider.estimateGas({
     from,
     to,
     value: value.toString(),
     data,
   });
-
-  return amount;
 }
 
 /**
- * Get mean gas price for sending a txn, in wei
- * @param web3 Web3 instance
+ * Get mean gas price for sending a txn, in wei.
+ * @param provider The provider
  */
-export async function getCurrentGasPrice(web3: Web3): Promise<BigNumber> {
-  const gasPrice = await web3.eth.getGasPrice();
-  return new BigNumber(gasPrice);
-}
-
-/**
- * Get current transfer fees for an asset
- * @param web3 Web3 instance
- * @param asset The asset to check for transfer fees
- */
-export async function getTransferFeeSettings(
-  web3: Web3,
-  {
-    asset,
-    accountAddress,
-  }: {
-    asset: Asset;
-    accountAddress?: string;
-  }
-) {
-  let transferFee: BigNumber | undefined;
-  let transferFeeTokenAddress: string | undefined;
-
-  if (asset.tokenAddress.toLowerCase() == ENJIN_ADDRESS.toLowerCase()) {
-    // Enjin asset
-    const feeContract = new web3.eth.Contract(
-      ERC1155,
-      asset.tokenAddress
-    ) as unknown as ERC1155Abi;
-
-    const params = await feeContract.methods
-      .transferSettings(asset.tokenId as string)
-      .call({ from: accountAddress });
-    if (params) {
-      transferFee = makeBigNumber(params[3]);
-      if (params[2] === "0") {
-        transferFeeTokenAddress = ENJIN_COIN_ADDRESS;
-      }
-    }
-  }
-  return { transferFee, transferFeeTokenAddress };
+export async function getCurrentGasPrice(provider: ethers.providers.Provider) {
+  return provider.getGasPrice();
 }
 
 /**
@@ -636,23 +369,18 @@ export async function getTransferFeeSettings(
  * @param order The order to estimate price on
  * @param secondsToBacktrack The number of seconds to subtract on current time,
  *  to fix race conditions
- * @param shouldRoundUp Whether to round up fractional wei
  */
-export function estimateCurrentPrice(
-  order: Order,
-  secondsToBacktrack = 30,
-  shouldRoundUp = true
-) {
+export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30) {
   let { basePrice, listingTime, expirationTime, extra } = order;
   const { side, takerRelayerFee, saleKind } = order;
 
-  const now = new BigNumber(Math.round(Date.now() / 1000)).minus(
+  const now = BigNumber.from(Math.round(Date.now() / 1000)).sub(
     secondsToBacktrack
   );
-  basePrice = new BigNumber(basePrice);
-  listingTime = new BigNumber(listingTime);
-  expirationTime = new BigNumber(expirationTime);
-  extra = new BigNumber(extra);
+  basePrice = BigNumber.from(basePrice ?? 0);
+  listingTime = BigNumber.from(listingTime ?? 0);
+  expirationTime = BigNumber.from(expirationTime ?? 0);
+  extra = BigNumber.from(extra ?? 0);
 
   let exactPrice = basePrice;
 
@@ -660,107 +388,31 @@ export function estimateCurrentPrice(
     // Do nothing, price is correct
   } else if (saleKind === SaleKind.DutchAuction) {
     const diff = extra
-      .times(now.minus(listingTime))
-      .dividedBy(expirationTime.minus(listingTime));
+      .mul(now.sub(listingTime))
+      .div(expirationTime.sub(listingTime));
 
     exactPrice =
       side == OrderSide.Sell
         ? /* Sell-side - start price: basePrice. End price: basePrice - extra. */
-          basePrice.minus(diff)
+          basePrice.sub(diff)
         : /* Buy-side - start price: basePrice. End price: basePrice + extra. */
-          basePrice.plus(diff);
+          basePrice.add(diff);
   }
 
   // Add taker fee only for buyers
   if (side === OrderSide.Sell && !order.waitingForBestCounterOrder) {
     // Buyer fee increases sale price
-    exactPrice = exactPrice.times(+takerRelayerFee / INVERSE_BASIS_POINT + 1);
+    exactPrice = exactPrice.mul(+takerRelayerFee / INVERSE_BASIS_POINT + 1);
   }
 
-  return shouldRoundUp
-    ? exactPrice.integerValue(BigNumber.ROUND_CEIL)
-    : exactPrice;
-}
-
-/**
- * Get the representation of a fungible asset
- * @param schema The Schema needed to access this asset
- * @param asset The asset to trade
- * @param quantity The number of items to trade
- */
-export function getAssetType(
-  schema: Schema<AssetType>,
-  asset: Asset,
-  quantity = new BigNumber(1)
-): AssetType {
-  const tokenId = asset.tokenId != null ? asset.tokenId.toString() : undefined;
-
-  return schema.assetFromFields({
-    ID: tokenId,
-    Quantity: quantity.toString(),
-    Address: asset.tokenAddress.toLowerCase(),
-    Name: asset.name,
-  });
-}
-
-/**
- * Get the representation of a group of assets
- * Sort order is enforced here. Throws if there's a duplicate.
- * @param assets Assets to bundle
- * @param schemas The Schema needed to access each asset, respectively
- * @param quantities The quantity of each asset to bundle, respectively
- */
-export function getBundle(
-  assets: Asset[],
-  schemas: Array<Schema<AssetType>>,
-  quantities: BigNumber[]
-): Bundle {
-  if (assets.length != quantities.length) {
-    throw new Error("Bundle must have a quantity for every asset");
-  }
-
-  if (assets.length != schemas.length) {
-    throw new Error("Bundle must have a schema for every asset");
-  }
-
-  const wyAssets = assets.map((asset, i) =>
-    getAssetType(schemas[i], asset, quantities[i])
-  );
-
-  const sorters = [
-    (assetAndSchema: { asset: AssetType; schema: TokenStandard }) =>
-      assetAndSchema.asset.address,
-    (assetAndSchema: { asset: AssetType; schema: TokenStandard }) =>
-      assetAndSchema.asset.id || 0,
-  ];
-
-  const wyAssetsAndSchemas = wyAssets.map((asset, i) => ({
-    asset,
-    schema: schemas[i].name as TokenStandard,
-  }));
-
-  const uniqueAssets = _.uniqBy(
-    wyAssetsAndSchemas,
-    (group) => `${sorters[0](group)}-${sorters[1](group)}`
-  );
-
-  if (uniqueAssets.length != wyAssetsAndSchemas.length) {
-    throw new Error("Bundle can't contain duplicate assets");
-  }
-
-  const sortedWyAssetsAndSchemas = _.sortBy(wyAssetsAndSchemas, sorters);
-
-  return {
-    assets: sortedWyAssetsAndSchemas.map((group) => group.asset),
-    schemas: sortedWyAssetsAndSchemas.map((group) => group.schema),
-  };
+  return exactPrice;
 }
 
 export function toBaseUnitAmount(
   amount: FixedNumber,
   decimals: number
 ): BigNumber {
-  const unit = EthersBigNumber.from(10).pow(decimals);
+  const unit = BigNumber.from(10).pow(decimals);
   const baseUnitAmount = amount.mulUnsafe(FixedNumber.from(unit));
   const hasDecimals = baseUnitAmount !== baseUnitAmount.round(decimals);
   if (hasDecimals) {
@@ -768,7 +420,7 @@ export function toBaseUnitAmount(
       `Invalid unit amount: ${amount.toString()} - Too many decimal places`
     );
   }
-  return new BigNumber(baseUnitAmount.toString());
+  return BigNumber.from(baseUnitAmount.toString());
 }
 
 /**
@@ -818,7 +470,7 @@ export async function delay(ms: number) {
  * @param erc721Contract contract to check
  */
 export async function getNonCompliantApprovalAddress(
-  erc721Contract: Contract,
+  erc721Contract: ethers.Contract,
   tokenId: string,
   _accountAddress: string
 ): Promise<string | undefined> {
@@ -829,7 +481,7 @@ export async function getNonCompliantApprovalAddress(
     erc721Contract.methods.partIndexToApproved(tokenId).call(),
   ]);
 
-  return _.compact(results)[0].status;
+  return results.filter(Boolean)[0].status;
 }
 
 export const merkleValidatorByNetwork = {
@@ -913,13 +565,13 @@ export const feesToBasisPoints = (
 };
 
 /**
- * checks protocol address
- * @param protocolAddress a protocol address
+ * Checks if a protocol address is valid.
+ * @param protocolAddress The protocol address
  */
 export const isValidProtocol = (protocolAddress: string): boolean => {
-  const checkSumAddress = Web3.utils.toChecksumAddress(protocolAddress);
+  const checkSumAddress = ethers.utils.getAddress(protocolAddress);
   const validProtocolAddresses = [CROSS_CHAIN_SEAPORT_V1_5_ADDRESS].map(
-    (address) => Web3.utils.toChecksumAddress(address)
+    (address) => ethers.utils.getAddress(address)
   );
   return validProtocolAddresses.includes(checkSumAddress);
 };

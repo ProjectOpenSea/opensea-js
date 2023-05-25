@@ -62,32 +62,18 @@ Then, in your project, run:
 npm install --save opensea-js
 ```
 
-> **Warning**
-> Due to the use of git-url dependencies, versions of `npm` below 8.5.2 are incompatible with this package due to broken integrity checksum validation.
-> Above version 8.5.2, `npm` will no longer validate integrity checksums for git-url dependencies.
-
-Install [web3](https://github.com/ethereum/web3.js) too if you haven't already.
-
-If you run into an error while building the dependencies and you're on a Mac, run this:
-
-```bash
-xcode-select --install # Install Command Line Tools if you haven't already.
-sudo xcode-select --switch /Library/Developer/CommandLineTools # Enable command line tools
-sudo npm explore npm -g -- npm install node-gyp@latest # (Optional) update node-gyp
-```
-
 ## Getting Started
 
 To get started, first request an API key [here](https://docs.opensea.io/reference). Note the terms of use for using API data.
 
-Then, create a new OpenSeaJS client, called an OpenSeaSDK 🚢, using your Web3 provider:
+Then, create a new OpenSeaJS client, called an OpenSeaSDK 🚢, using your web3 provider:
 
 ```JavaScript
-import * as Web3 from 'web3'
+import { ethers } from 'ethers'
 import { OpenSeaSDK, Network } from 'opensea-js'
 
 // This example provider won't let you make transactions, only read-only calls:
-const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
+const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')
 
 const openseaSDK = new OpenSeaSDK(provider, {
   networkName: Network.Main,
@@ -99,7 +85,7 @@ const openseaSDK = new OpenSeaSDK(provider, {
 
 **NOTE:** Using the sample Infura provider above won't let you authorize transactions, which are needed when approving and trading assets and currency. To make transactions, you need a provider with a private key or mnemonic set.
 
-In a browser with web3 or an extension like [MetaMask](https://metamask.io/) or [Dapper](http://www.meetdapper.com/), you can use `window.ethereum` (or `window.web3.currentProvider` for legacy mobile web3 browsers) to access the native provider. In a Node.js script, you can follow [this example](https://github.com/ProjectOpenSea/opensea-creatures/blob/master/scripts/sell.js) to use a custom mnemonic.
+In a browser with web3 or an extension like [MetaMask](https://metamask.io/) or [Coinbase Wallet](https://www.coinbase.com/wallet), you can use `window.ethereum` to access the native provider.
 
 ### Fetching Assets
 
@@ -387,7 +373,7 @@ Example for transferring 2 DAI ($2) to another address:
 
 ```JavaScript
 const paymentToken = (await openseaSDK.api.getPaymentTokens({ symbol: 'DAI'})).tokens[0]
-const quantity = new BigNumber(Math.pow(10, paymentToken.decimals)).times(2)
+const quantity = BigNumber.from(Math.pow(10, paymentToken.decimals)).times(2)
 const transactionHash = await openseaSDK.transfer({
   asset: {
     tokenId: null,
@@ -400,7 +386,7 @@ const transactionHash = await openseaSDK.transfer({
 })
 ```
 
-For more information, check out the documentation for Schemas on https://projectopensea.github.io/opensea-js/.
+For more information, check out the [documentation](https://projectopensea.github.io/opensea-js/).
 
 ## Advanced
 

@@ -1,17 +1,19 @@
 import { assert } from "chai";
+import { ethers } from "ethers";
 import { before, suite, test } from "mocha";
-import Web3 from "web3";
-import { MAINNET_PROVIDER_URL } from "../../constants";
-import { OpenSeaSDK } from "../../index";
-import { Network, OpenSeaAsset, OrderSide } from "../../types";
-import { feesToBasisPoints } from "../../utils/utils";
+import { OpenSeaSDK } from "../../src/index";
+import { Network, OpenSeaAsset, OrderSide } from "../../src/types";
+import { feesToBasisPoints } from "../../src/utils/utils";
 import {
+  ALCHEMY_API_KEY,
   BAYC_CONTRACT_ADDRESS,
   BAYC_TOKEN_ID,
   MAINNET_API_KEY,
 } from "../constants";
 
-const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
+const provider = new ethers.providers.JsonRpcProvider(
+  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+);
 
 const client = new OpenSeaSDK(
   provider,

@@ -1,18 +1,17 @@
-import { BigNumber } from "bignumber.js";
 import { assert } from "chai";
+import { BigNumber, ethers } from "ethers";
 import { suite, test } from "mocha";
-import Web3 from "web3";
-import { MAINNET_PROVIDER_URL } from "../../constants";
-import { OpenSeaSDK } from "../../index";
-import { Network, OrderJSON } from "../../types";
-import { orderFromJSON } from "../../utils/utils";
-import { MAINNET_API_KEY } from "../constants";
+import { OpenSeaSDK } from "../../src/index";
+import { Network, OrderJSON } from "../../src/types";
+import { orderFromJSON } from "../../src/utils/utils";
+import { ALCHEMY_API_KEY, MAINNET_API_KEY } from "../constants";
 import ordersJSONFixture from "../fixtures/orders.json";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ordersJSON = ordersJSONFixture as any;
+const ordersJSON = ordersJSONFixture as unknown as OrderJSON[];
 
-const provider = new Web3.providers.HttpProvider(MAINNET_PROVIDER_URL);
+const provider = new ethers.providers.JsonRpcProvider(
+  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+);
 
 const client = new OpenSeaSDK(
   provider,

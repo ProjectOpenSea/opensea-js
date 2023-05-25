@@ -3,9 +3,9 @@ import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
 } from "@opensea/seaport-js/lib/constants";
 import { assert } from "chai";
+import { ethers } from "ethers";
 import { suite, test } from "mocha";
-import Web3 from "web3";
-import { isValidProtocol } from "../../utils/utils";
+import { isValidProtocol } from "../../src/utils/utils";
 
 suite("Utils: utils", () => {
   test("isValidProtocol works with all forms of address", async () => {
@@ -21,12 +21,8 @@ suite("Utils: utils", () => {
     assert.isFalse(isValidProtocol(seaport_v_1_4.toLowerCase()));
     assert.isFalse(isValidProtocol(randomAddress.toLowerCase()));
 
-    assert.isTrue(isValidProtocol(Web3.utils.toChecksumAddress(seaport_v1_5)));
-    assert.isFalse(
-      isValidProtocol(Web3.utils.toChecksumAddress(seaport_v_1_4))
-    );
-    assert.isFalse(
-      isValidProtocol(Web3.utils.toChecksumAddress(randomAddress))
-    );
+    assert.isTrue(isValidProtocol(ethers.utils.getAddress(seaport_v1_5)));
+    assert.isFalse(isValidProtocol(ethers.utils.getAddress(seaport_v_1_4)));
+    assert.isFalse(isValidProtocol(ethers.utils.getAddress(randomAddress)));
   });
 });

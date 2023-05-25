@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
 import { sdk } from "./init";
-import { SafelistStatus } from "../types";
+import { SafelistStatus } from "../../src/types";
 
 suite("SDK: getCollection", () => {
   test("Get Verified Collection", async () => {

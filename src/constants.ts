@@ -1,8 +1,6 @@
 import { Network } from "./types";
 
 export const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
-export const NULL_BLOCK_HASH =
-  "0x0000000000000000000000000000000000000000000000000000000000000000";
 export const INVERSE_BASIS_POINT = 10_000; // 100 basis points per 1%
 export const SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS =
   "0xa604060890923ff400e8c6f5290461a83aedacec"; // Same address on mainnet and Goerli
@@ -10,14 +8,10 @@ export const SHARED_STORE_FRONT_ADDRESS_MAINNET =
   "0x495f947276749ce646f68ac8c248420045cb7b5e";
 export const SHARED_STORE_FRONT_ADDRESS_GOERLI =
   "0x804159144aefb1dc17b171afcefa5b33746c722f";
-export const ENJIN_COIN_ADDRESS = "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c";
-export const ENJIN_ADDRESS = "0xfaaFDc07907ff5120a76b34b731b278c38d6043C";
 export const MAX_EXPIRATION_MONTHS = 1;
 const ORDERBOOK_VERSION = 1 as number;
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_TESTNET = "https://testnets-api.opensea.io";
-export const RPC_URL_PATH = "jsonrpc/v1/";
-export const MAINNET_PROVIDER_URL = `${API_BASE_MAINNET}/${RPC_URL_PATH}`;
 export const API_PATH = `/api/v${ORDERBOOK_VERSION}`;
 
 export const MERKLE_VALIDATOR_MAINNET =

@@ -7,9 +7,9 @@ export { orderToJSON, orderFromJSON } from "./utils/utils";
 /**
  * Example setup:
  *
- * import * as Web3 from 'web3'
+ * import { ethers } from 'ethers'
  * import { OpenSeaPort, Network } from 'opensea-js'
- * const provider = new Web3.providers.HttpProvider('https://mainnet.infura.io')
+ * const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')
  * const client = new OpenSeaPort(provider, {
  *   networkName: Network.Main
  * })

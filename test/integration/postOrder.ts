@@ -7,8 +7,8 @@ import {
   sdk,
   walletAddress,
 } from "./init";
-import { WETH_ADDRESS, OFFER_AMOUNT } from "../__tests__/constants";
-import { expectValidOrder } from "../__tests__/utils";
+import { WETH_ADDRESS, OFFER_AMOUNT } from "../constants";
+import { expectValidOrder } from "../utils";
 
 suite("SDK: order posting", () => {
   test("Post Buy Order", async () => {

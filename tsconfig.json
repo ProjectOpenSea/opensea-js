@@ -1,8 +1,8 @@
 {
-  "include": ["./src/**/*", "./node_modules/types-bn/index.d.ts"],
+  "include": ["./src/**/*", "./node_modules/types-bn/index.d.ts", "test"],
   "compilerOptions": {
     "outDir": "lib",
-    "target": "es5",
+    "target": "es6",
     "lib": ["dom", "esnext"],
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,

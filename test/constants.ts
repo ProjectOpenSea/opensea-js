@@ -1,5 +1,5 @@
-import { OpenSeaAPI } from "../api";
-import { Network } from "../types";
+import { OpenSeaAPI } from "../src/api";
+import { Network } from "../src/types";
 
 export const MAINNET_API_KEY = process.env.API_KEY;
 export const WALLET_PRIV_KEY = process.env.WALLET_PRIV_KEY;
@@ -11,14 +11,14 @@ export const mainApi = new OpenSeaAPI(
     apiKey: MAINNET_API_KEY,
     networkName: Network.Main,
   },
-  console.info
+  process.env.DEBUG ? console.info : undefined
 );
 
 export const testnetApi = new OpenSeaAPI(
   {
     networkName: Network.Goerli,
   },
-  console.info
+  process.env.DEBUG ? console.info : undefined
 );
 
 export const DAPPER_ADDRESS = "0x4819352bd7fadcCFAA8A2cDA4b2825a9ec51417c";

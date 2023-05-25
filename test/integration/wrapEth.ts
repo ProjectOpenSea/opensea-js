@@ -2,8 +2,8 @@ import { assert } from "chai";
 import { formatEther } from "ethers/lib/utils";
 import { describe, test } from "mocha";
 import { ETH_TO_WRAP, sdk, walletAddress } from "./init";
-import { Network, TokenStandard } from "../types";
-import { getCanonicalWrappedEther } from "../utils/tokens";
+import { Network, TokenStandard } from "../../src/types";
+import { getCanonicalWrappedEther } from "../../src/utils/tokens";
 
 // Skip this test if there is no ETH to wrap/unwrap
 (ETH_TO_WRAP ? describe.only : describe.skip)("SDK: WETH", () => {
@@ -18,7 +18,6 @@ import { getCanonicalWrappedEther } from "../utils/tokens";
       asset: wethAsset,
     });
     const startingWeth = formatEther(startingWethBalance.toString());
-    console.log(`Starting Weth: ${startingWeth}`);
 
     const ethToWrap = Number(ETH_TO_WRAP);
     await sdk.wrapEth({
@@ -32,7 +31,6 @@ import { getCanonicalWrappedEther } from "../utils/tokens";
     });
 
     const newWeth = formatEther(newWethBalance.toString());
-    console.log(`New Weth: ${newWeth}`);
 
     assert(
       Number(startingWeth) + Number(ethToWrap) === Number(newWeth),
@@ -49,7 +47,6 @@ import { getCanonicalWrappedEther } from "../utils/tokens";
       asset: wethAsset,
     });
     const finalWeth = formatEther(finalWethBalance.toString());
-    console.log(`Final Weth: ${finalWeth}`);
     assert(
       Number(startingWeth) === Number(finalWeth),
       "Balances should match."

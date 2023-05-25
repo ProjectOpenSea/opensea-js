@@ -23,7 +23,7 @@
       "config": ""
     },
     "current_price": "10000000000000000",
-    "current_bounty": "100000000000000.0",
+    "current_bounty": "100000000000000",
     "maker_relayer_fee": "100",
     "taker_relayer_fee": "250",
     "maker_protocol_fee": "0",
@@ -211,7 +211,7 @@
       "address": "0x0000000000000000000000000000000000000000",
       "config": ""
     },
-    "current_price": "0.01",
+    "current_price": "1",
     "maker_relayer_fee": "0",
     "taker_relayer_fee": "0",
     "maker_protocol_fee": "0",

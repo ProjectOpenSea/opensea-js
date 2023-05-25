@@ -17,38 +17,34 @@
     "lib"
   ],
   "scripts": {
-    "abi-type-gen": "yarn run typechain --target=web3-v1 src/abi/*.json --out-dir=src/typechain/contracts",
+    "postinstall": "npm run build",
     "build": "yarn abi-type-gen && tsc -p tsconfig.build.json",
+    "abi-type-gen": "yarn run typechain --target=ethers-v5 src/abi/*.json --out-dir=src/typechain/contracts",
     "check-types": "tsc --noEmit --project tsconfig.json",
     "coverage-report": "nyc report --reporter=text-lcov | coveralls",
     "docs-build": "typedoc --out docs src/index.ts",
     "eslint:check": "eslint . --max-warnings 0 --ext .js,.ts",
     "eslint:fix": "eslint . --fix --max-warnings 0 --ext .js,.ts",
-    "integration_tests": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register -r dotenv/config src/__integration_tests__/**/*.ts --timeout 15000",
     "lint:check": "concurrently \"yarn check-types\" \"yarn prettier:check\" \"yarn eslint:check\"",
     "prepare": "husky install && npm run build",
     "prettier:check": "prettier --check .",
     "prettier:check:package.json": "yarn prettier-package-json --list-different",
     "prettier:fix": "prettier --write .",
-    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register src/__tests__/**/*.ts --timeout 15000"
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register test/**/*.ts --exclude test/integration/**/*.ts --timeout 15000",
+    "test:integration": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register -r dotenv/config test/integration/**/*.ts --timeout 15000"
   },
   "types": "lib/index.d.ts",
   "dependencies": {
     "@opensea/seaport-js": "^1.2.1",
-    "ajv": "8.11.0",
-    "bignumber.js": "9.0.2",
     "ethers": "^5.6.6",
     "fbemitter": "^3.0.0",
-    "isomorphic-unfetch": "^4.0.0",
-    "lodash": "^4.17.21",
-    "web3": "^1.8.1"
+    "isomorphic-unfetch": "^4.0.0"
   },
   "devDependencies": {
-    "@typechain/web3-v1": "^6.0.0",
+    "@typechain/ethers-v5": "^11.0.0",
     "@types/chai": "4.3.5",
     "@types/chai-as-promised": "^7.1.5",
     "@types/fbemitter": "^2.0.32",
-    "@types/lodash": "^4.14.178",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.0.0",
     "@types/query-string": "^6.1.0",
@@ -109,8 +105,7 @@
   "nyc": {
     "exclude": [
       "src/utils/tokens/**/*.ts",
-      "src/utils/schemas/**/*.ts",
-      "src/__tests__/**/*"
+      "src/typechain"
     ]
   }
 }
