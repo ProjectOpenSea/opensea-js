@@ -7,7 +7,7 @@ import { OpenSeaSDK } from "../../index";
 import { Network, OrderJSON } from "../../types";
 import { orderFromJSON } from "../../utils/utils";
 import { MAINNET_API_KEY } from "../constants";
-import ordersJSONFixture from "../fixtures/orders.json";
+import ordersJSONFixture = require("../fixtures/orders.json");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ordersJSON = ordersJSONFixture as any;
