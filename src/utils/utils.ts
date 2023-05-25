@@ -2,7 +2,6 @@ import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
-import { TxData } from "ethereum-types";
 import { BigNumber, FixedNumber, ethers } from "ethers";
 import {
   INVERSE_BASIS_POINT,
@@ -346,7 +345,7 @@ export const orderToJSON = (order: Order): OrderJSON => {
  */
 export async function estimateGas(
   provider: ethers.providers.Provider,
-  { from, to, data, value = 0 }: TxData
+  { from, to, data, value = BigNumber.from(0) }: ethers.Transaction
 ) {
   return await provider.estimateGas({
     from,

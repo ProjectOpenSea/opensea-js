@@ -1,3 +1,4 @@
+import EventEmitter = require("events");
 import { Seaport } from "@opensea/seaport-js";
 import {
   ConsiderationInputItem,
@@ -14,7 +15,6 @@ import {
   providers,
 } from "ethers";
 import { parseEther } from "ethers/lib/utils";
-import { EventEmitter, EventSubscription } from "fbemitter";
 import { OpenSeaAPI } from "./api";
 import {
   CONDUIT_KEYS_TO_CONDUIT,
@@ -117,7 +117,7 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Add a listener to a marketplace event
+   * Add a listener to a marketplace event.
    * @param event An event to listen for
    * @param listener A callback that will accept an object with event data
    * @param once Whether the listener should only be called once
@@ -126,20 +126,22 @@ export class OpenSeaSDK {
     event: EventType,
     listener: (data: EventData) => void,
     once = false
-  ): EventSubscription {
-    const subscription = once
-      ? this._emitter.once(event, listener)
-      : this._emitter.addListener(event, listener);
-    return subscription;
+  ) {
+    if (once) {
+      this._emitter.once(event, listener);
+    } else {
+      this._emitter.addListener(event, listener);
+    }
   }
 
   /**
-   * Remove an event listener, included here for completeness.
-   * Simply calls `.remove()` on a subscription
-   * @param subscription The event subscription returned from `addListener`
+   * Remove an event listener, included for completeness.
+   * Simply calls `.removeListener()` on an event and listener.
+   * @param event The event to remove a listener for
+   * @param listener The listener to remove
    */
-  public removeListener(subscription: EventSubscription) {
-    subscription.remove();
+  public removeListener(event: EventType, listener: (data: EventData) => void) {
+    this._emitter.removeListener(event, listener);
   }
 
   /**
@@ -155,7 +157,6 @@ export class OpenSeaSDK {
    * Wrap ETH into W-ETH.
    * W-ETH is needed for placing buy orders (making offers).
    * Emits the `WrapEth` event when the transaction is prompted.
-   * @param param0 __namedParameters Object
    * @param amountInEth How much ether to wrap
    * @param accountAddress Address of the user's wallet containing the ether
    */
@@ -195,7 +196,6 @@ export class OpenSeaSDK {
   /**
    * Unwrap W-ETH into ETH.
    * Emits the `UnwrapWeth` event when the transaction is prompted.
-   * @param param0 __namedParameters Object
    * @param amountInEth How much W-ETH to unwrap
    * @param accountAddress Address of the user's wallet containing the W-ETH
    */
@@ -730,7 +730,6 @@ export class OpenSeaSDK {
 
   /**
    * Cancel an order on-chain, preventing it from ever being fulfilled.
-   * @param param0 __namedParameters Object
    * @param order The order to cancel
    * @param accountAddress The order maker's wallet address
    * @param domain An optional domain to be hashed and included at the end of fulfillment calldata
@@ -771,11 +770,8 @@ export class OpenSeaSDK {
    * An order may not be fulfillable if a target item's transfer function
    * is locked for some reason, e.g. an item is being rented within a game
    * or trading has been locked for an item type.
-   * @param param0 __namedParameters Object
    * @param order Order to check
    * @param accountAddress The account address that will be fulfilling the order
-   * @param recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
-   * @param referrerAddress The optional address that referred the order
    */
   public async isOrderFulfillable({
     order,
@@ -863,10 +859,8 @@ export class OpenSeaSDK {
 
   /**
    * Compute the fees for an order
-   * @param param0 __namedParameters
    * @param asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
    * @param side The side of the order (buy or sell)
-   * @param accountAddress The account to check fees for (useful if fees differ by account, like transfer fees)
    */
   public async computeFees({
     asset,

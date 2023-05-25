@@ -526,12 +526,12 @@ handleSDKEvents() {
       console.info({ accountAddress, tokenAddress })
       dispatch({ type: ActionTypes.APPROVE_WETH })
     })
-    openSeaSDK.addListener(EventType.ApproveAllAssets, ({ accountAddress, proxyAddress, tokenAddress }) => {
-      console.info({ accountAddress, proxyAddress, tokenAddress })
+    openSeaSDK.addListener(EventType.ApproveAllAssets, ({ accountAddress, tokenAddress }) => {
+      console.info({ accountAddress, tokenAddress })
       dispatch({ type: ActionTypes.APPROVE_ALL_ASSETS })
     })
-    openSeaSDK.addListener(EventType.ApproveAsset, ({ accountAddress, proxyAddress, tokenAddress, tokenId }) => {
-      console.info({ accountAddress, proxyAddress, tokenAddress, tokenId })
+    openSeaSDK.addListener(EventType.ApproveAsset, ({ accountAddress, tokenAddress, tokenId }) => {
+      console.info({ accountAddress, tokenAddress, tokenId })
       dispatch({ type: ActionTypes.APPROVE_ASSET })
     })
     openSeaSDK.addListener(EventType.CreateOrder, ({ order, accountAddress }) => {

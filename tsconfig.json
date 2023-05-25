@@ -1,5 +1,5 @@
 {
-  "include": ["./src/**/*", "./node_modules/types-bn/index.d.ts", "test"],
+  "include": ["./src/**/*", "test"],
   "compilerOptions": {
     "outDir": "lib",
     "target": "es6",

@@ -59,7 +59,6 @@ export enum EventType {
 export interface EventData {
   accountAddress?: string;
   toAddress?: string;
-  proxyAddress?: string;
   amount?: BigNumberish;
   contractAddress?: string;
   assets?: AssetType[];
@@ -73,7 +72,6 @@ export interface EventData {
   orderV2?: OrderV2;
   buy?: Order;
   sell?: Order;
-  matchMetadata?: string;
 }
 
 /**
