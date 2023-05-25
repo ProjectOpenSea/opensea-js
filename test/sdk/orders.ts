@@ -5,7 +5,7 @@ import { OpenSeaSDK } from "../../src/index";
 import { Network, OrderJSON } from "../../src/types";
 import { orderFromJSON } from "../../src/utils/utils";
 import { ALCHEMY_API_KEY, MAINNET_API_KEY } from "../constants";
-import ordersJSONFixture from "../fixtures/orders.json";
+import ordersJSONFixture = require("../fixtures/orders.json");
 
 const ordersJSON = ordersJSONFixture as unknown as OrderJSON[];
 
