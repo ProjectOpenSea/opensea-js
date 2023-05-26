@@ -16,7 +16,7 @@ export type ProtocolData =
 // Protocol agnostic order data
 type OrderType = "basic" | "dutch" | "english" | "criteria";
 export type OrderSide = "ask" | "bid";
-export type OrderFee = {
+type OrderFee = {
   account: OpenSeaAccount;
   basisPoints: string;
 };
