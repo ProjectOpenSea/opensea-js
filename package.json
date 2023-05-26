@@ -18,7 +18,8 @@
     "src"
   ],
   "scripts": {
-    "postinstall": "npm run build",
+    "postinstall": "husky install",
+    "prepare": "npm run build",
     "build": "npm run abi-type-gen && tsc -p tsconfig.build.json && npm run bundle",
     "bundle": "browserify lib/index.js -o lib/bundle.js",
     "abi-type-gen": "typechain --target=ethers-v5 src/abi/*.json --out-dir=src/typechain/contracts",
@@ -28,7 +29,6 @@
     "eslint:check": "eslint . --max-warnings 0 --ext .js,.ts",
     "eslint:fix": "eslint . --fix --max-warnings 0 --ext .js,.ts",
     "lint:check": "concurrently \"npm run check-types\" \"npm run prettier:check\" \"npm run eslint:check\"",
-    "prepare": "husky install && npm run build",
     "prettier:check": "prettier --check .",
     "prettier:check:package.json": "npm run prettier-package-json --list-different",
     "prettier:fix": "prettier --write .",
