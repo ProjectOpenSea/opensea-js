@@ -21,7 +21,7 @@
     "postinstall": "npm run build",
     "build": "npm run abi-type-gen && tsc -p tsconfig.build.json && npm run bundle",
     "bundle": "browserify lib/index.js -o lib/bundle.js",
-    "abi-type-gen": "npm run run typechain --target=ethers-v5 src/abi/*.json --out-dir=src/typechain/contracts",
+    "abi-type-gen": "npm run typechain --target=ethers-v5 src/abi/*.json --out-dir=src/typechain/contracts",
     "check-types": "tsc --noEmit --project tsconfig.json",
     "coverage-report": "nyc report --reporter=text-lcov | coveralls",
     "docs-build": "typedoc --out docs src/index.ts",
