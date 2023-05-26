@@ -8,20 +8,6 @@ on:
     types: [created]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version-file: .nvmrc
-      - name: Upgrade npm
-        run: npm install -g npm
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - run: yarn build
-
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
@@ -32,10 +18,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org/
-      - name: Upgrade npm
-        run: npm install -g npm
-      - run: npm ci
-      - run: npm run build
+      - run: npm install
+      - run: npm test
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

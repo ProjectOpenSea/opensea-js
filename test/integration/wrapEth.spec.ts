@@ -1,13 +1,17 @@
 import { assert } from "chai";
-import { formatEther } from "ethers/lib/utils";
+import { parseEther } from "ethers/lib/utils";
 import { describe, test } from "mocha";
 import { ETH_TO_WRAP, sdk, walletAddress } from "./init";
 import { Network, TokenStandard } from "../../src/types";
 import { getCanonicalWrappedEther } from "../../src/utils/tokens";
 
-// Skip this test if there is no ETH to wrap/unwrap
-(ETH_TO_WRAP ? describe.only : describe.skip)("SDK: WETH", () => {
-  test("Wrap ETH and Unwrap", async () => {
+describe("SDK: WETH", () => {
+  test("Wrap ETH and Unwrap", async function () {
+    if (!ETH_TO_WRAP) {
+      this.skip();
+      return;
+    }
+
     const wethAsset = {
       tokenAddress: getCanonicalWrappedEther(Network.Main).address,
       tokenId: null,
@@ -17,28 +21,27 @@ import { getCanonicalWrappedEther } from "../../src/utils/tokens";
       accountAddress: walletAddress,
       asset: wethAsset,
     });
-    const startingWeth = formatEther(startingWethBalance.toString());
 
-    const ethToWrap = Number(ETH_TO_WRAP);
     await sdk.wrapEth({
-      amountInEth: ethToWrap,
+      amountInEth: ETH_TO_WRAP,
       accountAddress: walletAddress,
     });
 
-    const newWethBalance = await sdk.getBalance({
+    const endingWethBalance = await sdk.getBalance({
       accountAddress: walletAddress,
       asset: wethAsset,
     });
 
-    const newWeth = formatEther(newWethBalance.toString());
+    const ethToWrapInWei = parseEther(ETH_TO_WRAP);
 
-    assert(
-      Number(startingWeth) + Number(ethToWrap) === Number(newWeth),
+    assert.equal(
+      startingWethBalance.add(ethToWrapInWei).toString(),
+      endingWethBalance.toString(),
       "Balances should match."
     );
 
     await sdk.unwrapWeth({
-      amountInEth: ethToWrap,
+      amountInEth: ETH_TO_WRAP,
       accountAddress: walletAddress,
     });
 
@@ -46,9 +49,9 @@ import { getCanonicalWrappedEther } from "../../src/utils/tokens";
       accountAddress: walletAddress,
       asset: wethAsset,
     });
-    const finalWeth = formatEther(finalWethBalance.toString());
-    assert(
-      Number(startingWeth) === Number(finalWeth),
+    assert.equal(
+      startingWethBalance.toString(),
+      finalWethBalance.toString(),
       "Balances should match."
     );
   }).timeout(30000);

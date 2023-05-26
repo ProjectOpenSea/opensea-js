@@ -405,12 +405,6 @@ export interface OpenSeaAsset extends Asset {
   description: string;
   // Owner of the asset
   owner: OpenSeaAccount;
-  // Orders on the asset. Null if asset was fetched in a list
-  orders: Order[] | null;
-  // Buy orders (offers) on the asset. Null if asset in a list and didn't prefetch buy orders
-  buyOrders: Order[] | null;
-  // Sell orders (auctions) on the asset. Null if asset in a list and didn't prefetch sell orders
-  sellOrders: Order[] | null;
 
   // Whether the asset is on a pre-sale (so token ids aren't real)
   isPresale: boolean;
@@ -545,10 +539,6 @@ export interface OpenSeaAssetBundle {
   name: string;
   slug: string;
   permalink: string;
-
-  // Sell orders (auctions) on the bundle. Null if bundle in a list and didn't prefetch sell orders
-  sellOrders: Order[] | null;
-
   assetContract?: OpenSeaAssetContract;
   description?: string;
   externalLink?: string;
@@ -727,32 +717,6 @@ export interface OrderJSON extends Partial<ECSignature> {
 }
 
 /**
- * Query interface for Orders
- * Includes `maker`, `taker` and `side` from above
- * See https://docs.opensea.io/reference#retrieving-orders for
- * full docs.
- */
-export interface OrderQuery extends Partial<OrderJSON> {
-  owner?: string;
-  sale_kind?: SaleKind;
-  side?: OrderSide;
-  asset_contract_address?: string;
-  payment_token_address?: string;
-  is_english?: boolean;
-  is_expired?: boolean;
-  bundled?: boolean;
-  include_invalid?: boolean;
-  token_id?: number | string;
-  token_ids?: Array<number | string>;
-  // This means listing_time > value in seconds
-  listed_after?: number | string;
-  // This means listing_time <= value in seconds
-  listed_before?: number | string;
-  limit?: number;
-  offset?: number;
-}
-
-/**
  * Query interface for Assets
  */
 export interface OpenSeaAssetQuery {
@@ -775,9 +739,4 @@ export interface OpenSeaFungibleTokenQuery
   offset?: number;
   // Typescript bug requires this duplication
   symbol?: string;
-}
-
-export interface OrderbookResponse {
-  orders: OrderJSON[];
-  count: number;
 }

@@ -577,7 +577,7 @@ npm install
 And install TypeScript if you haven't already:
 
 ```bash
-npm install -g tslint typescript
+npm install -g typescript
 ```
 
 **Build**
@@ -601,7 +601,7 @@ Note that the tests require access to both Infura and the OpenSea API. The timeo
 Generate html docs, also available for browsing [here](https://projectopensea.github.io/opensea-js/):
 
 ```bash
-yarn docs-build
+npm run docs-build
 ```
 
 **Contributing**
@@ -619,8 +619,8 @@ Contributions welcome! Please use GitHub issues for suggestions/concerns - if yo
 ## Testing your branch locally
 
 ```sh
-yarn link # in opensea-js repo
-yarn link opensea-js # in repo you're working on
+npm link # in opensea-js repo
+npm link opensea-js # in repo you're working on
 ```
 
 [version-badge]: https://img.shields.io/github/package-json/v/ProjectOpenSea/opensea-js

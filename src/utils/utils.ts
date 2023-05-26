@@ -7,10 +7,9 @@ import {
   INVERSE_BASIS_POINT,
   MAX_EXPIRATION_MONTHS,
   MERKLE_VALIDATOR_MAINNET,
-  NULL_ADDRESS,
-  SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS,
-  SHARED_STORE_FRONT_ADDRESS_MAINNET,
-  SHARED_STORE_FRONT_ADDRESS_GOERLI,
+  SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+  SHARED_STOREFRONT_ADDRESS_MAINNET,
+  SHARED_STOREFRONT_ADDRESS_GOERLI,
 } from "../constants";
 import {
   AssetEvent,
@@ -24,7 +23,6 @@ import {
   OpenSeaTraitStats,
   OpenSeaUser,
   Order,
-  OrderJSON,
   OrderSide,
   SaleKind,
   TokenStandard,
@@ -44,9 +42,6 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
     owner: asset.owner,
     assetContract: assetContractFromJSON(asset.asset_contract),
     collection: collectionFromJSON(asset.collection),
-    orders: asset.orders ? asset.orders.map(orderFromJSON) : null,
-    sellOrders: asset.sell_orders ? asset.sell_orders.map(orderFromJSON) : null,
-    buyOrders: asset.buy_orders ? asset.buy_orders.map(orderFromJSON) : null,
 
     isPresale: asset.is_presale,
     // Don't use previews if it's a special image
@@ -70,15 +65,6 @@ export const assetFromJSON = (asset: any): OpenSeaAsset => {
       ? `#${asset.background_color}`
       : null,
   };
-  // If orders were included, put them in sell/buy order groups
-  if (fromJSON.orders && !fromJSON.sellOrders) {
-    fromJSON.sellOrders = fromJSON.orders.filter(
-      (o) => o.side == OrderSide.Sell
-    );
-  }
-  if (fromJSON.orders && !fromJSON.buyOrders) {
-    fromJSON.buyOrders = fromJSON.orders.filter((o) => o.side == OrderSide.Buy);
-  }
   return fromJSON;
 };
 
@@ -143,10 +129,6 @@ export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
     description: asset_bundle.description,
     externalLink: asset_bundle.external_link,
     permalink: asset_bundle.permalink,
-
-    sellOrders: asset_bundle.sell_orders
-      ? asset_bundle.sell_orders.map(orderFromJSON)
-      : null,
   };
 
   return fromJSON;
@@ -225,116 +207,6 @@ export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
   return fromJSON;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const orderFromJSON = (order: any): Order => {
-  const createdDate = new Date(`${order.created_date ?? 0}Z`);
-
-  const fromJSON: Order = {
-    hash: order.order_hash ?? order.hash,
-    cancelledOrFinalized: order.cancelled ?? order.finalized,
-    markedInvalid: order.marked_invalid,
-    metadata: order.metadata,
-    quantity: BigNumber.from(order.quantity ?? 1),
-    exchange: order.exchange,
-    makerAccount: order.maker,
-    takerAccount: order.taker,
-    // Use string address to conform to the Order schema
-    maker: order.maker.address,
-    taker: order.taker.address,
-    makerRelayerFee: BigNumber.from(order.maker_relayer_fee ?? 0),
-    takerRelayerFee: BigNumber.from(order.taker_relayer_fee ?? 0),
-    makerProtocolFee: BigNumber.from(order.maker_protocol_fee ?? 0),
-    takerProtocolFee: BigNumber.from(order.taker_protocol_fee ?? 0),
-    makerReferrerFee: BigNumber.from(order.maker_referrer_fee ?? 0),
-    waitingForBestCounterOrder: order.fee_recipient.address == NULL_ADDRESS,
-    feeMethod: order.fee_method,
-    feeRecipientAccount: order.fee_recipient,
-    feeRecipient: order.fee_recipient.address,
-    side: order.side,
-    saleKind: order.sale_kind,
-    target: order.target,
-    howToCall: order.how_to_call,
-    calldata: order.calldata,
-    replacementPattern: order.replacement_pattern,
-    staticTarget: order.static_target,
-    staticExtradata: order.static_extradata,
-    paymentToken: order.payment_token,
-    basePrice: BigNumber.from(order.base_price ?? 0),
-    extra: BigNumber.from(order.extra ?? 0),
-    currentBounty: BigNumber.from(order.current_bounty ?? 0),
-    currentPrice: BigNumber.from(order.current_price ?? 0),
-
-    createdTime: BigNumber.from(Math.round(createdDate.getTime() / 1000)),
-    listingTime: BigNumber.from(order.listing_time ?? 0),
-    expirationTime: BigNumber.from(order.expiration_time ?? 0),
-
-    salt: BigNumber.from(order.salt ?? 0),
-    v: parseInt(order.v),
-    r: order.r,
-    s: order.s,
-
-    paymentTokenContract: order.payment_token_contract
-      ? tokenFromJSON(order.payment_token_contract)
-      : undefined,
-    asset: order.asset ? assetFromJSON(order.asset) : undefined,
-    assetBundle: order.asset_bundle
-      ? assetBundleFromJSON(order.asset_bundle)
-      : undefined,
-  };
-
-  // Use client-side price calc, to account for buyer fee (not added by server) and latency
-  fromJSON.currentPrice = estimateCurrentPrice(fromJSON);
-
-  return fromJSON;
-};
-
-/**
- * Convert an order to JSON, hashing it as well if necessary
- * @param order order (hashed or unhashed)
- */
-export const orderToJSON = (order: Order): OrderJSON => {
-  const asJSON: OrderJSON = {
-    exchange: order.exchange.toLowerCase(),
-    maker: order.maker.toLowerCase(),
-    taker: order.taker.toLowerCase(),
-    makerRelayerFee: order.makerRelayerFee.toString(),
-    takerRelayerFee: order.takerRelayerFee.toString(),
-    makerProtocolFee: order.makerProtocolFee.toString(),
-    takerProtocolFee: order.takerProtocolFee.toString(),
-    makerReferrerFee: order.makerReferrerFee.toString(),
-    feeMethod: order.feeMethod,
-    feeRecipient: order.feeRecipient.toLowerCase(),
-    side: order.side,
-    saleKind: order.saleKind,
-    target: order.target.toLowerCase(),
-    howToCall: order.howToCall,
-    calldata: order.calldata,
-    replacementPattern: order.replacementPattern,
-    staticTarget: order.staticTarget.toLowerCase(),
-    staticExtradata: order.staticExtradata,
-    paymentToken: order.paymentToken.toLowerCase(),
-    quantity: order.quantity.toString(),
-    basePrice: order.basePrice.toString(),
-    englishAuctionReservePrice: order.englishAuctionReservePrice
-      ? order.englishAuctionReservePrice.toString()
-      : undefined,
-    extra: order.extra.toString(),
-    createdTime: order.createdTime ? order.createdTime.toString() : undefined,
-    listingTime: order.listingTime.toString(),
-    expirationTime: order.expirationTime.toString(),
-    salt: order.salt.toString(),
-
-    metadata: order.metadata,
-
-    v: order.v,
-    r: order.r,
-    s: order.s,
-
-    nonce: order.nonce,
-  };
-  return asJSON;
-};
-
 /**
  * Estimate gas usage for a transaction.
  * @param provider The Provider
@@ -353,14 +225,6 @@ export async function estimateGas(
     value: value.toString(),
     data,
   });
-}
-
-/**
- * Get mean gas price for sending a txn, in wei.
- * @param provider The provider
- */
-export async function getCurrentGasPrice(provider: ethers.providers.Provider) {
-  return provider.getGasPrice();
 }
 
 /**
@@ -511,8 +375,8 @@ export const getAssetItemType = (tokenStandard?: TokenStandard) => {
 };
 
 const SHARED_STOREFRONT_ADDRESSES = new Set([
-  SHARED_STORE_FRONT_ADDRESS_MAINNET.toLowerCase(),
-  SHARED_STORE_FRONT_ADDRESS_GOERLI.toLowerCase(),
+  SHARED_STOREFRONT_ADDRESS_MAINNET.toLowerCase(),
+  SHARED_STOREFRONT_ADDRESS_GOERLI.toLowerCase(),
 ]);
 
 /**
@@ -524,7 +388,7 @@ const SHARED_STOREFRONT_ADDRESSES = new Set([
 export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress =
   (tokenAddress: string): string => {
     return SHARED_STOREFRONT_ADDRESSES.has(tokenAddress.toLowerCase())
-      ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_ADDRESS
+      ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS
       : tokenAddress;
   };
 

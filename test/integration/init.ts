@@ -7,6 +7,16 @@ import {
   WALLET_PRIV_KEY,
 } from "../utils/constants";
 
+for (const envVar of [
+  "WALLET_PRIV_KEY",
+  "SELL_ORDER_CONTRACT_ADDRESS",
+  "SELL_ORDER_TOKEN_ID",
+]) {
+  if (!process.env[envVar]) {
+    throw new Error(`${envVar} must be set for integration tests`);
+  }
+}
+
 export const TOKEN_ADDRESS = process.env.SELL_ORDER_CONTRACT_ADDRESS;
 export const TOKEN_ID = process.env.SELL_ORDER_TOKEN_ID;
 export const LISTING_AMOUNT = process.env.LISTING_AMOUNT;
@@ -16,11 +26,7 @@ const rpcProvider = new ethers.providers.JsonRpcProvider(
   `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
 );
 
-if (!WALLET_PRIV_KEY) {
-  throw new Error("WALLET_PRIV_KEY must be set for integration tests");
-}
-const wallet = new ethers.Wallet(WALLET_PRIV_KEY, rpcProvider);
-
+const wallet = new ethers.Wallet(WALLET_PRIV_KEY as string, rpcProvider);
 export const walletAddress = wallet.address;
 
 export const sdk = new OpenSeaSDK(

@@ -2,7 +2,6 @@
 import { OpenSeaAPI } from "./api";
 import { OpenSeaSDK } from "./sdk";
 import { Network, EventData, EventType } from "./types";
-export { orderToJSON, orderFromJSON } from "./utils/utils";
 
 /**
  * Example setup:

@@ -26,13 +26,17 @@ suite("SDK: order posting", () => {
     expectValidOrder(order);
   });
 
-  test("Post Sell Order", async () => {
+  test("Post Sell Order", async function () {
+    if (!TOKEN_ADDRESS || !TOKEN_ID) {
+      this.skip();
+    }
+
     const sellOrder = {
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT ?? "40",
       asset: {
-        tokenAddress: TOKEN_ADDRESS ?? "",
-        tokenId: TOKEN_ID ?? "",
+        tokenAddress: TOKEN_ADDRESS,
+        tokenId: TOKEN_ID,
       },
     };
 

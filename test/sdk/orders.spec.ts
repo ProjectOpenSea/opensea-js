@@ -1,13 +1,9 @@
 import { assert } from "chai";
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import { suite, test } from "mocha";
 import { OpenSeaSDK } from "../../src/index";
-import { Network, OrderJSON } from "../../src/types";
-import { orderFromJSON } from "../../src/utils/utils";
-import ordersJSONFixture = require("../fixtures/orders.json");
+import { Network } from "../../src/types";
 import { ALCHEMY_API_KEY, MAINNET_API_KEY } from "../utils/constants";
-
-const ordersJSON = ordersJSONFixture as unknown as OrderJSON[];
 
 const provider = new ethers.providers.JsonRpcProvider(
   `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
@@ -23,15 +19,6 @@ const client = new OpenSeaSDK(
 );
 
 suite("SDK: orders", () => {
-  ordersJSON.map((orderJSON: OrderJSON, index: number) => {
-    test("Order #" + index + " has correct types", () => {
-      const order = orderFromJSON(orderJSON);
-      assert.instanceOf(order.basePrice, BigNumber);
-      assert.typeOf(order.maker, "string");
-      assert.equal(+order.quantity, 1);
-    });
-  });
-
   test("Fungible tokens filter", async () => {
     const manaTokens = (await client.api.getPaymentTokens({ symbol: "MANA" }))
       .tokens;

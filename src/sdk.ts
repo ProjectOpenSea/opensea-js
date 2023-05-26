@@ -17,10 +17,8 @@ import {
 import { parseEther } from "ethers/lib/utils";
 import { OpenSeaAPI } from "./api";
 import {
-  CONDUIT_KEYS_TO_CONDUIT,
   INVERSE_BASIS_POINT,
   NULL_ADDRESS,
-  CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
   DEFAULT_ZONE_BY_NETWORK,
   WETH_ADDRESS_BY_NETWORK,
 } from "./constants";
@@ -61,7 +59,7 @@ import {
 
 export class OpenSeaSDK {
   // Provider
-  public provider: providers.Provider;
+  public provider: providers.JsonRpcProvider;
   // Seaport v1.5 client
   public seaport_v1_5: Seaport;
   // Logger function to use when debugging
@@ -71,7 +69,7 @@ export class OpenSeaSDK {
 
   private _networkName: Network;
   private _emitter: EventEmitter;
-  private signerOrProvider: Wallet | providers.Provider;
+  private signerOrProvider: Wallet | providers.JsonRpcProvider;
 
   /**
    * Your very own seaport.
@@ -84,7 +82,7 @@ export class OpenSeaSDK {
    *  information
    */
   constructor(
-    provider: providers.Provider,
+    provider: providers.JsonRpcProvider,
     apiConfig: OpenSeaAPIConfig = {},
     logger?: (arg: string) => void,
     wallet?: Wallet
@@ -97,21 +95,12 @@ export class OpenSeaSDK {
     this.provider = provider;
     this.signerOrProvider = wallet ?? this.provider;
 
-    this.seaport_v1_5 = new Seaport(
-      this.signerOrProvider as providers.JsonRpcProvider,
-      {
-        conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
-        overrides: {
-          defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
-        },
-        seaportVersion: "1.5",
-      }
-    );
+    this.seaport_v1_5 = new Seaport(this.signerOrProvider);
 
     // Emit events
     this._emitter = new EventEmitter();
 
-    // Debugging: default to nothing
+    // Logger: default to no logging if fn not provided
     this.logger = logger ?? ((arg: string) => arg);
   }
 
@@ -163,12 +152,12 @@ export class OpenSeaSDK {
     amountInEth,
     accountAddress,
   }: {
-    amountInEth: number;
+    amountInEth: BigNumberish;
     accountAddress: string;
   }) {
     const token = getCanonicalWrappedEther(this._networkName);
 
-    const value = parseEther(amountInEth.toString());
+    const value = parseEther(FixedNumber.from(amountInEth).toString());
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount: value });
 
@@ -202,12 +191,12 @@ export class OpenSeaSDK {
     amountInEth,
     accountAddress,
   }: {
-    amountInEth: number;
+    amountInEth: BigNumberish;
     accountAddress: string;
   }) {
     const token = getCanonicalWrappedEther(this._networkName);
 
-    const amount = parseEther(amountInEth.toString());
+    const amount = parseEther(FixedNumber.from(amountInEth).toString());
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
 
@@ -234,7 +223,7 @@ export class OpenSeaSDK {
   private getAmountWithBasisPointsApplied = (
     amount: BigNumber,
     basisPoints: number
-  ) => {
+  ): string => {
     return amount.mul(basisPoints).div(INVERSE_BASIS_POINT).toString();
   };
 
