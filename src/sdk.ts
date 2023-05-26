@@ -1,5 +1,6 @@
 import EventEmitter = require("events");
 import { Seaport } from "@opensea/seaport-js";
+import { OPENSEA_CONDUIT_KEY } from "@opensea/seaport-js/lib/constants";
 import {
   ConsiderationInputItem,
   CreateInputItem,
@@ -18,7 +19,6 @@ import { parseEther } from "ethers/lib/utils";
 import { OpenSeaAPI } from "./api";
 import {
   INVERSE_BASIS_POINT,
-  NULL_ADDRESS,
   DEFAULT_ZONE_BY_NETWORK,
   WETH_ADDRESS_BY_NETWORK,
 } from "./constants";
@@ -95,7 +95,9 @@ export class OpenSeaSDK {
     this.provider = provider;
     this.signerOrProvider = wallet ?? this.provider;
 
-    this.seaport_v1_5 = new Seaport(this.signerOrProvider);
+    this.seaport_v1_5 = new Seaport(this.signerOrProvider, {
+      overrides: { defaultConduitKey: OPENSEA_CONDUIT_KEY },
+    });
 
     // Emit events
     this._emitter = new EventEmitter();
@@ -291,11 +293,11 @@ export class OpenSeaSDK {
   }
 
   private getAssetItems(
-    assets: Asset[],
+    assets: OpenSeaAsset[],
     quantities: BigNumber[] = []
   ): CreateInputItem[] {
     return assets.map((asset, index) => ({
-      itemType: getAssetItemType(asset.tokenStandard),
+      itemType: getAssetItemType(asset.assetContract.tokenStandard),
       token:
         getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
           asset.tokenAddress
@@ -345,7 +347,7 @@ export class OpenSeaSDK {
     const openseaAsset = await this.api.getAsset(asset);
     const considerationAssetItems = this.getAssetItems(
       [openseaAsset],
-      [BigNumber.from(quantity)]
+      [BigNumber.from(quantity ?? 1)]
     );
 
     const { basePrice } = await this._getPriceParameters(
@@ -375,12 +377,13 @@ export class OpenSeaSDK {
           },
         ],
         consideration: [...considerationAssetItems, ...considerationFeeItems],
-        endTime: expirationTime
-          ? BigNumber.from(expirationTime).toString()
-          : getMaxOrderExpirationTimestamp().toString(),
+        endTime:
+          expirationTime !== undefined
+            ? BigNumber.from(expirationTime).toString()
+            : getMaxOrderExpirationTimestamp().toString(),
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
         domain,
-        salt: BigNumber.from(salt).toString(),
+        salt: BigNumber.from(salt ?? 0).toString(),
         restrictedByZone: false,
         allowPartialFills: true,
       },
@@ -420,7 +423,7 @@ export class OpenSeaSDK {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress = NULL_ADDRESS,
+    paymentTokenAddress = ethers.constants.AddressZero,
     buyerAddress,
   }: {
     asset: Asset;
@@ -442,7 +445,7 @@ export class OpenSeaSDK {
     const openseaAsset = await this.api.getAsset(asset);
     const offerAssetItems = this.getAssetItems(
       [openseaAsset],
-      [BigNumber.from(quantity)]
+      [BigNumber.from(quantity ?? 1)]
     );
 
     const { basePrice, endPrice } = await this._getPriceParameters(
@@ -485,7 +488,7 @@ export class OpenSeaSDK {
           getMaxOrderExpirationTimestamp().toString(),
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
         domain,
-        salt: BigNumber.from(salt).toString(),
+        salt: BigNumber.from(salt ?? 0).toString(),
         restrictedByZone: false,
         allowPartialFills: true,
       },
@@ -570,7 +573,7 @@ export class OpenSeaSDK {
         getMaxOrderExpirationTimestamp().toString(),
       zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
       domain,
-      salt: BigNumber.from(salt).toString(),
+      salt: BigNumber.from(salt ?? 0).toString(),
       restrictedByZone: false,
       allowPartialFills: true,
     };
@@ -812,7 +815,7 @@ export class OpenSeaSDK {
         .call();
 
       if (count !== undefined) {
-        return BigNumber.from(count);
+        return count;
       }
     } else if (asset.tokenStandard == TokenStandard.ERC721) {
       const contract = new ethers.Contract(
@@ -929,7 +932,7 @@ export class OpenSeaSDK {
     waitingForBestCounterOrder = false,
     englishAuctionReservePrice?: BigNumberish
   ) {
-    const isEther = tokenAddress === NULL_ADDRESS;
+    const isEther = tokenAddress === ethers.constants.AddressZero;
     let paymentToken;
     if (!isEther) {
       const { tokens } = await this.api.getPaymentTokens({
@@ -989,10 +992,12 @@ export class OpenSeaSDK {
         "Expiration time must be set if order will change in price."
       );
     }
-    if (!reservePrice?.isZero() && !waitingForBestCounterOrder) {
+    const reservePriceIsDefinedAndNonZero =
+      reservePrice && !reservePrice.isZero();
+    if (reservePriceIsDefinedAndNonZero && !waitingForBestCounterOrder) {
       throw new Error("Reserve prices may only be set on English auctions.");
     }
-    if (!reservePrice?.isZero() && reservePrice?.lt(startAmountWei)) {
+    if (reservePriceIsDefinedAndNonZero && reservePrice?.lt(startAmountWei)) {
       throw new Error(
         "Reserve price must be greater than or equal to the start amount."
       );

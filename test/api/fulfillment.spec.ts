@@ -1,11 +1,11 @@
 import "../utils/setup";
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { mainApi } from "../utils/constants";
+import { mainAPI } from "../utils/constants";
 
 suite("Generating fulfillment data", () => {
   test(`Generate fulfillment data for listing`, async () => {
-    const order = await mainApi.getOrder({
+    const order = await mainAPI.getOrder({
       protocol: "seaport",
       side: "ask",
     });
@@ -14,7 +14,7 @@ suite("Generating fulfillment data", () => {
       return;
     }
 
-    const fulfillment = await mainApi.generateFulfillmentData(
+    const fulfillment = await mainAPI.generateFulfillmentData(
       "0x000000000000000000000000000000000000dEaD",
       order.orderHash,
       order.protocolAddress,
@@ -25,7 +25,7 @@ suite("Generating fulfillment data", () => {
   });
 
   test(`Generate fulfillment data for offer`, async () => {
-    const order = await mainApi.getOrder({
+    const order = await mainAPI.getOrder({
       protocol: "seaport",
       side: "bid",
     });
@@ -34,7 +34,7 @@ suite("Generating fulfillment data", () => {
       return;
     }
 
-    const fulfillment = await mainApi.generateFulfillmentData(
+    const fulfillment = await mainAPI.generateFulfillmentData(
       "0x000000000000000000000000000000000000dEaD",
       order.orderHash,
       order.protocolAddress,

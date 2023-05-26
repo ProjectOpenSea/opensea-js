@@ -13,14 +13,14 @@ WALLET_PRIV_KEY = "0x" # Wallet private key
 
 # The following needs to be an NFT owned by the wallet address derived from WALLET_PRIV_KEY
 SELL_ORDER_CONTRACT_ADDRESS = "0x"
-SELL_ORDER_TOKEN_ID = ""
+SELL_ORDER_TOKEN_ID = "123"
 ```
 
 Optional:
 
 ```bash
-OFFER_AMOUNT = "" # Defaults to 0.004
-LISTING_AMOUNT = "" # Defaults to 40
+OFFER_AMOUNT = "0.004" # Defaults to 0.004
+LISTING_AMOUNT = "40" # Defaults to 40
 ```
 
 #### WETH Tests

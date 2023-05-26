@@ -1,6 +1,5 @@
 import { Network } from "./types";
 
-export const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 export const INVERSE_BASIS_POINT = 10_000; // 100 basis points per 1%
 export const MAX_EXPIRATION_MONTHS = 1;
 

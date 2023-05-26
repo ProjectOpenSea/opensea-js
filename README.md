@@ -375,7 +375,7 @@ Example for transferring 2 DAI ($2) to another address:
 ```typescript
 const paymentToken = (await openseaSDK.api.getPaymentTokens({ symbol: "DAI" }))
   .tokens[0];
-const quantity = BigNumber.from(Math.pow(10, paymentToken.decimals)).times(2);
+const quantity = ethers.utils.parseUnits("2", paymentToken.decimals);
 const transactionHash = await openseaSDK.transfer({
   asset: {
     tokenId: null,
