@@ -22,7 +22,7 @@ jobs:
         run: npm install
 
       - name: Run linters
-        run: npm run lint:check
+        run: npm run lint
 
   test:
     runs-on: ubuntu-latest
