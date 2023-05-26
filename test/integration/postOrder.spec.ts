@@ -50,12 +50,15 @@ suite("SDK: order posting", () => {
   test("Post collection offer", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const network: Network = (sdk as any)._networkName;
+
     const postOrderRequest = {
       collectionSlug: collection.slug,
       accountAddress: walletAddress,
       amount: OFFER_AMOUNT ?? "0.004",
       quantity: 1,
-      paymentTokenAddress: WETH_ADDRESS_BY_NETWORK[Network.Main],
+      paymentTokenAddress: WETH_ADDRESS_BY_NETWORK[network],
     };
 
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest);

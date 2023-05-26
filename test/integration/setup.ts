@@ -7,11 +7,7 @@ import {
   WALLET_PRIV_KEY,
 } from "../utils/constants";
 
-for (const envVar of [
-  "WALLET_PRIV_KEY",
-  "SELL_ORDER_CONTRACT_ADDRESS",
-  "SELL_ORDER_TOKEN_ID",
-]) {
+for (const envVar of ["WALLET_PRIV_KEY"]) {
   if (!process.env[envVar]) {
     throw new Error(`${envVar} must be set for integration tests`);
   }

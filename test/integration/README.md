@@ -25,7 +25,7 @@ LISTING_AMOUNT = "" # Defaults to 40
 
 #### WETH Tests
 
-This test requires ETH and a transaction fee to be in your wallet.
+This test requires ETH in your wallet and an amount for the transaction fee. Please note THIS TEST COSTS ETH TO RUN.
 
 If you would like to run this test, you need to add `ETH_TO_WRAP = "0.001"` to your `.env` file.
 
