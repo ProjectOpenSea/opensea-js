@@ -4,7 +4,6 @@ import {
 } from "@opensea/seaport-js/lib/constants";
 import { BigNumber, ethers } from "ethers";
 import {
-  INVERSE_BASIS_POINT,
   MAX_EXPIRATION_MONTHS,
   MERKLE_VALIDATOR_MAINNET,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
@@ -24,7 +23,6 @@ import {
   OpenSeaUser,
   Order,
   OrderSide,
-  SaleKind,
   TokenStandard,
   Transaction,
   UnsignedOrder,
@@ -225,50 +223,6 @@ export async function estimateGas(
     value: value.toString(),
     data,
   });
-}
-
-/**
- * Estimates the price of an order
- * @param order The order to estimate price on
- * @param secondsToBacktrack The number of seconds to subtract on current time,
- *  to fix race conditions
- */
-export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30) {
-  let { basePrice, listingTime, expirationTime, extra } = order;
-  const { side, takerRelayerFee, saleKind } = order;
-
-  const now = BigNumber.from(Math.round(Date.now() / 1000)).sub(
-    secondsToBacktrack
-  );
-  basePrice = BigNumber.from(basePrice ?? 0);
-  listingTime = BigNumber.from(listingTime ?? 0);
-  expirationTime = BigNumber.from(expirationTime ?? 0);
-  extra = BigNumber.from(extra ?? 0);
-
-  let exactPrice = basePrice;
-
-  if (saleKind === SaleKind.FixedPrice) {
-    // Do nothing, price is correct
-  } else if (saleKind === SaleKind.DutchAuction) {
-    const diff = extra
-      .mul(now.sub(listingTime))
-      .div(expirationTime.sub(listingTime));
-
-    exactPrice =
-      side == OrderSide.Sell
-        ? /* Sell-side - start price: basePrice. End price: basePrice - extra. */
-          basePrice.sub(diff)
-        : /* Buy-side - start price: basePrice. End price: basePrice + extra. */
-          basePrice.add(diff);
-  }
-
-  // Add taker fee only for buyers
-  if (side === OrderSide.Sell && !order.waitingForBestCounterOrder) {
-    // Buyer fee increases sale price
-    exactPrice = exactPrice.mul(+takerRelayerFee / INVERSE_BASIS_POINT + 1);
-  }
-
-  return exactPrice;
 }
 
 /**
