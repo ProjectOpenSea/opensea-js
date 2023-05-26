@@ -12,9 +12,7 @@
 [![Docs][docs-badge]][docs-link]
 [![Discussions][discussions-badge]][discussions-link]
 
-A JavaScript library for crypto-native ecommerce: buying, selling, and bidding on any cryptogood. With OpenSea.js, you can easily build your own native marketplace for your non-fungible tokens, or NFTs. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don't have to deploy your own smart contracts or backend orderbooks.
-
-Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](https://www.npmjs.com/package/opensea-js)
+A JavaScript library for crypto-native e-commerce: buying, selling, and bidding on NFTs (non-fungible tokens). With OpenSea.js, you can easily build your own native marketplace. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don't have to deploy your own smart contracts or manage backend orderbooks.
 
 - [Synopsis](#synopsis)
 - [Installation](#installation)
@@ -37,7 +35,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Private Auctions](#private-auctions)
   - [Listening to Events](#listening-to-events)
 - [Learning More](#learning-more)
-- [Migrating to version 1.0](#migrating-to-version-10)
+- [Changelog](#changelog)
 - [Development Information](#development-information)
 - [Diagnosing Common Issues](#diagnosing-common-issues)
 - [Testing your branch locally](#testing-your-branch-locally)
@@ -60,6 +58,8 @@ Then, in your project, run:
 
 ```bash
 npm install --save opensea-js
+# or
+yarn add opensea-js
 ```
 
 ## Getting Started
@@ -83,9 +83,9 @@ const openseaSDK = new OpenSeaSDK(provider, {
 });
 ```
 
-**NOTE:** for testnet, please use `Chain.Goerli` as the `chain` - Rinkeby was deprecated in 2022.
+**NOTE:** For testnet, please use `Chain.Goerli` as the `chain`. Rinkeby was deprecated in 2022.
 
-**NOTE:** Using the sample Infura provider above won't let you authorize transactions, which are needed when approving and trading assets and currency. To make transactions, you need a provider with a private key or mnemonic set.
+**NOTE:** Using the sample provider above won't let you authorize transactions, which are needed when approving and trading assets and currency. To make transactions, you need a provider with a private key or mnemonic set.
 
 In a browser with web3 or an extension like [MetaMask](https://metamask.io/) or [Coinbase Wallet](https://www.coinbase.com/wallet), you can use `window.ethereum` to access the native provider.
 
@@ -120,7 +120,7 @@ You can fetch an asset using the `OpenSeaAPI`, which will return an `OpenSeaAsse
 ```TypeScript
 const asset: OpenSeaAsset = await openseaSDK.api.getAsset({
   tokenAddress, // string
-  tokenId, // string | number | null
+  tokenId, // string | number | BigNumber | null
 })
 ```
 
@@ -487,9 +487,8 @@ Events are fired whenever transactions or orders are being created, and when tra
 Our recommendation is that you "forward" OpenSea events to your own store or state management system. Here's an example of doing that with a Redux action:
 
 ```typescript
-import { EventType } from 'opensea-js'
+import { openSeaSDK, EventType } from 'opensea-js'
 import * as ActionTypes from './index'
-import { openSeaSDK } from '../globalSingletons'
 
 // ...
 
@@ -564,7 +563,7 @@ To remove all listeners and start over, just call `openseaSDK.removeAllListeners
 
 Auto-generated documentation for each export is available [here](https://projectopensea.github.io/opensea-js/).
 
-## Migrating to version 1.0
+## Changelog
 
 See the [Changelog](CHANGELOG.md).
 
@@ -598,7 +597,7 @@ Or run the tests:
 npm test
 ```
 
-Note that the tests require access to both Infura and the OpenSea API. The timeout is adjustable via the `test` script in `package.json`.
+Note that the tests require access to Alchemy and the OpenSea API. The timeout is adjustable via the `test` script in `package.json`.
 
 **Generate Documentation**
 
