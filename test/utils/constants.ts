@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { OpenSeaAPI } from "../../src/api";
 import { Network } from "../../src/types";
 
-export const MAINNET_API_KEY = process.env.API_KEY;
+export const MAINNET_API_KEY = process.env.OPENSEA_API_KEY;
 export const WALLET_PRIV_KEY = process.env.WALLET_PRIV_KEY;
 
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;

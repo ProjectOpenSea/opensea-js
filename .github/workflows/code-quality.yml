@@ -38,7 +38,7 @@ jobs:
 
       - name: Run tests
         env:
-          API_KEY: ${{ secrets.API_KEY }}
+          OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
         run: npm run test
 
   # integration-test:
@@ -55,7 +55,7 @@ jobs:
 
   #     - name: Run integration tests
   #       env:
-  #         API_KEY: ${{ secrets.API_KEY }}
+  #         OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
   #         SELL_ORDER_CONTRACT_ADDRESS: ${{ secrets.SELL_ORDER_CONTRACT_ADDRESS }}
   #         SELL_ORDER_TOKEN_ID: ${{ secrets.SELL_ORDER_TOKEN_ID }}
   #         LISTING_AMOUNT: ${{ secrets.LISTING_AMOUNT }}
@@ -76,5 +76,5 @@ jobs:
 
       - name: Run tests
         env:
-          API_KEY: ${{ secrets.API_KEY }}
+          OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
         run: npm run test

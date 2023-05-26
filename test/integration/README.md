@@ -7,7 +7,7 @@ These tests were built to test the order posting functionality of the SDK. Signi
 Environment variables for integration tests are set using `.env`. This file is not in the source code for the repository so you will need to create a file with the following fields:
 
 ```bash
-API_KEY = "" # OpenSea API Key
+OPENSEA_API_KEY = "" # OpenSea API Key
 ALCHEMY_API_KEY = "" # Alchemy API Key
 WALLET_PRIV_KEY = "0x" # Wallet private key
 
