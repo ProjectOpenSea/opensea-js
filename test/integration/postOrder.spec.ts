@@ -1,13 +1,15 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { Network } from "src";
+import { WETH_ADDRESS_BY_NETWORK } from "src/constants";
 import {
   LISTING_AMOUNT,
   TOKEN_ADDRESS,
   TOKEN_ID,
   sdk,
   walletAddress,
-} from "./init";
-import { WETH_ADDRESS, OFFER_AMOUNT } from "../utils/constants";
+} from "./setup";
+import { OFFER_AMOUNT } from "../utils/constants";
 import { expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {
@@ -53,7 +55,7 @@ suite("SDK: order posting", () => {
       accountAddress: walletAddress,
       amount: OFFER_AMOUNT ?? "0.004",
       quantity: 1,
-      paymentTokenAddress: WETH_ADDRESS,
+      paymentTokenAddress: WETH_ADDRESS_BY_NETWORK[Network.Main],
     };
 
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest);

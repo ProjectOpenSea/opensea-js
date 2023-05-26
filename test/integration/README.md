@@ -8,10 +8,11 @@ Environment variables for integration tests are set using `.env`. This file is n
 
 ```bash
 API_KEY = "" # OpenSea API Key
-WALLET_PRIV_KEY = ""
-ALCHEMY_API_KEY = ""
-# The following needs to be an NFT owned by the WALLET_ADDRESS
-SELL_ORDER_CONTRACT_ADDRESS = ""
+ALCHEMY_API_KEY = "" # Alchemy API Key
+WALLET_PRIV_KEY = "0x" # Wallet private key
+
+# The following needs to be an NFT owned by the wallet address derived from WALLET_PRIV_KEY
+SELL_ORDER_CONTRACT_ADDRESS = "0x"
 SELL_ORDER_TOKEN_ID = ""
 ```
 
@@ -24,7 +25,9 @@ LISTING_AMOUNT = "" # Defaults to 40
 
 #### WETH Tests
 
-This test requires ETH and a transaction fee to be in your wallet. If you would like to run this test, you need to add e.g. `ETH_TO_WRAP = "0.001"` to your `.env` file.
+This test requires ETH and a transaction fee to be in your wallet.
+
+If you would like to run this test, you need to add `ETH_TO_WRAP = "0.001"` to your `.env` file.
 
 ### How to run:
 

@@ -2,8 +2,8 @@ import { ethers } from "ethers";
 import { OpenSeaSDK } from "../../src/sdk";
 import { Network } from "../../src/types";
 import {
-  ALCHEMY_API_KEY,
   MAINNET_API_KEY,
+  RPC_PROVIDER,
   WALLET_PRIV_KEY,
 } from "../utils/constants";
 
@@ -22,15 +22,11 @@ export const TOKEN_ID = process.env.SELL_ORDER_TOKEN_ID;
 export const LISTING_AMOUNT = process.env.LISTING_AMOUNT;
 export const ETH_TO_WRAP = process.env.ETH_TO_WRAP;
 
-const rpcProvider = new ethers.providers.JsonRpcProvider(
-  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-);
-
-const wallet = new ethers.Wallet(WALLET_PRIV_KEY as string, rpcProvider);
+const wallet = new ethers.Wallet(WALLET_PRIV_KEY as string, RPC_PROVIDER);
 export const walletAddress = wallet.address;
 
 export const sdk = new OpenSeaSDK(
-  rpcProvider,
+  RPC_PROVIDER,
   {
     networkName: Network.Main,
     apiKey: MAINNET_API_KEY,

@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { parseEther } from "ethers/lib/utils";
 import { describe, test } from "mocha";
-import { ETH_TO_WRAP, sdk, walletAddress } from "./init";
+import { ETH_TO_WRAP, sdk, walletAddress } from "./setup";
 import { Network, TokenStandard } from "../../src/types";
 import { getCanonicalWrappedEther } from "../../src/utils/tokens";
 

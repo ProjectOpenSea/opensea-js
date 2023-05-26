@@ -1,5 +1,4 @@
 import { assert } from "chai";
-import { ethers } from "ethers";
 import { suite, test } from "mocha";
 import {
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
@@ -10,17 +9,13 @@ import { OpenSeaSDK } from "../../src/index";
 import { Network } from "../../src/types";
 import { getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress } from "../../src/utils/utils";
 import {
-  ALCHEMY_API_KEY,
   DAPPER_ADDRESS,
   MAINNET_API_KEY,
+  RPC_PROVIDER,
 } from "../utils/constants";
 
-const provider = new ethers.providers.JsonRpcProvider(
-  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-);
-
 const client = new OpenSeaSDK(
-  provider,
+  RPC_PROVIDER,
   {
     networkName: Network.Main,
     apiKey: MAINNET_API_KEY,

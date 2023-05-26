@@ -1,22 +1,17 @@
 import { assert } from "chai";
-import { ethers } from "ethers";
 import { before, suite, test } from "mocha";
 import { OpenSeaSDK } from "../../src/index";
 import { Network, OpenSeaAsset, OrderSide } from "../../src/types";
 import { feesToBasisPoints } from "../../src/utils/utils";
 import {
-  ALCHEMY_API_KEY,
   BAYC_CONTRACT_ADDRESS,
   BAYC_TOKEN_ID,
   MAINNET_API_KEY,
+  RPC_PROVIDER,
 } from "../utils/constants";
 
-const provider = new ethers.providers.JsonRpcProvider(
-  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-);
-
 const client = new OpenSeaSDK(
-  provider,
+  RPC_PROVIDER,
   {
     networkName: Network.Main,
     apiKey: MAINNET_API_KEY,
