@@ -39,7 +39,7 @@ import {
   ComputedFees,
   EventData,
   EventType,
-  Network,
+  Chain,
   OpenSeaAPIConfig,
   OpenSeaAsset,
   OpenSeaCollection,
@@ -58,25 +58,26 @@ import {
 } from "./utils/utils";
 
 export class OpenSeaSDK {
-  // Provider
+  /** Provider */
   public provider: providers.JsonRpcProvider;
-  // Seaport v1.5 client
+  /** Seaport v1.5 client */
   public seaport_v1_5: Seaport;
-  // Logger function to use when debugging
+  /** Logger function to use when debugging */
   public logger: (arg: string) => void;
-  // API instance on this seaport
+  /** API instance on this seaport */
   public readonly api: OpenSeaAPI;
+  /** The configured chain */
+  public readonly chain: Chain;
 
-  private _networkName: Network;
   private _emitter: EventEmitter;
-  private signerOrProvider: Wallet | providers.JsonRpcProvider;
+  private _signerOrProvider: Wallet | providers.JsonRpcProvider;
 
   /**
    * Your very own seaport.
    * Create a new instance of OpenSeaJS.
    * @param provider Provider to use for transactions. For example:
    *  `const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')`
-   * @param apiConfig configuration options, including `networkName`
+   * @param apiConfig configuration options, including `chain`
    * @param logger logger, optional, a function that will be called with debugging
    * @param wallet optional, if you'd like to use an ethers wallet for order posting
    *  information
@@ -88,14 +89,14 @@ export class OpenSeaSDK {
     wallet?: Wallet
   ) {
     // API config
-    apiConfig.networkName = apiConfig.networkName ?? Network.Main;
+    apiConfig.chain ??= Chain.Mainnet;
+    this.chain = apiConfig.chain;
     this.api = new OpenSeaAPI(apiConfig);
-    this._networkName = apiConfig.networkName;
 
     this.provider = provider;
-    this.signerOrProvider = wallet ?? this.provider;
+    this._signerOrProvider = wallet ?? this.provider;
 
-    this.seaport_v1_5 = new Seaport(this.signerOrProvider, {
+    this.seaport_v1_5 = new Seaport(this._signerOrProvider, {
       overrides: { defaultConduitKey: OPENSEA_CONDUIT_KEY },
     });
 
@@ -157,7 +158,7 @@ export class OpenSeaSDK {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
-    const token = getCanonicalWrappedEther(this._networkName);
+    const token = getCanonicalWrappedEther(this.chain);
 
     const value = parseEther(FixedNumber.from(amountInEth).toString());
 
@@ -166,7 +167,7 @@ export class OpenSeaSDK {
     const wethContract = new Contract(
       token.address,
       ["function deposit() payable"],
-      this.signerOrProvider
+      this._signerOrProvider
     );
 
     wethContract.connect(this.provider);
@@ -196,7 +197,7 @@ export class OpenSeaSDK {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
-    const token = getCanonicalWrappedEther(this._networkName);
+    const token = getCanonicalWrappedEther(this.chain);
 
     const amount = parseEther(FixedNumber.from(amountInEth).toString());
 
@@ -205,7 +206,7 @@ export class OpenSeaSDK {
     const wethContract = new Contract(
       token.address,
       ["function withdraw(uint wad) public"],
-      this.signerOrProvider
+      this._signerOrProvider
     );
 
     wethContract.connect(this.provider);
@@ -342,7 +343,7 @@ export class OpenSeaSDK {
       throw new Error("Asset must have a tokenId");
     }
     paymentTokenAddress =
-      paymentTokenAddress ?? WETH_ADDRESS_BY_NETWORK[this._networkName];
+      paymentTokenAddress ?? WETH_ADDRESS_BY_NETWORK[this.chain];
 
     const openseaAsset = await this.api.getAsset(asset);
     const considerationAssetItems = this.getAssetItems(
@@ -381,7 +382,7 @@ export class OpenSeaSDK {
           expirationTime !== undefined
             ? BigNumber.from(expirationTime).toString()
             : getMaxOrderExpirationTimestamp().toString(),
-        zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+        zone: DEFAULT_ZONE_BY_NETWORK[this.chain],
         domain,
         salt: BigNumber.from(salt ?? 0).toString(),
         restrictedByZone: false,
@@ -486,7 +487,7 @@ export class OpenSeaSDK {
         endTime:
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
-        zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+        zone: DEFAULT_ZONE_BY_NETWORK[this.chain],
         domain,
         salt: BigNumber.from(salt ?? 0).toString(),
         restrictedByZone: false,
@@ -571,7 +572,7 @@ export class OpenSeaSDK {
       endTime:
         expirationTime?.toString() ??
         getMaxOrderExpirationTimestamp().toString(),
-      zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
+      zone: DEFAULT_ZONE_BY_NETWORK[this.chain],
       domain,
       salt: BigNumber.from(salt ?? 0).toString(),
       restrictedByZone: false,

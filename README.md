@@ -70,7 +70,7 @@ Then, create a new OpenSeaJS client, called an OpenSeaSDK 🚢, using your web3 
 
 ```typescript
 import { ethers } from "ethers";
-import { OpenSeaSDK, Network } from "opensea-js";
+import { OpenSeaSDK, Chain } from "opensea-js";
 
 // This example provider won't let you make transactions, only read-only calls:
 const provider = new ethers.providers.JsonRpcProvider(
@@ -78,12 +78,12 @@ const provider = new ethers.providers.JsonRpcProvider(
 );
 
 const openseaSDK = new OpenSeaSDK(provider, {
-  networkName: Network.Main,
+  chain: Chain.Mainnet,
   apiKey: YOUR_API_KEY,
 });
 ```
 
-**NOTE:** for testnet, please use `Network.Goerli` as the `networkName` - Rinkeby was deprecated in 2022.
+**NOTE:** for testnet, please use `Chain.Goerli` as the `chain` - Rinkeby was deprecated in 2022.
 
 **NOTE:** Using the sample Infura provider above won't let you authorize transactions, which are needed when approving and trading assets and currency. To make transactions, you need a provider with a private key or mnemonic set.
 

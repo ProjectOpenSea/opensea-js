@@ -8,25 +8,25 @@ import {
   SerializedOrderV2,
   ProtocolData,
 } from "./types";
-import { Network } from "../types";
+import { Chain } from "../types";
 import { accountFromJSON, assetBundleFromJSON } from "../utils";
 
-const NETWORK_TO_CHAIN = {
-  [Network.Main]: "ethereum",
-  [Network.Goerli]: "goerli",
+const CHAIN_TO_NAME = {
+  [Chain.Mainnet]: "ethereum",
+  [Chain.Goerli]: "goerli",
 };
 
 export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS;
 
 export const getOrdersAPIPath = (
-  network: Network,
+  chain: Chain,
   protocol: OrderProtocol,
   side: OrderSide
 ) => {
-  const chain = NETWORK_TO_CHAIN[network];
+  const chainName = CHAIN_TO_NAME[chain];
   const sidePath = side === "ask" ? "listings" : "offers";
-  return `/v2/orders/${chain}/${protocol}/${sidePath}`;
+  return `/v2/orders/${chainName}/${protocol}/${sidePath}`;
 };
 
 export const getCollectionPath = (slug: string) => {
@@ -80,13 +80,13 @@ export const getFulfillListingPayload = (
   fulfillerAddress: string,
   order_hash: string,
   protocolAddress: string,
-  network: Network
+  chain: Chain
 ) => {
-  const chain = NETWORK_TO_CHAIN[network];
+  const chainName = CHAIN_TO_NAME[chain];
   return {
     listing: {
       hash: order_hash,
-      chain,
+      chain: chainName,
       protocol_address: protocolAddress,
     },
     fulfiller: {
@@ -99,13 +99,13 @@ export const getFulfillOfferPayload = (
   fulfillerAddress: string,
   order_hash: string,
   protocolAddress: string,
-  network: Network
+  chain: Chain
 ) => {
-  const chain = NETWORK_TO_CHAIN[network];
+  const chainName = CHAIN_TO_NAME[chain];
   return {
     offer: {
       hash: order_hash,
-      chain,
+      chain: chainName,
       protocol_address: protocolAddress,
     },
     fulfiller: {

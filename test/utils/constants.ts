@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { OpenSeaAPI } from "../../src/api";
-import { Network } from "../../src/types";
+import { Chain } from "../../src/types";
 
 export const MAINNET_API_KEY = process.env.OPENSEA_API_KEY;
 export const WALLET_PRIV_KEY = process.env.WALLET_PRIV_KEY;
@@ -20,14 +20,14 @@ export const BAYC_TOKEN_IDS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 export const mainAPI = new OpenSeaAPI(
   {
     apiKey: MAINNET_API_KEY,
-    networkName: Network.Main,
+    chain: Chain.Mainnet,
   },
   process.env.DEBUG ? console.log : undefined
 );
 
 export const testnetAPI = new OpenSeaAPI(
   {
-    networkName: Network.Goerli,
+    chain: Chain.Goerli,
   },
   process.env.DEBUG ? console.log : undefined
 );

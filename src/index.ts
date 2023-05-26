@@ -1,16 +1,16 @@
 /* eslint-disable import/no-unused-modules */
 import { OpenSeaAPI } from "./api";
 import { OpenSeaSDK } from "./sdk";
-import { Network, EventData, EventType } from "./types";
+import { Chain, EventData, EventType } from "./types";
 
 /**
  * Example setup:
  *
  * import { ethers } from 'ethers'
- * import { OpenSeaPort, Network } from 'opensea-js'
+ * import { OpenSeaPort, Chain } from 'opensea-js'
  * const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')
  * const client = new OpenSeaPort(provider, {
- *   networkName: Network.Main
+ *   chain: Chain.Mainnet
  * })
  */
 
@@ -24,7 +24,7 @@ export {
   // Useful for serializing and deserializing orders:
   // Types to help initialize SDK and listen to events.
   EventType,
-  Network,
+  Chain,
 };
 
 export type { EventData };

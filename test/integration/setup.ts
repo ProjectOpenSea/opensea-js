@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { OpenSeaSDK } from "../../src/sdk";
-import { Network } from "../../src/types";
+import { Chain } from "../../src/types";
 import {
   MAINNET_API_KEY,
   RPC_PROVIDER,
@@ -24,7 +24,7 @@ export const walletAddress = wallet.address;
 export const sdk = new OpenSeaSDK(
   RPC_PROVIDER,
   {
-    networkName: Network.Main,
+    chain: Chain.Mainnet,
     apiKey: MAINNET_API_KEY,
   },
   (line) => console.info(`MAINNET: ${line}`),

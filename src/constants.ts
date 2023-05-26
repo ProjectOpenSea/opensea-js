@@ -1,4 +1,4 @@
-import { Network } from "./types";
+import { Chain } from "./types";
 
 export const INVERSE_BASIS_POINT = 10_000; // 100 basis points per 1%
 export const MAX_EXPIRATION_MONTHS = 1;
@@ -12,13 +12,13 @@ export const MERKLE_VALIDATOR_MAINNET =
   "0xbaf2127b49fc93cbca6269fade0f7f31df4c88a7";
 
 export const WETH_ADDRESS_BY_NETWORK = {
-  [Network.Main]: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-  [Network.Goerli]: "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6",
+  [Chain.Mainnet]: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  [Chain.Goerli]: "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6",
 } as const;
 
 export const DEFAULT_ZONE_BY_NETWORK = {
-  [Network.Main]: "0x0000000000000000000000000000000000000000",
-  [Network.Goerli]: "0x0000000000000000000000000000000000000000",
+  [Chain.Mainnet]: "0x0000000000000000000000000000000000000000",
+  [Chain.Goerli]: "0x0000000000000000000000000000000000000000",
 } as const;
 
 export const SHARED_STOREFRONT_ADDRESS_MAINNET =

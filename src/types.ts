@@ -77,17 +77,17 @@ export interface EventData {
 /**
  * OpenSea API configuration object
  * @param apiKey Optional key to use for API
- * @param networkName `Network` type to use. Defaults to `Network.Main` (mainnet)
+ * @param chain `Chain` type to use. Defaults to `Chain.Mainnet` (mainnet)
  * @param apiBaseUrl Optional base URL to use for the API
  */
 export interface OpenSeaAPIConfig {
-  networkName?: Network;
+  chain?: Chain;
   apiKey?: string;
   apiBaseUrl?: string;
 }
 
-export enum Network {
-  Main = "main",
+export enum Chain {
+  Mainnet = "main",
   Goerli = "goerli",
 }
 

@@ -12,7 +12,7 @@ import {
 } from "../constants";
 import {
   AssetEvent,
-  Network,
+  Chain,
   OpenSeaAccount,
   OpenSeaAsset,
   OpenSeaAssetBundle,
@@ -287,8 +287,8 @@ export async function getNonCompliantApprovalAddress(
 }
 
 export const merkleValidatorByNetwork = {
-  [Network.Main]: MERKLE_VALIDATOR_MAINNET,
-  [Network.Goerli]: null,
+  [Chain.Mainnet]: MERKLE_VALIDATOR_MAINNET,
+  [Chain.Goerli]: null,
 };
 
 /**
