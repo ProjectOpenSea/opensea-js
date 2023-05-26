@@ -56,6 +56,7 @@ jobs:
       - name: Run integration tests
         env:
           OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
           WALLET_PRIV_KEY: ${{ secrets.WALLET_PRIV_KEY }}
           SELL_ORDER_CONTRACT_ADDRESS: ${{ secrets.SELL_ORDER_CONTRACT_ADDRESS }}
           SELL_ORDER_TOKEN_ID: ${{ secrets.SELL_ORDER_TOKEN_ID }}
