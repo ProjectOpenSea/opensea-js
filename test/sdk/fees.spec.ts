@@ -9,7 +9,7 @@ import {
   BAYC_CONTRACT_ADDRESS,
   BAYC_TOKEN_ID,
   MAINNET_API_KEY,
-} from "../constants";
+} from "../utils/constants";
 
 const provider = new ethers.providers.JsonRpcProvider(
   `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`

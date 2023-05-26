@@ -32,8 +32,8 @@
     "prettier:check": "prettier --check .",
     "prettier:check:package.json": "yarn prettier-package-json --list-different",
     "prettier:fix": "prettier --write .",
-    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register test/**/*.ts --exclude test/integration/**/*.ts --timeout 15000",
-    "test:integration": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register -r dotenv/config test/integration/**/*.ts --timeout 15000"
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register test/**/*.spec.ts --exclude test/integration/**/*.ts --timeout 15000",
+    "test:integration": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register -r dotenv/config test/integration/**/*.spec.ts --timeout 15000"
   },
   "types": "lib/index.d.ts",
   "dependencies": {

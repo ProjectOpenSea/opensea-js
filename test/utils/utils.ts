@@ -1,28 +1,29 @@
-import {
-  CROSS_CHAIN_SEAPORT_V1_4_ADDRESS,
-  CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
-} from "@opensea/seaport-js/lib/constants";
-import { assert } from "chai";
-import { ethers } from "ethers";
-import { suite, test } from "mocha";
-import { isValidProtocol } from "../../src/utils/utils";
+import { expect } from "chai";
+import { OrderV2 } from "src/orders/types";
 
-suite("Utils: utils", () => {
-  test("isValidProtocol works with all forms of address", async () => {
-    const seaport_v1_5 = CROSS_CHAIN_SEAPORT_V1_5_ADDRESS;
-    const seaport_v_1_4 = CROSS_CHAIN_SEAPORT_V1_4_ADDRESS;
-    const randomAddress = "0x1F7Cf51573Bf5270323a395F0bb5Fd3c3a4DB867";
-
-    assert.isTrue(isValidProtocol(seaport_v1_5));
-    assert.isFalse(isValidProtocol(seaport_v_1_4));
-    assert.isFalse(isValidProtocol(randomAddress));
-
-    assert.isTrue(isValidProtocol(seaport_v1_5.toLowerCase()));
-    assert.isFalse(isValidProtocol(seaport_v_1_4.toLowerCase()));
-    assert.isFalse(isValidProtocol(randomAddress.toLowerCase()));
-
-    assert.isTrue(isValidProtocol(ethers.utils.getAddress(seaport_v1_5)));
-    assert.isFalse(isValidProtocol(ethers.utils.getAddress(seaport_v_1_4)));
-    assert.isFalse(isValidProtocol(ethers.utils.getAddress(randomAddress)));
-  });
-});
+export const expectValidOrder = (order: OrderV2) => {
+  const requiredFields = [
+    "createdDate",
+    "closingDate",
+    "listingTime",
+    "expirationTime",
+    "orderHash",
+    "maker",
+    "taker",
+    "protocolData",
+    "protocolAddress",
+    "currentPrice",
+    "makerFees",
+    "takerFees",
+    "side",
+    "orderType",
+    "cancelled",
+    "finalized",
+    "markedInvalid",
+    "makerAssetBundle",
+    "takerAssetBundle",
+  ];
+  for (const field of requiredFields) {
+    expect(field in order).to.be.true;
+  }
+};

@@ -6,7 +6,7 @@ import {
   mainApi,
   MAINNET_API_KEY,
   testnetApi,
-} from "../constants";
+} from "../utils/constants";
 
 suite("API", () => {
   test("API has correct base url", () => {

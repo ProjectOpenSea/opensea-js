@@ -9,7 +9,11 @@ import {
 import { OpenSeaSDK } from "../../src/index";
 import { Network } from "../../src/types";
 import { getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress } from "../../src/utils/utils";
-import { ALCHEMY_API_KEY, DAPPER_ADDRESS, MAINNET_API_KEY } from "../constants";
+import {
+  ALCHEMY_API_KEY,
+  DAPPER_ADDRESS,
+  MAINNET_API_KEY,
+} from "../utils/constants";
 
 const provider = new ethers.providers.JsonRpcProvider(
   `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`

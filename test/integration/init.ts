@@ -5,7 +5,7 @@ import {
   ALCHEMY_API_KEY,
   MAINNET_API_KEY,
   WALLET_PRIV_KEY,
-} from "../constants";
+} from "../utils/constants";
 
 export const TOKEN_ADDRESS = process.env.SELL_ORDER_CONTRACT_ADDRESS;
 export const TOKEN_ID = process.env.SELL_ORDER_TOKEN_ID;
