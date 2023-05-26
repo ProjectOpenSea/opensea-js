@@ -2,7 +2,7 @@ import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
-import { BigNumber, FixedNumber, ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import {
   INVERSE_BASIS_POINT,
   MAX_EXPIRATION_MONTHS,
@@ -405,21 +405,6 @@ export function estimateCurrentPrice(order: Order, secondsToBacktrack = 30) {
   }
 
   return exactPrice;
-}
-
-export function toBaseUnitAmount(
-  amount: FixedNumber,
-  decimals: number
-): BigNumber {
-  const unit = BigNumber.from(10).pow(decimals);
-  const baseUnitAmount = amount.mulUnsafe(FixedNumber.from(unit));
-  const hasDecimals = baseUnitAmount !== baseUnitAmount.round(decimals);
-  if (hasDecimals) {
-    throw new Error(
-      `Invalid unit amount: ${amount.toString()} - Too many decimal places`
-    );
-  }
-  return BigNumber.from(baseUnitAmount.toString());
 }
 
 /**

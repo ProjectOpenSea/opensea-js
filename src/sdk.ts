@@ -57,7 +57,6 @@ import {
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
   feesToBasisPoints,
   isValidProtocol,
-  toBaseUnitAmount,
 } from "./utils/utils";
 
 export class OpenSeaSDK {
@@ -344,7 +343,7 @@ export class OpenSeaSDK {
     startAmount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
-    salt?: string;
+    salt?: BigNumberish;
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
   }): Promise<OrderV2> {
@@ -363,8 +362,8 @@ export class OpenSeaSDK {
     const { basePrice } = await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
-      BigNumber.from(expirationTime ?? getMaxOrderExpirationTimestamp()),
-      BigNumber.from(startAmount)
+      expirationTime ?? getMaxOrderExpirationTimestamp(),
+      startAmount
     );
 
     const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
@@ -387,12 +386,12 @@ export class OpenSeaSDK {
           },
         ],
         consideration: [...considerationAssetItems, ...considerationFeeItems],
-        endTime:
-          expirationTime?.toString() ??
-          getMaxOrderExpirationTimestamp().toString(),
+        endTime: expirationTime
+          ? BigNumber.from(expirationTime).toString()
+          : getMaxOrderExpirationTimestamp().toString(),
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
         domain,
-        salt,
+        salt: BigNumber.from(salt).toString(),
         restrictedByZone: false,
         allowPartialFills: true,
       },
@@ -441,9 +440,9 @@ export class OpenSeaSDK {
     endAmount?: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
-    salt?: string;
-    listingTime?: string;
-    expirationTime?: BigNumberish;
+    salt?: BigNumberish;
+    listingTime?: number;
+    expirationTime?: number;
     paymentTokenAddress?: string;
     buyerAddress?: string;
   }): Promise<OrderV2> {
@@ -460,9 +459,9 @@ export class OpenSeaSDK {
     const { basePrice, endPrice } = await this._getPriceParameters(
       OrderSide.Sell,
       paymentTokenAddress,
-      BigNumber.from(expirationTime ?? getMaxOrderExpirationTimestamp()),
-      BigNumber.from(startAmount),
-      endAmount !== undefined ? BigNumber.from(endAmount) : undefined
+      expirationTime ?? getMaxOrderExpirationTimestamp(),
+      startAmount,
+      endAmount ?? undefined
     );
 
     const {
@@ -491,13 +490,13 @@ export class OpenSeaSDK {
       {
         offer: offerAssetItems,
         consideration: considerationFeeItems,
-        startTime: listingTime,
+        startTime: listingTime?.toString(),
         endTime:
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
         zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
         domain,
-        salt,
+        salt: BigNumber.from(salt).toString(),
         restrictedByZone: false,
         allowPartialFills: true,
       },
@@ -527,11 +526,11 @@ export class OpenSeaSDK {
   }: {
     collectionSlug: string;
     accountAddress: string;
-    amount: string;
+    amount: BigNumberish;
     quantity: number;
     domain?: string;
-    salt?: string;
-    expirationTime?: BigNumberish;
+    salt?: BigNumberish;
+    expirationTime?: number | string;
     paymentTokenAddress: string;
   }): Promise<PostOfferResponse | null> {
     const collection = await this.api.getCollection(collectionSlug);
@@ -551,8 +550,8 @@ export class OpenSeaSDK {
     const { basePrice } = await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
-      BigNumber.from(expirationTime ?? getMaxOrderExpirationTimestamp()),
-      BigNumber.from(amount)
+      expirationTime ?? getMaxOrderExpirationTimestamp(),
+      amount
     );
     const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
       await this.getFees({
@@ -582,7 +581,7 @@ export class OpenSeaSDK {
         getMaxOrderExpirationTimestamp().toString(),
       zone: DEFAULT_ZONE_BY_NETWORK[this._networkName],
       domain,
-      salt,
+      salt: BigNumber.from(salt).toString(),
       restrictedByZone: false,
       allowPartialFills: true,
     };
@@ -929,31 +928,59 @@ export class OpenSeaSDK {
    * @param expirationTime When the auction expires, or 0 if never.
    * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
    * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
+   * @param waitingForBestCounterOrder
+   * @param englishAuctionReservePrice
    */
   private async _getPriceParameters(
     orderSide: OrderSide,
     tokenAddress: string,
-    expirationTime: BigNumber,
-    startAmount: BigNumber,
-    endAmount?: BigNumber,
+    expirationTime: BigNumberish,
+    startAmount: BigNumberish,
+    endAmount?: BigNumberish,
     waitingForBestCounterOrder = false,
-    englishAuctionReservePrice?: BigNumber
+    englishAuctionReservePrice?: BigNumberish
   ) {
-    const priceDiff =
-      endAmount != null ? startAmount.sub(endAmount) : BigNumber.from(0);
-    const paymentToken = tokenAddress.toLowerCase();
-    const isEther = tokenAddress == NULL_ADDRESS;
-    const { tokens } = await this.api.getPaymentTokens({
-      address: paymentToken,
-    });
-    const token = tokens[0];
+    const isEther = tokenAddress === NULL_ADDRESS;
+    let paymentToken;
+    if (!isEther) {
+      const { tokens } = await this.api.getPaymentTokens({
+        address: tokenAddress.toLowerCase(),
+      });
+      paymentToken = tokens[0];
+    }
+    const decimals = paymentToken?.decimals ?? 18;
+
+    const startAmountWei = ethers.utils.parseUnits(
+      FixedNumber.from(startAmount).toString(),
+      decimals
+    );
+    const endAmountWei = endAmount
+      ? ethers.utils.parseUnits(
+          FixedNumber.from(endAmount).toString(),
+          decimals
+        )
+      : undefined;
+    const priceDiffWei =
+      endAmountWei !== undefined
+        ? startAmountWei.sub(endAmountWei)
+        : BigNumber.from(0);
+
+    const basePrice = startAmountWei;
+    const endPrice = endAmountWei;
+    const extra = priceDiffWei;
+    const reservePrice = englishAuctionReservePrice
+      ? ethers.utils.parseUnits(
+          FixedNumber.from(startAmount).toString(),
+          decimals
+        )
+      : undefined;
 
     // Validation
-    if (startAmount == null || startAmount.lt(0)) {
+    if (startAmount == null || startAmountWei.lt(0)) {
       throw new Error(`Starting price must be a number >= 0`);
     }
-    if (!isEther && !token) {
-      throw new Error(`No ERC-20 token found for '${paymentToken}'`);
+    if (!isEther && !paymentToken) {
+      throw new Error(`No ERC-20 token found for ${tokenAddress}`);
     }
     if (isEther && waitingForBestCounterOrder) {
       throw new Error(
@@ -963,53 +990,24 @@ export class OpenSeaSDK {
     if (isEther && orderSide === OrderSide.Buy) {
       throw new Error(`Offers must use wrapped ETH or an ERC-20 token.`);
     }
-    if (priceDiff.lt(0)) {
+    if (priceDiffWei.lt(0)) {
       throw new Error(
         "End price must be less than or equal to the start price."
       );
     }
-    if (priceDiff.gt(0) && expirationTime.eq(0)) {
+    if (priceDiffWei.gt(0) && BigNumber.from(expirationTime).isZero()) {
       throw new Error(
         "Expiration time must be set if order will change in price."
       );
     }
-    if (
-      englishAuctionReservePrice &&
-      !englishAuctionReservePrice.isZero() &&
-      !waitingForBestCounterOrder
-    ) {
+    if (!reservePrice?.isZero() && !waitingForBestCounterOrder) {
       throw new Error("Reserve prices may only be set on English auctions.");
     }
-    if (
-      englishAuctionReservePrice &&
-      !englishAuctionReservePrice.isZero() &&
-      englishAuctionReservePrice < startAmount
-    ) {
+    if (!reservePrice?.isZero() && reservePrice?.lt(startAmountWei)) {
       throw new Error(
         "Reserve price must be greater than or equal to the start amount."
       );
     }
-
-    const basePrice = toBaseUnitAmount(
-      FixedNumber.from(startAmount.toString()),
-      token.decimals
-    );
-
-    const endPrice = endAmount
-      ? toBaseUnitAmount(FixedNumber.from(endAmount.toString()), token.decimals)
-      : undefined;
-
-    const extra = toBaseUnitAmount(
-      FixedNumber.from(priceDiff.toString()),
-      token.decimals
-    );
-
-    const reservePrice = englishAuctionReservePrice
-      ? toBaseUnitAmount(
-          FixedNumber.from(englishAuctionReservePrice.toString()),
-          token.decimals
-        )
-      : undefined;
 
     return { basePrice, extra, paymentToken, reservePrice, endPrice };
   }
