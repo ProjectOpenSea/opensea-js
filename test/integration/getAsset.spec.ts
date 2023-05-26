@@ -11,8 +11,9 @@ suite("SDK: getAsset", () => {
     };
     const asset = await sdk.api.getAsset(assetToGet);
     assert(asset, "Asset should not be null");
-    assert(
-      asset.assetContract.address === tokenAddress,
+    assert.equal(
+      asset.assetContract.address,
+      tokenAddress,
       "Contract address should match."
     );
     assert(asset.animationUrl, "Animation URL should not be null");

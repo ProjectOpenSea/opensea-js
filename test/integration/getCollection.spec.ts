@@ -10,7 +10,7 @@ suite("SDK: getCollection", () => {
 
     assert(collection, "Collection should not be null");
     assert(collection.name, "Collection name should exist");
-    assert(collection.slug === slug, "Collection slug should match.");
+    assert.equal(collection.slug, slug, "Collection slug should match.");
     assert(
       collection.safelistRequestStatus === SafelistStatus.VERIFIED,
       "Collection should be verified."
