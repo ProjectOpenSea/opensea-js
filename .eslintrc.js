@@ -9,7 +9,7 @@ module.exports = {
   ignorePatterns: ["docs", "lib", "src/typechain"],
   reportUnusedDisableDirectives: true,
   parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint", "import", "jest", "prettier"],
+  plugins: ["@typescript-eslint", "import", "prettier"],
 
   extends: [
     "eslint:recommended",
