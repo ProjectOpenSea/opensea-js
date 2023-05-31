@@ -13,6 +13,7 @@
     "url": "https://github.com/ProjectOpenSea/opensea-js/issues"
   },
   "main": "lib/index.js",
+  "browser": "lib/bundle.js",
   "files": [
     "lib",
     "src"
