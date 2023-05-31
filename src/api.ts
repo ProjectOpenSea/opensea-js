@@ -1,6 +1,5 @@
 import "isomorphic-unfetch";
 import { URLSearchParams } from "url";
-import _ from "lodash";
 import { API_BASE_MAINNET, API_BASE_TESTNET, API_PATH } from "./constants";
 import {
   BuildOfferResponse,
@@ -30,7 +29,7 @@ import {
   getPostCollectionOfferPayload,
 } from "./orders/utils";
 import {
-  Network,
+  Chain,
   OpenSeaAPIConfig,
   OpenSeaAsset,
   OpenSeaAssetBundle,
@@ -63,30 +62,30 @@ export class OpenSeaAPI {
   public logger: (arg: string) => void;
 
   private apiKey: string | undefined;
-  private networkName: Network;
+  private chain: Chain;
   private retryDelay = 3000;
 
   /**
    * Create an instance of the OpenSea API
-   * @param config OpenSeaAPIConfig for setting up the API, including an optional API key, network name, and base URL
+   * @param config OpenSeaAPIConfig for setting up the API, including an optional API key, Chain name, and base URL
    * @param logger Optional function for logging debug strings before and after requests are made
    */
   constructor(config: OpenSeaAPIConfig, logger?: (arg: string) => void) {
     this.apiKey = config.apiKey;
-    this.networkName = config.networkName ?? Network.Main;
+    this.chain = config.chain ?? Chain.Mainnet;
 
-    switch (config.networkName) {
-      case Network.Goerli:
-        this.apiBaseUrl = config.apiBaseUrl || API_BASE_TESTNET;
+    switch (config.chain) {
+      case Chain.Goerli:
+        this.apiBaseUrl = config.apiBaseUrl ?? API_BASE_TESTNET;
         break;
-      case Network.Main:
+      case Chain.Mainnet:
       default:
-        this.apiBaseUrl = config.apiBaseUrl || API_BASE_MAINNET;
+        this.apiBaseUrl = config.apiBaseUrl ?? API_BASE_MAINNET;
         break;
     }
 
     // Debugging: default to nothing
-    this.logger = logger || ((arg: string) => arg);
+    this.logger = logger ?? ((arg: string) => arg);
   }
 
   /**
@@ -100,7 +99,7 @@ export class OpenSeaAPI {
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
     const { orders } = await this.get<OrdersQueryResponse>(
-      getOrdersAPIPath(this.networkName, protocol, side),
+      getOrdersAPIPath(this.chain, protocol, side),
       serializeOrdersQueryOptions({
         limit: 1,
         orderBy,
@@ -130,7 +129,7 @@ export class OpenSeaAPI {
     }
   > {
     const response = await this.get<OrdersQueryResponse>(
-      getOrdersAPIPath(this.networkName, protocol, side),
+      getOrdersAPIPath(this.chain, protocol, side),
       serializeOrdersQueryOptions({
         limit: this.pageSize,
         orderBy,
@@ -159,14 +158,14 @@ export class OpenSeaAPI {
         fulfillerAddress,
         orderHash,
         protocolAddress,
-        this.networkName
+        this.chain
       );
     } else {
       payload = getFulfillOfferPayload(
         fulfillerAddress,
         orderHash,
         protocolAddress,
-        this.networkName
+        this.chain
       );
     }
     const response = await this.post<FulfillmentDataResponse>(
@@ -189,7 +188,7 @@ export class OpenSeaAPI {
     const { protocol = "seaport", side, protocolAddress } = apiOptions;
     try {
       response = await this.post<OrdersPostQueryResponse>(
-        getOrdersAPIPath(this.networkName, protocol, side),
+        getOrdersAPIPath(this.chain, protocol, side),
         { ...order, protocol_address: protocolAddress }
       );
     } catch (error) {
@@ -229,8 +228,6 @@ export class OpenSeaAPI {
     retries = 0
   ): Promise<PostOfferResponse | null> {
     const payload = getPostCollectionOfferPayload(slug, order);
-    console.log("Post Order Payload");
-    console.log(JSON.stringify(payload, null, 4));
     try {
       return await this.post<PostOfferResponse>(
         getPostCollectionOfferPath(),
@@ -241,30 +238,6 @@ export class OpenSeaAPI {
       await delay(1000);
       return this.postCollectionOffer(order, slug, retries - 1);
     }
-  }
-
-  /**
-   * Create a whitelist entry for an asset to prevent others from buying.
-   * Buyers will have to have verified at least one of the emails
-   * on an asset in order to buy.
-   * This will throw a 403 if the given API key isn't allowed to create whitelist entries for this contract or asset.
-   * @param tokenAddress Address of the asset's contract
-   * @param tokenId The asset's token ID
-   * @param email The email allowed to buy.
-   */
-  public async postAssetWhitelist(
-    tokenAddress: string,
-    tokenId: string | number,
-    email: string
-  ): Promise<boolean> {
-    const json = await this.post<{ success: boolean }>(
-      `${API_PATH}/asset/${tokenAddress}/${tokenId}/whitelist/`,
-      {
-        email,
-      }
-    );
-
-    return !!json.success;
   }
 
   /**
@@ -286,7 +259,7 @@ export class OpenSeaAPI {
     let json;
     try {
       json = await this.get(
-        `${API_PATH}/asset/${tokenAddress}/${tokenId || 0}/`
+        `${API_PATH}/asset/${tokenAddress}/${tokenId ?? 0}/`
       );
     } catch (error) {
       _throwOrContinue(error, retries);
@@ -411,7 +384,6 @@ export class OpenSeaAPI {
   public async get<T>(apiPath: string, query: object = {}): Promise<T> {
     const qs = this.objectToSearchParams(query);
     const url = `${apiPath}?${qs}`;
-    console.log(url);
 
     const response = await this._fetch(url);
     return response.json();
@@ -443,20 +415,6 @@ export class OpenSeaAPI {
     return response.json();
   }
 
-  /**
-   * PUT JSON data to API, sending auth token in headers
-   * @param apiPath Path to URL endpoint under API
-   * @param body Data to send
-   * @param opts RequestInit opts, similar to Fetch API. If it contains
-   *  a body, it won't be stringified.
-   */
-  public async put(apiPath: string, body: object, opts: RequestInit = {}) {
-    return this.post(apiPath, body, {
-      method: "PUT",
-      ...opts,
-    });
-  }
-
   private objectToSearchParams(params: object = {}) {
     const urlSearchParams = new URLSearchParams();
 
@@ -485,7 +443,7 @@ export class OpenSeaAPI {
       headers: {
         ...(apiKey ? { "X-API-KEY": apiKey } : {}),
         "x-app-id": "opensea-js",
-        ...(opts.headers || {}),
+        ...(opts.headers ?? {}),
       },
     };
 

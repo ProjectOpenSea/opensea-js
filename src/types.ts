@@ -1,6 +1,5 @@
 /* eslint-disable import/no-unused-modules */
-import BigNumber from "bignumber.js";
-import { AbiItem } from "web3-utils";
+import { BigNumber, BigNumberish } from "ethers";
 import type { OrderV2 } from "./orders/types";
 
 /**
@@ -8,7 +7,7 @@ import type { OrderV2 } from "./orders/types";
  * 1. Transaction events, which tell you when a new transaction was
  *    created, confirmed, denied, or failed.
  * 2. pre-transaction events, which are named (like "WrapEth") and indicate
- *    that Web3 is asking for a signature on a transaction that needs to occur before
+ *    that ethers is asking for a signature on a transaction that needs to occur before
  *    an order is made or fulfilled. This includes approval events and account
  *    initialization.
  * 3. Basic actions: matching, cancelling, and creating orders.
@@ -60,11 +59,10 @@ export enum EventType {
 export interface EventData {
   accountAddress?: string;
   toAddress?: string;
-  proxyAddress?: string;
-  amount?: BigNumber;
+  amount?: BigNumberish;
   contractAddress?: string;
-  assets?: WyvernAsset[];
-  asset?: WyvernAsset;
+  assets?: AssetType[];
+  asset?: AssetType;
 
   transactionHash?: string;
   event?: EventType;
@@ -74,43 +72,24 @@ export interface EventData {
   orderV2?: OrderV2;
   buy?: Order;
   sell?: Order;
-  matchMetadata?: string;
 }
 
 /**
  * OpenSea API configuration object
  * @param apiKey Optional key to use for API
- * @param networkName `Network` type to use. Defaults to `Network.Main` (mainnet)
- * @param gasPrice Default gas price to send to the Wyvern Protocol
+ * @param chain `Chain` type to use. Defaults to `Chain.Mainnet` (mainnet)
  * @param apiBaseUrl Optional base URL to use for the API
  */
 export interface OpenSeaAPIConfig {
-  networkName?: Network;
+  chain?: Chain;
   apiKey?: string;
   apiBaseUrl?: string;
-  useReadOnlyProvider?: boolean;
-  // Sent to WyvernJS
-  gasPrice?: BigNumber;
-
-  wyvernConfig?: WyvernConfig;
 }
 
-export enum Network {
-  Main = "main",
+export enum Chain {
+  Mainnet = "main",
   Goerli = "goerli",
-  Rinkeby = "rinkeby",
 }
-
-export type WyvernConfig = {
-  network: Network;
-  gasPrice?: BigNumber;
-  wyvernExchangeContractAddress?: string;
-  wyvernProxyRegistryContractAddress?: string;
-  wyvernDAOContractAddress?: string;
-  wyvernTokenContractAddress?: string;
-  wyvernAtomicizerContractAddress?: string;
-  wyvernTokenTransferProxyContractAddress?: string;
-};
 
 /**
  * Seaport order side: buy or sell.
@@ -121,7 +100,7 @@ export enum OrderSide {
 }
 
 /**
- * Wyvern fee method
+ * Fee method
  * ProtocolFee: Charge maker fee to seller and charge taker fee to buyer.
  * SplitFee: Maker fees are deducted from the token amount that the maker receives. Taker fees are extra tokens that must be paid by the taker.
  */
@@ -131,9 +110,7 @@ export enum FeeMethod {
 }
 
 /**
- * Wyvern: type of sale. Fixed or Dutch auction
- * Note: not imported from wyvern.js because it uses
- * EnglishAuction as 1 and DutchAuction as 2
+ * Type of sale.
  */
 export enum SaleKind {
   FixedPrice = 0,
@@ -151,36 +128,13 @@ export enum AssetContractType {
   Unknown = "unknown",
 }
 
-// Wyvern Schemas (see https://github.com/ProjectOpenSea/wyvern-schemas)
-export enum WyvernSchemaName {
+/**
+ * Token standards
+ */
+export enum TokenStandard {
   ERC20 = "ERC20",
   ERC721 = "ERC721",
-  ERC721v3 = "ERC721v3",
   ERC1155 = "ERC1155",
-  LegacyEnjin = "Enjin",
-  ENSShortNameAuction = "ENSShortNameAuction",
-  // CryptoPunks = 'CryptoPunks'
-}
-
-/**
- * The NFT version that this contract uses.
- * ERC721 versions are:
- * 1.0: CryptoKitties and early 721s, which lack approve-all and
- *      have problems calling `transferFrom` from the owner's account.
- * 2.0: CryptoSaga and others that lack `transferFrom` and have
- *      `takeOwnership` instead
- * 3.0: The current OpenZeppelin standard:
- *      https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC721/ERC721.sol
- * Special cases:
- * locked: When the transfer function has been locked by the dev
- */
-export enum TokenStandardVersion {
-  Unsupported = "unsupported",
-  Locked = "locked",
-  Enjin = "1155-1.0",
-  ERC721v1 = "1.0",
-  ERC721v2 = "2.0",
-  ERC721v3 = "3.0",
 }
 
 /**
@@ -205,39 +159,25 @@ export interface Fees {
   sellerFees: Map<string, number>;
 }
 
-export interface WyvernNFTAsset {
+export interface NFTAsset {
   id: string;
   address: string;
 }
-export interface WyvernFTAsset {
+export interface FungibleAsset {
   id?: string;
   address: string;
   quantity: string;
 }
-export type WyvernAsset = WyvernNFTAsset | WyvernFTAsset;
+export type AssetType = NFTAsset | FungibleAsset;
 
-// Abstractions over Wyvern assets for bundles
-export interface WyvernBundle {
-  assets: WyvernAsset[];
-  schemas: WyvernSchemaName[];
+// Abstractions over assets for bundles
+export interface Bundle {
+  assets: AssetType[];
+  standards: TokenStandard[];
   name?: string;
   description?: string;
   external_link?: string;
 }
-
-export type WyvernAtomicMatchParameters = [
-  string[],
-  BigNumber[],
-  Array<number | BigNumber>,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  Array<number | BigNumber>,
-  string[]
-];
 
 /**
  * The OpenSea account object appended to orders, providing extra metadata, profile images and usernames
@@ -268,10 +208,8 @@ export interface Asset {
   tokenId: string | null;
   // The asset's contract address
   tokenAddress: string;
-  // The Wyvern schema name (e.g. "ERC721") for this asset
-  schemaName?: WyvernSchemaName;
-  // The token standard version of this asset
-  version?: TokenStandardVersion;
+  // The token standard (e.g. "ERC721") for this asset
+  tokenStandard?: TokenStandard;
   // Optional for ENS names
   name?: string;
   // Optional for fungible items
@@ -288,8 +226,8 @@ export interface OpenSeaAssetContract extends OpenSeaFees {
   address: string;
   // Type of token (fungible/NFT)
   type: AssetContractType;
-  // Wyvern Schema Name for this contract
-  schemaName: WyvernSchemaName;
+  // Token Standard for this contract
+  tokenStandard: TokenStandard;
 
   // Total fee levied on sellers by this contract, in basis points
   sellerFeeBasisPoints: number;
@@ -467,12 +405,6 @@ export interface OpenSeaAsset extends Asset {
   description: string;
   // Owner of the asset
   owner: OpenSeaAccount;
-  // Orders on the asset. Null if asset was fetched in a list
-  orders: Order[] | null;
-  // Buy orders (offers) on the asset. Null if asset in a list and didn't prefetch buy orders
-  buyOrders: Order[] | null;
-  // Sell orders (auctions) on the asset. Null if asset in a list and didn't prefetch sell orders
-  sellOrders: Order[] | null;
 
   // Whether the asset is on a pre-sale (so token ids aren't real)
   isPresale: boolean;
@@ -607,10 +539,6 @@ export interface OpenSeaAssetBundle {
   name: string;
   slug: string;
   permalink: string;
-
-  // Sell orders (auctions) on the bundle. Null if bundle in a list and didn't prefetch sell orders
-  sellOrders: Order[] | null;
-
   assetContract?: OpenSeaAssetContract;
   description?: string;
   externalLink?: string;
@@ -663,13 +591,13 @@ export interface ComputedFees extends OpenSeaFees {
 }
 
 interface ExchangeMetadataForAsset {
-  asset: WyvernAsset;
-  schema: WyvernSchemaName;
+  asset: AssetType;
+  schema: TokenStandard;
   referrerAddress?: string;
 }
 
 interface ExchangeMetadataForBundle {
-  bundle: WyvernBundle;
+  bundle: Bundle;
   referrerAddress?: string;
 }
 
@@ -677,7 +605,15 @@ export type ExchangeMetadata =
   | ExchangeMetadataForAsset
   | ExchangeMetadataForBundle;
 
-export interface UnhashedOrder {
+export enum HowToCall {
+  Call = 0,
+  DelegateCall = 1,
+  StaticCall = 2,
+  Create = 3,
+}
+
+export interface UnsignedOrder {
+  hash?: string;
   exchange: string;
   maker: string;
   taker: string;
@@ -712,17 +648,6 @@ export interface UnhashedOrder {
   metadata: ExchangeMetadata;
 }
 
-export enum HowToCall {
-  Call = 0,
-  DelegateCall = 1,
-  StaticCall = 2,
-  Create = 3,
-}
-
-export interface UnsignedOrder extends UnhashedOrder {
-  hash?: string;
-}
-
 export interface ECSignature {
   v: number;
   r: string;
@@ -755,7 +680,7 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
  * list of API query parameters and documentation.
  */
 export interface OrderJSON extends Partial<ECSignature> {
-  // Base wyvern fields
+  // Base fields
   exchange: string;
   maker: string;
   taker: string;
@@ -791,45 +716,6 @@ export interface OrderJSON extends Partial<ECSignature> {
   nonce?: number;
 }
 
-export type RawWyvernOrderJSON = Omit<
-  OrderJSON,
-  | "makerReferrerFee"
-  | "quantity"
-  | "englishAuctionReservePrice"
-  | "createdTime"
-  | "metadata"
-  | "hash"
-  | "v"
-  | "r"
-  | "s"
->;
-
-/**
- * Query interface for Orders
- * Includes `maker`, `taker` and `side` from above
- * See https://docs.opensea.io/reference#retrieving-orders for
- * full docs.
- */
-export interface OrderQuery extends Partial<OrderJSON> {
-  owner?: string;
-  sale_kind?: SaleKind;
-  side?: OrderSide;
-  asset_contract_address?: string;
-  payment_token_address?: string;
-  is_english?: boolean;
-  is_expired?: boolean;
-  bundled?: boolean;
-  include_invalid?: boolean;
-  token_id?: number | string;
-  token_ids?: Array<number | string>;
-  // This means listing_time > value in seconds
-  listed_after?: number | string;
-  // This means listing_time <= value in seconds
-  listed_before?: number | string;
-  limit?: number;
-  offset?: number;
-}
-
 /**
  * Query interface for Assets
  */
@@ -853,79 +739,4 @@ export interface OpenSeaFungibleTokenQuery
   offset?: number;
   // Typescript bug requires this duplication
   symbol?: string;
-}
-
-export interface OrderbookResponse {
-  orders: OrderJSON[];
-  count: number;
-}
-
-// Types related to Web3
-export type Web3Callback<T> = (err: Error | null, result: T) => void;
-export type TxnCallback = (result: boolean) => void;
-
-export type PartialReadonlyContractAbi = AbiItem[];
-
-// Types extracted from wyvern-js: https://github.com/ProjectOpenSea/wyvern-js#7429b1f2dd123f012cae1f3144a069e91ecd0682
-export interface AnnotatedFunctionABI {
-  type: AbiType;
-  name: string;
-  target: string;
-  inputs: AnnotatedFunctionInput[];
-  outputs: AnnotatedFunctionOutput[];
-  constant: boolean;
-  stateMutability: StateMutability;
-  payable: boolean;
-}
-
-export enum AbiType {
-  Function = "function",
-  Constructor = "constructor",
-  Event = "event",
-  Fallback = "fallback",
-}
-
-export interface AnnotatedFunctionInput {
-  name: string;
-  type: string;
-  kind: FunctionInputKind;
-  value?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-}
-
-export interface AnnotatedFunctionOutput {
-  name: string;
-  type: string;
-  kind: FunctionOutputKind;
-}
-
-export enum FunctionInputKind {
-  Replaceable = "replaceable",
-  Asset = "asset",
-  Owner = "owner",
-  Index = "index",
-  Count = "count",
-  Data = "data",
-}
-
-export enum FunctionOutputKind {
-  Owner = "owner",
-  Asset = "asset",
-  Count = "count",
-  Other = "other",
-}
-
-export enum StateMutability {
-  Pure = "pure",
-  View = "view",
-  Payable = "payable",
-  Nonpayable = "nonpayable",
-}
-
-export enum SolidityTypes {
-  Address = "address",
-  Uint256 = "uint256",
-  Uint8 = "uint8",
-  Uint = "uint",
-  Bytes = "bytes",
-  String = "string",
 }

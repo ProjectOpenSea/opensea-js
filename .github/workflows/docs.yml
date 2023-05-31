@@ -16,16 +16,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - name: Upgrade npm
-        run: npm install -g npm
-
       - name: Install dependencies
-        run: npm install --immutable --ignore-scripts
+        run: npm install
 
-      - name: Gen ABI
-        run: npm run abi-type-gen
-
-      - name: Build
+      - name: Build docs
         run: npm run docs-build
 
       - name: Deploy 🚀

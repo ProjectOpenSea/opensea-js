@@ -2,6 +2,7 @@ import {
   ConsiderationItem,
   OrderWithCounter,
 } from "@opensea/seaport-js/lib/types";
+import { BigNumber } from "ethers";
 import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
 
 // Protocol data
@@ -15,7 +16,7 @@ export type ProtocolData =
 // Protocol agnostic order data
 type OrderType = "basic" | "dutch" | "english" | "criteria";
 export type OrderSide = "ask" | "bid";
-export type OrderFee = {
+type OrderFee = {
   account: OpenSeaAccount;
   basisPoints: string;
 };
@@ -30,7 +31,7 @@ export type OrderV2 = {
   taker: OpenSeaAccount | null;
   protocolData: ProtocolData;
   protocolAddress: string;
-  currentPrice: string;
+  currentPrice: BigNumber;
   makerFees: OrderFee[];
   takerFees: OrderFee[];
   side: OrderSide;
