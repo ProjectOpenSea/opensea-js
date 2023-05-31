@@ -3,7 +3,7 @@ name: Documentation
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 jobs:
@@ -22,9 +22,9 @@ jobs:
       - name: Build docs
         run: npm run docs-build
 
-      - name: Deploy docs 🚀
+      - name: Deploy 🚀
         if: github.ref == 'refs/heads/main'
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        uses: JamesIves/github-pages-deploy-action@v4.4.2
         with:
           branch: gh-pages
           folder: docs
