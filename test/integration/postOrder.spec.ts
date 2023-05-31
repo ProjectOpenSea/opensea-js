@@ -1,7 +1,5 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
-import { Network } from "src";
-import { WETH_ADDRESS_BY_NETWORK } from "src/constants";
 import {
   LISTING_AMOUNT,
   TOKEN_ADDRESS,
@@ -9,6 +7,7 @@ import {
   sdk,
   walletAddress,
 } from "./setup";
+import { WETH_ADDRESS_BY_NETWORK } from "../../src/constants";
 import { OFFER_AMOUNT } from "../utils/constants";
 import { expectValidOrder } from "../utils/utils";
 
@@ -16,7 +15,7 @@ suite("SDK: order posting", () => {
   test("Post Buy Order", async () => {
     const buyOrder = {
       accountAddress: walletAddress,
-      startAmount: OFFER_AMOUNT ?? "0.004",
+      startAmount: OFFER_AMOUNT,
       asset: {
         tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
         tokenId: "2288",
@@ -35,7 +34,7 @@ suite("SDK: order posting", () => {
 
     const sellOrder = {
       accountAddress: walletAddress,
-      startAmount: LISTING_AMOUNT ?? "40",
+      startAmount: LISTING_AMOUNT,
       asset: {
         tokenAddress: TOKEN_ADDRESS,
         tokenId: TOKEN_ID,
@@ -49,16 +48,13 @@ suite("SDK: order posting", () => {
 
   test("Post collection offer", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const network: Network = (sdk as any)._networkName;
-
+    const paymentTokenAddress = WETH_ADDRESS_BY_NETWORK[sdk.chain];
     const postOrderRequest = {
       collectionSlug: collection.slug,
       accountAddress: walletAddress,
-      amount: OFFER_AMOUNT ?? "0.004",
+      amount: OFFER_AMOUNT,
       quantity: 1,
-      paymentTokenAddress: WETH_ADDRESS_BY_NETWORK[network],
+      paymentTokenAddress,
     };
 
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest);

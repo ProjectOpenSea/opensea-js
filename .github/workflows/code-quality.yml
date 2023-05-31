@@ -22,7 +22,7 @@ jobs:
         run: npm install
 
       - name: Run linters
-        run: npm run lint:check
+        run: npm run lint
 
   test:
     runs-on: ubuntu-latest
@@ -38,29 +38,29 @@ jobs:
 
       - name: Run tests
         env:
-          API_KEY: ${{ secrets.API_KEY }}
+          OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
         run: npm run test
 
-  # integration-test:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: actions/setup-node@v3
-  #       with:
-  #         node-version-file: .nvmrc
-  #         cache: npm
+  test-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          cache: npm
 
-  #     - name: Install dependencies
-  #       run: npm install
+      - name: Install dependencies
+        run: npm install
 
-  #     - name: Run integration tests
-  #       env:
-  #         API_KEY: ${{ secrets.API_KEY }}
-  #         SELL_ORDER_CONTRACT_ADDRESS: ${{ secrets.SELL_ORDER_CONTRACT_ADDRESS }}
-  #         SELL_ORDER_TOKEN_ID: ${{ secrets.SELL_ORDER_TOKEN_ID }}
-  #         LISTING_AMOUNT: ${{ secrets.LISTING_AMOUNT }}
-  #         ETH_TO_WRAP:  ${{ secrets.ETH_TO_WRAP }}
-  #       run: npm run test:integration
+      - name: Run integration tests
+        env:
+          OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+          WALLET_PRIV_KEY: ${{ secrets.WALLET_PRIV_KEY }}
+          SELL_ORDER_CONTRACT_ADDRESS: ${{ secrets.SELL_ORDER_CONTRACT_ADDRESS }}
+          SELL_ORDER_TOKEN_ID: ${{ secrets.SELL_ORDER_TOKEN_ID }}
+        run: npm run test:integration
 
   test-earliest-node-engine-support:
     runs-on: ubuntu-latest
@@ -76,5 +76,5 @@ jobs:
 
       - name: Run tests
         env:
-          API_KEY: ${{ secrets.API_KEY }}
+          OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
         run: npm run test

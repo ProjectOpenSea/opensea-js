@@ -3,39 +3,39 @@ import { suite, test } from "mocha";
 import {
   BAYC_CONTRACT_ADDRESS,
   BAYC_TOKEN_ID,
-  mainApi,
+  mainAPI,
   MAINNET_API_KEY,
-  testnetApi,
+  testnetAPI,
 } from "../utils/constants";
 
 suite("API", () => {
   test("API has correct base url", () => {
-    assert.equal(mainApi.apiBaseUrl, "https://api.opensea.io");
-    assert.equal(testnetApi.apiBaseUrl, "https://testnets-api.opensea.io");
+    assert.equal(mainAPI.apiBaseUrl, "https://api.opensea.io");
+    assert.equal(testnetAPI.apiBaseUrl, "https://testnets-api.opensea.io");
   });
 
   test("Includes API key in request", async () => {
-    const oldLogger = mainApi.logger;
+    const oldLogger = mainAPI.logger;
 
     const logPromise = new Promise<void>((resolve, reject) => {
-      mainApi.logger = (log) => {
+      mainAPI.logger = (log) => {
         try {
           assert.include(log, `"X-API-KEY":"${MAINNET_API_KEY}"`);
           resolve();
         } catch (e) {
           reject(e);
         } finally {
-          mainApi.logger = oldLogger;
+          mainAPI.logger = oldLogger;
         }
       };
-      mainApi.getPaymentTokens({ symbol: "WETH" });
+      mainAPI.getPaymentTokens({ symbol: "WETH" });
     });
 
     await logPromise;
   });
 
   test("API fetches fees for an asset", async () => {
-    const asset = await mainApi.getAsset({
+    const asset = await mainAPI.getAsset({
       tokenAddress: BAYC_CONTRACT_ADDRESS,
       tokenId: BAYC_TOKEN_ID,
     });
@@ -44,7 +44,7 @@ suite("API", () => {
   });
 
   test("API fetches assets", async () => {
-    const { assets } = await mainApi.getAssets({
+    const { assets } = await mainAPI.getAssets({
       asset_contract_address: BAYC_CONTRACT_ADDRESS,
       order_by: "sale_date",
     });
@@ -56,7 +56,7 @@ suite("API", () => {
   test("API handles errors", async () => {
     // 404 Not found for random token id
     try {
-      await mainApi.get(`/asset/${BAYC_CONTRACT_ADDRESS}/202020202020`);
+      await mainAPI.get(`/asset/${BAYC_CONTRACT_ADDRESS}/202020202020`);
     } catch (error) {
       assert.include((error as Error).message, "Not found");
     }

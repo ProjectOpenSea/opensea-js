@@ -1,6 +1,6 @@
 import { tokens as goerliTokens } from "./goerli";
 import { tokens as mainTokens } from "./main";
-import { Network } from "../../types";
+import { Chain } from "../../types";
 
 interface Token {
   name: string;
@@ -14,11 +14,11 @@ export interface NetworkTokens {
   otherTokens: Token[];
 }
 
-export const getCanonicalWrappedEther = function (network: Network): Token {
-  switch (network) {
-    case Network.Main:
+export const getCanonicalWrappedEther = function (chain: Chain): Token {
+  switch (chain) {
+    case Chain.Mainnet:
       return tokens.main.canonicalWrappedEther;
-    case Network.Goerli:
+    case Chain.Goerli:
       return tokens.goerli.canonicalWrappedEther;
   }
 };

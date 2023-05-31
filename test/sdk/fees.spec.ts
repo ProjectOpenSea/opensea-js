@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
 import { OpenSeaSDK } from "../../src/index";
-import { Network, OpenSeaAsset, OrderSide } from "../../src/types";
+import { Chain, OpenSeaAsset, OrderSide } from "../../src/types";
 import { feesToBasisPoints } from "../../src/utils/utils";
 import {
   BAYC_CONTRACT_ADDRESS,
@@ -13,7 +13,7 @@ import {
 const client = new OpenSeaSDK(
   RPC_PROVIDER,
   {
-    networkName: Network.Main,
+    chain: Chain.Mainnet,
     apiKey: MAINNET_API_KEY,
   },
   (line) => console.info(`MAINNET: ${line}`)

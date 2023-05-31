@@ -18,26 +18,26 @@
     "src"
   ],
   "scripts": {
-    "postinstall": "npm run build",
+    "postinstall": "husky install",
+    "prepare": "npm run build",
     "build": "npm run abi-type-gen && tsc -p tsconfig.build.json && npm run bundle",
     "bundle": "browserify lib/index.js -o lib/bundle.js",
     "abi-type-gen": "typechain --target=ethers-v5 src/abi/*.json --out-dir=src/typechain/contracts",
     "check-types": "tsc --noEmit --project tsconfig.json",
     "coverage-report": "nyc report --reporter=text-lcov | coveralls",
     "docs-build": "typedoc --out docs src/index.ts",
+    "lint": "concurrently \"npm run check-types\" \"npm run prettier:check\" \"npm run eslint:check\"",
     "eslint:check": "eslint . --max-warnings 0 --ext .js,.ts",
-    "eslint:fix": "eslint . --fix --max-warnings 0 --ext .js,.ts",
-    "lint:check": "concurrently \"npm run check-types\" \"npm run prettier:check\" \"npm run eslint:check\"",
-    "prepare": "husky install && npm run build",
+    "eslint:fix": "npm run eslint:check -- --fix",
     "prettier:check": "prettier --check .",
-    "prettier:check:package.json": "npm run prettier-package-json --list-different",
+    "prettier:check:package.json": "prettier-package-json --list-different",
     "prettier:fix": "prettier --write .",
     "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register test/**/*.spec.ts --exclude test/integration/**/*.ts --timeout 15000",
     "test:integration": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register -r dotenv/config test/integration/**/*.spec.ts --timeout 15000"
   },
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@opensea/seaport-js": "^1.3.0",
+    "@opensea/seaport-js": "^2.0.0",
     "ethers": "^5.7.2",
     "isomorphic-unfetch": "^4.0.2"
   },

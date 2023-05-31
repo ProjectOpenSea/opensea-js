@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { parseEther } from "ethers/lib/utils";
 import { describe, test } from "mocha";
 import { ETH_TO_WRAP, sdk, walletAddress } from "./setup";
-import { Network, TokenStandard } from "../../src/types";
+import { Chain, TokenStandard } from "../../src/types";
 import { getCanonicalWrappedEther } from "../../src/utils/tokens";
 
 describe("SDK: WETH", () => {
@@ -13,7 +13,7 @@ describe("SDK: WETH", () => {
     }
 
     const wethAsset = {
-      tokenAddress: getCanonicalWrappedEther(Network.Main).address,
+      tokenAddress: getCanonicalWrappedEther(Chain.Mainnet).address,
       tokenId: null,
       tokenStandard: TokenStandard.ERC20,
     };

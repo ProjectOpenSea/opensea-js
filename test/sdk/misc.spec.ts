@@ -6,7 +6,7 @@ import {
   SHARED_STOREFRONT_ADDRESS_GOERLI,
 } from "../../src/constants";
 import { OpenSeaSDK } from "../../src/index";
-import { Network } from "../../src/types";
+import { Chain } from "../../src/types";
 import { getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress } from "../../src/utils/utils";
 import {
   DAPPER_ADDRESS,
@@ -17,7 +17,7 @@ import {
 const client = new OpenSeaSDK(
   RPC_PROVIDER,
   {
-    networkName: Network.Main,
+    chain: Chain.Mainnet,
     apiKey: MAINNET_API_KEY,
   },
   (line) => console.info(`MAINNET: ${line}`)
