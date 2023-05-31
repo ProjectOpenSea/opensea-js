@@ -632,8 +632,8 @@ npm link opensea-js # in repo you're working on
 [npm-link]: https://www.npmjs.com/package/opensea-js
 [ci-badge]: https://github.com/ProjectOpenSea/opensea-js/actions/workflows/code-quality.yml/badge.svg
 [ci-link]: https://github.com/ProjectOpenSea/opensea-js/actions/workflows/code-quality.yml
-[coverage-badge]: https://coveralls.io/repos/github/ProjectOpenSea/opensea-js/badge.svg?branch=master
-[coverage-link]: https://coveralls.io/github/ProjectOpenSea/opensea-js?branch=master
+[coverage-badge]: https://coveralls.io/repos/github/ProjectOpenSea/opensea-js/badge.svg?branch=main
+[coverage-link]: https://coveralls.io/github/ProjectOpenSea/opensea-js?branch=main
 [license-badge]: https://img.shields.io/github/license/ProjectOpenSea/opensea-js
 [license-link]: https://github.com/ProjectOpenSea/opensea-js/blob/main/LICENSE
 [docs-badge]: https://img.shields.io/badge/OpenSea.js-documentation-informational
