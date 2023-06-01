@@ -18,7 +18,7 @@
     "src"
   ],
   "scripts": {
-    "postinstall": "husky install",
+    "postinstall": "husky install || true",
     "prepare": "npm run build",
     "build": "npm run abi-type-gen && tsc -p tsconfig.build.json && npm run bundle",
     "bundle": "browserify lib/index.js -o lib/bundle.js",
