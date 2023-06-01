@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "JavaScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data!",
   "license": "MIT",
   "author": "OpenSea Developers",
@@ -18,7 +18,7 @@
     "src"
   ],
   "scripts": {
-    "postinstall": "husky install",
+    "postinstall": "husky install || true",
     "prepare": "npm run build",
     "build": "npm run abi-type-gen && tsc -p tsconfig.build.json && npm run bundle",
     "bundle": "browserify lib/index.js -o lib/bundle.js",
