@@ -41,6 +41,9 @@ jobs:
           OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
         run: npm run test
 
+      - name: Create code coverage report
+        run: npm run coverage-report
+
       - name: Upload code coverage
         uses: coverallsapp/github-action@master
         with:
