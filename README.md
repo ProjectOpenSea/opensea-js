@@ -2,8 +2,6 @@
   <img src="./img/banner.png" />
 </p>
 
-# OpenSea.js <!-- omit in toc -->
-
 [![Version][version-badge]][version-link]
 [![npm][npm-badge]][npm-link]
 [![Test CI][ci-badge]][ci-link]
@@ -11,6 +9,8 @@
 [![License][license-badge]][license-link]
 [![Docs][docs-badge]][docs-link]
 [![Discussions][discussions-badge]][discussions-link]
+
+# OpenSea.js <!-- omit in toc -->
 
 A JavaScript library for crypto-native e-commerce: buying, selling, and bidding on NFTs (non-fungible tokens). With OpenSea.js, you can easily build your own native marketplace. These can be ERC-721 or ERC-1155 (semi-fungible) items. You don't have to deploy your own smart contracts or manage backend orderbooks.
 
