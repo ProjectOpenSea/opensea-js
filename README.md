@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://storage.googleapis.com/opensea-static/opensea-js-logo-updated.png" />
+  <img src="./img/banner.png" />
 </p>
 
 # OpenSea.js <!-- omit in toc -->
