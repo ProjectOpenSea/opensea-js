@@ -58,7 +58,7 @@ suite("API", () => {
     try {
       await mainAPI.get(`/asset/${BAYC_CONTRACT_ADDRESS}/202020202020`);
     } catch (error) {
-      assert.include((error as Error).message, "Not found");
+      assert.include((error as Error).message, "status=404");
     }
   });
 });
