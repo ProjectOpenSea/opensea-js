@@ -6,7 +6,7 @@ module.exports = {
     node: true,
   },
   root: true,
-  ignorePatterns: ["docs", "lib", "src/typechain"],
+  ignorePatterns: ["docs", "lib", "coverage", "src/typechain"],
   reportUnusedDisableDirectives: true,
   parser: "@typescript-eslint/parser",
   plugins: ["@typescript-eslint", "import", "prettier"],
