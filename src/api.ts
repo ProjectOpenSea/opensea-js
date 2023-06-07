@@ -1,4 +1,4 @@
-import "isomorphic-unfetch";
+import { ethers } from "ethers";
 import { API_BASE_MAINNET, API_BASE_TESTNET, API_PATH } from "./constants";
 import {
   BuildOfferResponse,
@@ -382,36 +382,27 @@ export class OpenSeaAPI {
    */
   public async get<T>(apiPath: string, query: object = {}): Promise<T> {
     const qs = this.objectToSearchParams(query);
-    const url = `${apiPath}?${qs}`;
-
-    const response = await this._fetch(url);
-    return response.json();
+    const url = `${this.apiBaseUrl}${apiPath}?${qs}`;
+    return await this._fetch({ url });
   }
 
   /**
    * POST JSON data to API, sending auth token in headers
    * @param apiPath Path to URL endpoint under API
    * @param body Data to send. Will be JSON.stringified
-   * @param opts RequestInit opts, similar to Fetch API. If it contains
-   *  a body, it won't be stringified.
+   * @param opts ethers ConnectionInfo, similar to Fetch API.
    */
   public async post<T>(
     apiPath: string,
     body?: object,
-    opts: RequestInit = {}
+    opts?: ethers.utils.ConnectionInfo
   ): Promise<T> {
-    const fetchOpts = {
-      method: "POST",
-      body: body ? JSON.stringify(body) : undefined,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
+    const options = {
+      url: `${this.apiBaseUrl}${apiPath}`,
       ...opts,
     };
 
-    const response = await this._fetch(apiPath, fetchOpts);
-    return response.json();
+    return await this._fetch(options, body);
   }
 
   private objectToSearchParams(params: object = {}) {
@@ -430,85 +421,28 @@ export class OpenSeaAPI {
 
   /**
    * Get from an API Endpoint, sending auth token in headers
-   * @param apiPath Path to URL endpoint under API
-   * @param opts RequestInit opts, similar to Fetch API
+   * @param opts ethers ConnectionInfo, similar to Fetch API
+   * @param body Optional body to send. If set, will POST, otherwise GET
    */
-  private async _fetch(apiPath: string, opts: RequestInit = {}) {
-    const apiBase = this.apiBaseUrl;
-    const apiKey = this.apiKey;
-    const finalUrl = apiBase + apiPath;
-    const finalOpts = {
+  private async _fetch(opts: ethers.utils.ConnectionInfo, body?: object) {
+    const headers = {
+      "x-app-id": "opensea-js",
+      ...(this.apiKey ? { "X-API-KEY": this.apiKey } : {}),
+      ...opts.headers,
+    };
+    const req = {
       ...opts,
-      headers: {
-        ...(apiKey ? { "X-API-KEY": apiKey } : {}),
-        "x-app-id": "opensea-js",
-        ...(opts.headers ?? {}),
-      },
+      headers,
     };
 
     this.logger(
-      `Sending request: ${finalUrl} ${JSON.stringify(finalOpts).substr(
-        0,
-        100
-      )}...`
+      `Sending request: ${opts.url} ${JSON.stringify(req).slice(0, 200)}...`
     );
 
-    return fetch(finalUrl, finalOpts).then(async (res) =>
-      this._handleApiResponse(res)
+    return await ethers.utils.fetchJson(
+      req,
+      body ? JSON.stringify(body) : undefined
     );
-  }
-
-  private async _handleApiResponse(response: Response) {
-    if (response.ok) {
-      this.logger(`Got success: ${response.status}`);
-      return response;
-    }
-
-    let result;
-    let errorMessage;
-    try {
-      result = await response.text();
-      result = JSON.parse(result);
-    } catch {
-      // Result will be undefined or text
-    }
-
-    this.logger(`Got error ${response.status}: ${JSON.stringify(result)}`);
-
-    switch (response.status) {
-      case 400:
-        errorMessage =
-          result && result.errors
-            ? result.errors.join(", ")
-            : `Invalid request: ${JSON.stringify(result)}`;
-        break;
-      case 401:
-      case 403:
-        errorMessage = `Unauthorized. Full message was '${JSON.stringify(
-          result
-        )}'`;
-        break;
-      case 404:
-        errorMessage = `Not found. Full message was '${JSON.stringify(
-          result
-        )}'`;
-        break;
-      case 500:
-        errorMessage = `Internal server error. OpenSea has been alerted, but if the problem persists please contact us via Discord: https://discord.gg/opensea - full message was ${JSON.stringify(
-          result
-        )}`;
-        break;
-      case 503:
-        errorMessage = `Service unavailable. Please try again in a few minutes. If the problem persists please contact us via Discord: https://discord.gg/opensea - full message was ${JSON.stringify(
-          result
-        )}`;
-        break;
-      default:
-        errorMessage = `Message: ${JSON.stringify(result)}`;
-        break;
-    }
-
-    throw new Error(`API Error ${response.status}: ${errorMessage}`);
   }
 }
 

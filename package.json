@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "6.0.2",
+  "version": "6.0.3",
   "description": "JavaScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data!",
   "license": "MIT",
   "author": "OpenSea Developers",
@@ -38,8 +38,7 @@
   "types": "lib/index.d.ts",
   "dependencies": {
     "@opensea/seaport-js": "^2.0.0",
-    "ethers": "^5.7.2",
-    "isomorphic-unfetch": "^4.0.2"
+    "ethers": "^5.7.2"
   },
   "devDependencies": {
     "@typechain/ethers-v5": "^11.0.0",
