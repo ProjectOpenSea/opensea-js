@@ -15,7 +15,7 @@ suite("SDK: order posting", () => {
   test("Post Buy Order", async () => {
     const buyOrder = {
       accountAddress: walletAddress,
-      startAmount: OFFER_AMOUNT,
+      startAmount: +OFFER_AMOUNT,
       asset: {
         tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
         tokenId: "2288",
@@ -34,7 +34,7 @@ suite("SDK: order posting", () => {
 
     const sellOrder = {
       accountAddress: walletAddress,
-      startAmount: LISTING_AMOUNT,
+      startAmount: +LISTING_AMOUNT,
       asset: {
         tokenAddress: TOKEN_ADDRESS,
         tokenId: TOKEN_ID,
