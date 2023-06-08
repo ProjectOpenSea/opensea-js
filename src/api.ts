@@ -427,7 +427,7 @@ export class OpenSeaAPI {
   private async _fetch(opts: ethers.utils.ConnectionInfo, body?: object) {
     const headers = {
       "x-app-id": "opensea-js",
-      ...(this.apiKey ? { "X-API-KEY": this.apiKey } : {}),
+      ...(this.apiKey ? { "HTTP_X_API_KEY": this.apiKey } : {}),
       ...opts.headers,
     };
     const req = {
