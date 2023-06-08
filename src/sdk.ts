@@ -944,14 +944,11 @@ export class OpenSeaSDK {
     const decimals = paymentToken?.decimals ?? 18;
 
     const startAmountWei = ethers.utils.parseUnits(
-      FixedNumber.from(startAmount).toString(),
+      startAmount.toString(),
       decimals
     );
     const endAmountWei = endAmount
-      ? ethers.utils.parseUnits(
-          FixedNumber.from(endAmount).toString(),
-          decimals
-        )
+      ? ethers.utils.parseUnits(endAmount.toString(), decimals)
       : undefined;
     const priceDiffWei =
       endAmountWei !== undefined
@@ -962,10 +959,7 @@ export class OpenSeaSDK {
     const endPrice = endAmountWei;
     const extra = priceDiffWei;
     const reservePrice = englishAuctionReservePrice
-      ? ethers.utils.parseUnits(
-          FixedNumber.from(startAmount).toString(),
-          decimals
-        )
+      ? ethers.utils.parseUnits(startAmount.toString(), decimals)
       : undefined;
 
     // Validation
