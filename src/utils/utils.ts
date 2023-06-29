@@ -376,6 +376,28 @@ export const feesToBasisPoints = (
 };
 
 /**
+ * Checks whether the current chain is a test chain.
+ * @param chain Chain to check.
+ * @returns True if the chain is a test chain.
+ */
+export const isTestChain = (chain: Chain): boolean => {
+  switch (chain) {
+    case Chain.Goerli:
+    case Chain.Sepolia:
+    case Chain.Mumbai:
+    case Chain.Baobab:
+    case Chain.BNBTestnet:
+    case Chain.ArbitrumGoerli:
+    case Chain.Fuji:
+    case Chain.OptimisGoerli:
+    case Chain.SolanaDevnet:
+      return true;
+    default:
+      return false;
+  }
+};
+
+/**
  * Checks if a protocol address is valid.
  * @param protocolAddress The protocol address
  */

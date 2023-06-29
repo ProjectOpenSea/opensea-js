@@ -52,6 +52,7 @@ import {
   delay,
   tokenFromJSON,
   collectionFromJSON,
+  isTestChain,
 } from "../utils/utils";
 
 export class OpenSeaAPI {
@@ -81,22 +82,9 @@ export class OpenSeaAPI {
     this.apiKey = config.apiKey;
     this.chain = config.chain ?? Chain.Mainnet;
 
-    switch (config.chain) {
-      case Chain.Goerli:
-      case Chain.Sepolia:
-      case Chain.Mumbai:
-      case Chain.Baobab:
-      case Chain.BNBTestnet:
-      case Chain.ArbitrumGoerli:
-      case Chain.Fuji:
-      case Chain.OptimisGoerli:
-      case Chain.SolanaDevnet:
-        this.apiBaseUrl = config.apiBaseUrl ?? API_BASE_TESTNET;
-        break;
-      default:
-        this.apiBaseUrl = config.apiBaseUrl ?? API_BASE_MAINNET;
-        break;
-    }
+    this.apiBaseUrl = isTestChain(this.chain)
+      ? API_BASE_TESTNET
+      : API_BASE_MAINNET;
 
     // Debugging: default to nothing
     this.logger = logger ?? ((arg: string) => arg);

@@ -332,9 +332,14 @@ export class OpenSeaSDK {
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
   }): Promise<OrderV2> {
-    //TODO: Make this function multichain compatible
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
+    }
+    //TODO: Make this function multichain compatible
+    if (this.chain != Chain.Mainnet && this.chain != Chain.Goerli) {
+      throw new Error(
+        `Creating orders on ${this.chain} not yet supported by the SDK.`
+      );
     }
     paymentTokenAddress = paymentTokenAddress ?? getWETHAddress(this.chain);
 
@@ -432,9 +437,14 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
   }): Promise<OrderV2> {
-    //TODO: Make this function multichain compatible
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
+    }
+    //TODO: Make this function multichain compatible
+    if (this.chain != Chain.Mainnet && this.chain != Chain.Goerli) {
+      throw new Error(
+        `Creating orders on ${this.chain} not yet supported by the SDK.`
+      );
     }
 
     const openseaAsset = await this.api.getAsset(asset);
