@@ -5,7 +5,6 @@ import {
 import { BigNumber, ethers } from "ethers";
 import {
   MAX_EXPIRATION_MONTHS,
-  MERKLE_VALIDATOR_MAINNET,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
   SHARED_STOREFRONT_ADDRESS_MAINNET,
   SHARED_STOREFRONT_ADDRESS_GOERLI,
@@ -286,11 +285,6 @@ export async function getNonCompliantApprovalAddress(
   return results.filter(Boolean)[0].status;
 }
 
-export const merkleValidatorByNetwork = {
-  [Chain.Mainnet]: MERKLE_VALIDATOR_MAINNET,
-  [Chain.Goerli]: null,
-};
-
 /**
  * The longest time that an order is valid for is one month from the current date
  * @returns unix timestamp
@@ -325,6 +319,21 @@ export const getAssetItemType = (tokenStandard?: TokenStandard) => {
       return ItemType.ERC1155;
     default:
       throw new Error(`Unknown schema name: ${tokenStandard}`);
+  }
+};
+
+export const getWETHAddress = (chain: Chain) => {
+  switch (chain) {
+    case Chain.Mainnet:
+      return "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+    case Chain.Polygon:
+      return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+    case Chain.Goerli:
+      return "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6";
+    case Chain.Sepolia:
+      return "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14";
+    default:
+      throw new Error(`WETH is not supported on ${chain}`);
   }
 };
 

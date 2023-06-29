@@ -87,8 +87,27 @@ export interface OpenSeaAPIConfig {
 }
 
 export enum Chain {
-  Mainnet = "main",
+  // Mainnet Chains
+  Mainnet = "ethereum",
+  Polygon = "matic",
+  Klaytn = "klaytn",
+  BNB = "bsc",
+  Arbitrum = "arbitrum",
+  ArbitrumNova = "arbitrum_nova",
+  Avalanche = "avalanche",
+  Optimism = "optimism",
+  Solana = "solana",
+
+  //Testnet Chains
   Goerli = "goerli",
+  Sepolia = "sepolia",
+  Mumbai = "mumbai",
+  Baobab = "baobab",
+  BNBTestnet = "bsctestnet",
+  ArbitrumGoerli = "arbitrum_goerli",
+  Fuji = "avalanche_fuji",
+  OptimisGoerli = "optimism_goerli",
+  SolanaDevnet = "soldev",
 }
 
 /**

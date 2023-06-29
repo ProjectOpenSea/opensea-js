@@ -16,18 +16,15 @@ import {
   providers,
 } from "ethers";
 import { parseEther } from "ethers/lib/utils";
-import { OpenSeaAPI } from "./api";
-import {
-  INVERSE_BASIS_POINT,
-  DEFAULT_ZONE_BY_NETWORK,
-  WETH_ADDRESS_BY_NETWORK,
-} from "./constants";
+import { OpenSeaAPI } from "./api/api";
+import { PostOfferResponse } from "./api/types";
+import { INVERSE_BASIS_POINT, DEFAULT_ZONE } from "./constants";
 import {
   constructPrivateListingCounterOrder,
   getPrivateListingConsiderations,
   getPrivateListingFulfillments,
 } from "./orders/privateListings";
-import { OrderV2, PostOfferResponse } from "./orders/types";
+import { OrderV2 } from "./orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "./orders/utils";
 import {
   ERC1155__factory,
@@ -46,7 +43,6 @@ import {
   OrderSide,
   TokenStandard,
 } from "./types";
-import { getCanonicalWrappedEther } from "./utils/tokens";
 import {
   delay,
   getMaxOrderExpirationTimestamp,
@@ -55,6 +51,7 @@ import {
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
   feesToBasisPoints,
   isValidProtocol,
+  getWETHAddress,
 } from "./utils/utils";
 
 export class OpenSeaSDK {
@@ -158,14 +155,12 @@ export class OpenSeaSDK {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
-    const token = getCanonicalWrappedEther(this.chain);
-
     const value = parseEther(FixedNumber.from(amountInEth).toString());
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount: value });
 
     const wethContract = new Contract(
-      token.address,
+      getWETHAddress(this.chain),
       ["function deposit() payable"],
       this._signerOrProvider
     );
@@ -197,14 +192,12 @@ export class OpenSeaSDK {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
-    const token = getCanonicalWrappedEther(this.chain);
-
     const amount = parseEther(FixedNumber.from(amountInEth).toString());
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
 
     const wethContract = new Contract(
-      token.address,
+      getWETHAddress(this.chain),
       ["function withdraw(uint wad) public"],
       this._signerOrProvider
     );
@@ -339,11 +332,11 @@ export class OpenSeaSDK {
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
   }): Promise<OrderV2> {
+    //TODO: Make this function multichain compatible
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
     }
-    paymentTokenAddress =
-      paymentTokenAddress ?? WETH_ADDRESS_BY_NETWORK[this.chain];
+    paymentTokenAddress = paymentTokenAddress ?? getWETHAddress(this.chain);
 
     const openseaAsset = await this.api.getAsset(asset);
     const considerationAssetItems = this.getAssetItems(
@@ -382,7 +375,7 @@ export class OpenSeaSDK {
           expirationTime !== undefined
             ? BigNumber.from(expirationTime).toString()
             : getMaxOrderExpirationTimestamp().toString(),
-        zone: DEFAULT_ZONE_BY_NETWORK[this.chain],
+        zone: DEFAULT_ZONE,
         domain,
         salt: BigNumber.from(salt ?? 0).toString(),
         restrictedByZone: false,
@@ -439,6 +432,7 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
   }): Promise<OrderV2> {
+    //TODO: Make this function multichain compatible
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
     }
@@ -487,7 +481,7 @@ export class OpenSeaSDK {
         endTime:
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
-        zone: DEFAULT_ZONE_BY_NETWORK[this.chain],
+        zone: DEFAULT_ZONE,
         domain,
         salt: BigNumber.from(salt ?? 0).toString(),
         restrictedByZone: false,
@@ -572,7 +566,7 @@ export class OpenSeaSDK {
       endTime:
         expirationTime?.toString() ??
         getMaxOrderExpirationTimestamp().toString(),
-      zone: DEFAULT_ZONE_BY_NETWORK[this.chain],
+      zone: DEFAULT_ZONE,
       domain,
       salt: BigNumber.from(salt ?? 0).toString(),
       restrictedByZone: false,

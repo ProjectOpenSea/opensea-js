@@ -7,7 +7,7 @@ import {
   sdk,
   walletAddress,
 } from "./setup";
-import { WETH_ADDRESS_BY_NETWORK } from "../../src/constants";
+import { getWETHAddress } from "../../src/utils";
 import { OFFER_AMOUNT } from "../utils/constants";
 import { expectValidOrder } from "../utils/utils";
 
@@ -48,7 +48,7 @@ suite("SDK: order posting", () => {
 
   test("Post collection offer", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
-    const paymentTokenAddress = WETH_ADDRESS_BY_NETWORK[sdk.chain];
+    const paymentTokenAddress = getWETHAddress(sdk.chain);
     const postOrderRequest = {
       collectionSlug: collection.slug,
       accountAddress: walletAddress,
