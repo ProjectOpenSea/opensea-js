@@ -572,10 +572,10 @@ export class OpenSeaSDK {
       endTime:
         expirationTime?.toString() ??
         getMaxOrderExpirationTimestamp().toString(),
-      zone: DEFAULT_ZONE_BY_NETWORK[this.chain],
+      zone: buildOfferResult.partialParameters.zone,
       domain,
       salt: BigNumber.from(salt ?? 0).toString(),
-      restrictedByZone: false,
+      restrictedByZone: true,
       allowPartialFills: true,
     };
 
