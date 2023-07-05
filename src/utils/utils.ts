@@ -389,7 +389,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.BNBTestnet:
     case Chain.ArbitrumGoerli:
     case Chain.Fuji:
-    case Chain.OptimisGoerli:
+    case Chain.OptimismGoerli:
     case Chain.SolanaDevnet:
       return true;
     default:
