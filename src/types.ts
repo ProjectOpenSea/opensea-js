@@ -106,7 +106,7 @@ export enum Chain {
   BNBTestnet = "bsctestnet",
   ArbitrumGoerli = "arbitrum_goerli",
   Fuji = "avalanche_fuji",
-  OptimisGoerli = "optimism_goerli",
+  OptimismGoerli = "optimism_goerli",
   SolanaDevnet = "soldev",
 }
 
