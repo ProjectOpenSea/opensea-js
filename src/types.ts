@@ -98,7 +98,7 @@ export enum Chain {
   Optimism = "optimism",
   Solana = "solana",
 
-  //Testnet Chains
+  // Testnet Chains
   Goerli = "goerli",
   Sepolia = "sepolia",
   Mumbai = "mumbai",
