@@ -11,11 +11,6 @@ import {
 import { Chain } from "../types";
 import { accountFromJSON, assetBundleFromJSON } from "../utils";
 
-const CHAIN_TO_NAME = {
-  [Chain.Mainnet]: "ethereum",
-  [Chain.Goerli]: "goerli",
-};
-
 export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS;
 
@@ -24,9 +19,8 @@ export const getOrdersAPIPath = (
   protocol: OrderProtocol,
   side: OrderSide
 ) => {
-  const chainName = CHAIN_TO_NAME[chain];
   const sidePath = side === "ask" ? "listings" : "offers";
-  return `/v2/orders/${chainName}/${protocol}/${sidePath}`;
+  return `/v2/orders/${chain}/${protocol}/${sidePath}`;
 };
 
 export const getCollectionPath = (slug: string) => {
@@ -39,6 +33,30 @@ export const getBuildOfferPath = () => {
 
 export const getPostCollectionOfferPath = () => {
   return `/v2/offers`;
+};
+
+export const getListNFTsByCollectionPath = (slug: string) => {
+  return `/v2/collection/${slug}/nfts`;
+};
+
+export const getListNFTsByContractPath = (chain: Chain, address: string) => {
+  return `/v2/chain/${chain}/contract/${address}/nfts`;
+};
+
+export const getNFTPath = (
+  chain: Chain,
+  address: string,
+  identifier: string
+) => {
+  return `/v2/chain/${chain}/contract/${address}/nfts/${identifier}`;
+};
+
+export const getRefreshMetadataPath = (
+  chain: Chain,
+  address: string,
+  identifier: string
+) => {
+  return `/v2/chain/${chain}/contract/${address}/nfts/${identifier}/refresh`;
 };
 
 export const getPostCollectionOfferPayload = (
@@ -82,11 +100,10 @@ export const getFulfillListingPayload = (
   protocolAddress: string,
   chain: Chain
 ) => {
-  const chainName = CHAIN_TO_NAME[chain];
   return {
     listing: {
       hash: order_hash,
-      chain: chainName,
+      chain,
       protocol_address: protocolAddress,
     },
     fulfiller: {
@@ -101,11 +118,10 @@ export const getFulfillOfferPayload = (
   protocolAddress: string,
   chain: Chain
 ) => {
-  const chainName = CHAIN_TO_NAME[chain];
   return {
     offer: {
       hash: order_hash,
-      chain: chainName,
+      chain,
       protocol_address: protocolAddress,
     },
     fulfiller: {

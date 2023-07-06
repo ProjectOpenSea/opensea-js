@@ -2,18 +2,17 @@ import { assert } from "chai";
 import { parseEther } from "ethers/lib/utils";
 import { describe, test } from "mocha";
 import { ETH_TO_WRAP, sdk, walletAddress } from "./setup";
-import { Chain, TokenStandard } from "../../src/types";
-import { getCanonicalWrappedEther } from "../../src/utils/tokens";
+import { TokenStandard } from "../../src/types";
+import { getWETHAddress } from "../../src/utils";
 
 describe("SDK: WETH", () => {
   test("Wrap ETH and Unwrap", async function () {
     if (!ETH_TO_WRAP) {
       this.skip();
-      return;
     }
 
     const wethAsset = {
-      tokenAddress: getCanonicalWrappedEther(Chain.Mainnet).address,
+      tokenAddress: getWETHAddress(sdk.chain),
       tokenId: null,
       tokenStandard: TokenStandard.ERC20,
     };
