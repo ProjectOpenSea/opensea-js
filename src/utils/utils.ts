@@ -332,6 +332,23 @@ export const getWETHAddress = (chain: Chain) => {
       return "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6";
     case Chain.Sepolia:
       return "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14";
+    case Chain.Klaytn:
+      return "0xfd844c2fca5e595004b17615f891620d1cb9bbb2";
+    case Chain.Baobab:
+      return "0x9330dd6713c8328a8d82b14e3f60a0f0b4cc7bfb";
+    case Chain.Avalanche:
+      return "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7";
+    case Chain.Fuji:
+      return "0xd00ae08403B9bbb9124bB305C09058E32C39A48c";
+    case Chain.BNB:
+      return "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
+    case Chain.BNBTestnet:
+      return "0xae13d989dac2f0debff460ac112a837c89baa7cd";
+    // OP Chains have weth at the same address
+    case Chain.Optimism:
+    case Chain.Zora:
+    case Chain.ZoraTestnet:
+      return "0x4200000000000000000000000000000000000006";
     default:
       throw new Error(`WETH is not supported on ${chain}`);
   }

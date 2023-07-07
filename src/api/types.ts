@@ -45,7 +45,7 @@ export type GetNFTResponse = {
   nft: NFT;
 };
 
-type NFT = {
+export type NFT = {
   identifier: string;
   collection: string;
   contract: string;

@@ -2,10 +2,10 @@ import { assert } from "chai";
 import { suite, test } from "mocha";
 import { OpenSeaSDK } from "../../src/index";
 import { Chain } from "../../src/types";
-import { MAINNET_API_KEY, RPC_PROVIDER } from "../utils/constants";
+import { MAINNET_API_KEY, RPC_PROVIDER_MAINNET } from "../utils/constants";
 
 const client = new OpenSeaSDK(
-  RPC_PROVIDER,
+  RPC_PROVIDER_MAINNET,
   {
     chain: Chain.Mainnet,
     apiKey: MAINNET_API_KEY,
