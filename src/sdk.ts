@@ -17,7 +17,7 @@ import {
 } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { OpenSeaAPI } from "./api/api";
-import { PostOfferResponse } from "./api/types";
+import { PostOfferResponse, NFT } from "./api/types";
 import { INVERSE_BASIS_POINT, DEFAULT_ZONE } from "./constants";
 import {
   constructPrivateListingCounterOrder,
@@ -42,6 +42,7 @@ import {
   OpenSeaCollection,
   OrderSide,
   TokenStandard,
+  OpenSeaFungibleToken,
 } from "./types";
 import {
   delay,
@@ -301,6 +302,23 @@ export class OpenSeaSDK {
     }));
   }
 
+  private getNFTItems(
+    nfts: NFT[],
+    quantities: BigNumber[] = []
+  ): CreateInputItem[] {
+    return nfts.map((nft, index) => ({
+      itemType: getAssetItemType(
+        nft.token_standard.toUpperCase() as TokenStandard
+      ),
+      token:
+        getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
+          nft.contract
+        ),
+      identifier: nft.identifier ?? undefined,
+      amount: quantities[index].toString() ?? "1",
+    }));
+  }
+
   /**
    * Create a buy order to make an offer on an asset.
    * @param options Options for creating the buy order
@@ -343,9 +361,13 @@ export class OpenSeaSDK {
     }
     paymentTokenAddress = paymentTokenAddress ?? getWETHAddress(this.chain);
 
-    const openseaAsset = await this.api.getAsset(asset);
-    const considerationAssetItems = this.getAssetItems(
-      [openseaAsset],
+    const { nft } = await this.api.getNFT(
+      this.chain,
+      asset.tokenAddress,
+      asset.tokenId
+    );
+    const considerationAssetItems = this.getNFTItems(
+      [nft],
       [BigNumber.from(quantity ?? 1)]
     );
 
@@ -356,12 +378,13 @@ export class OpenSeaSDK {
       startAmount
     );
 
-    const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
-      await this.getFees({
-        collection: openseaAsset.collection,
-        paymentTokenAddress,
-        startAmount: basePrice,
-      });
+    const collection = await this.api.getCollection(nft.collection);
+
+    const { openseaSellerFees, collectionSellerFees } = await this.getFees({
+      collection,
+      paymentTokenAddress,
+      startAmount: basePrice,
+    });
     const considerationFeeItems = [
       ...openseaSellerFees,
       ...collectionSellerFees,
@@ -440,16 +463,14 @@ export class OpenSeaSDK {
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
     }
-    //TODO: Make this function multichain compatible
-    if (this.chain != Chain.Mainnet && this.chain != Chain.Goerli) {
-      throw new Error(
-        `Creating orders on ${this.chain} not yet supported by the SDK.`
-      );
-    }
 
-    const openseaAsset = await this.api.getAsset(asset);
-    const offerAssetItems = this.getAssetItems(
-      [openseaAsset],
+    const { nft } = await this.api.getNFT(
+      this.chain,
+      asset.tokenAddress,
+      asset.tokenId
+    );
+    const offerAssetItems = this.getNFTItems(
+      [nft],
       [BigNumber.from(quantity ?? 1)]
     );
 
@@ -461,16 +482,15 @@ export class OpenSeaSDK {
       endAmount ?? undefined
     );
 
-    const {
-      sellerFee,
-      openseaSellerFees,
-      collectionSellerFees: collectionSellerFees,
-    } = await this.getFees({
-      collection: openseaAsset.collection,
-      paymentTokenAddress,
-      startAmount: basePrice,
-      endAmount: endPrice,
-    });
+    const collection = await this.api.getCollection(nft.collection);
+
+    const { sellerFee, openseaSellerFees, collectionSellerFees } =
+      await this.getFees({
+        collection,
+        paymentTokenAddress,
+        startAmount: basePrice,
+        endAmount: endPrice,
+      });
     const considerationFeeItems = [
       sellerFee,
       ...openseaSellerFees,
@@ -550,13 +570,12 @@ export class OpenSeaSDK {
       expirationTime ?? getMaxOrderExpirationTimestamp(),
       amount
     );
-    const { openseaSellerFees, collectionSellerFees: collectionSellerFees } =
-      await this.getFees({
-        collection,
-        paymentTokenAddress,
-        startAmount: basePrice,
-        endAmount: basePrice,
-      });
+    const { openseaSellerFees, collectionSellerFees } = await this.getFees({
+      collection,
+      paymentTokenAddress,
+      startAmount: basePrice,
+      endAmount: basePrice,
+    });
 
     const considerationItems = [
       convertedConsiderationItem,
@@ -938,7 +957,7 @@ export class OpenSeaSDK {
     englishAuctionReservePrice?: BigNumberish
   ) {
     const isEther = tokenAddress === ethers.constants.AddressZero;
-    let paymentToken;
+    let paymentToken: OpenSeaFungibleToken | undefined;
     if (!isEther) {
       const { tokens } = await this.api.getPaymentTokens({
         address: tokenAddress.toLowerCase(),
@@ -971,7 +990,22 @@ export class OpenSeaSDK {
       throw new Error(`Starting price must be a number >= 0`);
     }
     if (!isEther && !paymentToken) {
-      throw new Error(`No ERC-20 token found for ${tokenAddress}`);
+      try {
+        if (
+          tokenAddress.toLowerCase() == getWETHAddress(this.chain).toLowerCase()
+        ) {
+          paymentToken = {
+            name: "Wrapped Ether",
+            symbol: "WETH",
+            decimals: 18,
+            address: tokenAddress,
+          };
+        }
+      } catch (error) {
+        throw new Error(
+          `No ERC-20 token found for ${tokenAddress}, only WETH is currently supported for chains other than Mainnet Ethereum`
+        );
+      }
     }
     if (isEther && waitingForBestCounterOrder) {
       throw new Error(

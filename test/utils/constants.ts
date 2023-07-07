@@ -5,9 +5,14 @@ import { Chain } from "../../src/types";
 export const MAINNET_API_KEY = process.env.OPENSEA_API_KEY;
 export const WALLET_PRIV_KEY = process.env.WALLET_PRIV_KEY;
 
-const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
-export const RPC_PROVIDER = new ethers.providers.JsonRpcProvider(
-  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+const ALCHEMY_API_KEY_MAINNET = process.env.ALCHEMY_API_KEY;
+const ALCHEMY_API_KEY_POLYGON = process.env.ALCHEMY_API_KEY_POLYGON;
+
+export const RPC_PROVIDER_MAINNET = new ethers.providers.JsonRpcProvider(
+  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_MAINNET}`
+);
+export const RPC_PROVIDER_POLYGON = new ethers.providers.JsonRpcProvider(
+  `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_POLYGON}`
 );
 
 export const OFFER_AMOUNT = process.env.OFFER_AMOUNT ?? "0.004";

@@ -7,11 +7,11 @@ import {
   BAYC_CONTRACT_ADDRESS,
   BAYC_TOKEN_ID,
   MAINNET_API_KEY,
-  RPC_PROVIDER,
+  RPC_PROVIDER_MAINNET,
 } from "../utils/constants";
 
 const client = new OpenSeaSDK(
-  RPC_PROVIDER,
+  RPC_PROVIDER_MAINNET,
   {
     chain: Chain.Mainnet,
     apiKey: MAINNET_API_KEY,

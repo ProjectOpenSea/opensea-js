@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "description": "JavaScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data!",
   "license": "MIT",
   "author": "OpenSea Developers",
@@ -33,7 +33,7 @@
     "prettier:check:package.json": "prettier-package-json --list-different",
     "prettier:fix": "prettier --write .",
     "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register test/**/*.spec.ts --exclude test/integration/**/*.ts --timeout 15000",
-    "test:integration": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register -r dotenv/config test/integration/**/*.spec.ts --timeout 15000"
+    "test:integration": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register -r dotenv/config test/integration/**/*.spec.ts --timeout 25000"
   },
   "types": "lib/index.d.ts",
   "dependencies": {
