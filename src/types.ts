@@ -97,6 +97,7 @@ export enum Chain {
   Avalanche = "avalanche",
   Optimism = "optimism",
   Solana = "solana",
+  Zora = "zora",
 
   // Testnet Chains
   Goerli = "goerli",
@@ -108,6 +109,7 @@ export enum Chain {
   Fuji = "avalanche_fuji",
   OptimismGoerli = "optimism_goerli",
   SolanaDevnet = "soldev",
+  ZoraTestnet = "zora_testnet",
 }
 
 /**
