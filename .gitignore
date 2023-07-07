@@ -68,6 +68,7 @@ lib
 docs
 
 .DS_Store
+.idea/
 
 # Auto generated typechain contracts
 src/typechain/contracts/
