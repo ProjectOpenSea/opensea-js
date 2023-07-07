@@ -391,6 +391,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.Fuji:
     case Chain.OptimismGoerli:
     case Chain.SolanaDevnet:
+    case Chain.ZoraTestnet:
       return true;
     default:
       return false;
