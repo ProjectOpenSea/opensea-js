@@ -107,7 +107,7 @@ export class OpenSeaAPI {
         orderBy,
         orderDirection,
         ...restOptions,
-      })
+      }),
     );
     if (orders.length === 0) {
       throw new Error("Not found: no matching order found");
@@ -137,7 +137,7 @@ export class OpenSeaAPI {
         orderBy,
         orderDirection,
         ...restOptions,
-      })
+      }),
     );
     return {
       ...response,
@@ -152,7 +152,7 @@ export class OpenSeaAPI {
     fulfillerAddress: string,
     orderHash: string,
     protocolAddress: string,
-    side: OrderSide
+    side: OrderSide,
   ): Promise<FulfillmentDataResponse> {
     let payload: object | null = null;
     if (side === "ask") {
@@ -160,19 +160,19 @@ export class OpenSeaAPI {
         fulfillerAddress,
         orderHash,
         protocolAddress,
-        this.chain
+        this.chain,
       );
     } else {
       payload = getFulfillOfferPayload(
         fulfillerAddress,
         orderHash,
         protocolAddress,
-        this.chain
+        this.chain,
       );
     }
     const response = await this.post<FulfillmentDataResponse>(
       getFulfillmentDataPath(side),
-      payload
+      payload,
     );
     return response;
   }
@@ -183,7 +183,7 @@ export class OpenSeaAPI {
   public async postOrder(
     order: ProtocolData,
     apiOptions: OrderAPIOptions,
-    { retries = 2 }: { retries?: number } = {}
+    { retries = 2 }: { retries?: number } = {},
   ): Promise<OrderV2> {
     let response: OrdersPostQueryResponse;
     // TODO: Validate apiOptions. Avoid API calls that will definitely fail
@@ -191,7 +191,7 @@ export class OpenSeaAPI {
     try {
       response = await this.post<OrdersPostQueryResponse>(
         getOrdersAPIPath(this.chain, protocol, side),
-        { ...order, protocol_address: protocolAddress }
+        { ...order, protocol_address: protocolAddress },
       );
     } catch (error) {
       _throwOrContinue(error, retries);
@@ -207,16 +207,16 @@ export class OpenSeaAPI {
   public async buildOffer(
     offererAddress: string,
     quantity: number,
-    collectionSlug: string
+    collectionSlug: string,
   ): Promise<BuildOfferResponse> {
     const payload = getBuildCollectionOfferPayload(
       offererAddress,
       quantity,
-      collectionSlug
+      collectionSlug,
     );
     const response = await this.post<BuildOfferResponse>(
       getBuildOfferPath(),
-      payload
+      payload,
     );
     return response;
   }
@@ -227,13 +227,13 @@ export class OpenSeaAPI {
   public async postCollectionOffer(
     order: ProtocolData,
     slug: string,
-    retries = 0
+    retries = 0,
   ): Promise<PostOfferResponse | null> {
     const payload = getPostCollectionOfferPayload(slug, order);
     try {
       return await this.post<PostOfferResponse>(
         getPostCollectionOfferPath(),
-        payload
+        payload,
       );
     } catch (error) {
       _throwOrContinue(error, retries);
@@ -256,12 +256,12 @@ export class OpenSeaAPI {
       tokenAddress: string;
       tokenId: string | number | null;
     },
-    retries = 1
+    retries = 1,
   ): Promise<OpenSeaAsset> {
     let json;
     try {
       json = await this.get(
-        `${API_PATH}/asset/${tokenAddress}/${tokenId ?? 0}/`
+        `${API_PATH}/asset/${tokenAddress}/${tokenId ?? 0}/`,
       );
     } catch (error) {
       _throwOrContinue(error, retries);
@@ -283,7 +283,7 @@ export class OpenSeaAPI {
     slug: string,
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
-    retries = 1
+    retries = 1,
   ): Promise<ListNFTsResponse> {
     let response;
     try {
@@ -292,7 +292,7 @@ export class OpenSeaAPI {
         {
           limit,
           next,
-        }
+        },
       );
     } catch (error) {
       _throwOrContinue(error, retries);
@@ -316,7 +316,7 @@ export class OpenSeaAPI {
     address: string,
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
-    retries = 1
+    retries = 1,
   ): Promise<ListNFTsResponse> {
     let response;
     try {
@@ -325,7 +325,7 @@ export class OpenSeaAPI {
         {
           limit,
           next,
-        }
+        },
       );
     } catch (error) {
       _throwOrContinue(error, retries);
@@ -347,12 +347,12 @@ export class OpenSeaAPI {
     chain: Chain,
     address: string,
     identifier: string,
-    retries = 1
+    retries = 1,
   ): Promise<GetNFTResponse> {
     let response;
     try {
       response = await this.get<GetNFTResponse>(
-        getNFTPath(chain, address, identifier)
+        getNFTPath(chain, address, identifier),
       );
     } catch (error) {
       _throwOrContinue(error, retries);
@@ -410,7 +410,7 @@ export class OpenSeaAPI {
   public async getPaymentTokens(
     query: OpenSeaFungibleTokenQuery = {},
     page = 1,
-    retries = 1
+    retries = 1,
   ): Promise<{ tokens: OpenSeaFungibleToken[] }> {
     let json;
     try {
@@ -452,7 +452,7 @@ export class OpenSeaAPI {
    */
   public async getBundles(
     query: OpenSeaAssetBundleQuery = {},
-    page = 1
+    page = 1,
   ): Promise<{ bundles: OpenSeaAssetBundle[]; estimatedCount: number }> {
     const json = await this.get<{
       estimated_count: number;
@@ -480,13 +480,13 @@ export class OpenSeaAPI {
     chain: Chain,
     address: string,
     identifier: string,
-    retries = 1
+    retries = 1,
   ): Promise<unknown> {
     let response;
     try {
       response = await this.post(
         getRefreshMetadataPath(chain, address, identifier),
-        {}
+        {},
       );
     } catch (error) {
       _throwOrContinue(error, retries);
@@ -517,7 +517,7 @@ export class OpenSeaAPI {
   public async post<T>(
     apiPath: string,
     body?: object,
-    opts?: ethers.utils.ConnectionInfo
+    opts?: ethers.utils.ConnectionInfo,
   ): Promise<T> {
     const options = {
       url: `${this.apiBaseUrl}${apiPath}`,
@@ -558,12 +558,12 @@ export class OpenSeaAPI {
     };
 
     this.logger(
-      `Sending request: ${opts.url} ${JSON.stringify(req).slice(0, 200)}...`
+      `Sending request: ${opts.url} ${JSON.stringify(req).slice(0, 200)}...`,
     );
 
     return await ethers.utils.fetchJson(
       req,
-      body ? JSON.stringify(body) : undefined
+      body ? JSON.stringify(body) : undefined,
     );
   }
 }

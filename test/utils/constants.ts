@@ -9,10 +9,10 @@ const ALCHEMY_API_KEY_MAINNET = process.env.ALCHEMY_API_KEY;
 const ALCHEMY_API_KEY_POLYGON = process.env.ALCHEMY_API_KEY_POLYGON;
 
 export const RPC_PROVIDER_MAINNET = new ethers.providers.JsonRpcProvider(
-  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_MAINNET}`
+  `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_MAINNET}`,
 );
 export const RPC_PROVIDER_POLYGON = new ethers.providers.JsonRpcProvider(
-  `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_POLYGON}`
+  `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY_POLYGON}`,
 );
 
 export const OFFER_AMOUNT = process.env.OFFER_AMOUNT ?? "0.004";
@@ -27,12 +27,12 @@ export const mainAPI = new OpenSeaAPI(
     apiKey: MAINNET_API_KEY,
     chain: Chain.Mainnet,
   },
-  process.env.DEBUG ? console.log : undefined
+  process.env.DEBUG ? console.log : undefined,
 );
 
 export const testnetAPI = new OpenSeaAPI(
   {
     chain: Chain.Goerli,
   },
-  process.env.DEBUG ? console.log : undefined
+  process.env.DEBUG ? console.log : undefined,
 );

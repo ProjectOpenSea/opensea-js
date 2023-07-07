@@ -24,11 +24,11 @@ export const ETH_TO_WRAP = process.env.ETH_TO_WRAP;
 
 const walletMainnet = new ethers.Wallet(
   WALLET_PRIV_KEY as string,
-  RPC_PROVIDER_MAINNET
+  RPC_PROVIDER_MAINNET,
 );
 const walletPolygon = new ethers.Wallet(
   WALLET_PRIV_KEY as string,
-  RPC_PROVIDER_POLYGON
+  RPC_PROVIDER_POLYGON,
 );
 export const walletAddress = walletMainnet.address;
 
@@ -39,7 +39,7 @@ export const sdk = new OpenSeaSDK(
     apiKey: MAINNET_API_KEY,
   },
   (line) => console.info(`MAINNET: ${line}`),
-  walletMainnet
+  walletMainnet,
 );
 
 export const sdkPolygon = new OpenSeaSDK(
@@ -49,5 +49,5 @@ export const sdkPolygon = new OpenSeaSDK(
     apiKey: MAINNET_API_KEY,
   },
   (line) => console.info(`POLYGON: ${line}`),
-  walletPolygon
+  walletPolygon,
 );
