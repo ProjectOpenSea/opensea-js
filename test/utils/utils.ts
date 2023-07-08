@@ -31,9 +31,9 @@ export const expectValidOrder = (
   }
   if (usingDefaultMarketplaceFee) {
     if (order.makerFees.length > 0) {
-      expect(order.takerFees[0].basisPoints).to.be.equal(0);
+      expect(parseInt(order.takerFees[0].basisPoints)).to.be.equal(0);
     } else {
-      expect(order.takerFees[0].basisPoints).to.be.equal(50);
+      expect(parseInt(order.takerFees[0].basisPoints)).to.be.equal(50);
     }
   }
 };
