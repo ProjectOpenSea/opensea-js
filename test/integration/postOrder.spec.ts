@@ -41,6 +41,34 @@ suite("SDK: order posting", () => {
     expectValidOrder(order);
   });
 
+  test("Post Buy Order - Mainnet Low Marketplace Fee", async () => {
+    const buyOrder = {
+      accountAddress: walletAddress,
+      startAmount: +OFFER_AMOUNT,
+      asset: {
+        tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
+        tokenId: "2288",
+      },
+      useDefaultMarketplaceFee: false,
+    };
+    const order = await sdk.createBuyOrder(buyOrder);
+    expectValidOrder(order, false);
+  });
+
+  test("Post Buy Order - Polygon Low Marketplace Fee", async () => {
+    const buyOrder = {
+      accountAddress: walletAddress,
+      startAmount: +OFFER_AMOUNT,
+      asset: {
+        tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
+        tokenId: "2288",
+      },
+      useDefaultMarketplaceFee: false,
+    };
+    const order = await sdk.createBuyOrder(buyOrder);
+    expectValidOrder(order, false);
+  });
+
   test("Post Sell Order - Mainnet", async function () {
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
@@ -71,6 +99,40 @@ suite("SDK: order posting", () => {
     };
     const order = await sdkPolygon.createSellOrder(sellOrder);
     expectValidOrder(order);
+  });
+
+  test("Post Sell Order - Mainnet Low Marketplace Fee", async function () {
+    if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
+      this.skip();
+    }
+    const sellOrder = {
+      accountAddress: walletAddress,
+      startAmount: LISTING_AMOUNT,
+      asset: {
+        tokenAddress: TOKEN_ADDRESS_MAINNET as string,
+        tokenId: TOKEN_ID_MAINNET as string,
+      },
+      useDefaultMarketplaceFee: false,
+    };
+    const order = await sdk.createSellOrder(sellOrder);
+    expectValidOrder(order, false);
+  });
+
+  test("Post Sell Order - Polygon Low Marketplace Fee", async function () {
+    if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
+      this.skip();
+    }
+    const sellOrder = {
+      accountAddress: walletAddress,
+      startAmount: LISTING_AMOUNT,
+      asset: {
+        tokenAddress: TOKEN_ADDRESS_POLYGON,
+        tokenId: TOKEN_ID_POLYGON,
+      },
+      useDefaultMarketplaceFee: false,
+    };
+    const order = await sdkPolygon.createSellOrder(sellOrder);
+    expectValidOrder(order, false);
   });
 
   test("Post Collection Offer - Mainnet", async () => {
