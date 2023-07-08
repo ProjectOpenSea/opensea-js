@@ -229,11 +229,13 @@ export class OpenSeaSDK {
     paymentTokenAddress,
     startAmount,
     endAmount,
+    useDefaultMarketPlaceFees = true,
   }: {
     collection: OpenSeaCollection;
     paymentTokenAddress: string;
     startAmount: BigNumber;
     endAmount?: BigNumber;
+    useDefaultMarketPlaceFees?: boolean;
   }): Promise<{
     sellerFee: ConsiderationInputItem;
     openseaSellerFees: ConsiderationInputItem[];
@@ -243,8 +245,19 @@ export class OpenSeaSDK {
     const osFees = collection.fees?.openseaFees;
     const creatorFees = collection.fees?.sellerFees;
 
-    const openseaSellerFeeBasisPoints = feesToBasisPoints(osFees);
+    let openseaSellerFeeBasisPoints = feesToBasisPoints(osFees);
     const collectionSellerFeeBasisPoints = feesToBasisPoints(creatorFees);
+
+    // If not using default marketplace fees
+    // If collection has fees, set opensea fee to 0
+    // If collection does not have fees, set opensea fee to 50 (0.5%)
+    if (!useDefaultMarketPlaceFees) {
+      if (collectionSellerFeeBasisPoints > 0) {
+        openseaSellerFeeBasisPoints = 0;
+      } else {
+        openseaSellerFeeBasisPoints = 50;
+      }
+    }
 
     // Seller basis points
     const sellerBasisPoints =
@@ -330,6 +343,7 @@ export class OpenSeaSDK {
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.expirationTime Expiration time for the order, in seconds
    * @param options.paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to WETH
+   * @param options.useDefaultMarketPlaceFees Optional boolean for using the default marketplace fees. If unspecified, defaults to true. Set to false to use lower marketplace fees (OpenSea Pro)
    */
   public async createBuyOrder({
     asset,
@@ -340,6 +354,7 @@ export class OpenSeaSDK {
     salt,
     expirationTime,
     paymentTokenAddress,
+    useDefaultMarketPlaceFees = true,
   }: {
     asset: Asset;
     accountAddress: string;
@@ -349,6 +364,7 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
+    useDefaultMarketPlaceFees?: boolean;
   }): Promise<OrderV2> {
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
@@ -384,6 +400,7 @@ export class OpenSeaSDK {
       collection,
       paymentTokenAddress,
       startAmount: basePrice,
+      useDefaultMarketPlaceFees,
     });
     const considerationFeeItems = [
       ...openseaSellerFees,
@@ -434,6 +451,7 @@ export class OpenSeaSDK {
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
+   * @param options.useDefaultMarketPlaceFees Optional boolean for using the default marketplace fees. If unspecified, defaults to true. Set to false to use lower marketplace fees (OpenSea Pro)
    */
   public async createSellOrder({
     asset,
@@ -447,6 +465,7 @@ export class OpenSeaSDK {
     expirationTime,
     paymentTokenAddress = ethers.constants.AddressZero,
     buyerAddress,
+    useDefaultMarketPlaceFees = true,
   }: {
     asset: Asset;
     accountAddress: string;
@@ -459,6 +478,7 @@ export class OpenSeaSDK {
     expirationTime?: number;
     paymentTokenAddress?: string;
     buyerAddress?: string;
+    useDefaultMarketPlaceFees?: boolean;
   }): Promise<OrderV2> {
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
@@ -490,6 +510,7 @@ export class OpenSeaSDK {
         paymentTokenAddress,
         startAmount: basePrice,
         endAmount: endPrice,
+        useDefaultMarketPlaceFees,
       });
     const considerationFeeItems = [
       sellerFee,
