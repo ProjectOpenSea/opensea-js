@@ -16,7 +16,7 @@ const client = new OpenSeaSDK(
     chain: Chain.Mainnet,
     apiKey: MAINNET_API_KEY,
   },
-  (line) => console.info(`MAINNET: ${line}`)
+  (line) => console.info(`MAINNET: ${line}`),
 );
 
 let asset: OpenSeaAsset;
@@ -34,10 +34,10 @@ suite("SDK: fees", () => {
     const buyerFeeBasisPoints =
       collection.openseaBuyerFeeBasisPoints + collection.devBuyerFeeBasisPoints;
     const openseaSellerFeeBasisPoints = feesToBasisPoints(
-      collection.fees?.openseaFees
+      collection.fees?.openseaFees,
     );
     const devSellerFeeBasisPoints = feesToBasisPoints(
-      collection.fees?.sellerFees
+      collection.fees?.sellerFees,
     );
     const sellerFeeBasisPoints =
       openseaSellerFeeBasisPoints + devSellerFeeBasisPoints;
@@ -51,24 +51,24 @@ suite("SDK: fees", () => {
     assert.equal(buyerFees.totalSellerFeeBasisPoints, sellerFeeBasisPoints);
     assert.equal(
       buyerFees.openseaSellerFeeBasisPoints,
-      openseaSellerFeeBasisPoints
+      openseaSellerFeeBasisPoints,
     );
     assert.equal(buyerFees.devSellerFeeBasisPoints, devSellerFeeBasisPoints);
     assert.equal(
       buyerFees.devBuyerFeeBasisPoints,
-      collection.devBuyerFeeBasisPoints
+      collection.devBuyerFeeBasisPoints,
     );
     assert.equal(
       buyerFees.devSellerFeeBasisPoints,
-      collection.devSellerFeeBasisPoints
+      collection.devSellerFeeBasisPoints,
     );
     assert.equal(
       buyerFees.openseaBuyerFeeBasisPoints,
-      collection.openseaBuyerFeeBasisPoints
+      collection.openseaBuyerFeeBasisPoints,
     );
     assert.equal(
       buyerFees.openseaSellerFeeBasisPoints,
-      collection.openseaSellerFeeBasisPoints
+      collection.openseaSellerFeeBasisPoints,
     );
 
     const sellerFees = await client.computeFees({
@@ -79,19 +79,19 @@ suite("SDK: fees", () => {
     assert.equal(sellerFees.totalSellerFeeBasisPoints, sellerFeeBasisPoints);
     assert.equal(
       sellerFees.devBuyerFeeBasisPoints,
-      collection.devBuyerFeeBasisPoints
+      collection.devBuyerFeeBasisPoints,
     );
     assert.equal(
       sellerFees.devSellerFeeBasisPoints,
-      collection.devSellerFeeBasisPoints
+      collection.devSellerFeeBasisPoints,
     );
     assert.equal(
       sellerFees.openseaBuyerFeeBasisPoints,
-      collection.openseaBuyerFeeBasisPoints
+      collection.openseaBuyerFeeBasisPoints,
     );
     assert.equal(
       sellerFees.openseaSellerFeeBasisPoints,
-      collection.openseaSellerFeeBasisPoints
+      collection.openseaSellerFeeBasisPoints,
     );
   });
 });

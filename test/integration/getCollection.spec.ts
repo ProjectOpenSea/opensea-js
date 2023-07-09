@@ -13,7 +13,7 @@ suite("SDK: getCollection", () => {
     assert.equal(collection.slug, slug, "Collection slug should match.");
     assert(
       collection.safelistRequestStatus === SafelistStatus.VERIFIED,
-      "Collection should be verified."
+      "Collection should be verified.",
     );
     assert(collection.stats, "Collection stats should not be null");
   });

@@ -73,7 +73,7 @@ import { OpenSeaSDK, Chain } from "opensea-js";
 
 // This example provider won't let you make transactions, only read-only calls:
 const provider = new ethers.providers.JsonRpcProvider(
-  "https://mainnet.infura.io"
+  "https://mainnet.infura.io",
 );
 
 const openseaSDK = new OpenSeaSDK(provider, {
@@ -276,7 +276,7 @@ const { orders, count } = await openseaSDK.api.getOrders(
     tokenId,
     side: "ask",
   },
-  2
+  2,
 );
 ```
 

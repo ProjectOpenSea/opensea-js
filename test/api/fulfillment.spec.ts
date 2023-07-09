@@ -18,7 +18,7 @@ suite("Generating fulfillment data", () => {
       "0x000000000000000000000000000000000000dEaD",
       order.orderHash,
       order.protocolAddress,
-      order.side
+      order.side,
     );
 
     assert.exists(fulfillment.fulfillment_data.orders[0].signature);
@@ -38,7 +38,7 @@ suite("Generating fulfillment data", () => {
       "0x000000000000000000000000000000000000dEaD",
       order.orderHash,
       order.protocolAddress,
-      order.side
+      order.side,
     );
 
     assert.exists(fulfillment.fulfillment_data.orders[0].signature);
