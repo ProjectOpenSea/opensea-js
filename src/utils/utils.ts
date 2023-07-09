@@ -133,7 +133,7 @@ export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
 
 export const assetContractFromJSON = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  asset_contract: any
+  asset_contract: any,
 ): OpenSeaAssetContract => {
   return {
     name: asset_contract.name,
@@ -214,7 +214,7 @@ export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
  */
 export async function estimateGas(
   provider: ethers.providers.Provider,
-  { from, to, data, value = BigNumber.from(0) }: ethers.Transaction
+  { from, to, data, value = BigNumber.from(0) }: ethers.Transaction,
 ) {
   return await provider.estimateGas({
     from,
@@ -231,7 +231,7 @@ export async function estimateGas(
  */
 export function assignOrdersToSides(
   order: Order,
-  matchingOrder: UnsignedOrder
+  matchingOrder: UnsignedOrder,
 ): { buy: Order; sell: Order } {
   const isSellOrder = order.side == OrderSide.Sell;
 
@@ -273,7 +273,7 @@ export async function delay(ms: number) {
 export async function getNonCompliantApprovalAddress(
   erc721Contract: ethers.Contract,
   tokenId: string,
-  _accountAddress: string
+  _accountAddress: string,
 ): Promise<string | undefined> {
   const results = await Promise.allSettled([
     // CRYPTOKITTIES check
@@ -293,7 +293,7 @@ export const getMaxOrderExpirationTimestamp = () => {
   const maxExpirationDate = new Date();
 
   maxExpirationDate.setMonth(
-    maxExpirationDate.getMonth() + MAX_EXPIRATION_MONTHS
+    maxExpirationDate.getMonth() + MAX_EXPIRATION_MONTHS,
   );
   maxExpirationDate.setDate(maxExpirationDate.getDate() - 1);
 
@@ -380,7 +380,7 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
  * @returns sum of basis points in a fee map
  */
 export const feesToBasisPoints = (
-  fees: Map<string, number> | undefined
+  fees: Map<string, number> | undefined,
 ): number => {
   if (!fees) {
     return 0;
@@ -388,7 +388,7 @@ export const feesToBasisPoints = (
 
   return Array.from(fees.values()).reduce(
     (sum, basisPoints) => basisPoints + sum,
-    0
+    0,
   );
 };
 
@@ -422,7 +422,7 @@ export const isTestChain = (chain: Chain): boolean => {
 export const isValidProtocol = (protocolAddress: string): boolean => {
   const checkSumAddress = ethers.utils.getAddress(protocolAddress);
   const validProtocolAddresses = [CROSS_CHAIN_SEAPORT_V1_5_ADDRESS].map(
-    (address) => ethers.utils.getAddress(address)
+    (address) => ethers.utils.getAddress(address),
   );
   return validProtocolAddresses.includes(checkSumAddress);
 };

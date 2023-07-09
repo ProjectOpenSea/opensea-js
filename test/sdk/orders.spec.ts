@@ -10,7 +10,7 @@ const client = new OpenSeaSDK(
     chain: Chain.Mainnet,
     apiKey: MAINNET_API_KEY,
   },
-  (line) => console.info(`MAINNET: ${line}`)
+  (line) => console.info(`MAINNET: ${line}`),
 );
 
 suite("SDK: orders", () => {

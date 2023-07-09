@@ -17,7 +17,7 @@ export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
 export const getOrdersAPIPath = (
   chain: Chain,
   protocol: OrderProtocol,
-  side: OrderSide
+  side: OrderSide,
 ) => {
   const sidePath = side === "ask" ? "listings" : "offers";
   return `/v2/orders/${chain}/${protocol}/${sidePath}`;
@@ -46,7 +46,7 @@ export const getListNFTsByContractPath = (chain: Chain, address: string) => {
 export const getNFTPath = (
   chain: Chain,
   address: string,
-  identifier: string
+  identifier: string,
 ) => {
   return `/v2/chain/${chain}/contract/${address}/nfts/${identifier}`;
 };
@@ -54,14 +54,14 @@ export const getNFTPath = (
 export const getRefreshMetadataPath = (
   chain: Chain,
   address: string,
-  identifier: string
+  identifier: string,
 ) => {
   return `/v2/chain/${chain}/contract/${address}/nfts/${identifier}/refresh`;
 };
 
 export const getPostCollectionOfferPayload = (
   collectionSlug: string,
-  protocol_data: ProtocolData
+  protocol_data: ProtocolData,
 ) => {
   return {
     criteria: {
@@ -75,7 +75,7 @@ export const getPostCollectionOfferPayload = (
 export const getBuildCollectionOfferPayload = (
   offererAddress: string,
   quantity: number,
-  collectionSlug: string
+  collectionSlug: string,
 ) => {
   return {
     offerer: offererAddress,
@@ -98,7 +98,7 @@ export const getFulfillListingPayload = (
   fulfillerAddress: string,
   order_hash: string,
   protocolAddress: string,
-  chain: Chain
+  chain: Chain,
 ) => {
   return {
     listing: {
@@ -116,7 +116,7 @@ export const getFulfillOfferPayload = (
   fulfillerAddress: string,
   order_hash: string,
   protocolAddress: string,
-  chain: Chain
+  chain: Chain,
 ) => {
   return {
     offer: {
@@ -132,7 +132,7 @@ export const getFulfillOfferPayload = (
 
 type OrdersQueryPathOptions = "protocol" | "side";
 export const serializeOrdersQueryOptions = (
-  options: Omit<OrdersQueryOptions, OrdersQueryPathOptions>
+  options: Omit<OrdersQueryOptions, OrdersQueryPathOptions>,
 ) => {
   return {
     limit: options.limit,

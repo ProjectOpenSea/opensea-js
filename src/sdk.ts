@@ -84,7 +84,7 @@ export class OpenSeaSDK {
     provider: providers.JsonRpcProvider,
     apiConfig: OpenSeaAPIConfig = {},
     logger?: (arg: string) => void,
-    wallet?: Wallet
+    wallet?: Wallet,
   ) {
     // API config
     apiConfig.chain ??= Chain.Mainnet;
@@ -114,7 +114,7 @@ export class OpenSeaSDK {
   public addListener(
     event: EventType,
     listener: (data: EventData) => void,
-    once = false
+    once = false,
   ) {
     if (once) {
       this._emitter.once(event, listener);
@@ -163,7 +163,7 @@ export class OpenSeaSDK {
     const wethContract = new Contract(
       getWETHAddress(this.chain),
       ["function deposit() payable"],
-      this._signerOrProvider
+      this._signerOrProvider,
     );
 
     wethContract.connect(this.provider);
@@ -172,7 +172,7 @@ export class OpenSeaSDK {
       await this._confirmTransaction(
         transaction.hash,
         EventType.WrapEth,
-        "Wrapping ETH"
+        "Wrapping ETH",
       );
     } catch (error) {
       console.error(error);
@@ -200,7 +200,7 @@ export class OpenSeaSDK {
     const wethContract = new Contract(
       getWETHAddress(this.chain),
       ["function withdraw(uint wad) public"],
-      this._signerOrProvider
+      this._signerOrProvider,
     );
 
     wethContract.connect(this.provider);
@@ -209,7 +209,7 @@ export class OpenSeaSDK {
       await this._confirmTransaction(
         transaction.hash,
         EventType.UnwrapWeth,
-        "Unwrapping W-ETH"
+        "Unwrapping W-ETH",
       );
     } catch (error) {
       console.error(error);
@@ -219,7 +219,7 @@ export class OpenSeaSDK {
 
   private getAmountWithBasisPointsApplied = (
     amount: BigNumber,
-    basisPoints: number
+    basisPoints: number,
   ): string => {
     return amount.mul(basisPoints).div(INVERSE_BASIS_POINT).toString();
   };
@@ -258,19 +258,19 @@ export class OpenSeaSDK {
         amount: this.getAmountWithBasisPointsApplied(startAmount, basisPoints),
         endAmount: this.getAmountWithBasisPointsApplied(
           endAmount ?? startAmount,
-          basisPoints
+          basisPoints,
         ),
         recipient,
       };
     };
 
     const getConsiderationItemsFromFeeCategory = (
-      feeCategory: Map<string, number>
+      feeCategory: Map<string, number>,
     ): ConsiderationInputItem[] => {
       return Array.from(feeCategory.entries()).map(
         ([recipient, basisPoints]) => {
           return getConsiderationItem(basisPoints, recipient);
-        }
+        },
       );
     };
 
@@ -289,13 +289,13 @@ export class OpenSeaSDK {
 
   private getAssetItems(
     assets: OpenSeaAsset[],
-    quantities: BigNumber[] = []
+    quantities: BigNumber[] = [],
   ): CreateInputItem[] {
     return assets.map((asset, index) => ({
       itemType: getAssetItemType(asset.assetContract.tokenStandard),
       token:
         getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-          asset.tokenAddress
+          asset.tokenAddress,
         ),
       identifier: asset.tokenId ?? undefined,
       amount: quantities[index].toString() ?? "1",
@@ -304,15 +304,15 @@ export class OpenSeaSDK {
 
   private getNFTItems(
     nfts: NFT[],
-    quantities: BigNumber[] = []
+    quantities: BigNumber[] = [],
   ): CreateInputItem[] {
     return nfts.map((nft, index) => ({
       itemType: getAssetItemType(
-        nft.token_standard.toUpperCase() as TokenStandard
+        nft.token_standard.toUpperCase() as TokenStandard,
       ),
       token:
         getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-          nft.contract
+          nft.contract,
         ),
       identifier: nft.identifier ?? undefined,
       amount: quantities[index].toString() ?? "1",
@@ -356,7 +356,7 @@ export class OpenSeaSDK {
     //TODO: Make this function multichain compatible
     if (this.chain != Chain.Mainnet && this.chain != Chain.Goerli) {
       throw new Error(
-        `Creating orders on ${this.chain} not yet supported by the SDK.`
+        `Creating orders on ${this.chain} not yet supported by the SDK.`,
       );
     }
     paymentTokenAddress = paymentTokenAddress ?? getWETHAddress(this.chain);
@@ -364,18 +364,18 @@ export class OpenSeaSDK {
     const { nft } = await this.api.getNFT(
       this.chain,
       asset.tokenAddress,
-      asset.tokenId
+      asset.tokenId,
     );
     const considerationAssetItems = this.getNFTItems(
       [nft],
-      [BigNumber.from(quantity ?? 1)]
+      [BigNumber.from(quantity ?? 1)],
     );
 
     const { basePrice } = await this._getPriceParameters(
       OrderSide.Buy,
       paymentTokenAddress,
       expirationTime ?? getMaxOrderExpirationTimestamp(),
-      startAmount
+      startAmount,
     );
 
     const collection = await this.api.getCollection(nft.collection);
@@ -409,7 +409,7 @@ export class OpenSeaSDK {
         restrictedByZone: false,
         allowPartialFills: true,
       },
-      accountAddress
+      accountAddress,
     );
     const order = await executeAllActions();
 
@@ -467,11 +467,11 @@ export class OpenSeaSDK {
     const { nft } = await this.api.getNFT(
       this.chain,
       asset.tokenAddress,
-      asset.tokenId
+      asset.tokenId,
     );
     const offerAssetItems = this.getNFTItems(
       [nft],
-      [BigNumber.from(quantity ?? 1)]
+      [BigNumber.from(quantity ?? 1)],
     );
 
     const { basePrice, endPrice } = await this._getPriceParameters(
@@ -479,7 +479,7 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       expirationTime ?? getMaxOrderExpirationTimestamp(),
       startAmount,
-      endAmount ?? undefined
+      endAmount ?? undefined,
     );
 
     const collection = await this.api.getCollection(nft.collection);
@@ -499,7 +499,7 @@ export class OpenSeaSDK {
 
     if (buyerAddress) {
       considerationFeeItems.push(
-        ...getPrivateListingConsiderations(offerAssetItems, buyerAddress)
+        ...getPrivateListingConsiderations(offerAssetItems, buyerAddress),
       );
     }
 
@@ -517,7 +517,7 @@ export class OpenSeaSDK {
         restrictedByZone: false,
         allowPartialFills: true,
       },
-      accountAddress
+      accountAddress,
     );
     const order = await executeAllActions();
 
@@ -554,7 +554,7 @@ export class OpenSeaSDK {
     const buildOfferResult = await this.api.buildOffer(
       accountAddress,
       quantity,
-      collectionSlug
+      collectionSlug,
     );
     const item = buildOfferResult.partialParameters.consideration[0];
     const convertedConsiderationItem = {
@@ -568,7 +568,7 @@ export class OpenSeaSDK {
       OrderSide.Buy,
       paymentTokenAddress,
       expirationTime ?? getMaxOrderExpirationTimestamp(),
-      amount
+      amount,
     );
     const { openseaSellerFees, collectionSellerFees } = await this.getFees({
       collection,
@@ -604,7 +604,7 @@ export class OpenSeaSDK {
 
     const { executeAllActions } = await this.seaport_v1_5.createOrder(
       payload,
-      accountAddress
+      accountAddress,
     );
     const order = await executeAllActions();
 
@@ -626,12 +626,12 @@ export class OpenSeaSDK {
 
     if (!order.taker?.address) {
       throw new Error(
-        "Order is not a private listing must have a taker address"
+        "Order is not a private listing must have a taker address",
       );
     }
     const counterOrder = constructPrivateListingCounterOrder(
       order.protocolData,
-      order.taker.address
+      order.taker.address,
     );
     const fulfillments = getPrivateListingFulfillments(order.protocolData);
     const transaction = await this.seaport_v1_5
@@ -650,7 +650,7 @@ export class OpenSeaSDK {
     await this._confirmTransaction(
       transactionReceipt.transactionHash,
       EventType.MatchOrders,
-      "Fulfilling order"
+      "Fulfilling order",
     );
     return transactionReceipt.transactionHash;
   }
@@ -684,7 +684,7 @@ export class OpenSeaSDK {
         accountAddress,
         order.orderHash,
         order.protocolAddress,
-        order.side
+        order.side,
       );
       const signature = result.fulfillment_data.orders[0].signature;
       order.clientSignature = signature;
@@ -695,7 +695,7 @@ export class OpenSeaSDK {
     if (isPrivateListing) {
       if (recipientAddress) {
         throw new Error(
-          "Private listings cannot be fulfilled with a recipient address"
+          "Private listings cannot be fulfilled with a recipient address",
         );
       }
       return this.fulfillPrivateOrder({
@@ -716,7 +716,7 @@ export class OpenSeaSDK {
     await this._confirmTransaction(
       transaction.hash,
       EventType.MatchOrders,
-      "Fulfilling order"
+      "Fulfilling order",
     );
     return transaction.hash;
   }
@@ -776,7 +776,7 @@ export class OpenSeaSDK {
     await this._confirmTransaction(
       transactionHash,
       EventType.CancelOrder,
-      "Cancelling order"
+      "Cancelling order",
     );
   }
 
@@ -820,7 +820,7 @@ export class OpenSeaSDK {
    */
   public async getBalance(
     { accountAddress, asset }: { accountAddress: string; asset: Asset },
-    retries = 1
+    retries = 1,
   ): Promise<BigNumber> {
     if (
       asset.tokenStandard == TokenStandard.ERC20 ||
@@ -831,7 +831,7 @@ export class OpenSeaSDK {
         asset.tokenStandard == TokenStandard.ERC20
           ? ERC20__factory.createInterface()
           : ERC1155__factory.createInterface(),
-        this.provider
+        this.provider,
       );
 
       const count = await contract.methods
@@ -845,7 +845,7 @@ export class OpenSeaSDK {
       const contract = new ethers.Contract(
         asset.tokenAddress,
         ERC721__factory.createInterface(),
-        this.provider
+        this.provider,
       );
 
       try {
@@ -930,7 +930,7 @@ export class OpenSeaSDK {
     await this._confirmTransaction(
       transaction.hash,
       EventType.ApproveOrder,
-      "Approving order"
+      "Approving order",
     );
 
     return transaction.hash;
@@ -954,7 +954,7 @@ export class OpenSeaSDK {
     startAmount: BigNumberish,
     endAmount?: BigNumberish,
     waitingForBestCounterOrder = false,
-    englishAuctionReservePrice?: BigNumberish
+    englishAuctionReservePrice?: BigNumberish,
   ) {
     const isEther = tokenAddress === ethers.constants.AddressZero;
     let paymentToken: OpenSeaFungibleToken | undefined;
@@ -968,7 +968,7 @@ export class OpenSeaSDK {
 
     const startAmountWei = ethers.utils.parseUnits(
       startAmount.toString(),
-      decimals
+      decimals,
     );
     const endAmountWei = endAmount
       ? ethers.utils.parseUnits(endAmount.toString(), decimals)
@@ -1003,13 +1003,13 @@ export class OpenSeaSDK {
         }
       } catch (error) {
         throw new Error(
-          `No ERC-20 token found for ${tokenAddress}, only WETH is currently supported for chains other than Mainnet Ethereum`
+          `No ERC-20 token found for ${tokenAddress}, only WETH is currently supported for chains other than Mainnet Ethereum`,
         );
       }
     }
     if (isEther && waitingForBestCounterOrder) {
       throw new Error(
-        `English auctions must use wrapped ETH or an ERC-20 token.`
+        `English auctions must use wrapped ETH or an ERC-20 token.`,
       );
     }
     if (isEther && orderSide === OrderSide.Buy) {
@@ -1017,12 +1017,12 @@ export class OpenSeaSDK {
     }
     if (priceDiffWei.lt(0)) {
       throw new Error(
-        "End price must be less than or equal to the start price."
+        "End price must be less than or equal to the start price.",
       );
     }
     if (priceDiffWei.gt(0) && BigNumber.from(expirationTime).isZero()) {
       throw new Error(
-        "Expiration time must be set if order will change in price."
+        "Expiration time must be set if order will change in price.",
       );
     }
     const reservePriceIsDefinedAndNonZero =
@@ -1032,7 +1032,7 @@ export class OpenSeaSDK {
     }
     if (reservePriceIsDefinedAndNonZero && reservePrice?.lt(startAmountWei)) {
       throw new Error(
-        "Reserve price must be greater than or equal to the start amount."
+        "Reserve price must be greater than or equal to the start amount.",
       );
     }
 
@@ -1046,7 +1046,7 @@ export class OpenSeaSDK {
   private async _confirmTransaction(
     transactionHash: string,
     event: EventType,
-    description: string
+    description: string,
   ): Promise<void> {
     const transactionEventData = { transactionHash, event };
     this.logger(`Transaction started: ${description}`);

@@ -15,7 +15,7 @@ suite("SDK: NFTs", () => {
     assert.equal(
       asset.assetContract.address,
       tokenAddress,
-      "Contract address should match."
+      "Contract address should match.",
     );
     assert(asset.animationUrl, "Animation URL should not be null");
   });
@@ -31,7 +31,7 @@ suite("SDK: NFTs", () => {
     const tokenAddress = "0x4768cbf202f365fbf704b9b9d397551a0443909b"; // Roo Troop
     const response = await sdk.api.getNFTsByContract(
       Chain.Polygon,
-      tokenAddress
+      tokenAddress,
     );
     assert(response, "Response should exist.");
     assert.equal(response.nfts.length, 50, "Response should include 50 NFTs");
@@ -44,18 +44,18 @@ suite("SDK: NFTs", () => {
     const response = await sdk.api.getNFT(
       Chain.Polygon,
       tokenAddress,
-      identifier
+      identifier,
     );
     assert(response.nft, "Response should contain nft.");
     assert.equal(
       response.nft.contract,
       tokenAddress,
-      "NFT address should match token address"
+      "NFT address should match token address",
     );
     assert.equal(
       response.nft.identifier,
       identifier,
-      "NFT address should match token address"
+      "NFT address should match token address",
     );
   });
 
@@ -65,7 +65,7 @@ suite("SDK: NFTs", () => {
     const response = await sdk.api.refreshNFTMetadata(
       Chain.Polygon,
       tokenAddress,
-      identifier
+      identifier,
     );
     assert(response, "Response should exist.");
     expect(response).to.contain(`contract ${tokenAddress}`);

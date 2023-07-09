@@ -36,7 +36,7 @@ describe("SDK: WETH", () => {
     assert.equal(
       startingWethBalance.add(ethToWrapInWei).toString(),
       endingWethBalance.toString(),
-      "Balances should match."
+      "Balances should match.",
     );
 
     await sdk.unwrapWeth({
@@ -51,7 +51,7 @@ describe("SDK: WETH", () => {
     assert.equal(
       startingWethBalance.toString(),
       finalWethBalance.toString(),
-      "Balances should match."
+      "Balances should match.",
     );
   }).timeout(30000);
 });

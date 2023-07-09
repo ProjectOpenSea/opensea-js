@@ -26,7 +26,7 @@ suite("Getting orders", () => {
         protocol: "seaport",
         side: "ask",
         maker: "0x000000000000000000000000000000000000dEaD",
-      })
+      }),
     )
       .to.eventually.be.rejected.and.be.an.instanceOf(Error)
       .and.have.property("message", "Not found: no matching order found");

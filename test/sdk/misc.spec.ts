@@ -20,7 +20,7 @@ const client = new OpenSeaSDK(
     chain: Chain.Mainnet,
     apiKey: MAINNET_API_KEY,
   },
-  (line) => console.info(`MAINNET: ${line}`)
+  (line) => console.info(`MAINNET: ${line}`),
 );
 
 suite("SDK: misc", () => {
@@ -37,39 +37,39 @@ suite("SDK: misc", () => {
     const address = DAPPER_ADDRESS;
     assert.equal(
       getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        address
+        address,
       ),
-      address
+      address,
     );
   });
 
   test("Checks that shared storefront addresses are remapped to lazy mint adapter address", async () => {
     assert.equal(
       getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STOREFRONT_ADDRESS_GOERLI
+        SHARED_STOREFRONT_ADDRESS_GOERLI,
       ),
-      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS
+      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
     );
     assert.equal(
       getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STOREFRONT_ADDRESS_MAINNET
+        SHARED_STOREFRONT_ADDRESS_MAINNET,
       ),
-      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS
+      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
     );
   });
 
   test("Checks that upper case shared storefront addresses are remapped to lazy mint adapter address", async () => {
     assert.equal(
       getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STOREFRONT_ADDRESS_GOERLI.toUpperCase()
+        SHARED_STOREFRONT_ADDRESS_GOERLI.toUpperCase(),
       ),
-      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS
+      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
     );
     assert.equal(
       getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STOREFRONT_ADDRESS_MAINNET.toUpperCase()
+        SHARED_STOREFRONT_ADDRESS_MAINNET.toUpperCase(),
       ),
-      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS
+      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
     );
   });
 });
