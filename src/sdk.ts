@@ -353,12 +353,6 @@ export class OpenSeaSDK {
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
     }
-    //TODO: Make this function multichain compatible
-    if (this.chain != Chain.Mainnet && this.chain != Chain.Goerli) {
-      throw new Error(
-        `Creating orders on ${this.chain} not yet supported by the SDK.`,
-      );
-    }
     paymentTokenAddress = paymentTokenAddress ?? getWETHAddress(this.chain);
 
     const { nft } = await this.api.getNFT(
