@@ -93,6 +93,7 @@ export class OpenSeaSDK {
 
     this.provider = provider;
     this._signerOrProvider = wallet ?? this.provider;
+
     this.seaport_v1_5 = new Seaport(this._signerOrProvider, {
       overrides: { defaultConduitKey: OPENSEA_CONDUIT_KEY },
     });
