@@ -22,6 +22,7 @@ export const expectValidOrder = (order: OrderV2) => {
     "markedInvalid",
     "makerAssetBundle",
     "takerAssetBundle",
+    "remainingQuantity",
   ];
   for (const field of requiredFields) {
     expect(field in order).to.be.true;
