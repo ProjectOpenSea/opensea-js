@@ -182,5 +182,6 @@ export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
     clientSignature: order.client_signature,
     makerAssetBundle: assetBundleFromJSON(order.maker_asset_bundle),
     takerAssetBundle: assetBundleFromJSON(order.taker_asset_bundle),
+    remainingQuantity: order.remaining_quantity,
   };
 };
