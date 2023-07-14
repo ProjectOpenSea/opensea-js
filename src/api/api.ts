@@ -261,7 +261,7 @@ export class OpenSeaAPI {
     },
     retries = 1,
   ): Promise<OpenSeaAsset> {
-    if (!(this.chain in [Chain.Mainnet, Chain.Goerli])) {
+    if (![Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
       throw new Error("Please use `getNFT()` for multichain capabilities.");
     }
 
@@ -383,7 +383,7 @@ export class OpenSeaAPI {
     next: string | undefined;
     previous: string | undefined;
   }> {
-    if (!(this.chain in [Chain.Mainnet, Chain.Goerli])) {
+    if (![Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
       throw new Error(
         "Please use `getNFTsByContract()` or `getNFTsByCollection()` for multichain capabilities.",
       );
@@ -428,7 +428,7 @@ export class OpenSeaAPI {
     page = 1,
     retries = 1,
   ): Promise<{ tokens: OpenSeaFungibleToken[] }> {
-    if (!(this.chain in [Chain.Mainnet, Chain.Goerli])) {
+    if (![Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
       throw new Error(
         "This method does not work outside of Mainnet and Goerli chains as it uses the v1 API.",
       );
