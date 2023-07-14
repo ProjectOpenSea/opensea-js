@@ -63,7 +63,7 @@ suite("SDK: order posting", () => {
     }
     const sellOrder = {
       accountAddress: walletAddress,
-      startAmount: LISTING_AMOUNT,
+      startAmount: +LISTING_AMOUNT * 1_000_000,
       asset: {
         tokenAddress: TOKEN_ADDRESS_POLYGON,
         tokenId: TOKEN_ID_POLYGON,
