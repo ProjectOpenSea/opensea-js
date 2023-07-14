@@ -952,7 +952,7 @@ export class OpenSeaSDK {
   ) {
     const isEther = tokenAddress === ethers.constants.AddressZero;
     let paymentToken: OpenSeaFungibleToken | undefined;
-    if (!isEther) {
+    if (!isEther && [Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
       const { tokens } = await this.api.getPaymentTokens({
         address: tokenAddress.toLowerCase(),
       });
