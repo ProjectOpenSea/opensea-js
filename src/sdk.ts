@@ -816,53 +816,60 @@ export class OpenSeaSDK {
     { accountAddress, asset }: { accountAddress: string; asset: Asset },
     retries = 1,
   ): Promise<BigNumber> {
-    if (
-      asset.tokenStandard == TokenStandard.ERC20 ||
-      asset.tokenStandard == TokenStandard.ERC1155
-    ) {
-      const contract = new ethers.Contract(
-        asset.tokenAddress,
-        asset.tokenStandard == TokenStandard.ERC20
-          ? ERC20__factory.createInterface()
-          : ERC1155__factory.createInterface(),
-        this.provider,
-      );
-
-      const count = await contract.methods
-        .balanceOf(accountAddress, asset.tokenId ?? undefined)
-        .call();
-
-      if (count !== undefined) {
-        return count;
-      }
-    } else if (asset.tokenStandard == TokenStandard.ERC721) {
-      const contract = new ethers.Contract(
-        asset.tokenAddress,
-        ERC721__factory.createInterface(),
-        this.provider,
-      );
-
-      try {
-        const owner = await contract.methods.ownerOf(asset.tokenId).call();
-        if (owner) {
-          return owner.toLowerCase() == accountAddress.toLowerCase()
-            ? BigNumber.from(1)
-            : BigNumber.from(0);
+    try {
+      switch (asset.tokenStandard) {
+        case TokenStandard.ERC20: {
+          const contract = new ethers.Contract(
+            asset.tokenAddress,
+            ERC20__factory.createInterface(),
+            this.provider,
+          );
+          return await contract.callStatic.balanceOf(accountAddress);
         }
-        // eslint-disable-next-line no-empty
-      } catch {}
-    } else {
-      // Missing ownership call - skip check to allow listings
-      // by default
-      throw new Error("Missing ownership schema for this asset type");
-    }
-
-    if (retries <= 0) {
-      throw new Error("Unable to get current owner from smart contract");
-    } else {
-      await delay(500);
-      // Recursively check owner again
-      return await this.getBalance({ accountAddress, asset }, retries - 1);
+        case TokenStandard.ERC1155: {
+          const contract = new ethers.Contract(
+            asset.tokenAddress,
+            ERC1155__factory.createInterface(),
+            this.provider,
+          );
+          return await contract.callStatic.balanceOf(
+            accountAddress,
+            asset.tokenId,
+          );
+        }
+        case TokenStandard.ERC721: {
+          const contract = new ethers.Contract(
+            asset.tokenAddress,
+            ERC721__factory.createInterface(),
+            this.provider,
+          );
+          try {
+            const owner = await contract.callStatic.ownerOf(asset.tokenId);
+            return owner.toLowerCase() == accountAddress.toLowerCase()
+              ? BigNumber.from(1)
+              : BigNumber.from(0);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } catch (error: any) {
+            this.logger(
+              `Failed to get ownerOf ERC721: ${error.message ?? error}`,
+            );
+            return BigNumber.from(0);
+          }
+        }
+        default:
+          throw new Error("Unsupported token standard for getBalance");
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (retries <= 0) {
+        throw new Error(
+          `Unable to get owner from smart contract: ${error.message ?? error}`,
+        );
+      } else {
+        await delay(500);
+        // Recursively check owner again
+        return await this.getBalance({ accountAddress, asset }, retries - 1);
+      }
     }
   }
 
