@@ -156,6 +156,8 @@ export class OpenSeaSDK {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
+    await this._checkAccountIsAvailable(accountAddress);
+
     const value = parseEther(FixedNumber.from(amountInEth).toString());
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount: value });
@@ -193,6 +195,8 @@ export class OpenSeaSDK {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
+    await this._checkAccountIsAvailable(accountAddress);
+
     const amount = parseEther(FixedNumber.from(amountInEth).toString());
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
@@ -350,6 +354,8 @@ export class OpenSeaSDK {
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
   }): Promise<OrderV2> {
+    await this._checkAccountIsAvailable(accountAddress);
+
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
     }
@@ -454,6 +460,8 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
   }): Promise<OrderV2> {
+    await this._checkAccountIsAvailable(accountAddress);
+
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
     }
@@ -544,6 +552,8 @@ export class OpenSeaSDK {
     expirationTime?: number | string;
     paymentTokenAddress: string;
   }): Promise<PostOfferResponse | null> {
+    await this._checkAccountIsAvailable(accountAddress);
+
     const collection = await this.api.getCollection(collectionSlug);
     const buildOfferResult = await this.api.buildOffer(
       accountAddress,
@@ -614,10 +624,6 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
   }): Promise<string> {
-    if (!isValidProtocol(order.protocolAddress)) {
-      throw new Error("Unsupported protocol");
-    }
-
     if (!order.taker?.address) {
       throw new Error(
         "Order is not a private listing must have a taker address",
@@ -669,6 +675,8 @@ export class OpenSeaSDK {
     recipientAddress?: string;
     domain?: string;
   }): Promise<string> {
+    await this._checkAccountIsAvailable(accountAddress);
+
     if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
@@ -752,6 +760,8 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
   }) {
+    await this._checkAccountIsAvailable(accountAddress);
+
     if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
@@ -915,6 +925,8 @@ export class OpenSeaSDK {
    * @returns Transaction hash of the approval transaction
    */
   public async approveOrder(order: OrderV2, domain?: string) {
+    await this._checkAccountIsAvailable(order.maker.address);
+
     if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
@@ -1042,6 +1054,28 @@ export class OpenSeaSDK {
 
   private _dispatch(event: EventType, data: EventData) {
     this._emitter.emit(event, data);
+  }
+
+  /**
+   * Throws an error if an account is not available through the provider.
+   *
+   * @param accountAddress The account address to check is available.
+   */
+  private async _checkAccountIsAvailable(accountAddress: string) {
+    const accountAddressChecksummed = ethers.utils.getAddress(accountAddress);
+    if (
+      (this._signerOrProvider as Wallet).address !==
+        accountAddressChecksummed &&
+      !(
+        await (
+          this._signerOrProvider as providers.JsonRpcProvider
+        ).listAccounts()
+      ).includes(accountAddressChecksummed)
+    ) {
+      throw new Error(
+        `Specified accountAddress is not available through wallet or provider: ${accountAddressChecksummed}`,
+      );
+    }
   }
 
   private async _confirmTransaction(
