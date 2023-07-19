@@ -3,8 +3,7 @@ import { ethers } from "ethers";
 import { suite, test } from "mocha";
 import {
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-  SHARED_STOREFRONT_ADDRESS_MAINNET,
-  SHARED_STOREFRONT_ADDRESS_GOERLI,
+  SHARED_STOREFRONT_ADDRESSES,
 } from "../../src/constants";
 import { OpenSeaSDK } from "../../src/index";
 import { Chain } from "../../src/types";
@@ -45,33 +44,25 @@ suite("SDK: misc", () => {
   });
 
   test("Checks that shared storefront addresses are remapped to lazy mint adapter address", async () => {
-    assert.equal(
-      getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STOREFRONT_ADDRESS_GOERLI,
-      ),
-      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-    );
-    assert.equal(
-      getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STOREFRONT_ADDRESS_MAINNET,
-      ),
-      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-    );
+    for (const address of SHARED_STOREFRONT_ADDRESSES) {
+      assert.equal(
+        getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
+          address,
+        ),
+        SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+      );
+    }
   });
 
   test("Checks that upper case shared storefront addresses are remapped to lazy mint adapter address", async () => {
-    assert.equal(
-      getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STOREFRONT_ADDRESS_GOERLI.toUpperCase(),
-      ),
-      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-    );
-    assert.equal(
-      getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-        SHARED_STOREFRONT_ADDRESS_MAINNET.toUpperCase(),
-      ),
-      SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-    );
+    for (const address of SHARED_STOREFRONT_ADDRESSES) {
+      assert.equal(
+        getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
+          address.toUpperCase(),
+        ),
+        SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+      );
+    }
   });
 
   test("Should throw an error when using methods that need a provider or wallet with the accountAddress", async () => {
