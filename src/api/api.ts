@@ -1,10 +1,11 @@
 import { ethers } from "ethers";
 import {
   BuildOfferResponse,
-  PostOfferResponse,
+  Offer,
   GetCollectionResponse,
   ListNFTsResponse,
   GetNFTResponse,
+  ListCollectionOffersResponse,
 } from "./types";
 import { API_BASE_MAINNET, API_BASE_TESTNET, API_PATH } from "../constants";
 import {
@@ -34,6 +35,7 @@ import {
   getListNFTsByContractPath,
   getNFTPath,
   getRefreshMetadataPath,
+  getCollectionOffersPath,
 } from "../orders/utils";
 import {
   Chain,
@@ -224,17 +226,32 @@ export class OpenSeaAPI {
   /**
    * Post collection offer
    */
+  public async getCollectionOffers(
+    slug: string,
+    retries = 0,
+  ): Promise<ListCollectionOffersResponse | null> {
+    try {
+      return await this.get<ListCollectionOffersResponse>(
+        getCollectionOffersPath(slug),
+      );
+    } catch (error) {
+      _throwOrContinue(error, retries);
+      await delay(1000);
+      return this.getCollectionOffers(slug, retries - 1);
+    }
+  }
+
+  /**
+   * Post collection offer
+   */
   public async postCollectionOffer(
     order: ProtocolData,
     slug: string,
     retries = 0,
-  ): Promise<PostOfferResponse | null> {
+  ): Promise<Offer | null> {
     const payload = getPostCollectionOfferPayload(slug, order);
     try {
-      return await this.post<PostOfferResponse>(
-        getPostCollectionOfferPath(),
-        payload,
-      );
+      return await this.post<Offer>(getPostCollectionOfferPath(), payload);
     } catch (error) {
       _throwOrContinue(error, retries);
       await delay(1000);

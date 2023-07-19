@@ -426,3 +426,36 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
   );
   return validProtocolAddresses.includes(checkSumAddress);
 };
+
+/**
+ * Decode an encoded list of token ids
+ * @param encodedTokenIds encoded token ids from the criteria of an order
+ * @returns a list of token ids
+ */
+export const decodeTokenIds = (encodedTokenIds: string): string[] => {
+  if (encodedTokenIds.length === 0) {
+    return [];
+  }
+
+  if (encodedTokenIds == "*") {
+    return ["*"];
+  }
+
+  const ranges = encodedTokenIds.split(",");
+  const numbers: string[] = [];
+
+  for (const r of ranges) {
+    if (r.includes(":")) {
+      const [start, end] = r.split(":").map(Number);
+      numbers.push(
+        ...Array.from({ length: end - start + 1 }, (_, i) =>
+          (start + i).toString(),
+        ),
+      );
+    } else {
+      numbers.push(Number(r).toString());
+    }
+  }
+
+  return numbers;
+};
