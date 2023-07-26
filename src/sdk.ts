@@ -17,7 +17,7 @@ import {
 } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { OpenSeaAPI } from "./api/api";
-import { PostOfferResponse, NFT } from "./api/types";
+import { Offer, NFT } from "./api/types";
 import { INVERSE_BASIS_POINT, DEFAULT_ZONE } from "./constants";
 import {
   constructPrivateListingCounterOrder,
@@ -156,6 +156,8 @@ export class OpenSeaSDK {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
+    await this._checkAccountIsAvailable(accountAddress);
+
     const value = parseEther(FixedNumber.from(amountInEth).toString());
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount: value });
@@ -193,6 +195,8 @@ export class OpenSeaSDK {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
+    await this._checkAccountIsAvailable(accountAddress);
+
     const amount = parseEther(FixedNumber.from(amountInEth).toString());
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
@@ -366,6 +370,8 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     useDefaultMarketplaceFees?: boolean;
   }): Promise<OrderV2> {
+    await this._checkAccountIsAvailable(accountAddress);
+
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
     }
@@ -474,6 +480,8 @@ export class OpenSeaSDK {
     buyerAddress?: string;
     useDefaultMarketplaceFees?: boolean;
   }): Promise<OrderV2> {
+    await this._checkAccountIsAvailable(accountAddress);
+
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
     }
@@ -564,7 +572,9 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: number | string;
     paymentTokenAddress: string;
-  }): Promise<PostOfferResponse | null> {
+  }): Promise<Offer | null> {
+    await this._checkAccountIsAvailable(accountAddress);
+
     const collection = await this.api.getCollection(collectionSlug);
     const buildOfferResult = await this.api.buildOffer(
       accountAddress,
@@ -635,10 +645,6 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
   }): Promise<string> {
-    if (!isValidProtocol(order.protocolAddress)) {
-      throw new Error("Unsupported protocol");
-    }
-
     if (!order.taker?.address) {
       throw new Error(
         "Order is not a private listing must have a taker address",
@@ -690,6 +696,8 @@ export class OpenSeaSDK {
     recipientAddress?: string;
     domain?: string;
   }): Promise<string> {
+    await this._checkAccountIsAvailable(accountAddress);
+
     if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
@@ -773,6 +781,8 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
   }) {
+    await this._checkAccountIsAvailable(accountAddress);
+
     if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
@@ -837,53 +847,60 @@ export class OpenSeaSDK {
     { accountAddress, asset }: { accountAddress: string; asset: Asset },
     retries = 1,
   ): Promise<BigNumber> {
-    if (
-      asset.tokenStandard == TokenStandard.ERC20 ||
-      asset.tokenStandard == TokenStandard.ERC1155
-    ) {
-      const contract = new ethers.Contract(
-        asset.tokenAddress,
-        asset.tokenStandard == TokenStandard.ERC20
-          ? ERC20__factory.createInterface()
-          : ERC1155__factory.createInterface(),
-        this.provider,
-      );
-
-      const count = await contract.methods
-        .balanceOf(accountAddress, asset.tokenId ?? undefined)
-        .call();
-
-      if (count !== undefined) {
-        return count;
-      }
-    } else if (asset.tokenStandard == TokenStandard.ERC721) {
-      const contract = new ethers.Contract(
-        asset.tokenAddress,
-        ERC721__factory.createInterface(),
-        this.provider,
-      );
-
-      try {
-        const owner = await contract.methods.ownerOf(asset.tokenId).call();
-        if (owner) {
-          return owner.toLowerCase() == accountAddress.toLowerCase()
-            ? BigNumber.from(1)
-            : BigNumber.from(0);
+    try {
+      switch (asset.tokenStandard) {
+        case TokenStandard.ERC20: {
+          const contract = new ethers.Contract(
+            asset.tokenAddress,
+            ERC20__factory.createInterface(),
+            this.provider,
+          );
+          return await contract.callStatic.balanceOf(accountAddress);
         }
-        // eslint-disable-next-line no-empty
-      } catch {}
-    } else {
-      // Missing ownership call - skip check to allow listings
-      // by default
-      throw new Error("Missing ownership schema for this asset type");
-    }
-
-    if (retries <= 0) {
-      throw new Error("Unable to get current owner from smart contract");
-    } else {
-      await delay(500);
-      // Recursively check owner again
-      return await this.getBalance({ accountAddress, asset }, retries - 1);
+        case TokenStandard.ERC1155: {
+          const contract = new ethers.Contract(
+            asset.tokenAddress,
+            ERC1155__factory.createInterface(),
+            this.provider,
+          );
+          return await contract.callStatic.balanceOf(
+            accountAddress,
+            asset.tokenId,
+          );
+        }
+        case TokenStandard.ERC721: {
+          const contract = new ethers.Contract(
+            asset.tokenAddress,
+            ERC721__factory.createInterface(),
+            this.provider,
+          );
+          try {
+            const owner = await contract.callStatic.ownerOf(asset.tokenId);
+            return owner.toLowerCase() == accountAddress.toLowerCase()
+              ? BigNumber.from(1)
+              : BigNumber.from(0);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } catch (error: any) {
+            this.logger(
+              `Failed to get ownerOf ERC721: ${error.message ?? error}`,
+            );
+            return BigNumber.from(0);
+          }
+        }
+        default:
+          throw new Error("Unsupported token standard for getBalance");
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (retries <= 0) {
+        throw new Error(
+          `Unable to get owner from smart contract: ${error.message ?? error}`,
+        );
+      } else {
+        await delay(500);
+        // Recursively check owner again
+        return await this.getBalance({ accountAddress, asset }, retries - 1);
+      }
     }
   }
 
@@ -929,6 +946,8 @@ export class OpenSeaSDK {
    * @returns Transaction hash of the approval transaction
    */
   public async approveOrder(order: OrderV2, domain?: string) {
+    await this._checkAccountIsAvailable(order.maker.address);
+
     if (!isValidProtocol(order.protocolAddress)) {
       throw new Error("Unsupported protocol");
     }
@@ -973,7 +992,7 @@ export class OpenSeaSDK {
   ) {
     const isEther = tokenAddress === ethers.constants.AddressZero;
     let paymentToken: OpenSeaFungibleToken | undefined;
-    if (!isEther) {
+    if (!isEther && [Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
       const { tokens } = await this.api.getPaymentTokens({
         address: tokenAddress.toLowerCase(),
       });
@@ -1056,6 +1075,28 @@ export class OpenSeaSDK {
 
   private _dispatch(event: EventType, data: EventData) {
     this._emitter.emit(event, data);
+  }
+
+  /**
+   * Throws an error if an account is not available through the provider.
+   *
+   * @param accountAddress The account address to check is available.
+   */
+  private async _checkAccountIsAvailable(accountAddress: string) {
+    const accountAddressChecksummed = ethers.utils.getAddress(accountAddress);
+    if (
+      (this._signerOrProvider instanceof Wallet &&
+        this._signerOrProvider.address === accountAddressChecksummed) ||
+      (this._signerOrProvider instanceof providers.JsonRpcProvider &&
+        (await this._signerOrProvider.listAccounts()).includes(
+          accountAddressChecksummed,
+        ))
+    ) {
+      return;
+    }
+    throw new Error(
+      `Specified accountAddress is not available through wallet or provider: ${accountAddressChecksummed}`,
+    );
   }
 
   private async _confirmTransaction(

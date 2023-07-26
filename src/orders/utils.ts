@@ -35,6 +35,10 @@ export const getPostCollectionOfferPath = () => {
   return `/v2/offers`;
 };
 
+export const getCollectionOffersPath = (slug: string) => {
+  return `/v2/offers/collection/${slug}`;
+};
+
 export const getListNFTsByCollectionPath = (slug: string) => {
   return `/v2/collection/${slug}/nfts`;
 };
@@ -182,5 +186,6 @@ export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
     clientSignature: order.client_signature,
     makerAssetBundle: assetBundleFromJSON(order.maker_asset_bundle),
     takerAssetBundle: assetBundleFromJSON(order.taker_asset_bundle),
+    remainingQuantity: order.remaining_quantity,
   };
 };

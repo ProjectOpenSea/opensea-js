@@ -1,10 +1,11 @@
 import { ethers } from "ethers";
 import {
   BuildOfferResponse,
-  PostOfferResponse,
+  Offer,
   GetCollectionResponse,
   ListNFTsResponse,
   GetNFTResponse,
+  ListCollectionOffersResponse,
 } from "./types";
 import { API_BASE_MAINNET, API_BASE_TESTNET, API_PATH } from "../constants";
 import {
@@ -34,6 +35,7 @@ import {
   getListNFTsByContractPath,
   getNFTPath,
   getRefreshMetadataPath,
+  getCollectionOffersPath,
 } from "../orders/utils";
 import {
   Chain,
@@ -222,19 +224,45 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Post collection offer
+   * Get collection offers for a given slug in the API
+   *
+   * @param slug The collection you would like to list offers for
+   * @param retries Number of times to retry if the service is unavailable for any reason
+   *
+   * @returns {@link ListCollectionOffersResponse}
+   */
+  public async getCollectionOffers(
+    slug: string,
+    retries = 0,
+  ): Promise<ListCollectionOffersResponse | null> {
+    try {
+      return await this.get<ListCollectionOffersResponse>(
+        getCollectionOffersPath(slug),
+      );
+    } catch (error) {
+      _throwOrContinue(error, retries);
+      await delay(1000);
+      return this.getCollectionOffers(slug, retries - 1);
+    }
+  }
+
+  /**
+   * Post a collection offer to the API
+   *
+   * @param order The order to post
+   * @param slug The collection you would like to post an offer for
+   * @param retries Number of times to retry if the service is unavailable for any reason
+   *
+   * @returns {@link Offer}
    */
   public async postCollectionOffer(
     order: ProtocolData,
     slug: string,
     retries = 0,
-  ): Promise<PostOfferResponse | null> {
+  ): Promise<Offer | null> {
     const payload = getPostCollectionOfferPayload(slug, order);
     try {
-      return await this.post<PostOfferResponse>(
-        getPostCollectionOfferPath(),
-        payload,
-      );
+      return await this.post<Offer>(getPostCollectionOfferPath(), payload);
     } catch (error) {
       _throwOrContinue(error, retries);
       await delay(1000);
@@ -244,6 +272,9 @@ export class OpenSeaAPI {
 
   /**
    * Fetch an asset from the API, throwing if none is found
+   *
+   * @deprecated Please use `getNFT()` for multichain capabilities.
+   *
    * @param tokenAddress Address of the asset's contract
    * @param tokenId The asset's token ID, or null if ERC-20
    * @param retries Number of times to retry if the service is unavailable for any reason
@@ -258,6 +289,10 @@ export class OpenSeaAPI {
     },
     retries = 1,
   ): Promise<OpenSeaAsset> {
+    if (![Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
+      throw new Error("Please use `getNFT()` for multichain capabilities.");
+    }
+
     let json;
     try {
       json = await this.get(
@@ -365,6 +400,9 @@ export class OpenSeaAPI {
 
   /**
    * Fetch list of assets from the API, returning the page of assets and the count of total assets
+   *
+   * @deprecated Please use `getNFTsByContract()` or `getNFTsByCollection()` for multichain capabilities.
+   *
    * @param query Query to use for getting orders. A subset of parameters on the `OpenSeaAssetJSON` type is supported
    */
   public async getAssets(query: OpenSeaAssetQuery = {}): Promise<{
@@ -373,6 +411,12 @@ export class OpenSeaAPI {
     next: string | undefined;
     previous: string | undefined;
   }> {
+    if (![Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
+      throw new Error(
+        "Please use `getNFTsByContract()` or `getNFTsByCollection()` for multichain capabilities.",
+      );
+    }
+
     const json = await this.get<{
       estimated_count: number;
       assets: unknown[];
@@ -412,6 +456,12 @@ export class OpenSeaAPI {
     page = 1,
     retries = 1,
   ): Promise<{ tokens: OpenSeaFungibleToken[] }> {
+    if (![Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
+      throw new Error(
+        "This method does not work outside of Mainnet and Goerli chains as it uses the v1 API.",
+      );
+    }
+
     let json;
     try {
       json = await this.get<unknown[]>(`${API_PATH}/tokens/`, {

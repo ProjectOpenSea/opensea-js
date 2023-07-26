@@ -39,6 +39,7 @@ export type OrderV2 = {
   clientSignature: string | null;
   makerAssetBundle: OpenSeaAssetBundle;
   takerAssetBundle: OpenSeaAssetBundle;
+  remainingQuantity: number;
 };
 
 export type FulfillmentDataResponse = {
@@ -116,6 +117,7 @@ export type SerializedOrderV2 = {
   client_signature: string | null;
   maker_asset_bundle: unknown;
   taker_asset_bundle: unknown;
+  remaining_quantity: number;
 };
 
 export type QueryCursors = {
