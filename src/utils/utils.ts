@@ -471,13 +471,13 @@ export const decodeTokenIds = (encodedTokenIds: string): string[] => {
       const end = BigNumber.from(endStr);
       const diff = end.sub(start).add(1);
 
-      if (diff.isNegative() || diff.isZero()) {
+      if (diff.lte(0)) {
         throw new Error(
           `Invalid range. End value: ${end} must be greater than or equal to the start value: ${start}.`,
         );
       }
 
-      for (let i = BigNumber.from(0); i < diff; i = i.add(1)) {
+      for (let i = BigNumber.from(0); i.lt(diff); i = i.add(1)) {
         tokenIds.push(start.add(i).toString());
       }
     } else {
