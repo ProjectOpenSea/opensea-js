@@ -1,5 +1,5 @@
 import { ConsiderationItem } from "@opensea/seaport-js/lib/types";
-import { ProtocolData } from "src/orders/types";
+import { ProtocolData } from "../orders/types";
 
 export type BuildOfferResponse = {
   partialParameters: PartialParameters;
