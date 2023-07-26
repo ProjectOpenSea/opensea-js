@@ -16,10 +16,10 @@ suite("SDK: getCollectionOffers", () => {
     const tokens = offer.criteria.encoded_token_ids;
     assert(tokens, "Criteria should not be null");
 
-    const encodedTokends = offer.criteria.encoded_token_ids;
-    assert(encodedTokends, "Encoded tokens should not be null");
+    const encodedTokenIds = offer.criteria.encoded_token_ids;
+    assert(encodedTokenIds, "Encoded tokens should not be null");
 
-    const decodedTokenIds = decodeTokenIds(encodedTokends);
+    const decodedTokenIds = decodeTokenIds(encodedTokenIds);
     assert(decodedTokenIds[0], "Decoded tokens should not be null");
   });
 });

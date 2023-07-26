@@ -224,7 +224,11 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Post collection offer
+   * Get collection offers for a given slug in the API
+   *
+   * @param slug The collection you would like to list offers for
+   * @param retries Number of times to retry if the service is unavailable for any reason
+   * @returns ListCollectionOffersResponse
    */
   public async getCollectionOffers(
     slug: string,
