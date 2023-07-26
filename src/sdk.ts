@@ -1064,18 +1064,18 @@ export class OpenSeaSDK {
   private async _checkAccountIsAvailable(accountAddress: string) {
     const accountAddressChecksummed = ethers.utils.getAddress(accountAddress);
     if (
-      (this._signerOrProvider as Wallet).address !==
-        accountAddressChecksummed &&
-      !(
-        await (
-          this._signerOrProvider as providers.JsonRpcProvider
-        ).listAccounts()
-      ).includes(accountAddressChecksummed)
+      (this._signerOrProvider instanceof Wallet &&
+        this._signerOrProvider.address === accountAddressChecksummed) ||
+      (this._signerOrProvider instanceof providers.JsonRpcProvider &&
+        (await this._signerOrProvider.listAccounts()).includes(
+          accountAddressChecksummed,
+        ))
     ) {
-      throw new Error(
-        `Specified accountAddress is not available through wallet or provider: ${accountAddressChecksummed}`,
-      );
+      return;
     }
+    throw new Error(
+      `Specified accountAddress is not available through wallet or provider: ${accountAddressChecksummed}`,
+    );
   }
 
   private async _confirmTransaction(

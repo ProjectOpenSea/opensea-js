@@ -20,6 +20,7 @@ jobs:
       - run: npm test
         env:
           OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

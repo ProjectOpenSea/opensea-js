@@ -6,8 +6,7 @@ import { BigNumber, ethers } from "ethers";
 import {
   MAX_EXPIRATION_MONTHS,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-  SHARED_STOREFRONT_ADDRESS_MAINNET,
-  SHARED_STOREFRONT_ADDRESS_GOERLI,
+  SHARED_STOREFRONT_ADDRESSES,
 } from "../constants";
 import {
   AssetEvent,
@@ -354,11 +353,6 @@ export const getWETHAddress = (chain: Chain) => {
   }
 };
 
-const SHARED_STOREFRONT_ADDRESSES = new Set([
-  SHARED_STOREFRONT_ADDRESS_MAINNET.toLowerCase(),
-  SHARED_STOREFRONT_ADDRESS_GOERLI.toLowerCase(),
-]);
-
 /**
  * Checks if the token address is the shared storefront address and if so replaces
  * that address with the lazy mint adapter addres. Otherwise, returns the input token address
@@ -367,7 +361,7 @@ const SHARED_STOREFRONT_ADDRESSES = new Set([
  */
 export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress =
   (tokenAddress: string): string => {
-    return SHARED_STOREFRONT_ADDRESSES.has(tokenAddress.toLowerCase())
+    return SHARED_STOREFRONT_ADDRESSES.includes(tokenAddress.toLowerCase())
       ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS
       : tokenAddress;
   };
