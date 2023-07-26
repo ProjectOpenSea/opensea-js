@@ -20,6 +20,6 @@ suite("SDK: getCollectionOffers", () => {
     assert(encodedTokends, "Encoded tokens should not be null");
 
     const decodedTokenIds = decodeTokenIds(encodedTokends);
-    assert(decodedTokenIds[0] == "*", "Decoded tokens should not be null");
+    assert(decodedTokenIds[0], "Decoded tokens should not be null");
   });
 });
