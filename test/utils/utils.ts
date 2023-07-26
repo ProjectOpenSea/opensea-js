@@ -77,7 +77,7 @@ describe("decodeTokenIds", () => {
 
   it("should throw an error for invalid range format", () => {
     expect(() => decodeTokenIds("5:2")).throws(
-      "Invalid range. End value must be greater than or equal to the start value.",
+      "Invalid range. End value: 2 must be greater than or equal to the start value: 5.",
     );
   });
 

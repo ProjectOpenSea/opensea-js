@@ -473,7 +473,7 @@ export const decodeTokenIds = (encodedTokenIds: string): string[] => {
 
       if (diff.isNegative() || diff.isZero()) {
         throw new Error(
-          "Invalid range. End value must be greater than or equal to the start value.",
+          `Invalid range. End value: ${end} must be greater than or equal to the start value: ${start}.`,
         );
       }
 
