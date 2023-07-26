@@ -1,10 +1,11 @@
 import { ethers } from "ethers";
 import {
   BuildOfferResponse,
-  PostOfferResponse,
+  Offer,
   GetCollectionResponse,
   ListNFTsResponse,
   GetNFTResponse,
+  ListCollectionOffersResponse,
 } from "./types";
 import { API_BASE_MAINNET, API_BASE_TESTNET, API_PATH } from "../constants";
 import {
@@ -34,6 +35,7 @@ import {
   getListNFTsByContractPath,
   getNFTPath,
   getRefreshMetadataPath,
+  getCollectionOffersPath,
 } from "../orders/utils";
 import {
   Chain,
@@ -222,19 +224,45 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Post collection offer
+   * Get collection offers for a given slug in the API
+   *
+   * @param slug The collection you would like to list offers for
+   * @param retries Number of times to retry if the service is unavailable for any reason
+   *
+   * @returns {@link ListCollectionOffersResponse}
+   */
+  public async getCollectionOffers(
+    slug: string,
+    retries = 0,
+  ): Promise<ListCollectionOffersResponse | null> {
+    try {
+      return await this.get<ListCollectionOffersResponse>(
+        getCollectionOffersPath(slug),
+      );
+    } catch (error) {
+      _throwOrContinue(error, retries);
+      await delay(1000);
+      return this.getCollectionOffers(slug, retries - 1);
+    }
+  }
+
+  /**
+   * Post a collection offer to the API
+   *
+   * @param order The order to post
+   * @param slug The collection you would like to post an offer for
+   * @param retries Number of times to retry if the service is unavailable for any reason
+   *
+   * @returns {@link Offer}
    */
   public async postCollectionOffer(
     order: ProtocolData,
     slug: string,
     retries = 0,
-  ): Promise<PostOfferResponse | null> {
+  ): Promise<Offer | null> {
     const payload = getPostCollectionOfferPayload(slug, order);
     try {
-      return await this.post<PostOfferResponse>(
-        getPostCollectionOfferPath(),
-        payload,
-      );
+      return await this.post<Offer>(getPostCollectionOfferPath(), payload);
     } catch (error) {
       _throwOrContinue(error, retries);
       await delay(1000);

@@ -17,7 +17,7 @@ import {
 } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { OpenSeaAPI } from "./api/api";
-import { PostOfferResponse, NFT } from "./api/types";
+import { Offer, NFT } from "./api/types";
 import { INVERSE_BASIS_POINT, DEFAULT_ZONE } from "./constants";
 import {
   constructPrivateListingCounterOrder,
@@ -551,7 +551,7 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: number | string;
     paymentTokenAddress: string;
-  }): Promise<PostOfferResponse | null> {
+  }): Promise<Offer | null> {
     await this._checkAccountIsAvailable(accountAddress);
 
     const collection = await this.api.getCollection(collectionSlug);

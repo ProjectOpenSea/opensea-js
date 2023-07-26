@@ -14,6 +14,7 @@ type PartialParameters = {
 type Criteria = {
   collection: CollectionCriteria;
   contract?: ContractCriteria;
+  encoded_token_ids?: string;
 };
 
 type CollectionCriteria = {
@@ -28,12 +29,16 @@ export type GetCollectionResponse = {
   collection: object;
 };
 
-export type PostOfferResponse = {
+export type Offer = {
   order_hash: string;
   chain: string;
   criteria: Criteria;
   protocol_data: ProtocolData;
   protocol_address: string;
+};
+
+export type ListCollectionOffersResponse = {
+  offers: Offer[];
 };
 
 export type ListNFTsResponse = {
