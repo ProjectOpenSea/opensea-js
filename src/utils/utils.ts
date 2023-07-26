@@ -455,16 +455,16 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
  * const decodedEmpty = decodeTokenIds(emptyEncoded); // Output: []
  */
 export const decodeTokenIds = (encodedTokenIds: string): string[] => {
+  if (encodedTokenIds === "*") {
+    return ["*"];
+  }
+
   const validFormatRegex = /^(\d+(:\d+)?)(,\d+(:\d+)?)*$/;
 
   if (!validFormatRegex.test(encodedTokenIds)) {
     throw new Error(
       "Invalid input format. Expected a valid comma-separated list of numbers and ranges.",
     );
-  }
-
-  if (encodedTokenIds === "*") {
-    return ["*"];
   }
 
   const ranges = encodedTokenIds.split(",");
@@ -483,11 +483,12 @@ export const decodeTokenIds = (encodedTokenIds: string): string[] => {
         );
       }
 
-      for (let i = start.toNumber(); i <= end.toNumber(); i++) {
-        tokenIds.push(BigNumber.from(i).toString());
+      for (let i = 0; i < diff.toNumber(); i++) {
+        tokenIds.push(start.add(i).toString());
       }
     } else {
-      tokenIds.push(BigNumber.from(range).toString());
+      const tokenId = BigNumber.from(range);
+      tokenIds.push(tokenId.toString());
     }
   }
 
