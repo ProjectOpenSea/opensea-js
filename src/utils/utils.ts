@@ -477,7 +477,7 @@ export const decodeTokenIds = (encodedTokenIds: string): string[] => {
         );
       }
 
-      for (let i = 0; i < diff.toNumber(); i++) {
+      for (let i = BigNumber.from(0); i < diff; i = i.add(1)) {
         tokenIds.push(start.add(i).toString());
       }
     } else {
