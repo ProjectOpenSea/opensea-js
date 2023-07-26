@@ -228,6 +228,7 @@ export class OpenSeaAPI {
    *
    * @param slug The collection you would like to list offers for
    * @param retries Number of times to retry if the service is unavailable for any reason
+   *
    * @returns ListCollectionOffersResponse
    */
   public async getCollectionOffers(
@@ -246,7 +247,13 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Post collection offer
+   * Post a collection offer to the API
+   *
+   * @param order The order to post
+   * @param slug The collection you would like to post an offer for
+   * @param retries Number of times to retry if the service is unavailable for any reason
+   *
+   * @returns Offer
    */
   public async postCollectionOffer(
     order: ProtocolData,
