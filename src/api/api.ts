@@ -253,7 +253,7 @@ export class OpenSeaAPI {
    * @param slug The collection you would like to post an offer for
    * @param retries Number of times to retry if the service is unavailable for any reason
    *
-   * @returns (@link Offer}
+   * @returns {@link Offer}
    */
   public async postCollectionOffer(
     order: ProtocolData,
