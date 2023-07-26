@@ -428,34 +428,68 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
 };
 
 /**
- * Decode an encoded list of token ids
- * @param encodedTokenIds encoded token ids from the criteria of an order
- * @returns a list of token ids
+ * Decodes an encoded string of token IDs into an array of individual token IDs using BigNumber for precise calculations.
+ *
+ * The encoded token IDs can be in the following formats:
+ * 1. Single numbers: '123' => ['123']
+ * 2. Comma-separated numbers: '1,2,3,4' => ['1', '2', '3', '4']
+ * 3. Ranges of numbers: '5:8' => ['5', '6', '7', '8']
+ * 4. Combinations of single numbers and ranges: '1,3:5,8' => ['1', '3', '4', '5', '8']
+ * 5. Wildcard '*' (matches all token IDs): '*' => ['*']
+ *
+ * @param encodedTokenIds - The encoded string of token IDs to be decoded.
+ * @returns An array of individual token IDs after decoding the input.
+ *
+ * @throws {Error} If the input is not correctly formatted or if BigNumber operations fail.
+ *
+ * @example
+ * const encoded = '1,3:5,8';
+ * const decoded = decodeTokenIds(encoded); // Output: ['1', '3', '4', '5', '8']
+ *
+ * @example
+ * const encodedWildcard = '*';
+ * const decodedWildcard = decodeTokenIds(encodedWildcard); // Output: ['*']
+ *
+ * @example
+ * const emptyEncoded = '';
+ * const decodedEmpty = decodeTokenIds(emptyEncoded); // Output: []
  */
 export const decodeTokenIds = (encodedTokenIds: string): string[] => {
-  if (encodedTokenIds.length === 0) {
-    return [];
+  const validFormatRegex = /^(\d+(:\d+)?)(,\d+(:\d+)?)*$/;
+
+  if (!validFormatRegex.test(encodedTokenIds)) {
+    throw new Error(
+      "Invalid input format. Expected a valid comma-separated list of numbers and ranges.",
+    );
   }
 
-  if (encodedTokenIds == "*") {
+  if (encodedTokenIds === "*") {
     return ["*"];
   }
 
   const ranges = encodedTokenIds.split(",");
-  const numbers: string[] = [];
+  const tokenIds: string[] = [];
 
-  for (const r of ranges) {
-    if (r.includes(":")) {
-      const [start, end] = r.split(":").map(Number);
-      numbers.push(
-        ...Array.from({ length: end - start + 1 }, (_, i) =>
-          (start + i).toString(),
-        ),
-      );
+  for (const range of ranges) {
+    if (range.includes(":")) {
+      const [startStr, endStr] = range.split(":");
+      const start = BigNumber.from(startStr);
+      const end = BigNumber.from(endStr);
+      const diff = end.sub(start).add(1);
+
+      if (diff.isNegative() || diff.isZero()) {
+        throw new Error(
+          "Invalid range. End value must be greater than or equal to the start value.",
+        );
+      }
+
+      for (let i = start.toNumber(); i <= end.toNumber(); i++) {
+        tokenIds.push(BigNumber.from(i).toString());
+      }
     } else {
-      numbers.push(Number(r).toString());
+      tokenIds.push(BigNumber.from(range).toString());
     }
   }
 
-  return numbers;
+  return tokenIds;
 };
