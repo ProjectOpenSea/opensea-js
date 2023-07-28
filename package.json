@@ -23,7 +23,7 @@
     "bundle": "browserify lib/index.js -o lib/bundle.js",
     "check-types": "tsc --noEmit --project tsconfig.json",
     "coverage-report": "nyc report --reporter=lcov",
-    "docs-build": "typedoc --out docs src/index.ts",
+    "docs-build": "typedoc",
     "eslint:check": "eslint . --max-warnings 0 --ext .js,.ts",
     "eslint:fix": "npm run eslint:check -- --fix",
     "postinstall": "husky install || exit 0",

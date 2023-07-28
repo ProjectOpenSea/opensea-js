@@ -3,75 +3,84 @@ import { BigNumber, BigNumberish } from "ethers";
 import type { OrderV2 } from "./orders/types";
 
 /**
- * Events emitted by the SDK. There are five types:
- * 1. Transaction events, which tell you when a new transaction was
- *    created, confirmed, denied, or failed.
- * 2. pre-transaction events, which are named (like "WrapEth") and indicate
- *    that ethers is asking for a signature on a transaction that needs to occur before
- *    an order is made or fulfilled. This includes approval events and account
- *    initialization.
- * 3. Basic actions: matching, cancelling, and creating orders.
- *    The "CreateOrder" event fires when a signature is being prompted
- *    to create an off-chain order. The "OrderDenied" event fires when a signature
- *    request is denied by the user.
- * 4. The "TransferAll" event, which fires when a user is about to directly
- *    transfer one or more assets to another account
+ * Events emitted by the SDK which can be used by frontends applications
+ * to update state or show useful messages to users.
+ * @category Events
  */
 export enum EventType {
-  // Transactions and signature requests
+  /**
+   * Emitted when the transaction is sent to the network and the application
+   * is waiting for the transaction to be mined.
+   */
   TransactionCreated = "TransactionCreated",
+  /**
+   * Emitted when the transaction has succeeded is mined and confirmed.
+   */
   TransactionConfirmed = "TransactionConfirmed",
+  /**
+   * Emitted when the transaction has failed to be submitted.
+   */
   TransactionDenied = "TransactionDenied",
+  /**
+   * Emitted when the transaction has failed to be mined.
+   */
   TransactionFailed = "TransactionFailed",
 
-  // Pre-transaction events
-  InitializeAccount = "InitializeAccount",
+  /**
+   * Emitted when the {@link OpenSeaSDK.wrapEth} method is called.
+   */
   WrapEth = "WrapEth",
+  /**
+   * Emitted when the {@link OpenSeaSDK.unwrapWeth} method is called.
+   */
   UnwrapWeth = "UnwrapWeth",
-  ApproveCurrency = "ApproveCurrency",
-  ApproveAsset = "ApproveAsset",
-  ApproveAllAssets = "ApproveAllAssets",
-  UnapproveCurrency = "UnapproveCurrency",
 
   // Basic actions: matching orders, creating orders, and cancelling orders
+  /**
+   * Emitted when fulfilling a public or private order.
+   */
   MatchOrders = "MatchOrders",
+  /**
+   * Emitted when the {@link OpenSeaSDK.cancelOrder} method is called.
+   */
   CancelOrder = "CancelOrder",
-  BulkCancelExistingOrders = "BulkCancelExistingOrders",
+  /**
+   * Emitted when the {@link OpenSeaSDK.approveOrder} method is called.
+   */
   ApproveOrder = "ApproveOrder",
-  CreateOrder = "CreateOrder",
-  // When the signature request for an order is denied
-  OrderDenied = "OrderDenied",
-
-  // When transferring one or more assets
-  TransferAll = "TransferAll",
-  TransferOne = "TransferOne",
-
-  // When wrapping or unwrapping NFTs
-  WrapAssets = "WrapAssets",
-  UnwrapAssets = "UnwrapAssets",
-  LiquidateAssets = "LiquidateAssets",
-  PurchaseAssets = "PurchaseAssets",
 }
 
 /**
- * Data that gets sent with each EventType
+ * Data that gets sent with each {@link EventType}
+ * @category Events
  */
 export interface EventData {
+  /**
+   * Wallet address of the user who initiated the event.
+   */
   accountAddress?: string;
-  toAddress?: string;
+  /**
+   * Amount of ETH sent when wrapping or unwrapping.
+   */
   amount?: BigNumberish;
-  contractAddress?: string;
-  assets?: AssetType[];
-  asset?: AssetType;
 
+  /**
+   * The transaction hash of the event.
+   */
   transactionHash?: string;
+  /**
+   * The {@link EventType} of the event.
+   */
   event?: EventType;
+  /**
+   * Error which occured when transaction was denied or failed.
+   */
   error?: unknown;
 
-  order?: Order | UnsignedOrder;
+  /**
+   * The {@link OrderV2} object.
+   */
   orderV2?: OrderV2;
-  buy?: Order;
-  sell?: Order;
 }
 
 /**
@@ -86,29 +95,52 @@ export interface OpenSeaAPIConfig {
   apiBaseUrl?: string;
 }
 
+/**
+ * Each of the possible chains that OpenSea supports.
+ */
 export enum Chain {
   // Mainnet Chains
+  /** Ethereum */
   Mainnet = "ethereum",
+  /** Polygon */
   Polygon = "matic",
+  /** Klaytn */
   Klaytn = "klaytn",
+  /** Binance Smart Chain */
   BNB = "bsc",
+  /** Arbitrum */
   Arbitrum = "arbitrum",
+  /** Arbitrum Nova */
   ArbitrumNova = "arbitrum_nova",
+  /** Avalanche */
   Avalanche = "avalanche",
+  /** Optimism */
   Optimism = "optimism",
+  /** Solana */
   Solana = "solana",
+  /** Zora */
   Zora = "zora",
 
   // Testnet Chains
+  /** Goerli */
   Goerli = "goerli",
+  /** Sepolia */
   Sepolia = "sepolia",
+  /** Polygon Testchain Mumbai */
   Mumbai = "mumbai",
+  /** Klaytn Baobab */
   Baobab = "baobab",
+  /** Binance Smart Chain Testnet */
   BNBTestnet = "bsctestnet",
+  /** Arbitrum Testnet */
   ArbitrumGoerli = "arbitrum_goerli",
+  /** Avalanche Fuji Testnet */
   Fuji = "avalanche_fuji",
+  /** Optimism Goerli Testnet */
   OptimismGoerli = "optimism_goerli",
+  /** Solana Devnet */
   SolanaDevnet = "soldev",
+  /** Zora Testnet */
   ZoraTestnet = "zora_testnet",
 }
 
@@ -222,18 +254,19 @@ export interface OpenSeaUser {
 }
 
 /**
- * Simple, unannotated asset spec
+ * Generic Blockchain Asset.
+ * @category API Models
  */
 export interface Asset {
-  // The asset's token ID, or null if ERC-20
+  /** The asset's token ID, or null if ERC-20 */
   tokenId: string | null;
-  // The asset's contract address
+  /** The asset's contract address */
   tokenAddress: string;
-  // The token standard (e.g. "ERC721") for this asset
+  /** The token standard (e.g. "ERC721") for this asset */
   tokenStandard?: TokenStandard;
-  // Optional for ENS names
+  /** Optional for ENS names */
   name?: string;
-  // Optional for fungible items
+  /** Optional for fungible items */
   decimals?: number;
 }
 
@@ -366,47 +399,48 @@ export interface OpenSeaCollectionStats {
 }
 
 /**
- * Annotated collection with OpenSea metadata
+ * Annotated collection with OpenSea metadata.
+ * @category  API Models
  */
 export interface OpenSeaCollection extends OpenSeaFees {
-  // Name of the collection
+  /** Name of the collection */
   name: string;
-  // Slug, used in URL
+  /** The identifier of the collection. */
   slug: string;
-  // Accounts allowed to edit this collection
+  /** Accounts allowed to edit this collection */
   editors: string[];
-  // Whether this collection is hidden from the homepage
+  /** Whether this collection is hidden from the homepage */
   hidden: boolean;
-  // Whether this collection is featured
+  /** Whether this collection is featured */
   featured: boolean;
-  // Date collection was created
+  /** Date collection was created */
   createdDate: Date;
 
-  // Description of the collection
+  /** Description of the collection */
   description: string;
-  // Image for the collection
+  /** Image for the collection */
   imageUrl: string;
-  // Image for the collection, large
+  /** Image for the collection, large */
   largeImageUrl: string;
-  // Image for the collection when featured
+  /** Image for the collection when featured */
   featuredImageUrl: string;
-  // Object with stats about the collection
+  /** Object with stats about the collection */
   stats: OpenSeaCollectionStats;
-  // Data about displaying cards
+  /** Data about displaying cards */
   displayData: object;
-  // The collection's approval status
+  /** The collection's approval status */
   safelistRequestStatus: SafelistStatus;
-  // Tokens allowed for this collection
+  /** Tokens allowed for this collection */
   paymentTokens: OpenSeaFungibleToken[];
-  // Address for dev fee payouts
+  /** Address for dev fee payouts */
   payoutAddress?: string;
-  // Array of trait types for the collection
+  /** Array of trait types for the collection */
   traitStats: OpenSeaTraitStats;
-  // Link to the collection's main website
+  /** Link to the collection's main website */
   externalLink?: string;
-  // Link to the collection's wiki, if available
+  /** Link to the collection's wiki, if available */
   wikiLink?: string;
-  // Map of collection fees holding OpenSea and seller fees
+  /** Map of collection fees holding OpenSea and seller fees */
   fees: Fees;
 }
 
@@ -416,43 +450,47 @@ export interface OpenSeaTraitStats {
 
 /**
  * Annotated asset spec with OpenSea metadata
+ * @category API Models
  */
 export interface OpenSeaAsset extends Asset {
+  /** The Asset's Contract */
   assetContract: OpenSeaAssetContract;
+  /** Collection the asset belongs to */
   collection: OpenSeaCollection;
-  // The asset's given name
+  /** The asset's given name */
   name: string;
-  // Description of the asset
+  /** Description of the asset */
   description: string;
-  // Owner of the asset
+  /** Owner of the asset */
   owner: OpenSeaAccount;
 
-  // Whether the asset is on a pre-sale (so token ids aren't real)
+  /** Whether the asset is on a pre-sale (so token ids aren't real) */
   isPresale: boolean;
-  // The cached and size-optimized image url for this token
+  /** The cached and size-optimized image url for this token */
   imageUrl: string;
-  // The image preview url for this token.
-  // Note: Loses gif animation and may have issues with SVGs
+  /** The image preview url for this token.
+   * Note: Loses gif animation and may have issues with SVGs
+   */
   imagePreviewUrl: string;
-  // The original image url for this token
+  /** The original image url for this token */
   imageUrlOriginal: string;
-  // Thumbnail url for this token
+  /** Thumbnail url for this token */
   imageUrlThumbnail: string;
-  // The animation url for this token, if it exists
+  /** The animation url for this token, if it exists */
   animationUrl: string | null;
-  // The original animation url for this token, if it exists
+  /** The original animation url for this token, if it exists */
   animationUrlOriginal: string | null;
-  // Link to token on OpenSea
+  /** Link to token on OpenSea */
   openseaLink: string;
-  // Link to token on dapp's site
+  /** Link to token on dapp's site */
   externalLink: string;
-  // Array of traits on this token
+  /** Array of traits on this token */
   traits: object[];
-  // Number of times this token has been traded (sold)
+  /** Number of times this token has been traded (sold) */
   numSales: number;
-  // Data about the last time this token was sold
+  /** Data about the last time this token was sold */
   lastSale: AssetEvent | null;
-  // The suggested background color for the image url
+  /** The suggested background color for the image url */
   backgroundColor: string | null;
 }
 
@@ -552,16 +590,25 @@ export interface OpenSeaFungibleToken {
 
 /**
  * Bundles of assets, grouped together into one OpenSea order
- * URLs for bundles are auto-generated from the name
+ * URLs for bundles are auto-generated from the name.
+ * @category API Models
  */
 export interface OpenSeaAssetBundle {
+  /** The maker of the order. */
   maker: OpenSeaAccount;
+  /** List of {@link OpenSeaAsset} included in the bundle. */
   assets: OpenSeaAsset[];
+  /** Name of the bundle. */
   name: string;
+  /** Slug identifier of the bundle. */
   slug: string;
+  /** Permanent Link to the bundle. */
   permalink: string;
+  /** Annotated asset contract with OpenSea metadata */
   assetContract?: OpenSeaAssetContract;
+  /** Description of the bundle */
   description?: string;
+  /** Outbound Link to the bundle. */
   externalLink?: string;
 }
 
@@ -592,13 +639,13 @@ export interface OpenSeaAssetBundleQuery
  * The basis point values of each type of fee
  */
 interface OpenSeaFees {
-  // Fee for OpenSea levied on sellers
+  /** Fee for OpenSea levied on sellers */
   openseaSellerFeeBasisPoints: number;
-  // Fee for OpenSea levied on buyers
+  /** Fee for OpenSea levied on buyers */
   openseaBuyerFeeBasisPoints: number;
-  // Fee for the collection owner levied on sellers
+  /** Fee for the collection owner levied on sellers */
   devSellerFeeBasisPoints: number;
-  // Fee for the collection owner levied on buyers
+  /** Fee for the collection owner levied on buyers */
   devBuyerFeeBasisPoints: number;
 }
 

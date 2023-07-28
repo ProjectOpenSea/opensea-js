@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { before, suite, test } from "mocha";
 import { OpenSeaSDK } from "../../src/index";
-import { Chain, OpenSeaAsset, OrderSide } from "../../src/types";
+import { Chain, OpenSeaAsset } from "../../src/types";
 import { feesToBasisPoints } from "../../src/utils/utils";
 import {
   BAYC_CONTRACT_ADDRESS,
@@ -44,7 +44,6 @@ suite("SDK: fees", () => {
 
     const buyerFees = await client.computeFees({
       asset,
-      side: OrderSide.Buy,
     });
 
     assert.equal(buyerFees.totalBuyerFeeBasisPoints, buyerFeeBasisPoints);
@@ -73,7 +72,6 @@ suite("SDK: fees", () => {
 
     const sellerFees = await client.computeFees({
       asset,
-      side: OrderSide.Sell,
     });
     assert.equal(sellerFees.totalBuyerFeeBasisPoints, buyerFeeBasisPoints);
     assert.equal(sellerFees.totalSellerFeeBasisPoints, sellerFeeBasisPoints);
