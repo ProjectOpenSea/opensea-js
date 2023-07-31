@@ -140,7 +140,7 @@ export type GetBundlesResponse = {
  * @category API Models
  */
 export type NFT = {
-  /** NFT Identifier */
+  /** NFT Identifier (also commonly referred to as Token Id) */
   identifier: string;
   /** Slug identifier of collection */
   collection: string;
@@ -162,6 +162,6 @@ export type NFT = {
   updated_at: string;
   /** Whether NFT is disabled for trading on OpenSea */
   is_disabled: boolean;
-  /** Whether NFT is NSFW */
+  /** Whether NFT is NSFW (Not Safe For Work) */
   is_nsfw: boolean;
 };
