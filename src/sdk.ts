@@ -55,14 +55,18 @@ import {
   getWETHAddress,
 } from "./utils/utils";
 
+/**
+ * The OpenSea SDK main class.
+ * @category Main Classes
+ */
 export class OpenSeaSDK {
-  /** Provider */
+  /** Provider to use for transactions. */
   public provider: providers.JsonRpcProvider;
-  /** Seaport v1.5 client */
+  /** Seaport v1.5 client  @see {@link https://github.com/ProjectOpenSea/seaport}*/
   public seaport_v1_5: Seaport;
   /** Logger function to use when debugging */
   public logger: (arg: string) => void;
-  /** API instance on this seaport */
+  /** API instance */
   public readonly api: OpenSeaAPI;
   /** The configured chain */
   public readonly chain: Chain;
@@ -71,13 +75,12 @@ export class OpenSeaSDK {
   private _signerOrProvider: Wallet | providers.JsonRpcProvider;
 
   /**
-   * Your very own seaport.
    * Create a new instance of OpenSeaJS.
    * @param provider Provider to use for transactions. For example:
    *  `const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')`
    * @param apiConfig configuration options, including `chain`
-   * @param logger logger, optional, a function that will be called with debugging
-   * @param wallet optional, if you'd like to use an ethers wallet for order posting
+   * @param logger function that will be called with debugging
+   * @param wallet ethers wallet for order posting
    *  information
    */
   constructor(
@@ -106,10 +109,10 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Add a listener to a marketplace event.
-   * @param event An event to listen for
-   * @param listener A callback that will accept an object with event data
-   * @param once Whether the listener should only be called once
+   * Add a listener for events emitted by the SDK.
+   * @param event The {@link EventType} to listen to.
+   * @param listener A callback that will accept an object with {@link EventData}\
+   * @param once Whether the listener should only be called once, or continue listening until removed.
    */
   public addListener(
     event: EventType,
@@ -124,9 +127,8 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Remove an event listener, included for completeness.
-   * Simply calls `.removeListener()` on an event and listener.
-   * @param event The event to remove a listener for
+   * Remove an event listener by calling `.removeListener()` on an event and listener.
+   * @param event The {@link EventType} to remove a listener for\
    * @param listener The listener to remove
    */
   public removeListener(event: EventType, listener: (data: EventData) => void) {
@@ -134,8 +136,8 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Remove all event listeners. Good idea to call this when you're unmounting
-   * a component that listens to events to make UI updates
+   * Remove all event listeners. This should be called when you're unmounting
+   * a component that listens to events to make UI updates.
    * @param event Optional EventType to remove listeners for
    */
   public removeAllListeners(event?: EventType) {
@@ -143,11 +145,11 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Wrap ETH into W-ETH.
+   * Wrap ETH into WETH.
    * W-ETH is needed for placing buy orders (making offers).
-   * Emits the `WrapEth` event when the transaction is prompted.
-   * @param amountInEth How much ether to wrap
-   * @param accountAddress Address of the user's wallet containing the ether
+   * @param options
+   * @param options.amountInEth Amount of ether to wrap
+   * @param options.accountAddress Address of the user's wallet containing the ether
    */
   public async wrapEth({
     amountInEth,
@@ -183,10 +185,11 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Unwrap W-ETH into ETH.
+   * Unwrap WETH into ETH.
    * Emits the `UnwrapWeth` event when the transaction is prompted.
-   * @param amountInEth How much W-ETH to unwrap
-   * @param accountAddress Address of the user's wallet containing the W-ETH
+   * @param options
+   * @param options.amountInEth How much WETH to unwrap
+   * @param options.accountAddress Address of the user's wallet containing the WETH
    */
   public async unwrapWeth({
     amountInEth,
@@ -291,21 +294,6 @@ export class OpenSeaSDK {
     };
   }
 
-  private getAssetItems(
-    assets: OpenSeaAsset[],
-    quantities: BigNumber[] = [],
-  ): CreateInputItem[] {
-    return assets.map((asset, index) => ({
-      itemType: getAssetItemType(asset.assetContract.tokenStandard),
-      token:
-        getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-          asset.tokenAddress,
-        ),
-      identifier: asset.tokenId ?? undefined,
-      amount: quantities[index].toString() ?? "1",
-    }));
-  }
-
   private getNFTItems(
     nfts: NFT[],
     quantities: BigNumber[] = [],
@@ -325,15 +313,21 @@ export class OpenSeaSDK {
 
   /**
    * Create a buy order to make an offer on an asset.
-   * @param options Options for creating the buy order
+   * @param options
    * @param options.asset The asset to trade
-   * @param options.accountAddress Address of the maker's wallet
-   * @param options.startAmount Value of the offer, in units of the payment token (or wrapped ETH if no payment token address specified)
-   * @param options.quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei
+   * @param options.accountAddress Address of the wallet making the buy order
+   * @param options.startAmount Value of the offer in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
+   * @param options.quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1.
    * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt.
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
-   * @param options.expirationTime Expiration time for the order, in seconds
-   * @param options.paymentTokenAddress Optional address for using an ERC-20 token in the order. If unspecified, defaults to WETH
+   * @param options.expirationTime Expiration time for the order, in UTC seconds
+   * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH
+   * @returns The {@link OrderV2} that was created.
+   *
+   * @throws Error if the asset does not contain a token id.
+   * @throws Error if the accountAddress is not available through wallet or provider.
+   * @throws Error if the startAmount is not greater than 0.
+   * @throws Error if paymentTokenAddress is not WETH on anything other than Ethereum mainnet.
    */
   public async createBuyOrder({
     asset,
@@ -421,19 +415,25 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Create a sell order to auction an asset.
-   * @param options Options for creating the sell order
+   * Create a sell order to make a listing for a asset.
+   * @param options
    * @param options.asset The asset to trade
-   * @param options.accountAddress Address of the maker's wallet
-   * @param options.startAmount Price of the asset at the start of the auction. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-   * @param options.endAmount Optional price of the asset at the end of its expiration time. Units are in the amount of a token above the token's decimal places (integer part). For example, for ether, expected units are in ETH, not wei.
-   * @param options.quantity The number of assets to sell (if fungible or semi-fungible). Defaults to 1. In units, not base units, e.g. not wei.
-   * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt.
+   * @param options.accountAddress  Address of the wallet making the buy order
+   * @param options.startAmount Value of the listing at the start of the auction in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
+   * @param options.endAmount Value of the listing at the end of the auction. If specified, price will change linearly between startAmount and endAmount as time progresses.
+   * @param options.quantity The number of assets to list (if fungible or semi-fungible). Defaults to 1.
+   * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt. This can be used for on-chain order attribution to assist with analytics.
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
-   * @param options.paymentTokenAddress Address of the ERC-20 token to accept in return. If undefined or null, uses Ether.
+   * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to ETH
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
+   * @returns The {@link OrderV2} that was created.
+   *
+   * @throws Error if the asset does not contain a token id.
+   * @throws Error if the accountAddress is not available through wallet or provider.
+   * @throws Error if the startAmount is not greater than 0.
+   * @throws Error if paymentTokenAddress is not WETH on anything other than Ethereum mainnet.
    */
   public async createSellOrder({
     asset,
@@ -531,7 +531,17 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Create a collection offer
+   * Create a offer (buy order) for a collection.
+   * @param options
+   * @param options.collectionSlug Identifier for the collection.
+   * @param options.accountAddress Address of the wallet making the offer.
+   * @param options.amount Value of the offer in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified).
+   * @param options.quantity The number of assets to bid for (if fungible or semi-fungible).
+   * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt. This can be used for on-chain order attribution to assist with analytics.
+   * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
+   * @param options.expirationTime Expiration time for the order, in UTC seconds.
+   * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH.
+   * @returns The {@link Offer} that was created.
    */
   public async createCollectionOffer({
     collectionSlug,
@@ -656,13 +666,17 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Fullfill or "take" an order for an asset, either a buy or sell order
-   * @param options fullfillment options
+   * Fullfill or "take" an order for an asset. The order can be either a buy or sell order.
+   * @param options
    * @param options.order The order to fulfill, a.k.a. "take"
-   * @param options.accountAddress The taker's wallet address
-   * @param options.recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress
-   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata
-   * @returns Transaction hash for fulfilling the order
+   * @param options.accountAddress Address of the wallet taking the offer.
+   * @param options.recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
+   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
+   * @returns Transaction hash of the order.
+   *
+   * @throws Error if the accountAddress is not available through wallet or provider.
+   * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
+   * @throws Error if attempting to fulfill the order with a recipient address which does not match a private listing.
    */
   public async fulfillOrder({
     order,
@@ -747,9 +761,13 @@ export class OpenSeaSDK {
 
   /**
    * Cancel an order on-chain, preventing it from ever being fulfilled.
-   * @param order The order to cancel
-   * @param accountAddress The order maker's wallet address
-   * @param domain An optional domain to be hashed and included at the end of fulfillment calldata
+   * @param options
+   * @param options.order The order to cancel
+   * @param options.accountAddress The account address that will be cancelling the order.
+   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
+   *
+   * @throws Error if the accountAddress is not available through wallet or provider.
+   * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    */
   public async cancelOrder({
     order,
@@ -789,8 +807,12 @@ export class OpenSeaSDK {
    * An order may not be fulfillable if a target item's transfer function
    * is locked for some reason, e.g. an item is being rented within a game
    * or trading has been locked for an item type.
-   * @param order Order to check
-   * @param accountAddress The account address that will be fulfilling the order
+   * @param options
+   * @param options.order Order to check
+   * @param options.accountAddress The account address that will be fulfilling the order
+   * @returns True if the order is fulfillable, else False.
+   *
+   * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    */
   public async isOrderFulfillable({
     order,
@@ -817,10 +839,14 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Get an account's balance of any Asset.
-   * @param accountAddress Account address to check
-   * @param asset The Asset to check balance for
-   * @param retries How many times to retry if balance is 0
+   * Get an account's balance of any Asset. This asset can be an ERC20, ERC1155, or ERC721.
+   * @param options
+   * @param options.accountAddress Account address to check
+   * @param options.asset The Asset to check balance for
+   * @param retries How many times to retry if balance is 0. Defaults to 1.
+   * @returns The balance of the asset for the account.
+   *
+   * @throws Error if the token standard does not support balanceOf.
    */
   public async getBalance(
     { accountAddress, asset }: { accountAddress: string; asset: Asset },
@@ -884,15 +910,15 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Compute the fees for an order
-   * @param asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
-   * @param side The side of the order (buy or sell)
+   * Compute the fees for an order.
+   * @param options
+   * @param options.asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
+   * @returns The {@link ComputedFees} for the order.
    */
   public async computeFees({
     asset,
   }: {
     asset?: OpenSeaAsset;
-    side: OrderSide;
   }): Promise<ComputedFees> {
     const openseaBuyerFeeBasisPoints = 0;
     let openseaSellerFeeBasisPoints = 0;
@@ -918,11 +944,14 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Instead of signing an off-chain order, you can approve an order
-   * with on on-chain transaction using this method
+   * Instead of signing an off-chain order, this methods allows you to approve an order
+   * with on on-chain transaction.
    * @param order Order to approve
-   * @param domain An optional domain to be hashed and included at the end of fulfillment calldata
+   * @param domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
    * @returns Transaction hash of the approval transaction
+   *
+   * @throws Error if the accountAddress is not available through wallet or provider.
+   * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    */
   public async approveOrder(order: OrderV2, domain?: string) {
     await this._checkAccountIsAvailable(order.maker.address);

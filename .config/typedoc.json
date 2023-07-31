@@ -1,0 +1,14 @@
+{
+  "categorizeByGroup": false,
+  "categoryOrder": ["Main Classes", "API Response Types", "API Models", "*"],
+  "entryPoints": ["../src/index.ts"],
+  "excludePrivate": true,
+  "excludeReferences": true,
+  "includeVersion": true,
+  "out": "../docs",
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": true
+  }
+}
