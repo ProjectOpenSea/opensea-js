@@ -33,8 +33,8 @@
     "prettier:check": "prettier --check .",
     "prettier:check:package.json": "prettier-package-json --list-different",
     "prettier:fix": "prettier --write .",
-    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register test/**/*.spec.ts --exclude test/integration/**/*.ts --timeout 15000",
-    "test:integration": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register -r dotenv/config test/integration/**/*.spec.ts --timeout 25000"
+    "test": "cross-env TS_NODE_COMPILER_OPTIONS='{\\\"module\\\":\\\"commonjs\\\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register test/**/*.spec.ts --exclude test/integration/**/*.ts --timeout 15000",
+    "test:integration": "cross-env TS_NODE_COMPILER_OPTIONS='{\\\"module\\\":\\\"commonjs\\\"}' TS_NODE_TRANSPILE_ONLY=true nyc mocha -r ts-node/register -r dotenv/config test/integration/**/*.spec.ts --timeout 25000"
   },
   "types": "lib/index.d.ts",
   "dependencies": {
@@ -54,6 +54,7 @@
     "chai-as-promised": "^7.1.1",
     "concurrently": "^8.2.0",
     "confusing-browser-globals": "^1.0.11",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.0.3",
     "eslint": "^8.4.1",
     "eslint-config-prettier": "^8.3.0",
