@@ -344,7 +344,10 @@ export const getWETHAddress = (chain: Chain) => {
     case Chain.BNBTestnet:
       return "0xae13d989dac2f0debff460ac112a837c89baa7cd";
     // OP Chains have weth at the same address
+    case Chain.Base:
+    case Chain.BaseGoerli:
     case Chain.Optimism:
+    case Chain.OptimismGoerli:
     case Chain.Zora:
     case Chain.ZoraTestnet:
       return "0x4200000000000000000000000000000000000006";
