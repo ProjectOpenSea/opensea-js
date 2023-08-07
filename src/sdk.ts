@@ -689,8 +689,8 @@ export class OpenSeaSDK {
     recipientAddress?: string;
     domain?: string;
   }): Promise<string> {
-    requireValidProtocol(order.protocolAddress);
     await this._requireAccountIsAvailable(accountAddress);
+    requireValidProtocol(order.protocolAddress);
 
     if (order.orderHash) {
       const result = await this.api.generateFulfillmentData(
@@ -775,8 +775,8 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
   }) {
-    requireValidProtocol(order.protocolAddress);
     await this._requireAccountIsAvailable(accountAddress);
+    requireValidProtocol(order.protocolAddress);
 
     this._dispatch(EventType.CancelOrder, { orderV2: order, accountAddress });
 
@@ -946,8 +946,8 @@ export class OpenSeaSDK {
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    */
   public async approveOrder(order: OrderV2, domain?: string) {
-    requireValidProtocol(order.protocolAddress);
     await this._requireAccountIsAvailable(order.maker.address);
+    requireValidProtocol(order.protocolAddress);
 
     this._dispatch(EventType.ApproveOrder, {
       orderV2: order,
