@@ -414,7 +414,7 @@ export const isTestChain = (chain: Chain): boolean => {
 };
 
 /**
- * Checks if a protocol address is valid.
+ * Returns if a protocol address is valid.
  * @param protocolAddress The protocol address
  */
 export const isValidProtocol = (protocolAddress: string): boolean => {
@@ -423,6 +423,16 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
     (address) => ethers.utils.getAddress(address),
   );
   return validProtocolAddresses.includes(checkSumAddress);
+};
+
+/**
+ * Throws an error if the protocol address is not valid.
+ * @param protocolAddress The protocol address
+ */
+export const requireValidProtocol = (protocolAddress: string) => {
+  if (!isValidProtocol(protocolAddress)) {
+    throw new Error("Unsupported protocol");
+  }
 };
 
 /**

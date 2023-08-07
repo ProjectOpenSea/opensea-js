@@ -51,7 +51,7 @@ import {
   getAssetItemType,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
   feesToBasisPoints,
-  isValidProtocol,
+  requireValidProtocol,
   getWETHAddress,
 } from "./utils/utils";
 
@@ -158,7 +158,7 @@ export class OpenSeaSDK {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
-    await this._checkAccountIsAvailable(accountAddress);
+    await this._requireAccountIsAvailable(accountAddress);
 
     const value = parseEther(FixedNumber.from(amountInEth).toString());
 
@@ -198,7 +198,7 @@ export class OpenSeaSDK {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
-    await this._checkAccountIsAvailable(accountAddress);
+    await this._requireAccountIsAvailable(accountAddress);
 
     const amount = parseEther(FixedNumber.from(amountInEth).toString());
 
@@ -348,7 +348,7 @@ export class OpenSeaSDK {
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
   }): Promise<OrderV2> {
-    await this._checkAccountIsAvailable(accountAddress);
+    await this._requireAccountIsAvailable(accountAddress);
 
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
@@ -460,7 +460,7 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
   }): Promise<OrderV2> {
-    await this._checkAccountIsAvailable(accountAddress);
+    await this._requireAccountIsAvailable(accountAddress);
 
     if (!asset.tokenId) {
       throw new Error("Asset must have a tokenId");
@@ -562,7 +562,7 @@ export class OpenSeaSDK {
     expirationTime?: number | string;
     paymentTokenAddress: string;
   }): Promise<Offer | null> {
-    await this._checkAccountIsAvailable(accountAddress);
+    await this._requireAccountIsAvailable(accountAddress);
 
     const collection = await this.api.getCollection(collectionSlug);
     const buildOfferResult = await this.api.buildOffer(
@@ -666,7 +666,7 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Fullfill or "take" an order for an asset. The order can be either a buy or sell order.
+   * Fulfill or "take" an order for an asset. The order can be either a buy or sell order.
    * @param options
    * @param options.order The order to fulfill, a.k.a. "take"
    * @param options.accountAddress Address of the wallet taking the offer.
@@ -689,11 +689,8 @@ export class OpenSeaSDK {
     recipientAddress?: string;
     domain?: string;
   }): Promise<string> {
-    await this._checkAccountIsAvailable(accountAddress);
-
-    if (!isValidProtocol(order.protocolAddress)) {
-      throw new Error("Unsupported protocol");
-    }
+    requireValidProtocol(order.protocolAddress);
+    await this._requireAccountIsAvailable(accountAddress);
 
     if (order.orderHash) {
       const result = await this.api.generateFulfillmentData(
@@ -778,11 +775,8 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
   }) {
-    await this._checkAccountIsAvailable(accountAddress);
-
-    if (!isValidProtocol(order.protocolAddress)) {
-      throw new Error("Unsupported protocol");
-    }
+    requireValidProtocol(order.protocolAddress);
+    await this._requireAccountIsAvailable(accountAddress);
 
     this._dispatch(EventType.CancelOrder, { orderV2: order, accountAddress });
 
@@ -821,9 +815,7 @@ export class OpenSeaSDK {
     order: OrderV2;
     accountAddress: string;
   }): Promise<boolean> {
-    if (!isValidProtocol(order.protocolAddress)) {
-      throw new Error("Unsupported protocol");
-    }
+    requireValidProtocol(order.protocolAddress);
 
     try {
       const isValid = await this.seaport_v1_5
@@ -954,11 +946,8 @@ export class OpenSeaSDK {
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    */
   public async approveOrder(order: OrderV2, domain?: string) {
-    await this._checkAccountIsAvailable(order.maker.address);
-
-    if (!isValidProtocol(order.protocolAddress)) {
-      throw new Error("Unsupported protocol");
-    }
+    requireValidProtocol(order.protocolAddress);
+    await this._requireAccountIsAvailable(order.maker.address);
 
     this._dispatch(EventType.ApproveOrder, {
       orderV2: order,
@@ -1090,7 +1079,7 @@ export class OpenSeaSDK {
    *
    * @param accountAddress The account address to check is available.
    */
-  private async _checkAccountIsAvailable(accountAddress: string) {
+  private async _requireAccountIsAvailable(accountAddress: string) {
     const accountAddressChecksummed = ethers.utils.getAddress(accountAddress);
     if (
       (this._signerOrProvider instanceof Wallet &&
