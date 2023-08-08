@@ -22,7 +22,7 @@ Interested in purchasing for users server-side or with a bot, scheduling future 
 You can create sell orders that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in seconds) to your SDK instance:
 
 ```typescript
-const auction = await openseaSDK.createSellOrder({
+const order = await openseaSDK.createSellOrder({
   tokenAddress,
   tokenId,
   accountAddress,
@@ -57,7 +57,7 @@ Here's an example of listing the Genesis CryptoKitty for $100! No more needing t
 const paymentTokenAddress = "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359";
 
 // The units for `startAmount` and `endAmount` are now in DAI, so $100 USD
-const auction = await openseaSDK.createSellOrder({
+const order = await openseaSDK.createSellOrder({
   tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
   tokenId: "1", // Token ID
   accountAddress: OWNERS_WALLET_ADDRESS,
@@ -78,14 +78,9 @@ const order = await openseaSDK.api.getOrders({
 });
 ```
 
-**Fun note:** soon, all ERC-20 tokens will be allowed! This will mean you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea:
-
-- MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942
-- DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
-
 ### Private Auctions
 
-Now you can make auctions and listings that can only be fulfilled by an address or email of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on OpenSea, **without having to trust that the counterparty will abide by your terms!**
+You can make offers and listings that can only be fulfilled by an address or email of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on OpenSea, **without having to trust that the counterparty will abide by your terms!**
 
 Here's an example of listing a Decentraland parcel for 10 ETH with a specific buyer address allowed to take it. No more needing to worry about whether they'll give you enough back!
 
