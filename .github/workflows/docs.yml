@@ -28,3 +28,15 @@ jobs:
         with:
           branch: gh-pages
           folder: docs
+
+      - name: Copy files to another repository
+        uses: nkoppel/push-files-to-another-repository@v1.1.1
+        with:
+          source-directory: "developerDocs/"
+          destination-username: "ProjectOpenSea"
+          destination-repository: "developer-docs"
+          destination-directory: "opensea-js"
+          destination-branch: "main"
+          commit-username: "ProjectOpenSea-opensea-js"
+          commit-message: "Latest docs from opensea-js"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
