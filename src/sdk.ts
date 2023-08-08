@@ -2,6 +2,7 @@ import EventEmitter = require("events");
 import { Seaport } from "@opensea/seaport-js";
 import { OPENSEA_CONDUIT_KEY } from "@opensea/seaport-js/lib/constants";
 import {
+  AdvancedOrder,
   ConsiderationInputItem,
   CreateInputItem,
   OrderComponents,
@@ -636,7 +637,7 @@ export class OpenSeaSDK {
   }): Promise<string> {
     if (!order.taker?.address) {
       throw new Error(
-        "Order is not a private listing must have a taker address",
+        "Order is not a private listing - must have a taker address",
       );
     }
     const counterOrder = constructPrivateListingCounterOrder(
@@ -695,6 +696,8 @@ export class OpenSeaSDK {
       throw new Error("Unsupported protocol");
     }
 
+    let extraData: string | undefined = undefined;
+
     if (order.orderHash) {
       const result = await this.api.generateFulfillmentData(
         accountAddress,
@@ -702,6 +705,15 @@ export class OpenSeaSDK {
         order.protocolAddress,
         order.side,
       );
+
+      // If the order is using offer protection, the extraData
+      // must be included with the order to successfully fulfill.
+      const fulfillmentOrder =
+        result.fulfillment_data.transaction.input_data.orders[0];
+      if ("extraData" in fulfillmentOrder) {
+        extraData = (fulfillmentOrder as AdvancedOrder).extraData;
+      }
+
       const signature = result.fulfillment_data.orders[0].signature;
       order.clientSignature = signature;
       order.protocolData.signature = signature;
@@ -725,6 +737,7 @@ export class OpenSeaSDK {
       order: order.protocolData,
       accountAddress,
       recipientAddress,
+      extraData,
       domain,
     });
     const transaction = await executeAllActions();

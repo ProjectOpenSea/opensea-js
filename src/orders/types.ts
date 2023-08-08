@@ -1,4 +1,5 @@
-import { OrderWithCounter } from "@opensea/seaport-js/lib/types";
+import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport_v1_4/contracts/Seaport";
+import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "ethers";
 import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
 
@@ -81,7 +82,9 @@ type Transaction = {
   chain: number;
   to: string;
   value: number;
-  input_data: object;
+  input_data: {
+    orders: OrderWithCounter[] | AdvancedOrder[] | BasicOrderParametersStruct[];
+  };
 };
 
 // API query types
