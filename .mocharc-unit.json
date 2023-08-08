@@ -1,0 +1,6 @@
+{
+  "require": "ts-node/register/transpile-only",
+  "spec": "test/**/*.spec.ts",
+  "exclude": "test/integration/**/*.ts",
+  "timeout": "15s"
+}
