@@ -47,6 +47,10 @@ export const getListNFTsByContractPath = (chain: Chain, address: string) => {
   return `/v2/chain/${chain}/contract/${address}/nfts`;
 };
 
+export const getListNFTsByAccountPath = (chain: Chain, address: string) => {
+  return `/v2/chain/${chain}/account/${address}/nfts`;
+};
+
 export const getNFTPath = (
   chain: Chain,
   address: string,

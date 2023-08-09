@@ -39,6 +39,7 @@ import {
   getNFTPath,
   getRefreshMetadataPath,
   getCollectionOffersPath,
+  getListNFTsByAccountPath,
 } from "../orders/utils";
 import {
   Chain,
@@ -411,6 +412,40 @@ export class OpenSeaAPI {
       _throwOrContinue(error, retries);
       await delay(1000);
       return this.getNFTsByContract(chain, address, limit, next, retries - 1);
+    }
+
+    return response;
+  }
+
+  /**
+   * Fetch NFTs owned by an account.
+   * @param address The address of the account
+   * @param limit The number of NFTs to retrieve. Must be greater than 0 and less than 51.
+   * @param next Cursor to retrieve the next page of NFTs
+   * @param retries Number of times to retry if the service is unavailable for any reason.
+   * @param chain The chain to query. Defaults to the chain set in the constructor.
+   * @returns The {@link ListNFTsResponse} returned by the API.
+   */
+  public async getNFTsByAccount(
+    address: string,
+    limit: number | undefined = undefined,
+    next: string | undefined = undefined,
+    retries = 1,
+    chain = this.chain,
+  ): Promise<ListNFTsResponse> {
+    let response;
+    try {
+      response = await this.get<ListNFTsResponse>(
+        getListNFTsByAccountPath(chain, address),
+        {
+          limit,
+          next,
+        },
+      );
+    } catch (error) {
+      _throwOrContinue(error, retries);
+      await delay(1000);
+      return this.getNFTsByAccount(address, limit, next, retries - 1, chain);
     }
 
     return response;
