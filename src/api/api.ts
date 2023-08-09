@@ -423,6 +423,7 @@ export class OpenSeaAPI {
    * @param limit The number of NFTs to retrieve. Must be greater than 0 and less than 51.
    * @param next Cursor to retrieve the next page of NFTs
    * @param retries Number of times to retry if the service is unavailable for any reason.
+   * @param chain The chain to query. Defaults to the chain set in the constructor.
    * @returns The {@link ListNFTsResponse} returned by the API.
    */
   public async getNFTsByAccount(
