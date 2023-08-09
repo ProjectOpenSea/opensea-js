@@ -430,7 +430,7 @@ export class OpenSeaAPI {
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
     retries = 1,
-    { chain = this.chain }: { chain?: Chain } = { chain: this.chain },
+    chain = this.chain,
   ): Promise<ListNFTsResponse> {
     let response;
     try {
@@ -444,9 +444,7 @@ export class OpenSeaAPI {
     } catch (error) {
       _throwOrContinue(error, retries);
       await delay(1000);
-      return this.getNFTsByAccount(address, limit, next, retries - 1, {
-        chain,
-      });
+      return this.getNFTsByAccount(address, limit, next, retries - 1, chain);
     }
 
     return response;
