@@ -394,80 +394,40 @@ const listing = await openseaSDK.createSellOrder({
 
 Events are fired whenever transactions or orders are being created, and when transactions return receipts from recently mined blocks on the Ethereum blockchain.
 
-Our recommendation is that you "forward" OpenSea events to your own store or state management system. Here's an example of doing that with a Redux action:
+Our recommendation is that you "forward" OpenSea events to your own store or state management system. Here are examples of listening to the events:
 
 ```typescript
 import { openSeaSDK, EventType } from 'opensea-js'
-import * as ActionTypes from './index'
-
-// ...
 
 handleSDKEvents() {
-  return async function(dispatch, getState) {
     openSeaSDK.addListener(EventType.TransactionCreated, ({ transactionHash, event }) => {
-      console.info({ transactionHash, event })
-      dispatch({ type: ActionTypes.SET_PENDING_TRANSACTION_HASH, hash: transactionHash })
+      console.info('Transaction created: ', { transactionHash, event })
     })
     openSeaSDK.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) => {
-      console.info({ transactionHash, event })
-      // Only reset your exchange UI if we're finishing an order fulfillment or cancellation
-      if (event == EventType.MatchOrders || event == EventType.CancelOrder) {
-        dispatch({ type: ActionTypes.RESET_EXCHANGE })
-      }
+      console.info('Transaction confirmed: ',{ transactionHash, event })
     })
     openSeaSDK.addListener(EventType.TransactionDenied, ({ transactionHash, event }) => {
-      console.info({ transactionHash, event })
-      dispatch({ type: ActionTypes.RESET_EXCHANGE })
+      console.info('Transaction denied: ',{ transactionHash, event })
     })
     openSeaSDK.addListener(EventType.TransactionFailed, ({ transactionHash, event }) => {
-      console.info({ transactionHash, event })
-      dispatch({ type: ActionTypes.RESET_EXCHANGE })
-    })
-    openSeaSDK.addListener(EventType.InitializeAccount, ({ accountAddress }) => {
-      console.info({ accountAddress })
-      dispatch({ type: ActionTypes.INITIALIZE_PROXY })
+      console.info('Transaction failed: ',{ transactionHash, event })
     })
     openSeaSDK.addListener(EventType.WrapEth, ({ accountAddress, amount }) => {
-      console.info({ accountAddress, amount })
-      dispatch({ type: ActionTypes.WRAP_ETH })
+      console.info('Wrap ETH: ',{ accountAddress, amount })
     })
     openSeaSDK.addListener(EventType.UnwrapWeth, ({ accountAddress, amount }) => {
-      console.info({ accountAddress, amount })
-      dispatch({ type: ActionTypes.UNWRAP_WETH })
-    })
-    openSeaSDK.addListener(EventType.ApproveCurrency, ({ accountAddress, tokenAddress }) => {
-      console.info({ accountAddress, tokenAddress })
-      dispatch({ type: ActionTypes.APPROVE_WETH })
-    })
-    openSeaSDK.addListener(EventType.ApproveAllAssets, ({ accountAddress, tokenAddress }) => {
-      console.info({ accountAddress, tokenAddress })
-      dispatch({ type: ActionTypes.APPROVE_ALL_ASSETS })
-    })
-    openSeaSDK.addListener(EventType.ApproveAsset, ({ accountAddress, tokenAddress, tokenId }) => {
-      console.info({ accountAddress, tokenAddress, tokenId })
-      dispatch({ type: ActionTypes.APPROVE_ASSET })
-    })
-    openSeaSDK.addListener(EventType.CreateOrder, ({ order, accountAddress }) => {
-      console.info({ order, accountAddress })
-      dispatch({ type: ActionTypes.CREATE_ORDER })
-    })
-    openSeaSDK.addListener(EventType.OrderDenied, ({ order, accountAddress }) => {
-      console.info({ order, accountAddress })
-      dispatch({ type: ActionTypes.RESET_EXCHANGE })
+      console.info('Unwrap ETH: ',{ accountAddress, amount })
     })
     openSeaSDK.addListener(EventType.MatchOrders, ({ buy, sell, accountAddress }) => {
-      console.info({ buy, sell, accountAddress })
-      dispatch({ type: ActionTypes.FULFILL_ORDER })
+      console.info('Match orders: ', { buy, sell, accountAddress })
     })
     openSeaSDK.addListener(EventType.CancelOrder, ({ order, accountAddress }) => {
-      console.info({ order, accountAddress })
-      dispatch({ type: ActionTypes.CANCEL_ORDER })
+      console.info('Cancel order: ', { order, accountAddress })
     })
-  }
 }
 ```
 
-To remove all listeners and start over, just call `openseaSDK.removeAllListeners()`.
+To remove all listeners call `openseaSDK.removeAllListeners()`.
 
 ## Learning More
 

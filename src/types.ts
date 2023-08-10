@@ -3,19 +3,7 @@ import { BigNumber, BigNumberish } from "ethers";
 import type { OrderV2 } from "./orders/types";
 
 /**
- * Events emitted by the SDK. There are five types:
- * 1. Transaction events, which tell you when a new transaction was
- *    created, confirmed, denied, or failed.
- * 2. pre-transaction events, which are named (like "WrapEth") and indicate
- *    that ethers is asking for a signature on a transaction that needs to occur before
- *    an order is made or fulfilled. This includes approval events and account
- *    initialization.
- * 3. Basic actions: matching, cancelling, and creating orders.
- *    The "CreateOrder" event fires when a signature is being prompted
- *    to create an off-chain order. The "OrderDenied" event fires when a signature
- *    request is denied by the user.
- * 4. The "TransferAll" event, which fires when a user is about to directly
- *    transfer one or more assets to another account
+ * Events emitted by the SDK.
  */
 export enum EventType {
   // Transactions and signature requests
@@ -25,32 +13,13 @@ export enum EventType {
   TransactionFailed = "TransactionFailed",
 
   // Pre-transaction events
-  InitializeAccount = "InitializeAccount",
   WrapEth = "WrapEth",
   UnwrapWeth = "UnwrapWeth",
-  ApproveCurrency = "ApproveCurrency",
-  ApproveAsset = "ApproveAsset",
-  ApproveAllAssets = "ApproveAllAssets",
-  UnapproveCurrency = "UnapproveCurrency",
 
   // Basic actions: matching orders, creating orders, and cancelling orders
   MatchOrders = "MatchOrders",
   CancelOrder = "CancelOrder",
-  BulkCancelExistingOrders = "BulkCancelExistingOrders",
   ApproveOrder = "ApproveOrder",
-  CreateOrder = "CreateOrder",
-  // When the signature request for an order is denied
-  OrderDenied = "OrderDenied",
-
-  // When transferring one or more assets
-  TransferAll = "TransferAll",
-  TransferOne = "TransferOne",
-
-  // When wrapping or unwrapping NFTs
-  WrapAssets = "WrapAssets",
-  UnwrapAssets = "UnwrapAssets",
-  LiquidateAssets = "LiquidateAssets",
-  PurchaseAssets = "PurchaseAssets",
 }
 
 /**
