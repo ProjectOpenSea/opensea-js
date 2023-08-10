@@ -3,10 +3,9 @@ import { ethers } from "ethers";
 export const INVERSE_BASIS_POINT = 10_000; // 100 basis points per 1%
 export const MAX_EXPIRATION_MONTHS = 1;
 
-const API_VERSION = 1;
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_TESTNET = "https://testnets-api.opensea.io";
-export const API_PATH = `/api/v${API_VERSION}`;
+export const API_V1_PATH = `/api/v1`;
 
 export const DEFAULT_ZONE = ethers.constants.AddressZero;
 

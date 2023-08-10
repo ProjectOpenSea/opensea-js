@@ -344,7 +344,10 @@ export const getWETHAddress = (chain: Chain) => {
     case Chain.BNBTestnet:
       return "0xae13d989dac2f0debff460ac112a837c89baa7cd";
     // OP Chains have weth at the same address
+    case Chain.Base:
+    case Chain.BaseGoerli:
     case Chain.Optimism:
+    case Chain.OptimismGoerli:
     case Chain.Zora:
     case Chain.ZoraTestnet:
       return "0x4200000000000000000000000000000000000006";
@@ -397,6 +400,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.Sepolia:
     case Chain.Mumbai:
     case Chain.Baobab:
+    case Chain.BaseGoerli:
     case Chain.BNBTestnet:
     case Chain.ArbitrumGoerli:
     case Chain.Fuji:
@@ -410,7 +414,7 @@ export const isTestChain = (chain: Chain): boolean => {
 };
 
 /**
- * Checks if a protocol address is valid.
+ * Returns if a protocol address is valid.
  * @param protocolAddress The protocol address
  */
 export const isValidProtocol = (protocolAddress: string): boolean => {
@@ -419,4 +423,82 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
     (address) => ethers.utils.getAddress(address),
   );
   return validProtocolAddresses.includes(checkSumAddress);
+};
+
+/**
+ * Throws an error if the protocol address is not valid.
+ * @param protocolAddress The protocol address
+ */
+export const requireValidProtocol = (protocolAddress: string) => {
+  if (!isValidProtocol(protocolAddress)) {
+    throw new Error("Unsupported protocol");
+  }
+};
+
+/**
+ * Decodes an encoded string of token IDs into an array of individual token IDs using BigNumber for precise calculations.
+ *
+ * The encoded token IDs can be in the following formats:
+ * 1. Single numbers: '123' => ['123']
+ * 2. Comma-separated numbers: '1,2,3,4' => ['1', '2', '3', '4']
+ * 3. Ranges of numbers: '5:8' => ['5', '6', '7', '8']
+ * 4. Combinations of single numbers and ranges: '1,3:5,8' => ['1', '3', '4', '5', '8']
+ * 5. Wildcard '*' (matches all token IDs): '*' => ['*']
+ *
+ * @param encodedTokenIds - The encoded string of token IDs to be decoded.
+ * @returns An array of individual token IDs after decoding the input.
+ *
+ * @throws {Error} If the input is not correctly formatted or if BigNumber operations fail.
+ *
+ * @example
+ * const encoded = '1,3:5,8';
+ * const decoded = decodeTokenIds(encoded); // Output: ['1', '3', '4', '5', '8']
+ *
+ * @example
+ * const encodedWildcard = '*';
+ * const decodedWildcard = decodeTokenIds(encodedWildcard); // Output: ['*']
+ *
+ * @example
+ * const emptyEncoded = '';
+ * const decodedEmpty = decodeTokenIds(emptyEncoded); // Output: []
+ */
+export const decodeTokenIds = (encodedTokenIds: string): string[] => {
+  if (encodedTokenIds === "*") {
+    return ["*"];
+  }
+
+  const validFormatRegex = /^(\d+(:\d+)?)(,\d+(:\d+)?)*$/;
+
+  if (!validFormatRegex.test(encodedTokenIds)) {
+    throw new Error(
+      "Invalid input format. Expected a valid comma-separated list of numbers and ranges.",
+    );
+  }
+
+  const ranges = encodedTokenIds.split(",");
+  const tokenIds: string[] = [];
+
+  for (const range of ranges) {
+    if (range.includes(":")) {
+      const [startStr, endStr] = range.split(":");
+      const start = BigNumber.from(startStr);
+      const end = BigNumber.from(endStr);
+      const diff = end.sub(start).add(1);
+
+      if (diff.lte(0)) {
+        throw new Error(
+          `Invalid range. End value: ${end} must be greater than or equal to the start value: ${start}.`,
+        );
+      }
+
+      for (let i = BigNumber.from(0); i.lt(diff); i = i.add(1)) {
+        tokenIds.push(start.add(i).toString());
+      }
+    } else {
+      const tokenId = BigNumber.from(range);
+      tokenIds.push(tokenId.toString());
+    }
+  }
+
+  return tokenIds;
 };

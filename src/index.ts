@@ -1,17 +1,27 @@
 /* eslint-disable import/no-unused-modules */
 import { OpenSeaAPI } from "./api";
 import { OpenSeaSDK } from "./sdk";
-import { Chain, EventData, EventType } from "./types";
+import {
+  Asset,
+  Chain,
+  EventData,
+  EventType,
+  OpenSeaAsset,
+  OpenSeaAssetBundle,
+  OpenSeaCollection,
+} from "./types";
 
 /**
- * Example setup:
- *
+ * @example
+ * // Example Setup
+ * ```ts
  * import { ethers } from 'ethers'
  * import { OpenSeaPort, Chain } from 'opensea-js'
  * const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')
  * const client = new OpenSeaPort(provider, {
  *   chain: Chain.Mainnet
  * })
+ * ```
  */
 
 export {
@@ -27,4 +37,11 @@ export {
   Chain,
 };
 
-export type { EventData };
+export type {
+  EventData,
+  OpenSeaAsset,
+  OpenSeaAssetBundle,
+  OpenSeaCollection,
+  Asset,
+};
+export * from "./api/types";

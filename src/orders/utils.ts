@@ -35,12 +35,20 @@ export const getPostCollectionOfferPath = () => {
   return `/v2/offers`;
 };
 
+export const getCollectionOffersPath = (slug: string) => {
+  return `/v2/offers/collection/${slug}`;
+};
+
 export const getListNFTsByCollectionPath = (slug: string) => {
   return `/v2/collection/${slug}/nfts`;
 };
 
 export const getListNFTsByContractPath = (chain: Chain, address: string) => {
   return `/v2/chain/${chain}/contract/${address}/nfts`;
+};
+
+export const getListNFTsByAccountPath = (chain: Chain, address: string) => {
+  return `/v2/chain/${chain}/account/${address}/nfts`;
 };
 
 export const getNFTPath = (

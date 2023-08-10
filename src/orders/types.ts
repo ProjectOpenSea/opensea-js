@@ -1,4 +1,5 @@
-import { OrderWithCounter } from "@opensea/seaport-js/lib/types";
+import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport_v1_4/contracts/Seaport";
+import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "ethers";
 import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
 
@@ -18,27 +19,51 @@ type OrderFee = {
   basisPoints: string;
 };
 
+/**
+ * The latest OpenSea Order schema.
+ */
 export type OrderV2 = {
+  /** The date the order was created. */
   createdDate: string;
+  /** The date the order was closed. */
   closingDate: string | null;
+  /** The date the order was listed. Order can be created before the listing time. */
   listingTime: number;
+  /** The date the order expires. */
   expirationTime: number;
+  /** The hash of the order. */
   orderHash: string | null;
+  /** The account that created the order. */
   maker: OpenSeaAccount;
+  /** The account that filled the order. */
   taker: OpenSeaAccount | null;
+  /** The protocol data for the order. Only 'seaport' is currently supported. */
   protocolData: ProtocolData;
+  /** The contract address of the protocol. */
   protocolAddress: string;
+  /** The current price of the order. */
   currentPrice: BigNumber;
+  /** The maker fees for the order. */
   makerFees: OrderFee[];
+  /** The taker fees for the order. */
   takerFees: OrderFee[];
+  /** The side of the order. Ask/Bid */
   side: OrderSide;
+  /** The type of the order. Basic/Dutch/English/Criteria */
   orderType: OrderType;
+  /** Whether or not the maker has cancelled the order. */
   cancelled: boolean;
+  /** Whether or not the order is finalized. */
   finalized: boolean;
+  /** Whether or not the order is marked invalid and therefore not fillable. */
   markedInvalid: boolean;
+  /** The signature the order is signed with. */
   clientSignature: string | null;
+  /** Bundle of assets from the maker. */
   makerAssetBundle: OpenSeaAssetBundle;
+  /** Bundle of assets from the taker. */
   takerAssetBundle: OpenSeaAssetBundle;
+  /** Amount of items left in the order which can be taken. */
   remainingQuantity: number;
 };
 
@@ -57,7 +82,9 @@ type Transaction = {
   chain: number;
   to: string;
   value: number;
-  input_data: object;
+  input_data: {
+    orders: OrderWithCounter[] | AdvancedOrder[] | BasicOrderParametersStruct[];
+  };
 };
 
 // API query types
