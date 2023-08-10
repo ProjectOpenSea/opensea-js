@@ -20,13 +20,11 @@ A JavaScript library for crypto-native e-commerce: buying, selling, and bidding 
   - [Fetching Assets](#fetching-assets)
     - [Checking Balances and Ownerships](#checking-balances-and-ownerships)
   - [Making Offers](#making-offers)
-    - [Bidding on ENS Short Name Auctions](#bidding-on-ens-short-name-auctions)
     - [Offer Limits](#offer-limits)
   - [Making Listings / Selling Items](#making-listings--selling-items)
   - [Fetching Orders](#fetching-orders)
   - [Buying Items](#buying-items)
   - [Accepting Offers](#accepting-offers)
-  - [Transferring Items or Coins (Gifting)](#transferring-items-or-coins-gifting)
 - [Advanced](#advanced)
   - [Scheduling Future Listings](#scheduling-future-listings)
   - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
@@ -43,7 +41,7 @@ A JavaScript library for crypto-native e-commerce: buying, selling, and bidding 
 
 This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs.
 
-It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**auctions**), and complete trades programmatically.
+It allows developers to access the official orderbook, filter it, create buy orders (**offers**), create sell orders (**listings**), and complete trades programmatically.
 
 Get started by [requesting an API key](https://docs.opensea.io/reference/api-keys) and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEth`) in the process.
 
@@ -51,7 +49,7 @@ Happy seafaring! ⛵️
 
 ## Installation
 
-Switching to Node.js version 16 is required for SDK Version 3.0+ and to make sure common crypto dependencies work. Execute `nvm use`, if you have Node Version Manager.
+Node.js version 16 is the minimum required for the SDK. Execute `nvm use`, if you have Node Version Manager.
 
 Then, in your project, run:
 
@@ -169,37 +167,6 @@ const offer = await openseaSDK.createBuyOrder({
 
 When you make an offer on an item owned by an OpenSea user, **that user will automatically get an email notifying them with the offer amount**, if it's above their desired threshold.
 
-#### Bidding on ENS Short Name Auctions
-
-The Ethereum Name Service (ENS) is auctioning short (3-6 character) names that can be used for labeling wallet addresses and more. Learn more on the [ENS FAQ](https://opensea.io/ens).
-
-To bid, you must use the ENS Short Name schema:
-
-```typescript
-const {
-  tokenId,
-  // Token address should be `0xfac7bea255a6990f749363002136af6556b31e04` on mainnet
-  tokenAddress,
-  // Name must have `.eth` at the end and correspond with the tokenId
-  name
-} = ENS_ASSET // You can get an ENS asset from `openseaSDK.api.getAsset(...)`
-
-const offer = await openseaSDK.createBuyOrder({
-  asset: {
-    tokenId,
-    tokenAddress,
-    name,
-    // Only needed for the short-name auction, not ENS names
-    // that have been sold once already:
-    tokenStandard: "ENSShortNameAuction"
-  },
-  // Your wallet address (the bidder's address):
-  accountAddress: "0x1234..."
-  // Value of the offer, in wrapped ETH:
-  startAmount: 1.2,
-})
-```
-
 #### Offer Limits
 
 Note: The total value of buy orders must not exceed 1000 x wallet balance.
@@ -242,7 +209,7 @@ const paymentTokenAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 
 const startAmount = 0; // The minimum amount to sell for, in normal units (e.g. ETH)
 
-const auction = await openseaSDK.createSellOrder({
+const order = await openseaSDK.createSellOrder({
   asset: {
     tokenId,
     tokenAddress,
@@ -338,57 +305,6 @@ await openseaSDK.fulfillOrder({ order, accountAddress })
 
 If the order is a buy order (`order.side === "bid"`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
 
-### Transferring Items or Coins (Gifting)
-
-A handy feature in OpenSea.js is the ability to transfer any supported asset (fungible or non-fungible tokens) in one line of JavaScript.
-
-To transfer an ERC-721 asset or an ERC-1155 asset, it's just one call:
-
-```typescript
-const transactionHash = await openseaSDK.transfer({
-  asset: { tokenId, tokenAddress },
-  fromAddress, // Must own the asset
-  toAddress,
-});
-```
-
-For fungible ERC-1155 assets, you can set `tokenStandard` to "ERC1155" and pass a `quantity` in to transfer multiple at once:
-
-```typescript
-const transactionHash = await openseaSDK.transfer({
-  asset: {
-    tokenId,
-    tokenAddress,
-    tokenStandard: "ERC1155",
-  },
-  fromAddress, // Must own the asset
-  toAddress,
-  quantity: 2,
-});
-```
-
-To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `tokenStandard` to "ERC20", and include `quantity` in base units (e.g. wei) to indicate how many.
-
-Example for transferring 2 DAI ($2) to another address:
-
-```typescript
-const paymentToken = (await openseaSDK.api.getPaymentTokens({ symbol: "DAI" }))
-  .tokens[0];
-const quantity = ethers.utils.parseUnits("2", paymentToken.decimals);
-const transactionHash = await openseaSDK.transfer({
-  asset: {
-    tokenId: null,
-    tokenAddress: paymentToken.address,
-    tokenStandard: "ERC20",
-  },
-  fromAddress, // Must own the tokens
-  toAddress,
-  quantity,
-});
-```
-
-For more information, check out the [documentation](https://projectopensea.github.io/opensea-js/).
-
 ## Advanced
 
 Interested in purchasing for users server-side or with a bot, scheduling future orders, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
@@ -398,7 +314,7 @@ Interested in purchasing for users server-side or with a bot, scheduling future 
 You can create sell orders that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in seconds) to your SDK instance:
 
 ```typescript
-const auction = await openseaSDK.createSellOrder({
+const order = await openseaSDK.createSellOrder({
   tokenAddress,
   tokenId,
   accountAddress,
@@ -454,14 +370,9 @@ const order = await openseaSDK.api.getOrders({
 });
 ```
 
-**Fun note:** soon, all ERC-20 tokens will be allowed! This will mean you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea:
-
-- MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942
-- DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
-
 ### Private Auctions
 
-Now you can make auctions and listings that can only be fulfilled by an address or email of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on OpenSea, **without having to trust that the counterparty will abide by your terms!**
+You can make offers and listings that can only be fulfilled by an address or email of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on OpenSea, **without having to trust that the counterparty will abide by your terms!**
 
 Here's an example of listing a Decentraland parcel for 10 ETH with a specific buyer address allowed to take it. No more needing to worry about whether they'll give you enough back!
 
@@ -483,80 +394,40 @@ const listing = await openseaSDK.createSellOrder({
 
 Events are fired whenever transactions or orders are being created, and when transactions return receipts from recently mined blocks on the Ethereum blockchain.
 
-Our recommendation is that you "forward" OpenSea events to your own store or state management system. Here's an example of doing that with a Redux action:
+Our recommendation is that you "forward" OpenSea events to your own store or state management system. Here are examples of listening to the events:
 
 ```typescript
 import { openSeaSDK, EventType } from 'opensea-js'
-import * as ActionTypes from './index'
-
-// ...
 
 handleSDKEvents() {
-  return async function(dispatch, getState) {
     openSeaSDK.addListener(EventType.TransactionCreated, ({ transactionHash, event }) => {
-      console.info({ transactionHash, event })
-      dispatch({ type: ActionTypes.SET_PENDING_TRANSACTION_HASH, hash: transactionHash })
+      console.info('Transaction created: ', { transactionHash, event })
     })
     openSeaSDK.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) => {
-      console.info({ transactionHash, event })
-      // Only reset your exchange UI if we're finishing an order fulfillment or cancellation
-      if (event == EventType.MatchOrders || event == EventType.CancelOrder) {
-        dispatch({ type: ActionTypes.RESET_EXCHANGE })
-      }
+      console.info('Transaction confirmed: ',{ transactionHash, event })
     })
     openSeaSDK.addListener(EventType.TransactionDenied, ({ transactionHash, event }) => {
-      console.info({ transactionHash, event })
-      dispatch({ type: ActionTypes.RESET_EXCHANGE })
+      console.info('Transaction denied: ',{ transactionHash, event })
     })
     openSeaSDK.addListener(EventType.TransactionFailed, ({ transactionHash, event }) => {
-      console.info({ transactionHash, event })
-      dispatch({ type: ActionTypes.RESET_EXCHANGE })
-    })
-    openSeaSDK.addListener(EventType.InitializeAccount, ({ accountAddress }) => {
-      console.info({ accountAddress })
-      dispatch({ type: ActionTypes.INITIALIZE_PROXY })
+      console.info('Transaction failed: ',{ transactionHash, event })
     })
     openSeaSDK.addListener(EventType.WrapEth, ({ accountAddress, amount }) => {
-      console.info({ accountAddress, amount })
-      dispatch({ type: ActionTypes.WRAP_ETH })
+      console.info('Wrap ETH: ',{ accountAddress, amount })
     })
     openSeaSDK.addListener(EventType.UnwrapWeth, ({ accountAddress, amount }) => {
-      console.info({ accountAddress, amount })
-      dispatch({ type: ActionTypes.UNWRAP_WETH })
-    })
-    openSeaSDK.addListener(EventType.ApproveCurrency, ({ accountAddress, tokenAddress }) => {
-      console.info({ accountAddress, tokenAddress })
-      dispatch({ type: ActionTypes.APPROVE_WETH })
-    })
-    openSeaSDK.addListener(EventType.ApproveAllAssets, ({ accountAddress, tokenAddress }) => {
-      console.info({ accountAddress, tokenAddress })
-      dispatch({ type: ActionTypes.APPROVE_ALL_ASSETS })
-    })
-    openSeaSDK.addListener(EventType.ApproveAsset, ({ accountAddress, tokenAddress, tokenId }) => {
-      console.info({ accountAddress, tokenAddress, tokenId })
-      dispatch({ type: ActionTypes.APPROVE_ASSET })
-    })
-    openSeaSDK.addListener(EventType.CreateOrder, ({ order, accountAddress }) => {
-      console.info({ order, accountAddress })
-      dispatch({ type: ActionTypes.CREATE_ORDER })
-    })
-    openSeaSDK.addListener(EventType.OrderDenied, ({ order, accountAddress }) => {
-      console.info({ order, accountAddress })
-      dispatch({ type: ActionTypes.RESET_EXCHANGE })
+      console.info('Unwrap ETH: ',{ accountAddress, amount })
     })
     openSeaSDK.addListener(EventType.MatchOrders, ({ buy, sell, accountAddress }) => {
-      console.info({ buy, sell, accountAddress })
-      dispatch({ type: ActionTypes.FULFILL_ORDER })
+      console.info('Match orders: ', { buy, sell, accountAddress })
     })
     openSeaSDK.addListener(EventType.CancelOrder, ({ order, accountAddress }) => {
-      console.info({ order, accountAddress })
-      dispatch({ type: ActionTypes.CANCEL_ORDER })
+      console.info('Cancel order: ', { order, accountAddress })
     })
-  }
 }
 ```
 
-To remove all listeners and start over, just call `openseaSDK.removeAllListeners()`.
+To remove all listeners call `openseaSDK.removeAllListeners()`.
 
 ## Learning More
 

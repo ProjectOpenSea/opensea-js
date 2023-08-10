@@ -25,7 +25,6 @@ export enum EventType {
    * Emitted when the transaction has failed to be mined.
    */
   TransactionFailed = "TransactionFailed",
-
   /**
    * Emitted when the {@link OpenSeaSDK.wrapEth} method is called.
    */
@@ -34,8 +33,6 @@ export enum EventType {
    * Emitted when the {@link OpenSeaSDK.unwrapWeth} method is called.
    */
   UnwrapWeth = "UnwrapWeth",
-
-  // Basic actions: matching orders, creating orders, and cancelling orders
   /**
    * Emitted when fulfilling a public or private order.
    */
