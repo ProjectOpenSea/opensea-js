@@ -705,10 +705,9 @@ export class OpenSeaSDK {
 
       // If the order is using offer protection, the extraData
       // must be included with the order to successfully fulfill.
-      const fulfillmentOrder =
-        result.fulfillment_data.transaction.input_data.orders[0];
-      if ("extraData" in fulfillmentOrder) {
-        extraData = (fulfillmentOrder as AdvancedOrder).extraData;
+      const inputData = result.fulfillment_data.transaction.input_data;
+      if ("orders" in inputData && "extraData" in inputData.orders[0]) {
+        extraData = (inputData.orders[0] as AdvancedOrder).extraData;
       }
 
       const signature = result.fulfillment_data.orders[0].signature;
