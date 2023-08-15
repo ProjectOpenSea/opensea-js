@@ -256,14 +256,12 @@ The available API filters for the orders endpoint is documented in the `OrdersQu
 ```TypeScript
 /**
    * Attrs used by orderbook to make queries easier
-   * More to come soon!
    */
   side: "bid" | "ask", // "bid" for buy orders, "ask" for sell orders
   protocol?: "seaport"; // Protocol of the order (more options may be added in future)
   maker?: string, // Address of the order's creator
   taker?: string, // The null address if anyone is allowed to take the order
   owner?: string, // Address of owner of the order's item
-  sale_kind?: SaleKind, // 0 for fixed-price, 1 for Dutch auctions
   assetContractAddress?: string, // Contract address for order's item
   paymentTokenAddress?: string; // Contract address for order's payment token
   tokenId?: number | string,
