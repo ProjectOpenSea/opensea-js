@@ -131,7 +131,7 @@ See [Listening to Events](#listening-to-events) to respond to the setup transact
 
 English Auctions are auctions that start at a small amount (we recommend even doing 0!) and increase with every bid. At expiration time, the item sells to the highest bidder.
 
-To create an English Auction, create a listing that waits for the highest bid by setting `waitForHighestBid` to `true`:
+To create an English Auction set `englishAuction` to `true`:
 
 ```typescript
 // Create an auction to receive Wrapped Ether (WETH). See note below.
@@ -148,7 +148,7 @@ const auction = await openseaSDK.createSellOrder({
   startAmount,
   expirationTime,
   paymentTokenAddress,
-  waitForHighestBid: true,
+  englishAuction: true,
 });
 ```
 
