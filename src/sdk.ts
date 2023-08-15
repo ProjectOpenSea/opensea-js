@@ -483,7 +483,7 @@ export class OpenSeaSDK {
       [BigNumber.from(quantity ?? 1)],
     );
 
-    if (paymentTokenAddress == ethers.constants.AddressZero && englishAuction) {
+    if (englishAuction && paymentTokenAddress == ethers.constants.AddressZero) {
       throw new Error(
         `English auctions must use wrapped ETH or an ERC-20 token.`,
       );
