@@ -8,6 +8,8 @@ export const API_BASE_TESTNET = "https://testnets-api.opensea.io";
 export const API_V1_PATH = `/api/v1`;
 
 export const DEFAULT_ZONE = ethers.constants.AddressZero;
+export const ENGLISH_AUCTION_ZONE =
+  "0x110b2b128a9ed1be5ef3232d8e4e41640df5c2cd";
 
 // Ignore eslint no-unused-modules for below to keep backward compatibility
 // in case a downstream user was already using these imports directly.

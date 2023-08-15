@@ -10,6 +10,7 @@ import {
   sdkPolygon,
   walletAddress,
 } from "./setup";
+import { ENGLISH_AUCTION_ZONE } from "../../src/constants";
 import { getWETHAddress } from "../../src/utils";
 import { OFFER_AMOUNT } from "../utils/constants";
 import { expectValidOrder } from "../utils/utils";
@@ -55,6 +56,35 @@ suite("SDK: order posting", () => {
     };
     const order = await sdk.createSellOrder(sellOrder);
     expectValidOrder(order);
+  });
+
+  test("Post Auction Sell Order - Mainnet", async function () {
+    if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
+      this.skip();
+    }
+    const sellOrder = {
+      accountAddress: walletAddress,
+      startAmount: LISTING_AMOUNT,
+      asset: {
+        tokenAddress: TOKEN_ADDRESS_MAINNET as string,
+        tokenId: TOKEN_ID_MAINNET as string,
+      },
+      englishAuction: true,
+    };
+    try {
+      const order = await sdk.createSellOrder(sellOrder);
+      expectValidOrder(order);
+      expect(order.protocolData.parameters.zone.toLowerCase()).to.equal(
+        ENGLISH_AUCTION_ZONE,
+      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      expect(
+        error.message.includes(
+          "There is already a live auction for this item. You can only have one auction live at any time.",
+        ),
+      );
+    }
   });
 
   test("Post Sell Order - Polygon", async function () {

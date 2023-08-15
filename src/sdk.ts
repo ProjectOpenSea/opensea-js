@@ -19,7 +19,11 @@ import {
 import { parseEther } from "ethers/lib/utils";
 import { OpenSeaAPI } from "./api/api";
 import { Offer, NFT } from "./api/types";
-import { INVERSE_BASIS_POINT, DEFAULT_ZONE } from "./constants";
+import {
+  INVERSE_BASIS_POINT,
+  DEFAULT_ZONE,
+  ENGLISH_AUCTION_ZONE,
+} from "./constants";
 import {
   constructPrivateListingCounterOrder,
   getPrivateListingConsiderations,
@@ -429,6 +433,7 @@ export class OpenSeaSDK {
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to ETH
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
+   * @param options.englishAuction If true, the order will be listed as an English auction.
    * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
@@ -448,6 +453,7 @@ export class OpenSeaSDK {
     expirationTime,
     paymentTokenAddress = ethers.constants.AddressZero,
     buyerAddress,
+    englishAuction,
   }: {
     asset: Asset;
     accountAddress: string;
@@ -460,6 +466,7 @@ export class OpenSeaSDK {
     expirationTime?: number;
     paymentTokenAddress?: string;
     buyerAddress?: string;
+    englishAuction?: boolean;
   }): Promise<OrderV2> {
     await this._requireAccountIsAvailable(accountAddress);
 
@@ -476,6 +483,12 @@ export class OpenSeaSDK {
       [nft],
       [BigNumber.from(quantity ?? 1)],
     );
+
+    if (englishAuction && paymentTokenAddress == ethers.constants.AddressZero) {
+      throw new Error(
+        `English auctions must use wrapped ETH or an ERC-20 token.`,
+      );
+    }
 
     const { basePrice, endPrice } = await this._getPriceParameters(
       OrderSide.Sell,
@@ -514,11 +527,11 @@ export class OpenSeaSDK {
         endTime:
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
-        zone: DEFAULT_ZONE,
+        zone: englishAuction ? ENGLISH_AUCTION_ZONE : DEFAULT_ZONE,
         domain,
         salt: BigNumber.from(salt ?? 0).toString(),
-        restrictedByZone: false,
-        allowPartialFills: true,
+        restrictedByZone: englishAuction ? true : false,
+        allowPartialFills: englishAuction ? false : true,
       },
       accountAddress,
     );
@@ -988,8 +1001,6 @@ export class OpenSeaSDK {
    * @param expirationTime When the auction expires, or 0 if never.
    * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
    * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
-   * @param waitingForBestCounterOrder
-   * @param englishAuctionReservePrice
    */
   private async _getPriceParameters(
     orderSide: OrderSide,
@@ -997,8 +1008,6 @@ export class OpenSeaSDK {
     expirationTime: BigNumberish,
     startAmount: BigNumberish,
     endAmount?: BigNumberish,
-    waitingForBestCounterOrder = false,
-    englishAuctionReservePrice?: BigNumberish,
   ) {
     const isEther = tokenAddress === ethers.constants.AddressZero;
     let paymentToken: OpenSeaFungibleToken | undefined;
@@ -1025,9 +1034,6 @@ export class OpenSeaSDK {
     const basePrice = startAmountWei;
     const endPrice = endAmountWei;
     const extra = priceDiffWei;
-    const reservePrice = englishAuctionReservePrice
-      ? ethers.utils.parseUnits(startAmount.toString(), decimals)
-      : undefined;
 
     // Validation
     if (startAmount == null || startAmountWei.lt(0)) {
@@ -1051,11 +1057,6 @@ export class OpenSeaSDK {
         );
       }
     }
-    if (isEther && waitingForBestCounterOrder) {
-      throw new Error(
-        `English auctions must use wrapped ETH or an ERC-20 token.`,
-      );
-    }
     if (isEther && orderSide === OrderSide.Buy) {
       throw new Error(`Offers must use wrapped ETH or an ERC-20 token.`);
     }
@@ -1069,18 +1070,7 @@ export class OpenSeaSDK {
         "Expiration time must be set if order will change in price.",
       );
     }
-    const reservePriceIsDefinedAndNonZero =
-      reservePrice && !reservePrice.isZero();
-    if (reservePriceIsDefinedAndNonZero && !waitingForBestCounterOrder) {
-      throw new Error("Reserve prices may only be set on English auctions.");
-    }
-    if (reservePriceIsDefinedAndNonZero && reservePrice?.lt(startAmountWei)) {
-      throw new Error(
-        "Reserve price must be greater than or equal to the start amount.",
-      );
-    }
-
-    return { basePrice, extra, paymentToken, reservePrice, endPrice };
+    return { basePrice, extra, paymentToken, endPrice };
   }
 
   private _dispatch(event: EventType, data: EventData) {

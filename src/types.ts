@@ -165,14 +165,6 @@ export enum FeeMethod {
 }
 
 /**
- * Type of sale.
- */
-export enum SaleKind {
-  FixedPrice = 0,
-  DutchAuction = 1,
-}
-
-/**
  * Types of asset contracts
  * Given by the asset_contract_type in the OpenSea API
  */
@@ -675,13 +667,6 @@ export type ExchangeMetadata =
   | ExchangeMetadataForAsset
   | ExchangeMetadataForBundle;
 
-export enum HowToCall {
-  Call = 0,
-  DelegateCall = 1,
-  StaticCall = 2,
-  Create = 3,
-}
-
 export interface UnsignedOrder {
   hash?: string;
   exchange: string;
@@ -706,14 +691,7 @@ export interface UnsignedOrder {
 
   feeMethod: FeeMethod;
   side: OrderSide;
-  saleKind: SaleKind;
-  howToCall: HowToCall;
   quantity: BigNumber;
-
-  // OpenSea-specific
-  makerReferrerFee: BigNumber;
-  waitingForBestCounterOrder: boolean;
-  englishAuctionReservePrice?: BigNumber;
 
   metadata: ExchangeMetadata;
 }
@@ -741,7 +719,6 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
   markedInvalid?: boolean;
   asset?: OpenSeaAsset;
   assetBundle?: OpenSeaAssetBundle;
-  nonce?: number;
 }
 
 /**
@@ -761,9 +738,7 @@ export interface OrderJSON extends Partial<ECSignature> {
   feeRecipient: string;
   feeMethod: number;
   side: number;
-  saleKind: number;
   target: string;
-  howToCall: number;
   calldata: string;
   replacementPattern: string;
   staticTarget: string;
@@ -775,15 +750,11 @@ export interface OrderJSON extends Partial<ECSignature> {
   expirationTime: number | string;
   salt: string;
 
-  makerReferrerFee: string;
   quantity: string;
-  englishAuctionReservePrice: string | undefined;
 
   // createdTime is undefined when order hasn't been posted yet
   createdTime?: number | string;
   metadata: ExchangeMetadata;
-
-  nonce?: number;
 }
 
 /**
