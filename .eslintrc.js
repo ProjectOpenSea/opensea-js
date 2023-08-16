@@ -21,6 +21,12 @@ module.exports = {
   ],
   rules: {
     "no-restricted-globals": ["error"].concat(restrictedGlobals),
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: ["src"],
+      },
+    ],
     curly: ["error"],
     "@typescript-eslint/no-unused-vars": [
       "error",
