@@ -343,6 +343,8 @@ export const getWETHAddress = (chain: Chain) => {
       return "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
     case Chain.BNBTestnet:
       return "0xae13d989dac2f0debff460ac112a837c89baa7cd";
+    case Chain.Mumbai:
+      return "0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa";
     // OP Chains have weth at the same address
     case Chain.Base:
     case Chain.BaseGoerli:
