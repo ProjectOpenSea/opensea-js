@@ -21,6 +21,17 @@ module.exports = {
   ],
   rules: {
     "no-restricted-globals": ["error"].concat(restrictedGlobals),
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          {
+            group: ["src/**", "!src/*"],
+            message: "Please use relative import for `src` files.",
+          },
+        ],
+      },
+    ],
     curly: ["error"],
     "@typescript-eslint/no-unused-vars": [
       "error",
