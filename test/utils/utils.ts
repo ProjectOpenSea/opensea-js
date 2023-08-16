@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { OrderV2 } from "src/orders/types";
+import { OrderV2 } from "../../src/orders/types";
 
 export const expectValidOrder = (order: OrderV2) => {
   const requiredFields = [

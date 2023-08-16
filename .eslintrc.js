@@ -24,7 +24,12 @@ module.exports = {
     "no-restricted-imports": [
       "error",
       {
-        patterns: ["src"],
+        patterns: [
+          {
+            group: ["src/**", "!src/*"],
+            message: "Please use relative import for `src` files.",
+          },
+        ],
       },
     ],
     curly: ["error"],
