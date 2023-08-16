@@ -1,11 +1,11 @@
 import { ConsiderationItem } from "@opensea/seaport-js/lib/types";
+import { OrderV2, ProtocolData, QueryCursors } from "../orders/types";
 import {
   OpenSeaAsset,
   OpenSeaAssetBundle,
   OpenSeaCollection,
   OpenSeaFungibleToken,
-} from "src/types";
-import { OrderV2, ProtocolData, QueryCursors } from "../orders/types";
+} from "../types";
 
 /**
  * Response from OpenSea API for building an offer.
