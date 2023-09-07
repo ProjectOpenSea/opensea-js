@@ -127,9 +127,8 @@ suite("SDK: order posting", () => {
       quantity: 1,
       paymentTokenAddress,
     };
-    const offerResponse = await sdkPolygon.createCollectionOffer(
-      postOrderRequest,
-    );
+    const offerResponse =
+      await sdkPolygon.createCollectionOffer(postOrderRequest);
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");
   });
 });
