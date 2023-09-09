@@ -12,6 +12,7 @@ hidden: false
 - [Making Offers](#making-offers)
   - [Offer Limits](#offer-limits)
 - [Making Listings / Selling Items](#making-listings--selling-items)
+  - [Creating English Auctions](#creating-english-auctions)
 - [Fetching Orders](#fetching-orders)
 - [Buying Items](#buying-items)
 - [Accepting Offers](#accepting-offers)
