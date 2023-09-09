@@ -858,8 +858,8 @@ export class OpenSeaSDK {
   /**
    * Get an account's balance of any Asset. This asset can be an ERC20, ERC1155, or ERC721.
    * @param options
-   * @param options.accountAddress Account address to check
-   * @param options.asset The Asset to check balance for
+   * @param options.accountAddress Account address to check.
+   * @param options.asset The Asset to check balance for. (asset.TokenStandard has to be defined)
    * @param retries How many times to retry if balance is 0. Defaults to 1.
    * @returns The balance of the asset for the account.
    *

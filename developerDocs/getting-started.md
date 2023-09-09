@@ -61,9 +61,12 @@ The nice thing about the `Asset` type is that it unifies logic between fungibles
 Once you have an `Asset`, you can see how many any account owns, regardless of whether it's an ERC-20 token or a non-fungible good:
 
 ```typescript
+import { TokenStandard } from 'opensea-js/lib/types';
+
 const asset = {
   tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
   tokenId: "1", // Token ID
+  tokenStandard: TokenStandard.ERC721, // Required in getBalance
 };
 
 const balance = await openseaSDK.getBalance({
@@ -71,7 +74,7 @@ const balance = await openseaSDK.getBalance({
   asset, // Asset
 });
 
-const ownsKitty = balance.greaterThan(0);
+const ownsKitty = !balance.isZero();
 ```
 
 ### Making Offers
