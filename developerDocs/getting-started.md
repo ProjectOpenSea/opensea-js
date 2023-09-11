@@ -46,10 +46,22 @@ The `Asset` type is the minimal type you need for most marketplace actions. `Tok
 You can fetch an asset using the `OpenSeaAPI`, which will return an `OpenSeaAsset` for you (`OpenSeaAsset` extends `Asset`):
 
 ```TypeScript
+import { Chain } from "opensea-js";
+
+// Old deprecated way
 const asset: OpenSeaAsset = await openseaSDK.api.getAsset({
   tokenAddress, // string
   tokenId, // string | number | BigNumber | null
 })
+
+// New Multi-Chain query
+const nftKitty = await openseaSDK.api.getNFT(
+  Chain.Mainnet,
+  tokenAddress, // ex : '0x06012c8cf97bead5deae237070f9587f8e7a266d'
+  tokenId, // ex : '1'
+);
+
+console.log(nftKitty);
 ```
 
 Note that fungible ERC20 assets have `null` as their token id.
