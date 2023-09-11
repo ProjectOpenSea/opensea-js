@@ -36,7 +36,7 @@ const provider = new ethers.providers.JsonRpcProvider(
 
 const openseaSDK = new OpenSeaSDK(provider, {
   chain: Chain.Mainnet,
-  apiKey: YOUR_API_KEY,
+  apiKey: YOUR_API_KEY, // remove the api key if using testnets
 });
 ```
 
