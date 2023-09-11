@@ -20,7 +20,7 @@ Get started by [requesting an API key](https://docs.opensea.io/reference/api-key
 
 Happy seafaring! ⛵️
 
-## Table of Contentst
+## Table of Contents
 
 [Quick Start Guide](developerDocs/quick-start.md)\
 [Getting Started Guide](developerDocs/getting-started.md)\
