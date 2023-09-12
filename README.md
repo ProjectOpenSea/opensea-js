@@ -20,18 +20,18 @@ Get started by [requesting an API key](https://docs.opensea.io/reference/api-key
 
 Happy seafaring! ⛵️
 
-## Table of Contents
+## Documentation
 
-[Quick Start Guide](developerDocs/quick-start.md)\
-[Getting Started Guide](developerDocs/getting-started.md)\
-[Advanced Use Cases](developerDocs/advanced-use-cases.md)\
-[SDK Reference](https://projectopensea.github.io/opensea-js/)\
-[Frequently Asked Questions](developerdocs/faq.md)\
-[Contributing](developerDocs/contributing.md)
+- [Quick Start Guide](developerDocs/quick-start.md)
+- [Getting Started Guide](developerDocs/getting-started.md)
+- [Advanced Use Cases](developerDocs/advanced-use-cases.md)
+- [SDK Reference](https://projectopensea.github.io/opensea-js/)
+- [Frequently Asked Questions](developerDocs/faq.md)
+- [Contributing](developerDocs/contributing.md)
 
 ## Changelog
 
-The changelog for recent versions can be found at
+The changelog for recent versions can be found at:
 
 - https://docs.opensea.io/changelog
 - https://github.com/ProjectOpenSea/opensea-js/releases
@@ -47,6 +47,6 @@ The changelog for recent versions can be found at
 [license-badge]: https://img.shields.io/github/license/ProjectOpenSea/opensea-js
 [license-link]: https://github.com/ProjectOpenSea/opensea-js/blob/main/LICENSE
 [docs-badge]: https://img.shields.io/badge/OpenSea.js-documentation-informational
-[docs-link]: https://github.com/ProjectOpenSea/opensea-js#getting-started
+[docs-link]: https://github.com/ProjectOpenSea/opensea-js#documentation
 [discussions-badge]: https://img.shields.io/badge/OpenSea.js-discussions-blueviolet
 [discussions-link]: https://github.com/ProjectOpenSea/opensea-js/discussions
