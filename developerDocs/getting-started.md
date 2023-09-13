@@ -12,6 +12,7 @@ hidden: false
 - [Making Offers](#making-offers)
   - [Offer Limits](#offer-limits)
 - [Making Listings / Selling Items](#making-listings--selling-items)
+  - [Creating English Auctions](#creating-english-auctions)
 - [Fetching Orders](#fetching-orders)
 - [Buying Items](#buying-items)
 - [Accepting Offers](#accepting-offers)
@@ -27,9 +28,12 @@ Also see methods `getNFTsByCollection`, `getNFTsByContract`, and `getNFTsByAccou
 #### Checking Balances and Ownerships
 
 ```typescript
+import { TokenStandard } from "opensea-js/lib/types";
+
 const asset = {
   tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
   tokenId: "1",
+  tokenStandard: TokenStandard.ERC721,
 };
 
 const balance = await openseaSDK.getBalance({

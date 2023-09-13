@@ -423,7 +423,7 @@ export class OpenSeaSDK {
    * Create a sell order to make a listing for a asset.
    * @param options
    * @param options.asset The asset to trade
-   * @param options.accountAddress  Address of the wallet making the buy order
+   * @param options.accountAddress  Address of the wallet making the sell order
    * @param options.startAmount Value of the listing at the start of the auction in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
    * @param options.endAmount Value of the listing at the end of the auction. If specified, price will change linearly between startAmount and endAmount as time progresses.
    * @param options.quantity The number of assets to list (if fungible or semi-fungible). Defaults to 1.
@@ -859,7 +859,7 @@ export class OpenSeaSDK {
    * Get an account's balance of any Asset. This asset can be an ERC20, ERC1155, or ERC721.
    * @param options
    * @param options.accountAddress Account address to check
-   * @param options.asset The Asset to check balance for
+   * @param options.asset The Asset to check balance for. tokenStandard must be set.
    * @param retries How many times to retry if balance is 0. Defaults to 1.
    * @returns The balance of the asset for the account.
    *
