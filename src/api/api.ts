@@ -333,7 +333,7 @@ export class OpenSeaAPI {
     },
     retries = 1,
   ): Promise<OpenSeaAsset> {
-    if (![Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
+    if (![Chain.Mainnet, Chain.Sepolia].includes(this.chain)) {
       throw new Error("Please use `getNFT()` for multichain capabilities.");
     }
 
@@ -496,7 +496,7 @@ export class OpenSeaAPI {
   public async getAssets(
     query: OpenSeaAssetQuery = {},
   ): Promise<GetAssetsResponse> {
-    if (![Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
+    if (![Chain.Mainnet, Chain.Sepolia].includes(this.chain)) {
       throw new Error(
         "Please use `getNFTsByContract()` or `getNFTsByCollection()` for multichain capabilities.",
       );
@@ -544,9 +544,9 @@ export class OpenSeaAPI {
     page = 1,
     retries = 1,
   ): Promise<GetPaymentTokensResponse> {
-    if (![Chain.Mainnet, Chain.Goerli].includes(this.chain)) {
+    if (![Chain.Mainnet, Chain.Sepolia].includes(this.chain)) {
       throw new Error(
-        "This method does not work outside of Mainnet and Goerli chains as it uses the v1 API.",
+        "This method does not work outside of Mainnet and Sepolia chains as it uses the v1 API.",
       );
     }
 
