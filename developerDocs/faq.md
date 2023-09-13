@@ -1,5 +1,5 @@
 ---
-title: Frequenty Asked Questions
+title: Frequently Asked Questions
 category: 64cbb5277b5f3c0065d96616
 slug: opensea-sdk-faq
 parentDocSlug: opensea-sdk
@@ -13,13 +13,14 @@ hidden: false
 
 ## How do I access the source code?
 
-Source code can be found on [Github](https://github.com/ProjectOpenSea/opensea-js)
+The source code for the SDK can be found on [GitHub](https://github.com/ProjectOpenSea/opensea-js).
 
 ## What chains are supported?
 
-See [Chain enum](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/types.ts#L101) for a complete list of supported chains. However, a number
-of older methods only support Ethereum Mainnet and Goerli due to Rest API restrictions.
+See the [Chain enum](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/types.ts#L101) for a complete list of supported chains.
 
-## There is no SDK method for the API request I am trying to call.
+Please note a number of older SDK methods (API v1) only support Ethereum Mainnet and Sepolia due to Rest API restrictions. Please use methods in the v2 API for multichain capabilities.
 
-If the SDK does not currently have a specific API, you can use the generic [Get and Post methods](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/api/api.ts#L612-L636) to make any API Request. Also, this repo is an Open Source repo so feel free to create a pull request.
+## Why is there is no SDK method for the API request I am trying to call?
+
+If the SDK does not currently have a specific API, you can use the generic [GET and POST methods](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/api/api.ts#L612-L636) to make any API Request. This repository is also open source, so please feel free to create a pull request.

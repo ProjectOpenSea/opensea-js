@@ -12,70 +12,39 @@ hidden: false
 - [Making Offers](#making-offers)
   - [Offer Limits](#offer-limits)
 - [Making Listings / Selling Items](#making-listings--selling-items)
+  - [Creating English Auctions](#creating-english-auctions)
 - [Fetching Orders](#fetching-orders)
 - [Buying Items](#buying-items)
 - [Accepting Offers](#accepting-offers)
 
-### Fetching Assets
-
-Assets are items on OpenSea. They can be non-fungible (conforming to standards like ERC721), semi-fungible (like ERC1155 assets), and even fungible (ERC20).
-
-Assets are represented by the `Asset` type, defined in TypeScript:
+### Fetching NFTs
 
 ```TypeScript
-/**
- * Simple, unannotated non-fungible asset spec
- */
-export interface Asset {
-  // The asset's token ID, or null if ERC-20
-  tokenId: string | null,
-  // The asset's contract address
-  tokenAddress: string,
-  // The schema name (defaults to "ERC721") for this asset
-  tokenStandard?: TokenStandard,
-  // Optional for ENS names
-  name?: string,
-  // Optional for fungible items
-  decimals?: number
-}
+const { nft } = await openseaSDK.api.getNFT(openseaSDK.chain, tokenAddress, tokenId)
 ```
 
-The `Asset` type is the minimal type you need for most marketplace actions. `TokenStandard` is optional. If omitted, most actions will assume you're referring to a non-fungible, ERC721 asset. Other options include 'ERC20' and 'ERC1155'. You can import `import { TokenStandard } from "opensea-js/lib/types"` to get the full range of schemas supported.
-
-You can fetch an asset using the `OpenSeaAPI`, which will return an `OpenSeaAsset` for you (`OpenSeaAsset` extends `Asset`):
-
-```TypeScript
-const asset: OpenSeaAsset = await openseaSDK.api.getAsset({
-  tokenAddress, // string
-  tokenId, // string | number | BigNumber | null
-})
-```
-
-Note that fungible ERC20 assets have `null` as their token id.
+Also see methods `getNFTsByCollection`, `getNFTsByContract`, and `getNFTsByAccount`.
 
 #### Checking Balances and Ownerships
 
-The nice thing about the `Asset` type is that it unifies logic between fungibles, non-fungibles, and semi-fungibles.
-
-Once you have an `Asset`, you can see how many any account owns, regardless of whether it's an ERC-20 token or a non-fungible good:
-
 ```typescript
+import { TokenStandard } from "opensea-js/lib/types";
+
 const asset = {
   tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
-  tokenId: "1", // Token ID
+  tokenId: "1",
+  tokenStandard: TokenStandard.ERC721,
 };
 
 const balance = await openseaSDK.getBalance({
-  accountAddress, // string
-  asset, // Asset
+  accountAddress,
+  asset,
 });
 
-const ownsKitty = balance.greaterThan(0);
+const ownsKitty = balance.gt(0);
 ```
 
 ### Making Offers
-
-Once you have your asset, you can do this to make an offer on it:
 
 ```typescript
 // Token ID and smart contract address for a non-fungible token:
@@ -99,11 +68,11 @@ When you make an offer on an item owned by an OpenSea user, **that user will aut
 
 #### Offer Limits
 
-Note: The total value of buy orders must not exceed 1000 x wallet balance.
+Note: The total value of buy orders must not exceed 1000x wallet balance.
 
 ### Making Listings / Selling Items
 
-To sell an asset, call `createSellOrder`. You can do a fixed-price listing, where `startAmount` is equal to `endAmount`, or a declining [Dutch auction](https://en.wikipedia.org/wiki/Dutch_auction), where `endAmount` is lower and the price declines until `expirationTime` is hit:
+To sell an asset, call `createSellOrder`:
 
 ```typescript
 // Expire this auction one day from now.
@@ -117,13 +86,11 @@ const listing = await openseaSDK.createSellOrder({
   },
   accountAddress,
   startAmount: 3,
-  // If `endAmount` is specified, the order will decline in value to that amount until `expirationTime`. Otherwise, it's a fixed-price order:
-  endAmount: 0.1,
   expirationTime,
 });
 ```
 
-The units for `startAmount` and `endAmount` are Ether, ETH. If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
+The units for `startAmount` are Ether (ETH). If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
 
 See [Listening to Events](#listening-to-events) to respond to the setup transactions that occur the first time a user sells an item.
 
@@ -181,31 +148,7 @@ Note that the listing price of an asset is equal to the `currentPrice` of the **
 
 To learn more about signatures, makers, takers, listingTime vs createdTime and other kinds of order terminology, please read the [**Terminology Section**](https://docs.opensea.io/reference#terminology) of the API Docs.
 
-The available API filters for the orders endpoint is documented in the `OrdersQueryOptions` interface below, but see the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanations.
-
-```TypeScript
-/**
-   * Attrs used by orderbook to make queries easier
-   */
-  side: "bid" | "ask", // "bid" for buy orders, "ask" for sell orders
-  protocol?: "seaport"; // Protocol of the order (more options may be added in future)
-  maker?: string, // Address of the order's creator
-  taker?: string, // The null address if anyone is allowed to take the order
-  owner?: string, // Address of owner of the order's item
-  assetContractAddress?: string, // Contract address for order's item
-  paymentTokenAddress?: string; // Contract address for order's payment token
-  tokenId?: number | string,
-  tokenIds?: Array<number | string>,
-  listedAfter?: number | string, // This means listing_time > value in seconds
-  listedBefore?: number | string, // This means listing_time <= value in seconds
-  orderBy?: "created_date" | "eth_price", // Field to sort results by
-  orderDirection?: "asc" | "desc", // Sort direction of orderBy sorting of results
-  onlyEnglish?: boolean, // Only return english auction orders
-
-  // For pagination
-  limit?: number,
-  offset?: number,
-```
+The available API filters for the orders endpoint is documented in the `OrdersQueryOptions` interface. See the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanations.
 
 ### Buying Items
 
