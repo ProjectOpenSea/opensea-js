@@ -1084,12 +1084,16 @@ export class OpenSeaSDK {
   private async _requireAccountIsAvailable(accountAddress: string) {
     const accountAddressChecksummed = ethers.utils.getAddress(accountAddress);
     if (
-      (this._signerOrProvider instanceof Wallet &&
-        this._signerOrProvider.address === accountAddressChecksummed) ||
-      (this._signerOrProvider instanceof providers.JsonRpcProvider &&
-        (await this._signerOrProvider.listAccounts()).includes(
-          accountAddressChecksummed,
-        ))
+      (this._signerOrProvider.constructor.name === Wallet.name &&
+        (this._signerOrProvider as Wallet).address ===
+          accountAddressChecksummed) ||
+      (this._signerOrProvider.constructor.name ===
+        providers.JsonRpcProvider.name &&
+        (
+          await (
+            this._signerOrProvider as providers.JsonRpcProvider
+          ).listAccounts()
+        ).includes(accountAddressChecksummed))
     ) {
       return;
     }
