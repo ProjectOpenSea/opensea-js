@@ -10,7 +10,7 @@ import {
   sdkPolygon,
   walletAddress,
 } from "./setup";
-import { ENGLISH_AUCTION_ZONE } from "../../src/constants";
+import { ENGLISH_AUCTION_ZONE_MAINNETS } from "../../src/constants";
 import { getWETHAddress } from "../../src/utils";
 import { OFFER_AMOUNT } from "../utils/constants";
 import { expectValidOrder } from "../utils/utils";
@@ -75,7 +75,7 @@ suite("SDK: order posting", () => {
       const order = await sdk.createSellOrder(sellOrder);
       expectValidOrder(order);
       expect(order.protocolData.parameters.zone.toLowerCase()).to.equal(
-        ENGLISH_AUCTION_ZONE,
+        ENGLISH_AUCTION_ZONE_MAINNETS,
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
