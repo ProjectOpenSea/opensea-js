@@ -22,7 +22,8 @@ import { Offer, NFT } from "./api/types";
 import {
   INVERSE_BASIS_POINT,
   DEFAULT_ZONE,
-  ENGLISH_AUCTION_ZONE,
+  ENGLISH_AUCTION_ZONE_MAINNETS,
+  ENGLISH_AUCTION_ZONE_TESTNETS,
 } from "./constants";
 import {
   constructPrivateListingCounterOrder,
@@ -58,6 +59,7 @@ import {
   feesToBasisPoints,
   requireValidProtocol,
   getWETHAddress,
+  isTestChain,
 } from "./utils/utils";
 
 /**
@@ -527,7 +529,11 @@ export class OpenSeaSDK {
         endTime:
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
-        zone: englishAuction ? ENGLISH_AUCTION_ZONE : DEFAULT_ZONE,
+        zone: englishAuction
+          ? isTestChain(this.chain)
+            ? ENGLISH_AUCTION_ZONE_TESTNETS
+            : ENGLISH_AUCTION_ZONE_MAINNETS
+          : DEFAULT_ZONE,
         domain,
         salt: BigNumber.from(salt ?? 0).toString(),
         restrictedByZone: englishAuction ? true : false,
