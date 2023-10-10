@@ -107,8 +107,8 @@ export class OpenSeaAPI {
    * @param options.orderDirection The direction to sort the orders
    * @param options.orderBy The field to sort the orders by
    * @param options.limit The number of orders to retrieve
-   * @param options.makerAddress Fitler by the wallet addres of the order maker
-   * @param options.takerAddress Filter by  wallet address of the order taker
+   * @param options.maker Filter by the wallet address of the order maker
+   * @param options.taker Filter by  wallet address of the order taker
    * @param options.asset_contract_address Address of the NFT's contract
    * @param options.token_ids String array of token IDs to filter by.
    * @param options.listed_after Filter by orders listed after the Unix epoch timestamp in seconds
@@ -147,8 +147,8 @@ export class OpenSeaAPI {
    * @param options.orderDirection The direction to sort the orders
    * @param options.orderBy The field to sort the orders by
    * @param options.limit The number of orders to retrieve
-   * @param options.makerAddress Fitler by the wallet addres of the order maker
-   * @param options.takerAddress Filter by  wallet address of the order taker
+   * @param options.maker Filter by the wallet address of the order maker
+   * @param options.taker Filter by  wallet address of the order taker
    * @param options.asset_contract_address Address of the NFT's contract
    * @param options.token_ids String array of token IDs to filter by.
    * @param options.listed_after Filter by orders listed after the Unix epoch timestamp in seconds
