@@ -1086,13 +1086,9 @@ export class OpenSeaSDK {
     const availableAccounts: string[] = [];
 
     if ("address" in this._signerOrProvider) {
-      availableAccounts.push((this._signerOrProvider as Wallet).address);
+      availableAccounts.push(this._signerOrProvider.address);
     } else if ("listAccounts" in this._signerOrProvider) {
-      availableAccounts.push(
-        ...(await (
-          this._signerOrProvider as providers.JsonRpcProvider
-        ).listAccounts()),
-      );
+      availableAccounts.push(...(await this._signerOrProvider.listAccounts()));
     }
 
     if (availableAccounts.includes(accountAddressChecksummed)) {
