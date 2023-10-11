@@ -1082,25 +1082,21 @@ export class OpenSeaSDK {
    * @param accountAddress The account address to check is available.
    */
   private async _requireAccountIsAvailable(accountAddress: string) {
-    const availableAccounts: string[] = [];
     const accountAddressChecksummed = ethers.utils.getAddress(accountAddress);
+    const availableAccounts: string[] = [];
 
     if (this._signerOrProvider.constructor.name === Wallet.name) {
       availableAccounts.push((this._signerOrProvider as Wallet).address);
-      if (
-        (this._signerOrProvider as Wallet).address === accountAddressChecksummed
-      ) {
-        return;
-      }
     } else if ("listAccounts" in this._signerOrProvider) {
       availableAccounts.push(
         ...(await (
           this._signerOrProvider as providers.JsonRpcProvider
         ).listAccounts()),
       );
-      if (availableAccounts.includes(accountAddressChecksummed)) {
-        return;
-      }
+    }
+
+    if (availableAccounts.includes(accountAddressChecksummed)) {
+      return;
     }
 
     throw new Error(
