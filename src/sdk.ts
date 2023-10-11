@@ -1085,7 +1085,7 @@ export class OpenSeaSDK {
     const accountAddressChecksummed = ethers.utils.getAddress(accountAddress);
     const availableAccounts: string[] = [];
 
-    if (this._signerOrProvider.constructor.name === Wallet.name) {
+    if ("address" in this._signerOrProvider) {
       availableAccounts.push((this._signerOrProvider as Wallet).address);
     } else if ("listAccounts" in this._signerOrProvider) {
       availableAccounts.push(
