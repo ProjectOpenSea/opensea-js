@@ -1089,22 +1089,22 @@ export class OpenSeaSDK {
    */
   private async _requireAccountIsAvailable(accountAddress: string) {
     const accountAddressChecksummed = ethers.utils.getAddress(accountAddress);
-    if (
-      (this._signerOrProvider.constructor.name === Wallet.name &&
-        (this._signerOrProvider as Wallet).address ===
-          accountAddressChecksummed) ||
-      (this._signerOrProvider.constructor.name ===
-        providers.JsonRpcProvider.name &&
-        (
-          await (
-            this._signerOrProvider as providers.JsonRpcProvider
-          ).listAccounts()
-        ).includes(accountAddressChecksummed))
-    ) {
+    const availableAccounts: string[] = [];
+
+    if ("address" in this._signerOrProvider) {
+      availableAccounts.push(this._signerOrProvider.address);
+    } else if ("listAccounts" in this._signerOrProvider) {
+      availableAccounts.push(...(await this._signerOrProvider.listAccounts()));
+    }
+
+    if (availableAccounts.includes(accountAddressChecksummed)) {
       return;
     }
+
     throw new Error(
-      `Specified accountAddress is not available through wallet or provider: ${accountAddressChecksummed}`,
+      `Specified accountAddress is not available through wallet or provider: ${accountAddressChecksummed}. Accounts available: ${
+        availableAccounts.length > 0 ? availableAccounts.join(", ") : "none"
+      }`,
     );
   }
 

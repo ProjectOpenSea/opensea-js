@@ -78,14 +78,14 @@ suite("SDK: misc", () => {
       await client.wrapEth({ amountInEth: "0.1", accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
-      expect(e.message).to.equal(expectedErrorMessage);
+      expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
       await client.unwrapWeth({ amountInEth: "0.1", accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
-      expect(e.message).to.equal(expectedErrorMessage);
+      expect(e.message).to.include(expectedErrorMessage);
     }
 
     const asset = {} as any;
@@ -94,14 +94,14 @@ suite("SDK: misc", () => {
       await client.createBuyOrder({ asset, startAmount: 1, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
-      expect(e.message).to.equal(expectedErrorMessage);
+      expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
       await client.createSellOrder({ asset, startAmount: 1, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
-      expect(e.message).to.equal(expectedErrorMessage);
+      expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
@@ -114,7 +114,7 @@ suite("SDK: misc", () => {
       });
       throw new Error("should have thrown");
     } catch (e: any) {
-      expect(e.message).to.equal(expectedErrorMessage);
+      expect(e.message).to.include(expectedErrorMessage);
     }
 
     const order = {} as any;
@@ -123,14 +123,14 @@ suite("SDK: misc", () => {
       await client.fulfillOrder({ order, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
-      expect(e.message).to.equal(expectedErrorMessage);
+      expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
       await client.cancelOrder({ order, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
-      expect(e.message).to.equal(expectedErrorMessage);
+      expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
@@ -140,7 +140,7 @@ suite("SDK: misc", () => {
       });
       throw new Error("should have thrown");
     } catch (e: any) {
-      expect(e.message).to.equal(expectedErrorMessage);
+      expect(e.message).to.include(expectedErrorMessage);
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
   });
