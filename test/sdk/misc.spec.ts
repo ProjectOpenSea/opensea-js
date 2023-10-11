@@ -71,7 +71,7 @@ suite("SDK: misc", () => {
   test("Should throw an error when using methods that need a provider or wallet with the accountAddress", async () => {
     const wallet = ethers.Wallet.createRandom();
     const accountAddress = wallet.address;
-    const expectedErrorMessage = `Specified accountAddress is not available through wallet or provider: ${accountAddress}`;
+    const expectedErrorMessage = `Specified accountAddress is not available through wallet or provider: ${accountAddress}. Accounts available: none`;
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     try {
