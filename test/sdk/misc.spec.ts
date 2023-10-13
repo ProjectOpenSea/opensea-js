@@ -147,27 +147,27 @@ suite("SDK: misc", () => {
 
   describe("decodeTokenIds", () => {
     it('should return ["*"] when given "*" as input', () => {
-      expect(decodeTokenIds("*")).deep.equal(["*"]);
+      expect(decodeTokenIds("*")).to.deep.equal(["*"]);
     });
 
     it("should correctly decode a single number", () => {
-      expect(decodeTokenIds("123")).deep.equal(["123"]);
+      expect(decodeTokenIds("123")).to.deep.equal(["123"]);
     });
 
     it("should correctly decode multiple comma-separated numbers", () => {
-      expect(decodeTokenIds("1,2,3,4")).deep.equal(["1", "2", "3", "4"]);
+      expect(decodeTokenIds("1,2,3,4")).to.deep.equal(["1", "2", "3", "4"]);
     });
 
     it("should correctly decode a single number", () => {
-      expect(decodeTokenIds("10:10")).deep.equal(["10"]);
+      expect(decodeTokenIds("10:10")).to.deep.equal(["10"]);
     });
 
     it("should correctly decode a range of numbers", () => {
-      expect(decodeTokenIds("5:8")).deep.equal(["5", "6", "7", "8"]);
+      expect(decodeTokenIds("5:8")).to.deep.equal(["5", "6", "7", "8"]);
     });
 
     it("should correctly decode multiple ranges of numbers", () => {
-      expect(decodeTokenIds("1:3,7:9")).deep.equal([
+      expect(decodeTokenIds("1:3,7:9")).to.deep.equal([
         "1",
         "2",
         "3",
@@ -178,14 +178,20 @@ suite("SDK: misc", () => {
     });
 
     it("should correctly decode a mix of single numbers and ranges", () => {
-      expect(decodeTokenIds("1,3:5,8")).deep.equal(["1", "3", "4", "5", "8"]);
+      expect(decodeTokenIds("1,3:5,8")).to.deep.equal([
+        "1",
+        "3",
+        "4",
+        "5",
+        "8",
+      ]);
     });
 
     it("should throw an error for invalid input format", () => {
-      expect(() => decodeTokenIds("1:3:5,8")).throw(
+      expect(() => decodeTokenIds("1:3:5,8")).to.throw(
         "Invalid input format. Expected a valid comma-separated list of numbers and ranges.",
       );
-      expect(() => decodeTokenIds("1;3:5,8")).throw(
+      expect(() => decodeTokenIds("1;3:5,8")).to.throw(
         "Invalid input format. Expected a valid comma-separated list of numbers and ranges.",
       );
     });

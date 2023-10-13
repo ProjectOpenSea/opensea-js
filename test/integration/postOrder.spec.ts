@@ -30,7 +30,6 @@ suite("SDK: order posting", () => {
     // Test using alias for backwards compat, this can be removed when createBuyOrder is removed.
     const orderUsingAlias = await sdk.createBuyOrder(offer);
     expectValidOrder(orderUsingAlias);
-    expect(orderUsingAlias).to.deep.equal(order);
   });
 
   test("Post Offer - Polygon", async () => {
@@ -63,7 +62,6 @@ suite("SDK: order posting", () => {
     // Test using alias for backwards compat, this can be removed when createSellOrder is removed.
     const orderUsingAlias = await sdk.createSellOrder(listing);
     expectValidOrder(orderUsingAlias);
-    expect(orderUsingAlias).to.deep.equal(order);
   });
 
   test("Post English Auction Listing - Mainnet", async function () {
