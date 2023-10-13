@@ -91,14 +91,14 @@ suite("SDK: misc", () => {
     const asset = {} as any;
 
     try {
-      await client.createBuyOrder({ asset, startAmount: 1, accountAddress });
+      await client.createOffer({ asset, startAmount: 1, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
       expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
-      await client.createSellOrder({ asset, startAmount: 1, accountAddress });
+      await client.createListing({ asset, startAmount: 1, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
       expect(e.message).to.include(expectedErrorMessage);

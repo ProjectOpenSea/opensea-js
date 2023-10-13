@@ -31,7 +31,8 @@ Also see methods `getNFTsByCollection`, `getNFTsByContract`, and `getNFTsByAccou
 import { TokenStandard } from "opensea-js/lib/types";
 
 const asset = {
-  tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
+  // CryptoKitties
+  tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d",
   tokenId: "1",
   tokenStandard: TokenStandard.ERC721,
 };
@@ -51,16 +52,16 @@ const ownsKitty = balance.gt(0);
 const { tokenId, tokenAddress } = YOUR_ASSET;
 // The offerer's wallet address:
 const accountAddress = "0x1234...";
+// Value of the offer, in units of the payment token (or wrapped ETH if none is specified)
+const startAmount = 1.2;
 
-const offer = await openseaSDK.createBuyOrder({
+const offer = await openseaSDK.createOffer({
   asset: {
     tokenId,
     tokenAddress,
-    tokenStandard, // TokenStandard. If omitted, defaults to 'ERC721'. Other options include 'ERC20' and 'ERC1155'
   },
   accountAddress,
-  // Value of the offer, in units of the payment token (or wrapped ETH if none is specified):
-  startAmount: 1.2,
+  startAmount,
 });
 ```
 
@@ -72,14 +73,14 @@ Note: The total value of buy orders must not exceed 1000x wallet balance.
 
 ### Making Listings / Selling Items
 
-To sell an asset, call `createSellOrder`:
+To sell an asset, call `createListing`:
 
 ```typescript
 // Expire this auction one day from now.
-// Note that we convert from the JavaScript timestamp (milliseconds):
+// Note that we convert from the JavaScript timestamp (milliseconds) to seconds:
 const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24);
 
-const listing = await openseaSDK.createSellOrder({
+const listing = await openseaSDK.createListing({
   asset: {
     tokenId,
     tokenAddress,
@@ -103,10 +104,11 @@ To create an English Auction set `englishAuction` to `true`:
 ```typescript
 // Create an auction to receive Wrapped Ether (WETH). See note below.
 const paymentTokenAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+const englishAuction = true;
+// The minimum amount to start the auction at, in normal units (e.g. ETH)
+const startAmount = 0;
 
-const startAmount = 0; // The minimum amount to sell for, in normal units (e.g. ETH)
-
-const auction = await openseaSDK.createSellOrder({
+const auction = await openseaSDK.createListing({
   asset: {
     tokenId,
     tokenAddress,
@@ -115,7 +117,7 @@ const auction = await openseaSDK.createSellOrder({
   startAmount,
   expirationTime,
   paymentTokenAddress,
-  englishAuction: true,
+  englishAuction,
 });
 ```
 

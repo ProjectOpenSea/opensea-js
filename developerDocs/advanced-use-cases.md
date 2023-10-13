@@ -19,15 +19,15 @@ Interested in purchasing for users server-side or with a bot, scheduling future 
 
 ### Scheduling Future Listings
 
-You can create sell orders that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in seconds) to your SDK instance:
+You can create listings that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in seconds) to your SDK instance:
 
 ```typescript
-const order = await openseaSDK.createSellOrder({
-  tokenAddress,
-  tokenId,
+const listingTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // One day from now
+const order = await openseaSDK.createListing({
+  asset: { tokenAddress, tokenId },
   accountAddress,
   startAmount: 1,
-  listingTime: Math.round(Date.now() / 1000 + 60 * 60 * 24), // One day from now
+  listingTime,
 });
 ```
 
@@ -53,13 +53,15 @@ This will automatically approve the assets for trading and confirm the transacti
 Here's an example of listing the Genesis CryptoKitty for $100! No more needing to worry about the exchange rate:
 
 ```typescript
+// CryptoKitties
+const tokenAddress = "0x06012c8cf97bead5deae237070f9587f8e7a266d";
 // Token address for the DAI stablecoin, which is pegged to $1 USD
-const paymentTokenAddress = "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359";
+const paymentTokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
 
 // The units for `startAmount` and `endAmount` are now in DAI, so $100 USD
-const order = await openseaSDK.createSellOrder({
-  tokenAddress: "0x06012c8cf97bead5deae237070f9587f8e7a266d", // CryptoKitties
-  tokenId: "1", // Token ID
+const order = await openseaSDK.createListing({
+  tokenAddress,
+  tokenId: "1",
   accountAddress: OWNERS_WALLET_ADDRESS,
   startAmount: 100,
   paymentTokenAddress,
@@ -87,11 +89,14 @@ Here's an example of listing a Decentraland parcel for 10 ETH with a specific bu
 ```typescript
 // Address allowed to buy from you
 const buyerAddress = "0x123...";
+// Decentraland
+const tokenAddress = "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d";
+const tokenId =
+  "115792089237316195423570985008687907832853042650384256231655107562007036952461";
 
-const listing = await openseaSDK.createSellOrder({
-  tokenAddress: "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d", // Decentraland
-  tokenId:
-    "115792089237316195423570985008687907832853042650384256231655107562007036952461", // Token ID
+const listing = await openseaSDK.createListing({
+  tokenAddress,
+  tokenId,
   accountAddress: OWNERS_WALLET_ADDRESS,
   startAmount: 10,
   buyerAddress,
