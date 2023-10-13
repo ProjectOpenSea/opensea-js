@@ -12,6 +12,7 @@ import {
   BigNumberish,
   Contract,
   FixedNumber,
+  PayableOverrides,
   Wallet,
   ethers,
   providers,
@@ -658,16 +659,19 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the wallet taking the order.
    * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.
    *                       This can be used for on-chain order attribution to assist with analytics.
+   * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.
    */
   private async fulfillPrivateOrder({
     order,
     accountAddress,
     domain,
+    overrides,
   }: {
     order: OrderV2;
     accountAddress: string;
     domain?: string;
+    overrides?: PayableOverrides;
   }): Promise<string> {
     if (!order.taker?.address) {
       throw new Error(
@@ -684,6 +688,7 @@ export class OpenSeaSDK {
         orders: [order.protocolData, counterOrder],
         fulfillments,
         overrides: {
+          ...overrides,
           value: counterOrder.parameters.offer[0].startAmount,
         },
         accountAddress,
@@ -707,6 +712,7 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the wallet taking the offer.
    * @param options.recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
    * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
+   * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.
    *
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -718,11 +724,13 @@ export class OpenSeaSDK {
     accountAddress,
     recipientAddress,
     domain,
+    overrides,
   }: {
     order: OrderV2;
     accountAddress: string;
     recipientAddress?: string;
     domain?: string;
+    overrides?: PayableOverrides;
   }): Promise<string> {
     await this._requireAccountIsAvailable(accountAddress);
     requireValidProtocol(order.protocolAddress);
@@ -760,6 +768,7 @@ export class OpenSeaSDK {
         order,
         accountAddress,
         domain,
+        overrides,
       });
     }
 
@@ -769,6 +778,7 @@ export class OpenSeaSDK {
       recipientAddress,
       extraData,
       domain,
+      overrides,
     });
     const transaction = await executeAllActions();
 
@@ -787,6 +797,7 @@ export class OpenSeaSDK {
    * @param options.accountAddress The account address cancelling the orders.
    * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.
    *                       This can be used for on-chain order attribution to assist with analytics.
+   * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.
    */
   private async cancelSeaportOrders({
@@ -794,11 +805,13 @@ export class OpenSeaSDK {
     accountAddress,
     domain,
     protocolAddress = DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+    overrides,
   }: {
     orders: OrderComponents[];
     accountAddress: string;
     domain?: string;
     protocolAddress?: string;
+    overrides?: PayableOverrides;
   }): Promise<string> {
     const checksummedProtocolAddress = ethers.utils.getAddress(protocolAddress);
     if (checksummedProtocolAddress !== DEFAULT_SEAPORT_CONTRACT_ADDRESS) {
@@ -808,7 +821,7 @@ export class OpenSeaSDK {
     }
 
     const transaction = await this.seaport_v1_5
-      .cancelOrders(orders, accountAddress, domain)
+      .cancelOrders(orders, accountAddress, domain, overrides)
       .transact();
 
     return transaction.hash;
