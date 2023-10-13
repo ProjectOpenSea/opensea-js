@@ -69,7 +69,7 @@ When you make an offer on an item owned by an OpenSea user, **that user will aut
 
 #### Offer Limits
 
-Note: The total value of buy orders must not exceed 1000x wallet balance.
+Note: The total value of offers must not exceed 1000x wallet balance.
 
 ### Making Listings / Selling Items
 
@@ -146,7 +146,7 @@ const { orders, count } = await openseaSDK.api.getOrders(
 );
 ```
 
-Note that the listing price of an asset is equal to the `currentPrice` of the **lowest valid sell order** on the asset. Users can lower their listing price without invalidating previous sell orders, so all get shipped down until they're canceled, or one is fulfilled.
+Note that the listing price of an asset is equal to the `currentPrice` of the **lowest listing** on the asset. Users can lower their listing price without invalidating previous listing, so all get shipped down until they're canceled, or one is fulfilled.
 
 To learn more about signatures, makers, takers, listingTime vs createdTime and other kinds of order terminology, please read the [**Terminology Section**](https://docs.opensea.io/reference#terminology) of the API Docs.
 
@@ -154,7 +154,7 @@ The available API filters for the orders endpoint is documented in the `OrdersQu
 
 ### Buying Items
 
-To buy an item, you need to **fulfill a sell order**. To do that, it's just one call:
+To buy an item, you need to **fulfill a listing**. To do that, it's just one call:
 
 ```typescript
 const order = await openseaSDK.api.getOrder({ side: "ask", ... })
@@ -164,11 +164,11 @@ const transactionHash = await openseaSDK.fulfillOrder({ order, accountAddress })
 
 Note that the `fulfillOrder` promise resolves when the transaction has been confirmed and mined to the blockchain. To get the transaction hash before this happens, add an event listener (see [Listening to Events](#listening-to-events)) for the `TransactionCreated` event.
 
-If the order is a sell order (`order.side === "ask"`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s).
+If the order is a listing (sell order, `order.side === "ask"`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s).
 
 ### Accepting Offers
 
-Similar to fulfilling sell orders above, you need to fulfill a buy order on an item you own to receive the tokens in the offer.
+Similar to fulfilling listings above, you need to fulfill an offer (buy order) on an item you own to receive the tokens in the offer.
 
 ```typescript
 const order = await openseaSDK.api.getOrder({ side: "bid", ... })
@@ -176,4 +176,4 @@ const accountAddress = "0x..." // The owner's wallet address, also the taker
 await openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
-If the order is a buy order (`order.side === "bid"`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
+If the order is an offer (buy order, `order.side === "bid"`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.

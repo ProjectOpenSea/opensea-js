@@ -154,7 +154,7 @@ export class OpenSeaSDK {
 
   /**
    * Wrap ETH into WETH.
-   * W-ETH is needed for placing buy orders (making offers).
+   * W-ETH is needed for making offers.
    * @param options
    * @param options.amountInEth Amount of ether to wrap
    * @param options.accountAddress Address of the user's wallet containing the ether
@@ -337,7 +337,7 @@ export class OpenSeaSDK {
    * Create and submit an offer on an asset.
    * @param options
    * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
-   * @param options.accountAddress Address of the wallet making the buy order
+   * @param options.accountAddress Address of the wallet making the offer.
    * @param options.startAmount Value of the offer in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
    * @param options.quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1.
    * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt.
@@ -435,7 +435,7 @@ export class OpenSeaSDK {
    * Create and submit a listing for an asset.
    * @param options
    * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
-   * @param options.accountAddress  Address of the wallet making the sell order
+   * @param options.accountAddress  Address of the wallet making the listing
    * @param options.startAmount Value of the listing at the start of the auction in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
    * @param options.endAmount Value of the listing at the end of the auction. If specified, price will change linearly between startAmount and endAmount as time progresses.
    * @param options.quantity The number of assets to list (if fungible or semi-fungible). Defaults to 1.

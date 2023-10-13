@@ -44,7 +44,7 @@ await openseaSDK.fulfillOrder({
 })
 ```
 
-If the order is a sell order (`order.side === "ask"`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is a buy order ( `"bid"`), the taker is the _seller_ but the bid amount be sent to the `recipientAddress`.
+If the order is a listing (sell order, `order.side === "ask"`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is an offer (buy order, `"bid"`), the taker is the _seller_ but the bid amount be sent to the `recipientAddress`.
 
 This will automatically approve the assets for trading and confirm the transaction for sending them.
 

@@ -16,7 +16,7 @@ import { OFFER_AMOUNT } from "../utils/constants";
 import { expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {
-  test("Post Buy Order - Mainnet", async () => {
+  test("Post Offer - Mainnet", async () => {
     const offer = {
       accountAddress: walletAddress,
       startAmount: +OFFER_AMOUNT,
@@ -33,7 +33,7 @@ suite("SDK: order posting", () => {
     expect(orderUsingAlias).to.deep.equal(order);
   });
 
-  test("Post Buy Order - Polygon", async () => {
+  test("Post Offer - Polygon", async () => {
     const offer = {
       accountAddress: walletAddress,
       startAmount: +OFFER_AMOUNT,
@@ -46,7 +46,7 @@ suite("SDK: order posting", () => {
     expectValidOrder(order);
   });
 
-  test("Post Sell Order - Mainnet", async function () {
+  test("Post Listing - Mainnet", async function () {
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
@@ -66,7 +66,7 @@ suite("SDK: order posting", () => {
     expect(orderUsingAlias).to.deep.equal(order);
   });
 
-  test("Post Auction Sell Order - Mainnet", async function () {
+  test("Post English Auction Listing - Mainnet", async function () {
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
@@ -95,7 +95,7 @@ suite("SDK: order posting", () => {
     }
   });
 
-  test("Post Sell Order - Polygon", async function () {
+  test("Post Listing - Polygon", async function () {
     if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
       this.skip();
     }
