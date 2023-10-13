@@ -265,6 +265,24 @@ export interface Asset {
 }
 
 /**
+ * Generic Blockchain Asset, with tokenId required.
+ * @category API Models
+ */
+export interface AssetWithTokenId extends Asset {
+  /** The asset's token ID */
+  tokenId: string;
+}
+
+/**
+ * Generic Blockchain Asset, with tokenStandard required.
+ * @category API Models
+ */
+export interface AssetWithTokenStandard extends Asset {
+  /** The token standard (e.g. "ERC721") for this asset */
+  tokenStandard: TokenStandard;
+}
+
+/**
  * Annotated asset contract with OpenSea metadata
  */
 export interface OpenSeaAssetContract extends OpenSeaFees {

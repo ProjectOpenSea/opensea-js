@@ -308,7 +308,7 @@ export const hasErrorCode = (error: unknown): error is ErrorWithCode => {
   return !!untypedError.code;
 };
 
-export const getAssetItemType = (tokenStandard?: TokenStandard) => {
+export const getAssetItemType = (tokenStandard: TokenStandard) => {
   switch (tokenStandard) {
     case "ERC20":
       return ItemType.ERC20;

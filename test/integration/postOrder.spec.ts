@@ -16,8 +16,8 @@ import { OFFER_AMOUNT } from "../utils/constants";
 import { expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {
-  test("Post Buy Order - Mainnet", async () => {
-    const buyOrder = {
+  test("Post Offer - Mainnet", async () => {
+    const offer = {
       accountAddress: walletAddress,
       startAmount: +OFFER_AMOUNT,
       asset: {
@@ -25,12 +25,15 @@ suite("SDK: order posting", () => {
         tokenId: "2288",
       },
     };
-    const order = await sdk.createBuyOrder(buyOrder);
+    const order = await sdk.createOffer(offer);
     expectValidOrder(order);
+    // Test using alias for backwards compat, this can be removed when createBuyOrder is removed.
+    const orderUsingAlias = await sdk.createBuyOrder(offer);
+    expectValidOrder(orderUsingAlias);
   });
 
-  test("Post Buy Order - Polygon", async () => {
-    const buyOrder = {
+  test("Post Offer - Polygon", async () => {
+    const offer = {
       accountAddress: walletAddress,
       startAmount: +OFFER_AMOUNT,
       asset: {
@@ -38,15 +41,15 @@ suite("SDK: order posting", () => {
         tokenId: "2288",
       },
     };
-    const order = await sdk.createBuyOrder(buyOrder);
+    const order = await sdk.createOffer(offer);
     expectValidOrder(order);
   });
 
-  test("Post Sell Order - Mainnet", async function () {
+  test("Post Listing - Mainnet", async function () {
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
-    const sellOrder = {
+    const listing = {
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
       asset: {
@@ -54,15 +57,18 @@ suite("SDK: order posting", () => {
         tokenId: TOKEN_ID_MAINNET as string,
       },
     };
-    const order = await sdk.createSellOrder(sellOrder);
+    const order = await sdk.createListing(listing);
     expectValidOrder(order);
+    // Test using alias for backwards compat, this can be removed when createSellOrder is removed.
+    const orderUsingAlias = await sdk.createSellOrder(listing);
+    expectValidOrder(orderUsingAlias);
   });
 
-  test("Post Auction Sell Order - Mainnet", async function () {
+  test("Post English Auction Listing - Mainnet", async function () {
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
-    const sellOrder = {
+    const listing = {
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
       asset: {
@@ -72,7 +78,7 @@ suite("SDK: order posting", () => {
       englishAuction: true,
     };
     try {
-      const order = await sdk.createSellOrder(sellOrder);
+      const order = await sdk.createListing(listing);
       expectValidOrder(order);
       expect(order.protocolData.parameters.zone.toLowerCase()).to.equal(
         ENGLISH_AUCTION_ZONE_MAINNETS,
@@ -87,11 +93,11 @@ suite("SDK: order posting", () => {
     }
   });
 
-  test("Post Sell Order - Polygon", async function () {
+  test("Post Listing - Polygon", async function () {
     if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
       this.skip();
     }
-    const sellOrder = {
+    const listing = {
       accountAddress: walletAddress,
       startAmount: +LISTING_AMOUNT * 1_000_000,
       asset: {
@@ -99,7 +105,7 @@ suite("SDK: order posting", () => {
         tokenId: TOKEN_ID_POLYGON,
       },
     };
-    const order = await sdkPolygon.createSellOrder(sellOrder);
+    const order = await sdkPolygon.createListing(listing);
     expectValidOrder(order);
   });
 
