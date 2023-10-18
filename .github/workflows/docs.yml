@@ -15,6 +15,11 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      - uses: tibdex/github-app-token@v1
+        id: get_token
+        with:
+          app_id: ${{ secrets.PUBLIC_DOC_PUBLISHER_APP_ID }}
+          private_key: ${{ secrets.PUBLIC_DOC_PUBLISHER_PRIVATE_KEY }}
 
       - name: Install dependencies
         run: npm install
@@ -33,7 +38,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: nkoppel/push-files-to-another-repository@v1.1.1
         env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+          API_TOKEN_GITHUB: ${{ steps.get_token.outputs.token }}
         with:
           source-files: "developerDocs/"
           destination-username: "ProjectOpenSea"
