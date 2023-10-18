@@ -15,7 +15,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - uses: opensea-public-docs-publisher
+      - uses: tibdex/github-app-token@v1
         id: get_token
         with:
           app_id: ${{ secrets.PUBLIC_DOC_PUBLISHER_APP_ID }}
