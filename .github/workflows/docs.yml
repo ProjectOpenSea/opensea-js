@@ -18,7 +18,7 @@ jobs:
       - uses: opensea-public-docs-publisher
         id: get_token
         with:
-          app_id: 409633
+          app_id: ${{ secrets.PUBLIC_DOC_PUBLISHER_APP_ID }}
           private_key: ${{ secrets.PUBLIC_DOC_PUBLISHER_PRIVATE_KEY }}
 
       - name: Install dependencies
