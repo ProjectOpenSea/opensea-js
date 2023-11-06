@@ -47,7 +47,7 @@
     "@types/chai": "4.3.9",
     "@types/chai-as-promised": "^7.1.5",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^18.0.0",
+    "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "browserify": "^17.0.0",
