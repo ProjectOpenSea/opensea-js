@@ -5,8 +5,8 @@ import {
 import { BigNumber, ethers } from "ethers";
 import {
   MAX_EXPIRATION_MONTHS,
-  SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+  SHARED_STOREFRONT_ADDRESSES,
 } from "../constants";
 import {
   AssetEvent,
