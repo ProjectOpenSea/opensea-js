@@ -5,8 +5,8 @@ import {
 import { BigNumber, ethers } from "ethers";
 import {
   MAX_EXPIRATION_MONTHS,
-  SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
+  SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
 } from "../constants";
 import {
   AssetEvent,
@@ -404,7 +404,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.Baobab:
     case Chain.BaseGoerli:
     case Chain.BNBTestnet:
-    case Chain.ArbitrumGoerli:
+    case Chain.ArbitrumSepolia:
     case Chain.Fuji:
     case Chain.OptimismGoerli:
     case Chain.SolanaDevnet:

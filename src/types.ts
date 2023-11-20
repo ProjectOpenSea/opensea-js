@@ -135,7 +135,7 @@ export enum Chain {
   /** Binance Smart Chain Testnet */
   BNBTestnet = "bsctestnet",
   /** Arbitrum Testnet */
-  ArbitrumGoerli = "arbitrum_goerli",
+  ArbitrumSepolia = "arbitrum_sepolia",
   /** Avalanche Fuji Testnet */
   Fuji = "avalanche_fuji",
   /** Optimism Goerli Testnet */
