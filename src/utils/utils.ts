@@ -404,7 +404,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.Baobab:
     case Chain.BaseGoerli:
     case Chain.BNBTestnet:
-    case Chain.ArbitrumGoerli:
+    case Chain.ArbitrumSepolia:
     case Chain.Fuji:
     case Chain.OptimismGoerli:
     case Chain.SolanaDevnet:
