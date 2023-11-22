@@ -12,7 +12,7 @@ export type ProtocolData =
   OrderProtocolToProtocolData[keyof OrderProtocolToProtocolData];
 
 // Protocol agnostic order data
-type OrderType = "basic" | "dutch" | "english" | "criteria";
+export type OrderType = "basic" | "dutch" | "english" | "criteria";
 export type OrderSide = "ask" | "bid";
 type OrderFee = {
   account: OpenSeaAccount;
@@ -98,8 +98,9 @@ export type OrderAPIOptions = {
 };
 
 export type OrdersQueryOptions = OrderAPIOptions & {
-  limit: number;
+  limit?: number;
   cursor?: string;
+  next?: string;
 
   paymentTokenAddress?: string;
   maker?: string;

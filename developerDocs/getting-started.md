@@ -136,14 +136,11 @@ const { orders, count } = await openseaSDK.api.getOrders({
 });
 
 // Get page 2 of all auctions, a.k.a. orders where `side == 1`
-const { orders, count } = await openseaSDK.api.getOrders(
-  {
-    assetContractAddress: tokenAddress,
-    tokenId,
-    side: "ask",
-  },
-  2,
-);
+const { orders, count } = await openseaSDK.api.getOrders({
+  assetContractAddress: tokenAddress,
+  tokenId,
+  side: "ask",
+});
 ```
 
 Note that the listing price of an asset is equal to the `currentPrice` of the **lowest listing** on the asset. Users can lower their listing price without invalidating previous listing, so all get shipped down until they're canceled, or one is fulfilled.
@@ -151,6 +148,22 @@ Note that the listing price of an asset is equal to the `currentPrice` of the **
 To learn more about signatures, makers, takers, listingTime vs createdTime and other kinds of order terminology, please read the [**Terminology Section**](https://docs.opensea.io/reference#terminology) of the API Docs.
 
 The available API filters for the orders endpoint is documented in the `OrdersQueryOptions` interface. See the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanations.
+
+#### Fetching All Offers and Best Listings for a given collection
+
+There are two endpoints that return all offers and listings for a given collection, `getAllOffers` and `getAllListings`.
+
+```typescript
+const { offers } = await openseaSDK.api.getAllOffers(collectionSlug);
+```
+
+#### Fetching Best Offers and Best Listings for a given NFT
+
+There are two endpoints that return the best offer or listing, `getBestOffer` and `getBestListing`.
+
+```typescript
+const offer = await openseaSDK.api.getBestOffer(collectionSlug, tokenId);
+```
 
 ### Buying Items
 

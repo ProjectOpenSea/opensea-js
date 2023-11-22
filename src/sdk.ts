@@ -19,7 +19,7 @@ import {
 } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { OpenSeaAPI } from "./api/api";
-import { Offer, NFT } from "./api/types";
+import { CollectionOffer, NFT } from "./api/types";
 import {
   INVERSE_BASIS_POINT,
   DEFAULT_ZONE,
@@ -568,7 +568,7 @@ export class OpenSeaSDK {
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH.
-   * @returns The {@link Offer} that was created.
+   * @returns The {@link CollectionOffer} that was created.
    */
   public async createCollectionOffer({
     collectionSlug,
@@ -588,7 +588,7 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: number | string;
     paymentTokenAddress: string;
-  }): Promise<Offer | null> {
+  }): Promise<CollectionOffer | null> {
     await this._requireAccountIsAvailable(accountAddress);
 
     const collection = await this.api.getCollection(collectionSlug);
@@ -710,7 +710,7 @@ export class OpenSeaSDK {
    * @param options
    * @param options.order The order to fulfill, a.k.a. "take"
    * @param options.accountAddress Address of the wallet taking the offer.
-   * @param options.recipientAddress The optional address to receive the order's item(s) or curriencies. If not specified, defaults to accountAddress.
+   * @param options.recipientAddress The optional address to receive the order's item(s) or currencies. If not specified, defaults to accountAddress.
    * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
    * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.

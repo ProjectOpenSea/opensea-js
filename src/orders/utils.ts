@@ -23,6 +23,28 @@ export const getOrdersAPIPath = (
   return `/v2/orders/${chain}/${protocol}/${sidePath}`;
 };
 
+export const getAllOffersAPIPath = (collectionSlug: string) => {
+  return `/v2/offers/collection/${collectionSlug}/all`;
+};
+
+export const getAllListingsAPIPath = (collectionSlug: string) => {
+  return `/v2/listings/collection/${collectionSlug}/all`;
+};
+
+export const getBestOfferAPIPath = (
+  collectionSlug: string,
+  tokenId: string | number,
+) => {
+  return `/v2/offers/collection/${collectionSlug}/nfts/${tokenId}/best`;
+};
+
+export const getBestListingAPIPath = (
+  collectionSlug: string,
+  tokenId: string | number,
+) => {
+  return `/v2/listings/collection/${collectionSlug}/nfts/${tokenId}/best`;
+};
+
 export const getCollectionPath = (slug: string) => {
   return `/api/v1/collection/${slug}`;
 };
