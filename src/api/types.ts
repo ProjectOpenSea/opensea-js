@@ -158,10 +158,18 @@ export type GetOrdersResponse = QueryCursors & {
   orders: OrderV2[];
 };
 
+/**
+ * Response from OpenSea API for fetching offers.
+ * @category API Response Types
+ */
 export type GetOffersResponse = QueryCursors & {
   offers: Offer[];
 };
 
+/**
+ * Response from OpenSea API for fetching listings.
+ * @category API Response Types
+ */
 export type GetListingsResponse = QueryCursors & {
   listings: Listing[];
 };
