@@ -51,10 +51,10 @@ export type GetCollectionResponse = {
 };
 
 /**
- * Offer type.
+ * Base Order type shared between Listings and Offers.
  * @category API Models
  */
-export type Offer = {
+export type Order = {
   /** Offer Identifier */
   order_hash: string;
   /** Chain the offer exists on */
@@ -64,6 +64,12 @@ export type Offer = {
   /** The contract address of the protocol. */
   protocol_address: string;
 };
+
+/**
+ * Offer type.
+ * @category API Models
+ */
+export type Offer = Order;
 
 /**
  * Collection Offer type.
@@ -90,17 +96,9 @@ export type Price = {
  * Listing order type.
  * @category API Models
  */
-export type Listing = {
-  /** Listing Identifier */
-  order_hash: string;
-  /** Chain the offer exists on */
-  chain: string;
+export type Listing = Order & {
   /** The order type of the listing. */
   type: OrderType;
-  /** The protocol data for the order. Only 'seaport' is currently supported. */
-  protocol_data: ProtocolData;
-  /** The contract address of the protocol. */
-  protocol_address: string;
   /** The price of the listing. */
   price: Price;
 };

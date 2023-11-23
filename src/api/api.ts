@@ -190,7 +190,7 @@ export class OpenSeaAPI {
    * @param collectionSlug The slug of the collection.
    * @param limit The number of offers to return. Must be between 1 and 100. Default: 100
    * @param next The cursor for the next page of results. This is returned from a previous request.
-   * @returns The {@link GetOrderResponse} returned by the API.
+   * @returns The {@link GetOffersResponse} returned by the API.
    */
   public async getAllOffers(
     collectionSlug: string,
@@ -212,7 +212,7 @@ export class OpenSeaAPI {
    * @param collectionSlug The slug of the collection.
    * @param limit The number of listings to return. Must be between 1 and 100. Default: 100
    * @param next The cursor for the next page of results. This is returned from a previous request.
-   * @returns The {@link GetOrderResponse} returned by the API.
+   * @returns The {@link GetListingsResponse} returned by the API.
    */
   public async getAllListings(
     collectionSlug: string,
@@ -233,7 +233,7 @@ export class OpenSeaAPI {
    * Gets the best offer for a given token.
    * @param collectionSlug The slug of the collection.
    * @param tokenId The token identifier.
-   * @returns The {@link GetOrderResponse} returned by the API.
+   * @returns The {@link GetBestOfferResponse} returned by the API.
    */
   public async getBestOffer(
     collectionSlug: string,
@@ -249,7 +249,7 @@ export class OpenSeaAPI {
    * Gets the best listing for a given token.
    * @param collectionSlug The slug of the collection.
    * @param tokenId The token identifier.
-   * @returns The {@link GetOrderResponse} returned by the API.
+   * @returns The {@link GetBestListingResponse} returned by the API.
    */
   public async getBestListing(
     collectionSlug: string,
