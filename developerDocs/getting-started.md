@@ -125,32 +125,41 @@ Note that auctions aren't supported with Ether directly due to limitations in Et
 
 ### Fetching Orders
 
-To retrieve a list of offers and auctions on an asset, you can use an instance of the `OpenSeaAPI` exposed on the client. Parameters passed into API filter objects are camel-cased and serialized before being sent as [OpenSea API parameters](https://docs.opensea.io/v2.0/reference):
+To retrieve a list of offers and auctions on an asset, you can use `getOrders`. Parameters passed into API filter objects are camel-cased and serialized before being sent as [API parameters](https://docs.opensea.io/v2.0/reference):
 
 ```typescript
-// Get offers (bids), a.k.a. orders where `side == 0`
+// Get offers (bids), a.k.a. orders where `side == "bid"`
 const { orders, count } = await openseaSDK.api.getOrders({
   assetContractAddress: tokenAddress,
   tokenId,
   side: "bid",
 });
 
-// Get page 2 of all auctions, a.k.a. orders where `side == 1`
-const { orders, count } = await openseaSDK.api.getOrders(
-  {
-    assetContractAddress: tokenAddress,
-    tokenId,
-    side: "ask",
-  },
-  2,
-);
+// Get page 2 of all auctions, a.k.a. orders where `side == "ask"`
+const { orders, count } = await openseaSDK.api.getOrders({
+  assetContractAddress: tokenAddress,
+  tokenId,
+  side: "ask",
+});
 ```
 
 Note that the listing price of an asset is equal to the `currentPrice` of the **lowest listing** on the asset. Users can lower their listing price without invalidating previous listing, so all get shipped down until they're canceled, or one is fulfilled.
 
-To learn more about signatures, makers, takers, listingTime vs createdTime and other kinds of order terminology, please read the [**Terminology Section**](https://docs.opensea.io/reference#terminology) of the API Docs.
+#### Fetching All Offers and Best Listings for a given collection
 
-The available API filters for the orders endpoint is documented in the `OrdersQueryOptions` interface. See the main [API Docs](https://docs.opensea.io/reference#reference-getting-started) for a playground, along with more up-to-date and detailed explanations.
+There are two endpoints that return all offers and listings for a given collection, `getAllOffers` and `getAllListings`.
+
+```typescript
+const { offers } = await openseaSDK.api.getAllOffers(collectionSlug);
+```
+
+#### Fetching Best Offers and Best Listings for a given NFT
+
+There are two endpoints that return the best offer or listing, `getBestOffer` and `getBestListing`.
+
+```typescript
+const offer = await openseaSDK.api.getBestOffer(collectionSlug, tokenId);
+```
 
 ### Buying Items
 

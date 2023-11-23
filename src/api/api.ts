@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
 import {
   BuildOfferResponse,
-  Offer,
   GetCollectionResponse,
   ListNFTsResponse,
   GetNFTResponse,
@@ -10,6 +9,11 @@ import {
   GetOrdersResponse,
   GetPaymentTokensResponse,
   GetBundlesResponse,
+  GetBestOfferResponse,
+  GetBestListingResponse,
+  GetOffersResponse,
+  GetListingsResponse,
+  CollectionOffer,
 } from "./types";
 import { API_BASE_MAINNET, API_BASE_TESTNET, API_V1_PATH } from "../constants";
 import {
@@ -40,6 +44,10 @@ import {
   getRefreshMetadataPath,
   getCollectionOffersPath,
   getListNFTsByAccountPath,
+  getBestOfferAPIPath,
+  getBestListingAPIPath,
+  getAllOffersAPIPath,
+  getAllListingsAPIPath,
 } from "../orders/utils";
 import {
   Chain,
@@ -178,6 +186,82 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Gets all offers for a given collection.
+   * @param collectionSlug The slug of the collection.
+   * @param limit The number of offers to return. Must be between 1 and 100. Default: 100
+   * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @returns The {@link GetOffersResponse} returned by the API.
+   */
+  public async getAllOffers(
+    collectionSlug: string,
+    limit?: number,
+    next?: string,
+  ): Promise<GetOffersResponse> {
+    const response = await this.get<GetOffersResponse>(
+      getAllOffersAPIPath(collectionSlug),
+      serializeOrdersQueryOptions({
+        limit,
+        next,
+      }),
+    );
+    return response;
+  }
+
+  /**
+   * Gets all listings for a given collection.
+   * @param collectionSlug The slug of the collection.
+   * @param limit The number of listings to return. Must be between 1 and 100. Default: 100
+   * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @returns The {@link GetListingsResponse} returned by the API.
+   */
+  public async getAllListings(
+    collectionSlug: string,
+    limit?: number,
+    next?: string,
+  ): Promise<GetListingsResponse> {
+    const response = await this.get<GetListingsResponse>(
+      getAllListingsAPIPath(collectionSlug),
+      serializeOrdersQueryOptions({
+        limit,
+        next,
+      }),
+    );
+    return response;
+  }
+
+  /**
+   * Gets the best offer for a given token.
+   * @param collectionSlug The slug of the collection.
+   * @param tokenId The token identifier.
+   * @returns The {@link GetBestOfferResponse} returned by the API.
+   */
+  public async getBestOffer(
+    collectionSlug: string,
+    tokenId: string | number,
+  ): Promise<GetBestOfferResponse> {
+    const response = await this.get<GetBestOfferResponse>(
+      getBestOfferAPIPath(collectionSlug, tokenId),
+    );
+    return response;
+  }
+
+  /**
+   * Gets the best listing for a given token.
+   * @param collectionSlug The slug of the collection.
+   * @param tokenId The token identifier.
+   * @returns The {@link GetBestListingResponse} returned by the API.
+   */
+  public async getBestListing(
+    collectionSlug: string,
+    tokenId: string | number,
+  ): Promise<GetBestListingResponse> {
+    const response = await this.get<GetBestListingResponse>(
+      getBestListingAPIPath(collectionSlug, tokenId),
+    );
+    return response;
+  }
+
+  /**
    * Generate the data needed to fulfill a listing or an offer onchain.
    * @param fulfillerAddress The wallet address which will be used to fulfill the order
    * @param orderHash The hash of the order to fulfill
@@ -302,10 +386,13 @@ export class OpenSeaAPI {
     order: ProtocolData,
     slug: string,
     retries = 0,
-  ): Promise<Offer | null> {
+  ): Promise<CollectionOffer | null> {
     const payload = getPostCollectionOfferPayload(slug, order);
     try {
-      return await this.post<Offer>(getPostCollectionOfferPath(), payload);
+      return await this.post<CollectionOffer>(
+        getPostCollectionOfferPath(),
+        payload,
+      );
     } catch (error) {
       _throwOrContinue(error, retries);
       await delay(1000);
@@ -586,7 +673,7 @@ export class OpenSeaAPI {
 
   /**
    * Fetch list of bundles from the API.
-   * @param query Query to use for getting bunldes. See {@link OpenSeaAssetBundleQuery}.
+   * @param query Query to use for getting bundles. See {@link OpenSeaAssetBundleQuery}.
    * @param page Page number to fetch. Defaults to 1.
    * @returns The {@link GetBundlesResponse} returned by the API.
    */
@@ -651,7 +738,7 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Generic post methd for any API endpoint.
+   * Generic post method for any API endpoint.
    * @param apiPath Path to URL endpoint under API
    * @param body Data to send.
    * @param opts ethers ConnectionInfo, similar to Fetch API.

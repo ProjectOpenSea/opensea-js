@@ -1,5 +1,10 @@
 import { ConsiderationItem } from "@opensea/seaport-js/lib/types";
-import { OrderV2, ProtocolData, QueryCursors } from "../orders/types";
+import {
+  OrderType,
+  OrderV2,
+  ProtocolData,
+  QueryCursors,
+} from "../orders/types";
 import {
   OpenSeaAsset,
   OpenSeaAssetBundle,
@@ -12,7 +17,7 @@ import {
  * @category API Response Types
  */
 export type BuildOfferResponse = {
-  /** A portion of the parameters needed to sumbit a criteria offer, i.e. collection offer. */
+  /** A portion of the parameters needed to submit a criteria offer, i.e. collection offer. */
   partialParameters: PartialParameters;
 };
 
@@ -46,20 +51,56 @@ export type GetCollectionResponse = {
 };
 
 /**
- * Collection Offer type.
+ * Base Order type shared between Listings and Offers.
  * @category API Models
  */
-export type Offer = {
+export type Order = {
   /** Offer Identifier */
   order_hash: string;
   /** Chain the offer exists on */
   chain: string;
-  /** Defines which NFTs meet the criteria to fulfill the offer. */
-  criteria: Criteria;
   /** The protocol data for the order. Only 'seaport' is currently supported. */
   protocol_data: ProtocolData;
   /** The contract address of the protocol. */
   protocol_address: string;
+};
+
+/**
+ * Offer type.
+ * @category API Models
+ */
+export type Offer = Order;
+
+/**
+ * Collection Offer type.
+ * @category API Models
+ */
+export type CollectionOffer = Offer & {
+  /** Defines which NFTs meet the criteria to fulfill the offer. */
+  criteria: Criteria;
+};
+
+/**
+ * Price response.
+ * @category API Models
+ */
+export type Price = {
+  current: {
+    currency: string;
+    decimals: number;
+    value: string;
+  };
+};
+
+/**
+ * Listing order type.
+ * @category API Models
+ */
+export type Listing = Order & {
+  /** The order type of the listing. */
+  type: OrderType;
+  /** The price of the listing. */
+  price: Price;
 };
 
 /**
@@ -68,7 +109,7 @@ export type Offer = {
  */
 export type ListCollectionOffersResponse = {
   /** List of {@link Offer} */
-  offers: Offer[];
+  offers: CollectionOffer[];
 };
 
 /**
@@ -114,6 +155,34 @@ export type GetOrdersResponse = QueryCursors & {
   /** List of {@link OrderV2} */
   orders: OrderV2[];
 };
+
+/**
+ * Response from OpenSea API for fetching offers.
+ * @category API Response Types
+ */
+export type GetOffersResponse = QueryCursors & {
+  offers: Offer[];
+};
+
+/**
+ * Response from OpenSea API for fetching listings.
+ * @category API Response Types
+ */
+export type GetListingsResponse = QueryCursors & {
+  listings: Listing[];
+};
+
+/**
+ * Response from OpenSea API for fetching a best offer.
+ * @category API Response Types
+ */
+export type GetBestOfferResponse = Offer | CollectionOffer;
+
+/**
+ * Response from OpenSea API for fetching a best listing.
+ * @category API Response Types
+ */
+export type GetBestListingResponse = Listing;
 
 /**
  * Response from OpenSea API for fetching payment tokens.
