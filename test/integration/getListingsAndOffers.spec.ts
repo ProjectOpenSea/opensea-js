@@ -37,6 +37,25 @@ suite("SDK: getAllListings", () => {
       response.listings[0].protocol_data,
       "Protocol data should not be null",
     );
+    assert(response.next, "Cursor for next page should not be null");
+
+    // Should get the next page of listings
+    const responsePage2 = await sdk.api.getAllListings(
+      slug,
+      undefined,
+      response.next,
+    );
+    assert(responsePage2, "Response should not be null");
+    assert.notDeepEqual(
+      response.listings,
+      responsePage2.listings,
+      "Response of second page should not equal the response of first page",
+    );
+    assert.notEqual(
+      response.next,
+      responsePage2.next,
+      "Next cursor should change",
+    );
   });
 });
 

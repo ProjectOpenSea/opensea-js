@@ -199,10 +199,10 @@ export class OpenSeaAPI {
   ): Promise<GetOffersResponse> {
     const response = await this.get<GetOffersResponse>(
       getAllOffersAPIPath(collectionSlug),
-      serializeOrdersQueryOptions({
+      {
         limit,
         next,
-      }),
+      },
     );
     return response;
   }
@@ -221,10 +221,10 @@ export class OpenSeaAPI {
   ): Promise<GetListingsResponse> {
     const response = await this.get<GetListingsResponse>(
       getAllListingsAPIPath(collectionSlug),
-      serializeOrdersQueryOptions({
+      {
         limit,
         next,
-      }),
+      },
     );
     return response;
   }
