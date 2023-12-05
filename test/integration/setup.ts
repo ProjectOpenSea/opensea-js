@@ -33,21 +33,19 @@ const walletPolygon = new ethers.Wallet(
 export const walletAddress = walletMainnet.address;
 
 export const sdk = new OpenSeaSDK(
-  RPC_PROVIDER_MAINNET,
+  walletMainnet,
   {
     chain: Chain.Mainnet,
     apiKey: MAINNET_API_KEY,
   },
   (line) => console.info(`MAINNET: ${line}`),
-  walletMainnet,
 );
 
 export const sdkPolygon = new OpenSeaSDK(
-  RPC_PROVIDER_POLYGON,
+  walletPolygon,
   {
     chain: Chain.Polygon,
     apiKey: MAINNET_API_KEY,
   },
   (line) => console.info(`POLYGON: ${line}`),
-  walletPolygon,
 );

@@ -20,7 +20,7 @@ hidden: false
 ### Fetching NFTs
 
 ```TypeScript
-const { nft } = await openseaSDK.api.getNFT(openseaSDK.chain, tokenAddress, tokenId)
+const { nft } = await openseaSDK.api.getNFT(tokenAddress, tokenId)
 ```
 
 Also see methods `getNFTsByCollection`, `getNFTsByContract`, and `getNFTsByAccount`.

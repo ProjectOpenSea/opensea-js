@@ -5,7 +5,6 @@ export const MAX_EXPIRATION_MONTHS = 1;
 
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_TESTNET = "https://testnets-api.opensea.io";
-export const API_V1_PATH = `/api/v1`;
 
 export const DEFAULT_ZONE = ethers.constants.AddressZero;
 export const ENGLISH_AUCTION_ZONE_MAINNETS =
@@ -13,14 +12,9 @@ export const ENGLISH_AUCTION_ZONE_MAINNETS =
 export const ENGLISH_AUCTION_ZONE_TESTNETS =
   "0x9B814233894Cd227f561B78Cc65891AA55C62Ad2";
 
-// Ignore eslint no-unused-modules for below to keep backward compatibility
-// in case a downstream user was already using these imports directly.
-// These can be made non-exported in next major-versioned release.
-// eslint-disable-next-line import/no-unused-modules
-export const SHARED_STOREFRONT_ADDRESS_MAINNET =
+const SHARED_STOREFRONT_ADDRESS_MAINNET =
   "0x495f947276749ce646f68ac8c248420045cb7b5e";
-// eslint-disable-next-line import/no-unused-modules
-export const SHARED_STOREFRONT_ADDRESS_GOERLI =
+const SHARED_STOREFRONT_ADDRESS_GOERLI =
   "0x804159144aefb1dc17b171afcefa5b33746c722f";
 const SHARED_STOREFRONT_ADDRESS_POLYGON =
   "0x2953399124f0cbb46d2cbacd8a89cf0599974963";

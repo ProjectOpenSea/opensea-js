@@ -27,9 +27,6 @@ suite("SDK: order posting", () => {
     };
     const order = await sdk.createOffer(offer);
     expectValidOrder(order);
-    // Test using alias for backwards compat, this can be removed when createBuyOrder is removed.
-    const orderUsingAlias = await sdk.createBuyOrder(offer);
-    expectValidOrder(orderUsingAlias);
   });
 
   test("Post Offer - Polygon", async () => {
@@ -59,9 +56,6 @@ suite("SDK: order posting", () => {
     };
     const order = await sdk.createListing(listing);
     expectValidOrder(order);
-    // Test using alias for backwards compat, this can be removed when createSellOrder is removed.
-    const orderUsingAlias = await sdk.createSellOrder(listing);
-    expectValidOrder(orderUsingAlias);
   });
 
   test("Post English Auction Listing - Mainnet", async function () {
@@ -113,7 +107,7 @@ suite("SDK: order posting", () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
     const paymentTokenAddress = getWETHAddress(sdk.chain);
     const postOrderRequest = {
-      collectionSlug: collection.slug,
+      collectionSlug: collection.collection,
       accountAddress: walletAddress,
       amount: OFFER_AMOUNT,
       quantity: 1,
@@ -127,7 +121,7 @@ suite("SDK: order posting", () => {
     const collection = await sdkPolygon.api.getCollection("arttoken-1155-4");
     const paymentTokenAddress = getWETHAddress(sdkPolygon.chain);
     const postOrderRequest = {
-      collectionSlug: collection.slug,
+      collectionSlug: collection.collection,
       accountAddress: walletAddress,
       amount: OFFER_AMOUNT,
       quantity: 1,

@@ -5,11 +5,7 @@ import {
   ProtocolData,
   QueryCursors,
 } from "../orders/types";
-import {
-  OpenSeaAsset,
-  OpenSeaCollection,
-  OpenSeaFungibleToken,
-} from "../types";
+import { OpenSeaCollection, OpenSeaPaymentToken } from "../types";
 
 /**
  * Response from OpenSea API for building an offer.
@@ -62,6 +58,8 @@ export type Order = {
   protocol_data: ProtocolData;
   /** The contract address of the protocol. */
   protocol_address: string;
+  /** The price of the order. */
+  price: Price;
 };
 
 /**
@@ -98,8 +96,6 @@ export type Price = {
 export type Listing = Order & {
   /** The order type of the listing. */
   type: OrderType;
-  /** The price of the listing. */
-  price: Price;
 };
 
 /**
@@ -129,21 +125,6 @@ export type ListNFTsResponse = {
 export type GetNFTResponse = {
   /** See {@link NFT} */
   nft: NFT;
-};
-
-/**
- * Response from OpenSea API for fetching assets.
- * @category API Response Types
- */
-export type GetAssetsResponse = {
-  /** List of {@link OpenSeaAsset} */
-  assets: OpenSeaAsset[];
-  /** Estimated Total Count of Assets which OpenSea has. */
-  estimatedCount: number;
-  /** Cursor for next page of results. */
-  next: string | undefined;
-  /** This field is no longer returned and always null. */
-  previous: string | undefined;
 };
 
 /**
@@ -196,8 +177,8 @@ export type GetBestListingResponse = Listing;
  * @category API Response Types
  */
 export type GetPaymentTokensResponse = {
-  /** List of {@link OpenSeaFungibleToken} */
-  tokens: OpenSeaFungibleToken[];
+  /** List of {@link OpenSeaPaymentToken} */
+  tokens: OpenSeaPaymentToken[];
 };
 
 /**

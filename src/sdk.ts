@@ -39,21 +39,18 @@ import {
   ERC721__factory,
 } from "./typechain/contracts";
 import {
-  ComputedFees,
   EventData,
   EventType,
   Chain,
   OpenSeaAPIConfig,
-  OpenSeaAsset,
   OpenSeaCollection,
   OrderSide,
   TokenStandard,
-  OpenSeaFungibleToken,
+  OpenSeaPaymentToken,
   AssetWithTokenStandard,
   AssetWithTokenId,
 } from "./types";
 import {
-  delay,
   getMaxOrderExpirationTimestamp,
   hasErrorCode,
   getAssetItemType,
@@ -84,27 +81,26 @@ export class OpenSeaSDK {
   private _signerOrProvider: Wallet | providers.JsonRpcProvider;
 
   /**
-   * Create a new instance of OpenSeaJS.
-   * @param provider Provider to use for transactions. For example:
-   *  `const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')`
+   * Create a new instance of OpenSeaSDK.
+   * @param walletOrProvider Wallet or provider to use for transactions. For example:
+   * `new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')` or
+   * `new ethers.Wallet(privKey, provider)`
    * @param apiConfig configuration options, including `chain`
-   * @param logger function that will be called with debugging
-   * @param wallet ethers wallet for order posting
-   *  information
+   * @param logger optional function for logging debug strings. defaults to no logging
    */
   constructor(
-    provider: providers.JsonRpcProvider,
+    walletOrProvider: Wallet | providers.JsonRpcProvider,
     apiConfig: OpenSeaAPIConfig = {},
     logger?: (arg: string) => void,
-    wallet?: Wallet,
   ) {
     // API config
     apiConfig.chain ??= Chain.Mainnet;
     this.chain = apiConfig.chain;
     this.api = new OpenSeaAPI(apiConfig);
 
-    this.provider = provider;
-    this._signerOrProvider = wallet ?? this.provider;
+    this.provider = ((walletOrProvider as Wallet).provider ??
+      walletOrProvider) as providers.JsonRpcProvider;
+    this._signerOrProvider = walletOrProvider ?? this.provider;
 
     this.seaport_v1_5 = new Seaport(this._signerOrProvider, {
       overrides: { defaultConduitKey: OPENSEA_CONDUIT_KEY },
@@ -242,31 +238,20 @@ export class OpenSeaSDK {
 
   private async getFees({
     collection,
+    seller,
     paymentTokenAddress,
     startAmount,
     endAmount,
   }: {
     collection: OpenSeaCollection;
+    seller: string;
     paymentTokenAddress: string;
     startAmount: BigNumber;
     endAmount?: BigNumber;
-  }): Promise<{
-    sellerFee: ConsiderationInputItem;
-    openseaSellerFees: ConsiderationInputItem[];
-    collectionSellerFees: ConsiderationInputItem[];
-  }> {
-    // Seller fee basis points
-    const osFees = collection.fees?.openseaFees;
-    const creatorFees = collection.fees?.sellerFees;
-
-    const openseaSellerFeeBasisPoints = feesToBasisPoints(osFees);
-    const collectionSellerFeeBasisPoints = feesToBasisPoints(creatorFees);
-
-    // Seller basis points
-    const sellerBasisPoints =
-      INVERSE_BASIS_POINT -
-      openseaSellerFeeBasisPoints -
-      collectionSellerFeeBasisPoints;
+  }): Promise<ConsiderationInputItem[]> {
+    const collectionFees = collection.fees;
+    const collectionFeesBasisPoints = feesToBasisPoints(collectionFees);
+    const sellerBasisPoints = INVERSE_BASIS_POINT - collectionFeesBasisPoints;
 
     const getConsiderationItem = (basisPoints: number, recipient?: string) => {
       return {
@@ -280,27 +265,15 @@ export class OpenSeaSDK {
       };
     };
 
-    const getConsiderationItemsFromFeeCategory = (
-      feeCategory: Map<string, number>,
-    ): ConsiderationInputItem[] => {
-      return Array.from(feeCategory.entries()).map(
-        ([recipient, basisPoints]) => {
-          return getConsiderationItem(basisPoints, recipient);
-        },
-      );
-    };
+    const considerationItems: ConsiderationInputItem[] = [];
 
-    return {
-      sellerFee: getConsiderationItem(sellerBasisPoints),
-      openseaSellerFees:
-        openseaSellerFeeBasisPoints > 0 && collection.fees
-          ? getConsiderationItemsFromFeeCategory(osFees)
-          : [],
-      collectionSellerFees:
-        collectionSellerFeeBasisPoints > 0 && collection.fees
-          ? getConsiderationItemsFromFeeCategory(creatorFees)
-          : [],
-    };
+    considerationItems.push(getConsiderationItem(sellerBasisPoints, seller));
+    for (const fee of collectionFees) {
+      considerationItems.push(
+        getConsiderationItem(fee.fee * INVERSE_BASIS_POINT, fee.recipient),
+      );
+    }
+    return considerationItems;
   }
 
   private getNFTItems(
@@ -319,20 +292,6 @@ export class OpenSeaSDK {
       amount: quantities[index].toString() ?? "1",
     }));
   }
-
-  /**
-   * Alias, deprecated, please update to using {@link createListing}.
-   * This method will be removed in the next major version of opensea-js.
-   * @deprecated
-   */
-  createSellOrder = this.createListing;
-
-  /**
-   * Alias, deprecated, please update to using {@link createOffer}.
-   * This method will be removed in the next major version of opensea-js.
-   * @deprecated
-   */
-  createBuyOrder = this.createOffer;
 
   /**
    * Create and submit an offer on an asset.
@@ -373,11 +332,7 @@ export class OpenSeaSDK {
   }): Promise<OrderV2> {
     await this._requireAccountIsAvailable(accountAddress);
 
-    const { nft } = await this.api.getNFT(
-      this.chain,
-      asset.tokenAddress,
-      asset.tokenId,
-    );
+    const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
     const considerationAssetItems = this.getNFTItems(
       [nft],
       [BigNumber.from(quantity ?? 1)],
@@ -392,15 +347,12 @@ export class OpenSeaSDK {
 
     const collection = await this.api.getCollection(nft.collection);
 
-    const { openseaSellerFees, collectionSellerFees } = await this.getFees({
+    const considerationFeeItems = await this.getFees({
       collection,
+      seller: accountAddress,
       paymentTokenAddress,
       startAmount: basePrice,
     });
-    const considerationFeeItems = [
-      ...openseaSellerFees,
-      ...collectionSellerFees,
-    ];
 
     const { executeAllActions } = await this.seaport_v1_5.createOrder(
       {
@@ -483,11 +435,7 @@ export class OpenSeaSDK {
   }): Promise<OrderV2> {
     await this._requireAccountIsAvailable(accountAddress);
 
-    const { nft } = await this.api.getNFT(
-      this.chain,
-      asset.tokenAddress,
-      asset.tokenId,
-    );
+    const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
     const offerAssetItems = this.getNFTItems(
       [nft],
       [BigNumber.from(quantity ?? 1)],
@@ -509,18 +457,13 @@ export class OpenSeaSDK {
 
     const collection = await this.api.getCollection(nft.collection);
 
-    const { sellerFee, openseaSellerFees, collectionSellerFees } =
-      await this.getFees({
-        collection,
-        paymentTokenAddress,
-        startAmount: basePrice,
-        endAmount: endPrice,
-      });
-    const considerationFeeItems = [
-      sellerFee,
-      ...openseaSellerFees,
-      ...collectionSellerFees,
-    ];
+    const considerationFeeItems = await this.getFees({
+      collection,
+      seller: accountAddress,
+      paymentTokenAddress,
+      startAmount: basePrice,
+      endAmount: endPrice,
+    });
 
     if (buyerAddress) {
       considerationFeeItems.push(
@@ -611,8 +554,9 @@ export class OpenSeaSDK {
       expirationTime ?? getMaxOrderExpirationTimestamp(),
       amount,
     );
-    const { openseaSellerFees, collectionSellerFees } = await this.getFees({
+    const considerationFeeItems = await this.getFees({
       collection,
+      seller: accountAddress,
       paymentTokenAddress,
       startAmount: basePrice,
       endAmount: basePrice,
@@ -620,8 +564,7 @@ export class OpenSeaSDK {
 
     const considerationItems = [
       convertedConsiderationItem,
-      ...openseaSellerFees,
-      ...collectionSellerFees,
+      ...considerationFeeItems,
     ];
 
     const payload = {
@@ -906,107 +849,59 @@ export class OpenSeaSDK {
    * @param options
    * @param options.accountAddress Account address to check
    * @param options.asset The Asset to check balance for. tokenStandard must be set.
-   * @param retries How many times to retry if balance is 0. Defaults to 1.
    * @returns The balance of the asset for the account.
    *
    * @throws Error if the token standard does not support balanceOf.
    */
-  public async getBalance(
-    {
-      accountAddress,
-      asset,
-    }: { accountAddress: string; asset: AssetWithTokenStandard },
-    retries = 1,
-  ): Promise<BigNumber> {
-    try {
-      switch (asset.tokenStandard) {
-        case TokenStandard.ERC20: {
-          const contract = new ethers.Contract(
-            asset.tokenAddress,
-            ERC20__factory.createInterface(),
-            this.provider,
-          );
-          return await contract.callStatic.balanceOf(accountAddress);
-        }
-        case TokenStandard.ERC1155: {
-          const contract = new ethers.Contract(
-            asset.tokenAddress,
-            ERC1155__factory.createInterface(),
-            this.provider,
-          );
-          return await contract.callStatic.balanceOf(
-            accountAddress,
-            asset.tokenId,
-          );
-        }
-        case TokenStandard.ERC721: {
-          const contract = new ethers.Contract(
-            asset.tokenAddress,
-            ERC721__factory.createInterface(),
-            this.provider,
-          );
-          try {
-            const owner = await contract.callStatic.ownerOf(asset.tokenId);
-            return owner.toLowerCase() == accountAddress.toLowerCase()
-              ? BigNumber.from(1)
-              : BigNumber.from(0);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } catch (error: any) {
-            this.logger(
-              `Failed to get ownerOf ERC721: ${error.message ?? error}`,
-            );
-            return BigNumber.from(0);
-          }
-        }
-        default:
-          throw new Error("Unsupported token standard for getBalance");
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      if (retries <= 0) {
-        throw new Error(
-          `Unable to get owner from smart contract: ${error.message ?? error}`,
-        );
-      } else {
-        await delay(500);
-        // Recursively check owner again
-        return await this.getBalance({ accountAddress, asset }, retries - 1);
-      }
-    }
-  }
-
-  /**
-   * Compute the fees for an order.
-   * @param options
-   * @param options.asset Asset to use for fees.
-   * @returns The {@link ComputedFees} for the order.
-   */
-  public async computeFees({
+  public async getBalance({
+    accountAddress,
     asset,
   }: {
-    asset?: OpenSeaAsset;
-  }): Promise<ComputedFees> {
-    const openseaBuyerFeeBasisPoints = 0;
-    let openseaSellerFeeBasisPoints = 0;
-    const devBuyerFeeBasisPoints = 0;
-    let devSellerFeeBasisPoints = 0;
-
-    if (asset) {
-      const fees = asset.collection.fees;
-      openseaSellerFeeBasisPoints = +feesToBasisPoints(fees?.openseaFees);
-      devSellerFeeBasisPoints = +feesToBasisPoints(fees?.sellerFees);
+    accountAddress: string;
+    asset: AssetWithTokenStandard;
+  }): Promise<BigNumber> {
+    switch (asset.tokenStandard) {
+      case TokenStandard.ERC20: {
+        const contract = new ethers.Contract(
+          asset.tokenAddress,
+          ERC20__factory.createInterface(),
+          this.provider,
+        );
+        return await contract.callStatic.balanceOf(accountAddress);
+      }
+      case TokenStandard.ERC1155: {
+        const contract = new ethers.Contract(
+          asset.tokenAddress,
+          ERC1155__factory.createInterface(),
+          this.provider,
+        );
+        return await contract.callStatic.balanceOf(
+          accountAddress,
+          asset.tokenId,
+        );
+      }
+      case TokenStandard.ERC721: {
+        const contract = new ethers.Contract(
+          asset.tokenAddress,
+          ERC721__factory.createInterface(),
+          this.provider,
+        );
+        try {
+          const owner = await contract.callStatic.ownerOf(asset.tokenId);
+          return owner.toLowerCase() == accountAddress.toLowerCase()
+            ? BigNumber.from(1)
+            : BigNumber.from(0);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+          this.logger(
+            `Failed to get ownerOf ERC721: ${error.message ?? error}`,
+          );
+          return BigNumber.from(0);
+        }
+      }
+      default:
+        throw new Error("Unsupported token standard for getBalance");
     }
-
-    return {
-      totalBuyerFeeBasisPoints:
-        openseaBuyerFeeBasisPoints + devBuyerFeeBasisPoints,
-      totalSellerFeeBasisPoints:
-        openseaSellerFeeBasisPoints + devSellerFeeBasisPoints,
-      openseaBuyerFeeBasisPoints,
-      openseaSellerFeeBasisPoints,
-      devBuyerFeeBasisPoints,
-      devSellerFeeBasisPoints,
-    };
   }
 
   /**
@@ -1058,7 +953,7 @@ export class OpenSeaSDK {
     endAmount?: BigNumberish,
   ) {
     const isEther = tokenAddress === ethers.constants.AddressZero;
-    let paymentToken: OpenSeaFungibleToken | undefined;
+    let paymentToken: OpenSeaPaymentToken | undefined;
     if (!isEther && [Chain.Mainnet, Chain.Sepolia].includes(this.chain)) {
       const { tokens } = await this.api.getPaymentTokens({
         address: tokenAddress.toLowerCase(),

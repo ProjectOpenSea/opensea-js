@@ -1,7 +1,6 @@
 import { CROSS_CHAIN_SEAPORT_V1_5_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import { BigNumber } from "ethers";
 import {
-  OrderProtocol,
   OrdersQueryOptions,
   OrderSide,
   OrderV2,
@@ -13,81 +12,6 @@ import { accountFromJSON } from "../utils";
 
 export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS;
-
-export const getOrdersAPIPath = (
-  chain: Chain,
-  protocol: OrderProtocol,
-  side: OrderSide,
-) => {
-  const sidePath = side === "ask" ? "listings" : "offers";
-  return `/v2/orders/${chain}/${protocol}/${sidePath}`;
-};
-
-export const getAllOffersAPIPath = (collectionSlug: string) => {
-  return `/v2/offers/collection/${collectionSlug}/all`;
-};
-
-export const getAllListingsAPIPath = (collectionSlug: string) => {
-  return `/v2/listings/collection/${collectionSlug}/all`;
-};
-
-export const getBestOfferAPIPath = (
-  collectionSlug: string,
-  tokenId: string | number,
-) => {
-  return `/v2/offers/collection/${collectionSlug}/nfts/${tokenId}/best`;
-};
-
-export const getBestListingAPIPath = (
-  collectionSlug: string,
-  tokenId: string | number,
-) => {
-  return `/v2/listings/collection/${collectionSlug}/nfts/${tokenId}/best`;
-};
-
-export const getCollectionPath = (slug: string) => {
-  return `/api/v1/collection/${slug}`;
-};
-
-export const getBuildOfferPath = () => {
-  return `/v2/offers/build`;
-};
-
-export const getPostCollectionOfferPath = () => {
-  return `/v2/offers`;
-};
-
-export const getCollectionOffersPath = (slug: string) => {
-  return `/v2/offers/collection/${slug}`;
-};
-
-export const getListNFTsByCollectionPath = (slug: string) => {
-  return `/v2/collection/${slug}/nfts`;
-};
-
-export const getListNFTsByContractPath = (chain: Chain, address: string) => {
-  return `/v2/chain/${chain}/contract/${address}/nfts`;
-};
-
-export const getListNFTsByAccountPath = (chain: Chain, address: string) => {
-  return `/v2/chain/${chain}/account/${address}/nfts`;
-};
-
-export const getNFTPath = (
-  chain: Chain,
-  address: string,
-  identifier: string,
-) => {
-  return `/v2/chain/${chain}/contract/${address}/nfts/${identifier}`;
-};
-
-export const getRefreshMetadataPath = (
-  chain: Chain,
-  address: string,
-  identifier: string,
-) => {
-  return `/v2/chain/${chain}/contract/${address}/nfts/${identifier}/refresh`;
-};
 
 export const getPostCollectionOfferPayload = (
   collectionSlug: string,

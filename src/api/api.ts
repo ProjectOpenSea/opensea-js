@@ -1,11 +1,30 @@
 import { ethers } from "ethers";
 import {
+  getCollectionPath,
+  getOrdersAPIPath,
+  getPostCollectionOfferPath,
+  getBuildOfferPath,
+  getListNFTsByCollectionPath,
+  getListNFTsByContractPath,
+  getNFTPath,
+  getRefreshMetadataPath,
+  getCollectionOffersPath,
+  getListNFTsByAccountPath,
+  getBestOfferAPIPath,
+  getBestListingAPIPath,
+  getAllOffersAPIPath,
+  getAllListingsAPIPath,
+  getPaymentTokensPath,
+  getAccountPath,
+  getCollectionStatsPath,
+  getBestListingsAPIPath,
+} from "./apiPaths";
+import {
   BuildOfferResponse,
   GetCollectionResponse,
   ListNFTsResponse,
   GetNFTResponse,
   ListCollectionOffersResponse,
-  GetAssetsResponse,
   GetOrdersResponse,
   GetPaymentTokensResponse,
   GetBestOfferResponse,
@@ -14,7 +33,7 @@ import {
   GetListingsResponse,
   CollectionOffer,
 } from "./types";
-import { API_BASE_MAINNET, API_BASE_TESTNET, API_V1_PATH } from "../constants";
+import { API_BASE_MAINNET, API_BASE_TESTNET } from "../constants";
 import {
   FulfillmentDataResponse,
   OrderAPIOptions,
@@ -27,41 +46,26 @@ import {
 } from "../orders/types";
 import {
   serializeOrdersQueryOptions,
-  getOrdersAPIPath,
   deserializeOrder,
   getFulfillmentDataPath,
   getFulfillListingPayload,
   getFulfillOfferPayload,
-  getBuildOfferPath,
   getBuildCollectionOfferPayload,
-  getCollectionPath,
-  getPostCollectionOfferPath,
   getPostCollectionOfferPayload,
-  getListNFTsByCollectionPath,
-  getListNFTsByContractPath,
-  getNFTPath,
-  getRefreshMetadataPath,
-  getCollectionOffersPath,
-  getListNFTsByAccountPath,
-  getBestOfferAPIPath,
-  getBestListingAPIPath,
-  getAllOffersAPIPath,
-  getAllListingsAPIPath,
 } from "../orders/utils";
 import {
   Chain,
   OpenSeaAPIConfig,
-  OpenSeaAsset,
-  OpenSeaAssetQuery,
+  OpenSeaAccount,
   OpenSeaCollection,
-  OpenSeaFungibleTokenQuery,
+  OpenSeaCollectionStats,
+  OpenSeaPaymentTokensQuery,
 } from "../types";
 import {
-  assetFromJSON,
-  delay,
-  tokenFromJSON,
+  paymentTokenFromJSON,
   collectionFromJSON,
   isTestChain,
+  accountFromJSON,
 } from "../utils/utils";
 
 /**
@@ -84,12 +88,11 @@ export class OpenSeaAPI {
 
   private apiKey: string | undefined;
   private chain: Chain;
-  private retryDelay = 3000;
 
   /**
-   * Create an instance of the OpenSea API
+   * Create an instance of the OpenSeaAPI
    * @param config OpenSeaAPIConfig for setting up the API, including an optional API key, Chain name, and base URL
-   * @param logger Optional function for logging debug strings before and after requests are made
+   * @param logger Optional function for logging debug strings before and after requests are made. Defaults to no logging
    */
   constructor(config: OpenSeaAPIConfig, logger?: (arg: string) => void) {
     this.apiKey = config.apiKey;
@@ -258,6 +261,20 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Gets the best listing for a given collection.
+   * @param collectionSlug The slug of the collection.
+   * @returns The {@link GetListingsResponse} returned by the API.
+   */
+  public async getBestListings(
+    collectionSlug: string,
+  ): Promise<GetListingsResponse> {
+    const response = await this.get<GetListingsResponse>(
+      getBestListingsAPIPath(collectionSlug),
+    );
+    return response;
+  }
+
+  /**
    * Generate the data needed to fulfill a listing or an offer onchain.
    * @param fulfillerAddress The wallet address which will be used to fulfill the order
    * @param orderHash The hash of the order to fulfill
@@ -302,27 +319,18 @@ export class OpenSeaAPI {
    * @param apiOptions.side The side of the order (buy or sell).
    * @param apiOptions.protocolAddress The address of the seaport contract.
    * @param options
-   * @param options.retries Number of times to retry if the service is unavailable for any reason.
    * @returns The {@link OrderV2} posted to the API.
    */
   public async postOrder(
     order: ProtocolData,
     apiOptions: OrderAPIOptions,
-    { retries = 2 }: { retries?: number } = {},
   ): Promise<OrderV2> {
-    let response: OrdersPostQueryResponse;
     // TODO: Validate apiOptions. Avoid API calls that will definitely fail
     const { protocol = "seaport", side, protocolAddress } = apiOptions;
-    try {
-      response = await this.post<OrdersPostQueryResponse>(
-        getOrdersAPIPath(this.chain, protocol, side),
-        { ...order, protocol_address: protocolAddress },
-      );
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(this.retryDelay);
-      return this.postOrder(order, apiOptions, { retries: retries - 1 });
-    }
+    const response = await this.post<OrdersPostQueryResponse>(
+      getOrdersAPIPath(this.chain, protocol, side),
+      { ...order, protocol_address: protocolAddress },
+    );
     return deserializeOrder(response.order);
   }
 
@@ -353,85 +361,31 @@ export class OpenSeaAPI {
   /**
    * Get a list collection offers for a given slug.
    * @param slug The slug (identifier) of the collection to list offers for
-   * @param retries Number of times to retry if the service is unavailable for any reason.
    * @returns The {@link ListCollectionOffersResponse} returned by the API.
    */
   public async getCollectionOffers(
     slug: string,
-    retries = 0,
   ): Promise<ListCollectionOffersResponse | null> {
-    try {
-      return await this.get<ListCollectionOffersResponse>(
-        getCollectionOffersPath(slug),
-      );
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(1000);
-      return this.getCollectionOffers(slug, retries - 1);
-    }
+    return await this.get<ListCollectionOffersResponse>(
+      getCollectionOffersPath(slug),
+    );
   }
 
   /**
    * Post a collection offer to OpenSea.
    * @param order The collection offer to post.
    * @param slug The slug (identifier) of the collection to post the offer for.
-   * @param retries Number of times to retry if the service is unavailable for any reason.
    * @returns The {@link Offer} returned to the API.
    */
   public async postCollectionOffer(
     order: ProtocolData,
     slug: string,
-    retries = 0,
   ): Promise<CollectionOffer | null> {
     const payload = getPostCollectionOfferPayload(slug, order);
-    try {
-      return await this.post<CollectionOffer>(
-        getPostCollectionOfferPath(),
-        payload,
-      );
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(1000);
-      return this.postCollectionOffer(order, slug, retries - 1);
-    }
-  }
-
-  /**
-   * Fetch an asset.
-   * @deprecated Use {@link getNFT} for multichain capabilities.
-   * @param options
-   * @param options.tokenAddress The asset's contract address.
-   * @param options.tokenId The asset's token ID, or null if ERC-20
-   * @param retries Number of times to retry if the service is unavailable for any reason
-   * @returns The {@link OpenSeaAsset} returned by the API.
-   * @throws An error if the function is called on an unsupported chain.
-   */
-  public async getAsset(
-    {
-      tokenAddress,
-      tokenId,
-    }: {
-      tokenAddress: string;
-      tokenId: string | number | null;
-    },
-    retries = 1,
-  ): Promise<OpenSeaAsset> {
-    if (![Chain.Mainnet, Chain.Sepolia].includes(this.chain)) {
-      throw new Error("Please use `getNFT()` for multichain capabilities.");
-    }
-
-    let json;
-    try {
-      json = await this.get(
-        `${API_V1_PATH}/asset/${tokenAddress}/${tokenId ?? 0}/`,
-      );
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(1000);
-      return this.getAsset({ tokenAddress, tokenId }, retries - 1);
-    }
-
-    return assetFromJSON(json);
+    return await this.post<CollectionOffer>(
+      getPostCollectionOfferPath(),
+      payload,
+    );
   }
 
   /**
@@ -439,64 +393,44 @@ export class OpenSeaAPI {
    * @param slug The slug (identifier) of the collection
    * @param limit The number of NFTs to retrieve. Must be greater than 0 and less than 51.
    * @param next Cursor to retrieve the next page of NFTs
-   * @param retries Number of times to retry if the service is unavailable for any reason.
    * @returns The {@link ListNFTsResponse} returned by the API.
    */
   public async getNFTsByCollection(
     slug: string,
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
-    retries = 1,
   ): Promise<ListNFTsResponse> {
-    let response;
-    try {
-      response = await this.get<ListNFTsResponse>(
-        getListNFTsByCollectionPath(slug),
-        {
-          limit,
-          next,
-        },
-      );
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(1000);
-      return this.getNFTsByCollection(slug, limit, next, retries - 1);
-    }
-
+    const response = await this.get<ListNFTsResponse>(
+      getListNFTsByCollectionPath(slug),
+      {
+        limit,
+        next,
+      },
+    );
     return response;
   }
 
   /**
    * Fetch multiple NFTs for a contract.
-   * @param chain The NFT's chain.
    * @param address The NFT's contract address.
    * @param limit The number of NFTs to retrieve. Must be greater than 0 and less than 51.
    * @param next Cursor to retrieve the next page of NFTs.
-   * @param retries Number of times to retry if the service is unavailable for any reason.
+   * @param chain The NFT's chain.
    * @returns The {@link ListNFTsResponse} returned by the API.
    */
   public async getNFTsByContract(
-    chain: Chain,
     address: string,
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
-    retries = 1,
+    chain: Chain = this.chain,
   ): Promise<ListNFTsResponse> {
-    let response;
-    try {
-      response = await this.get<ListNFTsResponse>(
-        getListNFTsByContractPath(chain, address),
-        {
-          limit,
-          next,
-        },
-      );
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(1000);
-      return this.getNFTsByContract(chain, address, limit, next, retries - 1);
-    }
-
+    const response = await this.get<ListNFTsResponse>(
+      getListNFTsByContractPath(chain, address),
+      {
+        limit,
+        next,
+      },
+    );
     return response;
   }
 
@@ -505,7 +439,6 @@ export class OpenSeaAPI {
    * @param address The address of the account
    * @param limit The number of NFTs to retrieve. Must be greater than 0 and less than 51.
    * @param next Cursor to retrieve the next page of NFTs
-   * @param retries Number of times to retry if the service is unavailable for any reason.
    * @param chain The chain to query. Defaults to the chain set in the constructor.
    * @returns The {@link ListNFTsResponse} returned by the API.
    */
@@ -513,94 +446,35 @@ export class OpenSeaAPI {
     address: string,
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
-    retries = 1,
     chain = this.chain,
   ): Promise<ListNFTsResponse> {
-    let response;
-    try {
-      response = await this.get<ListNFTsResponse>(
-        getListNFTsByAccountPath(chain, address),
-        {
-          limit,
-          next,
-        },
-      );
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(1000);
-      return this.getNFTsByAccount(address, limit, next, retries - 1, chain);
-    }
+    const response = await this.get<ListNFTsResponse>(
+      getListNFTsByAccountPath(chain, address),
+      {
+        limit,
+        next,
+      },
+    );
 
     return response;
   }
 
   /**
    * Fetch metadata, traits, ownership information, and rarity for a single NFT.
-   * @param chain The NFT's chain.
    * @param address The NFT's contract address.
    * @param identifier the identifier of the NFT (i.e. Token ID)
-   * @param retries Number of times to retry if the service is unavailable for any reason
+   * @param chain The NFT's chain.
    * @returns The {@link GetNFTResponse} returned by the API.
    */
   public async getNFT(
-    chain: Chain,
     address: string,
     identifier: string,
-    retries = 1,
+    chain = this.chain,
   ): Promise<GetNFTResponse> {
-    let response;
-    try {
-      response = await this.get<GetNFTResponse>(
-        getNFTPath(chain, address, identifier),
-      );
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(1000);
-      return this.getNFT(chain, address, identifier, retries - 1);
-    }
-
+    const response = await this.get<GetNFTResponse>(
+      getNFTPath(chain, address, identifier),
+    );
     return response;
-  }
-
-  /**
-   * Fetch a list of assets.
-   * @deprecated Use {@link getNFTsByContract} or {@link getNFTsByCollection} for multichain capabilities.
-   * @param query Options to filter the list returned.
-   * @param query.owner The wallet address of the owner of the assets.
-   * @param query.asset_contract_address The Asset's contract address.
-   * @param query.token_ids String array of token IDs to filter by.
-   * @param query.order_by The field to order the list by.
-   * @param query.order_direction The direction to order the list.
-   * @param query.limit The number of assets to retrieve. Must be greater than 0 and less than 201.
-   * @param query.cursor Cursor to retrieve the next page of assets.
-   * @throws An error if the function is called on an unsupported chain.
-   * @returns The {@link GetAssetsResponse} returned by the API.
-   */
-  public async getAssets(
-    query: OpenSeaAssetQuery = {},
-  ): Promise<GetAssetsResponse> {
-    if (![Chain.Mainnet, Chain.Sepolia].includes(this.chain)) {
-      throw new Error(
-        "Please use `getNFTsByContract()` or `getNFTsByCollection()` for multichain capabilities.",
-      );
-    }
-
-    const json = await this.get<{
-      estimated_count: number;
-      assets: unknown[];
-      next: string | undefined;
-      previous: string | undefined;
-    }>(`${API_V1_PATH}/assets/`, {
-      limit: this.pageSize,
-      ...query,
-    });
-
-    return {
-      assets: json.assets.map((j) => assetFromJSON(j)),
-      next: json.next,
-      previous: json.previous,
-      estimatedCount: json.estimated_count,
-    };
   }
 
   /**
@@ -615,67 +489,69 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Fetch stats for an OpenSea collection.
+   * @param slug The slug (identifier) of the collection.
+   * @returns The {@link OpenSeaCollection} returned by the API.
+   */
+  public async getCollectionStats(
+    slug: string,
+  ): Promise<OpenSeaCollectionStats> {
+    const path = getCollectionStatsPath(slug);
+    const response = await this.get<OpenSeaCollectionStats>(path);
+    return response as OpenSeaCollectionStats;
+  }
+
+  /**
    * Fetch list of fungible tokens.
-   * @param query Query to use for getting tokens. See {@link OpenSeaFungibleTokenQuery}.
-   * @param page Page number to fetch. Defaults to 1.
-   * @param retries Number of times to retry if the service is unavailable for any reason.
-   * @throws An error if the function is called on an unsupported chain.
+   * @param query Query to use for getting tokens. See {@link OpenSeaPaymentTokenQuery}.
+   * @param next The cursor for the next page of results. This is returned from a previous request.
    * @returns The {@link GetPaymentTokensResponse} returned by the API.
    */
   public async getPaymentTokens(
-    query: OpenSeaFungibleTokenQuery = {},
-    page = 1,
-    retries = 1,
+    query: OpenSeaPaymentTokensQuery = {},
+    next?: string,
   ): Promise<GetPaymentTokensResponse> {
-    if (![Chain.Mainnet, Chain.Sepolia].includes(this.chain)) {
-      throw new Error(
-        "This method does not work outside of Mainnet and Sepolia chains as it uses the v1 API.",
-      );
-    }
-
-    let json;
-    try {
-      json = await this.get<unknown[]>(`${API_V1_PATH}/tokens/`, {
+    const json = await this.get<GetPaymentTokensResponse>(
+      getPaymentTokensPath(),
+      {
         ...query,
         limit: this.pageSize,
-        offset: (page - 1) * this.pageSize,
-      });
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(1000);
-      return this.getPaymentTokens(query, page, retries - 1);
-    }
-
+        next,
+      },
+    );
     return {
-      tokens: json.map((t) => tokenFromJSON(t)),
+      tokens: json.tokens.map((t) => paymentTokenFromJSON(t)),
     };
   }
 
   /**
+   * Fetch account for an address.
+   * @param query Query to use for getting tokens. See {@link OpenSeaPaymentTokenQuery}.
+   * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @returns The {@link GetAccountResponse} returned by the API.
+   */
+  public async getAccount(address: string): Promise<OpenSeaAccount> {
+    const json = await this.get<OpenSeaAccount>(getAccountPath(address));
+
+    return accountFromJSON(json);
+  }
+
+  /**
    * Force refresh the metadata for an NFT.
-   * @param chain The chain where the NFT is located.
    * @param address The address of the NFT's contract.
    * @param identifier The identifier of the NFT.
-   * @param retries Number of times to retry if the service is unavailable for any reason.
+   * @param chain The chain where the NFT is located.
    * @returns The response from the API.
    */
   public async refreshNFTMetadata(
-    chain: Chain,
     address: string,
     identifier: string,
-    retries = 1,
+    chain: Chain = this.chain,
   ): Promise<Response> {
-    let response;
-    try {
-      response = await this.post<Response>(
-        getRefreshMetadataPath(chain, address, identifier),
-        {},
-      );
-    } catch (error) {
-      _throwOrContinue(error, retries);
-      await delay(1000);
-      return this.refreshNFTMetadata(chain, address, identifier, retries - 1);
-    }
+    const response = await this.post<Response>(
+      getRefreshMetadataPath(chain, address, identifier),
+      {},
+    );
 
     return response;
   }
@@ -750,16 +626,5 @@ export class OpenSeaAPI {
       req,
       body ? JSON.stringify(body) : undefined,
     );
-  }
-}
-
-function _throwOrContinue(error: unknown, retries: number) {
-  const isUnavailable =
-    error instanceof Error &&
-    !!error.message &&
-    (error.message.includes("503") || error.message.includes("429"));
-
-  if (retries <= 0 || !isUnavailable) {
-    throw error;
   }
 }

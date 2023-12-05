@@ -7,171 +7,65 @@ import {
   MAX_EXPIRATION_MONTHS,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
+  INVERSE_BASIS_POINT,
 } from "../constants";
 import {
-  AssetEvent,
   Chain,
+  Fee,
   OpenSeaAccount,
-  OpenSeaAsset,
-  OpenSeaAssetContract,
   OpenSeaCollection,
-  OpenSeaFungibleToken,
-  OpenSeaTraitStats,
-  OpenSeaUser,
-  Order,
-  OrderSide,
+  OpenSeaPaymentToken,
+  RarityStrategy,
   TokenStandard,
-  Transaction,
-  UnsignedOrder,
 } from "../types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const assetFromJSON = (asset: any): OpenSeaAsset => {
-  const isAnimated = asset.image_url && asset.image_url.endsWith(".gif");
-  const isSvg = asset.image_url && asset.image_url.endsWith(".svg");
-  const fromJSON: OpenSeaAsset = {
-    tokenId: asset.token_id.toString(),
-    tokenAddress: asset.asset_contract.address,
-    name: asset.name,
-    description: asset.description,
-    owner: asset.owner,
-    assetContract: assetContractFromJSON(asset.asset_contract),
-    collection: collectionFromJSON(asset.collection),
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const collectionFromJSON = (collection: any): OpenSeaCollection => {
+  return {
+    name: collection.name,
+    collection: collection.collection,
+    description: collection.description,
+    imageUrl: collection.image_url,
+    bannerImageUrl: collection.banner_image_url,
+    owner: collection.owner,
+    safelistStatus: collection.safelist_status,
+    category: collection.category,
+    isDisabled: collection.is_disabled,
+    isNSFW: collection.is_nsfw,
+    traitOffersEnabled: collection.trait_offers_enabled,
+    collectionOffersEnabled: collection.collection_offers_enabled,
+    openseaUrl: collection.opensea_url,
+    projectUrl: collection.project_url,
+    wikiUrl: collection.wiki_url,
+    discordUrl: collection.discord_url,
+    telegramUrl: collection.telegram_url,
+    twitterUsername: collection.twitter_username,
+    instagramUsername: collection.instagram_username,
 
-    isPresale: asset.is_presale,
-    // Don't use previews if it's a special image
-    imageUrl:
-      isAnimated || isSvg
-        ? asset.image_url
-        : asset.image_preview_url || asset.image_url,
-    imagePreviewUrl: asset.image_preview_url,
-    imageUrlOriginal: asset.image_original_url,
-    imageUrlThumbnail: asset.image_thumbnail_url,
+    contracts: (collection.contracts ?? []).map((contract: any) => ({
+      address: contract.address,
+      chain: contract.chain,
+    })),
+    editors: collection.editors,
+    fees: (collection.fees ?? []).map(feeFromJSON),
+    rarity: rarityFromJSON(collection.rarity),
+    paymentTokens: (collection.payment_tokens ?? []).map(paymentTokenFromJSON),
+  };
+};
 
-    animationUrl: asset.animation_url,
-    animationUrlOriginal: asset.animation_original_url,
-
-    externalLink: asset.external_link,
-    openseaLink: asset.permalink,
-    traits: asset.traits,
-    numSales: asset.num_sales,
-    lastSale: asset.last_sale ? assetEventFromJSON(asset.last_sale) : null,
-    backgroundColor: asset.background_color
-      ? `#${asset.background_color}`
-      : null,
+export const rarityFromJSON = (rarity: any): RarityStrategy => {
+  const fromJSON: RarityStrategy = {
+    strategyId: rarity.strategy_id,
+    strategyVersion: rarity.strategy_version,
+    calculatedAt: rarity.calculated_at,
+    maxRank: rarity.max_rank,
+    tokensScored: rarity.tokens_scored,
   };
   return fromJSON;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const assetEventFromJSON = (assetEvent: any): AssetEvent => {
-  return {
-    eventType: assetEvent.event_type,
-    eventTimestamp: assetEvent.event_timestamp,
-    auctionType: assetEvent.auction_type,
-    totalPrice: assetEvent.total_price,
-    transaction: assetEvent.transaction
-      ? transactionFromJSON(assetEvent.transaction)
-      : null,
-    paymentToken: assetEvent.payment_token
-      ? tokenFromJSON(assetEvent.payment_token)
-      : null,
-  };
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const transactionFromJSON = (transaction: any): Transaction => {
-  return {
-    fromAccount: accountFromJSON(transaction.from_account),
-    toAccount: accountFromJSON(transaction.to_account),
-    createdDate: new Date(`${transaction.created_date}Z`),
-    modifiedDate: new Date(`${transaction.modified_date}Z`),
-    transactionHash: transaction.transaction_hash,
-    transactionIndex: transaction.transaction_index,
-    blockNumber: transaction.block_number,
-    blockHash: transaction.block_hash,
-    timestamp: new Date(`${transaction.timestamp}Z`),
-  };
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const accountFromJSON = (account: any): OpenSeaAccount => {
-  return {
-    address: account.address,
-    config: account.config,
-    profileImgUrl: account.profile_img_url,
-    user: account.user ? userFromJSON(account.user) : null,
-  };
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const userFromJSON = (user: any): OpenSeaUser => {
-  return {
-    username: user.username,
-  };
-};
-
-export const assetContractFromJSON = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  asset_contract: any,
-): OpenSeaAssetContract => {
-  return {
-    name: asset_contract.name,
-    description: asset_contract.description,
-    type: asset_contract.asset_contract_type,
-    tokenStandard: asset_contract.schema_name,
-    address: asset_contract.address,
-    tokenSymbol: asset_contract.symbol,
-    buyerFeeBasisPoints: +asset_contract.buyer_fee_basis_points,
-    sellerFeeBasisPoints: +asset_contract.seller_fee_basis_points,
-    openseaBuyerFeeBasisPoints: +asset_contract.opensea_buyer_fee_basis_points,
-    openseaSellerFeeBasisPoints:
-      +asset_contract.opensea_seller_fee_basis_points,
-    devBuyerFeeBasisPoints: +asset_contract.dev_buyer_fee_basis_points,
-    devSellerFeeBasisPoints: +asset_contract.dev_seller_fee_basis_points,
-    imageUrl: asset_contract.image_url,
-    externalLink: asset_contract.external_link,
-    wikiLink: asset_contract.wiki_link,
-  };
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const collectionFromJSON = (collection: any): OpenSeaCollection => {
-  const createdDate = new Date(`${collection.created_date}Z`);
-
-  return {
-    createdDate,
-    name: collection.name,
-    description: collection.description,
-    slug: collection.slug,
-    editors: collection.editors,
-    hidden: collection.hidden,
-    featured: collection.featured,
-    featuredImageUrl: collection.featured_image_url,
-    displayData: collection.display_data,
-    safelistRequestStatus: collection.safelist_request_status,
-    paymentTokens: (collection.payment_tokens ?? []).map(tokenFromJSON),
-    openseaBuyerFeeBasisPoints: +collection.opensea_buyer_fee_basis_points,
-    openseaSellerFeeBasisPoints: +collection.opensea_seller_fee_basis_points,
-    devBuyerFeeBasisPoints: +collection.dev_buyer_fee_basis_points,
-    devSellerFeeBasisPoints: +collection.dev_seller_fee_basis_points,
-    payoutAddress: collection.payout_address,
-    imageUrl: collection.image_url,
-    largeImageUrl: collection.large_image_url,
-    stats: collection.stats,
-    traitStats: collection.traits as OpenSeaTraitStats,
-    externalLink: collection.external_url,
-    wikiLink: collection.wiki_url,
-    fees: {
-      openseaFees: new Map(Object.entries(collection.fees.opensea_fees ?? {})),
-      sellerFees: new Map(Object.entries(collection.fees.seller_fees ?? {})),
-    },
-  };
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
-  const fromJSON: OpenSeaFungibleToken = {
+export const paymentTokenFromJSON = (token: any): OpenSeaPaymentToken => {
+  const fromJSON: OpenSeaPaymentToken = {
     name: token.name,
     symbol: token.symbol,
     decimals: token.decimals,
@@ -180,7 +74,33 @@ export const tokenFromJSON = (token: any): OpenSeaFungibleToken => {
     ethPrice: token.eth_price,
     usdPrice: token.usd_price,
   };
+  return fromJSON;
+};
 
+export const accountFromJSON = (account: any): OpenSeaAccount => {
+  return {
+    address: account.address,
+    username: account.username,
+    profileImageUrl: account.profile_image_url,
+    bannerImageUrl: account.banner_image_url,
+    website: account.website,
+    socialMediaAccounts: (account.social_media_accounts ?? []).map(
+      (acct: any) => ({
+        platform: acct.platform,
+        username: acct.username,
+      }),
+    ),
+    bio: account.bio,
+    joinedDate: account.joined_date,
+  };
+};
+
+export const feeFromJSON = (fee: any): Fee => {
+  const fromJSON: Fee = {
+    fee: fee.fee,
+    recipient: fee.recipient,
+    required: fee.required,
+  };
   return fromJSON;
 };
 
@@ -202,67 +122,6 @@ export async function estimateGas(
     value: value.toString(),
     data,
   });
-}
-
-/**
- * Assign an order and a new matching order to their buy/sell sides
- * @param order Original order
- * @param matchingOrder The result of _makeMatchingOrder
- */
-export function assignOrdersToSides(
-  order: Order,
-  matchingOrder: UnsignedOrder,
-): { buy: Order; sell: Order } {
-  const isSellOrder = order.side == OrderSide.Sell;
-
-  let buy: Order;
-  let sell: Order;
-  if (!isSellOrder) {
-    buy = order;
-    sell = {
-      ...matchingOrder,
-      v: buy.v,
-      r: buy.r,
-      s: buy.s,
-    };
-  } else {
-    sell = order;
-    buy = {
-      ...matchingOrder,
-      v: sell.v,
-      r: sell.r,
-      s: sell.s,
-    };
-  }
-
-  return { buy, sell };
-}
-
-/**
- * Delay using setTimeout
- * @param ms milliseconds to wait
- */
-export async function delay(ms: number) {
-  return new Promise((res) => setTimeout(res, ms));
-}
-
-/**
- * Get special-case approval addresses for an erc721 contract
- * @param erc721Contract contract to check
- */
-export async function getNonCompliantApprovalAddress(
-  erc721Contract: ethers.Contract,
-  tokenId: string,
-  _accountAddress: string,
-): Promise<string | undefined> {
-  const results = await Promise.allSettled([
-    // CRYPTOKITTIES check
-    erc721Contract.methods.kittyIndexToApproved(tokenId).call(),
-    // Etherbots check
-    erc721Contract.methods.partIndexToApproved(tokenId).call(),
-  ]);
-
-  return results.filter(Boolean)[0].status;
 }
 
 /**
@@ -326,6 +185,12 @@ export const getWETHAddress = (chain: Chain) => {
       return "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
     case Chain.BNBTestnet:
       return "0xae13d989dac2f0debff460ac112a837c89baa7cd";
+    case Chain.Arbitrum:
+      return "0x82af49447d8a07e3bd95bd0d56f35241523fbab1";
+    case Chain.ArbitrumNova:
+      return "0x722e8bdd2ce80a4422e880164f2079488e115365";
+    case Chain.ArbitrumSepolia:
+      return "0x980b62da83eff3d4576c647993b0c1d7faf17c73";
     // OP Chains have weth at the same address
     case Chain.Base:
     case Chain.BaseGoerli:
@@ -341,7 +206,7 @@ export const getWETHAddress = (chain: Chain) => {
 
 /**
  * Checks if the token address is the shared storefront address and if so replaces
- * that address with the lazy mint adapter addres. Otherwise, returns the input token address
+ * that address with the lazy mint adapter address. Otherwise, returns the input token address
  * @param tokenAddress token address
  * @returns input token address or lazy mint adapter address
  */
@@ -353,23 +218,13 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
   };
 
 /**
- * Sums up the basis points for an Opensea or seller fee map and returns the
- * single numeric value if the map is not empty. Otherwise, it returns 0
- * @param fees a `Fees` submap holding fees (either Fees.openseaFees
- *  or Fees.sellerFees)
- * @returns sum of basis points in a fee map
+ * Sums up the basis points for fees.
+ * @param fees The fees to sum up
+ * @returns sum of basis points
  */
-export const feesToBasisPoints = (
-  fees: Map<string, number> | undefined,
-): number => {
-  if (!fees) {
-    return 0;
-  }
-
-  return Array.from(fees.values()).reduce(
-    (sum, basisPoints) => basisPoints + sum,
-    0,
-  );
+export const feesToBasisPoints = (fees: Fee[]): number => {
+  const feeBasisPoints = fees.map((fee) => fee.fee * INVERSE_BASIS_POINT);
+  return feeBasisPoints.reduce((sum, basisPoints) => basisPoints + sum, 0);
 };
 
 /**

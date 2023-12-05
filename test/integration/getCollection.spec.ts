@@ -10,11 +10,21 @@ suite("SDK: getCollection", () => {
 
     assert(collection, "Collection should not be null");
     assert(collection.name, "Collection name should exist");
-    assert.equal(collection.slug, slug, "Collection slug should match.");
-    assert(
-      collection.safelistRequestStatus === SafelistStatus.VERIFIED,
+    assert.equal(collection.collection, slug, "Collection slug should match.");
+    assert.equal(
+      collection.safelistStatus,
+      SafelistStatus.VERIFIED,
       "Collection should be verified.",
     );
-    assert(collection.stats, "Collection stats should not be null");
+  });
+
+  test("Get Collection Stats", async () => {
+    const slug = "cool-cats-nft";
+    const stats = await sdk.api.getCollectionStats(slug);
+
+    assert(stats, "Stats should not be null");
+    assert(stats.total.volume, "Volume should not be null");
+    assert(stats.total.sales, "Sales should not be null");
+    assert(stats.intervals, "Intervals should exist");
   });
 });
