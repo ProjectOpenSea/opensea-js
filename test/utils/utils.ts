@@ -20,8 +20,6 @@ export const expectValidOrder = (order: OrderV2) => {
     "cancelled",
     "finalized",
     "markedInvalid",
-    "makerAssetBundle",
-    "takerAssetBundle",
     "remainingQuantity",
   ];
   for (const field of requiredFields) {

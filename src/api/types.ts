@@ -7,7 +7,6 @@ import {
 } from "../orders/types";
 import {
   OpenSeaAsset,
-  OpenSeaAssetBundle,
   OpenSeaCollection,
   OpenSeaFungibleToken,
 } from "../types";
@@ -199,17 +198,6 @@ export type GetBestListingResponse = Listing;
 export type GetPaymentTokensResponse = {
   /** List of {@link OpenSeaFungibleToken} */
   tokens: OpenSeaFungibleToken[];
-};
-
-/**
- * Response from OpenSea API for fetching bundles.
- * @category API Response Types
- */
-export type GetBundlesResponse = {
-  /** List of {@link OpenSeaAssetBundle} */
-  bundles: OpenSeaAssetBundle[];
-  /** Estimated Total Count of Bundles which OpenSea has. */
-  estimatedCount: number;
 };
 
 /**

@@ -9,7 +9,7 @@ import {
   ProtocolData,
 } from "./types";
 import { Chain } from "../types";
-import { accountFromJSON, assetBundleFromJSON } from "../utils";
+import { accountFromJSON } from "../utils";
 
 export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS;
@@ -172,8 +172,6 @@ export const serializeOrdersQueryOptions = (
     maker: options.maker,
     taker: options.taker,
     owner: options.owner,
-    bundled: options.bundled,
-    include_bundled: options.includeBundled,
     listed_after: options.listedAfter,
     listed_before: options.listedBefore,
     token_ids: options.tokenIds ?? [options.tokenId],
@@ -210,8 +208,6 @@ export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
     finalized: order.finalized,
     markedInvalid: order.marked_invalid,
     clientSignature: order.client_signature,
-    makerAssetBundle: assetBundleFromJSON(order.maker_asset_bundle),
-    takerAssetBundle: assetBundleFromJSON(order.taker_asset_bundle),
     remainingQuantity: order.remaining_quantity,
   };
 };

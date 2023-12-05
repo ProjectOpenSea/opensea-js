@@ -8,7 +8,6 @@ import {
   GetAssetsResponse,
   GetOrdersResponse,
   GetPaymentTokensResponse,
-  GetBundlesResponse,
   GetBestOfferResponse,
   GetBestListingResponse,
   GetOffersResponse,
@@ -53,14 +52,11 @@ import {
   Chain,
   OpenSeaAPIConfig,
   OpenSeaAsset,
-  OpenSeaAssetBundle,
-  OpenSeaAssetBundleQuery,
   OpenSeaAssetQuery,
   OpenSeaCollection,
   OpenSeaFungibleTokenQuery,
 } from "../types";
 import {
-  assetBundleFromJSON,
   assetFromJSON,
   delay,
   tokenFromJSON,
@@ -652,47 +648,6 @@ export class OpenSeaAPI {
 
     return {
       tokens: json.map((t) => tokenFromJSON(t)),
-    };
-  }
-
-  /**
-   * Fetch a bundle from the API.
-   * @param options
-   * @param options.slug The bundle's identifier
-   * @returns The {@link OpenSeaAssetBundle} returned by the API. If not found, returns null.
-   */
-  public async getBundle({
-    slug,
-  }: {
-    slug: string;
-  }): Promise<OpenSeaAssetBundle | null> {
-    const json = await this.get(`${API_V1_PATH}/bundle/${slug}/`);
-
-    return json ? assetBundleFromJSON(json) : null;
-  }
-
-  /**
-   * Fetch list of bundles from the API.
-   * @param query Query to use for getting bundles. See {@link OpenSeaAssetBundleQuery}.
-   * @param page Page number to fetch. Defaults to 1.
-   * @returns The {@link GetBundlesResponse} returned by the API.
-   */
-  public async getBundles(
-    query: OpenSeaAssetBundleQuery = {},
-    page = 1,
-  ): Promise<GetBundlesResponse> {
-    const json = await this.get<{
-      estimated_count: number;
-      bundles: unknown[];
-    }>(`${API_V1_PATH}/bundles/`, {
-      ...query,
-      limit: this.pageSize,
-      offset: (page - 1) * this.pageSize,
-    });
-
-    return {
-      bundles: json.bundles.map((j) => assetBundleFromJSON(j)),
-      estimatedCount: json.estimated_count,
     };
   }
 

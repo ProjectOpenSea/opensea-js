@@ -7,7 +7,6 @@ import {
   EventData,
   EventType,
   OpenSeaAsset,
-  OpenSeaAssetBundle,
   OpenSeaCollection,
 } from "./types";
 
@@ -37,11 +36,5 @@ export {
   Chain,
 };
 
-export type {
-  EventData,
-  OpenSeaAsset,
-  OpenSeaAssetBundle,
-  OpenSeaCollection,
-  Asset,
-};
+export type { EventData, OpenSeaAsset, OpenSeaCollection, Asset };
 export * from "./api/types";

@@ -978,7 +978,7 @@ export class OpenSeaSDK {
   /**
    * Compute the fees for an order.
    * @param options
-   * @param options.asset Asset to use for fees. May be blank ONLY for multi-collection bundles.
+   * @param options.asset Asset to use for fees.
    * @returns The {@link ComputedFees} for the order.
    */
   public async computeFees({

@@ -1,7 +1,7 @@
 import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport_v1_4/contracts/Seaport";
 import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "ethers";
-import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
+import { OpenSeaAccount } from "../types";
 
 // Protocol data
 type OrderProtocolToProtocolData = {
@@ -59,10 +59,6 @@ export type OrderV2 = {
   markedInvalid: boolean;
   /** The signature the order is signed with. */
   clientSignature: string | null;
-  /** Bundle of assets from the maker. */
-  makerAssetBundle: OpenSeaAssetBundle;
-  /** Bundle of assets from the taker. */
-  takerAssetBundle: OpenSeaAssetBundle;
   /** Amount of items left in the order which can be taken. */
   remainingQuantity: number;
 };
@@ -106,8 +102,6 @@ export type OrdersQueryOptions = OrderAPIOptions & {
   maker?: string;
   taker?: string;
   owner?: string;
-  bundled?: boolean;
-  includeBundled?: boolean;
   listedAfter?: number | string;
   listedBefore?: number | string;
   tokenId?: string;
@@ -143,8 +137,6 @@ export type SerializedOrderV2 = {
   finalized: boolean;
   marked_invalid: boolean;
   client_signature: string | null;
-  maker_asset_bundle: unknown;
-  taker_asset_bundle: unknown;
   remaining_quantity: number;
 };
 

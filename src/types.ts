@@ -217,15 +217,6 @@ export interface FungibleAsset {
 }
 export type AssetType = NFTAsset | FungibleAsset;
 
-// Abstractions over assets for bundles
-export interface Bundle {
-  assets: AssetType[];
-  standards: TokenStandard[];
-  name?: string;
-  description?: string;
-  external_link?: string;
-}
-
 /**
  * The OpenSea account object appended to orders, providing extra metadata, profile images and usernames
  */
@@ -601,53 +592,6 @@ export interface OpenSeaFungibleToken {
 }
 
 /**
- * Bundles of assets, grouped together into one OpenSea order
- * URLs for bundles are auto-generated from the name.
- * @category API Models
- */
-export interface OpenSeaAssetBundle {
-  /** The maker of the order. */
-  maker: OpenSeaAccount;
-  /** List of {@link OpenSeaAsset} included in the bundle. */
-  assets: OpenSeaAsset[];
-  /** Name of the bundle. */
-  name: string;
-  /** Slug identifier of the bundle. */
-  slug: string;
-  /** Permanent Link to the bundle. */
-  permalink: string;
-  /** Annotated asset contract with OpenSea metadata */
-  assetContract?: OpenSeaAssetContract;
-  /** Description of the bundle */
-  description?: string;
-  /** Outbound Link to the bundle. */
-  externalLink?: string;
-}
-
-interface OpenSeaAssetBundleJSON {
-  assets: OpenSeaAsset[];
-  name: string;
-  description?: string;
-  external_link?: string;
-
-  // From API only
-  maker?: OpenSeaAccount;
-}
-
-/**
- * Query interface for Bundles
- */
-export interface OpenSeaAssetBundleQuery
-  extends Partial<OpenSeaAssetBundleJSON> {
-  asset_contract_address?: string;
-  token_ids?: Array<number | string>;
-  on_sale?: boolean;
-  owner?: string;
-  offset?: number;
-  limit?: number;
-}
-
-/**
  * The basis point values of each type of fee
  */
 interface OpenSeaFees {
@@ -669,21 +613,6 @@ export interface ComputedFees extends OpenSeaFees {
   totalBuyerFeeBasisPoints: number;
   totalSellerFeeBasisPoints: number;
 }
-
-interface ExchangeMetadataForAsset {
-  asset: AssetType;
-  schema: TokenStandard;
-  referrerAddress?: string;
-}
-
-interface ExchangeMetadataForBundle {
-  bundle: Bundle;
-  referrerAddress?: string;
-}
-
-export type ExchangeMetadata =
-  | ExchangeMetadataForAsset
-  | ExchangeMetadataForBundle;
 
 export interface UnsignedOrder {
   hash?: string;
@@ -736,7 +665,6 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
   cancelledOrFinalized?: boolean;
   markedInvalid?: boolean;
   asset?: OpenSeaAsset;
-  assetBundle?: OpenSeaAssetBundle;
 }
 
 /**

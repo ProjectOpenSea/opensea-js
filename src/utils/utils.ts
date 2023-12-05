@@ -13,7 +13,6 @@ import {
   Chain,
   OpenSeaAccount,
   OpenSeaAsset,
-  OpenSeaAssetBundle,
   OpenSeaAssetContract,
   OpenSeaCollection,
   OpenSeaFungibleToken,
@@ -110,24 +109,6 @@ export const userFromJSON = (user: any): OpenSeaUser => {
   return {
     username: user.username,
   };
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const assetBundleFromJSON = (asset_bundle: any): OpenSeaAssetBundle => {
-  const fromJSON: OpenSeaAssetBundle = {
-    maker: asset_bundle.maker,
-    assets: asset_bundle.assets ? asset_bundle.assets.map(assetFromJSON) : [],
-    assetContract: asset_bundle.asset_contract
-      ? assetContractFromJSON(asset_bundle.asset_contract)
-      : undefined,
-    name: asset_bundle.name,
-    slug: asset_bundle.slug,
-    description: asset_bundle.description,
-    externalLink: asset_bundle.external_link,
-    permalink: asset_bundle.permalink,
-  };
-
-  return fromJSON;
 };
 
 export const assetContractFromJSON = (
