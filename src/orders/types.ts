@@ -1,7 +1,7 @@
 import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport_v1_4/contracts/Seaport";
 import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
 import { BigNumber } from "ethers";
-import { OpenSeaAccount } from "../types";
+import { OpenSeaAccount, OrderSide } from "../types";
 
 // Protocol data
 type OrderProtocolToProtocolData = {
@@ -12,8 +12,7 @@ export type ProtocolData =
   OrderProtocolToProtocolData[keyof OrderProtocolToProtocolData];
 
 // Protocol agnostic order data
-export type OrderType = "basic" | "dutch" | "english" | "criteria";
-export type OrderSide = "ask" | "bid";
+export type OrderType = "basic" | "english" | "criteria";
 type OrderFee = {
   account: OpenSeaAccount;
   basisPoints: string;
@@ -49,7 +48,7 @@ export type OrderV2 = {
   takerFees: OrderFee[];
   /** The side of the order. Ask/Bid */
   side: OrderSide;
-  /** The type of the order. Basic/Dutch/English/Criteria */
+  /** The type of the order. Basic/English/Criteria */
   orderType: OrderType;
   /** Whether or not the maker has cancelled the order. */
   cancelled: boolean;

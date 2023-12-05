@@ -37,7 +37,6 @@ import { API_BASE_MAINNET, API_BASE_TESTNET } from "../constants";
 import {
   FulfillmentDataResponse,
   OrderAPIOptions,
-  OrderSide,
   OrdersPostQueryResponse,
   OrdersQueryOptions,
   OrdersQueryResponse,
@@ -60,6 +59,7 @@ import {
   OpenSeaCollection,
   OpenSeaCollectionStats,
   OpenSeaPaymentTokensQuery,
+  OrderSide,
 } from "../types";
 import {
   paymentTokenFromJSON,
@@ -289,7 +289,7 @@ export class OpenSeaAPI {
     side: OrderSide,
   ): Promise<FulfillmentDataResponse> {
     let payload: object | null = null;
-    if (side === "ask") {
+    if (side === OrderSide.ASK) {
       payload = getFulfillListingPayload(
         fulfillerAddress,
         orderHash,

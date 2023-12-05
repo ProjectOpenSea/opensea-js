@@ -128,18 +128,18 @@ Note that auctions aren't supported with Ether directly due to limitations in Et
 To retrieve a list of offers and auctions on an asset, you can use `getOrders`. Parameters passed into API filter objects are camel-cased and serialized before being sent as [API parameters](https://docs.opensea.io/v2.0/reference):
 
 ```typescript
-// Get offers (bids), a.k.a. orders where `side == "bid"`
+// Get offers (bids), a.k.a. orders where `side == OrderSide.BID`
 const { orders, count } = await openseaSDK.api.getOrders({
   assetContractAddress: tokenAddress,
   tokenId,
-  side: "bid",
+  side: OrderSide.BID,
 });
 
-// Get page 2 of all auctions, a.k.a. orders where `side == "ask"`
+// Get page 2 of all auctions, a.k.a. orders where `side == OrderSide.ASK`
 const { orders, count } = await openseaSDK.api.getOrders({
   assetContractAddress: tokenAddress,
   tokenId,
-  side: "ask",
+  side: OrderSide.ASK,
 });
 ```
 
@@ -166,23 +166,23 @@ const offer = await openseaSDK.api.getBestOffer(collectionSlug, tokenId);
 To buy an item, you need to **fulfill a listing**. To do that, it's just one call:
 
 ```typescript
-const order = await openseaSDK.api.getOrder({ side: "ask", ... })
+const order = await openseaSDK.api.getOrder({ side: OrderSide.ASK, ... })
 const accountAddress = "0x..." // The buyer's wallet address, also the taker
 const transactionHash = await openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
 Note that the `fulfillOrder` promise resolves when the transaction has been confirmed and mined to the blockchain. To get the transaction hash before this happens, add an event listener (see [Listening to Events](#listening-to-events)) for the `TransactionCreated` event.
 
-If the order is a listing (sell order, `order.side === "ask"`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s).
+If the order is a listing (sell order, `order.side === OrderSide.ASK`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s).
 
 ### Accepting Offers
 
 Similar to fulfilling listings above, you need to fulfill an offer (buy order) on an item you own to receive the tokens in the offer.
 
 ```typescript
-const order = await openseaSDK.api.getOrder({ side: "bid", ... })
+const order = await openseaSDK.api.getOrder({ side: OrderSide.BID, ... })
 const accountAddress = "0x..." // The owner's wallet address, also the taker
 await openseaSDK.fulfillOrder({ order, accountAddress })
 ```
 
-If the order is an offer (buy order, `order.side === "bid"`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.
+If the order is an offer (buy order, `order.side === OrderSide.BID`), then the taker is the _owner_ and this will prompt the owner to exchange their item(s) for whatever is being offered in return. See [Listening to Events](#listening-to-events) below to respond to the setup transactions that occur the first time a user accepts a bid.

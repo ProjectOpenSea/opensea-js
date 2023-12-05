@@ -1,6 +1,4 @@
-/* eslint-disable import/no-unused-modules */
 import { OpenSeaSDK } from "./sdk";
-import { Asset, Chain, EventData, EventType, OpenSeaCollection } from "./types";
 
 /**
  * @example
@@ -14,14 +12,11 @@ import { Asset, Chain, EventData, EventType, OpenSeaCollection } from "./types";
  * })
  * ```
  */
-
 export {
   // Main SDK export
   OpenSeaSDK,
-  // Types to help initialize SDK and listen to events
-  EventType,
-  Chain,
 };
 
-export type { EventData, OpenSeaCollection, Asset };
+export * from "./types";
 export * from "./api/types";
+export * from "./orders/types";

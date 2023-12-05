@@ -341,7 +341,7 @@ export class OpenSeaSDK {
     );
 
     const { basePrice } = await this._getPriceParameters(
-      OrderSide.Buy,
+      OrderSide.BID,
       paymentTokenAddress,
       expirationTime ?? getMaxOrderExpirationTimestamp(),
       startAmount,
@@ -381,7 +381,7 @@ export class OpenSeaSDK {
     return this.api.postOrder(order, {
       protocol: "seaport",
       protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      side: "bid",
+      side: OrderSide.BID,
     });
   }
 
@@ -449,7 +449,7 @@ export class OpenSeaSDK {
     }
 
     const { basePrice, endPrice } = await this._getPriceParameters(
-      OrderSide.Sell,
+      OrderSide.ASK,
       paymentTokenAddress,
       expirationTime ?? getMaxOrderExpirationTimestamp(),
       startAmount,
@@ -497,7 +497,7 @@ export class OpenSeaSDK {
     return this.api.postOrder(order, {
       protocol: "seaport",
       protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      side: "ask",
+      side: OrderSide.ASK,
     });
   }
 
@@ -550,7 +550,7 @@ export class OpenSeaSDK {
     };
 
     const { basePrice } = await this._getPriceParameters(
-      OrderSide.Buy,
+      OrderSide.ASK,
       paymentTokenAddress,
       expirationTime ?? getMaxOrderExpirationTimestamp(),
       amount,
@@ -954,10 +954,13 @@ export class OpenSeaSDK {
   ) {
     const isEther = tokenAddress === ethers.constants.AddressZero;
     let paymentToken: OpenSeaPaymentToken | undefined;
-    if (!isEther && [Chain.Mainnet, Chain.Sepolia].includes(this.chain)) {
+    if (!isEther) {
       const { tokens } = await this.api.getPaymentTokens({
-        address: tokenAddress.toLowerCase(),
+        address: tokenAddress,
       });
+      if (!tokens) {
+        throw new Error(`No payment token found for ${tokenAddress}`);
+      }
       paymentToken = tokens[0];
     }
     const decimals = paymentToken?.decimals ?? 18;
@@ -982,25 +985,7 @@ export class OpenSeaSDK {
     if (startAmount == null || startAmountWei.lt(0)) {
       throw new Error(`Starting price must be a number >= 0`);
     }
-    if (!isEther && !paymentToken) {
-      try {
-        if (
-          tokenAddress.toLowerCase() == getWETHAddress(this.chain).toLowerCase()
-        ) {
-          paymentToken = {
-            name: "Wrapped Ether",
-            symbol: "WETH",
-            decimals: 18,
-            address: tokenAddress,
-          };
-        }
-      } catch (error) {
-        throw new Error(
-          `No ERC-20 token found for ${tokenAddress}, only WETH is currently supported for chains other than Mainnet Ethereum`,
-        );
-      }
-    }
-    if (isEther && orderSide === OrderSide.Buy) {
+    if (isEther && orderSide === OrderSide.BID) {
       throw new Error(`Offers must use wrapped ETH or an ERC-20 token.`);
     }
     if (priceDiffWei.lt(0)) {

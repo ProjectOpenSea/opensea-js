@@ -1,4 +1,3 @@
-/* eslint-disable import/no-unused-modules */
 import { BigNumberish } from "ethers";
 import type { OrderV2 } from "./orders/types";
 
@@ -146,11 +145,11 @@ export enum Chain {
 }
 
 /**
- * Seaport order side: buy or sell.
+ * Order side: ask (sell, listing) or bid (buy, offer)
  */
 export enum OrderSide {
-  Buy = 0,
-  Sell = 1,
+  ASK = "ask",
+  BID = "bid",
 }
 
 /**

@@ -1,12 +1,12 @@
-import { OrderProtocol, OrderSide } from "../orders/types";
-import { Chain } from "../types";
+import { OrderProtocol } from "../orders/types";
+import { Chain, OrderSide } from "../types";
 
 export const getOrdersAPIPath = (
   chain: Chain,
   protocol: OrderProtocol,
   side: OrderSide,
 ) => {
-  const sidePath = side === "ask" ? "listings" : "offers";
+  const sidePath = side === OrderSide.ASK ? "listings" : "offers";
   return `/v2/orders/${chain}/${protocol}/${sidePath}`;
 };
 

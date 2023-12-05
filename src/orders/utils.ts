@@ -2,12 +2,11 @@ import { CROSS_CHAIN_SEAPORT_V1_5_ADDRESS } from "@opensea/seaport-js/lib/consta
 import { BigNumber } from "ethers";
 import {
   OrdersQueryOptions,
-  OrderSide,
   OrderV2,
   SerializedOrderV2,
   ProtocolData,
 } from "./types";
-import { Chain } from "../types";
+import { Chain, OrderSide } from "../types";
 import { accountFromJSON } from "../utils";
 
 export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
@@ -46,7 +45,7 @@ export const getBuildCollectionOfferPayload = (
 };
 
 export const getFulfillmentDataPath = (side: OrderSide) => {
-  const sidePath = side === "ask" ? "listings" : "offers";
+  const sidePath = side === OrderSide.ASK ? "listings" : "offers";
   return `/v2/${sidePath}/fulfillment_data`;
 };
 

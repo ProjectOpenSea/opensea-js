@@ -1,13 +1,14 @@
 import "../utils/setup";
 import { assert } from "chai";
 import { suite, test } from "mocha";
+import { OrderSide } from "../../src/types";
 import { mainAPI } from "../utils/constants";
 
 suite("Generating fulfillment data", () => {
   test(`Generate fulfillment data for listing`, async () => {
     const order = await mainAPI.getOrder({
       protocol: "seaport",
-      side: "ask",
+      side: OrderSide.ASK,
     });
 
     if (order.orderHash == null) {
@@ -27,7 +28,7 @@ suite("Generating fulfillment data", () => {
   test(`Generate fulfillment data for offer`, async () => {
     const order = await mainAPI.getOrder({
       protocol: "seaport",
-      side: "bid",
+      side: OrderSide.BID,
     });
 
     if (order.orderHash == null) {
