@@ -339,17 +339,20 @@ export class OpenSeaAPI {
    * @param offererAddress The wallet address which is creating the offer.
    * @param quantity The number of NFTs requested in the offer.
    * @param collectionSlug The slug (identifier) of the collection to build the offer for.
+   * @param offerProtectionEnabled Build the offer on OpenSea's signed zone to provide offer protections from receiving an item which is disabled from trading.
    * @returns The {@link BuildOfferResponse} returned by the API.
    */
   public async buildOffer(
     offererAddress: string,
     quantity: number,
     collectionSlug: string,
+    offerProtectionEnabled = true,
   ): Promise<BuildOfferResponse> {
     const payload = getBuildCollectionOfferPayload(
       offererAddress,
       quantity,
       collectionSlug,
+      offerProtectionEnabled,
     );
     const response = await this.post<BuildOfferResponse>(
       getBuildOfferPath(),

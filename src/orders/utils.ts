@@ -30,6 +30,7 @@ export const getBuildCollectionOfferPayload = (
   offererAddress: string,
   quantity: number,
   collectionSlug: string,
+  offerProtectionEnabled: boolean,
 ) => {
   return {
     offerer: offererAddress,
@@ -40,6 +41,7 @@ export const getBuildCollectionOfferPayload = (
       },
     },
     protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+    offer_protection_enabled: offerProtectionEnabled,
   };
 };
 
