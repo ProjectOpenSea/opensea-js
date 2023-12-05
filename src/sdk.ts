@@ -244,7 +244,7 @@ export class OpenSeaSDK {
     endAmount,
   }: {
     collection: OpenSeaCollection;
-    seller: string;
+    seller?: string;
     paymentTokenAddress: string;
     startAmount: BigNumber;
     endAmount?: BigNumber;
@@ -267,7 +267,9 @@ export class OpenSeaSDK {
 
     const considerationItems: ConsiderationInputItem[] = [];
 
-    considerationItems.push(getConsiderationItem(sellerBasisPoints, seller));
+    if (seller) {
+      considerationItems.push(getConsiderationItem(sellerBasisPoints, seller));
+    }
     for (const fee of collectionFees) {
       considerationItems.push(
         getConsiderationItem(fee.fee * INVERSE_BASIS_POINT, fee.recipient),
@@ -349,7 +351,6 @@ export class OpenSeaSDK {
 
     const considerationFeeItems = await this.getFees({
       collection,
-      seller: accountAddress,
       paymentTokenAddress,
       startAmount: basePrice,
     });
@@ -556,7 +557,6 @@ export class OpenSeaSDK {
     );
     const considerationFeeItems = await this.getFees({
       collection,
-      seller: accountAddress,
       paymentTokenAddress,
       startAmount: basePrice,
       endAmount: basePrice,
