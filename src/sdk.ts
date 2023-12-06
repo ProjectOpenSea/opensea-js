@@ -13,7 +13,7 @@ import {
   Contract,
   FixedNumber,
   PayableOverrides,
-  Wallet,
+  Signer,
   ethers,
   providers,
 } from "ethers";
@@ -78,18 +78,18 @@ export class OpenSeaSDK {
   public readonly chain: Chain;
 
   private _emitter: EventEmitter;
-  private _signerOrProvider: Wallet | providers.JsonRpcProvider;
+  private _signerOrProvider: Signer | providers.JsonRpcProvider;
 
   /**
    * Create a new instance of OpenSeaSDK.
-   * @param walletOrProvider Wallet or provider to use for transactions. For example:
+   * @param signerOrProvider Signer or provider to use for transactions. For example:
    * `new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')` or
    * `new ethers.Wallet(privKey, provider)`
    * @param apiConfig configuration options, including `chain`
    * @param logger optional function for logging debug strings. defaults to no logging
    */
   constructor(
-    walletOrProvider: Wallet | providers.JsonRpcProvider,
+    signerOrProvider: Signer | providers.JsonRpcProvider,
     apiConfig: OpenSeaAPIConfig = {},
     logger?: (arg: string) => void,
   ) {
@@ -98,11 +98,12 @@ export class OpenSeaSDK {
     this.chain = apiConfig.chain;
     this.api = new OpenSeaAPI(apiConfig);
 
-    this.provider = ((walletOrProvider as Wallet).provider ??
-      walletOrProvider) as providers.JsonRpcProvider;
-    this._signerOrProvider = walletOrProvider ?? this.provider;
+    this.provider = ((signerOrProvider as Signer).provider ??
+      signerOrProvider) as providers.JsonRpcProvider;
+    this._signerOrProvider = signerOrProvider ?? this.provider;
 
-    this.seaport_v1_5 = new Seaport(this._signerOrProvider, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.seaport_v1_5 = new Seaport(this._signerOrProvider as any, {
       overrides: { defaultConduitKey: OPENSEA_CONDUIT_KEY },
     });
 
@@ -1014,7 +1015,7 @@ export class OpenSeaSDK {
     const availableAccounts: string[] = [];
 
     if ("address" in this._signerOrProvider) {
-      availableAccounts.push(this._signerOrProvider.address);
+      availableAccounts.push(this._signerOrProvider.address as string);
     } else if ("listAccounts" in this._signerOrProvider) {
       availableAccounts.push(...(await this._signerOrProvider.listAccounts()));
     }
