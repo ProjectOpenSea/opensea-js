@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { parseEther } from "ethers/lib/utils";
+import { parseEther } from "ethers";
 import { describe, test } from "mocha";
 import { ETH_TO_WRAP, sdk, walletAddress } from "./setup";
 import { TokenStandard } from "../../src/types";
@@ -34,8 +34,8 @@ describe("SDK: WETH", () => {
     const ethToWrapInWei = parseEther(ETH_TO_WRAP);
 
     assert.equal(
-      startingWethBalance.add(ethToWrapInWei).toString(),
-      endingWethBalance.toString(),
+      startingWethBalance + ethToWrapInWei,
+      endingWethBalance,
       "Balances should match.",
     );
 

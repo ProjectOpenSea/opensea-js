@@ -1,5 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
+import { Chain } from "../../src";
+import { getWETHAddress } from "../../src/utils";
 import {
   BAYC_CONTRACT_ADDRESS,
   mainAPI,
@@ -19,7 +21,7 @@ suite("API", () => {
     const logPromise = new Promise<void>((resolve, reject) => {
       mainAPI.logger = (log) => {
         try {
-          assert.include(log, `"X-API-KEY":"${MAINNET_API_KEY}"`);
+          assert.include(log, `"x-api-key":"${MAINNET_API_KEY}"`);
           resolve();
         } catch (e) {
           reject(e);
@@ -27,7 +29,7 @@ suite("API", () => {
           mainAPI.logger = oldLogger;
         }
       };
-      const wethAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+      const wethAddress = getWETHAddress(Chain.Mainnet);
       mainAPI.getPaymentToken(wethAddress);
     });
 

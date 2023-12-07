@@ -8,16 +8,15 @@ import {
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import {
-  BigNumber,
   BigNumberish,
   Contract,
   FixedNumber,
-  PayableOverrides,
+  Overrides,
   Signer,
   ethers,
-  providers,
+  parseEther,
+  JsonRpcProvider,
 } from "ethers";
-import { parseEther } from "ethers/lib/utils";
 import { OpenSeaAPI } from "./api/api";
 import { CollectionOffer, NFT } from "./api/types";
 import {
@@ -67,7 +66,7 @@ import {
  */
 export class OpenSeaSDK {
   /** Provider to use for transactions. */
-  public provider: providers.JsonRpcProvider;
+  public provider: JsonRpcProvider;
   /** Seaport v1.5 client  @see {@link https://github.com/ProjectOpenSea/seaport}*/
   public seaport_v1_5: Seaport;
   /** Logger function to use when debugging */
@@ -78,7 +77,7 @@ export class OpenSeaSDK {
   public readonly chain: Chain;
 
   private _emitter: EventEmitter;
-  private _signerOrProvider: Signer | providers.JsonRpcProvider;
+  private _signerOrProvider: Signer | JsonRpcProvider;
 
   /**
    * Create a new instance of OpenSeaSDK.
@@ -89,7 +88,7 @@ export class OpenSeaSDK {
    * @param logger optional function for logging debug strings. defaults to no logging
    */
   constructor(
-    signerOrProvider: Signer | providers.JsonRpcProvider,
+    signerOrProvider: Signer | JsonRpcProvider,
     apiConfig: OpenSeaAPIConfig = {},
     logger?: (arg: string) => void,
   ) {
@@ -99,7 +98,7 @@ export class OpenSeaSDK {
     this.api = new OpenSeaAPI(apiConfig);
 
     this.provider = ((signerOrProvider as Signer).provider ??
-      signerOrProvider) as providers.JsonRpcProvider;
+      signerOrProvider) as JsonRpcProvider;
     this._signerOrProvider = signerOrProvider ?? this.provider;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -166,7 +165,7 @@ export class OpenSeaSDK {
   }) {
     await this._requireAccountIsAvailable(accountAddress);
 
-    const value = parseEther(FixedNumber.from(amountInEth).toString());
+    const value = parseEther(FixedNumber.fromValue(amountInEth).toString());
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount: value });
 
@@ -206,7 +205,7 @@ export class OpenSeaSDK {
   }) {
     await this._requireAccountIsAvailable(accountAddress);
 
-    const amount = parseEther(FixedNumber.from(amountInEth).toString());
+    const amount = parseEther(FixedNumber.fromValue(amountInEth).toString());
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
 
@@ -231,10 +230,13 @@ export class OpenSeaSDK {
   }
 
   private getAmountWithBasisPointsApplied = (
-    amount: BigNumber,
+    amount: bigint,
     basisPoints: number,
   ): string => {
-    return amount.mul(basisPoints).div(INVERSE_BASIS_POINT).toString();
+    return (
+      (amount * BigInt(basisPoints)) /
+      BigInt(INVERSE_BASIS_POINT)
+    ).toString();
   };
 
   private async getFees({
@@ -247,8 +249,8 @@ export class OpenSeaSDK {
     collection: OpenSeaCollection;
     seller?: string;
     paymentTokenAddress: string;
-    startAmount: BigNumber;
-    endAmount?: BigNumber;
+    startAmount: bigint;
+    endAmount?: bigint;
   }): Promise<ConsiderationInputItem[]> {
     const collectionFees = collection.fees;
     const collectionFeesBasisPoints = feesToBasisPoints(collectionFees);
@@ -281,7 +283,7 @@ export class OpenSeaSDK {
 
   private getNFTItems(
     nfts: NFT[],
-    quantities: BigNumber[] = [],
+    quantities: bigint[] = [],
   ): CreateInputItem[] {
     return nfts.map((nft, index) => ({
       itemType: getAssetItemType(
@@ -338,7 +340,7 @@ export class OpenSeaSDK {
     const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
     const considerationAssetItems = this.getNFTItems(
       [nft],
-      [BigNumber.from(quantity ?? 1)],
+      [BigInt(quantity ?? 1)],
     );
 
     const { basePrice } = await this._getPriceParameters(
@@ -367,11 +369,11 @@ export class OpenSeaSDK {
         consideration: [...considerationAssetItems, ...considerationFeeItems],
         endTime:
           expirationTime !== undefined
-            ? BigNumber.from(expirationTime).toString()
+            ? BigInt(expirationTime).toString()
             : getMaxOrderExpirationTimestamp().toString(),
         zone: DEFAULT_ZONE,
         domain,
-        salt: BigNumber.from(salt ?? 0).toString(),
+        salt: BigInt(salt ?? 0).toString(),
         restrictedByZone: false,
         allowPartialFills: true,
       },
@@ -418,7 +420,7 @@ export class OpenSeaSDK {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress = ethers.constants.AddressZero,
+    paymentTokenAddress = ethers.ZeroAddress,
     buyerAddress,
     englishAuction,
   }: {
@@ -438,12 +440,9 @@ export class OpenSeaSDK {
     await this._requireAccountIsAvailable(accountAddress);
 
     const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
-    const offerAssetItems = this.getNFTItems(
-      [nft],
-      [BigNumber.from(quantity ?? 1)],
-    );
+    const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)]);
 
-    if (englishAuction && paymentTokenAddress == ethers.constants.AddressZero) {
+    if (englishAuction && paymentTokenAddress == ethers.ZeroAddress) {
       throw new Error(
         `English auctions must use wrapped ETH or an ERC-20 token.`,
       );
@@ -487,7 +486,7 @@ export class OpenSeaSDK {
             : ENGLISH_AUCTION_ZONE_MAINNETS
           : DEFAULT_ZONE,
         domain,
-        salt: BigNumber.from(salt ?? 0).toString(),
+        salt: BigInt(salt ?? 0).toString(),
         restrictedByZone: englishAuction ? true : false,
         allowPartialFills: englishAuction ? false : true,
       },
@@ -582,7 +581,7 @@ export class OpenSeaSDK {
         getMaxOrderExpirationTimestamp().toString(),
       zone: buildOfferResult.partialParameters.zone,
       domain,
-      salt: BigNumber.from(salt ?? 0).toString(),
+      salt: BigInt(salt ?? 0).toString(),
       restrictedByZone: true,
       allowPartialFills: true,
     };
@@ -615,7 +614,7 @@ export class OpenSeaSDK {
     order: OrderV2;
     accountAddress: string;
     domain?: string;
-    overrides?: PayableOverrides;
+    overrides?: Overrides;
   }): Promise<string> {
     if (!order.taker?.address) {
       throw new Error(
@@ -640,13 +639,16 @@ export class OpenSeaSDK {
       })
       .transact();
     const transactionReceipt = await transaction.wait();
+    if (!transactionReceipt) {
+      throw new Error("Missing transaction receipt");
+    }
 
     await this._confirmTransaction(
-      transactionReceipt.transactionHash,
+      transactionReceipt.hash,
       EventType.MatchOrders,
       "Fulfilling order",
     );
-    return transactionReceipt.transactionHash;
+    return transactionReceipt.hash;
   }
 
   /**
@@ -674,7 +676,7 @@ export class OpenSeaSDK {
     accountAddress: string;
     recipientAddress?: string;
     domain?: string;
-    overrides?: PayableOverrides;
+    overrides?: Overrides;
   }): Promise<string> {
     await this._requireAccountIsAvailable(accountAddress);
     requireValidProtocol(order.protocolAddress);
@@ -726,12 +728,17 @@ export class OpenSeaSDK {
     });
     const transaction = await executeAllActions();
 
+    const transactionHash = ethers.Transaction.from(transaction).hash;
+    if (!transactionHash) {
+      throw new Error("Missing transaction hash");
+    }
+
     await this._confirmTransaction(
-      transaction.hash,
+      transactionHash,
       EventType.MatchOrders,
       "Fulfilling order",
     );
-    return transaction.hash;
+    return transactionHash;
   }
 
   /**
@@ -755,9 +762,9 @@ export class OpenSeaSDK {
     accountAddress: string;
     domain?: string;
     protocolAddress?: string;
-    overrides?: PayableOverrides;
+    overrides?: Overrides;
   }): Promise<string> {
-    const checksummedProtocolAddress = ethers.utils.getAddress(protocolAddress);
+    const checksummedProtocolAddress = ethers.getAddress(protocolAddress);
     if (checksummedProtocolAddress !== DEFAULT_SEAPORT_CONTRACT_ADDRESS) {
       throw new Error(
         `Only ${DEFAULT_SEAPORT_CONTRACT_ADDRESS} is currently supported for cancelling orders.`,
@@ -835,7 +842,7 @@ export class OpenSeaSDK {
     try {
       const isValid = await this.seaport_v1_5
         .validate([order.protocolData], accountAddress)
-        .callStatic();
+        .staticCall();
       return !!isValid;
     } catch (error) {
       if (hasErrorCode(error) && error.code === "CALL_EXCEPTION") {
@@ -860,7 +867,7 @@ export class OpenSeaSDK {
   }: {
     accountAddress: string;
     asset: AssetWithTokenStandard;
-  }): Promise<BigNumber> {
+  }): Promise<bigint> {
     switch (asset.tokenStandard) {
       case TokenStandard.ERC20: {
         const contract = new ethers.Contract(
@@ -868,7 +875,7 @@ export class OpenSeaSDK {
           ERC20__factory.createInterface(),
           this.provider,
         );
-        return await contract.callStatic.balanceOf(accountAddress);
+        return await contract.balanceOf.staticCall(accountAddress);
       }
       case TokenStandard.ERC1155: {
         const contract = new ethers.Contract(
@@ -876,7 +883,7 @@ export class OpenSeaSDK {
           ERC1155__factory.createInterface(),
           this.provider,
         );
-        return await contract.callStatic.balanceOf(
+        return await contract.balanceOf.staticCall(
           accountAddress,
           asset.tokenId,
         );
@@ -888,16 +895,14 @@ export class OpenSeaSDK {
           this.provider,
         );
         try {
-          const owner = await contract.callStatic.ownerOf(asset.tokenId);
-          return owner.toLowerCase() == accountAddress.toLowerCase()
-            ? BigNumber.from(1)
-            : BigNumber.from(0);
+          const owner = await contract.ownerOf.staticCall(asset.tokenId);
+          return BigInt(owner.toLowerCase() == accountAddress.toLowerCase());
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
           this.logger(
             `Failed to get ownerOf ERC721: ${error.message ?? error}`,
           );
-          return BigNumber.from(0);
+          return 0n;
         }
       }
       default:
@@ -953,7 +958,7 @@ export class OpenSeaSDK {
     startAmount: BigNumberish,
     endAmount?: BigNumberish,
   ) {
-    const isEther = tokenAddress === ethers.constants.AddressZero;
+    const isEther = tokenAddress === ethers.ZeroAddress;
     let paymentToken: OpenSeaPaymentToken | undefined;
     if (!isEther) {
       paymentToken = await this.api.getPaymentToken(tokenAddress);
@@ -963,35 +968,30 @@ export class OpenSeaSDK {
     }
     const decimals = paymentToken?.decimals ?? 18;
 
-    const startAmountWei = ethers.utils.parseUnits(
-      startAmount.toString(),
-      decimals,
-    );
+    const startAmountWei = ethers.parseUnits(startAmount.toString(), decimals);
     const endAmountWei = endAmount
-      ? ethers.utils.parseUnits(endAmount.toString(), decimals)
+      ? ethers.parseUnits(endAmount.toString(), decimals)
       : undefined;
     const priceDiffWei =
-      endAmountWei !== undefined
-        ? startAmountWei.sub(endAmountWei)
-        : BigNumber.from(0);
+      endAmountWei !== undefined ? startAmountWei - endAmountWei : 0n;
 
     const basePrice = startAmountWei;
     const endPrice = endAmountWei;
     const extra = priceDiffWei;
 
     // Validation
-    if (startAmount == null || startAmountWei.lt(0)) {
+    if (startAmount == null || startAmountWei < 0) {
       throw new Error(`Starting price must be a number >= 0`);
     }
     if (isEther && orderSide === OrderSide.BID) {
       throw new Error(`Offers must use wrapped ETH or an ERC-20 token.`);
     }
-    if (priceDiffWei.lt(0)) {
+    if (priceDiffWei < 0) {
       throw new Error(
         "End price must be less than or equal to the start price.",
       );
     }
-    if (priceDiffWei.gt(0) && BigNumber.from(expirationTime).isZero()) {
+    if (priceDiffWei > 0 && BigInt(expirationTime) === 0n) {
       throw new Error(
         "Expiration time must be set if order will change in price.",
       );
@@ -1008,13 +1008,16 @@ export class OpenSeaSDK {
    * @param accountAddress The account address to check is available.
    */
   private async _requireAccountIsAvailable(accountAddress: string) {
-    const accountAddressChecksummed = ethers.utils.getAddress(accountAddress);
+    const accountAddressChecksummed = ethers.getAddress(accountAddress);
     const availableAccounts: string[] = [];
 
     if ("address" in this._signerOrProvider) {
       availableAccounts.push(this._signerOrProvider.address as string);
     } else if ("listAccounts" in this._signerOrProvider) {
-      availableAccounts.push(...(await this._signerOrProvider.listAccounts()));
+      const addresses = (await this._signerOrProvider.listAccounts()).map(
+        (acct) => acct.address,
+      );
+      availableAccounts.push(...addresses);
     }
 
     if (availableAccounts.includes(accountAddressChecksummed)) {

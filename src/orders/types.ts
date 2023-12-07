@@ -1,6 +1,5 @@
-import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport_v1_4/contracts/Seaport";
+import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport_v1_5/contracts/Seaport";
 import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
-import { BigNumber } from "ethers";
 import { OpenSeaAccount, OrderSide } from "../types";
 
 // Protocol data
@@ -41,7 +40,7 @@ export type OrderV2 = {
   /** The contract address of the protocol. */
   protocolAddress: string;
   /** The current price of the order. */
-  currentPrice: BigNumber;
+  currentPrice: bigint;
   /** The maker fees for the order. */
   makerFees: OrderFee[];
   /** The taker fees for the order. */
