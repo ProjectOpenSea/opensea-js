@@ -14,7 +14,7 @@ import {
   getBestListingAPIPath,
   getAllOffersAPIPath,
   getAllListingsAPIPath,
-  getPaymentTokensPath,
+  getPaymentTokenPath,
   getAccountPath,
   getCollectionStatsPath,
   getBestListingsAPIPath,
@@ -26,7 +26,6 @@ import {
   GetNFTResponse,
   ListCollectionOffersResponse,
   GetOrdersResponse,
-  GetPaymentTokensResponse,
   GetBestOfferResponse,
   GetBestListingResponse,
   GetOffersResponse,
@@ -58,7 +57,7 @@ import {
   OpenSeaAccount,
   OpenSeaCollection,
   OpenSeaCollectionStats,
-  OpenSeaPaymentTokensQuery,
+  OpenSeaPaymentToken,
   OrderSide,
 } from "../types";
 import {
@@ -488,7 +487,7 @@ export class OpenSeaAPI {
   public async getCollection(slug: string): Promise<OpenSeaCollection> {
     const path = getCollectionPath(slug);
     const response = await this.get<GetCollectionResponse>(path);
-    return collectionFromJSON(response.collection);
+    return collectionFromJSON(response);
   }
 
   /**
@@ -505,26 +504,19 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Fetch list of fungible tokens.
+   * Fetch a payment token.
    * @param query Query to use for getting tokens. See {@link OpenSeaPaymentTokenQuery}.
    * @param next The cursor for the next page of results. This is returned from a previous request.
-   * @returns The {@link GetPaymentTokensResponse} returned by the API.
+   * @returns The {@link OpenSeaPaymentToken} returned by the API.
    */
-  public async getPaymentTokens(
-    query: OpenSeaPaymentTokensQuery = {},
-    next?: string,
-  ): Promise<GetPaymentTokensResponse> {
-    const json = await this.get<GetPaymentTokensResponse>(
-      getPaymentTokensPath(),
-      {
-        ...query,
-        limit: this.pageSize,
-        next,
-      },
+  public async getPaymentToken(
+    address: string,
+    chain = this.chain,
+  ): Promise<OpenSeaPaymentToken> {
+    const json = await this.get<OpenSeaPaymentToken>(
+      getPaymentTokenPath(chain, address),
     );
-    return {
-      tokens: json.tokens.map((t) => paymentTokenFromJSON(t)),
-    };
+    return paymentTokenFromJSON(json);
   }
 
   /**
@@ -535,7 +527,6 @@ export class OpenSeaAPI {
    */
   public async getAccount(address: string): Promise<OpenSeaAccount> {
     const json = await this.get<OpenSeaAccount>(getAccountPath(address));
-
     return accountFromJSON(json);
   }
 

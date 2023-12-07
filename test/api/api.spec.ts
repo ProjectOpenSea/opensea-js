@@ -27,7 +27,8 @@ suite("API", () => {
           mainAPI.logger = oldLogger;
         }
       };
-      mainAPI.getPaymentTokens({ symbol: "WETH" });
+      const wethAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+      mainAPI.getPaymentToken(wethAddress);
     });
 
     await logPromise;
@@ -38,7 +39,7 @@ suite("API", () => {
     try {
       await mainAPI.getNFT(BAYC_CONTRACT_ADDRESS, "404040");
     } catch (error) {
-      assert.include((error as Error).message, "status=404");
+      assert.include((error as Error).message, "not found");
     }
   });
 });

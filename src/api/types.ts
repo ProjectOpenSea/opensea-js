@@ -5,7 +5,7 @@ import {
   ProtocolData,
   QueryCursors,
 } from "../orders/types";
-import { OpenSeaCollection, OpenSeaPaymentToken } from "../types";
+import { OpenSeaCollection } from "../types";
 
 /**
  * Response from OpenSea API for building an offer.
@@ -171,15 +171,6 @@ export type GetBestOfferResponse = Offer | CollectionOffer;
  * @category API Response Types
  */
 export type GetBestListingResponse = Listing;
-
-/**
- * Response from OpenSea API for fetching payment tokens.
- * @category API Response Types
- */
-export type GetPaymentTokensResponse = {
-  /** List of {@link OpenSeaPaymentToken} */
-  tokens: OpenSeaPaymentToken[];
-};
 
 /**
  * NFT type returned by OpenSea API.

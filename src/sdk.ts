@@ -273,7 +273,7 @@ export class OpenSeaSDK {
     }
     for (const fee of collectionFees) {
       considerationItems.push(
-        getConsiderationItem(fee.fee * INVERSE_BASIS_POINT, fee.recipient),
+        getConsiderationItem(fee.fee * 100, fee.recipient),
       );
     }
     return considerationItems;
@@ -956,13 +956,10 @@ export class OpenSeaSDK {
     const isEther = tokenAddress === ethers.constants.AddressZero;
     let paymentToken: OpenSeaPaymentToken | undefined;
     if (!isEther) {
-      const { tokens } = await this.api.getPaymentTokens({
-        address: tokenAddress,
-      });
-      if (!tokens) {
+      paymentToken = await this.api.getPaymentToken(tokenAddress);
+      if (!paymentToken) {
         throw new Error(`No payment token found for ${tokenAddress}`);
       }
-      paymentToken = tokens[0];
     }
     const decimals = paymentToken?.decimals ?? 18;
 

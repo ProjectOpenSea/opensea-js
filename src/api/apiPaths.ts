@@ -44,12 +44,12 @@ export const getCollectionStatsPath = (slug: string) => {
   return `/api/v2/collections/${slug}/stats`;
 };
 
-export const getPaymentTokensPath = () => {
-  return `/v2/payment_tokens`;
+export const getPaymentTokenPath = (chain: Chain, address: string) => {
+  return `/v2/chain/${chain}/payment_token/${address}`;
 };
 
 export const getAccountPath = (address: string) => {
-  return `/v2/account/${address}`;
+  return `/v2/accounts/${address}`;
 };
 
 export const getBuildOfferPath = () => {

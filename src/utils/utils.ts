@@ -7,7 +7,6 @@ import {
   MAX_EXPIRATION_MONTHS,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
-  INVERSE_BASIS_POINT,
 } from "../constants";
 import {
   Chain,
@@ -41,7 +40,6 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     telegramUrl: collection.telegram_url,
     twitterUsername: collection.twitter_username,
     instagramUsername: collection.instagram_username,
-
     contracts: (collection.contracts ?? []).map((contract: any) => ({
       address: contract.address,
       chain: contract.chain,
@@ -53,7 +51,10 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
   };
 };
 
-export const rarityFromJSON = (rarity: any): RarityStrategy => {
+export const rarityFromJSON = (rarity: any): RarityStrategy | null => {
+  if (!rarity) {
+    return null;
+  }
   const fromJSON: RarityStrategy = {
     strategyId: rarity.strategy_id,
     strategyVersion: rarity.strategy_version,
@@ -70,7 +71,8 @@ export const paymentTokenFromJSON = (token: any): OpenSeaPaymentToken => {
     symbol: token.symbol,
     decimals: token.decimals,
     address: token.address,
-    imageUrl: token.image_url,
+    chain: token.chain,
+    imageUrl: token.image,
     ethPrice: token.eth_price,
     usdPrice: token.usd_price,
   };
@@ -200,7 +202,7 @@ export const getWETHAddress = (chain: Chain) => {
     case Chain.ZoraTestnet:
       return "0x4200000000000000000000000000000000000006";
     default:
-      throw new Error(`WETH is not supported on ${chain}`);
+      throw new Error(`Unknown WETH address for ${chain}`);
   }
 };
 
@@ -223,7 +225,7 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
  * @returns sum of basis points
  */
 export const feesToBasisPoints = (fees: Fee[]): number => {
-  const feeBasisPoints = fees.map((fee) => fee.fee * INVERSE_BASIS_POINT);
+  const feeBasisPoints = fees.map((fee) => fee.fee * 100);
   return feeBasisPoints.reduce((sum, basisPoints) => basisPoints + sum, 0);
 };
 

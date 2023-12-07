@@ -320,6 +320,7 @@ export interface OpenSeaPaymentToken {
   symbol: string;
   decimals: number;
   address: string;
+  chain: Chain;
   imageUrl?: string;
   ethPrice?: string;
   usdPrice?: string;

@@ -68,11 +68,10 @@ const order = await openseaSDK.createListing({
 });
 ```
 
-You can use `getPaymentTokens` to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:
+You can use `getPaymentToken` to search for payment tokens by address. And you can even list all orders for a specific ERC-20 token by querying the API:
 
 ```typescript
-const token = (await openseaSDK.api.getPaymentTokens({ symbol: "MANA" }))
-  .tokens[0];
+const token = await openseaSDK.api.getPaymentToken(paymentTokenAddress);
 
 const order = await openseaSDK.api.getOrders({
   side: OrderSide.ASK,
