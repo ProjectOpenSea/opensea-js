@@ -42,7 +42,7 @@ const balance = await openseaSDK.getBalance({
   asset,
 });
 
-const ownsKitty = balance.gt(0);
+const ownsKitty = balance > 0n;
 ```
 
 ### Making Offers

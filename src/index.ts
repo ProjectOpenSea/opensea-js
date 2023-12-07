@@ -6,7 +6,7 @@ import { OpenSeaSDK } from "./sdk";
  * ```ts
  * import { ethers } from 'ethers'
  * import { OpenSeaSDK, Chain } from 'opensea-js'
- * const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io')
+ * const provider = new ethers.JsonRpcProvider('https://mainnet.infura.io')
  * const client = new OpenSeaSDK(provider, {
  *   chain: Chain.Mainnet
  * })

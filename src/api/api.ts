@@ -559,7 +559,7 @@ export class OpenSeaAPI {
   public async get<T>(apiPath: string, query: object = {}): Promise<T> {
     const qs = this.objectToSearchParams(query);
     const url = `${this.apiBaseUrl}${apiPath}?${qs}`;
-    return await this._fetch({ url });
+    return await this._fetch(url);
   }
 
   /**
@@ -572,14 +572,10 @@ export class OpenSeaAPI {
   public async post<T>(
     apiPath: string,
     body?: object,
-    opts?: ethers.utils.ConnectionInfo,
+    opts?: object,
   ): Promise<T> {
-    const options = {
-      url: `${this.apiBaseUrl}${apiPath}`,
-      ...opts,
-    };
-
-    return await this._fetch(options, body);
+    const url = `${this.apiBaseUrl}${apiPath}`;
+    return await this._fetch(url, opts, body);
   }
 
   private objectToSearchParams(params: object = {}) {
@@ -601,24 +597,29 @@ export class OpenSeaAPI {
    * @param opts ethers ConnectionInfo, similar to Fetch API
    * @param body Optional body to send. If set, will POST, otherwise GET
    */
-  private async _fetch(opts: ethers.utils.ConnectionInfo, body?: object) {
-    const headers = {
+  private async _fetch(url: string, headers?: object, body?: object) {
+    headers = {
       "x-app-id": "opensea-js",
       ...(this.apiKey ? { "X-API-KEY": this.apiKey } : {}),
-      ...opts.headers,
+      ...headers,
     };
-    const req = {
-      ...opts,
-      headers,
-    };
+
+    const req = new ethers.FetchRequest(url);
+    for (const [key, value] of Object.entries(headers)) {
+      req.setHeader(key, value);
+    }
+    if (body) {
+      req.body = body;
+    }
 
     this.logger(
-      `Sending request: ${opts.url} ${JSON.stringify(req).slice(0, 200)}...`,
+      `Sending request: ${url} ${JSON.stringify({
+        request: req,
+        headers: req.headers,
+      })}`,
     );
 
-    return await ethers.utils.fetchJson(
-      req,
-      body ? JSON.stringify(body) : undefined,
-    );
+    const response = await req.send();
+    return response.bodyJson;
   }
 }

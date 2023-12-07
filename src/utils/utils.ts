@@ -2,7 +2,7 @@ import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import {
   MAX_EXPIRATION_MONTHS,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
@@ -115,8 +115,8 @@ export const feeFromJSON = (fee: any): Fee => {
  * @param value Value in ETH to send with data
  */
 export async function estimateGas(
-  provider: ethers.providers.Provider,
-  { from, to, data, value = BigNumber.from(0) }: ethers.Transaction,
+  provider: ethers.Provider,
+  { from, to, data, value = 0n }: ethers.Transaction,
 ) {
   return await provider.estimateGas({
     from,
@@ -258,9 +258,9 @@ export const isTestChain = (chain: Chain): boolean => {
  * @param protocolAddress The protocol address
  */
 export const isValidProtocol = (protocolAddress: string): boolean => {
-  const checkSumAddress = ethers.utils.getAddress(protocolAddress);
+  const checkSumAddress = ethers.getAddress(protocolAddress);
   const validProtocolAddresses = [CROSS_CHAIN_SEAPORT_V1_5_ADDRESS].map(
-    (address) => ethers.utils.getAddress(address),
+    (address) => ethers.getAddress(address),
   );
   return validProtocolAddresses.includes(checkSumAddress);
 };
@@ -276,7 +276,7 @@ export const requireValidProtocol = (protocolAddress: string) => {
 };
 
 /**
- * Decodes an encoded string of token IDs into an array of individual token IDs using BigNumber for precise calculations.
+ * Decodes an encoded string of token IDs into an array of individual token IDs using bigint for precise calculations.
  *
  * The encoded token IDs can be in the following formats:
  * 1. Single numbers: '123' => ['123']
@@ -288,7 +288,7 @@ export const requireValidProtocol = (protocolAddress: string) => {
  * @param encodedTokenIds - The encoded string of token IDs to be decoded.
  * @returns An array of individual token IDs after decoding the input.
  *
- * @throws {Error} If the input is not correctly formatted or if BigNumber operations fail.
+ * @throws {Error} If the input is not correctly formatted or if bigint operations fail.
  *
  * @example
  * const encoded = '1,3:5,8';
@@ -321,21 +321,21 @@ export const decodeTokenIds = (encodedTokenIds: string): string[] => {
   for (const range of ranges) {
     if (range.includes(":")) {
       const [startStr, endStr] = range.split(":");
-      const start = BigNumber.from(startStr);
-      const end = BigNumber.from(endStr);
-      const diff = end.sub(start).add(1);
+      const start = BigInt(startStr);
+      const end = BigInt(endStr);
+      const diff = end - start + 1n;
 
-      if (diff.lte(0)) {
+      if (diff <= 0) {
         throw new Error(
           `Invalid range. End value: ${end} must be greater than or equal to the start value: ${start}.`,
         );
       }
 
-      for (let i = BigNumber.from(0); i.lt(diff); i = i.add(1)) {
-        tokenIds.push(start.add(i).toString());
+      for (let i = 0n; i < diff; i += 1n) {
+        tokenIds.push((start + i).toString());
       }
     } else {
-      const tokenId = BigNumber.from(range);
+      const tokenId = BigInt(range);
       tokenIds.push(tokenId.toString());
     }
   }
