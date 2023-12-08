@@ -1,7 +1,7 @@
 {
   "name": "opensea-js",
   "version": "7.0.0",
-  "description": "JavaScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data!",
+  "description": "TypeScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data",
   "license": "MIT",
   "author": "OpenSea Developers",
   "homepage": "https://docs.opensea.io/reference/api-overview",
@@ -76,6 +76,7 @@
     "crypto",
     "ethereum",
     "javascript",
+    "typescript",
     "marketplace",
     "nft",
     "node",

@@ -12,7 +12,7 @@
 
 # OpenSea.js <!-- omit in toc -->
 
-This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs.
+This is the TypeScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs.
 
 It allows developers to access the official orderbook, filter it, create listings and offers, and complete trades programmatically.
 
