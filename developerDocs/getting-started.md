@@ -28,7 +28,7 @@ Also see methods `getNFTsByCollection`, `getNFTsByContract`, and `getNFTsByAccou
 #### Checking Balances and Ownerships
 
 ```typescript
-import { TokenStandard } from "opensea-js/lib/types";
+import { TokenStandard } from "opensea-js";
 
 const asset = {
   // CryptoKitties
