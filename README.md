@@ -12,11 +12,11 @@
 
 # OpenSea.js <!-- omit in toc -->
 
-This is the JavaScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs.
+This is the TypeScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs.
 
 It allows developers to access the official orderbook, filter it, create listings and offers, and complete trades programmatically.
 
-Get started by [requesting an API key](https://docs.opensea.io/reference/api-keys) and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders on-chain, and listen to events (like `ApproveAllAssets` or `WrapEth`) in the process.
+Get started by [requesting an API key](https://docs.opensea.io/reference/api-keys) and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders on-chain, and listen to events in the process.
 
 Happy seafaring! ⛵️
 

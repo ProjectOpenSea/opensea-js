@@ -15,22 +15,17 @@ const client = new OpenSeaSDK(
 
 suite("SDK: orders", () => {
   test("Fungible tokens filter", async () => {
-    const manaTokens = (await client.api.getPaymentTokens({ symbol: "MANA" }))
-      .tokens;
-    assert.equal(manaTokens.length, 1);
-    const mana = manaTokens[0];
-    assert.isNotNull(mana);
-    assert.equal(mana.name, "Decentraland MANA");
-    assert.equal(mana.address, "0x0f5d2fb29fb7d3cfee444a200298f468908cc942");
-    assert.equal(mana.decimals, 18);
+    const manaAddress = "0x0f5d2fb29fb7d3cfee444a200298f468908cc942";
+    const manaPaymentToken = await client.api.getPaymentToken(manaAddress);
+    assert.isNotNull(manaPaymentToken);
+    assert.equal(manaPaymentToken.name, "Decentraland MANA");
+    assert.equal(manaPaymentToken.address, manaAddress);
+    assert.equal(manaPaymentToken.decimals, 18);
 
-    const dai = (await client.api.getPaymentTokens({ symbol: "DAI" }))
-      .tokens[0];
-    assert.isNotNull(dai);
-    assert.equal(dai.name, "Dai Stablecoin");
-    assert.equal(dai.decimals, 18);
-
-    const all = await client.api.getPaymentTokens();
-    assert.isNotEmpty(all);
+    const daiAddress = "0x6b175474e89094c44da98b954eedeac495271d0f";
+    const daiPaymentToken = await client.api.getPaymentToken(daiAddress);
+    assert.isNotNull(daiPaymentToken);
+    assert.equal(daiPaymentToken.name, "Dai Stablecoin");
+    assert.equal(daiPaymentToken.decimals, 18);
   });
 });

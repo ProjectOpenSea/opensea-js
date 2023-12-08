@@ -1,7 +1,7 @@
 {
   "name": "opensea-js",
-  "version": "6.1.15",
-  "description": "JavaScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data!",
+  "version": "7.0.0",
+  "description": "TypeScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data",
   "license": "MIT",
   "author": "OpenSea Developers",
   "homepage": "https://docs.opensea.io/reference/api-overview",
@@ -18,9 +18,8 @@
     "src"
   ],
   "scripts": {
-    "abi-type-gen": "typechain --target=ethers-v5 src/abi/*.json --out-dir=src/typechain/contracts",
-    "build": "npm run abi-type-gen && tsc -p tsconfig.build.json && npm run bundle",
-    "bundle": "browserify lib/index.js -o lib/bundle.js",
+    "abi-type-gen": "typechain --target=ethers-v6 src/abi/*.json --out-dir=src/typechain/contracts",
+    "build": "npm run abi-type-gen && tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit --project tsconfig.json",
     "coverage-report": "nyc report --reporter=lcov",
     "docs-build": "typedoc",
@@ -39,18 +38,17 @@
   },
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@opensea/seaport-js": "^2.0.8",
-    "ethers": "^5.7.2"
+    "@opensea/seaport-js": "^3.0.0",
+    "ethers": "^6.9.0"
   },
   "devDependencies": {
-    "@typechain/ethers-v5": "^11.0.0",
+    "@typechain/ethers-v6": "^0.5.1",
     "@types/chai": "4.3.11",
     "@types/chai-as-promised": "^7.1.5",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "browserify": "^17.0.0",
     "chai": "4.3.10",
     "chai-as-promised": "^7.1.1",
     "concurrently": "^8.2.0",
@@ -60,7 +58,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.0.0",
     "eslint-plugin-import": "^2.25.3",
-    "eslint-plugin-prettier": "^5.0.0-alpha.2",
+    "eslint-plugin-prettier": "^5.0.1",
     "husky": "^8.0.3",
     "lint-staged": "^15.0.0",
     "mocha": "^10.0.0",
@@ -78,6 +76,7 @@
     "crypto",
     "ethereum",
     "javascript",
+    "typescript",
     "marketplace",
     "nft",
     "node",

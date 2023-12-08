@@ -99,3 +99,13 @@ suite("SDK: getBestListing", () => {
     );
   });
 });
+
+suite("SDK: getBestListings", () => {
+  test("Get Best Listing", async () => {
+    const slug = "cool-cats-nft";
+    const response = await sdk.api.getBestListings(slug);
+
+    assert(response, "Response should not be null");
+    assert(response.listings, "Listings should not be null");
+  });
+});

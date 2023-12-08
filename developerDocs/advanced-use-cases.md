@@ -36,7 +36,7 @@ const order = await openseaSDK.createListing({
 You can buy and transfer an item to someone else in one step! Just pass the `recipientAddress` parameter:
 
 ```typescript
-const order = await openseaSDK.api.getOrder({ side: "ask", ... })
+const order = await openseaSDK.api.getOrder({ side: OrderSide.ASK, ... })
 await openseaSDK.fulfillOrder({
   order,
   accountAddress, // The address of your wallet, which will sign the transaction
@@ -44,7 +44,7 @@ await openseaSDK.fulfillOrder({
 })
 ```
 
-If the order is a listing (sell order, `order.side === "ask"`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is an offer (buy order, `"bid"`), the taker is the _seller_ but the bid amount be sent to the `recipientAddress`.
+If the order is a listing (sell order, `order.side === OrderSide.ASK`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is an offer (buy order, `"bid"`), the taker is the _seller_ but the bid amount be sent to the `recipientAddress`.
 
 This will automatically approve the assets for trading and confirm the transaction for sending them.
 
@@ -68,14 +68,13 @@ const order = await openseaSDK.createListing({
 });
 ```
 
-You can use `getPaymentTokens` to search for tokens by symbol name. And you can even list all orders for a specific ERC-20 token by querying the API:
+You can use `getPaymentToken` to search for payment tokens by address. And you can even list all orders for a specific ERC-20 token by querying the API:
 
 ```typescript
-const token = (await openseaSDK.api.getPaymentTokens({ symbol: "MANA" }))
-  .tokens[0];
+const token = await openseaSDK.api.getPaymentToken(paymentTokenAddress);
 
 const order = await openseaSDK.api.getOrders({
-  side: "ask",
+  side: OrderSide.ASK,
   paymentTokenAddress: token.address,
 });
 ```
@@ -110,34 +109,35 @@ Events are fired whenever transactions or orders are being created, and when tra
 Our recommendation is that you "forward" OpenSea events to your own store or state management system. Here are examples of listening to the events:
 
 ```typescript
-import { openSeaSDK, EventType } from 'opensea-js'
+import { OpenSeaSDK, EventType } from 'opensea-js'
+const sdk = new OpenSeaSDK(...);
 
 handleSDKEvents() {
-    openSeaSDK.addListener(EventType.TransactionCreated, ({ transactionHash, event }) => {
+    sdk.addListener(EventType.TransactionCreated, ({ transactionHash, event }) => {
       console.info('Transaction created: ', { transactionHash, event })
     })
-    openSeaSDK.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) => {
+    sdk.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) => {
       console.info('Transaction confirmed: ',{ transactionHash, event })
     })
-    openSeaSDK.addListener(EventType.TransactionDenied, ({ transactionHash, event }) => {
+    sdk.addListener(EventType.TransactionDenied, ({ transactionHash, event }) => {
       console.info('Transaction denied: ',{ transactionHash, event })
     })
-    openSeaSDK.addListener(EventType.TransactionFailed, ({ transactionHash, event }) => {
+    sdk.addListener(EventType.TransactionFailed, ({ transactionHash, event }) => {
       console.info('Transaction failed: ',{ transactionHash, event })
     })
-    openSeaSDK.addListener(EventType.WrapEth, ({ accountAddress, amount }) => {
+    sdk.addListener(EventType.WrapEth, ({ accountAddress, amount }) => {
       console.info('Wrap ETH: ',{ accountAddress, amount })
     })
-    openSeaSDK.addListener(EventType.UnwrapWeth, ({ accountAddress, amount }) => {
+    sdk.addListener(EventType.UnwrapWeth, ({ accountAddress, amount }) => {
       console.info('Unwrap ETH: ',{ accountAddress, amount })
     })
-    openSeaSDK.addListener(EventType.MatchOrders, ({ buy, sell, accountAddress }) => {
+    sdk.addListener(EventType.MatchOrders, ({ buy, sell, accountAddress }) => {
       console.info('Match orders: ', { buy, sell, accountAddress })
     })
-    openSeaSDK.addListener(EventType.CancelOrder, ({ order, accountAddress }) => {
+    sdk.addListener(EventType.CancelOrder, ({ order, accountAddress }) => {
       console.info('Cancel order: ', { order, accountAddress })
     })
 }
 ```
 
-To remove all listeners call `openseaSDK.removeAllListeners()`.
+To remove all listeners call `sdk.removeAllListeners()`.

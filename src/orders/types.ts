@@ -1,7 +1,6 @@
-import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport_v1_4/contracts/Seaport";
+import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport_v1_5/contracts/Seaport";
 import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
-import { BigNumber } from "ethers";
-import { OpenSeaAccount, OpenSeaAssetBundle } from "../types";
+import { OpenSeaAccount, OrderSide } from "../types";
 
 // Protocol data
 type OrderProtocolToProtocolData = {
@@ -12,8 +11,7 @@ export type ProtocolData =
   OrderProtocolToProtocolData[keyof OrderProtocolToProtocolData];
 
 // Protocol agnostic order data
-export type OrderType = "basic" | "dutch" | "english" | "criteria";
-export type OrderSide = "ask" | "bid";
+export type OrderType = "basic" | "english" | "criteria";
 type OrderFee = {
   account: OpenSeaAccount;
   basisPoints: string;
@@ -42,14 +40,14 @@ export type OrderV2 = {
   /** The contract address of the protocol. */
   protocolAddress: string;
   /** The current price of the order. */
-  currentPrice: BigNumber;
+  currentPrice: bigint;
   /** The maker fees for the order. */
   makerFees: OrderFee[];
   /** The taker fees for the order. */
   takerFees: OrderFee[];
   /** The side of the order. Ask/Bid */
   side: OrderSide;
-  /** The type of the order. Basic/Dutch/English/Criteria */
+  /** The type of the order. Basic/English/Criteria */
   orderType: OrderType;
   /** Whether or not the maker has cancelled the order. */
   cancelled: boolean;
@@ -59,10 +57,6 @@ export type OrderV2 = {
   markedInvalid: boolean;
   /** The signature the order is signed with. */
   clientSignature: string | null;
-  /** Bundle of assets from the maker. */
-  makerAssetBundle: OpenSeaAssetBundle;
-  /** Bundle of assets from the taker. */
-  takerAssetBundle: OpenSeaAssetBundle;
   /** Amount of items left in the order which can be taken. */
   remainingQuantity: number;
 };
@@ -106,8 +100,6 @@ export type OrdersQueryOptions = OrderAPIOptions & {
   maker?: string;
   taker?: string;
   owner?: string;
-  bundled?: boolean;
-  includeBundled?: boolean;
   listedAfter?: number | string;
   listedBefore?: number | string;
   tokenId?: string;
@@ -143,8 +135,6 @@ export type SerializedOrderV2 = {
   finalized: boolean;
   marked_invalid: boolean;
   client_signature: string | null;
-  maker_asset_bundle: unknown;
-  taker_asset_bundle: unknown;
   remaining_quantity: number;
 };
 

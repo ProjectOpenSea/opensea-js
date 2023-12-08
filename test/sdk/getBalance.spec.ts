@@ -25,7 +25,7 @@ suite("SDK: getBalance", () => {
       tokenId: null,
     };
     const balance = await client.getBalance({ accountAddress, asset });
-    assert(balance.gt(ethers.utils.parseEther("0.05")));
+    assert(balance > ethers.parseEther("0.05"));
   });
 
   test("Returns balance for ERC721", async () => {
@@ -35,7 +35,7 @@ suite("SDK: getBalance", () => {
       tokenId: "183",
     };
     const balance = await client.getBalance({ accountAddress, asset });
-    assert(balance.eq(1));
+    assert(balance === 1n);
   });
 
   test("Returns balance for ERC1155", async () => {
@@ -45,6 +45,6 @@ suite("SDK: getBalance", () => {
       tokenId: "21",
     };
     const balance = await client.getBalance({ accountAddress, asset });
-    assert(balance.gte(2));
+    assert(balance >= 2n);
   });
 });

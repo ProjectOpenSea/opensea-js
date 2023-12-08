@@ -5,12 +5,7 @@ import {
   ProtocolData,
   QueryCursors,
 } from "../orders/types";
-import {
-  OpenSeaAsset,
-  OpenSeaAssetBundle,
-  OpenSeaCollection,
-  OpenSeaFungibleToken,
-} from "../types";
+import { OpenSeaCollection } from "../types";
 
 /**
  * Response from OpenSea API for building an offer.
@@ -63,6 +58,8 @@ export type Order = {
   protocol_data: ProtocolData;
   /** The contract address of the protocol. */
   protocol_address: string;
+  /** The price of the order. */
+  price: Price;
 };
 
 /**
@@ -99,8 +96,6 @@ export type Price = {
 export type Listing = Order & {
   /** The order type of the listing. */
   type: OrderType;
-  /** The price of the listing. */
-  price: Price;
 };
 
 /**
@@ -130,21 +125,6 @@ export type ListNFTsResponse = {
 export type GetNFTResponse = {
   /** See {@link NFT} */
   nft: NFT;
-};
-
-/**
- * Response from OpenSea API for fetching assets.
- * @category API Response Types
- */
-export type GetAssetsResponse = {
-  /** List of {@link OpenSeaAsset} */
-  assets: OpenSeaAsset[];
-  /** Estimated Total Count of Assets which OpenSea has. */
-  estimatedCount: number;
-  /** Cursor for next page of results. */
-  next: string | undefined;
-  /** This field is no longer returned and always null. */
-  previous: string | undefined;
 };
 
 /**
@@ -191,26 +171,6 @@ export type GetBestOfferResponse = Offer | CollectionOffer;
  * @category API Response Types
  */
 export type GetBestListingResponse = Listing;
-
-/**
- * Response from OpenSea API for fetching payment tokens.
- * @category API Response Types
- */
-export type GetPaymentTokensResponse = {
-  /** List of {@link OpenSeaFungibleToken} */
-  tokens: OpenSeaFungibleToken[];
-};
-
-/**
- * Response from OpenSea API for fetching bundles.
- * @category API Response Types
- */
-export type GetBundlesResponse = {
-  /** List of {@link OpenSeaAssetBundle} */
-  bundles: OpenSeaAssetBundle[];
-  /** Estimated Total Count of Bundles which OpenSea has. */
-  estimatedCount: number;
-};
 
 /**
  * NFT type returned by OpenSea API.
