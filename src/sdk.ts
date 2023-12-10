@@ -957,12 +957,12 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Compute the `basePrice` and `extra` parameters to be used to price an order.
+   * Compute the `basePrice` and `endPrice` parameters to be used to price an order.
    * Also validates the expiration time and auction type.
    * @param tokenAddress Address of the ERC-20 token to use for trading. Use the null address for ETH.
    * @param expirationTime When the auction expires, or 0 if never.
    * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
-   * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
+   * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei)
    */
   private async _getPriceParameters(
     orderSide: OrderSide,
@@ -993,7 +993,6 @@ export class OpenSeaSDK {
 
     const basePrice = startAmountWei;
     const endPrice = endAmountWei;
-    const extra = priceDiffWei;
 
     // Validation
     if (startAmount == null || startAmountWei < 0) {
@@ -1012,7 +1011,7 @@ export class OpenSeaSDK {
         "Expiration time must be set if order will change in price.",
       );
     }
-    return { basePrice, extra, endPrice };
+    return { basePrice, endPrice };
   }
 
   private _dispatch(event: EventType, data: EventData) {
