@@ -10,8 +10,12 @@ export type OrderProtocol = keyof OrderProtocolToProtocolData;
 export type ProtocolData =
   OrderProtocolToProtocolData[keyof OrderProtocolToProtocolData];
 
-// Protocol agnostic order data
-export type OrderType = "basic" | "english" | "criteria";
+export enum OrderType {
+  BASIC = "basic",
+  ENGLISH = "english",
+  CRITERIA = "criteria",
+}
+
 type OrderFee = {
   account: OpenSeaAccount;
   basisPoints: string;
