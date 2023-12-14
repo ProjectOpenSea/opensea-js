@@ -18,7 +18,7 @@ import {
   JsonRpcProvider,
 } from "ethers";
 import { OpenSeaAPI } from "./api/api";
-import { CollectionOffer, NFT } from "./api/types";
+import { CollectionOffer, Listing, NFT, Order } from "./api/types";
 import {
   INVERSE_BASIS_POINT,
   DEFAULT_ZONE,
@@ -30,7 +30,7 @@ import {
   getPrivateListingConsiderations,
   getPrivateListingFulfillments,
 } from "./orders/privateListings";
-import { OrderV2 } from "./orders/types";
+import { OrderType, OrderV2 } from "./orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "./orders/utils";
 import {
   ERC1155__factory,
@@ -686,23 +686,38 @@ export class OpenSeaSDK {
     domain,
     overrides,
   }: {
-    order: OrderV2;
+    order: OrderV2 | Order;
     accountAddress: string;
     recipientAddress?: string;
     domain?: string;
     overrides?: Overrides;
   }): Promise<string> {
     await this._requireAccountIsAvailable(accountAddress);
-    requireValidProtocol(order.protocolAddress);
+
+    const protocolAddress =
+      (order as OrderV2).protocolAddress ?? (order as Order).protocol_address;
+    requireValidProtocol(protocolAddress);
+
+    const orderHash =
+      (order as OrderV2).orderHash ?? (order as Order).order_hash;
+
+    const side =
+      (order as OrderV2).side ??
+      ([OrderType.BASIC, OrderType.ENGLISH].includes((order as Listing).type)
+        ? OrderSide.ASK
+        : OrderSide.BID);
 
     let extraData: string | undefined = undefined;
 
-    if (order.orderHash) {
+    const protocolData =
+      (order as OrderV2).protocolData ?? (order as Order).protocol_data;
+
+    if (orderHash) {
       const result = await this.api.generateFulfillmentData(
         accountAddress,
-        order.orderHash,
-        order.protocolAddress,
-        order.side,
+        orderHash,
+        protocolAddress,
+        side,
       );
 
       // If the order is using offer protection, the extraData
@@ -711,13 +726,11 @@ export class OpenSeaSDK {
       if ("orders" in inputData && "extraData" in inputData.orders[0]) {
         extraData = (inputData.orders[0] as AdvancedOrder).extraData;
       }
-
       const signature = result.fulfillment_data.orders[0].signature;
-      order.clientSignature = signature;
-      order.protocolData.signature = signature;
+      protocolData.signature = signature;
     }
 
-    const isPrivateListing = !!order.taker;
+    const isPrivateListing = "taker" in order ? !!order.taker : false;
     if (isPrivateListing) {
       if (recipientAddress) {
         throw new Error(
@@ -725,7 +738,7 @@ export class OpenSeaSDK {
         );
       }
       return this.fulfillPrivateOrder({
-        order,
+        order: order as OrderV2,
         accountAddress,
         domain,
         overrides,
@@ -733,7 +746,7 @@ export class OpenSeaSDK {
     }
 
     const { executeAllActions } = await this.seaport_v1_5.fulfillOrder({
-      order: order.protocolData,
+      order: protocolData,
       accountAddress,
       recipientAddress,
       extraData,

@@ -22,10 +22,28 @@ type PartialParameters = {
   zoneHash: string;
 };
 
+/**
+ * Criteria for collection or trait offers.
+ * @category API Response Types
+ */
 type Criteria = {
+  /** The collection for the criteria */
   collection: CollectionCriteria;
-  contract?: ContractCriteria;
+  /** The contract for the criteria */
+  contract: ContractCriteria;
+  /** Represents a list of token ids which can be used to fulfill the criteria offer. */
   encoded_token_ids?: string;
+  /** The trait for the criteria */
+  trait?: TraitCriteria;
+};
+
+/**
+ * Criteria for trait offers.
+ * @category API Response Types
+ */
+type TraitCriteria = {
+  type: string;
+  value: string;
 };
 
 type CollectionCriteria = {
@@ -66,16 +84,16 @@ export type Order = {
  * Offer type.
  * @category API Models
  */
-export type Offer = Order;
+export type Offer = Order & {
+  /** The criteria for the offer if it is a collection or trait offer. */
+  criteria?: Criteria;
+};
 
 /**
  * Collection Offer type.
  * @category API Models
  */
-export type CollectionOffer = Offer & {
-  /** Defines which NFTs meet the criteria to fulfill the offer. */
-  criteria: Criteria;
-};
+export type CollectionOffer = Required<Pick<Offer, "criteria">> & Offer;
 
 /**
  * Price response.
