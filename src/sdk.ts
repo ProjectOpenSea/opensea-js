@@ -45,7 +45,6 @@ import {
   OpenSeaCollection,
   OrderSide,
   TokenStandard,
-  OpenSeaPaymentToken,
   AssetWithTokenStandard,
   AssetWithTokenId,
 } from "./types";
@@ -67,7 +66,7 @@ import {
 export class OpenSeaSDK {
   /** Provider to use for transactions. */
   public provider: JsonRpcProvider;
-  /** Seaport v1.5 client  @see {@link https://github.com/ProjectOpenSea/seaport}*/
+  /** Seaport v1.5 client @see {@link https://github.com/ProjectOpenSea/seaport-js} */
   public seaport_v1_5: Seaport;
   /** Logger function to use when debugging */
   public logger: (arg: string) => void;
@@ -75,6 +74,8 @@ export class OpenSeaSDK {
   public readonly api: OpenSeaAPI;
   /** The configured chain */
   public readonly chain: Chain;
+  /** Internal cache of decimals for payment tokens to save network requests */
+  private _cachedPaymentTokenDecimals: { [address: string]: number } = {};
 
   private _emitter: EventEmitter;
   private _signerOrProvider: Signer | JsonRpcProvider;
@@ -111,6 +112,19 @@ export class OpenSeaSDK {
 
     // Logger: default to no logging if fn not provided
     this.logger = logger ?? ((arg: string) => arg);
+
+    // Cache decimals for WETH payment token to skip network request
+    try {
+      const wethAddress = getWETHAddress(this.chain).toLowerCase();
+      this._cachedPaymentTokenDecimals[wethAddress] = 18;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (error.message.includes("Unknown WETH address")) {
+        // Ignore
+      } else {
+        console.error(error);
+      }
+    }
   }
 
   /**
@@ -943,13 +957,12 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Compute the `basePrice` and `extra` parameters to be used to price an order.
+   * Compute the `basePrice` and `endPrice` parameters to be used to price an order.
    * Also validates the expiration time and auction type.
-   * @param tokenAddress Address of the ERC-20 token to use for trading.
-   * Use the null address for ETH
+   * @param tokenAddress Address of the ERC-20 token to use for trading. Use the null address for ETH.
    * @param expirationTime When the auction expires, or 0 if never.
    * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
-   * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei). If unspecified, the order's `extra` attribute will be 0
+   * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei)
    */
   private async _getPriceParameters(
     orderSide: OrderSide,
@@ -958,15 +971,18 @@ export class OpenSeaSDK {
     startAmount: BigNumberish,
     endAmount?: BigNumberish,
   ) {
+    tokenAddress = tokenAddress.toLowerCase();
     const isEther = tokenAddress === ethers.ZeroAddress;
-    let paymentToken: OpenSeaPaymentToken | undefined;
+    let decimals = 18;
     if (!isEther) {
-      paymentToken = await this.api.getPaymentToken(tokenAddress);
-      if (!paymentToken) {
-        throw new Error(`No payment token found for ${tokenAddress}`);
+      if (tokenAddress in this._cachedPaymentTokenDecimals) {
+        decimals = this._cachedPaymentTokenDecimals[tokenAddress];
+      } else {
+        const paymentToken = await this.api.getPaymentToken(tokenAddress);
+        this._cachedPaymentTokenDecimals[tokenAddress] = paymentToken.decimals;
+        decimals = paymentToken.decimals;
       }
     }
-    const decimals = paymentToken?.decimals ?? 18;
 
     const startAmountWei = ethers.parseUnits(startAmount.toString(), decimals);
     const endAmountWei = endAmount
@@ -977,7 +993,6 @@ export class OpenSeaSDK {
 
     const basePrice = startAmountWei;
     const endPrice = endAmountWei;
-    const extra = priceDiffWei;
 
     // Validation
     if (startAmount == null || startAmountWei < 0) {
@@ -996,7 +1011,7 @@ export class OpenSeaSDK {
         "Expiration time must be set if order will change in price.",
       );
     }
-    return { basePrice, extra, paymentToken, endPrice };
+    return { basePrice, endPrice };
   }
 
   private _dispatch(event: EventType, data: EventData) {
