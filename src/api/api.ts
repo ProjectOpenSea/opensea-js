@@ -620,6 +620,17 @@ export class OpenSeaAPI {
     );
 
     const response = await req.send();
+    if (!response.ok) {
+      // If an errors array is returned, throw with the error messages.
+      const errors = response.bodyJson?.errors;
+      if (errors?.length > 0) {
+        throw new Error(`Server Error: ${errors.join(", ")}`);
+      } else {
+        // Otherwise, let ethers throw a SERVER_ERROR error since it will include
+        // more context about the request and response.
+        response.assertOk();
+      }
+    }
     return response.bodyJson;
   }
 }
