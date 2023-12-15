@@ -626,7 +626,7 @@ export class OpenSeaAPI {
       if (errors?.length > 0) {
         throw new Error(`Server Error: ${errors.join(", ")}`);
       } else {
-        // Otherwise, let ethers throw a SERVER_ERROR error since it will include
+        // Otherwise, let ethers throw a SERVER_ERROR since it will include
         // more context about the request and response.
         response.assertOk();
       }
