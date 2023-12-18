@@ -620,7 +620,7 @@ export class OpenSeaAPI {
     );
 
     const response = await req.send();
-    if (!response.ok) {
+    if (!response.ok()) {
       // If an errors array is returned, throw with the error messages.
       const errors = response.bodyJson?.errors;
       if (errors?.length > 0) {
