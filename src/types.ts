@@ -129,7 +129,7 @@ export enum Chain {
   /** Klaytn Baobab */
   Baobab = "baobab",
   /** Base L2 Testnet */
-  BaseGoerli = "base_goerli",
+  BaseSepolia = "base_sepolia",
   /** Binance Smart Chain Testnet */
   BNBTestnet = "bsctestnet",
   /** Arbitrum Testnet */

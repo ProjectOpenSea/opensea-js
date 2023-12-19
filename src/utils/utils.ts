@@ -195,7 +195,7 @@ export const getWETHAddress = (chain: Chain) => {
       return "0x980b62da83eff3d4576c647993b0c1d7faf17c73";
     // OP Chains have weth at the same address
     case Chain.Base:
-    case Chain.BaseGoerli:
+    case Chain.BaseSepolia:
     case Chain.Optimism:
     case Chain.OptimismGoerli:
     case Chain.Zora:
@@ -240,7 +240,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.Sepolia:
     case Chain.Mumbai:
     case Chain.Baobab:
-    case Chain.BaseGoerli:
+    case Chain.BaseSepolia:
     case Chain.BNBTestnet:
     case Chain.ArbitrumSepolia:
     case Chain.Fuji:
