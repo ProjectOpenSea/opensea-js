@@ -136,8 +136,8 @@ export enum Chain {
   ArbitrumSepolia = "arbitrum_sepolia",
   /** Avalanche Fuji Testnet */
   Fuji = "avalanche_fuji",
-  /** Optimism Goerli Testnet */
-  OptimismGoerli = "optimism_goerli",
+  /** Optimism Sepolia Testnet */
+  OptimismSepolia = "optimism_sepolia",
   /** Solana Devnet */
   SolanaDevnet = "soldev",
   /** Zora Testnet */
