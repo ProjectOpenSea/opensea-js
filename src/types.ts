@@ -44,6 +44,10 @@ export enum EventType {
    * Emitted when the {@link OpenSeaSDK.approveOrder} method is called.
    */
   ApproveOrder = "ApproveOrder",
+  /**
+   * Emitted when the {@link OpenSeaSDK.transfer} method is called.
+   */
+  Transfer = "Transfer",
 }
 
 /**
