@@ -969,7 +969,7 @@ export class OpenSeaSDK {
 
     switch (asset.tokenStandard) {
       case TokenStandard.ERC20: {
-        if (amount === undefined) {
+        if (!amount) {
           throw new Error("Missing ERC20 amount for transfer");
         }
         const contract = ERC20__factory.connect(
@@ -987,7 +987,7 @@ export class OpenSeaSDK {
         if (asset.tokenId === undefined || asset.tokenId === null) {
           throw new Error("Missing ERC1155 tokenId for transfer");
         }
-        if (amount === undefined) {
+        if (!amount) {
           throw new Error("Missing ERC1155 amount for transfer");
         }
         const contract = ERC1155__factory.connect(
