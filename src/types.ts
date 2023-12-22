@@ -144,8 +144,8 @@ export enum Chain {
   OptimismSepolia = "optimism_sepolia",
   /** Solana Devnet */
   SolanaDevnet = "soldev",
-  /** Zora Testnet */
-  ZoraTestnet = "zora_testnet",
+  /** Zora Sepolia */
+  ZoraSepolia = "zora_sepolia",
 }
 
 /**
