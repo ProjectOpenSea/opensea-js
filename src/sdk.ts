@@ -16,6 +16,7 @@ import {
   ethers,
   parseEther,
   JsonRpcProvider,
+  ContractTransactionResponse,
 } from "ethers";
 import { OpenSeaAPI } from "./api/api";
 import { CollectionOffer, Listing, NFT, Order } from "./api/types";
@@ -897,17 +898,18 @@ export class OpenSeaSDK {
   }): Promise<bigint> {
     switch (asset.tokenStandard) {
       case TokenStandard.ERC20: {
-        const contract = new ethers.Contract(
+        const contract = ERC20__factory.connect(
           asset.tokenAddress,
-          ERC20__factory.createInterface(),
           this.provider,
         );
         return await contract.balanceOf.staticCall(accountAddress);
       }
       case TokenStandard.ERC1155: {
-        const contract = new ethers.Contract(
+        if (asset.tokenId === undefined || asset.tokenId === null) {
+          throw new Error("Missing ERC1155 tokenId for getBalance");
+        }
+        const contract = ERC1155__factory.connect(
           asset.tokenAddress,
-          ERC1155__factory.createInterface(),
           this.provider,
         );
         return await contract.balanceOf.staticCall(
@@ -916,9 +918,11 @@ export class OpenSeaSDK {
         );
       }
       case TokenStandard.ERC721: {
-        const contract = new ethers.Contract(
+        if (asset.tokenId === undefined || asset.tokenId === null) {
+          throw new Error("Missing ERC721 tokenId for getBalance");
+        }
+        const contract = ERC721__factory.connect(
           asset.tokenAddress,
-          ERC721__factory.createInterface(),
           this.provider,
         );
         try {
@@ -935,6 +939,97 @@ export class OpenSeaSDK {
       default:
         throw new Error("Unsupported token standard for getBalance");
     }
+  }
+
+  /**
+   * Transfer an asset. This asset can be an ERC20, ERC1155, or ERC721.
+   * @param options
+   * @param options.asset The Asset to transfer. tokenStandard must be set.
+   * @param options.amount Amount of asset to transfer. Not used for ERC721.
+   * @param options.fromAddress The address to transfer from
+   * @param options.toAddress The address to transfer to
+   * @param options.overrides Transaction overrides, ignored if not set.
+   */
+  public async transfer({
+    asset,
+    amount,
+    fromAddress,
+    toAddress,
+    overrides,
+  }: {
+    asset: AssetWithTokenStandard;
+    amount?: BigNumberish;
+    fromAddress: string;
+    toAddress: string;
+    overrides?: Overrides;
+  }): Promise<void> {
+    this._requireAccountIsAvailable(fromAddress);
+    overrides = { ...overrides, from: fromAddress };
+    let transactionResponse: ContractTransactionResponse;
+
+    switch (asset.tokenStandard) {
+      case TokenStandard.ERC20: {
+        if (amount === undefined) {
+          throw new Error("Missing ERC20 amount for transfer");
+        }
+        const contract = ERC20__factory.connect(
+          asset.tokenAddress,
+          this.provider,
+        );
+        transactionResponse = await contract.transfer(
+          toAddress,
+          amount,
+          overrides,
+        );
+        break;
+      }
+      case TokenStandard.ERC1155: {
+        if (asset.tokenId === undefined || asset.tokenId === null) {
+          throw new Error("Missing ERC1155 tokenId for transfer");
+        }
+        if (amount === undefined) {
+          throw new Error("Missing ERC1155 amount for transfer");
+        }
+        const contract = ERC1155__factory.connect(
+          asset.tokenAddress,
+          this.provider,
+        );
+        transactionResponse = await contract.safeTransferFrom(
+          fromAddress,
+          toAddress,
+          asset.tokenId,
+          amount,
+          "",
+          overrides,
+        );
+        break;
+      }
+      case TokenStandard.ERC721: {
+        if (asset.tokenId === undefined || asset.tokenId === null) {
+          throw new Error("Missing ERC721 tokenId for transfer");
+        }
+        const contract = ERC721__factory.connect(
+          asset.tokenAddress,
+          this.provider,
+        );
+        transactionResponse = await contract.transferFrom(
+          fromAddress,
+          toAddress,
+          asset.tokenId,
+          overrides,
+        );
+        break;
+      }
+      default:
+        throw new Error("Unsupported token standard for transfer");
+    }
+
+    // Await transaction confirmation
+    await this._confirmTransaction(
+      transactionResponse.hash,
+      EventType.Transfer,
+      "Transferring asset",
+    );
   }
 
   /**
