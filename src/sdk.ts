@@ -190,7 +190,6 @@ export class OpenSeaSDK {
       this._signerOrProvider,
     );
 
-    wethContract.connect(this.provider);
     try {
       const transaction = await wethContract.deposit({ value });
       await this._confirmTransaction(
@@ -230,7 +229,6 @@ export class OpenSeaSDK {
       this._signerOrProvider,
     );
 
-    wethContract.connect(this.provider);
     try {
       const transaction = await wethContract.withdraw(amount);
       await this._confirmTransaction(
@@ -963,9 +961,9 @@ export class OpenSeaSDK {
     toAddress: string;
     overrides?: Overrides;
   }): Promise<void> {
-    this._requireAccountIsAvailable(fromAddress);
+    await this._requireAccountIsAvailable(fromAddress);
     overrides = { ...overrides, from: fromAddress };
-    let transactionResponse: ContractTransactionResponse;
+    let transaction: Promise<ContractTransactionResponse>;
 
     switch (asset.tokenStandard) {
       case TokenStandard.ERC20: {
@@ -974,13 +972,9 @@ export class OpenSeaSDK {
         }
         const contract = ERC20__factory.connect(
           asset.tokenAddress,
-          this.provider,
+          this._signerOrProvider,
         );
-        transactionResponse = await contract.transfer(
-          toAddress,
-          amount,
-          overrides,
-        );
+        transaction = contract.transfer(toAddress, amount, overrides);
         break;
       }
       case TokenStandard.ERC1155: {
@@ -992,9 +986,9 @@ export class OpenSeaSDK {
         }
         const contract = ERC1155__factory.connect(
           asset.tokenAddress,
-          this.provider,
+          this._signerOrProvider,
         );
-        transactionResponse = await contract.safeTransferFrom(
+        transaction = contract.safeTransferFrom(
           fromAddress,
           toAddress,
           asset.tokenId,
@@ -1010,9 +1004,9 @@ export class OpenSeaSDK {
         }
         const contract = ERC721__factory.connect(
           asset.tokenAddress,
-          this.provider,
+          this._signerOrProvider,
         );
-        transactionResponse = await contract.transferFrom(
+        transaction = contract.transferFrom(
           fromAddress,
           toAddress,
           asset.tokenId,
@@ -1024,12 +1018,20 @@ export class OpenSeaSDK {
         throw new Error("Unsupported token standard for transfer");
     }
 
-    // Await transaction confirmation
-    await this._confirmTransaction(
-      transactionResponse.hash,
-      EventType.Transfer,
-      "Transferring asset",
-    );
+    try {
+      const transactionResponse = await transaction;
+      await this._confirmTransaction(
+        transactionResponse.hash,
+        EventType.Transfer,
+        "Transferring asset",
+      );
+    } catch (error) {
+      console.error(error);
+      this._dispatch(EventType.TransactionDenied, {
+        error,
+        accountAddress: fromAddress,
+      });
+    }
   }
 
   /**
