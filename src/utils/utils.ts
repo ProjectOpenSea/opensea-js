@@ -48,6 +48,8 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     fees: (collection.fees ?? []).map(feeFromJSON),
     rarity: rarityFromJSON(collection.rarity),
     paymentTokens: (collection.payment_tokens ?? []).map(paymentTokenFromJSON),
+    totalSupply: collection.total_supply,
+    createdDate: collection.created_date,
   };
 };
 
