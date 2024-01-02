@@ -227,7 +227,11 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
  */
 export const feesToBasisPoints = (fees: Fee[]): number => {
   const feeBasisPoints = fees.map((fee) =>
-    Number(FixedNumber.fromValue(fee.fee).mul(FIXED_NUMBER_100).toString()),
+    Number(
+      FixedNumber.fromString(fee.fee.toString())
+        .mul(FIXED_NUMBER_100)
+        .toString(),
+    ),
   );
   const totalBasisPoints = feeBasisPoints.reduce(
     (sum, basisPoints) => basisPoints + sum,
