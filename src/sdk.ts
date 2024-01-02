@@ -22,6 +22,7 @@ import { OpenSeaAPI } from "./api/api";
 import { CollectionOffer, Listing, NFT, Order } from "./api/types";
 import {
   INVERSE_BASIS_POINT,
+  INVERSE_BASIS_POINT_BIGINT,
   DEFAULT_ZONE,
   ENGLISH_AUCTION_ZONE_MAINNETS,
   ENGLISH_AUCTION_ZONE_TESTNETS,
@@ -248,7 +249,7 @@ export class OpenSeaSDK {
   ): string => {
     return (
       (amount * BigInt(basisPoints)) /
-      BigInt(INVERSE_BASIS_POINT)
+      INVERSE_BASIS_POINT_BIGINT
     ).toString();
   };
 
@@ -1106,10 +1107,10 @@ export class OpenSeaSDK {
 
     // Validation
     if (startAmount == null || startAmountWei < 0) {
-      throw new Error(`Starting price must be a number >= 0`);
+      throw new Error("Starting price must be a number >= 0");
     }
     if (isEther && orderSide === OrderSide.BID) {
-      throw new Error(`Offers must use wrapped ETH or an ERC-20 token.`);
+      throw new Error("Offers must use wrapped ETH or an ERC-20 token.");
     }
     if (priceDiffWei < 0) {
       throw new Error(

@@ -2,11 +2,12 @@ import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
-import { ethers } from "ethers";
+import { ethers, FixedNumber } from "ethers";
 import {
   MAX_EXPIRATION_MONTHS,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
+  FIXED_NUMBER_100,
 } from "../constants";
 import {
   Chain,
@@ -225,8 +226,14 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
  * @returns sum of basis points
  */
 export const feesToBasisPoints = (fees: Fee[]): number => {
-  const feeBasisPoints = fees.map((fee) => fee.fee * 100);
-  return feeBasisPoints.reduce((sum, basisPoints) => basisPoints + sum, 0);
+  const feeBasisPoints = fees.map((fee) =>
+    Number(FixedNumber.fromValue(fee.fee).mul(FIXED_NUMBER_100).toString()),
+  );
+  const totalBasisPoints = feeBasisPoints.reduce(
+    (sum, basisPoints) => basisPoints + sum,
+    0,
+  );
+  return totalBasisPoints;
 };
 
 /**

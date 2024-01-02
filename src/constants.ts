@@ -1,12 +1,14 @@
-import { ethers } from "ethers";
+import { FixedNumber, ZeroAddress } from "ethers";
 
+export const FIXED_NUMBER_100 = FixedNumber.fromValue(100);
 export const INVERSE_BASIS_POINT = 10_000; // 100 basis points per 1%
+export const INVERSE_BASIS_POINT_BIGINT = BigInt(INVERSE_BASIS_POINT);
 export const MAX_EXPIRATION_MONTHS = 1;
 
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_TESTNET = "https://testnets-api.opensea.io";
 
-export const DEFAULT_ZONE = ethers.ZeroAddress;
+export const DEFAULT_ZONE = ZeroAddress;
 export const ENGLISH_AUCTION_ZONE_MAINNETS =
   "0x110b2b128a9ed1be5ef3232d8e4e41640df5c2cd";
 export const ENGLISH_AUCTION_ZONE_TESTNETS =
