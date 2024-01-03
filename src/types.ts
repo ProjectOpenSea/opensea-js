@@ -312,8 +312,12 @@ export interface OpenSeaCollection {
   fees: Fee[];
   /** The rarity strategy for the collection */
   rarity: RarityStrategy | null;
-  /** Tokens allowed for this collection */
+  /** Payment tokens allowed for orders for this collection */
   paymentTokens: OpenSeaPaymentToken[];
+  /** The total supply of the collection (minted minus burned) */
+  totalSupply: number;
+  /** The created date of the collection */
+  createdDate: string;
 }
 
 /**
