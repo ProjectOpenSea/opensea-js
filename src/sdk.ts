@@ -54,11 +54,11 @@ import {
   hasErrorCode,
   getAssetItemType,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
-  feesToBasisPoints,
   requireValidProtocol,
   getWETHAddress,
   isTestChain,
-  feeToBasisPoints,
+  basisPointsForFee,
+  totalBasisPointsForFees,
 } from "./utils/utils";
 
 /**
@@ -264,7 +264,7 @@ export class OpenSeaSDK {
     endAmount?: bigint;
   }): Promise<ConsiderationInputItem[]> {
     const collectionFees = collection.fees;
-    const collectionFeesBasisPoints = feesToBasisPoints(collectionFees);
+    const collectionFeesBasisPoints = totalBasisPointsForFees(collectionFees);
     const sellerBasisPoints = INVERSE_BASIS_POINT - collectionFeesBasisPoints;
 
     const getConsiderationItem = (basisPoints: bigint, recipient?: string) => {
@@ -286,7 +286,7 @@ export class OpenSeaSDK {
     }
     for (const fee of collectionFees) {
       considerationItems.push(
-        getConsiderationItem(feeToBasisPoints(fee), fee.recipient),
+        getConsiderationItem(basisPointsForFee(fee), fee.recipient),
       );
     }
     return considerationItems;

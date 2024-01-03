@@ -225,8 +225,8 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
  * @param fees The fees to sum up
  * @returns sum of basis points
  */
-export const feesToBasisPoints = (fees: Fee[]): bigint => {
-  const feeBasisPoints = fees.map((fee) => feeToBasisPoints(fee));
+export const totalBasisPointsForFees = (fees: Fee[]): bigint => {
+  const feeBasisPoints = fees.map((fee) => basisPointsForFee(fee));
   const totalBasisPoints = feeBasisPoints.reduce(
     (sum, basisPoints) => basisPoints + sum,
     0n,
@@ -239,7 +239,7 @@ export const feesToBasisPoints = (fees: Fee[]): bigint => {
  * @param fee The fee to convert
  * @returns the basis points
  */
-export const feeToBasisPoints = (fee: Fee): bigint => {
+export const basisPointsForFee = (fee: Fee): bigint => {
   return BigInt(
     FixedNumber.fromString(fee.fee.toString())
       .mul(FIXED_NUMBER_100)
