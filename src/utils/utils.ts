@@ -2,11 +2,12 @@ import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
-import { ethers } from "ethers";
+import { ethers, FixedNumber } from "ethers";
 import {
   MAX_EXPIRATION_MONTHS,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
+  FIXED_NUMBER_100,
 } from "../constants";
 import {
   Chain,
@@ -224,9 +225,27 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
  * @param fees The fees to sum up
  * @returns sum of basis points
  */
-export const feesToBasisPoints = (fees: Fee[]): number => {
-  const feeBasisPoints = fees.map((fee) => fee.fee * 100);
-  return feeBasisPoints.reduce((sum, basisPoints) => basisPoints + sum, 0);
+export const totalBasisPointsForFees = (fees: Fee[]): bigint => {
+  const feeBasisPoints = fees.map((fee) => basisPointsForFee(fee));
+  const totalBasisPoints = feeBasisPoints.reduce(
+    (sum, basisPoints) => basisPoints + sum,
+    0n,
+  );
+  return totalBasisPoints;
+};
+
+/**
+ * Converts a fee to its basis points representation.
+ * @param fee The fee to convert
+ * @returns the basis points
+ */
+export const basisPointsForFee = (fee: Fee): bigint => {
+  return BigInt(
+    FixedNumber.fromString(fee.fee.toString())
+      .mul(FIXED_NUMBER_100)
+      .toFormat(0) // format to 0 decimal places to convert to bigint
+      .toString(),
+  );
 };
 
 /**

@@ -54,10 +54,11 @@ import {
   hasErrorCode,
   getAssetItemType,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
-  feesToBasisPoints,
   requireValidProtocol,
   getWETHAddress,
   isTestChain,
+  basisPointsForFee,
+  totalBasisPointsForFees,
 } from "./utils/utils";
 
 /**
@@ -244,12 +245,9 @@ export class OpenSeaSDK {
 
   private getAmountWithBasisPointsApplied = (
     amount: bigint,
-    basisPoints: number,
+    basisPoints: bigint,
   ): string => {
-    return (
-      (amount * BigInt(basisPoints)) /
-      BigInt(INVERSE_BASIS_POINT)
-    ).toString();
+    return ((amount * basisPoints) / INVERSE_BASIS_POINT).toString();
   };
 
   private async getFees({
@@ -266,10 +264,10 @@ export class OpenSeaSDK {
     endAmount?: bigint;
   }): Promise<ConsiderationInputItem[]> {
     const collectionFees = collection.fees;
-    const collectionFeesBasisPoints = feesToBasisPoints(collectionFees);
+    const collectionFeesBasisPoints = totalBasisPointsForFees(collectionFees);
     const sellerBasisPoints = INVERSE_BASIS_POINT - collectionFeesBasisPoints;
 
-    const getConsiderationItem = (basisPoints: number, recipient?: string) => {
+    const getConsiderationItem = (basisPoints: bigint, recipient?: string) => {
       return {
         token: paymentTokenAddress,
         amount: this.getAmountWithBasisPointsApplied(startAmount, basisPoints),
@@ -288,7 +286,7 @@ export class OpenSeaSDK {
     }
     for (const fee of collectionFees) {
       considerationItems.push(
-        getConsiderationItem(fee.fee * 100, fee.recipient),
+        getConsiderationItem(basisPointsForFee(fee), fee.recipient),
       );
     }
     return considerationItems;
@@ -1106,10 +1104,10 @@ export class OpenSeaSDK {
 
     // Validation
     if (startAmount == null || startAmountWei < 0) {
-      throw new Error(`Starting price must be a number >= 0`);
+      throw new Error("Starting price must be a number >= 0");
     }
     if (isEther && orderSide === OrderSide.BID) {
-      throw new Error(`Offers must use wrapped ETH or an ERC-20 token.`);
+      throw new Error("Offers must use wrapped ETH or an ERC-20 token.");
     }
     if (priceDiffWei < 0) {
       throw new Error(
