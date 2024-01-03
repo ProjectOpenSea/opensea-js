@@ -230,7 +230,7 @@ export type Trait = {
   trait_type: string;
   /** A field indicating how to display. None is used for string traits. */
   display_type: TraitDisplayType;
-  /** Display type of trait */
+  /** Ceiling for possible numeric trait values */
   max_value: string;
   /** The value of the trait (e.g. 'Red') */
   value: string | number | Date;
