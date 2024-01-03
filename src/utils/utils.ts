@@ -202,7 +202,7 @@ export const getWETHAddress = (chain: Chain) => {
     case Chain.Optimism:
     case Chain.OptimismSepolia:
     case Chain.Zora:
-    case Chain.ZoraTestnet:
+    case Chain.ZoraSepolia:
       return "0x4200000000000000000000000000000000000006";
     default:
       throw new Error(`Unknown WETH address for ${chain}`);
@@ -267,7 +267,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.Fuji:
     case Chain.OptimismSepolia:
     case Chain.SolanaDevnet:
-    case Chain.ZoraTestnet:
+    case Chain.ZoraSepolia:
       return true;
     default:
       return false;
