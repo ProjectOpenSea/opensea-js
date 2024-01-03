@@ -241,7 +241,10 @@ export const feesToBasisPoints = (fees: Fee[]): bigint => {
  */
 export const feeToBasisPoints = (fee: Fee): bigint => {
   return BigInt(
-    FixedNumber.fromString(fee.fee.toString()).mul(FIXED_NUMBER_100).toString(),
+    FixedNumber.fromString(fee.fee.toString())
+      .mul(FIXED_NUMBER_100)
+      .toFormat(0) // format to 0 decimal places to convert to bigint
+      .toString(),
   );
 };
 
