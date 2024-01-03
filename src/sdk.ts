@@ -22,7 +22,6 @@ import { OpenSeaAPI } from "./api/api";
 import { CollectionOffer, Listing, NFT, Order } from "./api/types";
 import {
   INVERSE_BASIS_POINT,
-  INVERSE_BASIS_POINT_BIGINT,
   DEFAULT_ZONE,
   ENGLISH_AUCTION_ZONE_MAINNETS,
   ENGLISH_AUCTION_ZONE_TESTNETS,
@@ -59,6 +58,7 @@ import {
   requireValidProtocol,
   getWETHAddress,
   isTestChain,
+  feeToBasisPoints,
 } from "./utils/utils";
 
 /**
@@ -245,12 +245,9 @@ export class OpenSeaSDK {
 
   private getAmountWithBasisPointsApplied = (
     amount: bigint,
-    basisPoints: number,
+    basisPoints: bigint,
   ): string => {
-    return (
-      (amount * BigInt(basisPoints)) /
-      INVERSE_BASIS_POINT_BIGINT
-    ).toString();
+    return ((amount * basisPoints) / INVERSE_BASIS_POINT).toString();
   };
 
   private async getFees({
@@ -270,7 +267,7 @@ export class OpenSeaSDK {
     const collectionFeesBasisPoints = feesToBasisPoints(collectionFees);
     const sellerBasisPoints = INVERSE_BASIS_POINT - collectionFeesBasisPoints;
 
-    const getConsiderationItem = (basisPoints: number, recipient?: string) => {
+    const getConsiderationItem = (basisPoints: bigint, recipient?: string) => {
       return {
         token: paymentTokenAddress,
         amount: this.getAmountWithBasisPointsApplied(startAmount, basisPoints),
@@ -289,7 +286,7 @@ export class OpenSeaSDK {
     }
     for (const fee of collectionFees) {
       considerationItems.push(
-        getConsiderationItem(fee.fee * 100, fee.recipient),
+        getConsiderationItem(feeToBasisPoints(fee), fee.recipient),
       );
     }
     return considerationItems;
