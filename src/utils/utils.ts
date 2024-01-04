@@ -174,8 +174,6 @@ export const getWETHAddress = (chain: Chain) => {
       return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
     case Chain.Mumbai:
       return "0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa";
-    case Chain.Goerli:
-      return "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6";
     case Chain.Sepolia:
       return "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14";
     case Chain.Klaytn:
@@ -257,7 +255,6 @@ export const basisPointsForFee = (fee: Fee): bigint => {
  */
 export const isTestChain = (chain: Chain): boolean => {
   switch (chain) {
-    case Chain.Goerli:
     case Chain.Sepolia:
     case Chain.Mumbai:
     case Chain.Baobab:

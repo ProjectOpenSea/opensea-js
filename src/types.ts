@@ -124,8 +124,6 @@ export enum Chain {
 
   // Testnet Chains
   // ⚠️NOTE: When adding to this list, also add to the util function `isTestChain`
-  /** Goerli */
-  Goerli = "goerli",
   /** Sepolia */
   Sepolia = "sepolia",
   /** Polygon Testchain Mumbai */
