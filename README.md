@@ -4,11 +4,6 @@
 
 [![Version][version-badge]][version-link]
 [![npm][npm-badge]][npm-link]
-[![Test CI][ci-badge]][ci-link]
-[![Coverage Status][coverage-badge]][coverage-link]
-[![License][license-badge]][license-link]
-[![Docs][docs-badge]][docs-link]
-[![Discussions][discussions-badge]][discussions-link]
 
 # OpenSea.js <!-- omit in toc -->
 
