@@ -79,10 +79,10 @@
     "marketplace",
     "nft",
     "node",
-    "non-fungible-tokens",
-    "project-opensea",
+    "non-fungible tokens",
+    "opensea",
     "sdk",
-    "smart-contracts",
+    "smart contracts",
     "typescript"
   ],
   "engines": {
