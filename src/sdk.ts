@@ -256,14 +256,19 @@ export class OpenSeaSDK {
     paymentTokenAddress,
     startAmount,
     endAmount,
+    excludeOptionalCreatorFees,
   }: {
     collection: OpenSeaCollection;
     seller?: string;
     paymentTokenAddress: string;
     startAmount: bigint;
     endAmount?: bigint;
+    excludeOptionalCreatorFees?: boolean;
   }): Promise<ConsiderationInputItem[]> {
-    const collectionFees = collection.fees;
+    let collectionFees = collection.fees;
+    if (excludeOptionalCreatorFees) {
+      collectionFees = collectionFees.filter((fee) => fee.required);
+    }
     const collectionFeesBasisPoints = totalBasisPointsForFees(collectionFees);
     const sellerBasisPoints = INVERSE_BASIS_POINT - collectionFeesBasisPoints;
 
@@ -320,6 +325,7 @@ export class OpenSeaSDK {
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH
+   * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the offer. Default: false.
    * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
@@ -336,6 +342,7 @@ export class OpenSeaSDK {
     salt,
     expirationTime,
     paymentTokenAddress = getWETHAddress(this.chain),
+    excludeOptionalCreatorFees = false,
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -345,6 +352,7 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
+    excludeOptionalCreatorFees?: boolean;
   }): Promise<OrderV2> {
     await this._requireAccountIsAvailable(accountAddress);
 
@@ -367,6 +375,7 @@ export class OpenSeaSDK {
       collection,
       paymentTokenAddress,
       startAmount: basePrice,
+      excludeOptionalCreatorFees,
     });
 
     const { executeAllActions } = await this.seaport_v1_5.createOrder(
@@ -414,6 +423,7 @@ export class OpenSeaSDK {
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to ETH
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.englishAuction If true, the order will be listed as an English auction.
+   * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the listing. Default: false.
    * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
@@ -434,6 +444,7 @@ export class OpenSeaSDK {
     paymentTokenAddress = ethers.ZeroAddress,
     buyerAddress,
     englishAuction,
+    excludeOptionalCreatorFees = false,
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -447,6 +458,7 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
     englishAuction?: boolean;
+    excludeOptionalCreatorFees?: boolean;
   }): Promise<OrderV2> {
     await this._requireAccountIsAvailable(accountAddress);
 
@@ -475,6 +487,7 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       startAmount: basePrice,
       endAmount: endPrice,
+      excludeOptionalCreatorFees,
     });
 
     if (buyerAddress) {
@@ -523,6 +536,7 @@ export class OpenSeaSDK {
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH.
+   * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the offer. Default: false.
    * @returns The {@link CollectionOffer} that was created.
    */
   public async createCollectionOffer({
@@ -533,7 +547,8 @@ export class OpenSeaSDK {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress,
+    paymentTokenAddress = getWETHAddress(this.chain),
+    excludeOptionalCreatorFees = false,
   }: {
     collectionSlug: string;
     accountAddress: string;
@@ -543,6 +558,7 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: number | string;
     paymentTokenAddress: string;
+    excludeOptionalCreatorFees?: boolean;
   }): Promise<CollectionOffer | null> {
     await this._requireAccountIsAvailable(accountAddress);
 
@@ -571,6 +587,7 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       startAmount: basePrice,
       endAmount: basePrice,
+      excludeOptionalCreatorFees,
     });
 
     const considerationItems = [
