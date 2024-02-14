@@ -2,11 +2,12 @@ import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
-import { ethers } from "ethers";
+import { ethers, FixedNumber } from "ethers";
 import {
   MAX_EXPIRATION_MONTHS,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
+  FIXED_NUMBER_100,
 } from "../constants";
 import {
   Chain,
@@ -48,6 +49,8 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     fees: (collection.fees ?? []).map(feeFromJSON),
     rarity: rarityFromJSON(collection.rarity),
     paymentTokens: (collection.payment_tokens ?? []).map(paymentTokenFromJSON),
+    totalSupply: collection.total_supply,
+    createdDate: collection.created_date,
   };
 };
 
@@ -171,8 +174,6 @@ export const getWETHAddress = (chain: Chain) => {
       return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
     case Chain.Mumbai:
       return "0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa";
-    case Chain.Goerli:
-      return "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6";
     case Chain.Sepolia:
       return "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14";
     case Chain.Klaytn:
@@ -195,11 +196,11 @@ export const getWETHAddress = (chain: Chain) => {
       return "0x980b62da83eff3d4576c647993b0c1d7faf17c73";
     // OP Chains have weth at the same address
     case Chain.Base:
-    case Chain.BaseGoerli:
+    case Chain.BaseSepolia:
     case Chain.Optimism:
-    case Chain.OptimismGoerli:
+    case Chain.OptimismSepolia:
     case Chain.Zora:
-    case Chain.ZoraTestnet:
+    case Chain.ZoraSepolia:
       return "0x4200000000000000000000000000000000000006";
     default:
       throw new Error(`Unknown WETH address for ${chain}`);
@@ -224,9 +225,27 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
  * @param fees The fees to sum up
  * @returns sum of basis points
  */
-export const feesToBasisPoints = (fees: Fee[]): number => {
-  const feeBasisPoints = fees.map((fee) => fee.fee * 100);
-  return feeBasisPoints.reduce((sum, basisPoints) => basisPoints + sum, 0);
+export const totalBasisPointsForFees = (fees: Fee[]): bigint => {
+  const feeBasisPoints = fees.map((fee) => basisPointsForFee(fee));
+  const totalBasisPoints = feeBasisPoints.reduce(
+    (sum, basisPoints) => basisPoints + sum,
+    0n,
+  );
+  return totalBasisPoints;
+};
+
+/**
+ * Converts a fee to its basis points representation.
+ * @param fee The fee to convert
+ * @returns the basis points
+ */
+export const basisPointsForFee = (fee: Fee): bigint => {
+  return BigInt(
+    FixedNumber.fromString(fee.fee.toString())
+      .mul(FIXED_NUMBER_100)
+      .toFormat(0) // format to 0 decimal places to convert to bigint
+      .toString(),
+  );
 };
 
 /**
@@ -236,17 +255,16 @@ export const feesToBasisPoints = (fees: Fee[]): number => {
  */
 export const isTestChain = (chain: Chain): boolean => {
   switch (chain) {
-    case Chain.Goerli:
     case Chain.Sepolia:
     case Chain.Mumbai:
     case Chain.Baobab:
-    case Chain.BaseGoerli:
+    case Chain.BaseSepolia:
     case Chain.BNBTestnet:
     case Chain.ArbitrumSepolia:
     case Chain.Fuji:
-    case Chain.OptimismGoerli:
+    case Chain.OptimismSepolia:
     case Chain.SolanaDevnet:
-    case Chain.ZoraTestnet:
+    case Chain.ZoraSepolia:
       return true;
     default:
       return false;

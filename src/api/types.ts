@@ -195,7 +195,7 @@ export type GetBestListingResponse = Listing;
  * @category API Models
  */
 export type NFT = {
-  /** NFT Identifier (also commonly referred to as Token Id) */
+  /** NFT Identifier (also commonly referred to as tokenId) */
   identifier: string;
   /** Slug identifier of collection */
   collection: string;
@@ -211,12 +211,41 @@ export type NFT = {
   image_url: string;
   /** URL of metadata */
   metadata_url: string;
-  /** Date of NFT creation */
-  created_at: string;
   /** Date of latest NFT update */
   updated_at: string;
   /** Whether NFT is disabled for trading on OpenSea */
   is_disabled: boolean;
   /** Whether NFT is NSFW (Not Safe For Work) */
   is_nsfw: boolean;
+  /** Traits for the NFT, returns null if the NFT has than 50 traits */
+  traits: Trait[] | null;
 };
+
+/**
+ * Trait type returned by OpenSea API.
+ * @category API Models
+ */
+export type Trait = {
+  /** The name of the trait category (e.g. 'Background') */
+  trait_type: string;
+  /** A field indicating how to display. None is used for string traits. */
+  display_type: TraitDisplayType;
+  /** Ceiling for possible numeric trait values */
+  max_value: string;
+  /** The value of the trait (e.g. 'Red') */
+  value: string | number | Date;
+};
+
+/**
+ * Trait display type returned by OpenSea API.
+ * @category API Models
+ */
+export enum TraitDisplayType {
+  NUMBER = "number",
+  BOOST_PERCENTAGE = "boost_percentage",
+  BOOST_NUMBER = "boost_number",
+  AUTHOR = "author",
+  DATE = "date",
+  /** "None" is used for string traits */
+  NONE = "None",
+}

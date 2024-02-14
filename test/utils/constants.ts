@@ -31,7 +31,7 @@ export const mainAPI = new OpenSeaAPI(
 
 export const testnetAPI = new OpenSeaAPI(
   {
-    chain: Chain.Goerli,
+    chain: Chain.Sepolia,
   },
   process.env.DEBUG ? console.log : undefined,
 );

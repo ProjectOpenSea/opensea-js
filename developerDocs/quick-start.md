@@ -55,4 +55,4 @@ In a browser with web3 or an extension like [MetaMask](https://metamask.io/) or 
 
 ## Testnets
 
-For testnets, please use `Chain.Goerli` or `Chain.Sepolia`. Rinkeby was deprecated in 2022, and Goerli will be deprecated by January 2024.
+For testnets, please use `Chain.Sepolia`. Rinkeby was deprecated in 2022 and Goerli in 2023.

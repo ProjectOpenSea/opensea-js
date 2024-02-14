@@ -44,6 +44,10 @@ export enum EventType {
    * Emitted when the {@link OpenSeaSDK.approveOrder} method is called.
    */
   ApproveOrder = "ApproveOrder",
+  /**
+   * Emitted when the {@link OpenSeaSDK.transfer} method is called.
+   */
+  Transfer = "Transfer",
 }
 
 /**
@@ -120,8 +124,6 @@ export enum Chain {
 
   // Testnet Chains
   // ⚠️NOTE: When adding to this list, also add to the util function `isTestChain`
-  /** Goerli */
-  Goerli = "goerli",
   /** Sepolia */
   Sepolia = "sepolia",
   /** Polygon Testchain Mumbai */
@@ -129,19 +131,19 @@ export enum Chain {
   /** Klaytn Baobab */
   Baobab = "baobab",
   /** Base L2 Testnet */
-  BaseGoerli = "base_goerli",
+  BaseSepolia = "base_sepolia",
   /** Binance Smart Chain Testnet */
   BNBTestnet = "bsctestnet",
   /** Arbitrum Testnet */
   ArbitrumSepolia = "arbitrum_sepolia",
   /** Avalanche Fuji Testnet */
   Fuji = "avalanche_fuji",
-  /** Optimism Goerli Testnet */
-  OptimismGoerli = "optimism_goerli",
+  /** Optimism Sepolia Testnet */
+  OptimismSepolia = "optimism_sepolia",
   /** Solana Devnet */
   SolanaDevnet = "soldev",
-  /** Zora Testnet */
-  ZoraTestnet = "zora_testnet",
+  /** Zora Sepolia */
+  ZoraSepolia = "zora_sepolia",
 }
 
 /**
@@ -308,8 +310,12 @@ export interface OpenSeaCollection {
   fees: Fee[];
   /** The rarity strategy for the collection */
   rarity: RarityStrategy | null;
-  /** Tokens allowed for this collection */
+  /** Payment tokens allowed for orders for this collection */
   paymentTokens: OpenSeaPaymentToken[];
+  /** The total supply of the collection (minted minus burned) */
+  totalSupply: number;
+  /** The created date of the collection */
+  createdDate: string;
 }
 
 /**

@@ -260,15 +260,23 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Gets the best listing for a given collection.
+   * Gets the best listings for a given collection.
    * @param collectionSlug The slug of the collection.
+   * @param limit The number of listings to return. Must be between 1 and 100. Default: 100
+   * @param next The cursor for the next page of results. This is returned from a previous request.
    * @returns The {@link GetListingsResponse} returned by the API.
    */
   public async getBestListings(
     collectionSlug: string,
+    limit?: number,
+    next?: string,
   ): Promise<GetListingsResponse> {
     const response = await this.get<GetListingsResponse>(
       getBestListingsAPIPath(collectionSlug),
+      {
+        limit,
+        next,
+      },
     );
     return response;
   }
@@ -620,7 +628,7 @@ export class OpenSeaAPI {
     );
 
     const response = await req.send();
-    if (!response.ok) {
+    if (!response.ok()) {
       // If an errors array is returned, throw with the error messages.
       const errors = response.bodyJson?.errors;
       if (errors?.length > 0) {
