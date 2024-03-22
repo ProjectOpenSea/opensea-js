@@ -68,8 +68,8 @@ import {
 export class OpenSeaSDK {
   /** Provider to use for transactions. */
   public provider: JsonRpcProvider;
-  /** Seaport v1.5 client @see {@link https://github.com/ProjectOpenSea/seaport-js} */
-  public seaport_v1_5: Seaport;
+  /** Seaport v1.6 client @see {@link https://github.com/ProjectOpenSea/seaport-js} */
+  public seaport: Seaport;
   /** Logger function to use when debugging */
   public logger: (arg: string) => void;
   /** API instance */
@@ -105,7 +105,7 @@ export class OpenSeaSDK {
     this._signerOrProvider = signerOrProvider ?? this.provider;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.seaport_v1_5 = new Seaport(this._signerOrProvider as any, {
+    this.seaport = new Seaport(this._signerOrProvider as any, {
       overrides: { defaultConduitKey: OPENSEA_CONDUIT_KEY },
     });
 
@@ -378,7 +378,7 @@ export class OpenSeaSDK {
       excludeOptionalCreatorFees,
     });
 
-    const { executeAllActions } = await this.seaport_v1_5.createOrder(
+    const { executeAllActions } = await this.seaport.createOrder(
       {
         offer: [
           {
@@ -496,7 +496,7 @@ export class OpenSeaSDK {
       );
     }
 
-    const { executeAllActions } = await this.seaport_v1_5.createOrder(
+    const { executeAllActions } = await this.seaport.createOrder(
       {
         offer: offerAssetItems,
         consideration: considerationFeeItems,
@@ -614,7 +614,7 @@ export class OpenSeaSDK {
       allowPartialFills: true,
     };
 
-    const { executeAllActions } = await this.seaport_v1_5.createOrder(
+    const { executeAllActions } = await this.seaport.createOrder(
       payload,
       accountAddress,
     );
@@ -654,7 +654,7 @@ export class OpenSeaSDK {
       order.taker.address,
     );
     const fulfillments = getPrivateListingFulfillments(order.protocolData);
-    const transaction = await this.seaport_v1_5
+    const transaction = await this.seaport
       .matchOrders({
         orders: [order.protocolData, counterOrder],
         fulfillments,
@@ -759,7 +759,7 @@ export class OpenSeaSDK {
       });
     }
 
-    const { executeAllActions } = await this.seaport_v1_5.fulfillOrder({
+    const { executeAllActions } = await this.seaport.fulfillOrder({
       order: protocolData,
       accountAddress,
       recipientAddress,
@@ -812,7 +812,7 @@ export class OpenSeaSDK {
       );
     }
 
-    const transaction = await this.seaport_v1_5
+    const transaction = await this.seaport
       .cancelOrders(orders, accountAddress, domain, overrides)
       .transact();
 
@@ -881,7 +881,7 @@ export class OpenSeaSDK {
     requireValidProtocol(order.protocolAddress);
 
     try {
-      const isValid = await this.seaport_v1_5
+      const isValid = await this.seaport
         .validate([order.protocolData], accountAddress)
         .staticCall();
       return !!isValid;
@@ -1068,7 +1068,7 @@ export class OpenSeaSDK {
       accountAddress: order.maker.address,
     });
 
-    const transaction = await this.seaport_v1_5
+    const transaction = await this.seaport
       .validate([order.protocolData], order.maker.address, domain)
       .transact();
 

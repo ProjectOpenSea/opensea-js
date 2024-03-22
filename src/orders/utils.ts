@@ -1,4 +1,4 @@
-import { CROSS_CHAIN_SEAPORT_V1_5_ADDRESS } from "@opensea/seaport-js/lib/constants";
+import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import {
   OrdersQueryOptions,
   OrderV2,
@@ -9,7 +9,7 @@ import { Chain, OrderSide } from "../types";
 import { accountFromJSON } from "../utils";
 
 export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
-  CROSS_CHAIN_SEAPORT_V1_5_ADDRESS;
+  CROSS_CHAIN_SEAPORT_V1_6_ADDRESS;
 
 export const getPostCollectionOfferPayload = (
   collectionSlug: string,

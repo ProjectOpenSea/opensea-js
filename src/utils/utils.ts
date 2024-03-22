@@ -1,5 +1,6 @@
 import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
+  CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
 import { ethers, FixedNumber } from "ethers";
@@ -277,7 +278,10 @@ export const isTestChain = (chain: Chain): boolean => {
  */
 export const isValidProtocol = (protocolAddress: string): boolean => {
   const checkSumAddress = ethers.getAddress(protocolAddress);
-  const validProtocolAddresses = [CROSS_CHAIN_SEAPORT_V1_5_ADDRESS].map(
+  const validProtocolAddresses = [
+    CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
+    CROSS_CHAIN_SEAPORT_V1_5_ADDRESS
+  ].map(
     (address) => ethers.getAddress(address),
   );
   return validProtocolAddresses.includes(checkSumAddress);
@@ -289,7 +293,7 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
  */
 export const requireValidProtocol = (protocolAddress: string) => {
   if (!isValidProtocol(protocolAddress)) {
-    throw new Error("Unsupported protocol");
+    throw new Error(`Unsupported protocol address: ${protocolAddress}`);
   }
 };
 

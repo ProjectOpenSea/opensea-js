@@ -1,4 +1,4 @@
-import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport_v1_5/contracts/Seaport";
+import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport/contracts/Seaport";
 import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
 import { OpenSeaAccount, OrderSide } from "../types";
 
