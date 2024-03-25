@@ -176,7 +176,7 @@ export const getWETHAddress = (chain: Chain) => {
     case Chain.Mumbai:
       return "0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa";
     case Chain.Sepolia:
-      return "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14";
+      return "0x7b79995e5f793a07bc00c21412e50ecae098e7f9";
     case Chain.Klaytn:
       return "0xfd844c2fca5e595004b17615f891620d1cb9bbb2";
     case Chain.Baobab:
