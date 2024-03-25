@@ -1,3 +1,4 @@
+import { setTimeout } from "timers/promises";
 import { ethers } from "ethers";
 import {
   getCollectionPath,
@@ -606,19 +607,35 @@ export class OpenSeaAPI {
    * @param body Optional body to send. If set, will POST, otherwise GET
    */
   private async _fetch(url: string, headers?: object, body?: object) {
+    // Create the fetch request
+    const req = new ethers.FetchRequest(url);
+
+    // Set the headers
     headers = {
       "x-app-id": "opensea-js",
       ...(this.apiKey ? { "X-API-KEY": this.apiKey } : {}),
       ...headers,
     };
-
-    const req = new ethers.FetchRequest(url);
     for (const [key, value] of Object.entries(headers)) {
       req.setHeader(key, value);
     }
+
+    // Set the body if provided
     if (body) {
       req.body = body;
     }
+
+    // Set the throttle params
+    // - Should be able to replace this retryFunc with `setThrottleParams({ slotInterval: 1000 })`
+    //   when this bug is fixed in ethers: https://github.com/ethers-io/ethers.js/issues/4663
+    req.retryFunc = async (_req, resp, attempt) => {
+      this.logger(
+        `Fetch attempt ${attempt} failed with status ${resp.statusCode}`,
+      );
+      // Wait 1s between tries
+      await setTimeout(1000);
+      return true;
+    };
 
     this.logger(
       `Sending request: ${url} ${JSON.stringify({
