@@ -1,6 +1,6 @@
 {
   "name": "opensea-js",
-  "version": "7.0.9",
+  "version": "7.1.0",
   "description": "TypeScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data",
   "license": "MIT",
   "author": "OpenSea Developers",
@@ -38,7 +38,7 @@
   },
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@opensea/seaport-js": "^3.0.0",
+    "@opensea/seaport-js": "^4.0.0",
     "ethers": "^6.9.0"
   },
   "devDependencies": {
@@ -46,7 +46,7 @@
     "@types/chai": "4.3.14",
     "@types/chai-as-promised": "^7.1.5",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^18.0.0",
+    "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "chai": "^4.4.1",
@@ -86,7 +86,7 @@
     "typescript"
   ],
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
   "lint-staged": {
     "package.json": [
