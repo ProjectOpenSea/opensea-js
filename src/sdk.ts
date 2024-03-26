@@ -799,6 +799,10 @@ export class OpenSeaSDK {
     return transactionHash;
   }
 
+  /**
+   * Utility function to get the Seaport client based on the address.
+   * @param protocolAddress The Seaport address.
+   */
   private getSeaport(protocolAddress: string): Seaport {
     const checksummedProtocolAddress = ethers.getAddress(protocolAddress);
     switch (checksummedProtocolAddress) {
