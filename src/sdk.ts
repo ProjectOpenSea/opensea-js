@@ -1,6 +1,10 @@
 import EventEmitter = require("events");
 import { Seaport } from "@opensea/seaport-js";
-import { OPENSEA_CONDUIT_KEY } from "@opensea/seaport-js/lib/constants";
+import {
+  CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
+  CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
+  OPENSEA_CONDUIT_KEY,
+} from "@opensea/seaport-js/lib/constants";
 import {
   AdvancedOrder,
   ConsiderationInputItem,
@@ -69,7 +73,9 @@ export class OpenSeaSDK {
   /** Provider to use for transactions. */
   public provider: JsonRpcProvider;
   /** Seaport v1.6 client @see {@link https://github.com/ProjectOpenSea/seaport-js} */
-  public seaport: Seaport;
+  public seaport_v1_6: Seaport;
+  /** Seaport v1.5 client @see {@link https://github.com/ProjectOpenSea/seaport-js} */
+  public seaport_v1_5: Seaport;
   /** Logger function to use when debugging */
   public logger: (arg: string) => void;
   /** API instance */
@@ -105,7 +111,16 @@ export class OpenSeaSDK {
     this._signerOrProvider = signerOrProvider ?? this.provider;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.seaport = new Seaport(this._signerOrProvider as any, {
+    this.seaport_v1_5 = new Seaport(this._signerOrProvider as any, {
+      overrides: {
+        contractAddress: CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
+        seaportVersion: "1.5",
+        defaultConduitKey: OPENSEA_CONDUIT_KEY,
+      },
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.seaport_v1_6 = new Seaport(this._signerOrProvider as any, {
       overrides: { defaultConduitKey: OPENSEA_CONDUIT_KEY },
     });
 
@@ -378,7 +393,7 @@ export class OpenSeaSDK {
       excludeOptionalCreatorFees,
     });
 
-    const { executeAllActions } = await this.seaport.createOrder(
+    const { executeAllActions } = await this.seaport_v1_6.createOrder(
       {
         offer: [
           {
@@ -496,7 +511,7 @@ export class OpenSeaSDK {
       );
     }
 
-    const { executeAllActions } = await this.seaport.createOrder(
+    const { executeAllActions } = await this.seaport_v1_6.createOrder(
       {
         offer: offerAssetItems,
         consideration: considerationFeeItems,
@@ -614,7 +629,7 @@ export class OpenSeaSDK {
       allowPartialFills: true,
     };
 
-    const { executeAllActions } = await this.seaport.createOrder(
+    const { executeAllActions } = await this.seaport_v1_6.createOrder(
       payload,
       accountAddress,
     );
@@ -654,7 +669,8 @@ export class OpenSeaSDK {
       order.taker.address,
     );
     const fulfillments = getPrivateListingFulfillments(order.protocolData);
-    const transaction = await this.seaport
+    const seaport = this.getSeaport(order.protocolAddress);
+    const transaction = await seaport
       .matchOrders({
         orders: [order.protocolData, counterOrder],
         fulfillments,
@@ -759,7 +775,8 @@ export class OpenSeaSDK {
       });
     }
 
-    const { executeAllActions } = await this.seaport.fulfillOrder({
+    const seaport = this.getSeaport(protocolAddress);
+    const { executeAllActions } = await seaport.fulfillOrder({
       order: protocolData,
       accountAddress,
       recipientAddress,
@@ -780,6 +797,18 @@ export class OpenSeaSDK {
       "Fulfilling order",
     );
     return transactionHash;
+  }
+
+  private getSeaport(protocolAddress: string): Seaport {
+    const checksummedProtocolAddress = ethers.getAddress(protocolAddress);
+    switch (checksummedProtocolAddress) {
+      case CROSS_CHAIN_SEAPORT_V1_5_ADDRESS:
+        return this.seaport_v1_5;
+      case CROSS_CHAIN_SEAPORT_V1_6_ADDRESS:
+        return this.seaport_v1_6;
+      default:
+        throw new Error(`Unsupported protocol address: ${protocolAddress}`);
+    }
   }
 
   /**
@@ -805,14 +834,9 @@ export class OpenSeaSDK {
     protocolAddress?: string;
     overrides?: Overrides;
   }): Promise<string> {
-    const checksummedProtocolAddress = ethers.getAddress(protocolAddress);
-    if (checksummedProtocolAddress !== DEFAULT_SEAPORT_CONTRACT_ADDRESS) {
-      throw new Error(
-        `Only ${DEFAULT_SEAPORT_CONTRACT_ADDRESS} is currently supported for cancelling orders.`,
-      );
-    }
+    const seaport = this.getSeaport(protocolAddress);
 
-    const transaction = await this.seaport
+    const transaction = await seaport
       .cancelOrders(orders, accountAddress, domain, overrides)
       .transact();
 
@@ -880,8 +904,10 @@ export class OpenSeaSDK {
   }): Promise<boolean> {
     requireValidProtocol(order.protocolAddress);
 
+    const seaport = this.getSeaport(order.protocolAddress);
+
     try {
-      const isValid = await this.seaport
+      const isValid = await seaport
         .validate([order.protocolData], accountAddress)
         .staticCall();
       return !!isValid;
@@ -1068,7 +1094,8 @@ export class OpenSeaSDK {
       accountAddress: order.maker.address,
     });
 
-    const transaction = await this.seaport
+    const seaport = this.getSeaport(order.protocolAddress);
+    const transaction = await seaport
       .validate([order.protocolData], order.maker.address, domain)
       .transact();
 
