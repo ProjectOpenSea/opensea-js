@@ -1,4 +1,3 @@
-import { setTimeout } from "timers/promises";
 import { ethers } from "ethers";
 import {
   getCollectionPath,
@@ -67,6 +66,14 @@ import {
   isTestChain,
   accountFromJSON,
 } from "../utils/utils";
+
+function stall(duration: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, duration);
+  });
+}
 
 /**
  * The API class for the OpenSea SDK.
@@ -633,7 +640,7 @@ export class OpenSeaAPI {
         `Fetch attempt ${attempt} failed with status ${resp.statusCode}`,
       );
       // Wait 1s between tries
-      await setTimeout(1000);
+      await stall(1000);
       return true;
     };
 
