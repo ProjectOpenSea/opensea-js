@@ -123,7 +123,7 @@ suite("SDK: order posting", () => {
     const postOrderRequest = {
       collectionSlug: collection.collection,
       accountAddress: walletAddress,
-      amount: OFFER_AMOUNT,
+      amount: 0.0001,
       quantity: 1,
       paymentTokenAddress,
     };
