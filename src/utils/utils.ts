@@ -52,6 +52,7 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     paymentTokens: (collection.payment_tokens ?? []).map(paymentTokenFromJSON),
     totalSupply: collection.total_supply,
     createdDate: collection.created_date,
+    requiredZone: collection.required_zone,
   };
 };
 

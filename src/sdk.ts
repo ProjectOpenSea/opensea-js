@@ -393,6 +393,11 @@ export class OpenSeaSDK {
       excludeOptionalCreatorFees,
     });
 
+    let zone = DEFAULT_ZONE;
+    if (collection.requiredZone) {
+      zone = collection.requiredZone;
+    }
+
     const { executeAllActions } = await this.seaport_v1_6.createOrder(
       {
         offer: [
@@ -406,10 +411,10 @@ export class OpenSeaSDK {
           expirationTime !== undefined
             ? BigInt(expirationTime).toString()
             : getMaxOrderExpirationTimestamp().toString(),
-        zone: DEFAULT_ZONE,
+        zone,
         domain,
         salt: BigInt(salt ?? 0).toString(),
-        restrictedByZone: false,
+        restrictedByZone: zone !== DEFAULT_ZONE,
         allowPartialFills: true,
       },
       accountAddress,
@@ -511,6 +516,17 @@ export class OpenSeaSDK {
       );
     }
 
+    let zone = DEFAULT_ZONE;
+    if (englishAuction) {
+      if (isTestChain(this.chain)) {
+        zone = ENGLISH_AUCTION_ZONE_TESTNETS;
+      } else {
+        zone = ENGLISH_AUCTION_ZONE_MAINNETS;
+      }
+    } else if (collection.requiredZone) {
+      zone = collection.requiredZone;
+    }
+
     const { executeAllActions } = await this.seaport_v1_6.createOrder(
       {
         offer: offerAssetItems,
@@ -519,14 +535,10 @@ export class OpenSeaSDK {
         endTime:
           expirationTime?.toString() ??
           getMaxOrderExpirationTimestamp().toString(),
-        zone: englishAuction
-          ? isTestChain(this.chain)
-            ? ENGLISH_AUCTION_ZONE_TESTNETS
-            : ENGLISH_AUCTION_ZONE_MAINNETS
-          : DEFAULT_ZONE,
+        zone,
         domain,
         salt: BigInt(salt ?? 0).toString(),
-        restrictedByZone: englishAuction ? true : false,
+        restrictedByZone: zone !== DEFAULT_ZONE,
         allowPartialFills: englishAuction ? false : true,
       },
       accountAddress,

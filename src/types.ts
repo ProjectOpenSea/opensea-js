@@ -316,6 +316,8 @@ export interface OpenSeaCollection {
   totalSupply: number;
   /** The created date of the collection */
   createdDate: string;
+  /** When defined, the zone required for orders for the collection */
+  requiredZone?: string;
 }
 
 /**
