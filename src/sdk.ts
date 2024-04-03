@@ -552,6 +552,9 @@ export class OpenSeaSDK {
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH.
    * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the offer. Default: false.
+   * @param options.offerProtectionEnabled Build the offer on OpenSea's signed zone to provide offer protections from receiving an item which is disabled from trading.
+   * @param options.traitType If defined, the trait name to create the collection offer for.
+   * @param options.traitValue If defined, the trait value to create the collection offer for.
    * @returns The {@link CollectionOffer} that was created.
    */
   public async createCollectionOffer({
@@ -564,6 +567,9 @@ export class OpenSeaSDK {
     expirationTime,
     paymentTokenAddress = getWETHAddress(this.chain),
     excludeOptionalCreatorFees = false,
+    offerProtectionEnabled = true,
+    traitType,
+    traitValue,
   }: {
     collectionSlug: string;
     accountAddress: string;
@@ -574,6 +580,9 @@ export class OpenSeaSDK {
     expirationTime?: number | string;
     paymentTokenAddress: string;
     excludeOptionalCreatorFees?: boolean;
+    offerProtectionEnabled?: boolean;
+    traitType?: string;
+    traitValue?: string;
   }): Promise<CollectionOffer | null> {
     await this._requireAccountIsAvailable(accountAddress);
 
@@ -582,6 +591,9 @@ export class OpenSeaSDK {
       accountAddress,
       quantity,
       collectionSlug,
+      offerProtectionEnabled,
+      traitType,
+      traitValue,
     );
     const item = buildOfferResult.partialParameters.consideration[0];
     const convertedConsiderationItem = {
@@ -635,7 +647,12 @@ export class OpenSeaSDK {
     );
     const order = await executeAllActions();
 
-    return this.api.postCollectionOffer(order, collectionSlug);
+    return this.api.postCollectionOffer(
+      order,
+      collectionSlug,
+      traitType,
+      traitValue,
+    );
   }
 
   /**

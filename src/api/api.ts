@@ -355,6 +355,8 @@ export class OpenSeaAPI {
    * @param quantity The number of NFTs requested in the offer.
    * @param collectionSlug The slug (identifier) of the collection to build the offer for.
    * @param offerProtectionEnabled Build the offer on OpenSea's signed zone to provide offer protections from receiving an item which is disabled from trading.
+   * @param traitType If defined, the trait name to create the collection offer for.
+   * @param traitValue If defined, the trait value to create the collection offer for.
    * @returns The {@link BuildOfferResponse} returned by the API.
    */
   public async buildOffer(
@@ -362,12 +364,23 @@ export class OpenSeaAPI {
     quantity: number,
     collectionSlug: string,
     offerProtectionEnabled = true,
+    traitType?: string,
+    traitValue?: string,
   ): Promise<BuildOfferResponse> {
+    if (traitType || traitValue) {
+      if (!traitType || !traitValue) {
+        throw new Error(
+          "Both traitType and traitValue must be defined if one is defined.",
+        );
+      }
+    }
     const payload = getBuildCollectionOfferPayload(
       offererAddress,
       quantity,
       collectionSlug,
       offerProtectionEnabled,
+      traitType,
+      traitValue,
     );
     const response = await this.post<BuildOfferResponse>(
       getBuildOfferPath(),
@@ -393,13 +406,22 @@ export class OpenSeaAPI {
    * Post a collection offer to OpenSea.
    * @param order The collection offer to post.
    * @param slug The slug (identifier) of the collection to post the offer for.
+   * @param traitType If defined, the trait name to create the collection offer for.
+   * @param traitValue If defined, the trait value to create the collection offer for.
    * @returns The {@link Offer} returned to the API.
    */
   public async postCollectionOffer(
     order: ProtocolData,
     slug: string,
+    traitType?: string,
+    traitValue?: string,
   ): Promise<CollectionOffer | null> {
-    const payload = getPostCollectionOfferPayload(slug, order);
+    const payload = getPostCollectionOfferPayload(
+      slug,
+      order,
+      traitType,
+      traitValue,
+    );
     return await this.post<CollectionOffer>(
       getPostCollectionOfferPath(),
       payload,
@@ -656,7 +678,11 @@ export class OpenSeaAPI {
       // If an errors array is returned, throw with the error messages.
       const errors = response.bodyJson?.errors;
       if (errors?.length > 0) {
-        throw new Error(`Server Error: ${errors.join(", ")}`);
+        let errorMessage = errors.join(", ");
+        if (errorMessage === "[object Object]") {
+          errorMessage = JSON.stringify(errors);
+        }
+        throw new Error(`Server Error: ${errorMessage}`);
       } else {
         // Otherwise, let ethers throw a SERVER_ERROR since it will include
         // more context about the request and response.
