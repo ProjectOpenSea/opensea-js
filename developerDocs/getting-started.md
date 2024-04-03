@@ -97,7 +97,7 @@ See [Listening to Events](#listening-to-events) to respond to the setup transact
 
 ### Creating Collection and Trait Offers
 
-Criteria offers, consisting of colletion and trait offers, are supported with `openseaSDK.createCollectionOffer()`. For trait offers, include `traitType` as the trait name and `traitValue` as the required value for the offer.
+Criteria offers, consisting of collection and trait offers, are supported with `openseaSDK.createCollectionOffer()`. For trait offers, include `traitType` as the trait name and `traitValue` as the required value for the offer.
 
 #### Creating English Auctions
 
