@@ -131,4 +131,24 @@ suite("SDK: order posting", () => {
       await sdkPolygon.createCollectionOffer(postOrderRequest);
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");
   });
+
+  test("Post Trait Offer - Ethereum", async () => {
+    const collection = await sdk.api.getCollection("cool-cats-nft");
+    const paymentTokenAddress = getWETHAddress(sdk.chain);
+    const postOrderRequest = {
+      collectionSlug: collection.collection,
+      accountAddress: walletAddress,
+      amount: OFFER_AMOUNT,
+      quantity: 1,
+      paymentTokenAddress,
+      traitType: "face",
+      traitValue: "tvface bobross",
+    };
+    const offerResponse = await sdk.createCollectionOffer(postOrderRequest);
+    expect(offerResponse).to.exist.and.to.have.property("protocol_data");
+    expect(offerResponse?.criteria.trait).to.deep.equal({
+      type: "face",
+      value: "tvface bobross",
+    });
+  });
 });

@@ -14,14 +14,24 @@ export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
 export const getPostCollectionOfferPayload = (
   collectionSlug: string,
   protocol_data: ProtocolData,
+  traitType?: string,
+  traitValue?: string,
 ) => {
-  return {
+  const payload = {
     criteria: {
       collection: { slug: collectionSlug },
     },
     protocol_data,
     protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
   };
+  if (traitType && traitValue) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (payload.criteria as any).trait = {
+      type: traitType,
+      value: traitValue,
+    };
+  }
+  return payload;
 };
 
 export const getBuildCollectionOfferPayload = (
@@ -29,8 +39,10 @@ export const getBuildCollectionOfferPayload = (
   quantity: number,
   collectionSlug: string,
   offerProtectionEnabled: boolean,
+  traitType?: string,
+  traitValue?: string,
 ) => {
-  return {
+  const payload = {
     offerer: offererAddress,
     quantity,
     criteria: {
@@ -41,6 +53,14 @@ export const getBuildCollectionOfferPayload = (
     protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
     offer_protection_enabled: offerProtectionEnabled,
   };
+  if (traitType && traitValue) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (payload.criteria as any).trait = {
+      type: traitType,
+      value: traitValue,
+    };
+  }
+  return payload;
 };
 
 export const getFulfillmentDataPath = (side: OrderSide) => {
