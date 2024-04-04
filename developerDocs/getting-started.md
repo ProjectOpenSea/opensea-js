@@ -104,13 +104,13 @@ For trait offers, include `traitType` as the trait name and `traitValue` as the 
 ```typescript
 const collection = await sdk.api.getCollection("cool-cats-nft");
 const offer = await openseaSDK.createCollectionOffer({
-    collectionSlug: collection.collection,
-    accountAddress: walletAddress,
-    paymentTokenAddress: getWETHAddress(sdk.chain),
-    amount: 7,
-    quantity: 1,
-    traitType: "face",
-    traitValue: "tvface bobross",
+  collectionSlug: collection.collection,
+  accountAddress: walletAddress,
+  paymentTokenAddress: getWETHAddress(sdk.chain),
+  amount: 7,
+  quantity: 1,
+  traitType: "face",
+  traitValue: "tvface bobross",
 });
 ```
 
