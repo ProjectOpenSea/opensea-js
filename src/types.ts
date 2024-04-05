@@ -105,8 +105,10 @@ export enum Chain {
   Polygon = "matic",
   /** Klaytn */
   Klaytn = "klaytn",
-  /** Base L2 */
+  /** Base */
   Base = "base",
+  /** Blast */
+  Blast = "blast",
   /** Binance Smart Chain */
   BNB = "bsc",
   /** Arbitrum */
@@ -130,8 +132,10 @@ export enum Chain {
   Mumbai = "mumbai",
   /** Klaytn Baobab */
   Baobab = "baobab",
-  /** Base L2 Testnet */
+  /** Base Testnet */
   BaseSepolia = "base_sepolia",
+  /** Blast Testnet */
+  BlastSepolia = "blast_sepolia",
   /** Binance Smart Chain Testnet */
   BNBTestnet = "bsctestnet",
   /** Arbitrum Testnet */
