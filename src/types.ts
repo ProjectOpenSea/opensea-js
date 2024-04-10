@@ -128,8 +128,8 @@ export enum Chain {
   // ⚠️NOTE: When adding to this list, also add to the util function `isTestChain`
   /** Sepolia */
   Sepolia = "sepolia",
-  /** Polygon Testchain Mumbai */
-  Mumbai = "mumbai",
+  /** Polygon Amoy */
+  Amoy = "amoy",
   /** Klaytn Baobab */
   Baobab = "baobab",
   /** Base Testnet */
@@ -138,11 +138,11 @@ export enum Chain {
   BlastSepolia = "blast_sepolia",
   /** Binance Smart Chain Testnet */
   BNBTestnet = "bsctestnet",
-  /** Arbitrum Testnet */
+  /** Arbitrum Sepolia */
   ArbitrumSepolia = "arbitrum_sepolia",
-  /** Avalanche Fuji Testnet */
+  /** Avalanche Fuji */
   Fuji = "avalanche_fuji",
-  /** Optimism Sepolia Testnet */
+  /** Optimism Sepolia */
   OptimismSepolia = "optimism_sepolia",
   /** Solana Devnet */
   SolanaDevnet = "soldev",
