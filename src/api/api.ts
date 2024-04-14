@@ -105,9 +105,13 @@ export class OpenSeaAPI {
     this.apiKey = config.apiKey;
     this.chain = config.chain ?? Chain.Mainnet;
 
-    this.apiBaseUrl = isTestChain(this.chain)
-      ? API_BASE_TESTNET
-      : API_BASE_MAINNET;
+    if (config.apiBaseUrl) {
+      this.apiBaseUrl = config.apiBaseUrl;
+    } else {
+      this.apiBaseUrl = isTestChain(this.chain)
+        ? API_BASE_TESTNET
+        : API_BASE_MAINNET;
+    }
 
     // Debugging: default to nothing
     this.logger = logger ?? ((arg: string) => arg);
