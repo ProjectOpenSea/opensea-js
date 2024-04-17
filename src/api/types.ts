@@ -227,7 +227,7 @@ export type NFT = {
   owners: {
     address: string;
     quantity: number;
-  };
+  }[];
   /** Rarity of the NFT */
   rarity: null | {
     strategy_id: string | null;
