@@ -211,6 +211,8 @@ export type NFT = {
   image_url: string;
   /** URL of metadata */
   metadata_url: string;
+  /** URL on OpenSea */
+  opensea_url: string;
   /** Date of latest NFT update */
   updated_at: string;
   /** Whether NFT is disabled for trading on OpenSea */
@@ -219,6 +221,26 @@ export type NFT = {
   is_nsfw: boolean;
   /** Traits for the NFT, returns null if the NFT has than 50 traits */
   traits: Trait[] | null;
+  /** Creator of the NFT */
+  creator: string;
+  /** Owners of the NFT */
+  owners: {
+    address: string;
+    quantity: number;
+  };
+  /** Rarity of the NFT */
+  rarity: null | {
+    strategy_id: string | null;
+    strategy_version: string | null;
+    rank: number | null;
+    score: number | null;
+    calculated_at: string;
+    max_rank: number | null;
+    tokens_scored: number | null;
+    ranking_features: null | {
+      unique_attribute_count: number;
+    };
+  };
 };
 
 /**

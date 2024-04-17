@@ -34,23 +34,11 @@ suite("SDK: NFTs", () => {
 
   test("Get NFT", async () => {
     const tokenAddress = "0x4768cbf202f365fbf704b9b9d397551a0443909b"; // Roo Troop
-    const identifier = "2";
-    const response = await sdk.api.getNFT(
-      tokenAddress,
-      identifier,
-      Chain.Polygon,
-    );
+    const tokenId = "2";
+    const response = await sdk.api.getNFT(tokenAddress, tokenId, Chain.Polygon);
     assert(response.nft, "Response should contain nft.");
-    assert.equal(
-      response.nft.contract,
-      tokenAddress,
-      "NFT address should match token address",
-    );
-    assert.equal(
-      response.nft.identifier,
-      identifier,
-      "NFT address should match token address",
-    );
+    assert.equal(response.nft.contract, tokenAddress, "The address matches");
+    assert.equal(response.nft.identifier, tokenId, "The token id matches");
   });
 
   test("Refresh NFT", async () => {
