@@ -55,6 +55,19 @@ type ContractCriteria = {
 };
 
 /**
+ * Query args for Get Collections
+ * @category API Query Args
+ */
+export interface GetCollectionsArgs {
+  order_by?: string;
+  limit?: number;
+  next?: string;
+  chain?: string;
+  creator_username?: string;
+  include_hidden?: boolean;
+}
+
+/**
  * Response from OpenSea API for fetching a single collection.
  * @category API Response Types
  */
@@ -62,6 +75,24 @@ export type GetCollectionResponse = {
   /** Collection object. See {@link OpenSeaCollection} */
   collection: OpenSeaCollection;
 };
+
+/**
+ * Response from OpenSea API for fetching a list of collections.
+ * @category API Response Types
+ */
+export type GetCollectionsResponse = QueryCursorsV2 & {
+  /** List of collections. See {@link OpenSeaCollection} */
+  collections: OpenSeaCollection[];
+};
+
+export enum CollectionOrderByOption {
+  CREATED_DATE = "created_date",
+  ONE_DAY_CHANGE = "one_day_change",
+  SEVEN_DAY_VOLUME = "seven_day_volume",
+  SEVEN_DAY_CHANGE = "seven_day_change",
+  NUM_OWNERS = "num_owners",
+  MARKET_CAP = "market_cap",
+}
 
 /**
  * Base Order type shared between Listings and Offers.
@@ -189,6 +220,14 @@ export type GetBestOfferResponse = Offer | CollectionOffer;
  * @category API Response Types
  */
 export type GetBestListingResponse = Listing;
+
+/**
+ * Response from OpenSea API for offchain canceling an order.
+ * @category API Response Types
+ */
+export type CancelOrderResponse = {
+  last_signature_issued_valid_until: string | null;
+};
 
 /**
  * NFT type returned by OpenSea API.

@@ -1,6 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
 import { sdk } from "./setup";
+import { CollectionOrderByOption } from "../../src/api/types";
 import { SafelistStatus } from "../../src/types";
 
 suite("SDK: getCollection", () => {
@@ -15,6 +16,28 @@ suite("SDK: getCollection", () => {
       collection.safelistStatus,
       SafelistStatus.VERIFIED,
       "Collection should be verified.",
+    );
+  });
+
+  test("Get Collections", async () => {
+    const response = await sdk.api.getCollections();
+    const { collections, next } = response;
+    assert(collections[0], "Collection should not be null");
+    assert(collections[0].name, "Collection name should exist");
+    assert(next, "Next cursor should be included");
+
+    const response2 = await sdk.api.getCollections(
+      CollectionOrderByOption.MARKET_CAP,
+    );
+    const { collections: collectionsByMarketCap, next: nextByMarketCap } =
+      response2;
+    assert(collectionsByMarketCap[0], "Collection should not be null");
+    assert(collectionsByMarketCap[0].name, "Collection name should exist");
+    assert(nextByMarketCap, "Next cursor should be included");
+
+    assert(
+      collectionsByMarketCap[0].name != collections[0].name,
+      "Collection order should differ",
     );
   });
 
