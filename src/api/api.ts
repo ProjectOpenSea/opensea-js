@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import {
   getCollectionPath,
+  getCollectionsPath,
   getOrdersAPIPath,
   getPostCollectionOfferPath,
   getBuildOfferPath,
@@ -18,10 +19,12 @@ import {
   getAccountPath,
   getCollectionStatsPath,
   getBestListingsAPIPath,
+  getCancelOrderPath,
 } from "./apiPaths";
 import {
   BuildOfferResponse,
   GetCollectionResponse,
+  GetCollectionsResponse,
   ListNFTsResponse,
   GetNFTResponse,
   ListCollectionOffersResponse,
@@ -31,6 +34,9 @@ import {
   GetOffersResponse,
   GetListingsResponse,
   CollectionOffer,
+  CollectionOrderByOption,
+  CancelOrderResponse,
+  GetCollectionsArgs,
 } from "./types";
 import { API_BASE_MAINNET, API_BASE_TESTNET } from "../constants";
 import {
@@ -533,6 +539,40 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Fetch a list of OpenSea collections.
+   * @param orderBy The order to return the collections in. Default: CREATED_DATE
+   * @param chain The chain to filter the collections on. Default: all chains
+   * @param creatorUsername The creator's OpenSea username to filter the collections on.
+   * @param includeHidden If hidden collections should be returned. Default: false
+   * @param limit The limit of collections to return.
+   * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @returns List of {@link OpenSeaCollection} returned by the API.
+   */
+  public async getCollections(
+    orderBy: CollectionOrderByOption = CollectionOrderByOption.CREATED_DATE,
+    chain?: Chain,
+    creatorUsername?: string,
+    includeHidden: boolean = false,
+    limit?: number,
+    next?: string,
+  ): Promise<GetCollectionsResponse> {
+    const path = getCollectionsPath();
+    const args: GetCollectionsArgs = {
+      order_by: orderBy,
+      chain,
+      creator_username: creatorUsername,
+      include_hidden: includeHidden,
+      limit,
+      next,
+    };
+    const response = await this.get<GetCollectionsResponse>(path, args);
+    response.collections = response.collections.map((collection) =>
+      collectionFromJSON(collection),
+    );
+    return response;
+  }
+
+  /**
    * Fetch stats for an OpenSea collection.
    * @param slug The slug (identifier) of the collection.
    * @returns The {@link OpenSeaCollection} returned by the API.
@@ -589,6 +629,27 @@ export class OpenSeaAPI {
       {},
     );
 
+    return response;
+  }
+
+  /**
+   * Offchain cancel an order, offer or listing, by its order hash when protected by the SignedZone.
+   * Protocol and Chain are required to prevent hash collisions.
+   * Please note cancellation is only assured if a fulfillment signature was not vended prior to cancellation.
+   * @param protocolAddress The Seaport address for the order.
+   * @param orderHash The order hash, or external identifier, of the order.
+   * @param chain The chain where the order is located.
+   * @returns The response from the API.
+   */
+  public async offchainCancelOrder(
+    protocolAddress: string,
+    orderHash: string,
+    chain: Chain = this.chain,
+  ): Promise<CancelOrderResponse> {
+    const response = await this.post<CancelOrderResponse>(
+      getCancelOrderPath(chain, protocolAddress, orderHash),
+      {},
+    );
     return response;
   }
 

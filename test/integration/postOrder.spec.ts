@@ -115,6 +115,16 @@ suite("SDK: order posting", () => {
     };
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest);
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");
+
+    // Cancel the order
+    const { protocol_address, order_hash } = offerResponse!;
+    const cancelResponse = await sdk.offchainCancelOrder(
+      protocol_address,
+      order_hash,
+    );
+    expect(cancelResponse).to.exist.and.to.have.property(
+      "last_signature_issued_valid_until",
+    );
   });
 
   test("Post Collection Offer - Polygon", async () => {

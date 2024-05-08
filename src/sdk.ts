@@ -877,7 +877,7 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Cancel an order on-chain, preventing it from ever being fulfilled.
+   * Cancel an order onchain, preventing it from ever being fulfilled.
    * @param options
    * @param options.order The order to cancel
    * @param options.accountAddress The account address that will be cancelling the order.
@@ -914,6 +914,23 @@ export class OpenSeaSDK {
       EventType.CancelOrder,
       "Cancelling order",
     );
+  }
+
+  /**
+   * Offchain cancel an order, offer or listing, by its order hash when protected by the SignedZone.
+   * Protocol and Chain are required to prevent hash collisions.
+   * Please note cancellation is only assured if a fulfillment signature was not vended prior to cancellation.
+   * @param protocolAddress The Seaport address for the order.
+   * @param orderJash The order hash, or external identifier, of the order.
+   * @param chain The chain where the order is located.
+   * @returns The response from the API.
+   */
+  public async offchainCancelOrder(
+    protocolAddress: string,
+    orderHash: string,
+    chain: Chain = this.chain,
+  ) {
+    return this.api.offchainCancelOrder(protocolAddress, orderHash, chain);
   }
 
   /**
