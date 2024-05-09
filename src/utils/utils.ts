@@ -168,6 +168,55 @@ export const getAssetItemType = (tokenStandard: TokenStandard) => {
   }
 };
 
+export const getChainId = (chain: Chain) => {
+  switch (chain) {
+    case Chain.Mainnet:
+      return "1";
+    case Chain.Polygon:
+      return "137";
+    case Chain.Amoy:
+      return "80002";
+    case Chain.Sepolia:
+      return "11155111";
+    case Chain.Klaytn:
+      return "8217";
+    case Chain.Baobab:
+      return "1001";
+    case Chain.Avalanche:
+      return "43114";
+    case Chain.Fuji:
+      return "43113";
+    case Chain.BNB:
+      return "56";
+    case Chain.BNBTestnet:
+      return "97";
+    case Chain.Arbitrum:
+      return "42161";
+    case Chain.ArbitrumNova:
+      return "42170";
+    case Chain.ArbitrumSepolia:
+      return "421614";
+    case Chain.Blast:
+      return "238";
+    case Chain.BlastSepolia:
+      return "168587773";
+    case Chain.Base:
+      return "8453";
+    case Chain.BaseSepolia:
+      return "84532";
+    case Chain.Optimism:
+      return "10";
+    case Chain.OptimismSepolia:
+      return "11155420";
+    case Chain.Zora:
+      return "7777777";
+    case Chain.ZoraSepolia:
+      return "999999999";
+    default:
+      throw new Error(`Unknown chainId for ${chain}`);
+  }
+};
+
 export const getWETHAddress = (chain: Chain) => {
   switch (chain) {
     case Chain.Mainnet:

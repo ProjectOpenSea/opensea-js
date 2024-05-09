@@ -639,16 +639,22 @@ export class OpenSeaAPI {
    * @param protocolAddress The Seaport address for the order.
    * @param orderHash The order hash, or external identifier, of the order.
    * @param chain The chain where the order is located.
+   * @param offererSignature An EIP-712 signature from the offerer of the order.
+   *                         If this is not provided, the user associated with the API Key will be checked instead.
+   *                         The signature must be a EIP-712 signature consisting of the order's Seaport contract's
+   *                         name, version, address, and chain. The struct to sign is `OrderHash` containing a
+   *                         single bytes32 field.
    * @returns The response from the API.
    */
   public async offchainCancelOrder(
     protocolAddress: string,
     orderHash: string,
     chain: Chain = this.chain,
+    offererSignature?: string,
   ): Promise<CancelOrderResponse> {
     const response = await this.post<CancelOrderResponse>(
       getCancelOrderPath(chain, protocolAddress, orderHash),
-      {},
+      { offererSignature },
     );
     return response;
   }

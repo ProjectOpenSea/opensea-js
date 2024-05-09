@@ -95,7 +95,7 @@ export interface OpenSeaAPIConfig {
 
 /**
  * Each of the possible chains that OpenSea supports.
- * ⚠️NOTE: When adding to this list, also add to the util function `getWETHAddress`
+ * ⚠️NOTE: When adding to this list, also add to the util functions `getChainId` and `getWETHAddress`
  */
 export enum Chain {
   // Mainnet Chains
