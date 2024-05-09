@@ -63,6 +63,7 @@ import {
   isTestChain,
   basisPointsForFee,
   totalBasisPointsForFees,
+  getChainId,
 } from "./utils/utils";
 
 /**
@@ -916,21 +917,81 @@ export class OpenSeaSDK {
     );
   }
 
+  private _getSeaportVersion(protocolAddress: string) {
+    const protocolAddressChecksummed = ethers.getAddress(protocolAddress);
+    switch (protocolAddressChecksummed) {
+      case CROSS_CHAIN_SEAPORT_V1_6_ADDRESS:
+        return "1.6";
+      case CROSS_CHAIN_SEAPORT_V1_5_ADDRESS:
+        return "1.5";
+      default:
+        throw new Error("Unknown or unsupported protocol address");
+    }
+  }
+
+  /**
+   * Get the offerer signature for canceling an order offchain.
+   * The signature will only be valid if the signer address is the address of the order's offerer.
+   */
+  private async _getOffererSignature(
+    protocolAddress: string,
+    orderHash: string,
+    chain: Chain,
+  ) {
+    const chainId = getChainId(chain);
+    const name = "Seaport";
+    const version = this._getSeaportVersion(protocolAddress);
+
+    if (
+      typeof (this._signerOrProvider as Signer).signTypedData == "undefined"
+    ) {
+      throw new Error(
+        "Please pass an ethers Signer into this sdk to derive an offerer signature",
+      );
+    }
+
+    return (this._signerOrProvider as Signer).signTypedData(
+      { chainId, name, version, verifyingContract: protocolAddress },
+      { OrderHash: [{ name: "orderHash", type: "bytes32" }] },
+      { orderHash },
+    );
+  }
+
   /**
    * Offchain cancel an order, offer or listing, by its order hash when protected by the SignedZone.
    * Protocol and Chain are required to prevent hash collisions.
    * Please note cancellation is only assured if a fulfillment signature was not vended prior to cancellation.
    * @param protocolAddress The Seaport address for the order.
-   * @param orderJash The order hash, or external identifier, of the order.
+   * @param orderHash The order hash, or external identifier, of the order.
    * @param chain The chain where the order is located.
+   * @param offererSignature An EIP-712 signature from the offerer of the order.
+   *                         If this is not provided, the user associated with the API Key will be checked instead.
+   *                         The signature must be a EIP-712 signature consisting of the order's Seaport contract's
+   *                         name, version, address, and chain. The struct to sign is `OrderHash` containing a
+   *                         single bytes32 field.
+   * @param useSignerToDeriveOffererSignature Derive the offererSignature from the Ethers signer passed into this sdk.
    * @returns The response from the API.
    */
   public async offchainCancelOrder(
     protocolAddress: string,
     orderHash: string,
     chain: Chain = this.chain,
+    offererSignature?: string,
+    useSignerToDeriveOffererSignature?: boolean,
   ) {
-    return this.api.offchainCancelOrder(protocolAddress, orderHash, chain);
+    if (useSignerToDeriveOffererSignature) {
+      offererSignature = await this._getOffererSignature(
+        protocolAddress,
+        orderHash,
+        chain,
+      );
+    }
+    return this.api.offchainCancelOrder(
+      protocolAddress,
+      orderHash,
+      chain,
+      offererSignature,
+    );
   }
 
   /**
@@ -1220,12 +1281,8 @@ export class OpenSeaSDK {
     this._emitter.emit(event, data);
   }
 
-  /**
-   * Throws an error if an account is not available through the provider.
-   * @param accountAddress The account address to check is available.
-   */
-  private async _requireAccountIsAvailable(accountAddress: string) {
-    const accountAddressChecksummed = ethers.getAddress(accountAddress);
+  /** Get the accounts available from the signer or provider. */
+  private async _getAvailableAccounts() {
     const availableAccounts: string[] = [];
 
     if ("address" in this._signerOrProvider) {
@@ -1236,6 +1293,17 @@ export class OpenSeaSDK {
       );
       availableAccounts.push(...addresses);
     }
+
+    return availableAccounts;
+  }
+
+  /**
+   * Throws an error if an account is not available through the provider.
+   * @param accountAddress The account address to check is available.
+   */
+  private async _requireAccountIsAvailable(accountAddress: string) {
+    const accountAddressChecksummed = ethers.getAddress(accountAddress);
+    const availableAccounts = await this._getAvailableAccounts();
 
     if (availableAccounts.includes(accountAddressChecksummed)) {
       return;

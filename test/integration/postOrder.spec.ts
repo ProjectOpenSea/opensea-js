@@ -114,9 +114,11 @@ suite("SDK: order posting", () => {
       paymentTokenAddress,
     };
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest);
+    expect(offerResponse).to.exist.and.to.have.property("protocol_address");
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");
+    expect(offerResponse).to.exist.and.to.have.property("order_hash");
 
-    // Cancel the order
+    // Cancel the order using self serve API key tied to the offerer
     const { protocol_address, order_hash } = offerResponse!;
     const cancelResponse = await sdk.offchainCancelOrder(
       protocol_address,
@@ -139,7 +141,22 @@ suite("SDK: order posting", () => {
     };
     const offerResponse =
       await sdkPolygon.createCollectionOffer(postOrderRequest);
+    expect(offerResponse).to.exist.and.to.have.property("protocol_address");
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");
+    expect(offerResponse).to.exist.and.to.have.property("order_hash");
+
+    // Cancel the order using the offerer signature, deriving it from the ethers signer
+    const { protocol_address, order_hash } = offerResponse!;
+    const cancelResponse = await sdkPolygon.offchainCancelOrder(
+      protocol_address,
+      order_hash,
+      undefined,
+      undefined,
+      true,
+    );
+    expect(cancelResponse).to.exist.and.to.have.property(
+      "last_signature_issued_valid_until",
+    );
   });
 
   test("Post Trait Offer - Ethereum", async () => {
