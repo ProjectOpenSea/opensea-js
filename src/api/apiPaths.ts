@@ -6,7 +6,7 @@ export const getOrdersAPIPath = (
   protocol: OrderProtocol,
   side: OrderSide,
 ) => {
-  const sidePath = side === OrderSide.ASK ? "listings" : "offers";
+  const sidePath = side === OrderSide.LISTING ? "listings" : "offers";
   return `/v2/orders/${chain}/${protocol}/${sidePath}`;
 };
 

@@ -10,7 +10,7 @@ import {
 import { expectValidOrder } from "../utils/utils";
 
 suite("Getting orders", () => {
-  [OrderSide.ASK, OrderSide.BID].forEach((side) => {
+  [OrderSide.LISTING, OrderSide.OFFER].forEach((side) => {
     test(`getOrder should return a single order > ${side}`, async () => {
       const order = await mainAPI.getOrder({
         protocol: "seaport",
@@ -24,7 +24,7 @@ suite("Getting orders", () => {
     await expect(
       mainAPI.getOrder({
         protocol: "seaport",
-        side: OrderSide.ASK,
+        side: OrderSide.LISTING,
         maker: "0x000000000000000000000000000000000000dEaD",
       }),
     )
@@ -32,7 +32,7 @@ suite("Getting orders", () => {
       .and.have.property("message", "Not found: no matching order found");
   });
 
-  [OrderSide.ASK, OrderSide.BID].forEach((side) => {
+  [OrderSide.LISTING, OrderSide.OFFER].forEach((side) => {
     test(`getOrders should return a list of orders > ${side}`, async () => {
       const { orders, next, previous } = await mainAPI.getOrders({
         protocol: "seaport",

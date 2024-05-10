@@ -8,7 +8,7 @@ suite("Generating fulfillment data", () => {
   test(`Generate fulfillment data for listing`, async () => {
     const order = await mainAPI.getOrder({
       protocol: "seaport",
-      side: OrderSide.ASK,
+      side: OrderSide.LISTING,
     });
 
     if (order.orderHash == null) {
@@ -28,7 +28,7 @@ suite("Generating fulfillment data", () => {
   test(`Generate fulfillment data for offer`, async () => {
     const order = await mainAPI.getOrder({
       protocol: "seaport",
-      side: OrderSide.BID,
+      side: OrderSide.OFFER,
     });
 
     if (order.orderHash == null) {

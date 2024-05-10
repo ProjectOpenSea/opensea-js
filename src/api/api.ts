@@ -126,7 +126,7 @@ export class OpenSeaAPI {
   /**
    * Gets an order from API based on query options.
    * @param options
-   * @param options.side The side of the order (buy or sell
+   * @param options.side The side of the order (listing or offer)
    * @param options.protocol The protocol, typically seaport, to query orders for
    * @param options.orderDirection The direction to sort the orders
    * @param options.orderBy The field to sort the orders by
@@ -314,7 +314,7 @@ export class OpenSeaAPI {
     side: OrderSide,
   ): Promise<FulfillmentDataResponse> {
     let payload: object | null = null;
-    if (side === OrderSide.ASK) {
+    if (side === OrderSide.LISTING) {
       payload = getFulfillListingPayload(
         fulfillerAddress,
         orderHash,

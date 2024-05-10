@@ -379,7 +379,7 @@ export class OpenSeaSDK {
     );
 
     const { basePrice } = await this._getPriceParameters(
-      OrderSide.BID,
+      OrderSide.OFFER,
       paymentTokenAddress,
       expirationTime ?? getMaxOrderExpirationTimestamp(),
       startAmount,
@@ -425,7 +425,7 @@ export class OpenSeaSDK {
     return this.api.postOrder(order, {
       protocol: "seaport",
       protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      side: OrderSide.BID,
+      side: OrderSide.OFFER,
     });
   }
 
@@ -493,7 +493,7 @@ export class OpenSeaSDK {
     }
 
     const { basePrice, endPrice } = await this._getPriceParameters(
-      OrderSide.ASK,
+      OrderSide.LISTING,
       paymentTokenAddress,
       expirationTime ?? getMaxOrderExpirationTimestamp(),
       startAmount,
@@ -549,7 +549,7 @@ export class OpenSeaSDK {
     return this.api.postOrder(order, {
       protocol: "seaport",
       protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      side: OrderSide.ASK,
+      side: OrderSide.LISTING,
     });
   }
 
@@ -617,7 +617,7 @@ export class OpenSeaSDK {
     };
 
     const { basePrice } = await this._getPriceParameters(
-      OrderSide.ASK,
+      OrderSide.LISTING,
       paymentTokenAddress,
       expirationTime ?? getMaxOrderExpirationTimestamp(),
       amount,
@@ -764,8 +764,8 @@ export class OpenSeaSDK {
     const side =
       (order as OrderV2).side ??
       ([OrderType.BASIC, OrderType.ENGLISH].includes((order as Listing).type)
-        ? OrderSide.ASK
-        : OrderSide.BID);
+        ? OrderSide.LISTING
+        : OrderSide.OFFER);
 
     let extraData: string | undefined = undefined;
 
@@ -1261,7 +1261,7 @@ export class OpenSeaSDK {
     if (startAmount == null || startAmountWei < 0) {
       throw new Error("Starting price must be a number >= 0");
     }
-    if (isEther && orderSide === OrderSide.BID) {
+    if (isEther && orderSide === OrderSide.OFFER) {
       throw new Error("Offers must use wrapped ETH or an ERC-20 token.");
     }
     if (priceDiffWei < 0) {

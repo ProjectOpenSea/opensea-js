@@ -64,7 +64,7 @@ export const getBuildCollectionOfferPayload = (
 };
 
 export const getFulfillmentDataPath = (side: OrderSide) => {
-  const sidePath = side === OrderSide.ASK ? "listings" : "offers";
+  const sidePath = side === OrderSide.LISTING ? "listings" : "offers";
   return `/v2/${sidePath}/fulfillment_data`;
 };
 
