@@ -49,7 +49,7 @@ export type OrderV2 = {
   makerFees: OrderFee[];
   /** The taker fees for the order. */
   takerFees: OrderFee[];
-  /** The side of the order. Ask/Bid */
+  /** The side of the order. Listing/Offer */
   side: OrderSide;
   /** The type of the order. Basic/English/Criteria */
   orderType: OrderType;

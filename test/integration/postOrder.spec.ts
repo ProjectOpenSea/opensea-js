@@ -15,6 +15,9 @@ import { getWETHAddress } from "../../src/utils";
 import { OFFER_AMOUNT } from "../utils/constants";
 import { expectValidOrder } from "../utils/utils";
 
+const ONE_HOUR = Math.floor(Date.now() / 1000) + 3600;
+const expirationTime = ONE_HOUR;
+
 suite("SDK: order posting", () => {
   test("Post Offer - Mainnet", async () => {
     const offer = {
@@ -24,9 +27,14 @@ suite("SDK: order posting", () => {
         tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
         tokenId: "2288",
       },
+      expirationTime,
     };
     const order = await sdk.createOffer(offer);
     expectValidOrder(order);
+    expect(order.expirationTime).to.equal(expirationTime);
+    expect(order.protocolData.parameters.endTime).to.equal(
+      expirationTime.toString(),
+    );
   });
 
   test("Post Offer - Polygon", async () => {
@@ -37,6 +45,7 @@ suite("SDK: order posting", () => {
         tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
         tokenId: "2288",
       },
+      expirationTime,
     };
     const order = await sdk.createOffer(offer);
     expectValidOrder(order);
@@ -53,6 +62,7 @@ suite("SDK: order posting", () => {
         tokenAddress: TOKEN_ADDRESS_MAINNET as string,
         tokenId: TOKEN_ID_MAINNET as string,
       },
+      expirationTime,
     };
     const order = await sdk.createListing(listing);
     expectValidOrder(order);
@@ -70,6 +80,7 @@ suite("SDK: order posting", () => {
         tokenId: TOKEN_ID_MAINNET as string,
       },
       englishAuction: true,
+      expirationTime,
     };
     try {
       const order = await sdk.createListing(listing);
@@ -98,6 +109,7 @@ suite("SDK: order posting", () => {
         tokenAddress: TOKEN_ADDRESS_POLYGON,
         tokenId: TOKEN_ID_POLYGON,
       },
+      expirationTime,
     };
     const order = await sdkPolygon.createListing(listing);
     expectValidOrder(order);
@@ -112,6 +124,7 @@ suite("SDK: order posting", () => {
       amount: OFFER_AMOUNT,
       quantity: 1,
       paymentTokenAddress,
+      expirationTime,
     };
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest);
     expect(offerResponse).to.exist.and.to.have.property("protocol_address");
@@ -138,6 +151,7 @@ suite("SDK: order posting", () => {
       amount: 0.0001,
       quantity: 1,
       paymentTokenAddress,
+      expirationTime,
     };
     const offerResponse =
       await sdkPolygon.createCollectionOffer(postOrderRequest);
@@ -170,6 +184,7 @@ suite("SDK: order posting", () => {
       paymentTokenAddress,
       traitType: "face",
       traitValue: "tvface bobross",
+      expirationTime,
     };
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest);
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");

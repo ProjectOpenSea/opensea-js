@@ -151,11 +151,11 @@ export enum Chain {
 }
 
 /**
- * Order side: ask (sell, listing) or bid (buy, offer)
+ * Order side: listing (ask) or offer (bid)
  */
 export enum OrderSide {
-  ASK = "ask",
-  BID = "bid",
+  LISTING = "ask",
+  OFFER = "bid",
 }
 
 /**

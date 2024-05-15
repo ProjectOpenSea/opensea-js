@@ -36,7 +36,7 @@ const order = await openseaSDK.createListing({
 You can buy and transfer an item to someone else in one step! Just pass the `recipientAddress` parameter:
 
 ```typescript
-const order = await openseaSDK.api.getOrder({ side: OrderSide.ASK, ... })
+const order = await openseaSDK.api.getOrder({ side: OrderSide.LISTING, ... })
 await openseaSDK.fulfillOrder({
   order,
   accountAddress, // The address of your wallet, which will sign the transaction
@@ -44,7 +44,7 @@ await openseaSDK.fulfillOrder({
 })
 ```
 
-If the order is a listing (sell order, `order.side === OrderSide.ASK`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is an offer (buy order, `"bid"`), the taker is the _seller_ but the bid amount be sent to the `recipientAddress`.
+If the order is a listing (sell order, ask, `OrderSide.LISTING`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is an offer (buy order, bid, `OrderSide.OFFER`), the taker is the _seller_ but the bid amount be sent to the `recipientAddress`.
 
 This will automatically approve the assets for trading and confirm the transaction for sending them.
 
@@ -74,7 +74,7 @@ You can use `getPaymentToken` to search for payment tokens by address. And you c
 const token = await openseaSDK.api.getPaymentToken(paymentTokenAddress);
 
 const order = await openseaSDK.api.getOrders({
-  side: OrderSide.ASK,
+  side: OrderSide.LISTING,
   paymentTokenAddress: token.address,
 });
 ```
