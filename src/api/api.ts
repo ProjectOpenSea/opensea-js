@@ -726,7 +726,7 @@ export class OpenSeaAPI {
     }
 
     // Set the throttle params
-    req.setThrottleParams({ slotInterval: 1000 })
+    req.setThrottleParams({ slotInterval: 1000 });
 
     this.logger(
       `Sending request: ${url} ${JSON.stringify({
