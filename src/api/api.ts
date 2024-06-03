@@ -73,14 +73,6 @@ import {
   accountFromJSON,
 } from "../utils/utils";
 
-function stall(duration: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, duration);
-  });
-}
-
 /**
  * The API class for the OpenSea SDK.
  * @category Main Classes
