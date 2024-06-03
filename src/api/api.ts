@@ -726,16 +726,7 @@ export class OpenSeaAPI {
     }
 
     // Set the throttle params
-    // - Should be able to replace this retryFunc with `setThrottleParams({ slotInterval: 1000 })`
-    //   when this bug is fixed in ethers: https://github.com/ethers-io/ethers.js/issues/4663
-    req.retryFunc = async (_req, resp, attempt) => {
-      this.logger(
-        `Fetch attempt ${attempt} failed with status ${resp.statusCode}`,
-      );
-      // Wait 1s between tries
-      await stall(1000);
-      return true;
-    };
+    req.setThrottleParams({ slotInterval: 1000 })
 
     this.logger(
       `Sending request: ${url} ${JSON.stringify({
