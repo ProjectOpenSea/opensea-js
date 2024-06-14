@@ -1,14 +1,18 @@
 import { assert } from "chai";
 import { parseEther } from "ethers";
 import { describe, test } from "mocha";
-import { ETH_TO_WRAP, sdk, walletAddress } from "./setup";
+import type { OpenSeaSDK } from "src";
+import { ETH_TO_WRAP, sdk, sdkNoAddressProperty, walletAddress } from "./setup";
 import { TokenStandard } from "../../src/types";
 import { getWETHAddress } from "../../src/utils";
 
 describe("SDK: WETH", () => {
-  test("Wrap ETH and Unwrap", async function () {
+  async function testWrapAndUnwrap(
+    testContext: Mocha.Context,
+    sdk: OpenSeaSDK,
+  ) {
     if (!ETH_TO_WRAP) {
-      this.skip();
+      return testContext.skip();
     }
 
     const wethAsset = {
@@ -53,5 +57,12 @@ describe("SDK: WETH", () => {
       finalWethBalance.toString(),
       "Balances should match.",
     );
+  }
+  test("Wrap ETH and Unwrap", async function () {
+    await testWrapAndUnwrap(this, sdk);
+  }).timeout(30000);
+
+  test("Wrap ETH and unwrap without address property on ethers.Signer", async function () {
+    await testWrapAndUnwrap(this, sdkNoAddressProperty);
   }).timeout(30000);
 });
