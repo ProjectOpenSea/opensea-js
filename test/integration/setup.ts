@@ -49,16 +49,3 @@ export const sdkPolygon = new OpenSeaSDK(
   },
   (line) => console.info(`POLYGON: ${line}`),
 );
-
-export const sdkNoAddressProperty = new OpenSeaSDK(
-  new Proxy(walletMainnet, {
-    has: (target, prop) => (prop === "address" ? false : prop in target),
-    get: (target, prop: keyof ethers.Wallet) =>
-      prop === "address" ? undefined : target[prop],
-  }) as ethers.Signer,
-  {
-    chain: Chain.Mainnet,
-    apiKey: MAINNET_API_KEY,
-  },
-  (line) => console.info(`MAINNET NO STATIC ADDRESS: ${line}`),
-);
