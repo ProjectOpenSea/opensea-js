@@ -1292,6 +1292,8 @@ export class OpenSeaSDK {
         (acct) => acct.address,
       );
       availableAccounts.push(...addresses);
+    } else if ("getAddress" in this._signerOrProvider) {
+      availableAccounts.push(await this._signerOrProvider.getAddress());
     }
 
     return availableAccounts;
