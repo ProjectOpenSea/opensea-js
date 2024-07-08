@@ -212,6 +212,8 @@ export const getChainId = (chain: Chain) => {
       return "7777777";
     case Chain.ZoraSepolia:
       return "999999999";
+    case Chain.SeiTestnet:
+      return "1328";
     default:
       throw new Error(`Unknown chainId for ${chain}`);
   }
@@ -257,6 +259,8 @@ export const getWETHAddress = (chain: Chain) => {
     case Chain.Zora:
     case Chain.ZoraSepolia:
       return "0x4200000000000000000000000000000000000006";
+    case Chain.SeiTestnet:
+      return "0x3921ea6cf927be80211bb57f19830700285b0ada";
     default:
       throw new Error(`Unknown WETH address for ${chain}`);
   }
@@ -321,6 +325,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.OptimismSepolia:
     case Chain.SolanaDevnet:
     case Chain.ZoraSepolia:
+    case Chain.SeiTestnet:
       return true;
     default:
       return false;
