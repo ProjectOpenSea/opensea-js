@@ -21,13 +21,12 @@ import {
   parseEther,
   JsonRpcProvider,
   ContractTransactionResponse,
+  ZeroAddress,
 } from "ethers";
 import { OpenSeaAPI } from "./api/api";
 import { CollectionOffer, Listing, NFT, Order } from "./api/types";
 import {
   INVERSE_BASIS_POINT,
-  DEFAULT_ZONE,
-  SIGNED_ZONE,
   ENGLISH_AUCTION_ZONE_MAINNETS,
   ENGLISH_AUCTION_ZONE_TESTNETS,
 } from "./constants";
@@ -343,7 +342,8 @@ export class OpenSeaSDK {
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH
    * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the offer. Default: false.
-   * @param options.zone The zone to use for the order. If unspecified, defaults to SIGNED_ZONE.
+   * @param options.zone The zone to use for the order. For order protection, pass SIGNED_ZONE. If unspecified, defaults to no zone.
+   *
    * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
@@ -361,7 +361,7 @@ export class OpenSeaSDK {
     expirationTime,
     paymentTokenAddress = getWETHAddress(this.chain),
     excludeOptionalCreatorFees = false,
-    zone = SIGNED_ZONE, // Add the zone parameter with default value SIGNED_ZONE
+    zone = ZeroAddress,
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -372,7 +372,7 @@ export class OpenSeaSDK {
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
     excludeOptionalCreatorFees?: boolean;
-    zone?: string; // Add the zone type
+    zone?: string;
   }): Promise<OrderV2> {
     await this._requireAccountIsAvailable(accountAddress);
 
@@ -418,7 +418,7 @@ export class OpenSeaSDK {
         zone,
         domain,
         salt: BigInt(salt ?? 0).toString(),
-        restrictedByZone: zone !== DEFAULT_ZONE,
+        restrictedByZone: zone !== ZeroAddress,
         allowPartialFills: true,
       },
       accountAddress,
@@ -448,6 +448,7 @@ export class OpenSeaSDK {
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.englishAuction If true, the order will be listed as an English auction.
    * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the listing. Default: false.
+   * @param options.zone The zone to use for the order.  For order protection, pass SIGNED_ZONE. If unspecified, defaults to no zone.
    * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
@@ -469,6 +470,7 @@ export class OpenSeaSDK {
     buyerAddress,
     englishAuction,
     excludeOptionalCreatorFees = false,
+    zone = ZeroAddress,
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -483,6 +485,7 @@ export class OpenSeaSDK {
     buyerAddress?: string;
     englishAuction?: boolean;
     excludeOptionalCreatorFees?: boolean;
+    zone?: string;
   }): Promise<OrderV2> {
     await this._requireAccountIsAvailable(accountAddress);
 
@@ -520,13 +523,10 @@ export class OpenSeaSDK {
       );
     }
 
-    let zone = DEFAULT_ZONE;
     if (englishAuction) {
-      if (isTestChain(this.chain)) {
-        zone = ENGLISH_AUCTION_ZONE_TESTNETS;
-      } else {
-        zone = ENGLISH_AUCTION_ZONE_MAINNETS;
-      }
+      zone = isTestChain(this.chain)
+        ? ENGLISH_AUCTION_ZONE_TESTNETS
+        : ENGLISH_AUCTION_ZONE_MAINNETS;
     } else if (collection.requiredZone) {
       zone = collection.requiredZone;
     }
@@ -542,7 +542,7 @@ export class OpenSeaSDK {
         zone,
         domain,
         salt: BigInt(salt ?? 0).toString(),
-        restrictedByZone: zone !== DEFAULT_ZONE,
+        restrictedByZone: zone !== ZeroAddress,
         allowPartialFills: englishAuction ? false : true,
       },
       accountAddress,

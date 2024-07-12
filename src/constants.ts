@@ -1,4 +1,4 @@
-import { FixedNumber, ZeroAddress } from "ethers";
+import { FixedNumber } from "ethers";
 
 export const FIXED_NUMBER_100 = FixedNumber.fromValue(100);
 export const INVERSE_BASIS_POINT = 10_000n; // 100 basis points per 1%
@@ -7,8 +7,9 @@ export const MAX_EXPIRATION_MONTHS = 1;
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_TESTNET = "https://testnets-api.opensea.io";
 
-export const DEFAULT_ZONE = ZeroAddress;
+// eslint-disable-next-line import/no-unused-modules
 export const SIGNED_ZONE = "0x000056f7000000ece9003ca63978907a00ffd100";
+
 export const ENGLISH_AUCTION_ZONE_MAINNETS =
   "0x110b2b128a9ed1be5ef3232d8e4e41640df5c2cd";
 export const ENGLISH_AUCTION_ZONE_TESTNETS =
