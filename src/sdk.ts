@@ -27,6 +27,7 @@ import { CollectionOffer, Listing, NFT, Order } from "./api/types";
 import {
   INVERSE_BASIS_POINT,
   DEFAULT_ZONE,
+  SIGNED_ZONE,
   ENGLISH_AUCTION_ZONE_MAINNETS,
   ENGLISH_AUCTION_ZONE_TESTNETS,
 } from "./constants";
@@ -342,6 +343,7 @@ export class OpenSeaSDK {
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH
    * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the offer. Default: false.
+   * @param options.zone The zone to use for the order. If unspecified, defaults to SIGNED_ZONE.
    * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
@@ -359,6 +361,7 @@ export class OpenSeaSDK {
     expirationTime,
     paymentTokenAddress = getWETHAddress(this.chain),
     excludeOptionalCreatorFees = false,
+    zone = SIGNED_ZONE, // Add the zone parameter with default value SIGNED_ZONE
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -369,6 +372,7 @@ export class OpenSeaSDK {
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
     excludeOptionalCreatorFees?: boolean;
+    zone?: string; // Add the zone type
   }): Promise<OrderV2> {
     await this._requireAccountIsAvailable(accountAddress);
 
@@ -394,7 +398,6 @@ export class OpenSeaSDK {
       excludeOptionalCreatorFees,
     });
 
-    let zone = DEFAULT_ZONE;
     if (collection.requiredZone) {
       zone = collection.requiredZone;
     }
