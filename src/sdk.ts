@@ -305,10 +305,12 @@ export class OpenSeaSDK {
     if (seller) {
       considerationItems.push(getConsiderationItem(sellerBasisPoints, seller));
     }
-    for (const fee of collectionFees) {
-      considerationItems.push(
-        getConsiderationItem(basisPointsForFee(fee), fee.recipient),
-      );
+    if (collectionFeesBasisPoints > 0) {
+      for (const fee of collectionFees) {
+        considerationItems.push(
+          getConsiderationItem(basisPointsForFee(fee), fee.recipient),
+        );
+      }
     }
     return considerationItems;
   }
