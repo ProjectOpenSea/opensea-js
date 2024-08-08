@@ -186,10 +186,6 @@ export const getChainId = (chain: Chain) => {
       return "43114";
     case Chain.Fuji:
       return "43113";
-    case Chain.BNB:
-      return "56";
-    case Chain.BNBTestnet:
-      return "97";
     case Chain.Arbitrum:
       return "42161";
     case Chain.ArbitrumNova:
