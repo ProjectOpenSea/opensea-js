@@ -109,8 +109,6 @@ export enum Chain {
   Base = "base",
   /** Blast */
   Blast = "blast",
-  /** Binance Smart Chain */
-  BNB = "bsc",
   /** Arbitrum */
   Arbitrum = "arbitrum",
   /** Arbitrum Nova */
@@ -138,8 +136,6 @@ export enum Chain {
   BaseSepolia = "base_sepolia",
   /** Blast Testnet */
   BlastSepolia = "blast_sepolia",
-  /** Binance Smart Chain Testnet */
-  BNBTestnet = "bsctestnet",
   /** Arbitrum Sepolia */
   ArbitrumSepolia = "arbitrum_sepolia",
   /** Avalanche Fuji */

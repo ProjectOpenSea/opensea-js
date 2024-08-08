@@ -186,10 +186,6 @@ export const getChainId = (chain: Chain) => {
       return "43114";
     case Chain.Fuji:
       return "43113";
-    case Chain.BNB:
-      return "56";
-    case Chain.BNBTestnet:
-      return "97";
     case Chain.Arbitrum:
       return "42161";
     case Chain.ArbitrumNova:
@@ -239,10 +235,6 @@ export const getWETHAddress = (chain: Chain) => {
       return "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7";
     case Chain.Fuji:
       return "0xd00ae08403B9bbb9124bB305C09058E32C39A48c";
-    case Chain.BNB:
-      return "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
-    case Chain.BNBTestnet:
-      return "0xae13d989dac2f0debff460ac112a837c89baa7cd";
     case Chain.Arbitrum:
       return "0x82af49447d8a07e3bd95bd0d56f35241523fbab1";
     case Chain.ArbitrumNova:
@@ -323,7 +315,6 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.Baobab:
     case Chain.BaseSepolia:
     case Chain.BlastSepolia:
-    case Chain.BNBTestnet:
     case Chain.ArbitrumSepolia:
     case Chain.Fuji:
     case Chain.OptimismSepolia:
