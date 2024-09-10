@@ -544,7 +544,7 @@ export class OpenSeaAPI {
     orderBy: CollectionOrderByOption = CollectionOrderByOption.CREATED_DATE,
     chain?: Chain,
     creatorUsername?: string,
-    includeHidden: boolean = false,
+    includeHidden = false,
     limit?: number,
     next?: string,
   ): Promise<GetCollectionsResponse> {
