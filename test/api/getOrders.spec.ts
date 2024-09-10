@@ -20,7 +20,7 @@ suite("Getting orders", () => {
     });
   });
 
-  test(`getOrder should throw if no order found`, async () => {
+  test("getOrder should throw if no order found", async () => {
     await expect(
       mainAPI.getOrder({
         protocol: "seaport",
