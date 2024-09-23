@@ -496,7 +496,7 @@ export class OpenSeaSDK {
 
     if (englishAuction && paymentTokenAddress == ethers.ZeroAddress) {
       throw new Error(
-        `English auctions must use wrapped ETH or an ERC-20 token.`,
+        "English auctions must use wrapped ETH or an ERC-20 token.",
       );
     }
 

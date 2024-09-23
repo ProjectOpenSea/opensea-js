@@ -1,70 +1,70 @@
-const restrictedGlobals = require("confusing-browser-globals");
+const restrictedGlobals = require('confusing-browser-globals')
 
 module.exports = {
   env: {
     browser: true,
-    node: true,
+    node: true
   },
   root: true,
-  ignorePatterns: ["docs", "lib", "coverage", "src/typechain"],
+  ignorePatterns: ['docs', 'lib', 'coverage', 'src/typechain'],
   reportUnusedDisableDirectives: true,
-  parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint", "import", "prettier"],
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint', 'import', 'prettier'],
 
   extends: [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:import/errors",
-    "plugin:import/warnings",
-    "plugin:import/typescript",
-    "plugin:prettier/recommended",
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:import/errors',
+    'plugin:import/warnings',
+    'plugin:import/typescript',
+    'plugin:prettier/recommended'
   ],
   rules: {
-    "no-restricted-globals": ["error"].concat(restrictedGlobals),
-    "no-restricted-imports": [
-      "error",
+    'no-restricted-globals': ['error'].concat(restrictedGlobals),
+    'no-restricted-imports': [
+      'error',
       {
         patterns: [
           {
-            group: ["src/**", "!src/*"],
-            message: "Please use relative import for `src` files.",
-          },
-        ],
-      },
+            group: ['src/**', '!src/*'],
+            message: 'Please use relative import for `src` files.'
+          }
+        ]
+      }
     ],
-    curly: ["error"],
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+    curly: ['error'],
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
     ],
-    "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-empty-interface": "off",
-    "@typescript-eslint/no-var-requires": "off",
-    "import/order": [
-      "error",
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-empty-interface': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
+    'import/order': [
+      'error',
       {
-        groups: ["builtin", "external", "internal"],
-        "newlines-between": "never",
+        groups: ['builtin', 'external', 'internal'],
+        'newlines-between': 'never',
         alphabetize: {
-          order: "asc",
-          caseInsensitive: true,
-        },
-      },
+          order: 'asc',
+          caseInsensitive: true
+        }
+      }
     ],
-    "import/no-unused-modules": [1, { unusedExports: true }],
-    "no-control-regex": "off",
+    'import/no-unused-modules': [1, { unusedExports: true }],
+    'no-control-regex': 'off',
 
-    "object-shorthand": ["error", "always"],
+    'object-shorthand': ['error', 'always']
   },
   settings: {
-    "import/resolver": {
+    'import/resolver': {
       node: {
-        extensions: [".js", ".ts", ".tsx", ".json"],
+        extensions: ['.js', '.ts', '.tsx', '.json']
       },
       typescript: {
         alwaysTryTypes: true,
-        project: "src",
-      },
-    },
-  },
-};
+        project: 'src'
+      }
+    }
+  }
+}

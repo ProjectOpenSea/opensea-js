@@ -57,11 +57,11 @@ export const getAccountPath = (address: string) => {
 };
 
 export const getBuildOfferPath = () => {
-  return `/v2/offers/build`;
+  return "/v2/offers/build";
 };
 
 export const getPostCollectionOfferPath = () => {
-  return `/v2/offers`;
+  return "/v2/offers";
 };
 
 export const getCollectionOffersPath = (slug: string) => {

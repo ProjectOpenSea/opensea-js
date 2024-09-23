@@ -5,7 +5,7 @@ import { OrderSide } from "../../src/types";
 import { mainAPI } from "../utils/constants";
 
 suite("Generating fulfillment data", () => {
-  test(`Generate fulfillment data for listing`, async () => {
+  test("Generate fulfillment data for listing", async () => {
     const order = await mainAPI.getOrder({
       protocol: "seaport",
       side: OrderSide.LISTING,
@@ -25,7 +25,7 @@ suite("Generating fulfillment data", () => {
     assert.exists(fulfillment.fulfillment_data.orders[0].signature);
   });
 
-  test(`Generate fulfillment data for offer`, async () => {
+  test("Generate fulfillment data for offer", async () => {
     const order = await mainAPI.getOrder({
       protocol: "seaport",
       side: OrderSide.OFFER,
