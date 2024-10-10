@@ -29,7 +29,7 @@ Happy seafaring! ⛵️
 - [Frequently Asked Questions](developerDocs/faq.md)
 - [Contributing](developerDocs/contributing.md)
 
-## Changelog
+## Changelog#
 
 The changelog for recent versions can be found at:
 
