@@ -5,10 +5,10 @@ import {
 } from "@opensea/seaport-js/lib/constants";
 import { ethers, FixedNumber } from "ethers";
 import {
-  MAX_EXPIRATION_MONTHS,
-  SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-  SHARED_STOREFRONT_ADDRESSES,
   FIXED_NUMBER_100,
+  MAX_EXPIRATION_MONTHS,
+  SHARED_STOREFRONT_ADDRESSES,
+  SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
 } from "../constants";
 import {
   Chain,
@@ -212,6 +212,10 @@ export const getChainId = (chain: Chain) => {
       return "1329";
     case Chain.SeiTestnet:
       return "1328";
+    case Chain.B3:
+      return "8333";
+    case Chain.B3_Sepolia:
+      return "1993";
     default:
       throw new Error(`Unknown chainId for ${chain}`);
   }
@@ -257,6 +261,10 @@ export const getWETHAddress = (chain: Chain) => {
       return "0xe30fedd158a2e3b13e9badaeabafc5516e95e8c7";
     case Chain.SeiTestnet:
       return "0x3921ea6cf927be80211bb57f19830700285b0ada";
+    case Chain.B3:
+      return "0x4200000000000000000000000000000000000006";
+    case Chain.B3_Sepolia:
+      return "0x4200000000000000000000000000000000000006";
     default:
       throw new Error(`Unknown WETH address for ${chain}`);
   }
@@ -321,6 +329,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.SolanaDevnet:
     case Chain.ZoraSepolia:
     case Chain.SeiTestnet:
+    case Chain.B3_Sepolia:
       return true;
     default:
       return false;

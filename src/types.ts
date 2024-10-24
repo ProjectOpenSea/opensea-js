@@ -123,6 +123,7 @@ export enum Chain {
   Zora = "zora",
   /** Sei */
   Sei = "sei",
+  B3 = "b3",
 
   // Testnet Chains
   // ⚠️NOTE: When adding to this list, also add to the util function `isTestChain`
@@ -148,6 +149,7 @@ export enum Chain {
   ZoraSepolia = "zora_sepolia",
   /** Sei Testnet */
   SeiTestnet = "sei_testnet",
+  B3_Sepolia = "b3_sepolia",
 }
 
 /**
