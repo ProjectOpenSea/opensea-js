@@ -39,7 +39,8 @@
   "types": "lib/index.d.ts",
   "dependencies": {
     "@opensea/seaport-js": "^4.0.0",
-    "ethers": "^6.9.0"
+    "ethers": "^6.9.0",
+    "opensea-js": "^7.1.13"
   },
   "devDependencies": {
     "@typechain/ethers-v6": "^0.5.1",
