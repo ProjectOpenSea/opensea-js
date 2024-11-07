@@ -27,6 +27,7 @@ Happy seafaring! ⛵️
 - [Advanced Use Cases](developerDocs/advanced-use-cases.md)
 - [SDK Reference](https://projectopensea.github.io/opensea-js/)
 - [Frequently Asked Questions](developerDocs/faq.md)
+- [OpenSea SDK](developerDocs/overview.md)
 - [Contributing](developerDocs/contributing.md)
 
 ## Changelog
