@@ -1,5 +1,5 @@
 ---
-title: Getting Start Guide
+title: Getting Started Guide
 category: 64cbb5277b5f3c0065d96616
 slug: opensea-sdk-getting-started
 parentDocSlug: opensea-sdk
