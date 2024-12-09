@@ -348,13 +348,13 @@ export class OpenSeaAPI {
     }
     
     // Protocol validation
-    if (apiOptions.protocol && !["seaport"].includes(apiOptions.protocol)) {
-      throw new Error("Invalid protocol specified. Only 'seaport' is supported");
+    if (apiOptions.protocol && !Object.values(OrderProtocol).includes(apiOptions.protocol)) {
+      throw new Error(`Invalid protocol specified. Must be one of: ${Object.values(OrderProtocol).join(", ")}`);
     }
 
     // Side validation
-    if (!apiOptions.side || !["ask", "bid"].includes(apiOptions.side)) {
-      throw new Error("Invalid order side specified. Must be 'ask' or 'bid'");
+    if (!apiOptions.side || ![OrderSide.LISTING, OrderSide.OFFER].includes(apiOptions.side)) {
+      throw new Error(`Invalid order side specified. Must be either ${OrderSide.LISTING} or ${OrderSide.OFFER}`);
     }
 
     // Protocol address validation
