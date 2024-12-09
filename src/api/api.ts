@@ -342,7 +342,26 @@ export class OpenSeaAPI {
     order: ProtocolData,
     apiOptions: OrderAPIOptions,
   ): Promise<OrderV2> {
-    // TODO: Validate apiOptions. Avoid API calls that will definitely fail
+     // Input validation
+    if (!order || !apiOptions) {
+      throw new Error("Order and API options are required");
+    }
+    
+    // Protocol validation
+    if (apiOptions.protocol && !["seaport"].includes(apiOptions.protocol)) {
+      throw new Error("Invalid protocol specified. Only 'seaport' is supported");
+    }
+
+    // Side validation
+    if (!apiOptions.side || !["ask", "bid"].includes(apiOptions.side)) {
+      throw new Error("Invalid order side specified. Must be 'ask' or 'bid'");
+    }
+
+    // Protocol address validation
+    if (!apiOptions.protocolAddress || !ethers.isAddress(apiOptions.protocolAddress)) {
+      throw new Error("Invalid protocol address provided");
+    }
+
     const { protocol = "seaport", side, protocolAddress } = apiOptions;
     const response = await this.post<OrdersPostQueryResponse>(
       getOrdersAPIPath(this.chain, protocol, side),
