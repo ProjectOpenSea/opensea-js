@@ -66,6 +66,7 @@ import {
   OpenSeaPaymentToken,
   OrderSide,
 } from "../types";
+import { OrderProtocol } from "../orders/types";
 import {
   paymentTokenFromJSON,
   collectionFromJSON,
@@ -342,18 +343,18 @@ export class OpenSeaAPI {
     order: ProtocolData,
     apiOptions: OrderAPIOptions,
   ): Promise<OrderV2> {
-     // Input validation
+    // Input validation
     if (!order || !apiOptions) {
       throw new Error("Order and API options are required");
     }
     
     // Protocol validation
-    if (apiOptions.protocol && !Object.values(OrderProtocol).includes(apiOptions.protocol)) {
-      throw new Error(`Invalid protocol specified. Must be one of: ${Object.values(OrderProtocol).join(", ")}`);
+    if (apiOptions.protocol && apiOptions.protocol !== OrderProtocol.SEAPORT) {
+      throw new Error(`Invalid protocol specified. Must be ${OrderProtocol.SEAPORT}`);
     }
 
     // Side validation
-    if (!apiOptions.side || ![OrderSide.LISTING, OrderSide.OFFER].includes(apiOptions.side)) {
+    if (!apiOptions.side || (apiOptions.side !== OrderSide.LISTING && apiOptions.side !== OrderSide.OFFER)) {
       throw new Error(`Invalid order side specified. Must be either ${OrderSide.LISTING} or ${OrderSide.OFFER}`);
     }
 
@@ -362,7 +363,7 @@ export class OpenSeaAPI {
       throw new Error("Invalid protocol address provided");
     }
 
-    const { protocol = "seaport", side, protocolAddress } = apiOptions;
+    const { protocol = OrderProtocol.SEAPORT, side, protocolAddress } = apiOptions;
     const response = await this.post<OrdersPostQueryResponse>(
       getOrdersAPIPath(this.chain, protocol, side),
       { ...order, protocol_address: protocolAddress },
