@@ -3,12 +3,16 @@ import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
 import { OpenSeaAccount, OrderSide } from "../types";
 
 // Protocol data
+export enum OrderProtocol {
+  SEAPORT = "seaport"
+}
+
 type OrderProtocolToProtocolData = {
-  seaport: OrderWithCounter;
+  [OrderProtocol.SEAPORT]: OrderWithCounter;
 };
-export type OrderProtocol = keyof OrderProtocolToProtocolData;
+
 export type ProtocolData =
-  OrderProtocolToProtocolData[keyof OrderProtocolToProtocolData];
+  OrderProtocolToProtocolData[keyof typeof OrderProtocol];
 
 export enum OrderType {
   BASIC = "basic",
