@@ -1,25 +1,27 @@
 import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport/contracts/Seaport";
-import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
-import { OpenSeaAccount, OrderSide } from "../types";
+import {
+  AdvancedOrder,
+  OrderWithCounter,
+  OrderParameters,
+  Order,
+} from "@opensea/seaport-js/lib/types";
+import { BigNumberish } from "ethers";
+import { OpenSeaAccount, OrderSide, OrderProtocol } from "../types";
 
 // Protocol data
-type OrderProtocolToProtocolData = {
-  seaport: OrderWithCounter;
-};
-export type OrderProtocol = keyof OrderProtocolToProtocolData;
+type _OrderProtocolToProtocolData = Record<
+  OrderProtocol,
+  OrderWithCounter | AdvancedOrder | BasicOrderParametersStruct
+>;
+
 export type ProtocolData =
-  OrderProtocolToProtocolData[keyof OrderProtocolToProtocolData];
-
-export enum OrderType {
-  BASIC = "basic",
-  ENGLISH = "english",
-  CRITERIA = "criteria",
-}
-
-type OrderFee = {
-  account: OpenSeaAccount;
-  basisPoints: string;
-};
+  | OrderWithCounter
+  | (Order & {
+      numerator: bigint;
+      denominator: bigint;
+      extraData: string;
+      parameters: OrderParameters & { counter: BigNumberish };
+    });
 
 /**
  * The latest OpenSea Order schema.
@@ -63,6 +65,23 @@ export type OrderV2 = {
   clientSignature: string | null;
   /** Amount of items left in the order which can be taken. */
   remainingQuantity: number;
+};
+
+/**
+ * Represents the type of order in the OpenSea marketplace
+ */
+export enum OrderType {
+  /** Basic order type for simple transactions */
+  BASIC = "basic",
+  /** English auction order type */
+  ENGLISH = "english",
+  /** Criteria-based order type for collection offers */
+  CRITERIA = "criteria",
+}
+
+type OrderFee = {
+  account: OpenSeaAccount;
+  basisPoints: string;
 };
 
 export type FulfillmentDataResponse = {

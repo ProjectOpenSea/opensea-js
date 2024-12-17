@@ -52,6 +52,7 @@ import {
   TokenStandard,
   AssetWithTokenStandard,
   AssetWithTokenId,
+  OrderProtocol,
 } from "./types";
 import {
   getMaxOrderExpirationTimestamp,
@@ -428,7 +429,7 @@ export class OpenSeaSDK {
     const order = await executeAllActions();
 
     return this.api.postOrder(order, {
-      protocol: "seaport",
+      protocol: OrderProtocol.SEAPORT,
       protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
       side: OrderSide.OFFER,
     });
@@ -552,7 +553,7 @@ export class OpenSeaSDK {
     const order = await executeAllActions();
 
     return this.api.postOrder(order, {
-      protocol: "seaport",
+      protocol: OrderProtocol.SEAPORT,
       protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
       side: OrderSide.LISTING,
     });

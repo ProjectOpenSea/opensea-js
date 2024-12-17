@@ -1,17 +1,20 @@
 import "../utils/setup";
-import { assert } from "chai";
+import { expect } from "chai";
 import { suite, test } from "mocha";
-import { OrderSide } from "../../src/types";
+import { OrderProtocol, OrderSide } from "../../src/types";
 import { mainAPI } from "../utils/constants";
 
 suite("Generating fulfillment data", () => {
   test(`Generate fulfillment data for listing`, async () => {
     const order = await mainAPI.getOrder({
-      protocol: "seaport",
+      protocol: OrderProtocol.SEAPORT,
       side: OrderSide.LISTING,
     });
 
-    if (order.orderHash == null) {
+    expect(order).to.not.be.undefined;
+    expect(order.orderHash).to.not.be.null;
+
+    if (!order || !order.orderHash) {
       return;
     }
 
@@ -22,16 +25,23 @@ suite("Generating fulfillment data", () => {
       order.side,
     );
 
-    assert.exists(fulfillment.fulfillment_data.orders[0].signature);
+    expect(fulfillment).to.not.be.undefined;
+    expect(fulfillment.fulfillment_data).to.not.be.undefined;
+    expect(fulfillment.fulfillment_data.orders).to.be.an("array").that.is.not
+      .empty;
+    expect(fulfillment.fulfillment_data.orders[0].signature).to.exist;
   });
 
   test(`Generate fulfillment data for offer`, async () => {
     const order = await mainAPI.getOrder({
-      protocol: "seaport",
+      protocol: OrderProtocol.SEAPORT,
       side: OrderSide.OFFER,
     });
 
-    if (order.orderHash == null) {
+    expect(order).to.not.be.undefined;
+    expect(order.orderHash).to.not.be.null;
+
+    if (!order || !order.orderHash) {
       return;
     }
 
@@ -42,6 +52,10 @@ suite("Generating fulfillment data", () => {
       order.side,
     );
 
-    assert.exists(fulfillment.fulfillment_data.orders[0].signature);
+    expect(fulfillment).to.not.be.undefined;
+    expect(fulfillment.fulfillment_data).to.not.be.undefined;
+    expect(fulfillment.fulfillment_data.orders).to.be.an("array").that.is.not
+      .empty;
+    expect(fulfillment.fulfillment_data.orders[0].signature).to.exist;
   });
 });
