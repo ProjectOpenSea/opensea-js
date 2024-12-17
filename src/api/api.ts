@@ -1,4 +1,33 @@
 import { ethers } from "ethers";
+import { API_BASE_MAINNET, API_BASE_TESTNET } from "../constants";
+import {
+  ProtocolData,
+  OrdersQueryOptions,
+  OrdersQueryResponse,
+  OrderV2,
+  FulfillmentDataResponse,
+  OrderAPIOptions,
+  OrdersPostQueryResponse,
+} from "../orders/types";
+import {
+  getFulfillListingPayload,
+  getFulfillOfferPayload,
+  getFulfillmentDataPath,
+  getBuildCollectionOfferPayload,
+  getPostCollectionOfferPayload,
+  serializeOrdersQueryOptions,
+  deserializeOrder,
+} from "../orders/utils";
+import {
+  Chain,
+  OpenSeaAPIConfig,
+  OpenSeaCollection,
+  OpenSeaCollectionStats,
+  OpenSeaPaymentToken,
+  OpenSeaAccount,
+  OrderSide,
+  OrderProtocol,
+} from "../types";
 import {
   getCollectionPath,
   getCollectionsPath,
@@ -38,35 +67,6 @@ import {
   CancelOrderResponse,
   GetCollectionsArgs,
 } from "./types";
-import { API_BASE_MAINNET, API_BASE_TESTNET } from "../constants";
-import {
-  FulfillmentDataResponse,
-  OrderAPIOptions,
-  OrdersPostQueryResponse,
-  OrdersQueryOptions,
-  OrdersQueryResponse,
-  OrderV2,
-  ProtocolData,
-} from "../orders/types";
-import {
-  serializeOrdersQueryOptions,
-  deserializeOrder,
-  getFulfillmentDataPath,
-  getFulfillListingPayload,
-  getFulfillOfferPayload,
-  getBuildCollectionOfferPayload,
-  getPostCollectionOfferPayload,
-} from "../orders/utils";
-import {
-  Chain,
-  OpenSeaAPIConfig,
-  OpenSeaAccount,
-  OpenSeaCollection,
-  OpenSeaCollectionStats,
-  OpenSeaPaymentToken,
-  OrderSide,
-} from "../types";
-import { OrderProtocol } from "../orders/types";
 import {
   paymentTokenFromJSON,
   collectionFromJSON,
@@ -136,7 +136,7 @@ export class OpenSeaAPI {
    */
   public async getOrder({
     side,
-    protocol = "seaport",
+    protocol = OrderProtocol.SEAPORT,
     orderDirection = "desc",
     orderBy = "created_date",
     ...restOptions
@@ -174,7 +174,7 @@ export class OpenSeaAPI {
    */
   public async getOrders({
     side,
-    protocol = "seaport",
+    protocol = OrderProtocol.SEAPORT,
     orderDirection = "desc",
     orderBy = "created_date",
     ...restOptions
@@ -347,23 +347,38 @@ export class OpenSeaAPI {
     if (!order || !apiOptions) {
       throw new Error("Order and API options are required");
     }
-    
+
     // Protocol validation
     if (apiOptions.protocol && apiOptions.protocol !== OrderProtocol.SEAPORT) {
-      throw new Error(`Invalid protocol specified. Must be ${OrderProtocol.SEAPORT}`);
+      throw new Error(
+        `Invalid protocol specified. Must be ${OrderProtocol.SEAPORT}`,
+      );
     }
 
     // Side validation
-    if (!apiOptions.side || (apiOptions.side !== OrderSide.LISTING && apiOptions.side !== OrderSide.OFFER)) {
-      throw new Error(`Invalid order side specified. Must be either ${OrderSide.LISTING} or ${OrderSide.OFFER}`);
+    if (
+      !apiOptions.side ||
+      (apiOptions.side !== OrderSide.LISTING &&
+        apiOptions.side !== OrderSide.OFFER)
+    ) {
+      throw new Error(
+        `Invalid order side specified. Must be either ${OrderSide.LISTING} or ${OrderSide.OFFER}`,
+      );
     }
 
     // Protocol address validation
-    if (!apiOptions.protocolAddress || !ethers.isAddress(apiOptions.protocolAddress)) {
+    if (
+      !apiOptions.protocolAddress ||
+      !ethers.isAddress(apiOptions.protocolAddress)
+    ) {
       throw new Error("Invalid protocol address provided");
     }
 
-    const { protocol = OrderProtocol.SEAPORT, side, protocolAddress } = apiOptions;
+    const {
+      protocol = OrderProtocol.SEAPORT,
+      side,
+      protocolAddress,
+    } = apiOptions;
     const response = await this.post<OrdersPostQueryResponse>(
       getOrdersAPIPath(this.chain, protocol, side),
       { ...order, protocol_address: protocolAddress },
