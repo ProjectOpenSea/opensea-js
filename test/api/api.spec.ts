@@ -1,4 +1,4 @@
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { suite, test } from "mocha";
 import { Chain } from "../../src";
 import { getWETHAddress } from "../../src/utils";
@@ -21,7 +21,9 @@ suite("API", () => {
     const logPromise = new Promise<void>((resolve, reject) => {
       mainAPI.logger = (log) => {
         try {
-          assert.include(log, `"x-api-key":"${MAINNET_API_KEY}"`);
+          if (MAINNET_API_KEY) {
+            assert.include(log, `"x-api-key":"${MAINNET_API_KEY}"`);
+          }
           resolve();
         } catch (e) {
           reject(e);
@@ -37,11 +39,12 @@ suite("API", () => {
   });
 
   test("API handles errors", async () => {
-    // 404 Not found for random token id
     try {
       await mainAPI.getNFT(BAYC_CONTRACT_ADDRESS, "404040");
+      expect.fail("Should have thrown an error");
     } catch (error) {
-      assert.include((error as Error).message, "not found");
+      expect(error).to.be.an.instanceOf(Error);
+      expect((error as Error).message).to.include("not found");
     }
   });
 });
