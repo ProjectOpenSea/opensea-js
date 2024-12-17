@@ -375,3 +375,10 @@ export interface SocialMediaAccount {
   platform: string;
   username: string;
 }
+
+/**
+ * Order protocol
+ */
+export enum OrderProtocol {
+  SEAPORT = "seaport",
+}
