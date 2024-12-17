@@ -1,11 +1,11 @@
 import { ConsiderationItem } from "@opensea/seaport-js/lib/types";
-import {
+import type {
   OrderType,
   OrderV2,
   ProtocolData,
   QueryCursors,
 } from "../orders/types";
-import { OpenSeaCollection } from "../types";
+import type { OpenSeaCollection } from "../types";
 
 /**
  * Response from OpenSea API for building an offer.
