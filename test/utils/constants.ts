@@ -1,5 +1,7 @@
+import { expect } from "chai";
 import { ethers } from "ethers";
 import { OpenSeaAPI } from "../../src/api";
+import { OrderV2 } from "../../src/orders/types";
 import { Chain } from "../../src/types";
 
 export const MAINNET_API_KEY = process.env.OPENSEA_API_KEY;
@@ -35,3 +37,13 @@ export const testnetAPI = new OpenSeaAPI(
   },
   process.env.DEBUG ? console.log : undefined,
 );
+
+export const expectValidOrder = (order: OrderV2) => {
+  expect(order).to.have.property("orderHash");
+  expect(order).to.have.property("protocolData");
+  expect(order).to.have.property("protocolAddress");
+  expect(order).to.have.property("currentPrice");
+  expect(order).to.have.property("maker");
+  expect(order).to.have.property("side");
+  expect(order).to.have.property("orderType");
+};
