@@ -8,6 +8,7 @@ import {
   FulfillmentDataResponse,
   OrderAPIOptions,
   OrdersPostQueryResponse,
+  OrderProtocol,
 } from "../orders/types";
 import {
   getFulfillListingPayload,
@@ -27,15 +28,6 @@ import {
   OpenSeaAccount,
   OrderSide,
 } from "../types";
-import {
-  OrderProtocol,
-  OrderV2,
-  OrdersQueryOptions,
-  OrdersQueryResponse,
-  OrdersPostQueryResponse,
-  OrderAPIOptions,
-  FulfillmentDataResponse,
-} from "../orders/types";
 import {
   getCollectionPath,
   getCollectionsPath,
