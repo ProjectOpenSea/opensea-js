@@ -12,7 +12,7 @@ import { OpenSeaAccount, OrderSide } from "../types";
  * Order protocol
  */
 export enum OrderProtocol {
-  SEAPORT = "seaport"
+  SEAPORT = "seaport",
 }
 
 // Protocol data
