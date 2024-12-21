@@ -1,5 +1,5 @@
-import { Chain, OrderSide } from "../types";
 import { OrderProtocol } from "../orders/types";
+import { Chain, OrderSide } from "../types";
 
 export const getOrdersAPIPath = (
   chain: Chain,
