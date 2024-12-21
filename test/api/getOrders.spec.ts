@@ -1,7 +1,8 @@
 import "../utils/setup";
 import { expect } from "chai";
 import { suite, test } from "mocha";
-import { OrderProtocol, OrderSide } from "../../src/types";
+import { Chain, OrderSide } from "../../src/types";
+import { OrderProtocol } from "../../src/orders/types";
 import {
   BAYC_CONTRACT_ADDRESS,
   BAYC_TOKEN_IDS,
