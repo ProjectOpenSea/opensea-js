@@ -7,7 +7,6 @@ export const MAX_EXPIRATION_MONTHS = 1;
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_TESTNET = "https://testnets-api.opensea.io";
 
-// eslint-disable-next-line import/no-unused-modules
 export const SIGNED_ZONE = "0x000056f7000000ece9003ca63978907a00ffd100";
 
 export const ENGLISH_AUCTION_ZONE_MAINNETS =

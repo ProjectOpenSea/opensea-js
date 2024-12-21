@@ -35,7 +35,7 @@ import {
   getPrivateListingConsiderations,
   getPrivateListingFulfillments,
 } from "./orders/privateListings";
-import { OrderType, OrderV2 } from "./orders/types";
+import { OrderType, OrderV2, OrderProtocol } from "./orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "./orders/utils";
 import {
   ERC1155__factory,
@@ -428,7 +428,7 @@ export class OpenSeaSDK {
     const order = await executeAllActions();
 
     return this.api.postOrder(order, {
-      protocol: "seaport",
+      protocol: OrderProtocol.SEAPORT,
       protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
       side: OrderSide.OFFER,
     });
@@ -552,7 +552,7 @@ export class OpenSeaSDK {
     const order = await executeAllActions();
 
     return this.api.postOrder(order, {
-      protocol: "seaport",
+      protocol: OrderProtocol.SEAPORT,
       protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
       side: OrderSide.LISTING,
     });

@@ -2,7 +2,6 @@ import { OpenSeaSDK } from "./sdk";
 
 /**
  * @example
- * // Example Setup
  * ```ts
  * import { ethers } from 'ethers'
  * import { OpenSeaSDK, Chain } from 'opensea-js'
@@ -12,11 +11,11 @@ import { OpenSeaSDK } from "./sdk";
  * })
  * ```
  */
-export {
-  // Main SDK export
-  OpenSeaSDK,
-};
 
+// Export main SDK
+export { OpenSeaSDK };
+
+// Export types
 export * from "./types";
 export * from "./api/types";
-export * from "./orders/types";
+export type { OrderType, ProtocolData } from "./orders/types";
