@@ -26,8 +26,16 @@ import {
   OpenSeaPaymentToken,
   OpenSeaAccount,
   OrderSide,
-  OrderProtocol,
 } from "../types";
+import {
+  OrderProtocol,
+  OrderV2,
+  OrdersQueryOptions,
+  OrdersQueryResponse,
+  OrdersPostQueryResponse,
+  OrderAPIOptions,
+  FulfillmentDataResponse,
+} from "../orders/types";
 import {
   getCollectionPath,
   getCollectionsPath,
