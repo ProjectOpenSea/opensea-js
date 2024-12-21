@@ -40,7 +40,6 @@ module.exports = {
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-var-requires": "off",
-    "import/no-unused-modules": "off",
     "import/order": [
       "error",
       {
@@ -52,7 +51,9 @@ module.exports = {
         },
       },
     ],
+    "import/no-unused-modules": [1, { unusedExports: true }],
     "no-control-regex": "off",
+
     "object-shorthand": ["error", "always"],
   },
   settings: {
