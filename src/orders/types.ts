@@ -6,7 +6,14 @@ import {
   Order,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumberish } from "ethers";
-import { OpenSeaAccount, OrderSide, OrderProtocol } from "../types";
+import { OpenSeaAccount, OrderSide } from "../types";
+
+/**
+ * Order protocol
+ */
+export enum OrderProtocol {
+  SEAPORT = "seaport"
+}
 
 // Protocol data
 type _OrderProtocolToProtocolData = Record<
