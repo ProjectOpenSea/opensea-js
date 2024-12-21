@@ -35,11 +35,7 @@ import {
   getPrivateListingConsiderations,
   getPrivateListingFulfillments,
 } from "./orders/privateListings";
-import {
-  OrderType,
-  OrderV2,
-  OrderProtocol,
-} from "./orders/types";
+import { OrderType, OrderV2, OrderProtocol } from "./orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "./orders/utils";
 import {
   ERC1155__factory,
