@@ -154,6 +154,8 @@ export enum Chain {
   SeiTestnet = "sei_testnet",
   /** B3 Sepolia */
   B3Sepolia = "b3_sepolia",
+  /** Flow Testnet */
+  FlowTestnet = "flow_testnet",
 }
 
 /**

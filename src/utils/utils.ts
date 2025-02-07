@@ -332,6 +332,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.ZoraSepolia:
     case Chain.SeiTestnet:
     case Chain.B3Sepolia:
+    case Chain.FlowTestnet:
       return true;
     default:
       return false;
