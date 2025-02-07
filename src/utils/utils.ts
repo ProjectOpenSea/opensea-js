@@ -262,8 +262,7 @@ export const getWETHAddress = (chain: Chain) => {
     case Chain.B3Sepolia:
       return "0x4200000000000000000000000000000000000006";
     case Chain.BeraChain:
-      // https://beratrail.io/token/0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590
-      return "0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590";
+      return "0x6969696969696969696969696969696969696969";
     case Chain.Sei:
       return "0xe30fedd158a2e3b13e9badaeabafc5516e95e8c7";
     case Chain.SeiTestnet:
