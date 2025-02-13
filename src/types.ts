@@ -127,7 +127,7 @@ export enum Chain {
   B3 = "b3",
   /** Bera Chain */
   BeraChain = "bera_chain",
-
+  ApeChain = "ape_chain",
   // Testnet Chains
   // ⚠️NOTE: When adding to this list, also add to the util function `isTestChain`
   /** Sepolia */

@@ -220,6 +220,8 @@ export const getChainId = (chain: Chain) => {
       return "80094";
     case Chain.FlowTestnet:
       return "545";
+    case Chain.ApeChain:
+      return "33139";
     default:
       throw new Error(`Unknown chainId for ${chain}`);
   }
@@ -271,6 +273,8 @@ export const getWETHAddress = (chain: Chain) => {
       return "0x3921ea6cf927be80211bb57f19830700285b0ada";
     case Chain.FlowTestnet:
       return "0x23b1864b73c6E7Cd6D90bDFa3E62B159eBDdbAb3";
+    case Chain.ApeChain:
+      return "0x48b62137edfa95a428d35c09e44256a739f6b557";
     default:
       throw new Error(`Unknown WETH address for ${chain}`);
   }
