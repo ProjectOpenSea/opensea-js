@@ -343,7 +343,7 @@ export class OpenSeaSDK {
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH
-   * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the offer. Default: false.
+   * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the offer. Default: true.
    * @param options.zone The zone to use for the order. For order protection, pass SIGNED_ZONE. If unspecified, defaults to no zone.
    *
    * @returns The {@link OrderV2} that was created.
@@ -362,7 +362,7 @@ export class OpenSeaSDK {
     salt,
     expirationTime,
     paymentTokenAddress = getWETHAddress(this.chain),
-    excludeOptionalCreatorFees = false,
+    excludeOptionalCreatorFees = true,
     zone = ZeroAddress,
   }: {
     asset: AssetWithTokenId;
