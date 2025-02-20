@@ -65,6 +65,10 @@ suite("SDK: getBestOffer", () => {
     const tokenId = 1;
     const response = await sdk.api.getBestOffer(slug, tokenId);
 
+    assert.isString(response.price.currency, "Currency should be a string");
+    assert.isNumber(response.price.decimals, "Decimals should be a number");
+    assert.isString(response.price.value, "Price value should be a string");
+
     assert(response, "Response should not be null");
     assert(response.order_hash, "Order hash should not be null");
     assert(response.chain, "Chain should not be null");

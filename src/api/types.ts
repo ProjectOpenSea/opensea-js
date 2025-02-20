@@ -131,11 +131,9 @@ export type CollectionOffer = Required<Pick<Offer, "criteria">> & Offer;
  * @category API Models
  */
 export type Price = {
-  current: {
-    currency: string;
-    decimals: number;
-    value: string;
-  };
+  currency: string;
+  decimals: number;
+  value: string;
 };
 
 /**
