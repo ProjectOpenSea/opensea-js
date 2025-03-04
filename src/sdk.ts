@@ -14,7 +14,6 @@ import {
 import {
   BigNumberish,
   Contract,
-  FixedNumber,
   Overrides,
   Signer,
   ethers,
@@ -197,7 +196,7 @@ export class OpenSeaSDK {
   }) {
     await this._requireAccountIsAvailable(accountAddress);
 
-    const value = parseEther(FixedNumber.fromValue(amountInEth).toString());
+    const value = parseEther(amountInEth.toString());
 
     this._dispatch(EventType.WrapEth, { accountAddress, amount: value });
 
@@ -236,7 +235,7 @@ export class OpenSeaSDK {
   }) {
     await this._requireAccountIsAvailable(accountAddress);
 
-    const amount = parseEther(FixedNumber.fromValue(amountInEth).toString());
+    const amount = parseEther(amountInEth.toString());
 
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
 
