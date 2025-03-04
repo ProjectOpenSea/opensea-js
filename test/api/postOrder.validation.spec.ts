@@ -1,24 +1,27 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
 import { OpenSeaAPI } from "../../src/api/api";
-import { Chain, OrderSide } from "../../src/types";
 import { OrderAPIOptions } from "../../src/orders/types";
+import { Chain, OrderSide } from "../../src/types";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 suite("API: postOrder validation", () => {
   const api = new OpenSeaAPI({ chain: Chain.Mainnet });
-  const mockOrder = {
+  const mockOrder: any = {
     parameters: {
       offerer: "0x1234567890123456789012345678901234567890",
       zone: "0x1234567890123456789012345678901234567890",
       orderType: 0,
       startTime: "1234567890",
       endTime: "9876543210",
-      zoneHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      zoneHash:
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
       salt: "1234567890",
       offer: [],
       consideration: [],
       totalOriginalConsiderationItems: 0,
-      conduitKey: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      conduitKey:
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
     },
     signature: "0x",
   };
@@ -74,7 +77,9 @@ suite("API: postOrder validation", () => {
       await api.postOrder(mockOrder, apiOptions);
       expect.fail("Should have thrown an error");
     } catch (error: any) {
-      expect(error.message).to.equal("Currently only 'seaport' protocol is supported");
+      expect(error.message).to.equal(
+        "Currently only 'seaport' protocol is supported",
+      );
     }
   });
 
@@ -105,4 +110,4 @@ suite("API: postOrder validation", () => {
       expect(error.message).to.equal("Invalid protocol address format");
     }
   });
-}); 
+});
