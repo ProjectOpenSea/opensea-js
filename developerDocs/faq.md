@@ -21,6 +21,6 @@ See the [Chain enum](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/
 
 Please note a number of older SDK methods (API v1) only support Ethereum Mainnet and Sepolia due to Rest API restrictions. Please use methods in the v2 API for multichain capabilities.
 
-## Why is there is no SDK method for the API request I am trying to call?
+## Why is there no SDK method for the API request I am trying to call?
 
 If the SDK does not currently have a specific API, you can use the generic [GET and POST methods](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/api/api.ts#L612-L636) to make any API Request. This repository is also open source, so please feel free to create a pull request.
