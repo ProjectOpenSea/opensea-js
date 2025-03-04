@@ -227,6 +227,7 @@ export const getChainId = (chain: Chain) => {
   }
 };
 
+/** This should be the wrapped native asset for the chain. */
 export const getWETHAddress = (chain: Chain) => {
   switch (chain) {
     case Chain.Mainnet:
