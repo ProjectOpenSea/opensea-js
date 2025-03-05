@@ -1192,7 +1192,7 @@ export class OpenSeaSDK {
 
   /**
    * Instead of signing an off-chain order, this methods allows you to approve an order
-   * with on on-chain transaction.
+   * with an on-chain transaction.
    * @param order Order to approve
    * @param domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
    * @returns Transaction hash of the approval transaction
