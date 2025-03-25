@@ -131,6 +131,8 @@ export enum Chain {
   ApeChain = "ape_chain",
   /** Flow */
   Flow = "flow",
+  /** Ronin */
+  Ronin = "ronin",
   // Testnet Chains
   // ⚠️NOTE: When adding to this list, also add to the util function `isTestChain`
   /** Sepolia */
@@ -159,6 +161,8 @@ export enum Chain {
   B3Sepolia = "b3_sepolia",
   /** Flow Testnet */
   FlowTestnet = "flow_testnet",
+  /** Saigon Testnet */
+  SaigonTestnet = "saigon_testnet",
 }
 
 /**
