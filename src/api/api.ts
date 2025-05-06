@@ -21,6 +21,7 @@ import {
   getBestListingsAPIPath,
   getCancelOrderPath,
 } from "./apiPaths";
+import { OpenSeaRatelimitError } from "./errors";
 import {
   BuildOfferResponse,
   GetCollectionResponse,
@@ -755,6 +756,19 @@ export class OpenSeaAPI {
 
     const response = await req.send();
     if (!response.ok()) {
+      if (response.statusCode === 599 || response.statusCode === 429) {
+        let retryAfter: number | undefined;
+        const retryAfterHeader =
+          response.headers["retry-after"] || response.headers["Retry-After"];
+        if (retryAfterHeader) {
+          retryAfter = parseInt(retryAfterHeader, 10);
+        }
+        throw new OpenSeaRatelimitError(
+          `${response.statusCode} ${response.statusMessage}`,
+          retryAfter,
+          response.bodyJson,
+        );
+      }
       // If an errors array is returned, throw with the error messages.
       const errors = response.bodyJson?.errors;
       if (errors?.length > 0) {
