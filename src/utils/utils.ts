@@ -228,6 +228,10 @@ export const getChainId = (chain: Chain) => {
       return "2020";
     case Chain.SaigonTestnet:
       return "2021";
+    case Chain.Abstract:
+      return "2741";
+    case Chain.AbstractTestnet:
+      return "11124";
     default:
       throw new Error(`Unknown chainId for ${chain}`);
   }
@@ -288,6 +292,10 @@ export const getWETHAddress = (chain: Chain) => {
       return "0xe514d9deb7966c8be0ca922de8a064264ea6bcd4";
     case Chain.SaigonTestnet:
       return "0xa959726154953bae111746e265e6d754f48570e6";
+    case Chain.Abstract:
+      return "0x3439153eb7af838ad19d56e1571fbd09333c2809";
+    case Chain.AbstractTestnet:
+      return "0x9edcde0257f2386ce177c3a7fcdd97787f0d841d";
     default:
       throw new Error(`Unknown WETH address for ${chain}`);
   }
@@ -355,6 +363,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.B3Sepolia:
     case Chain.FlowTestnet:
     case Chain.SaigonTestnet:
+    case Chain.AbstractTestnet:
       return true;
     default:
       return false;
