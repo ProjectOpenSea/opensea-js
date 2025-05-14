@@ -1,5 +1,4 @@
 import {
-  CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
@@ -378,7 +377,6 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
   const checkSumAddress = ethers.getAddress(protocolAddress);
   const validProtocolAddresses = [
     CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
-    CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   ].map((address) => ethers.getAddress(address));
   return validProtocolAddresses.includes(checkSumAddress);
 };
