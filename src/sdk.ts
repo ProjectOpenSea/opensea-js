@@ -1,7 +1,6 @@
 import EventEmitter = require("events");
 import { Seaport } from "@opensea/seaport-js";
 import {
-  CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
   OPENSEA_CONDUIT_KEY,
 } from "@opensea/seaport-js/lib/constants";
@@ -74,8 +73,6 @@ export class OpenSeaSDK {
   public provider: JsonRpcProvider;
   /** Seaport v1.6 client @see {@link https://github.com/ProjectOpenSea/seaport-js} */
   public seaport_v1_6: Seaport;
-  /** Seaport v1.5 client @see {@link https://github.com/ProjectOpenSea/seaport-js} */
-  public seaport_v1_5: Seaport;
   /** Logger function to use when debugging */
   public logger: (arg: string) => void;
   /** API instance */
@@ -109,15 +106,6 @@ export class OpenSeaSDK {
     this.provider = ((signerOrProvider as Signer).provider ??
       signerOrProvider) as JsonRpcProvider;
     this._signerOrProvider = signerOrProvider ?? this.provider;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.seaport_v1_5 = new Seaport(this._signerOrProvider as any, {
-      overrides: {
-        contractAddress: CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
-        seaportVersion: "1.5",
-        defaultConduitKey: OPENSEA_CONDUIT_KEY,
-      },
-    });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.seaport_v1_6 = new Seaport(this._signerOrProvider as any, {
@@ -840,8 +828,6 @@ export class OpenSeaSDK {
   private getSeaport(protocolAddress: string): Seaport {
     const checksummedProtocolAddress = ethers.getAddress(protocolAddress);
     switch (checksummedProtocolAddress) {
-      case CROSS_CHAIN_SEAPORT_V1_5_ADDRESS:
-        return this.seaport_v1_5;
       case CROSS_CHAIN_SEAPORT_V1_6_ADDRESS:
         return this.seaport_v1_6;
       default:
@@ -926,8 +912,6 @@ export class OpenSeaSDK {
     switch (protocolAddressChecksummed) {
       case CROSS_CHAIN_SEAPORT_V1_6_ADDRESS:
         return "1.6";
-      case CROSS_CHAIN_SEAPORT_V1_5_ADDRESS:
-        return "1.5";
       default:
         throw new Error("Unknown or unsupported protocol address");
     }

@@ -13,8 +13,8 @@ suite("Utils: utils", () => {
 
     // Mapping of [address, isValid]
     const addressesToCheck: [string, boolean][] = [
-      [CROSS_CHAIN_SEAPORT_V1_5_ADDRESS, true],
       [CROSS_CHAIN_SEAPORT_V1_6_ADDRESS, true],
+      [CROSS_CHAIN_SEAPORT_V1_5_ADDRESS, false], // 1.5 is no longer supported
       [randomAddress, false],
     ];
 
