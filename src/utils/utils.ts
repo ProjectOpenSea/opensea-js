@@ -376,7 +376,7 @@ export const isTestChain = (chain: Chain): boolean => {
 export const isValidProtocol = (protocolAddress: string): boolean => {
   const checkSumAddress = ethers.getAddress(protocolAddress);
   const validProtocolAddresses = [CROSS_CHAIN_SEAPORT_V1_6_ADDRESS].map(
-    (address) => ethers.getAddress(address)
+    (address) => ethers.getAddress(address),
   );
   return validProtocolAddresses.includes(checkSumAddress);
 };
