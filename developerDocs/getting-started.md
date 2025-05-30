@@ -116,7 +116,7 @@ const offer = await openseaSDK.createCollectionOffer({
 
 #### Creating English Auctions
 
-English Auctions are auctions that start at a small amount (we recommend even doing 0!) and increase with every bid. At expiration time, the item sells to the highest bidder.
+English Auctions are auctions that start at a small amount (we recommend even using 0!) and increase with every bid. At expiration time, the item sells to the highest bidder.
 
 To create an English Auction set `englishAuction` to `true`:
 
