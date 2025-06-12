@@ -437,7 +437,7 @@ export class OpenSeaSDK {
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.englishAuction If true, the order will be listed as an English auction.
    * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the listing. Default: false.
-   * @param options.zone The zone to use for the order.  For order protection, pass SIGNED_ZONE. If unspecified, defaults to no zone.
+   * @param options.zone The zone to use for the order. For order protection, pass SIGNED_ZONE. If unspecified, defaults to no zone.
    * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
