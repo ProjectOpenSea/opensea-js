@@ -54,7 +54,7 @@ suite("SDK: order posting", () => {
   test("Post Listing - Mainnet", async function () {
     // English auctions are no longer supported on OpenSea
     this.skip();
-    
+
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }

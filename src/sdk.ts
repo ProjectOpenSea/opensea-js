@@ -482,7 +482,7 @@ export class OpenSeaSDK {
     const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)]);
 
     if (englishAuction) {
-      throw new Error("English auctions are no longer supported on OpenSea")
+      throw new Error("English auctions are no longer supported on OpenSea");
     }
     if (englishAuction && paymentTokenAddress == ethers.ZeroAddress) {
       throw new Error(
