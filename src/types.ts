@@ -135,6 +135,8 @@ export enum Chain {
   Ronin = "ronin",
   /** Abstract */
   Abstract = "abstract",
+  /** Shape */
+  Shape = "shape",
   // Testnet Chains
   // ⚠️NOTE: When adding to this list, also add to the util function `isTestChain`
   /** Sepolia */
@@ -167,6 +169,8 @@ export enum Chain {
   SaigonTestnet = "saigon_testnet",
   /** Abstract Testnet */
   AbstractTestnet = "abstract_testnet",
+  /** Shape Testnet */
+  ShapeTestnet = "shape_testnet",
 }
 
 /**
