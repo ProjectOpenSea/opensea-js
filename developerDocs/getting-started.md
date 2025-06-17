@@ -116,9 +116,11 @@ const offer = await openseaSDK.createCollectionOffer({
 
 #### Creating English Auctions
 
-English Auctions are auctions that start at a small amount (we recommend even using 0!) and increase with every bid. At expiration time, the item sells to the highest bidder.
+**⚠️ Note: English auctions are no longer supported on OpenSea**
 
-To create an English Auction set `englishAuction` to `true`:
+~~English Auctions are auctions that start at a small amount (we recommend even using 0!) and increase with every bid. At expiration time, the item sells to the highest bidder.~~
+
+~~To create an English Auction set `englishAuction` to `true`:~~
 
 ```typescript
 // Create an auction to receive Wrapped Ether (WETH). See note below.
@@ -140,7 +142,7 @@ const auction = await openseaSDK.createListing({
 });
 ```
 
-Note that auctions aren't supported with Ether directly due to limitations in Ethereum, so you have to use an ERC20 token, like Wrapped Ether (WETH), a stablecoin like DAI, etc. See [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether) for more info.
+~~Note that auctions aren't supported with Ether directly due to limitations in Ethereum, so you have to use an ERC20 token, like Wrapped Ether (WETH), a stablecoin like DAI, etc. See [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether) for more info.~~
 
 ### Fetching Orders
 
