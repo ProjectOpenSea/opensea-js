@@ -481,6 +481,9 @@ export class OpenSeaSDK {
     const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
     const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)]);
 
+    if (englishAuction) {
+      throw new Error("English auctions are no longer supported on OpenSea")
+    }
     if (englishAuction && paymentTokenAddress == ethers.ZeroAddress) {
       throw new Error(
         `English auctions must use wrapped ETH or an ERC-20 token.`,
