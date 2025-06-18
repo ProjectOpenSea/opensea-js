@@ -169,8 +169,6 @@ export enum Chain {
   SaigonTestnet = "saigon_testnet",
   /** Abstract Testnet */
   AbstractTestnet = "abstract_testnet",
-  /** Shape Testnet */
-  ShapeTestnet = "shape_testnet",
 }
 
 /**
