@@ -371,6 +371,7 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.FlowTestnet:
     case Chain.SaigonTestnet:
     case Chain.AbstractTestnet:
+    case Chain.ShapeTestnet:
       return true;
     default:
       return false;
