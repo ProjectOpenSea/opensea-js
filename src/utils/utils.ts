@@ -233,8 +233,6 @@ export const getChainId = (chain: Chain) => {
       return "11124";
     case Chain.Shape:
       return "360";
-    case Chain.ShapeTestnet:
-      return "11011";
     default:
       throw new Error(`Unknown chainId for ${chain}`);
   }
@@ -301,8 +299,6 @@ export const getWETHAddress = (chain: Chain) => {
       return "0x9edcde0257f2386ce177c3a7fcdd97787f0d841d";
     case Chain.Shape:
       return "0x4200000000000000000000000000000000000006";
-    case Chain.ShapeTestnet:
-      return "0x48A9B22b80F566E88f0f1DcC90Ea15A8A3bAE8a4";
     default:
       throw new Error(`Unknown WETH address for ${chain}`);
   }
@@ -371,7 +367,6 @@ export const isTestChain = (chain: Chain): boolean => {
     case Chain.FlowTestnet:
     case Chain.SaigonTestnet:
     case Chain.AbstractTestnet:
-    case Chain.ShapeTestnet:
       return true;
     default:
       return false;
