@@ -102,6 +102,9 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Listing - Polygon", async function () {
+    // POL not currently supported on OS2
+    this.skip();
+    
     if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
       this.skip();
     }
