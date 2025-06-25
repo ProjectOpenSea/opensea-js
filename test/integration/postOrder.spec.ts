@@ -101,9 +101,9 @@ suite("SDK: order posting", () => {
     }
   });
 
-  test("Post Listing - Polygon", async function () {
-    // POL not currently supported on OS2
-    this.skip();
+  test.skip("Post Listing - Polygon", async function () {
+    // POL not currently supported on OS2, update this test to use WETH
+    // (will need to supply account with WETH and do approval to conduit)
 
     if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
       this.skip();
