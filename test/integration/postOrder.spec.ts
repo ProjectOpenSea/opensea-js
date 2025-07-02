@@ -35,6 +35,9 @@ suite("SDK: order posting", () => {
     expect(order.protocolData.parameters.endTime).to.equal(
       expirationTime.toString(),
     );
+    expect(order.currentPrice).to.equal(
+      BigInt(parseFloat(OFFER_AMOUNT) * 10 ** 18),
+    );
   });
 
   test("Post Offer - Polygon", async () => {
