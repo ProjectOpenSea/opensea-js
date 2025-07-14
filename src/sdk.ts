@@ -44,6 +44,7 @@ import {
   EventData,
   EventType,
   Chain,
+  Fee,
   OpenSeaAPIConfig,
   OpenSeaCollection,
   OrderSide,
@@ -260,6 +261,7 @@ export class OpenSeaSDK {
     startAmount,
     endAmount,
     excludeOptionalCreatorFees,
+    isPrivateListing = false,
   }: {
     collection: OpenSeaCollection;
     seller?: string;
@@ -267,10 +269,16 @@ export class OpenSeaSDK {
     startAmount: bigint;
     endAmount?: bigint;
     excludeOptionalCreatorFees?: boolean;
+    isPrivateListing?: boolean;
   }): Promise<ConsiderationInputItem[]> {
     let collectionFees = collection.fees;
     if (excludeOptionalCreatorFees) {
       collectionFees = collectionFees.filter((fee) => fee.required);
+    }
+    if (isPrivateListing) {
+      collectionFees = collectionFees.filter((fee) =>
+        this.isNotMarketplaceFee(fee),
+      );
     }
     const collectionFeesBasisPoints = totalBasisPointsForFees(collectionFees);
     const sellerBasisPoints = INVERSE_BASIS_POINT - collectionFeesBasisPoints;
@@ -300,6 +308,14 @@ export class OpenSeaSDK {
       }
     }
     return considerationItems;
+  }
+
+  private isNotMarketplaceFee(fee: Fee): boolean {
+    const marketplaceFeePercentage = 2.5;
+    const isMarketplaceFeePercentage = fee.fee === marketplaceFeePercentage;
+    const isOptionalFee = !fee.required;
+
+    return !(isMarketplaceFeePercentage || isOptionalFee);
   }
 
   private getNFTItems(
@@ -385,6 +401,7 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       startAmount: basePrice,
       excludeOptionalCreatorFees,
+      isPrivateListing: false,
     });
 
     if (collection.requiredZone) {
@@ -507,6 +524,7 @@ export class OpenSeaSDK {
       startAmount: basePrice,
       endAmount: endPrice,
       excludeOptionalCreatorFees,
+      isPrivateListing: !!buyerAddress,
     });
 
     if (buyerAddress) {
@@ -623,6 +641,7 @@ export class OpenSeaSDK {
       startAmount: basePrice,
       endAmount: basePrice,
       excludeOptionalCreatorFees,
+      isPrivateListing: false,
     });
 
     const considerationItems = [
