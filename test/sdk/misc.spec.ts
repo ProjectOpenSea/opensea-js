@@ -5,26 +5,11 @@ import {
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
 } from "../../src/constants";
-import { OpenSeaSDK } from "../../src/index";
-import { Chain } from "../../src/types";
 import {
   decodeTokenIds,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
 } from "../../src/utils/utils";
-import {
-  DAPPER_ADDRESS,
-  MAINNET_API_KEY,
-  RPC_PROVIDER_MAINNET,
-} from "../utils/constants";
-
-const client = new OpenSeaSDK(
-  RPC_PROVIDER_MAINNET,
-  {
-    chain: Chain.Mainnet,
-    apiKey: MAINNET_API_KEY,
-  },
-  (line) => console.info(`MAINNET: ${line}`),
-);
+import { BAYC_CONTRACT_ADDRESS, client } from "../utils/constants";
 
 suite("SDK: misc", () => {
   test("Instance has public methods", () => {
@@ -37,7 +22,7 @@ suite("SDK: misc", () => {
   });
 
   test("Checks that a non-shared storefront address is not remapped", async () => {
-    const address = DAPPER_ADDRESS;
+    const address = BAYC_CONTRACT_ADDRESS;
     assert.equal(
       getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
         address,

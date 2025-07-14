@@ -1,18 +1,8 @@
 import { assert } from "chai";
 import { ethers } from "ethers";
 import { suite, test } from "mocha";
-import { OpenSeaSDK } from "../../src/index";
-import { Chain, TokenStandard } from "../../src/types";
-import { MAINNET_API_KEY, RPC_PROVIDER_MAINNET } from "../utils/constants";
-
-const client = new OpenSeaSDK(
-  RPC_PROVIDER_MAINNET,
-  {
-    chain: Chain.Mainnet,
-    apiKey: MAINNET_API_KEY,
-  },
-  (line) => console.info(`MAINNET: ${line}`),
-);
+import { TokenStandard } from "../../src/types";
+import { client } from "../utils/constants";
 
 suite("SDK: getBalance", () => {
   const accountAddress = "0x000000000000000000000000000000000000dEaD";
