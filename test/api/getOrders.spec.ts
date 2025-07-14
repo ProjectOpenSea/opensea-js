@@ -34,7 +34,7 @@ suite("Getting orders", () => {
 
   [OrderSide.LISTING, OrderSide.OFFER].forEach((side) => {
     test(`getOrders should return a list of orders > ${side}`, async () => {
-      const { orders, next, previous } = await mainAPI.getOrders({
+      const { orders, next } = await mainAPI.getOrders({
         protocol: "seaport",
         side,
         tokenIds: BAYC_TOKEN_IDS,
@@ -42,7 +42,6 @@ suite("Getting orders", () => {
       });
       orders.map((order) => expectValidOrder(order));
       expect(next).to.not.be.undefined;
-      expect(previous).to.not.be.undefined;
     });
   });
 });

@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { OpenSeaSDK } from "../../src/sdk";
 import { Chain } from "../../src/types";
 import {
-  MAINNET_API_KEY,
+  OPENSEA_API_KEY,
   RPC_PROVIDER_MAINNET,
   RPC_PROVIDER_POLYGON,
   WALLET_PRIV_KEY,
@@ -36,7 +36,7 @@ export const sdk = new OpenSeaSDK(
   walletMainnet,
   {
     chain: Chain.Mainnet,
-    apiKey: MAINNET_API_KEY,
+    apiKey: OPENSEA_API_KEY,
   },
   (line) => console.info(`MAINNET: ${line}`),
 );
@@ -45,7 +45,7 @@ export const sdkPolygon = new OpenSeaSDK(
   walletPolygon,
   {
     chain: Chain.Polygon,
-    apiKey: MAINNET_API_KEY,
+    apiKey: OPENSEA_API_KEY,
   },
   (line) => console.info(`POLYGON: ${line}`),
 );

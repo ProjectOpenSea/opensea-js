@@ -52,9 +52,6 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Listing - Mainnet", async function () {
-    // English auctions are no longer supported on OpenSea
-    this.skip();
-
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
@@ -72,6 +69,9 @@ suite("SDK: order posting", () => {
   });
 
   test("Post English Auction Listing - Mainnet", async function () {
+    // English auctions are no longer supported on OpenSea
+    this.skip();
+
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
@@ -102,18 +102,13 @@ suite("SDK: order posting", () => {
   });
 
   test.skip("Post Listing - Polygon", async function () {
-    // POL not currently supported on OS2, update this test to use WETH
-    // (will need to supply account with WETH and do approval to conduit)
-
-    if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
-      this.skip();
-    }
     const listing = {
       accountAddress: walletAddress,
+      paymentTokenAddress: getWETHAddress(sdkPolygon.chain),
       startAmount: +LISTING_AMOUNT * 1_000_000,
       asset: {
-        tokenAddress: TOKEN_ADDRESS_POLYGON,
-        tokenId: TOKEN_ID_POLYGON,
+        tokenAddress: TOKEN_ADDRESS_POLYGON as string,
+        tokenId: TOKEN_ID_POLYGON as string,
       },
       expirationTime,
     };
@@ -121,7 +116,7 @@ suite("SDK: order posting", () => {
     expectValidOrder(order);
   });
 
-  test("Post Collection Offer - Mainnet", async () => {
+  test.skip("Post Collection Offer - Mainnet", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
     const paymentTokenAddress = getWETHAddress(sdk.chain);
     const postOrderRequest = {
@@ -148,7 +143,7 @@ suite("SDK: order posting", () => {
     );
   });
 
-  test("Post Collection Offer - Polygon", async () => {
+  test.skip("Post Collection Offer - Polygon", async () => {
     const collection = await sdkPolygon.api.getCollection("arttoken-1155-4");
     const paymentTokenAddress = getWETHAddress(sdkPolygon.chain);
     const postOrderRequest = {

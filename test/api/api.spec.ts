@@ -5,14 +5,12 @@ import { getWETHAddress } from "../../src/utils";
 import {
   BAYC_CONTRACT_ADDRESS,
   mainAPI,
-  MAINNET_API_KEY,
-  testnetAPI,
+  OPENSEA_API_KEY,
 } from "../utils/constants";
 
 suite("API", () => {
   test("API has correct base url", () => {
     assert.equal(mainAPI.apiBaseUrl, "https://api.opensea.io");
-    assert.equal(testnetAPI.apiBaseUrl, "https://testnets-api.opensea.io");
   });
 
   test("Includes API key in request", async () => {
@@ -21,7 +19,7 @@ suite("API", () => {
     const logPromise = new Promise<void>((resolve, reject) => {
       mainAPI.logger = (log) => {
         try {
-          assert.include(log, `"x-api-key":"${MAINNET_API_KEY}"`);
+          assert.include(log, `"x-api-key":"${OPENSEA_API_KEY}"`);
           resolve();
         } catch (e) {
           reject(e);
