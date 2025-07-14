@@ -41,6 +41,18 @@ suite("SDK: getCollection", () => {
     );
   });
 
+  test("Get Collections by creator", async () => {
+    const response = await sdk.api.getCollections(
+      CollectionOrderByOption.CREATED_DATE,
+      undefined,
+      "cryptoexpert123",
+    );
+    const { collections } = response;
+    assert(collections.length == 2, "Collection should not be null");
+    assert(collections[0].collection, "test-7836");
+    assert(collections[0].collection, "test-7290");
+  });
+
   test("Get Collection Stats", async () => {
     const slug = "cool-cats-nft";
     const stats = await sdk.api.getCollectionStats(slug);
