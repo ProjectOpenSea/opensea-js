@@ -65,6 +65,8 @@ import {
   getChainId,
 } from "./utils/utils";
 
+const OPENSEA_FEE_RECIPIENT = "0x0000a26b00c1f0df003000390027140000faa719";
+
 /**
  * The OpenSea SDK main class.
  * @category Main Classes
@@ -261,7 +263,7 @@ export class OpenSeaSDK {
     startAmount,
     endAmount,
     excludeOptionalCreatorFees,
-    isPrivateListing = false,
+    buyerAddress,
   }: {
     collection: OpenSeaCollection;
     seller?: string;
@@ -269,13 +271,13 @@ export class OpenSeaSDK {
     startAmount: bigint;
     endAmount?: bigint;
     excludeOptionalCreatorFees?: boolean;
-    isPrivateListing?: boolean;
+    buyerAddress?: string;
   }): Promise<ConsiderationInputItem[]> {
     let collectionFees = collection.fees;
     if (excludeOptionalCreatorFees) {
       collectionFees = collectionFees.filter((fee) => fee.required);
     }
-    if (isPrivateListing) {
+    if (buyerAddress) {
       collectionFees = collectionFees.filter((fee) =>
         this.isNotMarketplaceFee(fee),
       );
@@ -311,11 +313,7 @@ export class OpenSeaSDK {
   }
 
   private isNotMarketplaceFee(fee: Fee): boolean {
-    const marketplaceFeePercentage = 2.5;
-    const isMarketplaceFeePercentage = fee.fee === marketplaceFeePercentage;
-    const isOptionalFee = !fee.required;
-
-    return !(isMarketplaceFeePercentage || isOptionalFee);
+    return fee.recipient.toLowerCase() !== OPENSEA_FEE_RECIPIENT.toLowerCase();
   }
 
   private getNFTItems(
@@ -401,7 +399,6 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       startAmount: basePrice,
       excludeOptionalCreatorFees,
-      isPrivateListing: false,
     });
 
     if (collection.requiredZone) {
@@ -524,7 +521,7 @@ export class OpenSeaSDK {
       startAmount: basePrice,
       endAmount: endPrice,
       excludeOptionalCreatorFees,
-      isPrivateListing: !!buyerAddress,
+      buyerAddress,
     });
 
     if (buyerAddress) {
@@ -641,7 +638,6 @@ export class OpenSeaSDK {
       startAmount: basePrice,
       endAmount: basePrice,
       excludeOptionalCreatorFees,
-      isPrivateListing: false,
     });
 
     const considerationItems = [
