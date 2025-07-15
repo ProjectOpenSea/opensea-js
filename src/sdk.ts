@@ -27,6 +27,7 @@ import {
   INVERSE_BASIS_POINT,
   ENGLISH_AUCTION_ZONE_MAINNETS,
   ENGLISH_AUCTION_ZONE_TESTNETS,
+  OPENSEA_FEE_RECIPIENT,
 } from "./constants";
 import {
   constructPrivateListingCounterOrder,
@@ -64,8 +65,6 @@ import {
   totalBasisPointsForFees,
   getChainId,
 } from "./utils/utils";
-
-const OPENSEA_FEE_RECIPIENT = "0x0000a26b00c1f0df003000390027140000faa719";
 
 /**
  * The OpenSea SDK main class.
@@ -263,7 +262,7 @@ export class OpenSeaSDK {
     startAmount,
     endAmount,
     excludeOptionalCreatorFees,
-    buyerAddress,
+    isPrivateListing = false,
   }: {
     collection: OpenSeaCollection;
     seller?: string;
@@ -271,13 +270,13 @@ export class OpenSeaSDK {
     startAmount: bigint;
     endAmount?: bigint;
     excludeOptionalCreatorFees?: boolean;
-    buyerAddress?: string;
+    isPrivateListing?: boolean;
   }): Promise<ConsiderationInputItem[]> {
     let collectionFees = collection.fees;
     if (excludeOptionalCreatorFees) {
       collectionFees = collectionFees.filter((fee) => fee.required);
     }
-    if (buyerAddress) {
+    if (isPrivateListing) {
       collectionFees = collectionFees.filter((fee) =>
         this.isNotMarketplaceFee(fee),
       );
@@ -521,7 +520,7 @@ export class OpenSeaSDK {
       startAmount: basePrice,
       endAmount: endPrice,
       excludeOptionalCreatorFees,
-      buyerAddress,
+      isPrivateListing: !!buyerAddress,
     });
 
     if (buyerAddress) {
