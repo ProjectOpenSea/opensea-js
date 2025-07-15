@@ -27,6 +27,7 @@ import {
   INVERSE_BASIS_POINT,
   ENGLISH_AUCTION_ZONE_MAINNETS,
   ENGLISH_AUCTION_ZONE_TESTNETS,
+  OPENSEA_FEE_RECIPIENT,
 } from "./constants";
 import {
   constructPrivateListingCounterOrder,
@@ -44,6 +45,7 @@ import {
   EventData,
   EventType,
   Chain,
+  Fee,
   OpenSeaAPIConfig,
   OpenSeaCollection,
   OrderSide,
@@ -260,6 +262,7 @@ export class OpenSeaSDK {
     startAmount,
     endAmount,
     excludeOptionalCreatorFees,
+    isPrivateListing = false,
   }: {
     collection: OpenSeaCollection;
     seller?: string;
@@ -267,10 +270,16 @@ export class OpenSeaSDK {
     startAmount: bigint;
     endAmount?: bigint;
     excludeOptionalCreatorFees?: boolean;
+    isPrivateListing?: boolean;
   }): Promise<ConsiderationInputItem[]> {
     let collectionFees = collection.fees;
     if (excludeOptionalCreatorFees) {
       collectionFees = collectionFees.filter((fee) => fee.required);
+    }
+    if (isPrivateListing) {
+      collectionFees = collectionFees.filter((fee) =>
+        this.isNotMarketplaceFee(fee),
+      );
     }
     const collectionFeesBasisPoints = totalBasisPointsForFees(collectionFees);
     const sellerBasisPoints = INVERSE_BASIS_POINT - collectionFeesBasisPoints;
@@ -300,6 +309,10 @@ export class OpenSeaSDK {
       }
     }
     return considerationItems;
+  }
+
+  private isNotMarketplaceFee(fee: Fee): boolean {
+    return fee.recipient.toLowerCase() !== OPENSEA_FEE_RECIPIENT.toLowerCase();
   }
 
   private getNFTItems(
@@ -507,6 +520,7 @@ export class OpenSeaSDK {
       startAmount: basePrice,
       endAmount: endPrice,
       excludeOptionalCreatorFees,
+      isPrivateListing: !!buyerAddress,
     });
 
     if (buyerAddress) {

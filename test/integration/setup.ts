@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { ethers } from "ethers";
 import { OpenSeaSDK } from "../../src/sdk";
 import { Chain } from "../../src/types";
@@ -14,8 +15,9 @@ for (const envVar of ["WALLET_PRIV_KEY"]) {
   }
 }
 
-export const TOKEN_ADDRESS_MAINNET = process.env.SELL_ORDER_CONTRACT_ADDRESS;
-export const TOKEN_ID_MAINNET = process.env.SELL_ORDER_TOKEN_ID;
+export const TOKEN_ADDRESS_MAINNET = process.env
+  .SELL_ORDER_CONTRACT_ADDRESS as string;
+export const TOKEN_ID_MAINNET = process.env.SELL_ORDER_TOKEN_ID as string;
 export const TOKEN_ADDRESS_POLYGON =
   process.env.SELL_ORDER_CONTRACT_ADDRESS_POLYGON;
 export const TOKEN_ID_POLYGON = process.env.SELL_ORDER_TOKEN_ID_POLYGON;
@@ -49,3 +51,22 @@ export const sdkPolygon = new OpenSeaSDK(
   },
   (line) => console.info(`POLYGON: ${line}`),
 );
+
+export const getRandomExpiration = (): number => {
+  const now = Math.floor(Date.now() / 1000);
+  const fifteenMinutes = 15 * 60;
+  const oneHour = 60 * 60;
+  const range = oneHour - fifteenMinutes + 1;
+
+  const maxValue = 0xffffffff; // 2^32 - 1
+  const rejectionThreshold = maxValue - (maxValue % range);
+
+  let randomValue: number;
+  do {
+    const randomBuffer = randomBytes(4);
+    randomValue = randomBuffer.readUInt32BE(0);
+  } while (randomValue >= rejectionThreshold);
+
+  const randomSeconds = (randomValue % range) + fifteenMinutes;
+  return now + randomSeconds;
+};
