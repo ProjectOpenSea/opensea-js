@@ -13,13 +13,11 @@ import {
 import { ENGLISH_AUCTION_ZONE_MAINNETS } from "../../src/constants";
 import { getWETHAddress } from "../../src/utils";
 import { OFFER_AMOUNT } from "../utils/constants";
-import { expectValidOrder } from "../utils/utils";
-
-const ONE_HOUR = Math.floor(Date.now() / 1000) + 3600;
-const expirationTime = ONE_HOUR;
+import { expectValidOrder, getRandomExpiration } from "../utils/utils";
 
 suite("SDK: order posting", () => {
   test("Post Offer - Mainnet", async () => {
+    const expirationTime = getRandomExpiration();
     const offer = {
       accountAddress: walletAddress,
       startAmount: +OFFER_AMOUNT,
@@ -41,6 +39,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Offer - Polygon", async () => {
+    const expirationTime = getRandomExpiration();
     const offer = {
       accountAddress: walletAddress,
       startAmount: +OFFER_AMOUNT,
@@ -58,6 +57,7 @@ suite("SDK: order posting", () => {
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
+    const expirationTime = getRandomExpiration();
     const listing = {
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
@@ -78,6 +78,7 @@ suite("SDK: order posting", () => {
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
+    const expirationTime = getRandomExpiration();
     const listing = {
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
@@ -105,6 +106,7 @@ suite("SDK: order posting", () => {
   });
 
   test.skip("Post Listing - Polygon", async function () {
+    const expirationTime = getRandomExpiration();
     const listing = {
       accountAddress: walletAddress,
       paymentTokenAddress: getWETHAddress(sdkPolygon.chain),
@@ -122,6 +124,7 @@ suite("SDK: order posting", () => {
   test.skip("Post Collection Offer - Mainnet", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
     const paymentTokenAddress = getWETHAddress(sdk.chain);
+    const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,
       accountAddress: walletAddress,
@@ -149,6 +152,7 @@ suite("SDK: order posting", () => {
   test.skip("Post Collection Offer - Polygon", async () => {
     const collection = await sdkPolygon.api.getCollection("arttoken-1155-4");
     const paymentTokenAddress = getWETHAddress(sdkPolygon.chain);
+    const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,
       accountAddress: walletAddress,
@@ -180,6 +184,7 @@ suite("SDK: order posting", () => {
   test("Post Trait Offer - Ethereum", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
     const paymentTokenAddress = getWETHAddress(sdk.chain);
+    const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,
       accountAddress: walletAddress,

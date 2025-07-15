@@ -8,10 +8,7 @@ import {
   sdk,
   walletAddress,
 } from "../integration/setup";
-import { expectValidOrder } from "../utils/utils";
-
-const ONE_HOUR = Math.floor(Date.now() / 1000) + 3600;
-const expirationTime = ONE_HOUR;
+import { expectValidOrder, getRandomExpiration } from "../utils/utils";
 
 suite("SDK: Private Listings Integration", () => {
   test("Post Private Listing - Mainnet", async function () {
@@ -20,6 +17,7 @@ suite("SDK: Private Listings Integration", () => {
     }
 
     const buyerAddress = "0x0000000000000000000000000000000000000001";
+    const expirationTime = getRandomExpiration();
 
     const privateListing = {
       accountAddress: walletAddress,
@@ -50,6 +48,7 @@ suite("SDK: Private Listings Integration", () => {
       this.skip();
     }
 
+    const expirationTime = getRandomExpiration();
     const regularListing = {
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
