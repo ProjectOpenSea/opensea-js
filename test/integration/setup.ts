@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { ethers } from "ethers";
 import { OpenSeaSDK } from "../../src/sdk";
 import { Chain } from "../../src/types";
@@ -57,8 +58,7 @@ export const getRandomExpiration = (): number => {
   const oneHour = 60 * 60;
   const range = oneHour - fifteenMinutes + 1;
 
-  const crypto = require("crypto");
-  const randomBuffer = crypto.randomBytes(4);
+  const randomBuffer = randomBytes(4);
   const randomValue = randomBuffer.readUInt32BE(0);
   const randomSeconds = (randomValue % range) + fifteenMinutes;
 
