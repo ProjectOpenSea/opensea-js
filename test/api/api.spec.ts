@@ -54,12 +54,12 @@ suite("API", () => {
 
     // Stub the private _fetch method to throw our rate limit error
     const fetchStub = sinon
-      .stub(mainAPI as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
       .rejects(rateLimitError);
 
     try {
       // This should trigger a rate limit error
-      await mainAPI.getPaymentToken(
+      await api.getPaymentToken(
         "0x0000000000000000000000000000000000000000",
       );
       assert.fail("Expected rate limit error to be thrown");
@@ -83,12 +83,12 @@ suite("API", () => {
 
     // Stub the private _fetch method to throw our rate limit error
     const fetchStub = sinon
-      .stub(mainAPI as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
       .rejects(rateLimitError);
 
     try {
       // This should trigger a rate limit error
-      await mainAPI.getPaymentToken(
+      await api.getPaymentToken(
         "0x0000000000000000000000000000000000000000",
       );
       assert.fail("Expected rate limit error to be thrown");
@@ -117,12 +117,12 @@ suite("API", () => {
 
     // Stub the private _fetch method to throw our rate limit error
     const fetchStub = sinon
-      .stub(mainAPI as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
       .rejects(rateLimitError);
 
     try {
       // This should trigger a rate limit error
-      await mainAPI.getPaymentToken(
+      await api.getPaymentToken(
         "0x0000000000000000000000000000000000000000",
       );
       assert.fail("Expected rate limit error to be thrown");
