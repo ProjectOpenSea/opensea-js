@@ -126,21 +126,12 @@ export class OpenSeaSDK {
     this.logger = logger ?? ((arg: string) => arg);
 
     // Cache decimals for offer and listing payment tokens to skip network request
-    try {
-      const offerPaymentToken = getOfferPaymentToken(this.chain).toLowerCase();
-      const listingPaymentToken = getListingPaymentToken(
-        this.chain,
-      ).toLowerCase();
-      this._cachedPaymentTokenDecimals[offerPaymentToken] = 18;
-      this._cachedPaymentTokenDecimals[listingPaymentToken] = 18;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      if (error.message.includes("Unknown WETH address")) {
-        // Ignore
-      } else {
-        console.error(error);
-      }
-    }
+    const offerPaymentToken = getOfferPaymentToken(this.chain).toLowerCase();
+    const listingPaymentToken = getListingPaymentToken(
+      this.chain,
+    ).toLowerCase();
+    this._cachedPaymentTokenDecimals[offerPaymentToken] = 18;
+    this._cachedPaymentTokenDecimals[listingPaymentToken] = 18;
   }
 
   /**
@@ -196,11 +187,11 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Wrap ETH into WETH.
-   * W-ETH is needed for making offers.
+   * Wrap native asset into wrapped native asset (e.g. ETH into WETH, POL into WPOL).
+   * Wrapped native assets are needed for making offers.
    * @param options
-   * @param options.amountInEth Amount of ether to wrap
-   * @param options.accountAddress Address of the user's wallet containing the ether
+   * @param options.amountInEth Amount of native asset to wrap
+   * @param options.accountAddress Address of the user's wallet containing the native asset
    */
   public async wrapEth({
     amountInEth,
@@ -226,7 +217,7 @@ export class OpenSeaSDK {
       await this._confirmTransaction(
         transaction.hash,
         EventType.WrapEth,
-        "Wrapping ETH",
+        "Wrapping native asset",
       );
     } catch (error) {
       console.error(error);
@@ -235,11 +226,11 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Unwrap WETH into ETH.
+   * Unwrap wrapped native asset into native asset (e.g. WETH into ETH, WPOL into POL).
    * Emits the `UnwrapWeth` event when the transaction is prompted.
    * @param options
-   * @param options.amountInEth How much WETH to unwrap
-   * @param options.accountAddress Address of the user's wallet containing the WETH
+   * @param options.amountInEth How much wrapped native asset to unwrap
+   * @param options.accountAddress Address of the user's wallet containing the wrapped native asset
    */
   public async unwrapWeth({
     amountInEth,
@@ -265,7 +256,7 @@ export class OpenSeaSDK {
       await this._confirmTransaction(
         transaction.hash,
         EventType.UnwrapWeth,
-        "Unwrapping W-ETH",
+        "Unwrapping wrapped native asset",
       );
     } catch (error) {
       console.error(error);
