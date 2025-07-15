@@ -58,9 +58,15 @@ export const getRandomExpiration = (): number => {
   const oneHour = 60 * 60;
   const range = oneHour - fifteenMinutes + 1;
 
-  const randomBuffer = randomBytes(4);
-  const randomValue = randomBuffer.readUInt32BE(0);
-  const randomSeconds = (randomValue % range) + fifteenMinutes;
+  const maxValue = 0xffffffff; // 2^32 - 1
+  const rejectionThreshold = maxValue - (maxValue % range);
 
+  let randomValue: number;
+  do {
+    const randomBuffer = randomBytes(4);
+    randomValue = randomBuffer.readUInt32BE(0);
+  } while (randomValue >= rejectionThreshold);
+
+  const randomSeconds = (randomValue % range) + fifteenMinutes;
   return now + randomSeconds;
 };
