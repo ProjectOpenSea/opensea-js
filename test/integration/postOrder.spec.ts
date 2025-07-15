@@ -12,7 +12,7 @@ import {
   getRandomExpiration,
 } from "./setup";
 import { ENGLISH_AUCTION_ZONE_MAINNETS } from "../../src/constants";
-import { getWETHAddress } from "../../src/utils";
+import { getOfferPaymentToken } from "../../src/utils";
 import { OFFER_AMOUNT } from "../utils/constants";
 import { expectValidOrder } from "../utils/utils";
 
@@ -106,11 +106,11 @@ suite("SDK: order posting", () => {
     }
   });
 
-  test.skip("Post Listing - Polygon", async function () {
+  test("Post Listing - Polygon", async () => {
     const expirationTime = getRandomExpiration();
     const listing = {
       accountAddress: walletAddress,
-      paymentTokenAddress: getWETHAddress(sdkPolygon.chain),
+      paymentTokenAddress: getOfferPaymentToken(sdkPolygon.chain),
       startAmount: +LISTING_AMOUNT * 1_000_000,
       asset: {
         tokenAddress: TOKEN_ADDRESS_POLYGON as string,
@@ -124,7 +124,7 @@ suite("SDK: order posting", () => {
 
   test.skip("Post Collection Offer - Mainnet", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
-    const paymentTokenAddress = getWETHAddress(sdk.chain);
+    const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
     const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,
@@ -152,7 +152,7 @@ suite("SDK: order posting", () => {
 
   test.skip("Post Collection Offer - Polygon", async () => {
     const collection = await sdkPolygon.api.getCollection("arttoken-1155-4");
-    const paymentTokenAddress = getWETHAddress(sdkPolygon.chain);
+    const paymentTokenAddress = getOfferPaymentToken(sdkPolygon.chain);
     const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,
@@ -184,7 +184,7 @@ suite("SDK: order posting", () => {
 
   test("Post Trait Offer - Ethereum", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
-    const paymentTokenAddress = getWETHAddress(sdk.chain);
+    const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
     const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,

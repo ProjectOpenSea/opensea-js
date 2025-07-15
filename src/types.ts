@@ -95,7 +95,11 @@ export interface OpenSeaAPIConfig {
 
 /**
  * Each of the possible chains that OpenSea supports.
- * ⚠️NOTE: When adding to this list, also add to the util functions `getChainId` and `getWETHAddress`
+ * ⚠️NOTE: When adding to this list, also add to the following functions:
+ * - `getChainId`
+ * - `getListingPaymentToken`
+ * - `getOfferPaymentToken`
+ * - `getNativeWrapTokenAddress` (if getOfferPaymentToken isn't the wrapped native asset)
  */
 export enum Chain {
   // Mainnet Chains

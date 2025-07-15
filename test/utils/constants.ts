@@ -27,7 +27,7 @@ export const client = new OpenSeaSDK(
   (line) => console.info(`MAINNET: ${line}`),
 );
 
-export const mainAPI = new OpenSeaAPI(
+export const api = new OpenSeaAPI(
   {
     apiKey: OPENSEA_API_KEY,
     chain: Chain.Mainnet,

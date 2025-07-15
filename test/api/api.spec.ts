@@ -2,34 +2,34 @@ import { assert } from "chai";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { Chain, OpenSeaRateLimitError } from "../../src";
-import { getWETHAddress } from "../../src/utils";
+import { getOfferPaymentToken } from "../../src/utils";
 import {
   BAYC_CONTRACT_ADDRESS,
-  mainAPI,
+  api,
   OPENSEA_API_KEY,
 } from "../utils/constants";
 
 suite("API", () => {
   test("API has correct base url", () => {
-    assert.equal(mainAPI.apiBaseUrl, "https://api.opensea.io");
+    assert.equal(api.apiBaseUrl, "https://api.opensea.io");
   });
 
   test("Includes API key in request", async () => {
-    const oldLogger = mainAPI.logger;
+    const oldLogger = api.logger;
 
     const logPromise = new Promise<void>((resolve, reject) => {
-      mainAPI.logger = (log) => {
+      api.logger = (log) => {
         try {
           assert.include(log, `"x-api-key":"${OPENSEA_API_KEY}"`);
           resolve();
         } catch (e) {
           reject(e);
         } finally {
-          mainAPI.logger = oldLogger;
+          api.logger = oldLogger;
         }
       };
-      const wethAddress = getWETHAddress(Chain.Mainnet);
-      mainAPI.getPaymentToken(wethAddress);
+      const offerPaymentToken = getOfferPaymentToken(Chain.Mainnet);
+      api.getPaymentToken(offerPaymentToken);
     });
 
     await logPromise;
@@ -38,7 +38,7 @@ suite("API", () => {
   test("API handles errors", async () => {
     // 404 Not found for random token id
     try {
-      await mainAPI.getNFT(BAYC_CONTRACT_ADDRESS, "404040");
+      await api.getNFT(BAYC_CONTRACT_ADDRESS, "404040");
     } catch (error) {
       assert.include((error as Error).message, "not found");
     }
@@ -54,14 +54,12 @@ suite("API", () => {
 
     // Stub the private _fetch method to throw our rate limit error
     const fetchStub = sinon
-      .stub(mainAPI as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
       .rejects(rateLimitError);
 
     try {
       // This should trigger a rate limit error
-      await mainAPI.getPaymentToken(
-        "0x0000000000000000000000000000000000000000",
-      );
+      await api.getPaymentToken("0x0000000000000000000000000000000000000000");
       assert.fail("Expected rate limit error to be thrown");
     } catch (error) {
       const rateLimitError = error as OpenSeaRateLimitError;
@@ -83,14 +81,12 @@ suite("API", () => {
 
     // Stub the private _fetch method to throw our rate limit error
     const fetchStub = sinon
-      .stub(mainAPI as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
       .rejects(rateLimitError);
 
     try {
       // This should trigger a rate limit error
-      await mainAPI.getPaymentToken(
-        "0x0000000000000000000000000000000000000000",
-      );
+      await api.getPaymentToken("0x0000000000000000000000000000000000000000");
       assert.fail("Expected rate limit error to be thrown");
     } catch (error) {
       const rateLimitError = error as OpenSeaRateLimitError;
@@ -117,14 +113,12 @@ suite("API", () => {
 
     // Stub the private _fetch method to throw our rate limit error
     const fetchStub = sinon
-      .stub(mainAPI as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
       .rejects(rateLimitError);
 
     try {
       // This should trigger a rate limit error
-      await mainAPI.getPaymentToken(
-        "0x0000000000000000000000000000000000000000",
-      );
+      await api.getPaymentToken("0x0000000000000000000000000000000000000000");
       assert.fail("Expected rate limit error to be thrown");
     } catch (error) {
       const rateLimitError = error as OpenSeaRateLimitError;
