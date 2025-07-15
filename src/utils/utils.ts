@@ -364,12 +364,6 @@ export const getListingPaymentToken = (chain: Chain) => {
 /** @deprecated Use getOfferPaymentToken instead. Backward compatibility alias. */
 export const getWETHAddress = getOfferPaymentToken;
 
-/** @deprecated Use getOfferPaymentToken instead. */
-export const getDefaultOfferCurrency = getOfferPaymentToken;
-
-/** @deprecated Use getListingPaymentToken instead. */
-export const getDefaultListingCurrency = getListingPaymentToken;
-
 /**
  * Checks if the token address is the shared storefront address and if so replaces
  * that address with the lazy mint adapter address. Otherwise, returns the input token address

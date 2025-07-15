@@ -27,6 +27,7 @@ import {
   ENGLISH_AUCTION_ZONE_MAINNETS,
   ENGLISH_AUCTION_ZONE_TESTNETS,
   OPENSEA_FEE_RECIPIENT,
+  WPOL_ADDRESS,
 } from "./constants";
 import {
   constructPrivateListingCounterOrder,
@@ -59,7 +60,6 @@ import {
   getAssetItemType,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
   requireValidProtocol,
-  getWETHAddress,
   getOfferPaymentToken,
   getListingPaymentToken,
   isTestChain,
@@ -125,10 +125,14 @@ export class OpenSeaSDK {
     // Logger: default to no logging if fn not provided
     this.logger = logger ?? ((arg: string) => arg);
 
-    // Cache decimals for WETH payment token to skip network request
+    // Cache decimals for offer and listing payment tokens to skip network request
     try {
-      const wethAddress = getWETHAddress(this.chain).toLowerCase();
-      this._cachedPaymentTokenDecimals[wethAddress] = 18;
+      const offerPaymentToken = getOfferPaymentToken(this.chain).toLowerCase();
+      const listingPaymentToken = getListingPaymentToken(
+        this.chain,
+      ).toLowerCase();
+      this._cachedPaymentTokenDecimals[offerPaymentToken] = 18;
+      this._cachedPaymentTokenDecimals[listingPaymentToken] = 18;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error.message.includes("Unknown WETH address")) {
@@ -176,6 +180,22 @@ export class OpenSeaSDK {
   }
 
   /**
+   * Get the appropriate token address for wrap/unwrap operations.
+   * For Polygon, use WPOL. For other chains, use getOfferPaymentToken,
+   * which is the wrapped native asset for the chain.
+   * @param chain The chain to get the token address for
+   * @returns The token address for wrap/unwrap operations
+   */
+  public getNativeWrapTokenAddress(chain: Chain): string {
+    switch (chain) {
+      case Chain.Polygon:
+        return WPOL_ADDRESS;
+      default:
+        return getOfferPaymentToken(chain);
+    }
+  }
+
+  /**
    * Wrap ETH into WETH.
    * W-ETH is needed for making offers.
    * @param options
@@ -196,7 +216,7 @@ export class OpenSeaSDK {
     this._dispatch(EventType.WrapEth, { accountAddress, amount: value });
 
     const wethContract = new Contract(
-      getWETHAddress(this.chain),
+      this.getNativeWrapTokenAddress(this.chain),
       ["function deposit() payable"],
       this._signerOrProvider,
     );
@@ -235,7 +255,7 @@ export class OpenSeaSDK {
     this._dispatch(EventType.UnwrapWeth, { accountAddress, amount });
 
     const wethContract = new Contract(
-      getWETHAddress(this.chain),
+      this.getNativeWrapTokenAddress(this.chain),
       ["function withdraw(uint wad) public"],
       this._signerOrProvider,
     );
