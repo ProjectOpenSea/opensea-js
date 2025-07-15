@@ -1,14 +1,15 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
-import { OPENSEA_FEE_RECIPIENT } from "../../src/constants";
 import {
+  getRandomExpiration,
   LISTING_AMOUNT,
   TOKEN_ADDRESS_MAINNET,
   TOKEN_ID_MAINNET,
   sdk,
   walletAddress,
-} from "../integration/setup";
-import { expectValidOrder, getRandomExpiration } from "../utils/utils";
+} from "./setup";
+import { OPENSEA_FEE_RECIPIENT } from "../../src/constants";
+import { expectValidOrder } from "../utils/utils";
 
 suite("SDK: Private Listings Integration", () => {
   test("Post Private Listing - Mainnet", async function () {

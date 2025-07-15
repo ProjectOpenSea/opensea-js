@@ -9,11 +9,12 @@ import {
   sdk,
   sdkPolygon,
   walletAddress,
+  getRandomExpiration,
 } from "./setup";
 import { ENGLISH_AUCTION_ZONE_MAINNETS } from "../../src/constants";
 import { getWETHAddress } from "../../src/utils";
 import { OFFER_AMOUNT } from "../utils/constants";
-import { expectValidOrder, getRandomExpiration } from "../utils/utils";
+import { expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {
   test("Post Offer - Mainnet", async () => {
