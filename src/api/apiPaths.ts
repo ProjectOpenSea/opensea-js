@@ -103,3 +103,7 @@ export const getCancelOrderPath = (
 ) => {
   return `/api/v2/orders/chain/${chain}/protocol/${protocolAddress}/${orderHash}/cancel`;
 };
+
+export const getTraitOffersPath = (collectionSlug: string) => {
+  return `/api/v2/offers/collection/${collectionSlug}/traits`;
+};
