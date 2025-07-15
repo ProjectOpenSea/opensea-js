@@ -113,3 +113,43 @@ suite("SDK: getBestListings", () => {
     assert(response.listings, "Listings should not be null");
   });
 });
+
+suite("SDK: getTraitOffers", () => {
+  test("Get Trait Offers", async () => {
+    const slug = "boredapeyachtclub";
+    const type = "Fur";
+    const value = "Solid Gold";
+    const response = await sdk.api.getTraitOffers(slug, type, value);
+
+    assert(response, "Response should not be null");
+    assert(response.offers, "Offers should not be null");
+    assert(Array.isArray(response.offers), "Offers should be an array");
+
+    if (response.offers.length > 0) {
+      const offer = response.offers[0];
+      assert(offer.order_hash, "Order hash should not be null");
+      assert(offer.chain, "Chain should not be null");
+      assert(offer.protocol_address, "Protocol address should not be null");
+      assert(offer.protocol_data, "Protocol data should not be null");
+      assert(offer.criteria, "Criteria should not be null for trait offers");
+      assert(offer.criteria.trait, "Trait criteria should not be null");
+      assert.equal(offer.criteria.trait.type, type, "Trait type should match");
+      assert.equal(
+        offer.criteria.trait.value,
+        value,
+        "Trait value should match",
+      );
+    }
+  });
+
+  test("Get Trait Offers with pagination", async () => {
+    const slug = "boredapeyachtclub";
+    const type = "Fur";
+    const value = "Solid Gold";
+    const response = await sdk.api.getTraitOffers(slug, type, value, 5);
+
+    assert(response, "Response should not be null");
+    assert(response.offers, "Offers should not be null");
+    assert(response.offers.length <= 5, "Should respect limit parameter");
+  });
+});

@@ -20,6 +20,7 @@ import {
   getCollectionStatsPath,
   getBestListingsAPIPath,
   getCancelOrderPath,
+  getTraitOffersPath,
 } from "./apiPaths";
 import {
   BuildOfferResponse,
@@ -233,6 +234,40 @@ export class OpenSeaAPI {
       {
         limit,
         next,
+      },
+    );
+    return response;
+  }
+
+  /**
+   * Gets trait offers for a given collection.
+   * @param collectionSlug The slug of the collection.
+   * @param type The name of the trait (e.g. 'Background').
+   * @param value The value of the trait (e.g. 'Red').
+   * @param limit The number of offers to return. Must be between 1 and 100. Default: 100
+   * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @param floatValue The value of the trait for decimal-based numeric traits.
+   * @param intValue The value of the trait for integer-based numeric traits.
+   * @returns The {@link GetOffersResponse} returned by the API.
+   */
+  public async getTraitOffers(
+    collectionSlug: string,
+    type: string,
+    value: string,
+    limit?: number,
+    next?: string,
+    floatValue?: number,
+    intValue?: number,
+  ): Promise<GetOffersResponse> {
+    const response = await this.get<GetOffersResponse>(
+      getTraitOffersPath(collectionSlug),
+      {
+        type,
+        value,
+        limit,
+        next,
+        float_value: floatValue,
+        int_value: intValue,
       },
     );
     return response;
