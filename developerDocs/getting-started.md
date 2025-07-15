@@ -106,7 +106,7 @@ const collection = await sdk.api.getCollection("cool-cats-nft");
 const offer = await openseaSDK.createCollectionOffer({
   collectionSlug: collection.collection,
   accountAddress: walletAddress,
-  paymentTokenAddress: getWETHAddress(sdk.chain),
+  paymentTokenAddress: getOfferPaymentToken(sdk.chain),
   amount: 7,
   quantity: 1,
   traitType: "face",

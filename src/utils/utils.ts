@@ -240,8 +240,8 @@ export const getChainId = (chain: Chain) => {
   }
 };
 
-/** This should be the wrapped native asset for the chain. */
-export const getWETHAddress = (chain: Chain) => {
+/** Returns the default currency for offers on the given chain. */
+export const getOfferPaymentToken = (chain: Chain) => {
   switch (chain) {
     case Chain.Mainnet:
       return "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
@@ -302,9 +302,73 @@ export const getWETHAddress = (chain: Chain) => {
     case Chain.Shape:
       return "0x4200000000000000000000000000000000000006";
     default:
-      throw new Error(`Unknown WETH address for ${chain}`);
+      throw new Error(`Unknown offer currency for ${chain}`);
   }
 };
+
+/** Returns the default currency for listings on the given chain. */
+export const getListingPaymentToken = (chain: Chain) => {
+  switch (chain) {
+    case Chain.Mainnet:
+    case Chain.Sepolia:
+    case Chain.Arbitrum:
+    case Chain.ArbitrumNova:
+    case Chain.ArbitrumSepolia:
+    case Chain.Blast:
+    case Chain.BlastSepolia:
+    case Chain.Base:
+    case Chain.BaseSepolia:
+    case Chain.Optimism:
+    case Chain.OptimismSepolia:
+    case Chain.Zora:
+    case Chain.ZoraSepolia:
+    case Chain.B3:
+    case Chain.B3Sepolia:
+    case Chain.Abstract:
+    case Chain.AbstractTestnet:
+    case Chain.Shape:
+      return "0x0000000000000000000000000000000000000000"; // ETH
+    case Chain.Polygon:
+      return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
+    case Chain.Amoy:
+      return "0x52eF3d68BaB452a294342DC3e5f464d7f610f72E"; // WETH
+    case Chain.Klaytn:
+      return "0xfd844c2fca5e595004b17615f891620d1cb9bbb2"; // WETH
+    case Chain.Baobab:
+      return "0x9330dd6713c8328a8d82b14e3f60a0f0b4cc7bfb"; // WETH
+    case Chain.Avalanche:
+      return "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"; // WETH
+    case Chain.Fuji:
+      return "0xd00ae08403B9bbb9124bB305C09058E32C39A48c"; // WETH
+    case Chain.BeraChain:
+      return "0x0000000000000000000000000000000000000000"; // BERA
+    case Chain.Sei:
+      return "0x0000000000000000000000000000000000000000"; // SEI
+    case Chain.SeiTestnet:
+      return "0x3921ea6cf927be80211bb57f19830700285b0ada"; // WETH
+    case Chain.Flow:
+      return "0xd3bf53dac106a0290b0483ecbc89d40fcc961f3e"; // WETH
+    case Chain.FlowTestnet:
+      return "0x23b1864b73c6E7Cd6D90bDFa3E62B159eBDdbAb3"; // WETH
+    case Chain.ApeChain:
+      return "0x0000000000000000000000000000000000000000"; // APE
+    case Chain.Ronin:
+      return "0xe514d9deb7966c8be0ca922de8a064264ea6bcd4"; // WETH
+    case Chain.SaigonTestnet:
+      return "0xa959726154953bae111746e265e6d754f48570e6"; // WETH
+    default:
+      throw new Error(`Unknown listing currency for ${chain}`);
+  }
+};
+
+/** @deprecated Use getOfferPaymentToken instead. Backward compatibility alias. */
+export const getWETHAddress = getOfferPaymentToken;
+
+/** @deprecated Use getOfferPaymentToken instead. */
+export const getDefaultOfferCurrency = getOfferPaymentToken;
+
+/** @deprecated Use getListingPaymentToken instead. */
+export const getDefaultListingCurrency = getListingPaymentToken;
 
 /**
  * Checks if the token address is the shared storefront address and if so replaces
