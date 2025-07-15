@@ -64,6 +64,7 @@ import {
   OpenSeaCollection,
   OpenSeaCollectionStats,
   OpenSeaPaymentToken,
+  OpenSeaRateLimitError,
   OrderSide,
 } from "../types";
 import {
@@ -777,26 +778,36 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Parses the retry-after header from the response with robust error handling.
+   * @param response The HTTP response object from the API
+   * @returns The retry-after value in seconds, or undefined if not present or invalid
+   */
+  private _parseRetryAfter(response: ethers.FetchResponse): number | undefined {
+    const retryAfterHeader =
+      response.headers["retry-after"] || response.headers["Retry-After"];
+    if (retryAfterHeader) {
+      const parsed = parseInt(retryAfterHeader, 10);
+      return isNaN(parsed) || parsed <= 0 ? undefined : parsed;
+    }
+    return undefined;
+  }
+
+  /**
    * Creates a rate limit error with retry-after information for backwards compatibility.
    * @param response The HTTP response object from the API
    * @returns An enhanced Error object with retryAfter and responseBody properties
    */
-  private _createRateLimitError(response: ethers.FetchResponse): Error {
-    let retryAfter: number | undefined;
-    const retryAfterHeader =
-      response.headers["retry-after"] || response.headers["Retry-After"];
-    if (retryAfterHeader) {
-      retryAfter = parseInt(retryAfterHeader, 10);
-    }
+  private _createRateLimitError(
+    response: ethers.FetchResponse,
+  ): OpenSeaRateLimitError {
+    const retryAfter = this._parseRetryAfter(response);
+    const error = new Error(
+      `${response.statusCode} ${response.statusMessage}`,
+    ) as OpenSeaRateLimitError;
 
-    const error = new Error(`${response.statusCode} ${response.statusMessage}`);
     // Add retry-after information to the error object for backwards compatibility
-    const errorWithRetryInfo = error as Error & {
-      retryAfter?: number;
-      responseBody?: unknown;
-    };
-    errorWithRetryInfo.retryAfter = retryAfter;
-    errorWithRetryInfo.responseBody = response.bodyJson;
+    error.retryAfter = retryAfter;
+    error.responseBody = response.bodyJson;
     return error;
   }
 }
