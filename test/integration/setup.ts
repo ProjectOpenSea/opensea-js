@@ -14,8 +14,9 @@ for (const envVar of ["WALLET_PRIV_KEY"]) {
   }
 }
 
-export const TOKEN_ADDRESS_MAINNET = process.env.SELL_ORDER_CONTRACT_ADDRESS;
-export const TOKEN_ID_MAINNET = process.env.SELL_ORDER_TOKEN_ID;
+export const TOKEN_ADDRESS_MAINNET = process.env
+  .SELL_ORDER_CONTRACT_ADDRESS as string;
+export const TOKEN_ID_MAINNET = process.env.SELL_ORDER_TOKEN_ID as string;
 export const TOKEN_ADDRESS_POLYGON =
   process.env.SELL_ORDER_CONTRACT_ADDRESS_POLYGON;
 export const TOKEN_ID_POLYGON = process.env.SELL_ORDER_TOKEN_ID_POLYGON;

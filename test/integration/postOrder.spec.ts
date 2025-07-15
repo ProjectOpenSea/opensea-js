@@ -62,8 +62,8 @@ suite("SDK: order posting", () => {
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
       asset: {
-        tokenAddress: TOKEN_ADDRESS_MAINNET as string,
-        tokenId: TOKEN_ID_MAINNET as string,
+        tokenAddress: TOKEN_ADDRESS_MAINNET,
+        tokenId: TOKEN_ID_MAINNET,
       },
       expirationTime,
     };
@@ -82,8 +82,8 @@ suite("SDK: order posting", () => {
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
       asset: {
-        tokenAddress: TOKEN_ADDRESS_MAINNET as string,
-        tokenId: TOKEN_ID_MAINNET as string,
+        tokenAddress: TOKEN_ADDRESS_MAINNET,
+        tokenId: TOKEN_ID_MAINNET,
       },
       englishAuction: true,
       expirationTime,
