@@ -6,6 +6,8 @@ import { ethers, FixedNumber } from "ethers";
 import {
   FIXED_NUMBER_100,
   MAX_EXPIRATION_MONTHS,
+  OPENSEA_CONDUIT_KEY,
+  OPENSEA_CONDUIT_KEY_2,
   SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
 } from "../constants";
@@ -392,6 +394,20 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
 export const requireValidProtocol = (protocolAddress: string) => {
   if (!isValidProtocol(protocolAddress)) {
     throw new Error(`Unsupported protocol address: ${protocolAddress}`);
+  }
+};
+
+/**
+ * Get the default conduit key for a given chain.
+ * @param chain The chain to get the conduit key for
+ * @returns The conduit key for the chain
+ */
+export const getDefaultConduitKey = (chain: Chain): string => {
+  switch (chain) {
+    case Chain.Abstract:
+      return OPENSEA_CONDUIT_KEY_2;
+    default:
+      return OPENSEA_CONDUIT_KEY;
   }
 };
 
