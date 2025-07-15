@@ -396,3 +396,14 @@ export interface SocialMediaAccount {
   platform: string;
   username: string;
 }
+
+/**
+ * Enhanced Error type for rate limit errors that includes retry-after information
+ * @category API Models
+ */
+export interface OpenSeaRateLimitError extends Error {
+  /** The number of seconds to wait before retrying the request */
+  retryAfter?: number;
+  /** The response body from the API */
+  responseBody?: unknown;
+}
