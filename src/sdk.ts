@@ -1,9 +1,6 @@
 import EventEmitter = require("events");
 import { Seaport } from "@opensea/seaport-js";
-import {
-  CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
-  OPENSEA_CONDUIT_KEY,
-} from "@opensea/seaport-js/lib/constants";
+import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import {
   AdvancedOrder,
   ConsiderationInputItem,
@@ -24,6 +21,8 @@ import {
 import { OpenSeaAPI } from "./api/api";
 import { CollectionOffer, Listing, NFT, Order } from "./api/types";
 import {
+  OPENSEA_CONDUIT_ADDRESS_2,
+  OPENSEA_CONDUIT_KEY_2,
   INVERSE_BASIS_POINT,
   ENGLISH_AUCTION_ZONE_MAINNETS,
   ENGLISH_AUCTION_ZONE_TESTNETS,
@@ -54,6 +53,7 @@ import {
   AssetWithTokenId,
 } from "./types";
 import {
+  getDefaultConduit,
   getMaxOrderExpirationTimestamp,
   hasErrorCode,
   getAssetItemType,
@@ -111,7 +111,10 @@ export class OpenSeaSDK {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.seaport_v1_6 = new Seaport(this._signerOrProvider as any, {
-      overrides: { defaultConduitKey: OPENSEA_CONDUIT_KEY },
+      conduitKeyToConduit: {
+        [OPENSEA_CONDUIT_KEY_2]: OPENSEA_CONDUIT_ADDRESS_2,
+      },
+      overrides: { defaultConduitKey: getDefaultConduit(this.chain) },
     });
 
     // Emit events

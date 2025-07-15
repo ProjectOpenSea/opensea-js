@@ -6,6 +6,8 @@ import { ethers, FixedNumber } from "ethers";
 import {
   FIXED_NUMBER_100,
   MAX_EXPIRATION_MONTHS,
+  OPENSEA_CONDUIT_KEY,
+  OPENSEA_CONDUIT_KEY_2,
   SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
 } from "../constants";
@@ -422,6 +424,20 @@ export const requireValidProtocol = (protocolAddress: string) => {
  * const emptyEncoded = '';
  * const decodedEmpty = decodeTokenIds(emptyEncoded); // Output: []
  */
+/**
+ * Get the default conduit key for a given chain.
+ * @param chain The chain to get the conduit key for
+ * @returns The conduit key for the chain
+ */
+export const getDefaultConduit = (chain: Chain): string => {
+  switch (chain) {
+    case Chain.Abstract:
+      return OPENSEA_CONDUIT_KEY_2;
+    default:
+      return OPENSEA_CONDUIT_KEY;
+  }
+};
+
 export const decodeTokenIds = (encodedTokenIds: string): string[] => {
   if (encodedTokenIds === "*") {
     return ["*"];
