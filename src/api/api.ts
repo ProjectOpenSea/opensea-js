@@ -755,6 +755,10 @@ export class OpenSeaAPI {
 
     const response = await req.send();
     if (!response.ok()) {
+      // Handle rate limit errors (429 Too Many Requests and 599 custom rate limit)
+      if (response.statusCode === 599 || response.statusCode === 429) {
+        throw this._createRateLimitError(response);
+      }
       // If an errors array is returned, throw with the error messages.
       const errors = response.bodyJson?.errors;
       if (errors?.length > 0) {
@@ -770,5 +774,29 @@ export class OpenSeaAPI {
       }
     }
     return response.bodyJson;
+  }
+
+  /**
+   * Creates a rate limit error with retry-after information for backwards compatibility.
+   * @param response The HTTP response object from the API
+   * @returns An enhanced Error object with retryAfter and responseBody properties
+   */
+  private _createRateLimitError(response: ethers.FetchResponse): Error {
+    let retryAfter: number | undefined;
+    const retryAfterHeader =
+      response.headers["retry-after"] || response.headers["Retry-After"];
+    if (retryAfterHeader) {
+      retryAfter = parseInt(retryAfterHeader, 10);
+    }
+
+    const error = new Error(`${response.statusCode} ${response.statusMessage}`);
+    // Add retry-after information to the error object for backwards compatibility
+    const errorWithRetryInfo = error as Error & {
+      retryAfter?: number;
+      responseBody?: unknown;
+    };
+    errorWithRetryInfo.retryAfter = retryAfter;
+    errorWithRetryInfo.responseBody = response.bodyJson;
+    return error;
   }
 }
