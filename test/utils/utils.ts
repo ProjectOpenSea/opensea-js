@@ -31,7 +31,12 @@ export const getRandomExpiration = (): number => {
   const now = Math.floor(Date.now() / 1000);
   const fifteenMinutes = 15 * 60;
   const oneHour = 60 * 60;
-  const randomSeconds =
-    Math.floor(Math.random() * (oneHour - fifteenMinutes + 1)) + fifteenMinutes;
+  const range = oneHour - fifteenMinutes + 1;
+
+  const crypto = require("crypto");
+  const randomBuffer = crypto.randomBytes(4);
+  const randomValue = randomBuffer.readUInt32BE(0);
+  const randomSeconds = (randomValue % range) + fifteenMinutes;
+
   return now + randomSeconds;
 };
