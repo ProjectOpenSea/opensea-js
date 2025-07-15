@@ -398,6 +398,20 @@ export const requireValidProtocol = (protocolAddress: string) => {
 };
 
 /**
+ * Get the default conduit key for a given chain.
+ * @param chain The chain to get the conduit key for
+ * @returns The conduit key for the chain
+ */
+export const getDefaultConduitKey = (chain: Chain): string => {
+  switch (chain) {
+    case Chain.Abstract:
+      return OPENSEA_CONDUIT_KEY_2;
+    default:
+      return OPENSEA_CONDUIT_KEY;
+  }
+};
+
+/**
  * Decodes an encoded string of token IDs into an array of individual token IDs using bigint for precise calculations.
  *
  * The encoded token IDs can be in the following formats:
@@ -424,20 +438,6 @@ export const requireValidProtocol = (protocolAddress: string) => {
  * const emptyEncoded = '';
  * const decodedEmpty = decodeTokenIds(emptyEncoded); // Output: []
  */
-/**
- * Get the default conduit key for a given chain.
- * @param chain The chain to get the conduit key for
- * @returns The conduit key for the chain
- */
-export const getDefaultConduit = (chain: Chain): string => {
-  switch (chain) {
-    case Chain.Abstract:
-      return OPENSEA_CONDUIT_KEY_2;
-    default:
-      return OPENSEA_CONDUIT_KEY;
-  }
-};
-
 export const decodeTokenIds = (encodedTokenIds: string): string[] => {
   if (encodedTokenIds === "*") {
     return ["*"];

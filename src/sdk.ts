@@ -53,7 +53,7 @@ import {
   AssetWithTokenId,
 } from "./types";
 import {
-  getDefaultConduit,
+  getDefaultConduitKey,
   getMaxOrderExpirationTimestamp,
   hasErrorCode,
   getAssetItemType,
@@ -114,7 +114,7 @@ export class OpenSeaSDK {
       conduitKeyToConduit: {
         [OPENSEA_CONDUIT_KEY_2]: OPENSEA_CONDUIT_ADDRESS_2,
       },
-      overrides: { defaultConduitKey: getDefaultConduit(this.chain) },
+      overrides: { defaultConduitKey: getDefaultConduitKey(this.chain) },
     });
 
     // Emit events
