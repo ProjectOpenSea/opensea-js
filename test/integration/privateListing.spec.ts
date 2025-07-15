@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { OPENSEA_FEE_RECIPIENT } from "../../src/constants";
 import {
   LISTING_AMOUNT,
   TOKEN_ADDRESS_MAINNET,
@@ -36,11 +37,9 @@ suite("SDK: Private Listings Integration", () => {
 
     expect(order.protocolData.parameters.consideration).to.exist;
 
-    const marketplaceFeeRecipient =
-      "0x0000a26b00c1F0DF003000390027140000fAa719";
     const hasMarketplaceFee = order.protocolData.parameters.consideration.some(
       (item: { recipient?: string }) =>
-        item.recipient?.toLowerCase() === marketplaceFeeRecipient.toLowerCase(),
+        item.recipient?.toLowerCase() === OPENSEA_FEE_RECIPIENT.toLowerCase(),
     );
 
     expect(hasMarketplaceFee).to.be.false;
