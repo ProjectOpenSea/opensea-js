@@ -59,9 +59,7 @@ suite("API", () => {
 
     try {
       // This should trigger a rate limit error
-      await api.getPaymentToken(
-        "0x0000000000000000000000000000000000000000",
-      );
+      await api.getPaymentToken("0x0000000000000000000000000000000000000000");
       assert.fail("Expected rate limit error to be thrown");
     } catch (error) {
       const rateLimitError = error as OpenSeaRateLimitError;
@@ -88,9 +86,7 @@ suite("API", () => {
 
     try {
       // This should trigger a rate limit error
-      await api.getPaymentToken(
-        "0x0000000000000000000000000000000000000000",
-      );
+      await api.getPaymentToken("0x0000000000000000000000000000000000000000");
       assert.fail("Expected rate limit error to be thrown");
     } catch (error) {
       const rateLimitError = error as OpenSeaRateLimitError;
@@ -122,9 +118,7 @@ suite("API", () => {
 
     try {
       // This should trigger a rate limit error
-      await api.getPaymentToken(
-        "0x0000000000000000000000000000000000000000",
-      );
+      await api.getPaymentToken("0x0000000000000000000000000000000000000000");
       assert.fail("Expected rate limit error to be thrown");
     } catch (error) {
       const rateLimitError = error as OpenSeaRateLimitError;
