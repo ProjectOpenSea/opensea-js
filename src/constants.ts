@@ -2,7 +2,7 @@ import { FixedNumber } from "ethers";
 
 export const FIXED_NUMBER_100 = FixedNumber.fromValue(100);
 export const INVERSE_BASIS_POINT = 10_000n; // 100 basis points per 1%
-export const MAX_EXPIRATION_MONTHS = 1;
+export const MAX_EXPIRATION_MONTHS = 6;
 
 export const API_BASE_MAINNET = "https://api.opensea.io";
 export const API_BASE_TESTNET = "https://testnets-api.opensea.io";
