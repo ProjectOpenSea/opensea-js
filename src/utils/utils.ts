@@ -5,11 +5,15 @@ import {
 import { ethers, FixedNumber } from "ethers";
 import {
   FIXED_NUMBER_100,
+  GUNZILLA_CONDUIT_KEY,
+  GUNZILLA_SEAPORT_1_6_ADDRESS,
+  GUNZILLA_SIGNED_ZONE_V2_ADDRESS,
   MAX_EXPIRATION_MONTHS,
   OPENSEA_CONDUIT_KEY,
   OPENSEA_CONDUIT_KEY_2,
   SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+  SIGNED_ZONE,
 } from "../constants";
 import {
   Chain,
@@ -205,6 +209,8 @@ export const getChainId = (chain: Chain) => {
       return "2741";
     case Chain.Shape:
       return "360";
+    case Chain.Gunzilla:
+      return "43419";
     default:
       throw new Error(`Unknown chainId for ${chain}`);
   }
@@ -214,37 +220,38 @@ export const getChainId = (chain: Chain) => {
 export const getOfferPaymentToken = (chain: Chain) => {
   switch (chain) {
     case Chain.Mainnet:
-      return "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+      return "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"; // WETH
     case Chain.Polygon:
-      return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+      return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
     case Chain.Avalanche:
-      return "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7";
+      return "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"; // WAVAX
     case Chain.Arbitrum:
-      return "0x82af49447d8a07e3bd95bd0d56f35241523fbab1";
+      return "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"; // WETH
     case Chain.ArbitrumNova:
-      return "0x722e8bdd2ce80a4422e880164f2079488e115365";
+      return "0x722e8bdd2ce80a4422e880164f2079488e115365"; // WETH
     case Chain.Blast:
-      return "0x4300000000000000000000000000000000000004";
+      return "0x4300000000000000000000000000000000000004"; // WETH
     // OP Chains have WETH at the same address
     case Chain.Base:
     case Chain.Optimism:
     case Chain.Zora:
     case Chain.B3:
-      return "0x4200000000000000000000000000000000000006";
-    case Chain.BeraChain:
-      return "0x6969696969696969696969696969696969696969";
-    case Chain.Sei:
-      return "0xe30fedd158a2e3b13e9badaeabafc5516e95e8c7";
-    case Chain.Flow:
-      return "0xd3bf53dac106a0290b0483ecbc89d40fcc961f3e";
-    case Chain.ApeChain:
-      return "0x48b62137edfa95a428d35c09e44256a739f6b557";
-    case Chain.Ronin:
-      return "0xe514d9deb7966c8be0ca922de8a064264ea6bcd4";
-    case Chain.Abstract:
-      return "0x3439153eb7af838ad19d56e1571fbd09333c2809";
     case Chain.Shape:
-      return "0x4200000000000000000000000000000000000006";
+      return "0x4200000000000000000000000000000000000006"; // WETH
+    case Chain.BeraChain:
+      return "0x6969696969696969696969696969696969696969"; // WBERA
+    case Chain.Sei:
+      return "0xe30fedd158a2e3b13e9badaeabafc5516e95e8c7"; // WSEI
+    case Chain.Flow:
+      return "0xd3bf53dac106a0290b0483ecbc89d40fcc961f3e"; // WFLOW
+    case Chain.ApeChain:
+      return "0x48b62137edfa95a428d35c09e44256a739f6b557"; // WAPE
+    case Chain.Ronin:
+      return "0xe514d9deb7966c8be0ca922de8a064264ea6bcd4"; // WRON
+    case Chain.Abstract:
+      return "0x3439153eb7af838ad19d56e1571fbd09333c2809"; // WETH
+    case Chain.Gunzilla:
+      return "0x5aad7bba61d95c2c4e525a35f4062040264611f1"; // WGUN
     default:
       throw new Error(`Unknown offer currency for ${chain}`);
   }
@@ -278,6 +285,8 @@ export const getListingPaymentToken = (chain: Chain) => {
       return "0x0000000000000000000000000000000000000000"; // APE
     case Chain.Ronin:
       return "0xe514d9deb7966c8be0ca922de8a064264ea6bcd4"; // WETH
+    case Chain.Gunzilla:
+      return "0x0000000000000000000000000000000000000000"; // GUN
     default:
       throw new Error(`Unknown listing currency for ${chain}`);
   }
@@ -333,9 +342,10 @@ export const basisPointsForFee = (fee: Fee): bigint => {
  */
 export const isValidProtocol = (protocolAddress: string): boolean => {
   const checkSumAddress = ethers.getAddress(protocolAddress);
-  const validProtocolAddresses = [CROSS_CHAIN_SEAPORT_V1_6_ADDRESS].map(
-    (address) => ethers.getAddress(address),
-  );
+  const validProtocolAddresses = [
+    CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
+    GUNZILLA_SEAPORT_1_6_ADDRESS,
+  ].map((address) => ethers.getAddress(address));
   return validProtocolAddresses.includes(checkSumAddress);
 };
 
@@ -358,8 +368,38 @@ export const getDefaultConduitKey = (chain: Chain): string => {
   switch (chain) {
     case Chain.Abstract:
       return OPENSEA_CONDUIT_KEY_2;
+    case Chain.Gunzilla:
+      return GUNZILLA_CONDUIT_KEY;
     default:
       return OPENSEA_CONDUIT_KEY;
+  }
+};
+
+/**
+ * Get the Seaport 1.6 contract address for a given chain.
+ * @param chain The chain to get the Seaport address for
+ * @returns The Seaport 1.6 address for the chain
+ */
+export const getSeaportAddress = (chain: Chain): string => {
+  switch (chain) {
+    case Chain.Gunzilla:
+      return GUNZILLA_SEAPORT_1_6_ADDRESS;
+    default:
+      return CROSS_CHAIN_SEAPORT_V1_6_ADDRESS;
+  }
+};
+
+/**
+ * Get the signed zone address for a given chain.
+ * @param chain The chain to get the signed zone address for
+ * @returns The signed zone address for the chain
+ */
+export const getSignedZone = (chain: Chain): string => {
+  switch (chain) {
+    case Chain.Gunzilla:
+      return GUNZILLA_SIGNED_ZONE_V2_ADDRESS;
+    default:
+      return SIGNED_ZONE;
   }
 };
 
