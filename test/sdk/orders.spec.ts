@@ -7,7 +7,7 @@ suite("SDK: orders", () => {
     const manaAddress = "0x0f5d2fb29fb7d3cfee444a200298f468908cc942";
     const manaPaymentToken = await client.api.getPaymentToken(manaAddress);
     assert.isNotNull(manaPaymentToken);
-    assert.equal(manaPaymentToken.name, "Decentraland");
+    assert.equal(manaPaymentToken.name, "Decentraland MANA");
     assert.equal(manaPaymentToken.address, manaAddress);
     assert.equal(manaPaymentToken.decimals, 18);
 
