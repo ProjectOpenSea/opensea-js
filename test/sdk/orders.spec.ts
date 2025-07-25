@@ -14,7 +14,7 @@ suite("SDK: orders", () => {
     const daiAddress = "0x6b175474e89094c44da98b954eedeac495271d0f";
     const daiPaymentToken = await client.api.getPaymentToken(daiAddress);
     assert.isNotNull(daiPaymentToken);
-    assert.equal(daiPaymentToken.name, "Dai");
+    assert.equal(daiPaymentToken.name, "Dai Stablecoin");
     assert.equal(daiPaymentToken.decimals, 18);
   });
 });
