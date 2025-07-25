@@ -1,7 +1,6 @@
 import EventEmitter = require("events");
 import { Seaport } from "@opensea/seaport-js";
 import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
-import { GUNZILLA_SEAPORT_1_6_ADDRESS } from "./constants";
 import {
   AdvancedOrder,
   ConsiderationInputItem,
@@ -26,8 +25,8 @@ import {
   OPENSEA_CONDUIT_KEY_2,
   INVERSE_BASIS_POINT,
   ENGLISH_AUCTION_ZONE_MAINNETS,
-  OPENSEA_FEE_RECIPIENT,
   WPOL_ADDRESS,
+  GUNZILLA_SEAPORT_1_6_ADDRESS,
 } from "./constants";
 import {
   constructPrivateListingCounterOrder,
@@ -65,6 +64,7 @@ import {
   basisPointsForFee,
   totalBasisPointsForFees,
   getChainId,
+  getFeeRecipient,
   getSignedZone,
 } from "./utils/utils";
 
@@ -328,7 +328,9 @@ export class OpenSeaSDK {
   }
 
   private isNotMarketplaceFee(fee: Fee): boolean {
-    return fee.recipient.toLowerCase() !== OPENSEA_FEE_RECIPIENT.toLowerCase();
+    return (
+      fee.recipient.toLowerCase() !== getFeeRecipient(this.chain).toLowerCase()
+    );
   }
 
   private getNFTItems(

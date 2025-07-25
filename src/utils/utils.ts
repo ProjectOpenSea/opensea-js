@@ -6,11 +6,13 @@ import { ethers, FixedNumber } from "ethers";
 import {
   FIXED_NUMBER_100,
   GUNZILLA_CONDUIT_KEY,
+  GUNZILLA_FEE_RECIPIENT,
   GUNZILLA_SEAPORT_1_6_ADDRESS,
   GUNZILLA_SIGNED_ZONE_V2_ADDRESS,
   MAX_EXPIRATION_MONTHS,
   OPENSEA_CONDUIT_KEY,
   OPENSEA_CONDUIT_KEY_2,
+  OPENSEA_FEE_RECIPIENT,
   SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
   SIGNED_ZONE,
@@ -400,6 +402,20 @@ export const getSignedZone = (chain: Chain): string => {
       return GUNZILLA_SIGNED_ZONE_V2_ADDRESS;
     default:
       return SIGNED_ZONE;
+  }
+};
+
+/**
+ * Get the fee recipient address for a given chain
+ * @param chain The blockchain chain
+ * @returns The fee recipient address for the chain
+ */
+export const getFeeRecipient = (chain: Chain): string => {
+  switch (chain) {
+    case Chain.Gunzilla:
+      return GUNZILLA_FEE_RECIPIENT;
+    default:
+      return OPENSEA_FEE_RECIPIENT;
   }
 };
 
