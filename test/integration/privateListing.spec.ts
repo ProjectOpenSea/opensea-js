@@ -8,7 +8,8 @@ import {
   sdk,
   walletAddress,
 } from "./setup";
-import { OPENSEA_FEE_RECIPIENT } from "../../src/constants";
+import { Chain } from "../../src/types";
+import { getFeeRecipient } from "../../src/utils/utils";
 import { expectValidOrder } from "../utils/utils";
 
 suite("SDK: Private Listings Integration", () => {
@@ -38,7 +39,8 @@ suite("SDK: Private Listings Integration", () => {
 
     const hasMarketplaceFee = order.protocolData.parameters.consideration.some(
       (item: { recipient?: string }) =>
-        item.recipient?.toLowerCase() === OPENSEA_FEE_RECIPIENT.toLowerCase(),
+        item.recipient?.toLowerCase() ===
+        getFeeRecipient(Chain.Mainnet).toLowerCase(),
     );
 
     expect(hasMarketplaceFee).to.be.false;

@@ -6,7 +6,6 @@ export const MAX_EXPIRATION_MONTHS = 6;
 
 export const API_BASE_MAINNET = "https://api.opensea.io";
 
-// eslint-disable-next-line import/no-unused-modules
 export const SIGNED_ZONE = "0x000056f7000000ece9003ca63978907a00ffd100";
 
 export const ENGLISH_AUCTION_ZONE_MAINNETS =
@@ -40,3 +39,19 @@ export const OPENSEA_CONDUIT_ADDRESS_2 =
   "0x963f00d3ff000064ffcba824b800c0000000c300";
 
 export const WPOL_ADDRESS = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270";
+
+export const GUNZILLA_FEE_RECIPIENT =
+  "0xd9f68d28e451a83affdb7c71cc2c20552555b07f";
+
+// eslint-disable-next-line import/no-unused-modules
+export const GUNZILLA_CONDUIT_ADDRESS =
+  "0x00000000001566479594a2e05532d81afa09bc52";
+
+export const GUNZILLA_CONDUIT_KEY =
+  "0x86d26897267711ea4b173c8c124a0a73612001da35562f1ee3b26929b6575e89";
+
+export const GUNZILLA_SEAPORT_1_6_ADDRESS =
+  "0x00000000006687982678b03100B9bDC8be440814";
+
+export const GUNZILLA_SIGNED_ZONE_V2_ADDRESS =
+  "0xdfe0000000005ce3008800300037e4c803ed08c7";

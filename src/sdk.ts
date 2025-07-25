@@ -25,8 +25,8 @@ import {
   OPENSEA_CONDUIT_KEY_2,
   INVERSE_BASIS_POINT,
   ENGLISH_AUCTION_ZONE_MAINNETS,
-  OPENSEA_FEE_RECIPIENT,
   WPOL_ADDRESS,
+  GUNZILLA_SEAPORT_1_6_ADDRESS,
 } from "./constants";
 import {
   constructPrivateListingCounterOrder,
@@ -64,6 +64,8 @@ import {
   basisPointsForFee,
   totalBasisPointsForFees,
   getChainId,
+  getFeeRecipient,
+  getSignedZone,
 } from "./utils/utils";
 
 /**
@@ -326,7 +328,9 @@ export class OpenSeaSDK {
   }
 
   private isNotMarketplaceFee(fee: Fee): boolean {
-    return fee.recipient.toLowerCase() !== OPENSEA_FEE_RECIPIENT.toLowerCase();
+    return (
+      fee.recipient.toLowerCase() !== getFeeRecipient(this.chain).toLowerCase()
+    );
   }
 
   private getNFTItems(
@@ -358,7 +362,7 @@ export class OpenSeaSDK {
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH
    * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the offer. Default: true.
-   * @param options.zone The zone to use for the order. For order protection, pass SIGNED_ZONE. If unspecified, defaults to no zone.
+   * @param options.zone The zone to use for the order. If unspecified, defaults to the chain's signed zone for order protection.
    *
    * @returns The {@link OrderV2} that was created.
    *
@@ -377,7 +381,7 @@ export class OpenSeaSDK {
     expirationTime,
     paymentTokenAddress = getOfferPaymentToken(this.chain),
     excludeOptionalCreatorFees = true,
-    zone = ZeroAddress,
+    zone = getSignedZone(this.chain),
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -858,6 +862,7 @@ export class OpenSeaSDK {
     const checksummedProtocolAddress = ethers.getAddress(protocolAddress);
     switch (checksummedProtocolAddress) {
       case CROSS_CHAIN_SEAPORT_V1_6_ADDRESS:
+      case GUNZILLA_SEAPORT_1_6_ADDRESS:
         return this.seaport_v1_6;
       default:
         throw new Error(`Unsupported protocol address: ${protocolAddress}`);
@@ -940,6 +945,7 @@ export class OpenSeaSDK {
     const protocolAddressChecksummed = ethers.getAddress(protocolAddress);
     switch (protocolAddressChecksummed) {
       case CROSS_CHAIN_SEAPORT_V1_6_ADDRESS:
+      case GUNZILLA_SEAPORT_1_6_ADDRESS:
         return "1.6";
       default:
         throw new Error("Unknown or unsupported protocol address");
