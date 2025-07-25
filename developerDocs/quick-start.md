@@ -52,4 +52,3 @@ const openseaSDK = new OpenSeaSDK(walletWithProvider, {
 ```
 
 In a browser with web3 or an extension like [MetaMask](https://metamask.io/) or [Coinbase Wallet](https://www.coinbase.com/wallet), you can use `window.ethereum` to access the native provider.
-
