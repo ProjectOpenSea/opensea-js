@@ -39,7 +39,7 @@ import {
   CancelOrderResponse,
   GetCollectionsArgs,
 } from "./types";
-import { API_BASE_MAINNET, API_BASE_TESTNET } from "../constants";
+import { API_BASE_MAINNET } from "../constants";
 import {
   FulfillmentDataResponse,
   OrderAPIOptions,
@@ -71,7 +71,6 @@ import {
 import {
   paymentTokenFromJSON,
   collectionFromJSON,
-  isTestChain,
   accountFromJSON,
 } from "../utils/utils";
 
@@ -108,9 +107,7 @@ export class OpenSeaAPI {
     if (config.apiBaseUrl) {
       this.apiBaseUrl = config.apiBaseUrl;
     } else {
-      this.apiBaseUrl = isTestChain(this.chain)
-        ? API_BASE_TESTNET
-        : API_BASE_MAINNET;
+      this.apiBaseUrl = API_BASE_MAINNET;
     }
 
     // Debugging: default to nothing

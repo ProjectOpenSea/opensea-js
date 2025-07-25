@@ -25,7 +25,6 @@ import {
   OPENSEA_CONDUIT_KEY_2,
   INVERSE_BASIS_POINT,
   ENGLISH_AUCTION_ZONE_MAINNETS,
-  ENGLISH_AUCTION_ZONE_TESTNETS,
   OPENSEA_FEE_RECIPIENT,
   WPOL_ADDRESS,
 } from "./constants";
@@ -62,7 +61,6 @@ import {
   requireValidProtocol,
   getOfferPaymentToken,
   getListingPaymentToken,
-  isTestChain,
   basisPointsForFee,
   totalBasisPointsForFees,
   getChainId,
@@ -546,9 +544,7 @@ export class OpenSeaSDK {
     }
 
     if (englishAuction) {
-      zone = isTestChain(this.chain)
-        ? ENGLISH_AUCTION_ZONE_TESTNETS
-        : ENGLISH_AUCTION_ZONE_MAINNETS;
+      zone = ENGLISH_AUCTION_ZONE_MAINNETS;
     } else if (collection.requiredZone) {
       zone = collection.requiredZone;
     }

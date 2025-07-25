@@ -84,7 +84,7 @@ export interface EventData {
 /**
  * OpenSea API configuration object
  * @param chain `Chain` to use. Defaults to Ethereum Mainnet (`Chain.Mainnet`)
- * @param apiKey API key to use. Not required for testnets
+ * @param apiKey API key to use
  * @param apiBaseUrl Optional base URL to use for the API
  */
 export interface OpenSeaAPIConfig {
@@ -102,77 +102,24 @@ export interface OpenSeaAPIConfig {
  * - `getNativeWrapTokenAddress` (if getOfferPaymentToken isn't the wrapped native asset)
  */
 export enum Chain {
-  // Mainnet Chains
-  /** Ethereum */
   Mainnet = "ethereum",
-  /** Polygon */
   Polygon = "matic",
-  /** Klaytn */
-  Klaytn = "klaytn",
-  /** Base */
   Base = "base",
-  /** Blast */
   Blast = "blast",
-  /** Arbitrum */
   Arbitrum = "arbitrum",
-  /** Arbitrum Nova */
   ArbitrumNova = "arbitrum_nova",
-  /** Avalanche */
   Avalanche = "avalanche",
-  /** Optimism */
   Optimism = "optimism",
-  /** Solana */
   Solana = "solana",
-  /** Zora */
   Zora = "zora",
-  /** Sei */
   Sei = "sei",
-  /** B3 */
   B3 = "b3",
-  /** Bera Chain */
   BeraChain = "bera_chain",
-  /** ApeChain */
   ApeChain = "ape_chain",
-  /** Flow */
   Flow = "flow",
-  /** Ronin */
   Ronin = "ronin",
-  /** Abstract */
   Abstract = "abstract",
-  /** Shape */
   Shape = "shape",
-  // Testnet Chains
-  // ⚠️NOTE: When adding to this list, also add to the util function `isTestChain`
-  /** Sepolia */
-  Sepolia = "sepolia",
-  /** Polygon Amoy */
-  Amoy = "amoy",
-  /** Klaytn Baobab */
-  Baobab = "baobab",
-  /** Base Testnet */
-  BaseSepolia = "base_sepolia",
-  /** Blast Testnet */
-  BlastSepolia = "blast_sepolia",
-  /** Arbitrum Sepolia */
-  ArbitrumSepolia = "arbitrum_sepolia",
-  /** Avalanche Fuji */
-  Fuji = "avalanche_fuji",
-  /** Optimism Sepolia */
-  OptimismSepolia = "optimism_sepolia",
-  /** Solana Devnet */
-  SolanaDevnet = "soldev",
-  /** Zora Sepolia */
-  ZoraSepolia = "zora_sepolia",
-  /** Sei Testnet */
-  SeiTestnet = "sei_testnet",
-  /** B3 Sepolia */
-  B3Sepolia = "b3_sepolia",
-  /** Flow Testnet */
-  FlowTestnet = "flow_testnet",
-  /** Saigon Testnet */
-  SaigonTestnet = "saigon_testnet",
-  /** Abstract Testnet */
-  AbstractTestnet = "abstract_testnet",
 }
 
 /**
