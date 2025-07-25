@@ -19,7 +19,7 @@ The source code for the SDK can be found on [GitHub](https://github.com/ProjectO
 
 See the [Chain enum](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/types.ts#L101) for a complete list of supported chains.
 
-Please note a number of older SDK methods (API v1) only support Ethereum Mainnet and Sepolia due to Rest API restrictions. Please use methods in the v2 API for multichain capabilities.
+Please use methods in the v2 API for multichain capabilities.
 
 ## Why is there no SDK method for the API request I am trying to call?
 

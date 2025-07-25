@@ -21,7 +21,7 @@ yarn add opensea-js
 
 # Initialization
 
-To get started, first [request an API key](https://docs.opensea.io/reference/api-keys). Note the terms of use for using API data. API keys are not needed for testnets.
+To get started, first [request an API key](https://docs.opensea.io/reference/api-keys). Note the terms of use for using API data.
 
 Then, create a new OpenSeaSDK client using your web3 provider:
 
@@ -52,7 +52,3 @@ const openseaSDK = new OpenSeaSDK(walletWithProvider, {
 ```
 
 In a browser with web3 or an extension like [MetaMask](https://metamask.io/) or [Coinbase Wallet](https://www.coinbase.com/wallet), you can use `window.ethereum` to access the native provider.
-
-## Testnets
-
-For testnets, please use `Chain.Sepolia`. Rinkeby was deprecated in 2022 and Goerli in 2023.

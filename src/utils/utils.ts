@@ -175,64 +175,34 @@ export const getChainId = (chain: Chain) => {
       return "1";
     case Chain.Polygon:
       return "137";
-    case Chain.Amoy:
-      return "80002";
-    case Chain.Sepolia:
-      return "11155111";
-    case Chain.Klaytn:
-      return "8217";
-    case Chain.Baobab:
-      return "1001";
     case Chain.Avalanche:
       return "43114";
-    case Chain.Fuji:
-      return "43113";
     case Chain.Arbitrum:
       return "42161";
     case Chain.ArbitrumNova:
       return "42170";
-    case Chain.ArbitrumSepolia:
-      return "421614";
     case Chain.Blast:
       return "238";
-    case Chain.BlastSepolia:
-      return "168587773";
     case Chain.Base:
       return "8453";
-    case Chain.BaseSepolia:
-      return "84532";
     case Chain.Optimism:
       return "10";
-    case Chain.OptimismSepolia:
-      return "11155420";
     case Chain.Zora:
       return "7777777";
-    case Chain.ZoraSepolia:
-      return "999999999";
     case Chain.Sei:
       return "1329";
-    case Chain.SeiTestnet:
-      return "1328";
     case Chain.B3:
       return "8333";
-    case Chain.B3Sepolia:
-      return "1993";
     case Chain.BeraChain:
       return "80094";
     case Chain.Flow:
       return "747";
-    case Chain.FlowTestnet:
-      return "545";
     case Chain.ApeChain:
       return "33139";
     case Chain.Ronin:
       return "2020";
-    case Chain.SaigonTestnet:
-      return "2021";
     case Chain.Abstract:
       return "2741";
-    case Chain.AbstractTestnet:
-      return "11124";
     case Chain.Shape:
       return "360";
     default:
@@ -247,58 +217,32 @@ export const getOfferPaymentToken = (chain: Chain) => {
       return "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
     case Chain.Polygon:
       return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-    case Chain.Amoy:
-      return "0x52eF3d68BaB452a294342DC3e5f464d7f610f72E";
-    case Chain.Sepolia:
-      return "0x7b79995e5f793a07bc00c21412e50ecae098e7f9";
-    case Chain.Klaytn:
-      return "0xfd844c2fca5e595004b17615f891620d1cb9bbb2";
-    case Chain.Baobab:
-      return "0x9330dd6713c8328a8d82b14e3f60a0f0b4cc7bfb";
     case Chain.Avalanche:
       return "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7";
-    case Chain.Fuji:
-      return "0xd00ae08403B9bbb9124bB305C09058E32C39A48c";
     case Chain.Arbitrum:
       return "0x82af49447d8a07e3bd95bd0d56f35241523fbab1";
     case Chain.ArbitrumNova:
       return "0x722e8bdd2ce80a4422e880164f2079488e115365";
-    case Chain.ArbitrumSepolia:
-      return "0x980b62da83eff3d4576c647993b0c1d7faf17c73";
     case Chain.Blast:
       return "0x4300000000000000000000000000000000000004";
-    case Chain.BlastSepolia:
-      return "0x4200000000000000000000000000000000000023";
     // OP Chains have WETH at the same address
     case Chain.Base:
-    case Chain.BaseSepolia:
     case Chain.Optimism:
-    case Chain.OptimismSepolia:
     case Chain.Zora:
-    case Chain.ZoraSepolia:
     case Chain.B3:
-    case Chain.B3Sepolia:
       return "0x4200000000000000000000000000000000000006";
     case Chain.BeraChain:
       return "0x6969696969696969696969696969696969696969";
     case Chain.Sei:
       return "0xe30fedd158a2e3b13e9badaeabafc5516e95e8c7";
-    case Chain.SeiTestnet:
-      return "0x3921ea6cf927be80211bb57f19830700285b0ada";
     case Chain.Flow:
       return "0xd3bf53dac106a0290b0483ecbc89d40fcc961f3e";
-    case Chain.FlowTestnet:
-      return "0x23b1864b73c6E7Cd6D90bDFa3E62B159eBDdbAb3";
     case Chain.ApeChain:
       return "0x48b62137edfa95a428d35c09e44256a739f6b557";
     case Chain.Ronin:
       return "0xe514d9deb7966c8be0ca922de8a064264ea6bcd4";
-    case Chain.SaigonTestnet:
-      return "0xa959726154953bae111746e265e6d754f48570e6";
     case Chain.Abstract:
       return "0x3439153eb7af838ad19d56e1571fbd09333c2809";
-    case Chain.AbstractTestnet:
-      return "0x9edcde0257f2386ce177c3a7fcdd97787f0d841d";
     case Chain.Shape:
       return "0x4200000000000000000000000000000000000006";
     default:
@@ -310,52 +254,30 @@ export const getOfferPaymentToken = (chain: Chain) => {
 export const getListingPaymentToken = (chain: Chain) => {
   switch (chain) {
     case Chain.Mainnet:
-    case Chain.Sepolia:
     case Chain.Arbitrum:
     case Chain.ArbitrumNova:
-    case Chain.ArbitrumSepolia:
     case Chain.Blast:
-    case Chain.BlastSepolia:
     case Chain.Base:
-    case Chain.BaseSepolia:
     case Chain.Optimism:
-    case Chain.OptimismSepolia:
     case Chain.Zora:
-    case Chain.ZoraSepolia:
     case Chain.B3:
-    case Chain.B3Sepolia:
     case Chain.Abstract:
-    case Chain.AbstractTestnet:
     case Chain.Shape:
       return "0x0000000000000000000000000000000000000000"; // ETH
     case Chain.Polygon:
       return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
-    case Chain.Amoy:
-      return "0x52eF3d68BaB452a294342DC3e5f464d7f610f72E"; // WETH
-    case Chain.Klaytn:
-      return "0xfd844c2fca5e595004b17615f891620d1cb9bbb2"; // WETH
-    case Chain.Baobab:
-      return "0x9330dd6713c8328a8d82b14e3f60a0f0b4cc7bfb"; // WETH
     case Chain.Avalanche:
       return "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"; // WETH
-    case Chain.Fuji:
-      return "0xd00ae08403B9bbb9124bB305C09058E32C39A48c"; // WETH
     case Chain.BeraChain:
       return "0x0000000000000000000000000000000000000000"; // BERA
     case Chain.Sei:
       return "0x0000000000000000000000000000000000000000"; // SEI
-    case Chain.SeiTestnet:
-      return "0x3921ea6cf927be80211bb57f19830700285b0ada"; // WETH
     case Chain.Flow:
       return "0xd3bf53dac106a0290b0483ecbc89d40fcc961f3e"; // WETH
-    case Chain.FlowTestnet:
-      return "0x23b1864b73c6E7Cd6D90bDFa3E62B159eBDdbAb3"; // WETH
     case Chain.ApeChain:
       return "0x0000000000000000000000000000000000000000"; // APE
     case Chain.Ronin:
       return "0xe514d9deb7966c8be0ca922de8a064264ea6bcd4"; // WETH
-    case Chain.SaigonTestnet:
-      return "0xa959726154953bae111746e265e6d754f48570e6"; // WETH
     default:
       throw new Error(`Unknown listing currency for ${chain}`);
   }
@@ -403,34 +325,6 @@ export const basisPointsForFee = (fee: Fee): bigint => {
       .toFormat(0) // format to 0 decimal places to convert to bigint
       .toString(),
   );
-};
-
-/**
- * Checks whether the current chain is a test chain.
- * @param chain Chain to check.
- * @returns True if the chain is a test chain.
- */
-export const isTestChain = (chain: Chain): boolean => {
-  switch (chain) {
-    case Chain.Sepolia:
-    case Chain.Amoy:
-    case Chain.Baobab:
-    case Chain.BaseSepolia:
-    case Chain.BlastSepolia:
-    case Chain.ArbitrumSepolia:
-    case Chain.Fuji:
-    case Chain.OptimismSepolia:
-    case Chain.SolanaDevnet:
-    case Chain.ZoraSepolia:
-    case Chain.SeiTestnet:
-    case Chain.B3Sepolia:
-    case Chain.FlowTestnet:
-    case Chain.SaigonTestnet:
-    case Chain.AbstractTestnet:
-      return true;
-    default:
-      return false;
-  }
 };
 
 /**
