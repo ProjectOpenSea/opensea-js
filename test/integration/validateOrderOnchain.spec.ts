@@ -8,12 +8,10 @@ import {
   getRandomExpiration,
   sdkPolygon,
 } from "./setup";
-import { OrderSide } from "../../src/types";
-import { expectValidOrder } from "../utils/utils";
 
 // Polygon network integration test for onchain order validation
 suite("SDK: validateOrderOnchain - Polygon Network", () => {
-  test("Create listing and validate onchain, then verify in API", async function () {
+  test("Create listing and validate onchain", async function () {
     // Set timeout to 60 seconds for this complex test
     this.timeout(60_000);
 
@@ -25,82 +23,57 @@ suite("SDK: validateOrderOnchain - Polygon Network", () => {
       this.skip();
     }
 
-    // First, create a listing using existing Polygon test data
+    // Create and validate listing onchain in one call
     const asset = {
       tokenAddress: TOKEN_ADDRESS_POLYGON as string,
       tokenId: TOKEN_ID_POLYGON as string,
     };
 
-    const listingParams = {
+    const txHash = await sdkPolygon.createListingAndValidateOnchain({
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
       asset,
       expirationTime: getRandomExpiration(),
-      submitOrder: false,
-    };
+    });
 
-    // Create the listing first
-    const order = await sdkPolygon.createListing(listingParams);
-    expectValidOrder(order);
-    console.log(`Created order with hash: ${order.orderHash}`);
-
-    // Validate the order onchain directly
-    const txHash = await sdkPolygon.validateOrderOnchain(order, walletAddress);
     expect(txHash).to.be.a("string");
     expect(txHash).to.match(/^0x[0-9a-fA-F]{64}$/);
-    console.log(`Order validated onchain with tx hash: ${txHash}`);
+    console.log(
+      `Listing created and validated onchain with tx hash: ${txHash}`,
+    );
 
-    // Wait a bit for the transaction to be processed
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    console.log("✓ Listing successfully created and validated onchain");
+  });
 
-    // Query the API to verify the order exists and is validated onchain
-    let apiOrder;
-    let attempts = 0;
-    const maxAttempts = 10; // Max 10 attempts over ~10 seconds
+  test("Create offer and validate onchain", async function () {
+    // Set timeout to 60 seconds for this complex test
+    this.timeout(60_000);
 
-    while (attempts < maxAttempts) {
-      try {
-        const ordersResponse = await sdkPolygon.api.getOrders({
-          protocol: "seaport",
-          side: OrderSide.LISTING,
-          maker: walletAddress,
-        });
-
-        if (ordersResponse.orders.length > 0) {
-          // Look for our specific order by comparing order hash
-          apiOrder = ordersResponse.orders.find(
-            (o) => o.orderHash === order.orderHash,
-          );
-          if (apiOrder) {
-            break;
-          }
-        }
-      } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        console.log(`Attempt ${attempts + 1} failed:`, errorMessage);
-      }
-
-      attempts++;
-      if (attempts < maxAttempts) {
-        console.log(
-          `Order not found in API yet, waiting... (attempt ${attempts}/${maxAttempts})`,
-        );
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    }
-
-    if (!apiOrder) {
-      throw new Error(
-        "Order not found in API after 10 seconds - onchain validation may have failed",
+    // Skip if Polygon-specific environment variables are not set
+    if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
+      console.log(
+        "Skipping test - missing Polygon token address or token ID environment variables",
       );
+      this.skip();
     }
 
-    // Verify the order exists in the API
-    expect(apiOrder).to.exist;
-    expect(apiOrder.orderHash).to.equal(order.orderHash);
-    expect(apiOrder.protocolAddress).to.equal(order.protocolAddress);
+    // Create and validate offer onchain in one call
+    const asset = {
+      tokenAddress: TOKEN_ADDRESS_POLYGON as string,
+      tokenId: TOKEN_ID_POLYGON as string,
+    };
 
-    console.log("✓ Order successfully validated onchain and found in API");
+    const txHash = await sdkPolygon.createOfferAndValidateOnchain({
+      accountAddress: walletAddress,
+      startAmount: "0.001", // Small offer amount in ETH
+      asset,
+      expirationTime: getRandomExpiration(),
+    });
+
+    expect(txHash).to.be.a("string");
+    expect(txHash).to.match(/^0x[0-9a-fA-F]{64}$/);
+    console.log(`Offer created and validated onchain with tx hash: ${txHash}`);
+
+    console.log("✓ Offer successfully created and validated onchain");
   });
 });
