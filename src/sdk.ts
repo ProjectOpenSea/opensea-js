@@ -1269,9 +1269,11 @@ export class OpenSeaSDK {
     });
 
     const seaport = this.getSeaport(order.protocolAddress);
-    const transaction = await seaport
-      .validate([order.protocolData], accountAddress, domain)
-      .transact();
+    const transaction = domain
+      ? await seaport
+          .validate([order.protocolData], accountAddress, domain)
+          .transact()
+      : await seaport.validate([order.protocolData], accountAddress).transact();
 
     await this._confirmTransaction(
       transaction.hash,
