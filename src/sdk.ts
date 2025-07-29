@@ -382,6 +382,7 @@ export class OpenSeaSDK {
     paymentTokenAddress = getOfferPaymentToken(this.chain),
     excludeOptionalCreatorFees = true,
     zone = getSignedZone(this.chain),
+    submitOrder = true,
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -393,6 +394,7 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     excludeOptionalCreatorFees?: boolean;
     zone?: string;
+    submitOrder?: boolean;
   }): Promise<OrderV2> {
     await this._requireAccountIsAvailable(accountAddress);
 
@@ -445,11 +447,15 @@ export class OpenSeaSDK {
     );
     const order = await executeAllActions();
 
-    return this.api.postOrder(order, {
-      protocol: "seaport",
-      protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      side: OrderSide.OFFER,
-    });
+    if (submitOrder) {
+      return this.api.postOrder(order, {
+        protocol: "seaport",
+        protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+        side: OrderSide.OFFER,
+      });
+    }
+
+    return order as unknown as OrderV2;
   }
 
   /**
@@ -491,6 +497,7 @@ export class OpenSeaSDK {
     englishAuction,
     excludeOptionalCreatorFees = false,
     zone = ZeroAddress,
+    submitOrder = true,
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -506,6 +513,7 @@ export class OpenSeaSDK {
     englishAuction?: boolean;
     excludeOptionalCreatorFees?: boolean;
     zone?: string;
+    submitOrder?: boolean;
   }): Promise<OrderV2> {
     await this._requireAccountIsAvailable(accountAddress);
 
@@ -571,11 +579,15 @@ export class OpenSeaSDK {
     );
     const order = await executeAllActions();
 
-    return this.api.postOrder(order, {
-      protocol: "seaport",
-      protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      side: OrderSide.LISTING,
-    });
+    if (submitOrder) {
+      return this.api.postOrder(order, {
+        protocol: "seaport",
+        protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+        side: OrderSide.LISTING,
+      });
+    }
+
+    return order as unknown as OrderV2;
   }
 
   /**

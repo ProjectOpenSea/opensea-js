@@ -36,6 +36,7 @@ suite("SDK: validateOrderOnchain - Polygon Network", () => {
       startAmount: LISTING_AMOUNT,
       asset,
       expirationTime: getRandomExpiration(),
+      submitOrder: false,
     };
 
     // Create the listing first

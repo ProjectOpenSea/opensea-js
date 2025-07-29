@@ -5,7 +5,7 @@ import { Chain } from "../../src/types";
 
 suite("SDK: NFTs", () => {
   test("Get NFTs By Collection", async () => {
-    const response = await sdk.api.getNFTsByCollection("proof-moonbirds");
+    const response = await sdk.api.getNFTsByCollection("moonbirds");
     assert(response, "Response should exist.");
     assert.equal(response.nfts.length, 50, "Response should include 50 NFTs");
     assert(response.next, "Response should have a next cursor");
