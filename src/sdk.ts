@@ -1249,17 +1249,12 @@ export class OpenSeaSDK {
    * and the alternative is orders can be submitted to the API for free instead of sent onchain.
    * @param order Order to validate onchain
    * @param accountAddress Address of the wallet that will pay the gas to validate the order
-   * @param domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
    * @returns Transaction hash of the validation transaction
    *
    * @throws Error if the accountAddress is not available through wallet or provider.
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    */
-  public async validateOrderOnchain(
-    order: OrderV2,
-    accountAddress: string,
-    domain?: string,
-  ) {
+  public async validateOrderOnchain(order: OrderV2, accountAddress: string) {
     await this._requireAccountIsAvailable(accountAddress);
     requireValidProtocol(order.protocolAddress);
 
@@ -1269,11 +1264,9 @@ export class OpenSeaSDK {
     });
 
     const seaport = this.getSeaport(order.protocolAddress);
-    const transaction = domain
-      ? await seaport
-          .validate([order.protocolData], accountAddress, domain)
-          .transact()
-      : await seaport.validate([order.protocolData], accountAddress).transact();
+    const transaction = await seaport
+      .validate([order.protocolData], accountAddress)
+      .transact();
 
     await this._confirmTransaction(
       transaction.hash,

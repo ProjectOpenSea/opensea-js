@@ -43,7 +43,7 @@ suite("SDK: validateOrderOnchain - Polygon Network", () => {
     expectValidOrder(order);
     console.log(`Created order with hash: ${order.orderHash}`);
 
-    // Now validate the order onchain
+    // Validate the order onchain directly
     const txHash = await sdkPolygon.validateOrderOnchain(order, walletAddress);
     expect(txHash).to.be.a("string");
     expect(txHash).to.match(/^0x[0-9a-fA-F]{64}$/);
@@ -90,12 +90,9 @@ suite("SDK: validateOrderOnchain - Polygon Network", () => {
     }
 
     if (!apiOrder) {
-      console.warn(
-        "Order not found in API after waiting - this might be expected in test environment",
+      throw new Error(
+        "Order not found in API after 10 seconds - onchain validation may have failed",
       );
-      // Don't fail the test if API doesn't return the order immediately
-      // as this could be due to indexing delays or test environment limitations
-      return;
     }
 
     // Verify the order exists in the API
