@@ -71,9 +71,9 @@ export const getRandomExpiration = (): number => {
   return now + randomSeconds;
 };
 
-export const getRandomSalt = (): string => {
+export const getRandomSalt = (): bigint => {
   // Generate a random 32-byte salt using crypto.randomBytes
   const saltBuffer = randomBytes(32);
-  // Convert to hexadecimal string with 0x prefix for BigInt compatibility
-  return "0x" + saltBuffer.toString("hex");
+  // Convert to BigInt using hex string representation
+  return BigInt("0x" + saltBuffer.toString("hex"));
 };
