@@ -6,6 +6,7 @@ import {
   TOKEN_ID_POLYGON,
   walletAddress,
   getRandomExpiration,
+  getRandomSalt,
   sdkPolygon,
 } from "./setup";
 import { OrderSide } from "../../src/types";
@@ -32,11 +33,13 @@ suite("SDK: validateOrderOnchain - Polygon Network", () => {
     };
 
     const expirationTime = getRandomExpiration();
+    const salt = getRandomSalt();
     const order = await sdkPolygon.createListing({
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
       asset,
       expirationTime,
+      salt,
     });
 
     expect(order.orderHash).to.be.a("string");
@@ -126,11 +129,13 @@ suite("SDK: validateOrderOnchain - Polygon Network", () => {
     };
 
     const expirationTime = getRandomExpiration();
+    const salt = getRandomSalt();
     const order = await sdkPolygon.createOffer({
       accountAddress: walletAddress,
       startAmount: +OFFER_AMOUNT, // Use the same constant as other tests
       asset,
       expirationTime,
+      salt,
     });
 
     expect(order.orderHash).to.be.a("string");
