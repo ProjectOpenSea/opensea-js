@@ -486,3 +486,45 @@ export const decodeTokenIds = (encodedTokenIds: string): string[] => {
 
   return tokenIds;
 };
+
+/**
+ * Group Gunzilla NFTs by name and rarity.
+ * @param nfts - Array of Gunzilla NFT assets.
+ * @returns Record grouping NFTs by name and rarity.
+ * @throws Error if input is not an array.
+ */
+interface GunzillaNFT {
+  name?: string;
+  attributes?: Array<{ trait_type: string; value: string | number }>;
+  type_spec?: { Item?: { rarity?: string } };
+}
+
+export function groupCollectionByNameAndRarity(
+  nfts: GunzillaNFT[],
+): Record<string, Record<string, GunzillaNFT[]>> {
+  if (!Array.isArray(nfts)) {
+    throw new Error("Expected an array of NFT assets");
+  }
+
+  const result: Record<string, Record<string, GunzillaNFT[]>> = {};
+  for (const nft of nfts) {
+    if (!nft) {
+      continue;
+    } // Skip null/undefined NFTs
+    const name = nft.name || "Unknown";
+    const rarity =
+      nft.attributes
+        ?.find((t) => t.trait_type === "Rarity")
+        ?.value?.toString() ||
+      nft.type_spec?.Item?.rarity ||
+      "Unknown";
+    if (!result[name]) {
+      result[name] = {};
+    }
+    if (!result[name][rarity]) {
+      result[name][rarity] = [];
+    }
+    result[name][rarity].push(nft);
+  }
+  return result;
+}
