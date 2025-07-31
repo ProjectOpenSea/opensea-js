@@ -211,6 +211,8 @@ export const getChainId = (chain: Chain) => {
       return "2741";
     case Chain.Shape:
       return "360";
+    case Chain.Unichain:
+      return "130";
     case Chain.Gunzilla:
       return "43419";
     default:
@@ -239,6 +241,7 @@ export const getOfferPaymentToken = (chain: Chain) => {
     case Chain.Zora:
     case Chain.B3:
     case Chain.Shape:
+    case Chain.Unichain:
       return "0x4200000000000000000000000000000000000006"; // WETH
     case Chain.BeraChain:
       return "0x6969696969696969696969696969696969696969"; // WBERA
@@ -272,6 +275,7 @@ export const getListingPaymentToken = (chain: Chain) => {
     case Chain.B3:
     case Chain.Abstract:
     case Chain.Shape:
+    case Chain.Unichain:
       return "0x0000000000000000000000000000000000000000"; // ETH
     case Chain.Polygon:
       return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
