@@ -70,3 +70,10 @@ export const getRandomExpiration = (): number => {
   const randomSeconds = (randomValue % range) + fifteenMinutes;
   return now + randomSeconds;
 };
+
+export const getRandomSalt = (): bigint => {
+  // Generate a random 32-byte salt using crypto.randomBytes
+  const saltBuffer = randomBytes(32);
+  // Convert to BigInt using hex string representation
+  return BigInt("0x" + saltBuffer.toString("hex"));
+};

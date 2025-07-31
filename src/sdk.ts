@@ -271,6 +271,287 @@ export class OpenSeaSDK {
     return ((amount * basisPoints) / INVERSE_BASIS_POINT).toString();
   };
 
+  /**
+   * Build listing order without submitting to API
+   * @param options Listing parameters
+   * @returns OrderWithCounter ready for API submission or onchain validation
+   */
+  private async _buildListingOrder({
+    asset,
+    accountAddress,
+    startAmount,
+    endAmount,
+    quantity = 1,
+    domain,
+    salt,
+    listingTime,
+    expirationTime,
+    paymentTokenAddress = getListingPaymentToken(this.chain),
+    buyerAddress,
+    englishAuction,
+    excludeOptionalCreatorFees = false,
+    zone = ZeroAddress,
+  }: {
+    asset: AssetWithTokenId;
+    accountAddress: string;
+    startAmount: BigNumberish;
+    endAmount?: BigNumberish;
+    quantity?: BigNumberish;
+    domain?: string;
+    salt?: BigNumberish;
+    listingTime?: number;
+    expirationTime?: number;
+    paymentTokenAddress?: string;
+    buyerAddress?: string;
+    englishAuction?: boolean;
+    excludeOptionalCreatorFees?: boolean;
+    zone?: string;
+  }) {
+    await this._requireAccountIsAvailable(accountAddress);
+
+    const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
+    const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)]);
+
+    if (englishAuction) {
+      throw new Error("English auctions are no longer supported on OpenSea");
+    }
+    if (englishAuction && paymentTokenAddress == ethers.ZeroAddress) {
+      throw new Error(
+        `English auctions must use wrapped ETH or an ERC-20 token.`,
+      );
+    }
+
+    const { basePrice, endPrice } = await this._getPriceParameters(
+      OrderSide.LISTING,
+      paymentTokenAddress,
+      expirationTime ?? getMaxOrderExpirationTimestamp(),
+      startAmount,
+      endAmount ?? undefined,
+    );
+
+    const collection = await this.api.getCollection(nft.collection);
+
+    const considerationFeeItems = await this.getFees({
+      collection,
+      seller: accountAddress,
+      paymentTokenAddress,
+      startAmount: basePrice,
+      endAmount: endPrice,
+      excludeOptionalCreatorFees,
+      isPrivateListing: !!buyerAddress,
+    });
+
+    if (buyerAddress) {
+      considerationFeeItems.push(
+        ...getPrivateListingConsiderations(offerAssetItems, buyerAddress),
+      );
+    }
+
+    if (englishAuction) {
+      zone = ENGLISH_AUCTION_ZONE_MAINNETS;
+    } else if (collection.requiredZone) {
+      zone = collection.requiredZone;
+    }
+
+    const { executeAllActions } = await this.seaport_v1_6.createOrder(
+      {
+        offer: offerAssetItems,
+        consideration: considerationFeeItems,
+        startTime: listingTime?.toString(),
+        endTime:
+          expirationTime?.toString() ??
+          getMaxOrderExpirationTimestamp().toString(),
+        zone,
+        domain,
+        salt: BigInt(salt ?? 0).toString(),
+        restrictedByZone: zone !== ZeroAddress,
+        allowPartialFills: englishAuction ? false : true,
+      },
+      accountAddress,
+    );
+
+    return executeAllActions();
+  }
+
+  /**
+   * Build listing order components without submitting to API
+   * @param options Listing parameters
+   * @returns OrderComponents ready for onchain validation
+   */
+  private async _buildListingOrderComponents({
+    asset,
+    accountAddress,
+    startAmount,
+    endAmount,
+    quantity = 1,
+    domain,
+    salt,
+    listingTime,
+    expirationTime,
+    paymentTokenAddress = getListingPaymentToken(this.chain),
+    buyerAddress,
+    englishAuction,
+    excludeOptionalCreatorFees = false,
+    zone = ZeroAddress,
+  }: {
+    asset: AssetWithTokenId;
+    accountAddress: string;
+    startAmount: BigNumberish;
+    endAmount?: BigNumberish;
+    quantity?: BigNumberish;
+    domain?: string;
+    salt?: BigNumberish;
+    listingTime?: number;
+    expirationTime?: number;
+    paymentTokenAddress?: string;
+    buyerAddress?: string;
+    englishAuction?: boolean;
+    excludeOptionalCreatorFees?: boolean;
+    zone?: string;
+  }): Promise<OrderComponents> {
+    const order = await this._buildListingOrder({
+      asset,
+      accountAddress,
+      startAmount,
+      endAmount,
+      quantity,
+      domain,
+      salt,
+      listingTime,
+      expirationTime,
+      paymentTokenAddress,
+      buyerAddress,
+      englishAuction,
+      excludeOptionalCreatorFees,
+      zone,
+    });
+    return order.parameters;
+  }
+
+  /**
+   * Build offer order without submitting to API
+   * @param options Offer parameters
+   * @returns OrderWithCounter ready for API submission or onchain validation
+   */
+  private async _buildOfferOrder({
+    asset,
+    accountAddress,
+    startAmount,
+    quantity = 1,
+    domain,
+    salt,
+    expirationTime,
+    paymentTokenAddress = getOfferPaymentToken(this.chain),
+    excludeOptionalCreatorFees = true,
+    zone = getSignedZone(this.chain),
+  }: {
+    asset: AssetWithTokenId;
+    accountAddress: string;
+    startAmount: BigNumberish;
+    quantity?: BigNumberish;
+    domain?: string;
+    salt?: BigNumberish;
+    expirationTime?: BigNumberish;
+    paymentTokenAddress?: string;
+    excludeOptionalCreatorFees?: boolean;
+    zone?: string;
+  }) {
+    await this._requireAccountIsAvailable(accountAddress);
+
+    const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
+    const considerationAssetItems = this.getNFTItems(
+      [nft],
+      [BigInt(quantity ?? 1)],
+    );
+
+    const { basePrice } = await this._getPriceParameters(
+      OrderSide.OFFER,
+      paymentTokenAddress,
+      expirationTime ?? getMaxOrderExpirationTimestamp(),
+      startAmount,
+    );
+
+    const collection = await this.api.getCollection(nft.collection);
+
+    const considerationFeeItems = await this.getFees({
+      collection,
+      paymentTokenAddress,
+      startAmount: basePrice,
+      excludeOptionalCreatorFees,
+    });
+
+    if (collection.requiredZone) {
+      zone = collection.requiredZone;
+    }
+
+    const { executeAllActions } = await this.seaport_v1_6.createOrder(
+      {
+        offer: [
+          {
+            token: paymentTokenAddress,
+            amount: basePrice.toString(),
+          },
+        ],
+        consideration: [...considerationAssetItems, ...considerationFeeItems],
+        endTime:
+          expirationTime !== undefined
+            ? BigInt(expirationTime).toString()
+            : getMaxOrderExpirationTimestamp().toString(),
+        zone,
+        domain,
+        salt: BigInt(salt ?? 0).toString(),
+        restrictedByZone: zone !== ZeroAddress,
+        allowPartialFills: true,
+      },
+      accountAddress,
+    );
+
+    return executeAllActions();
+  }
+
+  /**
+   * Build offer order components without submitting to API
+   * @param options Offer parameters
+   * @returns OrderComponents ready for onchain validation
+   */
+  private async _buildOfferOrderComponents({
+    asset,
+    accountAddress,
+    startAmount,
+    quantity = 1,
+    domain,
+    salt,
+    expirationTime,
+    paymentTokenAddress = getOfferPaymentToken(this.chain),
+    excludeOptionalCreatorFees = true,
+    zone = getSignedZone(this.chain),
+  }: {
+    asset: AssetWithTokenId;
+    accountAddress: string;
+    startAmount: BigNumberish;
+    quantity?: BigNumberish;
+    domain?: string;
+    salt?: BigNumberish;
+    expirationTime?: BigNumberish;
+    paymentTokenAddress?: string;
+    excludeOptionalCreatorFees?: boolean;
+    zone?: string;
+  }): Promise<OrderComponents> {
+    const order = await this._buildOfferOrder({
+      asset,
+      accountAddress,
+      startAmount,
+      quantity,
+      domain,
+      salt,
+      expirationTime,
+      paymentTokenAddress,
+      excludeOptionalCreatorFees,
+      zone,
+    });
+    return order.parameters;
+  }
+
   private async getFees({
     collection,
     seller,
@@ -394,56 +675,18 @@ export class OpenSeaSDK {
     excludeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<OrderV2> {
-    await this._requireAccountIsAvailable(accountAddress);
-
-    const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
-    const considerationAssetItems = this.getNFTItems(
-      [nft],
-      [BigInt(quantity ?? 1)],
-    );
-
-    const { basePrice } = await this._getPriceParameters(
-      OrderSide.OFFER,
-      paymentTokenAddress,
-      expirationTime ?? getMaxOrderExpirationTimestamp(),
-      startAmount,
-    );
-
-    const collection = await this.api.getCollection(nft.collection);
-
-    const considerationFeeItems = await this.getFees({
-      collection,
-      paymentTokenAddress,
-      startAmount: basePrice,
-      excludeOptionalCreatorFees,
-    });
-
-    if (collection.requiredZone) {
-      zone = collection.requiredZone;
-    }
-
-    const { executeAllActions } = await this.seaport_v1_6.createOrder(
-      {
-        offer: [
-          {
-            token: paymentTokenAddress,
-            amount: basePrice.toString(),
-          },
-        ],
-        consideration: [...considerationAssetItems, ...considerationFeeItems],
-        endTime:
-          expirationTime !== undefined
-            ? BigInt(expirationTime).toString()
-            : getMaxOrderExpirationTimestamp().toString(),
-        zone,
-        domain,
-        salt: BigInt(salt ?? 0).toString(),
-        restrictedByZone: zone !== ZeroAddress,
-        allowPartialFills: true,
-      },
+    const order = await this._buildOfferOrder({
+      asset,
       accountAddress,
-    );
-    const order = await executeAllActions();
+      startAmount,
+      quantity,
+      domain,
+      salt,
+      expirationTime,
+      paymentTokenAddress,
+      excludeOptionalCreatorFees,
+      zone,
+    });
 
     return this.api.postOrder(order, {
       protocol: "seaport",
@@ -507,69 +750,22 @@ export class OpenSeaSDK {
     excludeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<OrderV2> {
-    await this._requireAccountIsAvailable(accountAddress);
-
-    const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
-    const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)]);
-
-    if (englishAuction) {
-      throw new Error("English auctions are no longer supported on OpenSea");
-    }
-    if (englishAuction && paymentTokenAddress == ethers.ZeroAddress) {
-      throw new Error(
-        `English auctions must use wrapped ETH or an ERC-20 token.`,
-      );
-    }
-
-    const { basePrice, endPrice } = await this._getPriceParameters(
-      OrderSide.LISTING,
-      paymentTokenAddress,
-      expirationTime ?? getMaxOrderExpirationTimestamp(),
-      startAmount,
-      endAmount ?? undefined,
-    );
-
-    const collection = await this.api.getCollection(nft.collection);
-
-    const considerationFeeItems = await this.getFees({
-      collection,
-      seller: accountAddress,
-      paymentTokenAddress,
-      startAmount: basePrice,
-      endAmount: endPrice,
-      excludeOptionalCreatorFees,
-      isPrivateListing: !!buyerAddress,
-    });
-
-    if (buyerAddress) {
-      considerationFeeItems.push(
-        ...getPrivateListingConsiderations(offerAssetItems, buyerAddress),
-      );
-    }
-
-    if (englishAuction) {
-      zone = ENGLISH_AUCTION_ZONE_MAINNETS;
-    } else if (collection.requiredZone) {
-      zone = collection.requiredZone;
-    }
-
-    const { executeAllActions } = await this.seaport_v1_6.createOrder(
-      {
-        offer: offerAssetItems,
-        consideration: considerationFeeItems,
-        startTime: listingTime?.toString(),
-        endTime:
-          expirationTime?.toString() ??
-          getMaxOrderExpirationTimestamp().toString(),
-        zone,
-        domain,
-        salt: BigInt(salt ?? 0).toString(),
-        restrictedByZone: zone !== ZeroAddress,
-        allowPartialFills: englishAuction ? false : true,
-      },
+    const order = await this._buildListingOrder({
+      asset,
       accountAddress,
-    );
-    const order = await executeAllActions();
+      startAmount,
+      endAmount,
+      quantity,
+      domain,
+      salt,
+      listingTime,
+      expirationTime,
+      paymentTokenAddress,
+      buyerAddress,
+      englishAuction,
+      excludeOptionalCreatorFees,
+      zone,
+    });
 
     return this.api.postOrder(order, {
       protocol: "seaport",
@@ -1240,6 +1436,147 @@ export class OpenSeaSDK {
     );
 
     return transaction.hash;
+  }
+
+  /**
+   * Validates an order onchain using Seaport's validate() method. This submits the order onchain
+   * and pre-validates the order using Seaport, which makes it cheaper to fulfill since a signature
+   * is not needed to be verified during fulfillment for the order, but is not strictly required
+   * and the alternative is orders can be submitted to the API for free instead of sent onchain.
+   * @param orderComponents Order components to validate onchain
+   * @param accountAddress Address of the wallet that will pay the gas to validate the order
+   * @returns Transaction hash of the validation transaction
+   *
+   * @throws Error if the accountAddress is not available through wallet or provider.
+   */
+  public async validateOrderOnchain(
+    orderComponents: OrderComponents,
+    accountAddress: string,
+  ) {
+    await this._requireAccountIsAvailable(accountAddress);
+
+    this._dispatch(EventType.ApproveOrder, {
+      orderV2: { protocolData: orderComponents } as unknown as OrderV2,
+      accountAddress,
+    });
+
+    const seaport = this.getSeaport(DEFAULT_SEAPORT_CONTRACT_ADDRESS);
+    const transaction = await seaport
+      .validate(
+        [{ parameters: orderComponents, signature: "0x" }],
+        accountAddress,
+      )
+      .transact();
+
+    await this._confirmTransaction(
+      transaction.hash,
+      EventType.ApproveOrder,
+      "Validating order onchain",
+    );
+
+    return transaction.hash;
+  }
+
+  /**
+   * Create and validate a listing onchain using Seaport's validate() method. This combines
+   * order building with onchain validation in a single call.
+   * @param options Listing parameters
+   * @returns Transaction hash of the validation transaction
+   */
+  public async createListingAndValidateOnchain({
+    asset,
+    accountAddress,
+    startAmount,
+    endAmount,
+    quantity = 1,
+    domain,
+    salt,
+    listingTime,
+    expirationTime,
+    paymentTokenAddress,
+    buyerAddress,
+    englishAuction,
+    excludeOptionalCreatorFees = false,
+    zone,
+  }: {
+    asset: AssetWithTokenId;
+    accountAddress: string;
+    startAmount: BigNumberish;
+    endAmount?: BigNumberish;
+    quantity?: BigNumberish;
+    domain?: string;
+    salt?: BigNumberish;
+    listingTime?: number;
+    expirationTime?: number;
+    paymentTokenAddress?: string;
+    buyerAddress?: string;
+    englishAuction?: boolean;
+    excludeOptionalCreatorFees?: boolean;
+    zone?: string;
+  }): Promise<string> {
+    const orderComponents = await this._buildListingOrderComponents({
+      asset,
+      accountAddress,
+      startAmount,
+      endAmount,
+      quantity,
+      domain,
+      salt,
+      listingTime,
+      expirationTime,
+      paymentTokenAddress,
+      buyerAddress,
+      englishAuction,
+      excludeOptionalCreatorFees,
+      zone,
+    });
+
+    return this.validateOrderOnchain(orderComponents, accountAddress);
+  }
+
+  /**
+   * Create and validate an offer onchain using Seaport's validate() method. This combines
+   * order building with onchain validation in a single call.
+   * @param options Offer parameters
+   * @returns Transaction hash of the validation transaction
+   */
+  public async createOfferAndValidateOnchain({
+    asset,
+    accountAddress,
+    startAmount,
+    quantity = 1,
+    domain,
+    salt,
+    expirationTime,
+    paymentTokenAddress,
+    excludeOptionalCreatorFees = true,
+    zone,
+  }: {
+    asset: AssetWithTokenId;
+    accountAddress: string;
+    startAmount: BigNumberish;
+    quantity?: BigNumberish;
+    domain?: string;
+    salt?: BigNumberish;
+    expirationTime?: BigNumberish;
+    paymentTokenAddress?: string;
+    excludeOptionalCreatorFees?: boolean;
+    zone?: string;
+  }): Promise<string> {
+    const orderComponents = await this._buildOfferOrderComponents({
+      asset,
+      accountAddress,
+      startAmount,
+      quantity,
+      domain,
+      salt,
+      expirationTime,
+      paymentTokenAddress,
+      excludeOptionalCreatorFees,
+      zone,
+    });
+
+    return this.validateOrderOnchain(orderComponents, accountAddress);
   }
 
   /**
