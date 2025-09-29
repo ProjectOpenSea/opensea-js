@@ -215,6 +215,8 @@ export const getChainId = (chain: Chain) => {
       return "130";
     case Chain.Gunzilla:
       return "43419";
+    case Chain.HyperEVM:
+      return "999";
     default:
       throw new Error(`Unknown chainId for ${chain}`);
   }
@@ -257,6 +259,8 @@ export const getOfferPaymentToken = (chain: Chain) => {
       return "0x3439153eb7af838ad19d56e1571fbd09333c2809"; // WETH
     case Chain.Gunzilla:
       return "0x5aad7bba61d95c2c4e525a35f4062040264611f1"; // WGUN
+    case Chain.HyperEVM:
+      return "0x5555555555555555555555555555555555555555"; // WHYPE
     default:
       throw new Error(`Unknown offer currency for ${chain}`);
   }
@@ -265,6 +269,7 @@ export const getOfferPaymentToken = (chain: Chain) => {
 /** Returns the default currency for listings on the given chain. */
 export const getListingPaymentToken = (chain: Chain) => {
   switch (chain) {
+    case Chain.HyperEVM:
     case Chain.Mainnet:
     case Chain.Arbitrum:
     case Chain.ArbitrumNova:
@@ -376,6 +381,8 @@ export const getDefaultConduitKey = (chain: Chain): string => {
       return OPENSEA_CONDUIT_KEY_2;
     case Chain.Gunzilla:
       return GUNZILLA_CONDUIT_KEY;
+    case Chain.HyperEVM:
+      return OPENSEA_CONDUIT_KEY_2;
     default:
       return OPENSEA_CONDUIT_KEY;
   }
