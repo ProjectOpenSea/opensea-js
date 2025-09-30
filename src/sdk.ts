@@ -289,7 +289,6 @@ export class OpenSeaSDK {
     paymentTokenAddress = getListingPaymentToken(this.chain),
     buyerAddress,
     englishAuction,
-    excludeOptionalCreatorFees = false,
     zone = ZeroAddress,
   }: {
     asset: AssetWithTokenId;
@@ -304,7 +303,6 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
     englishAuction?: boolean;
-    excludeOptionalCreatorFees?: boolean;
     zone?: string;
   }) {
     await this._requireAccountIsAvailable(accountAddress);
@@ -337,7 +335,6 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       startAmount: basePrice,
       endAmount: endPrice,
-      excludeOptionalCreatorFees,
       isPrivateListing: !!buyerAddress,
     });
 
@@ -391,7 +388,6 @@ export class OpenSeaSDK {
     paymentTokenAddress = getListingPaymentToken(this.chain),
     buyerAddress,
     englishAuction,
-    excludeOptionalCreatorFees = false,
     zone = ZeroAddress,
   }: {
     asset: AssetWithTokenId;
@@ -406,7 +402,6 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
     englishAuction?: boolean;
-    excludeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<OrderComponents> {
     const order = await this._buildListingOrder({
@@ -422,7 +417,6 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       buyerAddress,
       englishAuction,
-      excludeOptionalCreatorFees,
       zone,
     });
     return order.parameters;
@@ -442,7 +436,6 @@ export class OpenSeaSDK {
     salt,
     expirationTime,
     paymentTokenAddress = getOfferPaymentToken(this.chain),
-    excludeOptionalCreatorFees = true,
     zone = getSignedZone(this.chain),
   }: {
     asset: AssetWithTokenId;
@@ -453,7 +446,6 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
-    excludeOptionalCreatorFees?: boolean;
     zone?: string;
   }) {
     await this._requireAccountIsAvailable(accountAddress);
@@ -477,7 +469,6 @@ export class OpenSeaSDK {
       collection,
       paymentTokenAddress,
       startAmount: basePrice,
-      excludeOptionalCreatorFees,
     });
 
     if (collection.requiredZone) {
@@ -523,7 +514,6 @@ export class OpenSeaSDK {
     salt,
     expirationTime,
     paymentTokenAddress = getOfferPaymentToken(this.chain),
-    excludeOptionalCreatorFees = true,
     zone = getSignedZone(this.chain),
   }: {
     asset: AssetWithTokenId;
@@ -534,7 +524,6 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
-    excludeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<OrderComponents> {
     const order = await this._buildOfferOrder({
@@ -546,7 +535,6 @@ export class OpenSeaSDK {
       salt,
       expirationTime,
       paymentTokenAddress,
-      excludeOptionalCreatorFees,
       zone,
     });
     return order.parameters;
@@ -558,7 +546,6 @@ export class OpenSeaSDK {
     paymentTokenAddress,
     startAmount,
     endAmount,
-    excludeOptionalCreatorFees,
     isPrivateListing = false,
   }: {
     collection: OpenSeaCollection;
@@ -566,13 +553,9 @@ export class OpenSeaSDK {
     paymentTokenAddress: string;
     startAmount: bigint;
     endAmount?: bigint;
-    excludeOptionalCreatorFees?: boolean;
     isPrivateListing?: boolean;
   }): Promise<ConsiderationInputItem[]> {
-    let collectionFees = collection.fees;
-    if (excludeOptionalCreatorFees) {
-      collectionFees = collectionFees.filter((fee) => fee.required);
-    }
+    let collectionFees = collection.fees.filter((fee) => fee.required);
     if (isPrivateListing) {
       collectionFees = collectionFees.filter((fee) =>
         this.isNotMarketplaceFee(fee),
@@ -642,7 +625,6 @@ export class OpenSeaSDK {
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH
-   * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the offer. Default: true.
    * @param options.zone The zone to use for the order. If unspecified, defaults to the chain's signed zone for order protection.
    *
    * @returns The {@link OrderV2} that was created.
@@ -661,7 +643,6 @@ export class OpenSeaSDK {
     salt,
     expirationTime,
     paymentTokenAddress = getOfferPaymentToken(this.chain),
-    excludeOptionalCreatorFees = true,
     zone = getSignedZone(this.chain),
   }: {
     asset: AssetWithTokenId;
@@ -672,7 +653,6 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
-    excludeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<OrderV2> {
     const order = await this._buildOfferOrder({
@@ -684,7 +664,6 @@ export class OpenSeaSDK {
       salt,
       expirationTime,
       paymentTokenAddress,
-      excludeOptionalCreatorFees,
       zone,
     });
 
@@ -710,7 +689,6 @@ export class OpenSeaSDK {
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to ETH
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.englishAuction If true, the order will be listed as an English auction.
-   * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the listing. Default: false.
    * @param options.zone The zone to use for the order. For order protection, pass SIGNED_ZONE. If unspecified, defaults to no zone.
    * @returns The {@link OrderV2} that was created.
    *
@@ -732,7 +710,6 @@ export class OpenSeaSDK {
     paymentTokenAddress = getListingPaymentToken(this.chain),
     buyerAddress,
     englishAuction,
-    excludeOptionalCreatorFees = false,
     zone = ZeroAddress,
   }: {
     asset: AssetWithTokenId;
@@ -747,7 +724,6 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
     englishAuction?: boolean;
-    excludeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<OrderV2> {
     const order = await this._buildListingOrder({
@@ -763,7 +739,6 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       buyerAddress,
       englishAuction,
-      excludeOptionalCreatorFees,
       zone,
     });
 
@@ -785,7 +760,6 @@ export class OpenSeaSDK {
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH.
-   * @param options.excludeOptionalCreatorFees If true, optional creator fees will be excluded from the offer. Default: false.
    * @param options.offerProtectionEnabled Build the offer on OpenSea's signed zone to provide offer protections from receiving an item which is disabled from trading.
    * @param options.traitType If defined, the trait name to create the collection offer for.
    * @param options.traitValue If defined, the trait value to create the collection offer for.
@@ -800,7 +774,6 @@ export class OpenSeaSDK {
     salt,
     expirationTime,
     paymentTokenAddress = getOfferPaymentToken(this.chain),
-    excludeOptionalCreatorFees = false,
     offerProtectionEnabled = true,
     traitType,
     traitValue,
@@ -813,7 +786,6 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: number | string;
     paymentTokenAddress: string;
-    excludeOptionalCreatorFees?: boolean;
     offerProtectionEnabled?: boolean;
     traitType?: string;
     traitValue?: string;
@@ -848,7 +820,6 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       startAmount: basePrice,
       endAmount: basePrice,
-      excludeOptionalCreatorFees,
     });
 
     const considerationItems = [
@@ -1496,7 +1467,6 @@ export class OpenSeaSDK {
     paymentTokenAddress,
     buyerAddress,
     englishAuction,
-    excludeOptionalCreatorFees = false,
     zone,
   }: {
     asset: AssetWithTokenId;
@@ -1511,7 +1481,6 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
     englishAuction?: boolean;
-    excludeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<string> {
     const orderComponents = await this._buildListingOrderComponents({
@@ -1527,7 +1496,6 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       buyerAddress,
       englishAuction,
-      excludeOptionalCreatorFees,
       zone,
     });
 
@@ -1549,7 +1517,6 @@ export class OpenSeaSDK {
     salt,
     expirationTime,
     paymentTokenAddress,
-    excludeOptionalCreatorFees = true,
     zone,
   }: {
     asset: AssetWithTokenId;
@@ -1560,7 +1527,6 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
     paymentTokenAddress?: string;
-    excludeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<string> {
     const orderComponents = await this._buildOfferOrderComponents({
@@ -1572,7 +1538,6 @@ export class OpenSeaSDK {
       salt,
       expirationTime,
       paymentTokenAddress,
-      excludeOptionalCreatorFees,
       zone,
     });
 
