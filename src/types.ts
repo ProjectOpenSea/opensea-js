@@ -123,6 +123,7 @@ export enum Chain {
   Unichain = "unichain",
   Gunzilla = "gunzilla",
   HyperEVM = "hyperevm",
+  Somnia = "somnia",
 }
 
 /**
