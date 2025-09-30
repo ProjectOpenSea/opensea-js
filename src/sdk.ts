@@ -289,6 +289,7 @@ export class OpenSeaSDK {
     paymentTokenAddress = getListingPaymentToken(this.chain),
     buyerAddress,
     englishAuction,
+    includeOptionalCreatorFees = false,
     zone = ZeroAddress,
   }: {
     asset: AssetWithTokenId;
@@ -303,6 +304,7 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
     englishAuction?: boolean;
+    includeOptionalCreatorFees?: boolean;
     zone?: string;
   }) {
     await this._requireAccountIsAvailable(accountAddress);
@@ -335,6 +337,7 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       startAmount: basePrice,
       endAmount: endPrice,
+      includeOptionalCreatorFees,
       isPrivateListing: !!buyerAddress,
     });
 
@@ -388,6 +391,7 @@ export class OpenSeaSDK {
     paymentTokenAddress = getListingPaymentToken(this.chain),
     buyerAddress,
     englishAuction,
+    includeOptionalCreatorFees = false,
     zone = ZeroAddress,
   }: {
     asset: AssetWithTokenId;
@@ -402,6 +406,7 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
     englishAuction?: boolean;
+    includeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<OrderComponents> {
     const order = await this._buildListingOrder({
@@ -417,6 +422,7 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       buyerAddress,
       englishAuction,
+      includeOptionalCreatorFees,
       zone,
     });
     return order.parameters;
@@ -546,6 +552,7 @@ export class OpenSeaSDK {
     paymentTokenAddress,
     startAmount,
     endAmount,
+    includeOptionalCreatorFees = false,
     isPrivateListing = false,
   }: {
     collection: OpenSeaCollection;
@@ -553,9 +560,12 @@ export class OpenSeaSDK {
     paymentTokenAddress: string;
     startAmount: bigint;
     endAmount?: bigint;
+    includeOptionalCreatorFees?: boolean;
     isPrivateListing?: boolean;
   }): Promise<ConsiderationInputItem[]> {
-    let collectionFees = collection.fees.filter((fee) => fee.required);
+    let collectionFees = includeOptionalCreatorFees
+      ? collection.fees
+      : collection.fees.filter((fee) => fee.required);
     if (isPrivateListing) {
       collectionFees = collectionFees.filter((fee) =>
         this.isNotMarketplaceFee(fee),
@@ -689,6 +699,7 @@ export class OpenSeaSDK {
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to ETH
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.englishAuction If true, the order will be listed as an English auction.
+   * @param options.includeOptionalCreatorFees If true, optional creator fees will be included in the listing. Default: false.
    * @param options.zone The zone to use for the order. For order protection, pass SIGNED_ZONE. If unspecified, defaults to no zone.
    * @returns The {@link OrderV2} that was created.
    *
@@ -710,6 +721,7 @@ export class OpenSeaSDK {
     paymentTokenAddress = getListingPaymentToken(this.chain),
     buyerAddress,
     englishAuction,
+    includeOptionalCreatorFees = false,
     zone = ZeroAddress,
   }: {
     asset: AssetWithTokenId;
@@ -724,6 +736,7 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
     englishAuction?: boolean;
+    includeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<OrderV2> {
     const order = await this._buildListingOrder({
@@ -739,6 +752,7 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       buyerAddress,
       englishAuction,
+      includeOptionalCreatorFees,
       zone,
     });
 
@@ -1467,6 +1481,7 @@ export class OpenSeaSDK {
     paymentTokenAddress,
     buyerAddress,
     englishAuction,
+    includeOptionalCreatorFees = false,
     zone,
   }: {
     asset: AssetWithTokenId;
@@ -1481,6 +1496,7 @@ export class OpenSeaSDK {
     paymentTokenAddress?: string;
     buyerAddress?: string;
     englishAuction?: boolean;
+    includeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<string> {
     const orderComponents = await this._buildListingOrderComponents({
@@ -1496,6 +1512,7 @@ export class OpenSeaSDK {
       paymentTokenAddress,
       buyerAddress,
       englishAuction,
+      includeOptionalCreatorFees,
       zone,
     });
 
