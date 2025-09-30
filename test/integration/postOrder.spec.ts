@@ -122,6 +122,45 @@ suite("SDK: order posting", () => {
     expectValidOrder(order);
   });
 
+  test("Post Listing with Optional Creator Fees - Mainnet", async function () {
+    if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
+      this.skip();
+    }
+    const expirationTime = getRandomExpiration();
+
+    // Get the NFT to retrieve its collection
+    const { nft } = await sdk.api.getNFT(
+      TOKEN_ADDRESS_MAINNET,
+      TOKEN_ID_MAINNET,
+    );
+    const collection = await sdk.api.getCollection(nft.collection);
+
+    const listing = {
+      accountAddress: walletAddress,
+      startAmount: LISTING_AMOUNT,
+      asset: {
+        tokenAddress: TOKEN_ADDRESS_MAINNET,
+        tokenId: TOKEN_ID_MAINNET,
+      },
+      includeOptionalCreatorFees: true,
+      expirationTime,
+    };
+    const order = await sdk.createListing(listing);
+    expectValidOrder(order);
+
+    // Verify that optional creator fees are included
+    const hasOptionalFees = collection.fees.some((fee) => !fee.required);
+    if (hasOptionalFees) {
+      // Check that the order has more consideration items than just seller + required fees
+      const requiredFeesCount = collection.fees.filter(
+        (fee) => fee.required,
+      ).length;
+      expect(
+        order.protocolData.parameters.consideration.length,
+      ).to.be.greaterThan(1 + requiredFeesCount);
+    }
+  });
+
   test.skip("Post Collection Offer - Mainnet", async () => {
     const collection = await sdk.api.getCollection("cool-cats-nft");
     const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
