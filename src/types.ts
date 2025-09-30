@@ -103,7 +103,7 @@ export interface OpenSeaAPIConfig {
  */
 export enum Chain {
   Mainnet = "ethereum",
-  Polygon = "matic",
+  Polygon = "polygon",
   Base = "base",
   Blast = "blast",
   Arbitrum = "arbitrum",
