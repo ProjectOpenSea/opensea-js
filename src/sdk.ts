@@ -111,8 +111,7 @@ export class OpenSeaSDK {
       signerOrProvider) as JsonRpcProvider;
     this._signerOrProvider = signerOrProvider ?? this.provider;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.seaport_v1_6 = new Seaport(this._signerOrProvider as any, {
+    this.seaport_v1_6 = new Seaport(this._signerOrProvider, {
       conduitKeyToConduit: {
         [OPENSEA_CONDUIT_KEY_2]: OPENSEA_CONDUIT_ADDRESS_2,
       },
@@ -949,12 +948,14 @@ export class OpenSeaSDK {
     order,
     accountAddress,
     recipientAddress,
+    unitsToFill,
     domain,
     overrides,
   }: {
     order: OrderV2 | Order;
     accountAddress: string;
     recipientAddress?: string;
+    unitsToFill?: BigNumberish;
     domain?: string;
     overrides?: Overrides;
   }): Promise<string> {
@@ -1016,16 +1017,15 @@ export class OpenSeaSDK {
       order: protocolData,
       accountAddress,
       recipientAddress,
+      unitsToFill,
       extraData,
       domain,
       overrides,
     });
-    const transaction = await executeAllActions();
-
-    const transactionHash = ethers.Transaction.from(transaction).hash;
-    if (!transactionHash) {
-      throw new Error("Missing transaction hash");
-    }
+    const result = (await executeAllActions()) as
+      | ContractTransactionResponse
+      | string;
+    const transactionHash = typeof result === "string" ? result : result.hash;
 
     await this._confirmTransaction(
       transactionHash,
@@ -1349,7 +1349,7 @@ export class OpenSeaSDK {
           toAddress,
           asset.tokenId,
           amount,
-          "",
+          "0x",
           overrides,
         );
         break;

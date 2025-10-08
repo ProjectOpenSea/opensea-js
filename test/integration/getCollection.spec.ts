@@ -1,8 +1,8 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { sdk } from "./setup";
 import { CollectionOrderByOption } from "../../src/api/types";
-import { SafelistStatus } from "../../src/types";
+import { Chain, SafelistStatus } from "../../src/types";
+import { sdk } from "../utils/setupIntegration";
 
 suite("SDK: getCollection", () => {
   test("Get Verified Collection", async () => {
@@ -61,5 +61,44 @@ suite("SDK: getCollection", () => {
     assert(stats.total.volume, "Volume should not be null");
     assert(stats.total.sales, "Sales should not be null");
     assert(stats.intervals, "Intervals should exist");
+  });
+
+  test("Get Collections for all chains", async () => {
+    // Iterate through all chains in the Chain enum
+    const chains = Object.values(Chain);
+
+    for (const chain of chains) {
+      try {
+        const response = await sdk.api.getCollections(
+          CollectionOrderByOption.CREATED_DATE,
+          chain,
+          undefined,
+          false,
+          5, // Limit to 5 collections per chain to keep test fast
+        );
+
+        const { collections } = response;
+        assert(
+          Array.isArray(collections),
+          `Collections should be an array for ${chain}`,
+        );
+        assert(
+          collections.length > 0,
+          `Chain ${chain} should have at least one collection`,
+        );
+        assert(
+          collections[0].name,
+          `Collection name should exist for ${chain}`,
+        );
+        assert(
+          collections[0].collection,
+          `Collection slug should exist for ${chain}`,
+        );
+      } catch (error) {
+        throw new Error(
+          `Failed to get collections for chain "${chain}": ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
   });
 });

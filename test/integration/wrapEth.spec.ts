@@ -1,11 +1,17 @@
 import { assert } from "chai";
 import { parseEther } from "ethers";
 import { describe, test } from "mocha";
-import { ETH_TO_WRAP, sdk, walletAddress } from "./setup";
 import { TokenStandard } from "../../src/types";
+import {
+  ETH_TO_WRAP,
+  sdk,
+  walletAddress,
+  requireIntegrationEnv,
+} from "../utils/setupIntegration";
 
 describe("SDK: WETH", () => {
   test("Wrap ETH and Unwrap", async function () {
+    requireIntegrationEnv();
     if (!ETH_TO_WRAP) {
       console.log("ETH_TO_WRAP not set, skipping");
       return;

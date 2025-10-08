@@ -1,5 +1,8 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { ENGLISH_AUCTION_ZONE_MAINNETS } from "../../src/constants";
+import { getOfferPaymentToken } from "../../src/utils";
+import { OFFER_AMOUNT } from "../utils/constants";
 import {
   LISTING_AMOUNT,
   TOKEN_ADDRESS_MAINNET,
@@ -9,15 +12,13 @@ import {
   sdk,
   sdkPolygon,
   walletAddress,
-  getRandomExpiration,
-} from "./setup";
-import { ENGLISH_AUCTION_ZONE_MAINNETS } from "../../src/constants";
-import { getOfferPaymentToken } from "../../src/utils";
-import { OFFER_AMOUNT } from "../utils/constants";
-import { expectValidOrder } from "../utils/utils";
+  requireIntegrationEnv,
+} from "../utils/setupIntegration";
+import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {
   test("Post Offer - Mainnet", async () => {
+    requireIntegrationEnv();
     const expirationTime = getRandomExpiration();
     const offer = {
       accountAddress: walletAddress,
@@ -40,6 +41,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Offer - Polygon", async () => {
+    requireIntegrationEnv();
     const expirationTime = getRandomExpiration();
     const offer = {
       accountAddress: walletAddress,
@@ -55,6 +57,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Listing - Mainnet", async function () {
+    requireIntegrationEnv();
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
@@ -73,6 +76,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post English Auction Listing - Mainnet", async function () {
+    requireIntegrationEnv();
     // English auctions are no longer supported on OpenSea
     this.skip();
 
@@ -107,6 +111,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Listing - Polygon", async () => {
+    requireIntegrationEnv();
     const expirationTime = getRandomExpiration();
     const listing = {
       accountAddress: walletAddress,
@@ -120,6 +125,46 @@ suite("SDK: order posting", () => {
     };
     const order = await sdkPolygon.createListing(listing);
     expectValidOrder(order);
+  });
+
+  test("Post Listing with Optional Creator Fees - Mainnet", async function () {
+    requireIntegrationEnv();
+    if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
+      this.skip();
+    }
+    const expirationTime = getRandomExpiration();
+
+    // Get the NFT to retrieve its collection
+    const { nft } = await sdk.api.getNFT(
+      TOKEN_ADDRESS_MAINNET,
+      TOKEN_ID_MAINNET,
+    );
+    const collection = await sdk.api.getCollection(nft.collection);
+
+    const listing = {
+      accountAddress: walletAddress,
+      startAmount: LISTING_AMOUNT,
+      asset: {
+        tokenAddress: TOKEN_ADDRESS_MAINNET,
+        tokenId: TOKEN_ID_MAINNET,
+      },
+      includeOptionalCreatorFees: true,
+      expirationTime,
+    };
+    const order = await sdk.createListing(listing);
+    expectValidOrder(order);
+
+    // Verify that optional creator fees are included
+    const hasOptionalFees = collection.fees.some((fee) => !fee.required);
+    if (hasOptionalFees) {
+      // Check that the order has more consideration items than just seller + required fees
+      const requiredFeesCount = collection.fees.filter(
+        (fee) => fee.required,
+      ).length;
+      expect(
+        order.protocolData.parameters.consideration.length,
+      ).to.be.greaterThan(1 + requiredFeesCount);
+    }
   });
 
   test.skip("Post Collection Offer - Mainnet", async () => {

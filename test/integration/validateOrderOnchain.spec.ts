@@ -1,22 +1,20 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { OFFER_AMOUNT } from "../utils/constants";
 import {
   LISTING_AMOUNT,
   TOKEN_ADDRESS_POLYGON,
   TOKEN_ID_POLYGON,
   walletAddress,
-  getRandomExpiration,
-  getRandomSalt,
   sdkPolygon,
-} from "./setup";
-import { OFFER_AMOUNT } from "../utils/constants";
+  requireIntegrationEnv,
+} from "../utils/setupIntegration";
+import { getRandomExpiration, getRandomSalt } from "../utils/utils";
 
 // Polygon network integration test for onchain order validation
 suite("SDK: validateOrderOnchain - Polygon Network", () => {
   test("Create listing and validate onchain", async function () {
-    // Set timeout to 60 seconds for this complex test
-    this.timeout(60_000);
-
+    requireIntegrationEnv();
     // Skip if Polygon-specific environment variables are not set
     if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
       console.log(
@@ -49,9 +47,7 @@ suite("SDK: validateOrderOnchain - Polygon Network", () => {
   });
 
   test("Create offer and validate onchain", async function () {
-    // Set timeout to 60 seconds for this complex test
-    this.timeout(60_000);
-
+    requireIntegrationEnv();
     // Skip if Polygon-specific environment variables are not set
     if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
       console.log(

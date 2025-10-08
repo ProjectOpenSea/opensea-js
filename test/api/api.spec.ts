@@ -3,11 +3,9 @@ import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { Chain, OpenSeaRateLimitError } from "../../src";
 import { getOfferPaymentToken } from "../../src/utils";
-import {
-  BAYC_CONTRACT_ADDRESS,
-  api,
-  OPENSEA_API_KEY,
-} from "../utils/constants";
+import { BAYC_CONTRACT_ADDRESS } from "../utils/constants";
+import { OPENSEA_API_KEY } from "../utils/env";
+import { api } from "../utils/sdk";
 
 suite("API", () => {
   test("API has correct base url", () => {

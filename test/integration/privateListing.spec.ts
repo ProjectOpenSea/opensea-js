@@ -1,19 +1,20 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { Chain } from "../../src/types";
+import { getFeeRecipient } from "../../src/utils/utils";
 import {
-  getRandomExpiration,
   LISTING_AMOUNT,
   TOKEN_ADDRESS_MAINNET,
   TOKEN_ID_MAINNET,
   sdk,
   walletAddress,
-} from "./setup";
-import { Chain } from "../../src/types";
-import { getFeeRecipient } from "../../src/utils/utils";
-import { expectValidOrder } from "../utils/utils";
+  requireIntegrationEnv,
+} from "../utils/setupIntegration";
+import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: Private Listings Integration", () => {
   test("Post Private Listing - Mainnet", async function () {
+    requireIntegrationEnv();
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
@@ -47,6 +48,7 @@ suite("SDK: Private Listings Integration", () => {
   });
 
   test("Post Regular Listing - Mainnet (for comparison)", async function () {
+    requireIntegrationEnv();
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
