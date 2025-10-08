@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { OFFER_AMOUNT } from "../utils/constants";
 import {
   LISTING_AMOUNT,
   TOKEN_ADDRESS_POLYGON,
@@ -8,8 +9,7 @@ import {
   getRandomExpiration,
   getRandomSalt,
   sdkPolygon,
-} from "./setup";
-import { OFFER_AMOUNT } from "../utils/constants";
+} from "../utils/testSetup";
 
 // Polygon network integration test for onchain order validation
 suite("SDK: validateOrderOnchain - Polygon Network", () => {

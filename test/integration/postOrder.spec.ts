@@ -1,5 +1,8 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { ENGLISH_AUCTION_ZONE_MAINNETS } from "../../src/constants";
+import { getOfferPaymentToken } from "../../src/utils";
+import { OFFER_AMOUNT } from "../utils/constants";
 import {
   LISTING_AMOUNT,
   TOKEN_ADDRESS_MAINNET,
@@ -10,10 +13,7 @@ import {
   sdkPolygon,
   walletAddress,
   getRandomExpiration,
-} from "./setup";
-import { ENGLISH_AUCTION_ZONE_MAINNETS } from "../../src/constants";
-import { getOfferPaymentToken } from "../../src/utils";
-import { OFFER_AMOUNT } from "../utils/constants";
+} from "../utils/testSetup";
 import { expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {

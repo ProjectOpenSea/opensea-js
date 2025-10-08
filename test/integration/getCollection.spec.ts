@@ -1,8 +1,8 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { sdk } from "./setup";
 import { CollectionOrderByOption } from "../../src/api/types";
 import { Chain, SafelistStatus } from "../../src/types";
+import { sdk } from "../utils/testSetup";
 
 suite("SDK: getCollection", () => {
   test("Get Verified Collection", async () => {

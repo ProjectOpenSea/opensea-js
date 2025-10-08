@@ -1,5 +1,7 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { Chain } from "../../src/types";
+import { getFeeRecipient } from "../../src/utils/utils";
 import {
   getRandomExpiration,
   LISTING_AMOUNT,
@@ -7,9 +9,7 @@ import {
   TOKEN_ID_MAINNET,
   sdk,
   walletAddress,
-} from "./setup";
-import { Chain } from "../../src/types";
-import { getFeeRecipient } from "../../src/utils/utils";
+} from "../utils/testSetup";
 import { expectValidOrder } from "../utils/utils";
 
 suite("SDK: Private Listings Integration", () => {

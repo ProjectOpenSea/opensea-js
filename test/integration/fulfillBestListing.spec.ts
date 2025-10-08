@@ -1,16 +1,18 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { EventData, EventType } from "../../src/types";
 import {
   BUY_LISTING_CHAIN,
   BUY_LISTING_CONTRACT_ADDRESS,
   BUY_LISTING_TOKEN_ID,
   sdkBuyListing,
   walletAddress,
-} from "./setup";
-import { EventData, EventType } from "../../src/types";
+} from "../utils/testSetup";
 
 suite("SDK: fulfill best listing", () => {
   test("Get best listing and fulfill without errors", async function () {
+    this.timeout(120_000);
+
     if (
       !sdkBuyListing ||
       !BUY_LISTING_CHAIN ||
