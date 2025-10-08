@@ -7,12 +7,10 @@ import {
   BUY_LISTING_TOKEN_ID,
   sdkBuyListing,
   walletAddress,
-} from "../utils/setup";
+} from "../utils/setupIntegration";
 
 suite("SDK: fulfill best listing", () => {
   test("Get best listing and fulfill without errors", async function () {
-    this.timeout(120_000);
-
     if (
       !sdkBuyListing ||
       !BUY_LISTING_CHAIN ||
