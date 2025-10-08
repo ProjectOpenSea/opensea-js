@@ -14,8 +14,6 @@ import {
   walletAddress,
   requireIntegrationEnv,
 } from "../utils/setupIntegration";
-// Use integration setup for integration tests
-import * as _integrationSetup from "../utils/setupIntegration";
 import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {

@@ -10,7 +10,6 @@ import {
   walletAddress,
   requireIntegrationEnv,
 } from "../utils/setupIntegration";
-import * as _integrationSetup from "../utils/setupIntegration";
 import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: Private Listings Integration", () => {

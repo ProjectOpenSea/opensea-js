@@ -9,7 +9,6 @@ import {
   sdkPolygon,
   requireIntegrationEnv,
 } from "../utils/setupIntegration";
-import * as _integrationSetup from "../utils/setupIntegration";
 import { getRandomExpiration, getRandomSalt } from "../utils/utils";
 
 // Polygon network integration test for onchain order validation
