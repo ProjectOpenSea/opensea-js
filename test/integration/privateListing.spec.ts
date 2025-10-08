@@ -8,8 +8,8 @@ import {
   TOKEN_ID_MAINNET,
   sdk,
   walletAddress,
-} from "../utils/setup";
-import { requireIntegrationEnv } from "../utils/setupIntegration";
+  requireIntegrationEnv,
+} from "../utils/setupIntegration";
 import * as _integrationSetup from "../utils/setupIntegration";
 import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 

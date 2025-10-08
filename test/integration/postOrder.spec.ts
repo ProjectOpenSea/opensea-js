@@ -12,8 +12,8 @@ import {
   sdk,
   sdkPolygon,
   walletAddress,
-} from "../utils/setup";
-import { requireIntegrationEnv } from "../utils/setupIntegration";
+  requireIntegrationEnv,
+} from "../utils/setupIntegration";
 // Use integration setup for integration tests
 import * as _integrationSetup from "../utils/setupIntegration";
 import { getRandomExpiration, expectValidOrder } from "../utils/utils";

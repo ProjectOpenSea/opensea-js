@@ -7,8 +7,8 @@ import {
   TOKEN_ID_POLYGON,
   walletAddress,
   sdkPolygon,
-} from "../utils/setup";
-import { requireIntegrationEnv } from "../utils/setupIntegration";
+  requireIntegrationEnv,
+} from "../utils/setupIntegration";
 import * as _integrationSetup from "../utils/setupIntegration";
 import { getRandomExpiration, getRandomSalt } from "../utils/utils";
 

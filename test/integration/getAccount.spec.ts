@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { sdk } from "../utils/setup";
+import { sdk } from "../utils/setupIntegration";
 import * as _integrationSetup from "../utils/setupIntegration";
 
 suite("SDK: getAccount", () => {

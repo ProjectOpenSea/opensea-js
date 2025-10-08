@@ -1,7 +1,7 @@
 import { assert, expect } from "chai";
 import { suite, test } from "mocha";
 import { Chain } from "../../src/types";
-import { sdk } from "../utils/setup";
+import { sdk } from "../utils/setupIntegration";
 
 suite("SDK: NFTs", () => {
   test("Get NFTs By Collection", async () => {
