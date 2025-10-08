@@ -7,7 +7,7 @@ import {
   BUY_LISTING_TOKEN_ID,
   sdkBuyListing,
   walletAddress,
-} from "../utils/testSetup";
+} from "../utils/setup";
 
 suite("SDK: fulfill best listing", () => {
   test("Get best listing and fulfill without errors", async function () {

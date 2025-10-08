@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
 import { decodeTokenIds } from "../../src/utils/utils";
-import { sdk } from "../utils/testSetup";
+import { sdk } from "../utils/setup";
 
 suite("SDK: getCollectionOffers", () => {
   test("Get Collection Offers", async () => {

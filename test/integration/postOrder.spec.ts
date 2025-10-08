@@ -12,9 +12,8 @@ import {
   sdk,
   sdkPolygon,
   walletAddress,
-  getRandomExpiration,
-} from "../utils/testSetup";
-import { expectValidOrder } from "../utils/utils";
+} from "../utils/setup";
+import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {
   test("Post Offer - Mainnet", async () => {

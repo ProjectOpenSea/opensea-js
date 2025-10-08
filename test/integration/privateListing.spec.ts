@@ -3,14 +3,13 @@ import { suite, test } from "mocha";
 import { Chain } from "../../src/types";
 import { getFeeRecipient } from "../../src/utils/utils";
 import {
-  getRandomExpiration,
   LISTING_AMOUNT,
   TOKEN_ADDRESS_MAINNET,
   TOKEN_ID_MAINNET,
   sdk,
   walletAddress,
-} from "../utils/testSetup";
-import { expectValidOrder } from "../utils/utils";
+} from "../utils/setup";
+import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: Private Listings Integration", () => {
   test("Post Private Listing - Mainnet", async function () {

@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { parseEther } from "ethers";
 import { describe, test } from "mocha";
 import { TokenStandard } from "../../src/types";
-import { ETH_TO_WRAP, sdk, walletAddress } from "../utils/testSetup";
+import { ETH_TO_WRAP, sdk, walletAddress } from "../utils/setup";
 
 describe("SDK: WETH", () => {
   test("Wrap ETH and Unwrap", async function () {

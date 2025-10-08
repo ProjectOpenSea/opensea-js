@@ -6,10 +6,9 @@ import {
   TOKEN_ADDRESS_POLYGON,
   TOKEN_ID_POLYGON,
   walletAddress,
-  getRandomExpiration,
-  getRandomSalt,
   sdkPolygon,
-} from "../utils/testSetup";
+} from "../utils/setup";
+import { getRandomExpiration, getRandomSalt } from "../utils/utils";
 
 // Polygon network integration test for onchain order validation
 suite("SDK: validateOrderOnchain - Polygon Network", () => {
