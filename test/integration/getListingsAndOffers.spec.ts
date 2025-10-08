@@ -1,6 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
 import { sdk } from "../utils/setup";
+import * as _integrationSetup from "../utils/setupIntegration";
 
 suite("SDK: getAllOffers", () => {
   test("Get All Offers", async () => {

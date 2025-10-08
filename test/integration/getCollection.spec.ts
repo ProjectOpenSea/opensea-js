@@ -3,6 +3,7 @@ import { suite, test } from "mocha";
 import { CollectionOrderByOption } from "../../src/api/types";
 import { Chain, SafelistStatus } from "../../src/types";
 import { sdk } from "../utils/setup";
+import * as _integrationSetup from "../utils/setupIntegration";
 
 suite("SDK: getCollection", () => {
   test("Get Verified Collection", async () => {

@@ -13,6 +13,8 @@ import {
   sdkPolygon,
   walletAddress,
 } from "../utils/setup";
+// Use integration setup for integration tests
+import * as _integrationSetup from "../utils/setupIntegration";
 import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {

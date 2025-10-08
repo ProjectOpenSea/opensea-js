@@ -3,6 +3,7 @@ import { parseEther } from "ethers";
 import { describe, test } from "mocha";
 import { TokenStandard } from "../../src/types";
 import { ETH_TO_WRAP, sdk, walletAddress } from "../utils/setup";
+import * as _integrationSetup from "../utils/setupIntegration";
 
 describe("SDK: WETH", () => {
   test("Wrap ETH and Unwrap", async function () {

@@ -1,4 +1,4 @@
-import "../utils/setup";
+// Unit tests should not require integration setup
 import { expect } from "chai";
 import { suite, test } from "mocha";
 import { OrderSide } from "../../src/types";

@@ -9,6 +9,7 @@ import {
   sdk,
   walletAddress,
 } from "../utils/setup";
+import * as _integrationSetup from "../utils/setupIntegration";
 import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: Private Listings Integration", () => {
