@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { ethers } from "ethers";
 import { suite, test } from "mocha";
 import { TokenStandard } from "../../src/types";
-import { client } from "../utils/constants";
+import { client } from "../utils/sdk";
 
 suite("SDK: getBalance", () => {
   const accountAddress = "0x000000000000000000000000000000000000dEaD";

@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { client } from "../utils/constants";
+import { client } from "../utils/sdk";
 
 suite("SDK: orders", () => {
   test("Fungible tokens filter", async () => {

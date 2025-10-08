@@ -2,7 +2,8 @@ import "../utils/setup";
 import { expect } from "chai";
 import { suite, test } from "mocha";
 import { OrderSide } from "../../src/types";
-import { BAYC_CONTRACT_ADDRESS, BAYC_TOKEN_IDS, api } from "../utils/constants";
+import { BAYC_CONTRACT_ADDRESS, BAYC_TOKEN_IDS } from "../utils/constants";
+import { api } from "../utils/sdk";
 import { expectValidOrder } from "../utils/utils";
 
 suite("Getting orders", () => {

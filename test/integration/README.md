@@ -8,8 +8,7 @@ Environment variables for integration tests are set using `.env`. This file is n
 
 ```bash
 OPENSEA_API_KEY="" # OpenSea API Key
-ALCHEMY_API_KEY="" # Alchemy API Key for ETH Mainnet
-ALCHEMY_API_KEY_POLYGON="" # Alchemy API Key for Polygon
+ALCHEMY_API_KEY="" # Alchemy API Key (used for all supported networks)
 WALLET_PRIV_KEY="0x" # Wallet private key
 
 # The following needs to be an NFT owned by the wallet address derived from WALLET_PRIV_KEY
@@ -19,6 +18,10 @@ SELL_ORDER_TOKEN_ID="123"
 ## Polygon
 SELL_ORDER_CONTRACT_ADDRESS_POLYGON="0x"
 SELL_ORDER_TOKEN_ID_POLYGON="123"
+## Optional Optimism test token (best listing fulfillment)
+BUY_LISTING_CHAIN="optimism"
+BUY_LISTING_CONTRACT_ADDRESS="0x"
+BUY_LISTING_TOKEN_ID="1"
 ```
 
 Optional:

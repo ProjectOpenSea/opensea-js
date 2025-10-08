@@ -2,7 +2,7 @@ import "../utils/setup";
 import { assert } from "chai";
 import { suite, test } from "mocha";
 import { OrderSide } from "../../src/types";
-import { api } from "../utils/constants";
+import { api } from "../utils/sdk";
 
 suite("Generating fulfillment data", () => {
   test(`Generate fulfillment data for listing`, async () => {

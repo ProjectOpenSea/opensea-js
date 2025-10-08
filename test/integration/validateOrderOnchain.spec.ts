@@ -14,9 +14,6 @@ import { OFFER_AMOUNT } from "../utils/constants";
 // Polygon network integration test for onchain order validation
 suite("SDK: validateOrderOnchain - Polygon Network", () => {
   test("Create listing and validate onchain", async function () {
-    // Set timeout to 60 seconds for this complex test
-    this.timeout(60_000);
-
     // Skip if Polygon-specific environment variables are not set
     if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
       console.log(
@@ -49,9 +46,6 @@ suite("SDK: validateOrderOnchain - Polygon Network", () => {
   });
 
   test("Create offer and validate onchain", async function () {
-    // Set timeout to 60 seconds for this complex test
-    this.timeout(60_000);
-
     // Skip if Polygon-specific environment variables are not set
     if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
       console.log(

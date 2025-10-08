@@ -9,7 +9,8 @@ import {
   decodeTokenIds,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
 } from "../../src/utils/utils";
-import { BAYC_CONTRACT_ADDRESS, client } from "../utils/constants";
+import { BAYC_CONTRACT_ADDRESS } from "../utils/constants";
+import { client } from "../utils/sdk";
 
 suite("SDK: misc", () => {
   test("Instance has public methods", () => {
