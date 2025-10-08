@@ -8,12 +8,14 @@ import {
   walletAddress,
   sdkPolygon,
 } from "../utils/setup";
+import { requireIntegrationEnv } from "../utils/setupIntegration";
 import * as _integrationSetup from "../utils/setupIntegration";
 import { getRandomExpiration, getRandomSalt } from "../utils/utils";
 
 // Polygon network integration test for onchain order validation
 suite("SDK: validateOrderOnchain - Polygon Network", () => {
   test("Create listing and validate onchain", async function () {
+    requireIntegrationEnv();
     // Skip if Polygon-specific environment variables are not set
     if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
       console.log(
@@ -46,6 +48,7 @@ suite("SDK: validateOrderOnchain - Polygon Network", () => {
   });
 
   test("Create offer and validate onchain", async function () {
+    requireIntegrationEnv();
     // Skip if Polygon-specific environment variables are not set
     if (!TOKEN_ADDRESS_POLYGON || !TOKEN_ID_POLYGON) {
       console.log(

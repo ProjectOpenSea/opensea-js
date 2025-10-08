@@ -4,9 +4,9 @@ import { alchemyProvider } from "./providers";
 import { OpenSeaSDK } from "../../src/sdk";
 import { Chain } from "../../src/types";
 
-for (const envVar of ["WALLET_PRIV_KEY"]) {
-  if (!process.env[envVar]) {
-    throw new Error(`${envVar} must be set for integration tests`);
+export function requireIntegrationEnv(): void {
+  if (!WALLET_PRIV_KEY) {
+    throw new Error("WALLET_PRIV_KEY must be set for integration tests");
   }
 }
 

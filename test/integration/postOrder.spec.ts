@@ -13,12 +13,14 @@ import {
   sdkPolygon,
   walletAddress,
 } from "../utils/setup";
+import { requireIntegrationEnv } from "../utils/setupIntegration";
 // Use integration setup for integration tests
 import * as _integrationSetup from "../utils/setupIntegration";
 import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {
   test("Post Offer - Mainnet", async () => {
+    requireIntegrationEnv();
     const expirationTime = getRandomExpiration();
     const offer = {
       accountAddress: walletAddress,
@@ -41,6 +43,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Offer - Polygon", async () => {
+    requireIntegrationEnv();
     const expirationTime = getRandomExpiration();
     const offer = {
       accountAddress: walletAddress,
@@ -56,6 +59,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Listing - Mainnet", async function () {
+    requireIntegrationEnv();
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }
@@ -74,6 +78,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post English Auction Listing - Mainnet", async function () {
+    requireIntegrationEnv();
     // English auctions are no longer supported on OpenSea
     this.skip();
 
@@ -108,6 +113,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Listing - Polygon", async () => {
+    requireIntegrationEnv();
     const expirationTime = getRandomExpiration();
     const listing = {
       accountAddress: walletAddress,
@@ -124,6 +130,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Listing with Optional Creator Fees - Mainnet", async function () {
+    requireIntegrationEnv();
     if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
       this.skip();
     }

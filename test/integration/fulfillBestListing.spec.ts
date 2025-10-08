@@ -7,10 +7,12 @@ import {
   BUY_LISTING_TOKEN_ID,
   sdkBuyListing,
   walletAddress,
+  requireIntegrationEnv,
 } from "../utils/setupIntegration";
 
 suite("SDK: fulfill best listing", () => {
   test("Get best listing and fulfill without errors", async function () {
+    requireIntegrationEnv();
     if (
       !sdkBuyListing ||
       !BUY_LISTING_CHAIN ||
