@@ -18,15 +18,20 @@ suite("Getting orders", () => {
   });
 
   test(`getOrder should throw if no order found`, async () => {
-    await expect(
-      api.getOrder({
+    try {
+      await api.getOrder({
         protocol: "seaport",
         side: OrderSide.LISTING,
         maker: "0x000000000000000000000000000000000000dEaD",
-      }),
-    )
-      .to.eventually.be.rejected.and.be.an.instanceOf(Error)
-      .and.have.property("message", "Not found: no matching order found");
+      });
+      expect.fail("Expected an error to be thrown");
+    } catch (error) {
+      expect(error).to.be.an.instanceOf(Error);
+      expect(error).to.have.property(
+        "message",
+        "Not found: no matching order found",
+      );
+    }
   });
 
   [OrderSide.LISTING, OrderSide.OFFER].forEach((side) => {

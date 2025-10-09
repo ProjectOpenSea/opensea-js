@@ -34,8 +34,8 @@
     "prettier:check:package.json": "prettier-package-json --list-different",
     "prettier:fix": "prettier --write .",
     "test": "nyc mocha --config ./.mocharc-unit.json",
-    "test:integration": "nyc mocha --config ./.mocharc-integration.json",
-    "test:all": "concurrently \"npm run test\" \"npm run test:integration\""
+    "test:all": "concurrently \"npm run test\" \"npm run test:integration\"",
+    "test:integration": "nyc mocha --config ./.mocharc-integration.json"
   },
   "types": "lib/index.d.ts",
   "dependencies": {
@@ -45,14 +45,12 @@
   "devDependencies": {
     "@typechain/ethers-v6": "^0.5.1",
     "@types/chai": "4.3.20",
-    "@types/chai-as-promised": "^7.1.5",
     "@types/mocha": "^10.0.0",
     "@types/node": "^22.0.0",
     "@types/sinon": "^17.0.4",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "chai": "^4.4.1",
-    "chai-as-promised": "^7.1.1",
     "concurrently": "^8.2.0",
     "confusing-browser-globals": "^1.0.11",
     "dotenv": "^17.0.0",
