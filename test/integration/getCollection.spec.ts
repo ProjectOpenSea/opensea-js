@@ -6,17 +6,6 @@ import { getSdkForChain } from "../utils/setupIntegration";
 import { processInBatches } from "../utils/utils";
 
 suite("SDK: getCollection", () => {
-  // Define all chains excluding Blast, ApeChain (internal server errors) and Solana (no NFT collections)
-  const allChains = Object.values(Chain).filter(
-    (chain) =>
-      chain !== Chain.Blast &&
-      chain !== Chain.ApeChain &&
-      chain !== Chain.Solana,
-  );
-  console.log(
-    "Skipping Blast and ApeChain chains due to internal server errors - skipping should be removed when resolved",
-  );
-
   test("Get Verified Collection", async () => {
     const slug = "cool-cats-nft";
     const collection = await getSdkForChain(Chain.Mainnet).api.getCollection(
@@ -80,9 +69,20 @@ suite("SDK: getCollection", () => {
   });
 
   test("Get Collections for all chains", async () => {
+    // Excluding Blast, ApeChain (internal server error) and Solana (no NFT collections)
+    const chains = Object.values(Chain).filter(
+      (chain) =>
+        chain !== Chain.Blast &&
+        chain !== Chain.ApeChain &&
+        chain !== Chain.Solana,
+    );
+    console.log(
+      "Skipping Blast and ApeChain due to internal server errors - skipping should be removed when resolved",
+    );
+
     const sdk = getSdkForChain(Chain.Mainnet);
 
-    await processInBatches(allChains, 3, async (chain) => {
+    await processInBatches(chains, 3, async (chain) => {
       try {
         const response = await sdk.api.getCollections(
           CollectionOrderByOption.CREATED_DATE,
