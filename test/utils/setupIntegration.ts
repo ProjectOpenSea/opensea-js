@@ -62,10 +62,9 @@ export const sdkPolygon = new OpenSeaSDK(
   (line) => console.info(`POLYGON: ${line}`),
 );
 
-const buyListingProvider =
-  BUY_LISTING_CHAIN === Chain.Optimism
-    ? alchemyProvider(Chain.Optimism)
-    : undefined;
+const buyListingProvider = BUY_LISTING_CHAIN
+  ? alchemyProvider(BUY_LISTING_CHAIN)
+  : undefined;
 const walletBuyListing = buyListingProvider
   ? new ethers.Wallet(WALLET_PRIV_KEY as string, buyListingProvider)
   : undefined;
