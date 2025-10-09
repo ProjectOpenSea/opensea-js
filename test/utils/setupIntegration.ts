@@ -11,11 +11,10 @@ export function requireIntegrationEnv(): void {
 }
 
 export const TOKEN_ADDRESS_MAINNET = process.env
-  .SELL_ORDER_CONTRACT_ADDRESS as string;
-export const TOKEN_ID_MAINNET = process.env.SELL_ORDER_TOKEN_ID as string;
-export const TOKEN_ADDRESS_POLYGON =
-  process.env.SELL_ORDER_CONTRACT_ADDRESS_POLYGON;
-export const TOKEN_ID_POLYGON = process.env.SELL_ORDER_TOKEN_ID_POLYGON;
+  .CREATE_LISTING_CONTRACT_ADDRESS as string;
+export const TOKEN_ID_MAINNET = process.env.CREATE_LISTING_TOKEN_ID as string;
+export const TOKEN_ADDRESS_POLYGON = process.env.CREATE_LISTING_2_CHAIN;
+export const TOKEN_ID_POLYGON = process.env.CREATE_LISTING_2_TOKEN_ID;
 export const LISTING_AMOUNT = process.env.LISTING_AMOUNT ?? "40";
 export const ETH_TO_WRAP = process.env.ETH_TO_WRAP;
 

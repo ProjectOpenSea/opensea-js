@@ -3,11 +3,7 @@ import { ethers } from "ethers";
 import { OpenSeaSDK } from "../../src/sdk";
 import { Chain } from "../../src/types";
 import { OPENSEA_API_KEY, WALLET_PRIV_KEY } from "../utils/env";
-import {
-  RPC_PROVIDER_MAINNET,
-  RPC_PROVIDER_OPTIMISM,
-  RPC_PROVIDER_POLYGON,
-} from "../utils/providers";
+import { alchemyProvider } from "../utils/providers";
 
 for (const envVar of ["WALLET_PRIV_KEY"]) {
   if (!process.env[envVar]) {
@@ -16,11 +12,11 @@ for (const envVar of ["WALLET_PRIV_KEY"]) {
 }
 
 export const TOKEN_ADDRESS_MAINNET = process.env
-  .SELL_ORDER_CONTRACT_ADDRESS as string;
-export const TOKEN_ID_MAINNET = process.env.SELL_ORDER_TOKEN_ID as string;
+  .CREATE_LISTING_CONTRACT_ADDRESS as string;
+export const TOKEN_ID_MAINNET = process.env.CREATE_LISTING_TOKEN_ID as string;
 export const TOKEN_ADDRESS_POLYGON =
-  process.env.SELL_ORDER_CONTRACT_ADDRESS_POLYGON;
-export const TOKEN_ID_POLYGON = process.env.SELL_ORDER_TOKEN_ID_POLYGON;
+  process.env.CREATE_LISTING_2_CONTRACT_ADDRESS;
+export const TOKEN_ID_POLYGON = process.env.CREATE_LISTING_2_TOKEN_ID;
 export const LISTING_AMOUNT = process.env.LISTING_AMOUNT ?? "40";
 export const ETH_TO_WRAP = process.env.ETH_TO_WRAP;
 
@@ -35,6 +31,9 @@ const normalizeChain = (chain?: string): Chain | undefined => {
 };
 
 export const BUY_LISTING_CHAIN = normalizeChain(process.env.BUY_LISTING_CHAIN);
+export const CREATE_LISTING_CHAIN = normalizeChain(
+  process.env.CREATE_LISTING_CHAIN || "ethereum",
+);
 export const BUY_LISTING_CONTRACT_ADDRESS =
   process.env.BUY_LISTING_CONTRACT_ADDRESS;
 export const BUY_LISTING_TOKEN_ID = process.env.BUY_LISTING_TOKEN_ID;
@@ -42,18 +41,18 @@ const BUY_LISTING_RPC_URL = process.env.BUY_LISTING_RPC_URL;
 
 const walletMainnet = new ethers.Wallet(
   WALLET_PRIV_KEY as string,
-  RPC_PROVIDER_MAINNET,
+  alchemyProvider(CREATE_LISTING_CHAIN ?? Chain.Mainnet),
 );
 const walletPolygon = new ethers.Wallet(
   WALLET_PRIV_KEY as string,
-  RPC_PROVIDER_POLYGON,
+  alchemyProvider(Chain.Polygon),
 );
 export const walletAddress = walletMainnet.address;
 
 export const sdk = new OpenSeaSDK(
   walletMainnet,
   {
-    chain: Chain.Mainnet,
+    chain: CREATE_LISTING_CHAIN ?? Chain.Mainnet,
     apiKey: OPENSEA_API_KEY,
   },
   (line) => console.info(`MAINNET: ${line}`),
@@ -71,9 +70,7 @@ export const sdkPolygon = new OpenSeaSDK(
 const buyListingProvider = BUY_LISTING_CHAIN
   ? BUY_LISTING_RPC_URL
     ? new ethers.JsonRpcProvider(BUY_LISTING_RPC_URL)
-    : BUY_LISTING_CHAIN === Chain.Optimism
-      ? RPC_PROVIDER_OPTIMISM
-      : undefined
+    : alchemyProvider(BUY_LISTING_CHAIN)
   : undefined;
 const walletBuyListing = buyListingProvider
   ? new ethers.Wallet(WALLET_PRIV_KEY as string, buyListingProvider)

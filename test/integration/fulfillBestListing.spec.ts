@@ -19,20 +19,9 @@ suite("SDK: fulfill best listing", () => {
       !BUY_LISTING_CONTRACT_ADDRESS ||
       !BUY_LISTING_TOKEN_ID
     ) {
-      const missing: string[] = [];
-      if (!sdkBuyListing) {
-        missing.push("sdkBuyListing");
-      }
-      if (!BUY_LISTING_CHAIN) {
-        missing.push("BUY_LISTING_CHAIN");
-      }
-      if (!BUY_LISTING_CONTRACT_ADDRESS) {
-        missing.push("BUY_LISTING_CONTRACT_ADDRESS");
-      }
-      if (!BUY_LISTING_TOKEN_ID) {
-        missing.push("BUY_LISTING_TOKEN_ID");
-      }
-      console.log(`Skipping test - missing: ${missing.join(", ")}`);
+      console.log(
+        "Skipping test - missing BUY_LISTING_CHAIN, BUY_LISTING_CONTRACT_ADDRESS, or BUY_LISTING_TOKEN_ID",
+      );
       this.skip();
       return;
     }
