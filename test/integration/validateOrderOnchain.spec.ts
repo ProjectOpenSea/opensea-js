@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
-import { OFFER_AMOUNT } from "../utils/constants";
+import { OFFER_AMOUNT } from "../utils/env";
 import { ensureVarsOrSkip, normalizeChainName } from "../utils/runtime";
 import {
   LISTING_AMOUNT,

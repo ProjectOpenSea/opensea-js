@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { suite, test } from "mocha";
 import { Chain } from "../../src/types";
 import { getOfferPaymentToken } from "../../src/utils";
-import { OFFER_AMOUNT } from "../utils/constants";
+import { OFFER_AMOUNT } from "../utils/env";
 import { ensureVarsOrSkip, normalizeChain } from "../utils/runtime";
 import {
   LISTING_AMOUNT,
@@ -57,8 +57,9 @@ suite("SDK: order posting", () => {
       accountAddress: walletAddress,
       startAmount: +OFFER_AMOUNT,
       asset: {
-        tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
-        tokenId: "2288",
+        tokenAddress: "0x251be3a17af4892035c37ebf5890f4a4d889dcad",
+        tokenId:
+          "5157722665851654661253630736650528917481758416718625695136396853508305538271",
       },
       expirationTime,
     };
