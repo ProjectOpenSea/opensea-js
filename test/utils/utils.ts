@@ -51,3 +51,28 @@ export const getRandomSalt = (): bigint => {
   const saltBuffer = randomBytes(32);
   return BigInt("0x" + saltBuffer.toString("hex"));
 };
+
+/**
+ * Process items in batches with controlled concurrency
+ * @param items Array of items to process
+ * @param batchSize Number of items to process concurrently in each batch
+ * @param processor Async function to process each item
+ */
+export const processInBatches = async <T, R>(
+  items: T[],
+  batchSize: number,
+  processor: (item: T) => Promise<R>,
+): Promise<R[]> => {
+  const results: R[] = [];
+
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+
+    const promises = batch.map(processor);
+    const batchResults = await Promise.all(promises);
+
+    results.push(...batchResults);
+  }
+
+  return results;
+};
