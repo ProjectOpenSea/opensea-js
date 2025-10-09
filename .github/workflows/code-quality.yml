@@ -37,10 +37,10 @@ jobs:
         run: npm install
 
       - name: Run tests
+        run: npm run test
         env:
           OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-        run: npm run test
 
       - name: Create code coverage report
         run: npm run coverage-report
@@ -63,6 +63,7 @@ jobs:
         run: npm install
 
       - name: Run integration tests
+        run: npm run test:integration
         env:
           OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
@@ -76,4 +77,3 @@ jobs:
           BUY_LISTING_CHAIN: ${{ secrets.BUY_LISTING_CHAIN }}
           BUY_LISTING_CONTRACT_ADDRESS: ${{ secrets.BUY_LISTING_CONTRACT_ADDRESS }}
           BUY_LISTING_TOKEN_ID: ${{ secrets.BUY_LISTING_TOKEN_ID }}
-        run: npm run test:integration
