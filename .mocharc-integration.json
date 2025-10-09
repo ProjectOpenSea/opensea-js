@@ -5,5 +5,7 @@
     "test/utils/setup.ts"
   ],
   "spec": "test/integration/**/*.spec.ts",
-  "timeout": "25s"
+  "timeout": "25s",
+  "parallel": true,
+  "jobs": 2
 }

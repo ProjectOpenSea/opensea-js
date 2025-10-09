@@ -1,43 +1,50 @@
 import { assert } from "chai";
 import { parseEther } from "ethers";
 import { describe, test } from "mocha";
-import { TokenStandard } from "../../src/types";
+import { TokenStandard, Chain } from "../../src/types";
 import {
   ETH_TO_WRAP,
-  sdk,
+  getSdkForChain,
   walletAddress,
   requireIntegrationEnv,
 } from "../utils/setupIntegration";
 
 describe("SDK: WETH", () => {
-  test("Wrap ETH and Unwrap", async function () {
+  beforeEach(() => {
     requireIntegrationEnv();
+  });
+
+  test("Wrap ETH and Unwrap", async function () {
     if (!ETH_TO_WRAP) {
       console.log("ETH_TO_WRAP not set, skipping");
       return;
     }
-    const startingBalance = await sdk.getBalance({
+    const startingBalance = await getSdkForChain(Chain.Mainnet).getBalance({
       accountAddress: walletAddress,
       asset: {
-        tokenAddress: sdk.getNativeWrapTokenAddress(sdk.chain),
+        tokenAddress: getSdkForChain(Chain.Mainnet).getNativeWrapTokenAddress(
+          getSdkForChain(Chain.Mainnet).chain,
+        ),
         tokenId: null,
         tokenStandard: TokenStandard.ERC20,
       },
     });
     console.log("Starting WETH balance:", startingBalance.toString());
 
-    await sdk.wrapEth({
+    await getSdkForChain(Chain.Mainnet).wrapEth({
       accountAddress: walletAddress,
       amountInEth: ETH_TO_WRAP,
     });
 
     const wethAsset = {
-      tokenAddress: sdk.getNativeWrapTokenAddress(sdk.chain),
+      tokenAddress: getSdkForChain(Chain.Mainnet).getNativeWrapTokenAddress(
+        getSdkForChain(Chain.Mainnet).chain,
+      ),
       tokenId: null,
       tokenStandard: TokenStandard.ERC20,
     };
 
-    const wrappedBalance = await sdk.getBalance({
+    const wrappedBalance = await getSdkForChain(Chain.Mainnet).getBalance({
       accountAddress: walletAddress,
       asset: wethAsset,
     });
@@ -50,12 +57,12 @@ describe("SDK: WETH", () => {
     assert.equal(wethAcquired, expectedWrappedBalance, "WETH balance");
 
     console.log("Unwrapping WETH...");
-    await sdk.unwrapWeth({
+    await getSdkForChain(Chain.Mainnet).unwrapWeth({
       accountAddress: walletAddress,
       amountInEth: ETH_TO_WRAP,
     });
 
-    const unwrappedBalance = await sdk.getBalance({
+    const unwrappedBalance = await getSdkForChain(Chain.Mainnet).getBalance({
       accountAddress: walletAddress,
       asset: wethAsset,
     });

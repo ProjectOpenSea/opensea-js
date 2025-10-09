@@ -4,7 +4,7 @@ import { OpenSeaSDK } from "../../src";
 import { OpenSeaAPI } from "../../src/api";
 import { Chain } from "../../src/types";
 
-export const client = new OpenSeaSDK(
+export const sdk = new OpenSeaSDK(
   alchemyProvider(Chain.Mainnet),
   {
     chain: Chain.Mainnet,

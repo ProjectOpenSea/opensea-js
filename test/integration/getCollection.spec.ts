@@ -2,12 +2,14 @@ import { assert } from "chai";
 import { suite, test } from "mocha";
 import { CollectionOrderByOption } from "../../src/api/types";
 import { Chain, SafelistStatus } from "../../src/types";
-import { sdk } from "../utils/setupIntegration";
+import { getSdkForChain } from "../utils/setupIntegration";
 
 suite("SDK: getCollection", () => {
   test("Get Verified Collection", async () => {
     const slug = "cool-cats-nft";
-    const collection = await sdk.api.getCollection(slug);
+    const collection = await getSdkForChain(Chain.Mainnet).api.getCollection(
+      slug,
+    );
 
     assert(collection, "Collection should not be null");
     assert(collection.name, "Collection name should exist");
@@ -20,13 +22,13 @@ suite("SDK: getCollection", () => {
   });
 
   test("Get Collections", async () => {
-    const response = await sdk.api.getCollections();
+    const response = await getSdkForChain(Chain.Mainnet).api.getCollections();
     const { collections, next } = response;
     assert(collections[0], "Collection should not be null");
     assert(collections[0].name, "Collection name should exist");
     assert(next, "Next cursor should be included");
 
-    const response2 = await sdk.api.getCollections(
+    const response2 = await getSdkForChain(Chain.Mainnet).api.getCollections(
       CollectionOrderByOption.MARKET_CAP,
     );
     const { collections: collectionsByMarketCap, next: nextByMarketCap } =
@@ -42,7 +44,7 @@ suite("SDK: getCollection", () => {
   });
 
   test("Get Collections by creator", async () => {
-    const response = await sdk.api.getCollections(
+    const response = await getSdkForChain(Chain.Mainnet).api.getCollections(
       CollectionOrderByOption.CREATED_DATE,
       undefined,
       "cryptoexpert123",
@@ -55,7 +57,9 @@ suite("SDK: getCollection", () => {
 
   test("Get Collection Stats", async () => {
     const slug = "cool-cats-nft";
-    const stats = await sdk.api.getCollectionStats(slug);
+    const stats = await getSdkForChain(Chain.Mainnet).api.getCollectionStats(
+      slug,
+    );
 
     assert(stats, "Stats should not be null");
     assert(stats.total.volume, "Volume should not be null");
@@ -69,7 +73,7 @@ suite("SDK: getCollection", () => {
 
     for (const chain of chains) {
       try {
-        const response = await sdk.api.getCollections(
+        const response = await getSdkForChain(Chain.Mainnet).api.getCollections(
           CollectionOrderByOption.CREATED_DATE,
           chain,
           undefined,

@@ -10,16 +10,16 @@ import {
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
 } from "../../src/utils/utils";
 import { BAYC_CONTRACT_ADDRESS } from "../utils/constants";
-import { client } from "../utils/sdk";
+import { sdk } from "../utils/sdk";
 
 suite("SDK: misc", () => {
   test("Instance has public methods", () => {
-    assert.equal(typeof client.wrapEth, "function");
+    assert.equal(typeof sdk.wrapEth, "function");
   });
 
   test("Instance exposes API methods", () => {
-    assert.equal(typeof client.api.getOrder, "function");
-    assert.equal(typeof client.api.getOrders, "function");
+    assert.equal(typeof sdk.api.getOrder, "function");
+    assert.equal(typeof sdk.api.getOrders, "function");
   });
 
   test("Checks that a non-shared storefront address is not remapped", async () => {
@@ -61,14 +61,14 @@ suite("SDK: misc", () => {
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     try {
-      await client.wrapEth({ amountInEth: "0.1", accountAddress });
+      await sdk.wrapEth({ amountInEth: "0.1", accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
       expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
-      await client.unwrapWeth({ amountInEth: "0.1", accountAddress });
+      await sdk.unwrapWeth({ amountInEth: "0.1", accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
       expect(e.message).to.include(expectedErrorMessage);
@@ -77,21 +77,21 @@ suite("SDK: misc", () => {
     const asset = {} as any;
 
     try {
-      await client.createOffer({ asset, startAmount: 1, accountAddress });
+      await sdk.createOffer({ asset, startAmount: 1, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
       expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
-      await client.createListing({ asset, startAmount: 1, accountAddress });
+      await sdk.createListing({ asset, startAmount: 1, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
       expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
-      await client.createCollectionOffer({
+      await sdk.createCollectionOffer({
         collectionSlug: "",
         amount: 1,
         quantity: 1,
@@ -106,21 +106,21 @@ suite("SDK: misc", () => {
     const order = {} as any;
 
     try {
-      await client.fulfillOrder({ order, accountAddress });
+      await sdk.fulfillOrder({ order, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
       expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
-      await client.cancelOrder({ order, accountAddress });
+      await sdk.cancelOrder({ order, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
       expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
-      await client.approveOrder({
+      await sdk.approveOrder({
         ...order,
         maker: { address: accountAddress },
       });
