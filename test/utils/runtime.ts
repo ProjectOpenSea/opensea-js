@@ -26,8 +26,16 @@ export const normalizeChainName = (chain: string): string => {
   if (!found) {
     throw new Error(`normalizeChainName: unsupported chain '${chain}'`);
   }
-  // Return the chain name with proper capitalization
-  return found.charAt(0).toUpperCase() + found.slice(1);
+  // Return the chain enum key
+  const enumKey = Object.keys(Chain).find(
+    (key) => Chain[key as keyof typeof Chain] === found,
+  );
+  if (!enumKey) {
+    throw new Error(
+      `normalizeChainName: could not find enum key for chain '${chain}'`,
+    );
+  }
+  return enumKey;
 };
 
 const getProviderForChain = (chain: Chain): ethers.Provider => {
