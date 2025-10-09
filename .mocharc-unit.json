@@ -1,5 +1,5 @@
 {
-  "require": ["ts-node/register/transpile-only", "test/utils/setup.ts"],
+  "require": ["test/register-ts-node-tests.js", "test/utils/setup.ts"],
   "spec": "test/**/*.spec.ts",
   "exclude": "test/integration/**/*.ts",
   "timeout": "15s",

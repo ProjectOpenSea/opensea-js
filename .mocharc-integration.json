@@ -1,6 +1,6 @@
 {
   "require": [
-    "ts-node/register/transpile-only",
+    "test/register-ts-node-tests.js",
     "dotenv/config",
     "test/utils/setup.ts"
   ],
