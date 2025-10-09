@@ -1,12 +1,15 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { sdk } from "./setup";
+import { Chain } from "../../src/types";
 import { decodeTokenIds } from "../../src/utils/utils";
+import { getSdkForChain } from "../utils/setupIntegration";
 
 suite("SDK: getCollectionOffers", () => {
   test("Get Collection Offers", async () => {
     const slug = "cool-cats-nft";
-    const response = await sdk.api.getCollectionOffers(slug);
+    const response = await getSdkForChain(
+      Chain.Mainnet,
+    ).api.getCollectionOffers(slug);
 
     assert(response, "Response should not be null");
     assert(response.offers, "Collection offers should not be null");

@@ -1,8 +1,8 @@
-import "../utils/setup";
 import { expect } from "chai";
 import { suite, test } from "mocha";
 import { OrderSide } from "../../src/types";
-import { BAYC_CONTRACT_ADDRESS, BAYC_TOKEN_IDS, api } from "../utils/constants";
+import { BAYC_CONTRACT_ADDRESS, BAYC_TOKEN_IDS } from "../utils/constants";
+import { api } from "../utils/sdk";
 import { expectValidOrder } from "../utils/utils";
 
 suite("Getting orders", () => {
@@ -17,15 +17,20 @@ suite("Getting orders", () => {
   });
 
   test(`getOrder should throw if no order found`, async () => {
-    await expect(
-      api.getOrder({
+    try {
+      await api.getOrder({
         protocol: "seaport",
         side: OrderSide.LISTING,
         maker: "0x000000000000000000000000000000000000dEaD",
-      }),
-    )
-      .to.eventually.be.rejected.and.be.an.instanceOf(Error)
-      .and.have.property("message", "Not found: no matching order found");
+      });
+      expect.fail("Expected an error to be thrown");
+    } catch (error) {
+      expect(error).to.be.an.instanceOf(Error);
+      expect(error).to.have.property(
+        "message",
+        "Not found: no matching order found",
+      );
+    }
   });
 
   [OrderSide.LISTING, OrderSide.OFFER].forEach((side) => {

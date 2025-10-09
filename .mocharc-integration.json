@@ -1,5 +1,7 @@
 {
-  "require": "ts-node/register/transpile-only, dotenv/config",
+  "require": ["ts-node/register/transpile-only", "dotenv/config"],
   "spec": "test/integration/**/*.spec.ts",
-  "timeout": "25s"
+  "timeout": "30s",
+  "parallel": true,
+  "jobs": 4
 }

@@ -1,23 +1,32 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { Chain } from "../../src/types";
+import { getOfferPaymentToken } from "../../src/utils";
+import { OFFER_AMOUNT } from "../utils/env";
+import { ensureVarsOrSkip, normalizeChain } from "../utils/runtime";
 import {
   LISTING_AMOUNT,
-  TOKEN_ADDRESS_MAINNET,
-  TOKEN_ADDRESS_POLYGON,
-  TOKEN_ID_MAINNET,
-  TOKEN_ID_POLYGON,
-  sdk,
-  sdkPolygon,
+  CREATE_LISTING_CHAIN,
+  CREATE_LISTING_CONTRACT_ADDRESS,
+  CREATE_LISTING_TOKEN_ID,
+  CREATE_LISTING_2_CHAIN,
+  CREATE_LISTING_2_CONTRACT_ADDRESS,
+  CREATE_LISTING_2_TOKEN_ID,
+  getSdkForChain,
   walletAddress,
-  getRandomExpiration,
-} from "./setup";
-import { ENGLISH_AUCTION_ZONE_MAINNETS } from "../../src/constants";
-import { getOfferPaymentToken } from "../../src/utils";
-import { OFFER_AMOUNT } from "../utils/constants";
-import { expectValidOrder } from "../utils/utils";
+  requireIntegrationEnv,
+} from "../utils/setupIntegration";
+import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {
+  beforeEach(() => {
+    requireIntegrationEnv();
+  });
+
   test("Post Offer - Mainnet", async () => {
+    const chain = Chain.Mainnet;
+    const sdk = getSdkForChain(chain);
+
     const expirationTime = getRandomExpiration();
     const offer = {
       accountAddress: walletAddress,
@@ -40,31 +49,43 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Offer - Polygon", async () => {
+    const chain2 = Chain.Polygon;
+    const sdk2 = getSdkForChain(chain2);
+
     const expirationTime = getRandomExpiration();
     const offer = {
       accountAddress: walletAddress,
       startAmount: +OFFER_AMOUNT,
       asset: {
-        tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
-        tokenId: "2288",
+        tokenAddress: "0x251be3a17af4892035c37ebf5890f4a4d889dcad",
+        tokenId:
+          "5157722665851654661253630736650528917481758416718625695136396853508305538271",
       },
       expirationTime,
     };
-    const order = await sdk.createOffer(offer);
+    const order = await sdk2.createOffer(offer);
     expectValidOrder(order);
   });
 
-  test("Post Listing - Mainnet", async function () {
-    if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
-      this.skip();
+  test(`Post Listing - ${CREATE_LISTING_CHAIN}`, async function () {
+    if (
+      !ensureVarsOrSkip(this, {
+        CREATE_LISTING_CONTRACT_ADDRESS,
+        CREATE_LISTING_TOKEN_ID,
+      })
+    ) {
+      return;
     }
+
+    const chain = CREATE_LISTING_CHAIN;
+    const sdk = getSdkForChain(chain);
     const expirationTime = getRandomExpiration();
     const listing = {
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
       asset: {
-        tokenAddress: TOKEN_ADDRESS_MAINNET,
-        tokenId: TOKEN_ID_MAINNET,
+        tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS,
+        tokenId: CREATE_LISTING_TOKEN_ID,
       },
       expirationTime,
     };
@@ -72,66 +93,51 @@ suite("SDK: order posting", () => {
     expectValidOrder(order);
   });
 
-  test("Post English Auction Listing - Mainnet", async function () {
-    // English auctions are no longer supported on OpenSea
-    this.skip();
-
-    if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
-      this.skip();
+  test(`Post Listing - ${CREATE_LISTING_2_CHAIN}`, async function () {
+    if (
+      !ensureVarsOrSkip(this, {
+        CREATE_LISTING_2_CONTRACT_ADDRESS,
+        CREATE_LISTING_2_TOKEN_ID,
+      })
+    ) {
+      return;
     }
+
+    const chain2 = CREATE_LISTING_2_CHAIN;
+    const sdk2 = getSdkForChain(chain2);
     const expirationTime = getRandomExpiration();
     const listing = {
       accountAddress: walletAddress,
-      startAmount: LISTING_AMOUNT,
-      asset: {
-        tokenAddress: TOKEN_ADDRESS_MAINNET,
-        tokenId: TOKEN_ID_MAINNET,
-      },
-      englishAuction: true,
-      expirationTime,
-    };
-    try {
-      const order = await sdk.createListing(listing);
-      expectValidOrder(order);
-      expect(order.protocolData.parameters.zone.toLowerCase()).to.equal(
-        ENGLISH_AUCTION_ZONE_MAINNETS,
-      );
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      expect(
-        error.message.includes(
-          "There is already a live auction for this item. You can only have one auction live at any time.",
-        ),
-      );
-    }
-  });
-
-  test("Post Listing - Polygon", async () => {
-    const expirationTime = getRandomExpiration();
-    const listing = {
-      accountAddress: walletAddress,
-      paymentTokenAddress: getOfferPaymentToken(sdkPolygon.chain),
+      paymentTokenAddress: getOfferPaymentToken(sdk2.chain),
       startAmount: +LISTING_AMOUNT * 1_000_000,
       asset: {
-        tokenAddress: TOKEN_ADDRESS_POLYGON as string,
-        tokenId: TOKEN_ID_POLYGON as string,
+        tokenAddress: CREATE_LISTING_2_CONTRACT_ADDRESS as string,
+        tokenId: CREATE_LISTING_2_TOKEN_ID as string,
       },
       expirationTime,
     };
-    const order = await sdkPolygon.createListing(listing);
+    const order = await sdk2.createListing(listing);
     expectValidOrder(order);
   });
 
-  test("Post Listing with Optional Creator Fees - Mainnet", async function () {
-    if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
-      this.skip();
+  test("Post Listing with Optional Creator Fees - Chain A", async function () {
+    if (
+      !ensureVarsOrSkip(this, {
+        CREATE_LISTING_CONTRACT_ADDRESS,
+        CREATE_LISTING_TOKEN_ID,
+      })
+    ) {
+      return;
     }
+
+    const chain = CREATE_LISTING_CHAIN;
+    const sdk = getSdkForChain(chain!);
     const expirationTime = getRandomExpiration();
 
     // Get the NFT to retrieve its collection
     const { nft } = await sdk.api.getNFT(
-      TOKEN_ADDRESS_MAINNET,
-      TOKEN_ID_MAINNET,
+      CREATE_LISTING_CONTRACT_ADDRESS,
+      CREATE_LISTING_TOKEN_ID,
     );
     const collection = await sdk.api.getCollection(nft.collection);
 
@@ -139,8 +145,8 @@ suite("SDK: order posting", () => {
       accountAddress: walletAddress,
       startAmount: LISTING_AMOUNT,
       asset: {
-        tokenAddress: TOKEN_ADDRESS_MAINNET,
-        tokenId: TOKEN_ID_MAINNET,
+        tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS,
+        tokenId: CREATE_LISTING_TOKEN_ID,
       },
       includeOptionalCreatorFees: true,
       expirationTime,
@@ -162,6 +168,8 @@ suite("SDK: order posting", () => {
   });
 
   test.skip("Post Collection Offer - Mainnet", async () => {
+    const chain = normalizeChain("ethereum")!;
+    const sdk = getSdkForChain(chain);
     const collection = await sdk.api.getCollection("cool-cats-nft");
     const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
     const expirationTime = getRandomExpiration();
@@ -190,8 +198,10 @@ suite("SDK: order posting", () => {
   });
 
   test.skip("Post Collection Offer - Polygon", async () => {
-    const collection = await sdkPolygon.api.getCollection("arttoken-1155-4");
-    const paymentTokenAddress = getOfferPaymentToken(sdkPolygon.chain);
+    const chain2 = normalizeChain("polygon")!;
+    const sdk2 = getSdkForChain(chain2);
+    const collection = await sdk2.api.getCollection("arttoken-1155-4");
+    const paymentTokenAddress = getOfferPaymentToken(sdk2.chain);
     const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,
@@ -201,15 +211,14 @@ suite("SDK: order posting", () => {
       paymentTokenAddress,
       expirationTime,
     };
-    const offerResponse =
-      await sdkPolygon.createCollectionOffer(postOrderRequest);
+    const offerResponse = await sdk2.createCollectionOffer(postOrderRequest);
     expect(offerResponse).to.exist.and.to.have.property("protocol_address");
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");
     expect(offerResponse).to.exist.and.to.have.property("order_hash");
 
     // Cancel the order using the offerer signature, deriving it from the ethers signer
     const { protocol_address, order_hash } = offerResponse!;
-    const cancelResponse = await sdkPolygon.offchainCancelOrder(
+    const cancelResponse = await sdk2.offchainCancelOrder(
       protocol_address,
       order_hash,
       undefined,
@@ -222,6 +231,8 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Trait Offer - Ethereum", async () => {
+    const chain = normalizeChain("ethereum")!;
+    const sdk = getSdkForChain(chain);
     const collection = await sdk.api.getCollection("cool-cats-nft");
     const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
     const expirationTime = getRandomExpiration();

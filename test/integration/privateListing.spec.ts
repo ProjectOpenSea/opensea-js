@@ -1,73 +1,97 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
-import {
-  getRandomExpiration,
-  LISTING_AMOUNT,
-  TOKEN_ADDRESS_MAINNET,
-  TOKEN_ID_MAINNET,
-  sdk,
-  walletAddress,
-} from "./setup";
 import { Chain } from "../../src/types";
 import { getFeeRecipient } from "../../src/utils/utils";
-import { expectValidOrder } from "../utils/utils";
+import { ensureVarsOrSkip, normalizeChainName } from "../utils/runtime";
+import {
+  LISTING_AMOUNT,
+  CREATE_LISTING_CHAIN,
+  CREATE_LISTING_CONTRACT_ADDRESS,
+  CREATE_LISTING_TOKEN_ID,
+  getSdkForChain,
+  walletAddress,
+  requireIntegrationEnv,
+} from "../utils/setupIntegration";
+import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
-suite("SDK: Private Listings Integration", () => {
-  test("Post Private Listing - Mainnet", async function () {
-    if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
-      this.skip();
-    }
+suite(
+  `SDK: Private Listings Integration - ${normalizeChainName(CREATE_LISTING_CHAIN)}`,
+  () => {
+    beforeEach(() => {
+      requireIntegrationEnv();
+    });
 
-    const buyerAddress = "0x0000000000000000000000000000000000000001";
-    const expirationTime = getRandomExpiration();
+    test("Post Private Listing - Mainnet", async function () {
+      if (
+        !ensureVarsOrSkip(this, {
+          CREATE_LISTING_CONTRACT_ADDRESS,
+          CREATE_LISTING_TOKEN_ID,
+        })
+      ) {
+        return;
+      }
 
-    const privateListing = {
-      accountAddress: walletAddress,
-      startAmount: LISTING_AMOUNT,
-      asset: {
-        tokenAddress: TOKEN_ADDRESS_MAINNET,
-        tokenId: TOKEN_ID_MAINNET,
-      },
-      buyerAddress,
-      expirationTime,
-    };
+      const chain = CREATE_LISTING_CHAIN;
+      const sdk = getSdkForChain(chain);
 
-    const order = await sdk.createListing(privateListing);
-    expectValidOrder(order);
+      const buyerAddress = "0x0000000000000000000000000000000000000001";
+      const expirationTime = getRandomExpiration();
 
-    expect(order.protocolData.parameters.consideration).to.exist;
+      const privateListing = {
+        accountAddress: walletAddress,
+        startAmount: LISTING_AMOUNT,
+        asset: {
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS,
+          tokenId: CREATE_LISTING_TOKEN_ID,
+        },
+        buyerAddress,
+        expirationTime,
+      };
+      const order = await sdk.createListing(privateListing);
+      expectValidOrder(order);
 
-    const hasMarketplaceFee = order.protocolData.parameters.consideration.some(
-      (item: { recipient?: string }) =>
-        item.recipient?.toLowerCase() ===
-        getFeeRecipient(Chain.Mainnet).toLowerCase(),
-    );
+      expect(order.protocolData.parameters.consideration).to.exist;
 
-    expect(hasMarketplaceFee).to.be.false;
-  });
+      const hasMarketplaceFee =
+        order.protocolData.parameters.consideration.some(
+          (item: { recipient?: string }) =>
+            item.recipient?.toLowerCase() ===
+            getFeeRecipient(Chain.Mainnet).toLowerCase(),
+        );
 
-  test("Post Regular Listing - Mainnet (for comparison)", async function () {
-    if (!TOKEN_ADDRESS_MAINNET || !TOKEN_ID_MAINNET) {
-      this.skip();
-    }
+      expect(hasMarketplaceFee).to.be.false;
+    });
 
-    const expirationTime = getRandomExpiration();
-    const regularListing = {
-      accountAddress: walletAddress,
-      startAmount: LISTING_AMOUNT,
-      asset: {
-        tokenAddress: TOKEN_ADDRESS_MAINNET,
-        tokenId: TOKEN_ID_MAINNET,
-      },
-      expirationTime,
-    };
+    test("Post Regular Listing - Mainnet (for comparison)", async function () {
+      if (
+        !ensureVarsOrSkip(this, {
+          CREATE_LISTING_CONTRACT_ADDRESS,
+          CREATE_LISTING_TOKEN_ID,
+        })
+      ) {
+        return;
+      }
 
-    const order = await sdk.createListing(regularListing);
-    expectValidOrder(order);
+      const chain2 = CREATE_LISTING_CHAIN;
+      const sdk2 = getSdkForChain(chain2);
 
-    expect(order.protocolData.parameters.consideration).to.exist;
-    expect(
-      order.protocolData.parameters.consideration.length,
-    ).to.be.greaterThan(0);
-  });
-});
+      const expirationTime = getRandomExpiration();
+      const regularListing = {
+        accountAddress: walletAddress,
+        startAmount: LISTING_AMOUNT,
+        asset: {
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS,
+          tokenId: CREATE_LISTING_TOKEN_ID,
+        },
+        expirationTime,
+      };
+      const order = await sdk2.createListing(regularListing);
+      expectValidOrder(order);
+
+      expect(order.protocolData.parameters.consideration).to.exist;
+      expect(
+        order.protocolData.parameters.consideration.length,
+      ).to.be.greaterThan(0);
+    });
+  },
+);

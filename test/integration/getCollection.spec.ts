@@ -1,13 +1,16 @@
 import { assert } from "chai";
 import { suite, test } from "mocha";
-import { sdk } from "./setup";
 import { CollectionOrderByOption } from "../../src/api/types";
 import { Chain, SafelistStatus } from "../../src/types";
+import { getSdkForChain } from "../utils/setupIntegration";
+import { processInBatches } from "../utils/utils";
 
 suite("SDK: getCollection", () => {
   test("Get Verified Collection", async () => {
     const slug = "cool-cats-nft";
-    const collection = await sdk.api.getCollection(slug);
+    const collection = await getSdkForChain(Chain.Mainnet).api.getCollection(
+      slug,
+    );
 
     assert(collection, "Collection should not be null");
     assert(collection.name, "Collection name should exist");
@@ -20,13 +23,13 @@ suite("SDK: getCollection", () => {
   });
 
   test("Get Collections", async () => {
-    const response = await sdk.api.getCollections();
+    const response = await getSdkForChain(Chain.Mainnet).api.getCollections();
     const { collections, next } = response;
     assert(collections[0], "Collection should not be null");
     assert(collections[0].name, "Collection name should exist");
     assert(next, "Next cursor should be included");
 
-    const response2 = await sdk.api.getCollections(
+    const response2 = await getSdkForChain(Chain.Mainnet).api.getCollections(
       CollectionOrderByOption.MARKET_CAP,
     );
     const { collections: collectionsByMarketCap, next: nextByMarketCap } =
@@ -42,7 +45,7 @@ suite("SDK: getCollection", () => {
   });
 
   test("Get Collections by creator", async () => {
-    const response = await sdk.api.getCollections(
+    const response = await getSdkForChain(Chain.Mainnet).api.getCollections(
       CollectionOrderByOption.CREATED_DATE,
       undefined,
       "cryptoexpert123",
@@ -55,7 +58,9 @@ suite("SDK: getCollection", () => {
 
   test("Get Collection Stats", async () => {
     const slug = "cool-cats-nft";
-    const stats = await sdk.api.getCollectionStats(slug);
+    const stats = await getSdkForChain(Chain.Mainnet).api.getCollectionStats(
+      slug,
+    );
 
     assert(stats, "Stats should not be null");
     assert(stats.total.volume, "Volume should not be null");
@@ -64,17 +69,28 @@ suite("SDK: getCollection", () => {
   });
 
   test("Get Collections for all chains", async () => {
-    // Iterate through all chains in the Chain enum
-    const chains = Object.values(Chain);
+    // Excluding Abstract, ApeChain, Blast (internal server error) and Solana (no NFT collections)
+    const chains = Object.values(Chain).filter(
+      (chain) =>
+        chain !== Chain.Abstract &&
+        chain !== Chain.ApeChain &&
+        chain !== Chain.Blast &&
+        chain !== Chain.Solana,
+    );
+    console.log(
+      "Skipping Abstract, ApeChain, Blast due to internal server errors - skipping should be removed when resolved",
+    );
 
-    for (const chain of chains) {
+    const sdk = getSdkForChain(Chain.Mainnet);
+
+    await processInBatches(chains, 3, async (chain) => {
       try {
         const response = await sdk.api.getCollections(
           CollectionOrderByOption.CREATED_DATE,
           chain,
           undefined,
           false,
-          5, // Limit to 5 collections per chain to keep test fast
+          3, // Limit to returning 3 collections per chain to keep test fast
         );
 
         const { collections } = response;
@@ -99,6 +115,6 @@ suite("SDK: getCollection", () => {
           `Failed to get collections for chain "${chain}": ${error instanceof Error ? error.message : String(error)}`,
         );
       }
-    }
+    });
   });
 });

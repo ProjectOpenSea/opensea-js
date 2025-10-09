@@ -185,8 +185,6 @@ export const getChainId = (chain: Chain) => {
       return "43114";
     case Chain.Arbitrum:
       return "42161";
-    case Chain.ArbitrumNova:
-      return "42170";
     case Chain.Blast:
       return "238";
     case Chain.Base:
@@ -235,8 +233,6 @@ export const getOfferPaymentToken = (chain: Chain) => {
       return "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"; // WAVAX
     case Chain.Arbitrum:
       return "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"; // WETH
-    case Chain.ArbitrumNova:
-      return "0x722e8bdd2ce80a4422e880164f2079488e115365"; // WETH
     case Chain.Blast:
       return "0x4300000000000000000000000000000000000004"; // WETH
     // OP Chains have WETH at the same address
@@ -277,7 +273,6 @@ export const getListingPaymentToken = (chain: Chain) => {
     case Chain.Somnia:
     case Chain.HyperEVM:
     case Chain.Arbitrum:
-    case Chain.ArbitrumNova:
     case Chain.Blast:
     case Chain.Base:
     case Chain.Optimism:

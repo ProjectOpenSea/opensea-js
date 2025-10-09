@@ -107,7 +107,6 @@ export enum Chain {
   Base = "base",
   Blast = "blast",
   Arbitrum = "arbitrum",
-  ArbitrumNova = "arbitrum_nova",
   Avalanche = "avalanche",
   Optimism = "optimism",
   Solana = "solana",

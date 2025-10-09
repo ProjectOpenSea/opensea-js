@@ -33,8 +33,8 @@ Happy seafaring! ⛵️
 
 The changelog for recent versions can be found at:
 
-- https://docs.opensea.io/changelog
-- https://github.com/ProjectOpenSea/opensea-js/releases
+- opensea-js: https://github.com/ProjectOpenSea/opensea-js/releases
+- OpenSea API: https://docs.opensea.io/changelog
 
 [version-badge]: https://img.shields.io/github/package-json/v/ProjectOpenSea/opensea-js
 [version-link]: https://github.com/ProjectOpenSea/opensea-js/releases
