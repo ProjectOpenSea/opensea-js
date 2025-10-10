@@ -464,6 +464,10 @@ export const decodeTokenIds = (encodedTokenIds: string): string[] => {
     return ["*"];
   }
 
+  if (encodedTokenIds === "") {
+    return [];
+  }
+
   const validFormatRegex = /^(\d+(:\d+)?)(,\d+(:\d+)?)*$/;
 
   if (!validFormatRegex.test(encodedTokenIds)) {
