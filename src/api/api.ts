@@ -120,12 +120,12 @@ export class OpenSeaAPI {
    * @param options.side The side of the order (listing or offer)
    * @param options.protocol The protocol, typically seaport, to query orders for
    * @param options.orderDirection The direction to sort the orders
-   * @param options.orderBy The field to sort the orders by
+   * @param options.orderBy The field to sort the orders by. Note: If using "eth_price", you must also provide asset_contract_address and token_ids parameters.
    * @param options.limit The number of orders to retrieve
    * @param options.maker Filter by the wallet address of the order maker
    * @param options.taker Filter by  wallet address of the order taker
-   * @param options.asset_contract_address Address of the NFT's contract
-   * @param options.token_ids String array of token IDs to filter by.
+   * @param options.asset_contract_address Address of the NFT's contract (required when orderBy is "eth_price")
+   * @param options.token_ids String array of token IDs to filter by (required when orderBy is "eth_price")
    * @param options.listed_after Filter by orders listed after the Unix epoch timestamp in seconds
    * @param options.listed_before Filter by orders listed before the Unix epoch timestamp in seconds
    * @returns The first {@link OrderV2} returned by the API
@@ -139,6 +139,19 @@ export class OpenSeaAPI {
     orderBy = "created_date",
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
+    // Validate eth_price orderBy requires additional parameters
+    if (orderBy === "eth_price") {
+      if (
+        !restOptions.assetContractAddress ||
+        !restOptions.tokenIds ||
+        restOptions.tokenIds.length === 0
+      ) {
+        throw new Error(
+          'When using orderBy: "eth_price", you must provide both asset_contract_address and token_ids parameters',
+        );
+      }
+    }
+
     const { orders } = await this.get<OrdersQueryResponse>(
       getOrdersAPIPath(this.chain, protocol, side),
       serializeOrdersQueryOptions({
@@ -160,12 +173,12 @@ export class OpenSeaAPI {
    * @param options.side The side of the order (buy or sell)
    * @param options.protocol The protocol, typically seaport, to query orders for
    * @param options.orderDirection The direction to sort the orders
-   * @param options.orderBy The field to sort the orders by
+   * @param options.orderBy The field to sort the orders by. Note: If using "eth_price", you must also provide asset_contract_address and token_ids parameters.
    * @param options.limit The number of orders to retrieve
    * @param options.maker Filter by the wallet address of the order maker
    * @param options.taker Filter by  wallet address of the order taker
-   * @param options.asset_contract_address Address of the NFT's contract
-   * @param options.token_ids String array of token IDs to filter by.
+   * @param options.asset_contract_address Address of the NFT's contract (required when orderBy is "eth_price")
+   * @param options.token_ids String array of token IDs to filter by (required when orderBy is "eth_price")
    * @param options.listed_after Filter by orders listed after the Unix epoch timestamp in seconds
    * @param options.listed_before Filter by orders listed before the Unix epoch timestamp in seconds
    * @returns The {@link GetOrdersResponse} returned by the API.
@@ -177,6 +190,19 @@ export class OpenSeaAPI {
     orderBy = "created_date",
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<GetOrdersResponse> {
+    // Validate eth_price orderBy requires additional parameters
+    if (orderBy === "eth_price") {
+      if (
+        !restOptions.assetContractAddress ||
+        !restOptions.tokenIds ||
+        restOptions.tokenIds.length === 0
+      ) {
+        throw new Error(
+          'When using orderBy: "eth_price", you must provide both asset_contract_address and token_ids parameters',
+        );
+      }
+    }
+
     const response = await this.get<OrdersQueryResponse>(
       getOrdersAPIPath(this.chain, protocol, side),
       serializeOrdersQueryOptions({
