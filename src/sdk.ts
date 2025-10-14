@@ -1092,6 +1092,113 @@ export class OpenSeaSDK {
   }
 
   /**
+   * Cancel multiple orders onchain, preventing them from being fulfilled.
+   * This method accepts either full OrderV2 objects, OrderComponents, or order hashes with protocol address.
+   * @param options
+   * @param options.orders Array of orders to cancel. Can be OrderV2 objects or OrderComponents.
+   * @param options.orderHashes Optional array of order hashes to cancel. Must provide protocolAddress if using this.
+   * @param options.accountAddress The account address cancelling the orders.
+   * @param options.protocolAddress Required when using orderHashes. The Seaport protocol address for the orders.
+   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.
+   * @param options.overrides Transaction overrides, ignored if not set.
+   * @returns Transaction hash of the cancellation.
+   *
+   * @throws Error if orderHashes is provided without protocolAddress.
+   * @throws Error if neither orders nor orderHashes is provided.
+   * @throws Error if the accountAddress is not available through wallet or provider.
+   * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
+   */
+  public async cancelOrders({
+    orders,
+    orderHashes,
+    accountAddress,
+    protocolAddress = DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+    domain,
+    overrides,
+  }: {
+    orders?: Array<OrderV2 | OrderComponents>;
+    orderHashes?: string[];
+    accountAddress: string;
+    protocolAddress?: string;
+    domain?: string;
+    overrides?: Overrides;
+  }): Promise<string> {
+    await this._requireAccountIsAvailable(accountAddress);
+    requireValidProtocol(protocolAddress);
+
+    // Validate input
+    if (!orders && !orderHashes) {
+      throw new Error(
+        "Either orders or orderHashes must be provided to cancel orders",
+      );
+    }
+
+    if (orders && orders.length === 0) {
+      throw new Error("At least one order must be provided");
+    }
+
+    if (orderHashes && orderHashes.length === 0) {
+      throw new Error("At least one order hash must be provided");
+    }
+
+    let orderComponents: OrderComponents[];
+    let effectiveProtocolAddress = protocolAddress;
+
+    if (orders) {
+      // Extract OrderComponents from either OrderV2 objects or use OrderComponents directly
+      orderComponents = orders.map((order) => {
+        if ("protocolData" in order) {
+          // It's an OrderV2 object
+          const orderV2 = order as OrderV2;
+          requireValidProtocol(orderV2.protocolAddress);
+          effectiveProtocolAddress = orderV2.protocolAddress;
+          return orderV2.protocolData.parameters;
+        } else {
+          // It's already OrderComponents
+          return order as OrderComponents;
+        }
+      });
+
+      // Dispatch event for the first order (for backwards compatibility)
+      if (orders[0] && "protocolData" in orders[0]) {
+        this._dispatch(EventType.CancelOrder, {
+          orderV2: orders[0] as OrderV2,
+          accountAddress,
+        });
+      }
+    } else if (orderHashes) {
+      // For order hashes, we need to explain that full order data is required for onchain cancellation
+      throw new Error(
+        "Onchain order cancellation requires full order data (OrderComponents). " +
+          "Order hashes alone are insufficient because Seaport's cancel() function needs the complete order parameters. " +
+          "Please provide the full OrderV2 objects or OrderComponents instead. " +
+          "If you only have order hashes and want to cancel orders protected by SignedZone, use offchainCancelOrder() instead.",
+      );
+    } else {
+      // Should never reach here due to earlier validation
+      throw new Error("Invalid input");
+    }
+
+    // Transact and get the transaction hash
+    const transactionHash = await this.cancelSeaportOrders({
+      orders: orderComponents,
+      accountAddress,
+      domain,
+      protocolAddress: effectiveProtocolAddress,
+      overrides,
+    });
+
+    // Await transaction confirmation
+    await this._confirmTransaction(
+      transactionHash,
+      EventType.CancelOrder,
+      `Cancelling ${orderComponents.length} order(s)`,
+    );
+
+    return transactionHash;
+  }
+
+  /**
    * Cancel an order onchain, preventing it from ever being fulfilled.
    * @param options
    * @param options.order The order to cancel
