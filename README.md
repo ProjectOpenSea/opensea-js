@@ -35,8 +35,6 @@ For frontend applications that need to interact with OpenSea functionality:
 3. **Return data to your frontend**: Send the necessary data (like transaction parameters) back to your frontend
 4. **Execute transactions in the browser**: Have users sign transactions with their own wallets (e.g., MetaMask) in the browser
 
-For a detailed example of this architecture, see [this guide on frontend fulfillment architecture](https://gist.github.com/ryanio/52b909dc36e50dd0c03983983ed5839b).
-
 ## Documentation
 
 - [Quick Start Guide](developerDocs/quick-start.md)
