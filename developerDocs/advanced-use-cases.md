@@ -10,6 +10,7 @@ hidden: false
 - [Scheduling Future Listings](#scheduling-future-listings)
 - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
 - [Private Orders](#private-orders)
+- [Canceling Orders](#canceling-orders)
 - [Bulk Transfers](#bulk-transfers)
 - [Listening to Events](#listening-to-events)
 
@@ -70,6 +71,84 @@ const listing = await openseaSDK.createListing({
   buyerAddress,
 });
 ```
+
+### Canceling Orders
+
+The SDK provides flexible options for canceling orders both onchain and offchain.
+
+#### Onchain Order Cancellation
+
+The SDK provides two methods for onchain order cancellation:
+
+**Cancel a Single Order**
+
+Use `cancelOrder()` to cancel a single order. This method accepts either:
+
+- A full `OrderV2` object from the API
+- Just an order hash (automatically fetches full order data)
+
+```typescript
+// Cancel using order hash (automatically fetches from API)
+await openseaSDK.cancelOrder({
+  orderHash: "0x123...",
+  accountAddress: "0x...",
+  protocolAddress: "0x00000000000000adc04c56bf30ac9d3c0aaf14dc", // Seaport address
+});
+
+// Cancel using full OrderV2 object
+const order = await openseaSDK.api.getOrder({ side: OrderSide.LISTING, ... });
+await openseaSDK.cancelOrder({
+  order,
+  accountAddress: "0x...",
+});
+```
+
+**Cancel Multiple Orders**
+
+Use `cancelOrders()` to cancel multiple orders in a single transaction. This method accepts:
+
+- Full `OrderV2` objects from the API
+- Lightweight `OrderComponents`
+- Just order hashes (automatically fetches full order data)
+
+```typescript
+// Cancel using order hashes (automatically fetches from API)
+await openseaSDK.cancelOrders({
+  orderHashes: ["0x123...", "0x456...", "0x789..."],
+  accountAddress: "0x...",
+  protocolAddress: "0x00000000000000adc04c56bf30ac9d3c0aaf14dc", // Seaport address
+});
+
+// Cancel using full OrderV2 objects
+const orders = await openseaSDK.api.getOrders({ maker: accountAddress });
+await openseaSDK.cancelOrders({
+  orders: orders.orders.slice(0, 3),
+  accountAddress: "0x...",
+});
+```
+
+When providing order hashes, the SDK automatically fetches the full order data from the OpenSea API, making it easier to cancel orders without manually fetching order details first.
+
+#### Offchain Order Cancellation
+
+For orders protected by SignedZone, you can cancel them offchain (no gas required):
+
+```typescript
+await openseaSDK.offchainCancelOrder(
+  protocolAddress,
+  orderHash,
+  chain,
+  offererSignature, // Optional: derived from signer if not provided
+);
+```
+
+Offchain cancellation is:
+
+- **Gas-free**: No transaction fees
+- **Instant**: No waiting for block confirmation
+- **Limited**: Only works for SignedZone-protected orders
+- **Authentication**: If `offererSignature` is not provided, the API key used to initialize the SDK must belong to the order's offerer
+- **Note**: Cancellation is only assured if no fulfillment signature was vended before cancellation
 
 ### Bulk Transfers
 

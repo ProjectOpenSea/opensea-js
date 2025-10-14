@@ -96,6 +96,14 @@ export const getRefreshMetadataPath = (
   return `/api/v2/chain/${chain}/contract/${address}/nfts/${identifier}/refresh`;
 };
 
+export const getOrderByHashPath = (
+  chain: Chain,
+  protocolAddress: string,
+  orderHash: string,
+) => {
+  return `/api/v2/orders/chain/${chain}/protocol/${protocolAddress}/${orderHash}`;
+};
+
 export const getCancelOrderPath = (
   chain: Chain,
   protocolAddress: string,

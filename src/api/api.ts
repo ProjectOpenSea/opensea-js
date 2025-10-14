@@ -19,6 +19,7 @@ import {
   getAccountPath,
   getCollectionStatsPath,
   getBestListingsAPIPath,
+  getOrderByHashPath,
   getCancelOrderPath,
   getTraitOffersPath,
 } from "./apiPaths";
@@ -165,6 +166,25 @@ export class OpenSeaAPI {
       throw new Error("Not found: no matching order found");
     }
     return deserializeOrder(orders[0]);
+  }
+
+  /**
+   * Gets a single order by its order hash.
+   * @param orderHash The hash of the order to fetch
+   * @param protocolAddress The address of the seaport contract
+   * @param chain The chain where the order is located. Defaults to the chain set in the constructor.
+   * @returns The {@link OrderV2} returned by the API
+   * @throws An error if the order is not found
+   */
+  public async getOrderByHash(
+    orderHash: string,
+    protocolAddress: string,
+    chain: Chain = this.chain,
+  ): Promise<OrderV2> {
+    const response = await this.get<{
+      order: OrdersQueryResponse["orders"][0];
+    }>(getOrderByHashPath(chain, protocolAddress, orderHash));
+    return deserializeOrder(response.order);
   }
 
   /**
