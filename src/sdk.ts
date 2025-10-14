@@ -1131,6 +1131,52 @@ export class OpenSeaSDK {
     );
   }
 
+  /**
+   * Cancel multiple orders onchain using their order components. This is a convenience method
+   * that allows canceling orders without needing the full OrderV2 objects.
+   * @param options
+   * @param options.orders Array of order components to cancel. You can obtain these from OrderV2.protocolData.parameters
+   * @param options.accountAddress The account address that will be cancelling the orders.
+   * @param options.protocolAddress The Seaport protocol address. Defaults to the default Seaport v1.6 address.
+   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.
+   *
+   * @throws Error if the accountAddress is not available through wallet or provider.
+   * @throws Error if the protocol address is not supported by OpenSea.
+   */
+  public async cancelOrders({
+    orders,
+    accountAddress,
+    protocolAddress = DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+    domain,
+  }: {
+    orders: OrderComponents[];
+    accountAddress: string;
+    protocolAddress?: string;
+    domain?: string;
+  }) {
+    await this._requireAccountIsAvailable(accountAddress);
+    requireValidProtocol(protocolAddress);
+
+    if (orders.length === 0) {
+      throw new Error("At least one order must be provided");
+    }
+
+    // Transact and get the transaction hash
+    const transactionHash = await this.cancelSeaportOrders({
+      orders,
+      accountAddress,
+      domain,
+      protocolAddress,
+    });
+
+    // Await transaction confirmation
+    await this._confirmTransaction(
+      transactionHash,
+      EventType.CancelOrder,
+      `Cancelling ${orders.length} order(s)`,
+    );
+  }
+
   private _getSeaportVersion(protocolAddress: string) {
     const protocolAddressChecksummed = ethers.getAddress(protocolAddress);
     switch (protocolAddressChecksummed) {
