@@ -20,6 +20,23 @@ Get started by [requesting an API key](https://docs.opensea.io/reference/api-key
 
 Happy seafaring! ⛵️
 
+## Security Warning
+
+**⚠️ Do not use this SDK directly in client-side/frontend applications.**
+
+The OpenSea SDK requires an API key for initialization. If you embed your API key in frontend code (e.g., browser applications, mobile apps), it will be publicly exposed and could be extracted by anyone, leading to potential abuse and rate limit issues.
+
+### Recommended Architecture
+
+For frontend applications that need to interact with OpenSea functionality:
+
+1. **Create a backend API wrapper**: Set up your own backend server that securely stores your OpenSea API key
+2. **Call OpenSea SDK server-side**: Use opensea-js on your backend to interact with OpenSea's APIs
+3. **Return data to your frontend**: Send the necessary data (like transaction parameters) back to your frontend
+4. **Execute transactions in the browser**: Have users sign transactions with their own wallets (e.g., MetaMask) in the browser
+
+For a detailed example of this architecture, see [this guide on frontend fulfillment architecture](https://gist.github.com/ryanio/52b909dc36e50dd0c03983983ed5839b).
+
 ## Documentation
 
 - [Quick Start Guide](developerDocs/quick-start.md)

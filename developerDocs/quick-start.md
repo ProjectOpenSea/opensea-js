@@ -52,3 +52,5 @@ const openseaSDK = new OpenSeaSDK(walletWithProvider, {
 ```
 
 In a browser with web3 or an extension like [MetaMask](https://metamask.io/) or [Coinbase Wallet](https://www.coinbase.com/wallet), you can use `window.ethereum` to access the native provider.
+
+> **⚠️ Security Warning**: While the SDK supports browser-based providers like `window.ethereum`, **you should never include your API key in client-side code**. Exposing your API key in frontend applications allows anyone to extract and abuse it. Instead, use the SDK on a secure backend server and return transaction data to your frontend. See the [README Security Warning](../README.md#security-warning) for the recommended architecture.
