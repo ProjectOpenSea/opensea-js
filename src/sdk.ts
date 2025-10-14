@@ -1412,6 +1412,7 @@ export class OpenSeaSDK {
    * @returns Transaction hash of the bulk transfer
    *
    * @throws Error if any asset is missing required fields (tokenId for NFTs, amount for ERC20/ERC1155).
+   * @throws Error if any asset is not approved for transfer to the OpenSea conduit.
    * @throws Error if the fromAddress is not available through wallet or provider.
    */
   public async bulkTransfer({
@@ -1431,6 +1432,33 @@ export class OpenSeaSDK {
 
     if (assets.length === 0) {
       throw new Error("At least one asset must be provided");
+    }
+
+    // Check approvals for all assets before attempting transfer
+    const unapprovedAssets: string[] = [];
+    for (const { asset, amount } of assets) {
+      const isApproved = await this._checkAssetApproval(
+        asset,
+        fromAddress,
+        OPENSEA_CONDUIT_ADDRESS_2,
+        amount,
+      );
+      if (!isApproved) {
+        const assetIdentifier =
+          asset.tokenId !== undefined
+            ? `${asset.tokenAddress}:${asset.tokenId}`
+            : asset.tokenAddress;
+        unapprovedAssets.push(assetIdentifier);
+      }
+    }
+
+    if (unapprovedAssets.length > 0) {
+      throw new Error(
+        `The following asset(s) are not approved for transfer to the OpenSea conduit:\n${unapprovedAssets.join("\n")}\n\n` +
+          `Please approve these assets for the OpenSea conduit at ${OPENSEA_CONDUIT_ADDRESS_2}.\n` +
+          `For ERC20 tokens, call approve() with sufficient allowance.\n` +
+          `For ERC721/ERC1155 tokens, call setApprovalForAll(${OPENSEA_CONDUIT_ADDRESS_2}, true).`,
+      );
     }
 
     // Build transfer items array for TransferHelper
@@ -1800,6 +1828,78 @@ export class OpenSeaSDK {
         availableAccounts.length > 0 ? availableAccounts.join(", ") : "none"
       }`,
     );
+  }
+
+  /**
+   * Check if an asset is approved for transfer to a specific operator (conduit).
+   * @param asset The asset to check approval for
+   * @param owner The owner address
+   * @param operator The operator address (conduit)
+   * @param amount Optional amount for ERC20 tokens
+   * @returns True if approved, false otherwise
+   */
+  private async _checkAssetApproval(
+    asset: AssetWithTokenStandard,
+    owner: string,
+    operator: string,
+    amount?: BigNumberish,
+  ): Promise<boolean> {
+    try {
+      switch (asset.tokenStandard) {
+        case TokenStandard.ERC20: {
+          const contract = ERC20__factory.connect(
+            asset.tokenAddress,
+            this.provider,
+          );
+          const allowance = await contract.allowance.staticCall(owner, operator);
+          // Check if allowance is sufficient
+          if (!amount) {
+            return false;
+          }
+          return allowance >= BigInt(amount.toString());
+        }
+
+        case TokenStandard.ERC721: {
+          const contract = ERC721__factory.connect(
+            asset.tokenAddress,
+            this.provider,
+          );
+          // Check isApprovedForAll first
+          const isApprovedForAll = await contract.isApprovedForAll.staticCall(
+            owner,
+            operator,
+          );
+          if (isApprovedForAll) {
+            return true;
+          }
+          // Check individual token approval
+          if (asset.tokenId !== undefined && asset.tokenId !== null) {
+            const approved = await contract.getApproved.staticCall(
+              asset.tokenId,
+            );
+            return approved.toLowerCase() === operator.toLowerCase();
+          }
+          return false;
+        }
+
+        case TokenStandard.ERC1155: {
+          const contract = ERC1155__factory.connect(
+            asset.tokenAddress,
+            this.provider,
+          );
+          return await contract.isApprovedForAll.staticCall(owner, operator);
+        }
+
+        default:
+          return false;
+      }
+    } catch (error) {
+      // If there's an error checking approval (e.g., contract doesn't exist), return false
+      this.logger(
+        `Error checking approval for ${asset.tokenAddress}: ${error}`,
+      );
+      return false;
+    }
   }
 
   /**

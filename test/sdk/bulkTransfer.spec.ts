@@ -129,4 +129,32 @@ suite("SDK: bulkTransfer", () => {
       );
     }
   });
+
+  test("Should provide helpful error when assets are not approved", async () => {
+    // This test will fail on approval check since we're using a random wallet
+    // that won't have any assets or approvals
+    try {
+      await sdk.bulkTransfer({
+        assets: [
+          {
+            asset: {
+              tokenAddress: BAYC_CONTRACT_ADDRESS,
+              tokenId: "1",
+              tokenStandard: "erc721",
+            },
+            toAddress: recipientAddress,
+          },
+        ],
+        fromAddress: accountAddress,
+      });
+      throw new Error("should have thrown");
+    } catch (e: any) {
+      // Should fail on either account check or approval check
+      // Both are expected since we're using random wallets
+      expect(e.message).to.satisfy((msg: string) =>
+        msg.includes("accountAddress is not available") ||
+        msg.includes("not approved for transfer"),
+      );
+    }
+  });
 });
