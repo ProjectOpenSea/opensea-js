@@ -1990,7 +1990,10 @@ export class OpenSeaSDK {
             asset.tokenAddress,
             this.provider,
           );
-          const allowance = await contract.allowance.staticCall(owner, operator);
+          const allowance = await contract.allowance.staticCall(
+            owner,
+            operator,
+          );
           // Check if allowance is sufficient
           if (!amount) {
             return false;
