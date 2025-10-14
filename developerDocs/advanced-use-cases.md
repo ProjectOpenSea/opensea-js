@@ -151,6 +151,7 @@ Offchain cancellation is:
 - **Gas-free**: No transaction fees
 - **Instant**: No waiting for block confirmation
 - **Limited**: Only works for SignedZone-protected orders
+- **Authentication**: If `offererSignature` is not provided, the API key used to initialize the SDK must belong to the order's offerer
 - **Note**: Cancellation is only assured if no fulfillment signature was vended before cancellation
 
 ### Listening to Events
