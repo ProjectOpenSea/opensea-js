@@ -5,11 +5,14 @@ import {
 import { ethers, FixedNumber } from "ethers";
 import {
   FIXED_NUMBER_100,
+  GUNZILLA_CONDUIT_ADDRESS,
   GUNZILLA_CONDUIT_KEY,
   GUNZILLA_FEE_RECIPIENT,
   GUNZILLA_SEAPORT_1_6_ADDRESS,
   GUNZILLA_SIGNED_ZONE_V2_ADDRESS,
   MAX_EXPIRATION_MONTHS,
+  OPENSEA_CONDUIT_ADDRESS,
+  OPENSEA_CONDUIT_ADDRESS_2,
   OPENSEA_CONDUIT_KEY,
   OPENSEA_CONDUIT_KEY_2,
   OPENSEA_FEE_RECIPIENT,
@@ -371,22 +374,31 @@ export const requireValidProtocol = (protocolAddress: string) => {
 };
 
 /**
- * Get the default conduit key for a given chain.
- * @param chain The chain to get the conduit key for
- * @returns The conduit key for the chain
+ * Get the default conduit key and address for a given chain.
+ * @param chain The chain to get the conduit for
+ * @returns The conduit key and address for the chain
  */
-export const getDefaultConduitKey = (chain: Chain): string => {
+export const getDefaultConduit = (
+  chain: Chain,
+): { key: string; address: string } => {
   switch (chain) {
     case Chain.Abstract:
-      return OPENSEA_CONDUIT_KEY_2;
-    case Chain.Gunzilla:
-      return GUNZILLA_CONDUIT_KEY;
     case Chain.HyperEVM:
-      return OPENSEA_CONDUIT_KEY_2;
+      return {
+        key: OPENSEA_CONDUIT_KEY_2,
+        address: OPENSEA_CONDUIT_ADDRESS_2,
+      };
+    case Chain.Gunzilla:
     case Chain.Somnia:
-      return GUNZILLA_CONDUIT_KEY;
+      return {
+        key: GUNZILLA_CONDUIT_KEY,
+        address: GUNZILLA_CONDUIT_ADDRESS,
+      };
     default:
-      return OPENSEA_CONDUIT_KEY;
+      return {
+        key: OPENSEA_CONDUIT_KEY,
+        address: OPENSEA_CONDUIT_ADDRESS,
+      };
   }
 };
 

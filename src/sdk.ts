@@ -21,8 +21,6 @@ import {
 import { OpenSeaAPI } from "./api/api";
 import { CollectionOffer, Listing, NFT, Offer, Order } from "./api/types";
 import {
-  OPENSEA_CONDUIT_ADDRESS_2,
-  OPENSEA_CONDUIT_KEY_2,
   INVERSE_BASIS_POINT,
   ENGLISH_AUCTION_ZONE_MAINNETS,
   WPOL_ADDRESS,
@@ -55,7 +53,7 @@ import {
   AssetWithTokenId,
 } from "./types";
 import {
-  getDefaultConduitKey,
+  getDefaultConduit,
   getMaxOrderExpirationTimestamp,
   hasErrorCode,
   getAssetItemType,
@@ -113,11 +111,12 @@ export class OpenSeaSDK {
       signerOrProvider) as JsonRpcProvider;
     this._signerOrProvider = signerOrProvider ?? this.provider;
 
+    const defaultConduit = getDefaultConduit(this.chain);
     this.seaport_v1_6 = new Seaport(this._signerOrProvider, {
       conduitKeyToConduit: {
-        [OPENSEA_CONDUIT_KEY_2]: OPENSEA_CONDUIT_ADDRESS_2,
+        [defaultConduit.key]: defaultConduit.address,
       },
-      overrides: { defaultConduitKey: getDefaultConduitKey(this.chain) },
+      overrides: { defaultConduitKey: defaultConduit.key },
     });
 
     // Emit events
@@ -1497,13 +1496,16 @@ export class OpenSeaSDK {
     // Check account availability after basic validation
     await this._requireAccountIsAvailable(fromAddress);
 
+    // Get the chain-specific default conduit
+    const defaultConduit = getDefaultConduit(this.chain);
+
     // Check approvals for all assets before attempting transfer
     const unapprovedAssets: string[] = [];
     for (const { asset, amount } of assets) {
       const isApproved = await this._checkAssetApproval(
         asset,
         fromAddress,
-        OPENSEA_CONDUIT_ADDRESS_2,
+        defaultConduit.address,
         amount,
       );
       if (!isApproved) {
@@ -1531,10 +1533,10 @@ export class OpenSeaSDK {
     });
 
     try {
-      // Use OpenSea conduit key for bulk transfers
+      // Use chain-specific conduit key for bulk transfers
       const transaction = await transferHelper.bulkTransfer(
         transferItems,
-        OPENSEA_CONDUIT_KEY_2,
+        defaultConduit.key,
         { ...overrides, from: fromAddress },
       );
 
@@ -1599,6 +1601,9 @@ export class OpenSeaSDK {
     // Check account availability after basic validation
     await this._requireAccountIsAvailable(fromAddress);
 
+    // Get the chain-specific default conduit
+    const defaultConduit = getDefaultConduit(this.chain);
+
     // Check which assets need approval and build approval calldata
     const approvalsNeeded: Array<{ target: string; callData: string }> = [];
     const processedContracts = new Set<string>();
@@ -1607,7 +1612,7 @@ export class OpenSeaSDK {
       const isApproved = await this._checkAssetApproval(
         asset,
         fromAddress,
-        OPENSEA_CONDUIT_ADDRESS_2,
+        defaultConduit.address,
         amount,
       );
 
@@ -1627,7 +1632,7 @@ export class OpenSeaSDK {
             "function setApprovalForAll(address operator, bool approved)",
           ]);
           const callData = iface.encodeFunctionData("setApprovalForAll", [
-            OPENSEA_CONDUIT_ADDRESS_2,
+            defaultConduit.address,
             true,
           ]);
           approvalsNeeded.push({
@@ -1640,7 +1645,7 @@ export class OpenSeaSDK {
             "function approve(address spender, uint256 amount) returns (bool)",
           ]);
           const callData = iface.encodeFunctionData("approve", [
-            OPENSEA_CONDUIT_ADDRESS_2,
+            defaultConduit.address,
             ethers.MaxUint256, // Approve max for convenience
           ]);
           approvalsNeeded.push({
