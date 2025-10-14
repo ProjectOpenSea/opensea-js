@@ -73,8 +73,23 @@ export const getFulfillListingPayload = (
   order_hash: string,
   protocolAddress: string,
   chain: Chain,
+  assetContractAddress?: string,
+  tokenId?: string,
 ) => {
-  return {
+  const payload: {
+    listing: {
+      hash: string;
+      chain: Chain;
+      protocol_address: string;
+    };
+    fulfiller: {
+      address: string;
+    };
+    consideration?: {
+      asset_contract_address: string;
+      token_id: string;
+    };
+  } = {
     listing: {
       hash: order_hash,
       chain,
@@ -84,6 +99,16 @@ export const getFulfillListingPayload = (
       address: fulfillerAddress,
     },
   };
+
+  // Add consideration for criteria listings if needed
+  if (assetContractAddress && tokenId) {
+    payload.consideration = {
+      asset_contract_address: assetContractAddress,
+      token_id: tokenId,
+    };
+  }
+
+  return payload;
 };
 
 export const getFulfillOfferPayload = (
@@ -91,8 +116,23 @@ export const getFulfillOfferPayload = (
   order_hash: string,
   protocolAddress: string,
   chain: Chain,
+  assetContractAddress?: string,
+  tokenId?: string,
 ) => {
-  return {
+  const payload: {
+    offer: {
+      hash: string;
+      chain: Chain;
+      protocol_address: string;
+    };
+    fulfiller: {
+      address: string;
+    };
+    consideration?: {
+      asset_contract_address: string;
+      token_id: string;
+    };
+  } = {
     offer: {
       hash: order_hash,
       chain,
@@ -102,6 +142,16 @@ export const getFulfillOfferPayload = (
       address: fulfillerAddress,
     },
   };
+
+  // Add consideration for criteria offers (e.g., collection offers)
+  if (assetContractAddress && tokenId) {
+    payload.consideration = {
+      asset_contract_address: assetContractAddress,
+      token_id: tokenId,
+    };
+  }
+
+  return payload;
 };
 
 type OrdersQueryPathOptions = "protocol" | "side";
