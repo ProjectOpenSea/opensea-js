@@ -1226,34 +1226,87 @@ export class OpenSeaSDK {
 
   /**
    * Cancel an order onchain, preventing it from ever being fulfilled.
+   * This method accepts either a full OrderV2 object or an order hash with protocol address.
+   *
    * @param options
-   * @param options.order The order to cancel
+   * @param options.order The order to cancel (OrderV2 object)
+   * @param options.orderHash Optional order hash to cancel. Must provide protocolAddress if using this.
    * @param options.accountAddress The account address that will be cancelling the order.
+   * @param options.protocolAddress Required when using orderHash. The Seaport protocol address for the order.
    * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
    *
+   * @throws Error if neither order nor orderHash is provided.
    * @throws Error if the accountAddress is not available through wallet or provider.
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
+   *
+   * @example
+   * // Cancel using OrderV2 object
+   * await sdk.cancelOrder({
+   *   order: orderV2Object,
+   *   accountAddress: "0x..."
+   * });
+   *
+   * @example
+   * // Cancel using order hash
+   * await sdk.cancelOrder({
+   *   orderHash: "0x123...",
+   *   protocolAddress: "0xabc...",
+   *   accountAddress: "0x..."
+   * });
    */
   public async cancelOrder({
     order,
+    orderHash,
     accountAddress,
+    protocolAddress = DEFAULT_SEAPORT_CONTRACT_ADDRESS,
     domain,
   }: {
-    order: OrderV2;
+    order?: OrderV2;
+    orderHash?: string;
     accountAddress: string;
+    protocolAddress?: string;
     domain?: string;
   }) {
-    await this._requireAccountIsAvailable(accountAddress);
-    requireValidProtocol(order.protocolAddress);
+    // Validate input
+    if (!order && !orderHash) {
+      throw new Error(
+        "Either order or orderHash must be provided to cancel order",
+      );
+    }
 
-    this._dispatch(EventType.CancelOrder, { orderV2: order, accountAddress });
+    await this._requireAccountIsAvailable(accountAddress);
+
+    let orderToCancel: OrderV2;
+
+    if (order) {
+      // Using OrderV2 object directly
+      requireValidProtocol(order.protocolAddress);
+      orderToCancel = order;
+    } else if (orderHash) {
+      // Fetch order from API using order hash
+      requireValidProtocol(protocolAddress);
+      orderToCancel = await this.api.getOrderByHash(
+        orderHash,
+        protocolAddress,
+        this.chain,
+      );
+      requireValidProtocol(orderToCancel.protocolAddress);
+    } else {
+      // Should never reach here due to earlier validation
+      throw new Error("Invalid input");
+    }
+
+    this._dispatch(EventType.CancelOrder, {
+      orderV2: orderToCancel,
+      accountAddress,
+    });
 
     // Transact and get the transaction hash
     const transactionHash = await this.cancelSeaportOrders({
-      orders: [order.protocolData.parameters],
+      orders: [orderToCancel.protocolData.parameters],
       accountAddress,
       domain,
-      protocolAddress: order.protocolAddress,
+      protocolAddress: orderToCancel.protocolAddress,
     });
 
     // Await transaction confirmation

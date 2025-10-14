@@ -78,7 +78,34 @@ The SDK provides flexible options for canceling orders both onchain and offchain
 
 #### Onchain Order Cancellation
 
-Cancel multiple orders in a single transaction using `cancelOrders()`. This method accepts:
+The SDK provides two methods for onchain order cancellation:
+
+**Cancel a Single Order**
+
+Use `cancelOrder()` to cancel a single order. This method accepts either:
+
+- A full `OrderV2` object from the API
+- Just an order hash (automatically fetches full order data)
+
+```typescript
+// Cancel using order hash (automatically fetches from API)
+await openseaSDK.cancelOrder({
+  orderHash: "0x123...",
+  accountAddress: "0x...",
+  protocolAddress: "0x00000000000000adc04c56bf30ac9d3c0aaf14dc", // Seaport address
+});
+
+// Cancel using full OrderV2 object
+const order = await openseaSDK.api.getOrder({ side: OrderSide.LISTING, ... });
+await openseaSDK.cancelOrder({
+  order,
+  accountAddress: "0x...",
+});
+```
+
+**Cancel Multiple Orders**
+
+Use `cancelOrders()` to cancel multiple orders in a single transaction. This method accepts:
 
 - Full `OrderV2` objects from the API
 - Lightweight `OrderComponents`
