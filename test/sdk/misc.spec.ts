@@ -136,6 +136,10 @@ suite("SDK: misc", () => {
       expect(decodeTokenIds("*")).to.deep.equal(["*"]);
     });
 
+    it("should return [] when given empty string as input", () => {
+      expect(decodeTokenIds("")).to.deep.equal([]);
+    });
+
     it("should correctly decode a single number", () => {
       expect(decodeTokenIds("123")).to.deep.equal(["123"]);
     });
