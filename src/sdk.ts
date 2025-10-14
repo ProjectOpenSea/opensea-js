@@ -28,6 +28,8 @@ import {
   WPOL_ADDRESS,
   GUNZILLA_SEAPORT_1_6_ADDRESS,
 } from "./constants";
+
+const TRANSFER_HELPER_ADDRESS = "0x0000000000c2d145a2526bd8c716263bfebe1a72";
 import {
   constructPrivateListingCounterOrder,
   getPrivateListingConsiderations,
@@ -1396,6 +1398,137 @@ export class OpenSeaSDK {
         error,
         accountAddress: fromAddress,
       });
+    }
+  }
+
+  /**
+   * Bulk transfer multiple assets using OpenSea's TransferHelper contract.
+   * This method is more gas-efficient than calling transfer() multiple times.
+   * Note: All assets must be approved for transfer to the OpenSea conduit before calling this method.
+   * @param options
+   * @param options.assets Array of assets to transfer. Each asset must have tokenStandard set.
+   * @param options.fromAddress The address to transfer from
+   * @param options.overrides Transaction overrides, ignored if not set.
+   * @returns Transaction hash of the bulk transfer
+   *
+   * @throws Error if any asset is missing required fields (tokenId for NFTs, amount for ERC20/ERC1155).
+   * @throws Error if the fromAddress is not available through wallet or provider.
+   */
+  public async bulkTransfer({
+    assets,
+    fromAddress,
+    overrides,
+  }: {
+    assets: Array<{
+      asset: AssetWithTokenStandard;
+      toAddress: string;
+      amount?: BigNumberish;
+    }>;
+    fromAddress: string;
+    overrides?: Overrides;
+  }): Promise<string> {
+    await this._requireAccountIsAvailable(fromAddress);
+
+    if (assets.length === 0) {
+      throw new Error("At least one asset must be provided");
+    }
+
+    // Build transfer items array for TransferHelper
+    const transferItems: Array<{
+      itemType: number;
+      token: string;
+      identifier: string;
+      amount: string;
+      recipient: string;
+    }> = [];
+
+    for (const { asset, toAddress, amount } of assets) {
+      let itemType: number;
+      let identifier: string;
+      let transferAmount: string;
+
+      switch (asset.tokenStandard) {
+        case TokenStandard.ERC20:
+          itemType = 1; // ERC20
+          identifier = "0";
+          if (!amount) {
+            throw new Error("Missing ERC20 amount for bulk transfer");
+          }
+          transferAmount = amount.toString();
+          break;
+
+        case TokenStandard.ERC721:
+          itemType = 2; // ERC721
+          if (asset.tokenId === undefined || asset.tokenId === null) {
+            throw new Error("Missing ERC721 tokenId for bulk transfer");
+          }
+          identifier = asset.tokenId.toString();
+          transferAmount = "1";
+          break;
+
+        case TokenStandard.ERC1155:
+          itemType = 3; // ERC1155
+          if (asset.tokenId === undefined || asset.tokenId === null) {
+            throw new Error("Missing ERC1155 tokenId for bulk transfer");
+          }
+          if (!amount) {
+            throw new Error("Missing ERC1155 amount for bulk transfer");
+          }
+          identifier = asset.tokenId.toString();
+          transferAmount = amount.toString();
+          break;
+
+        default:
+          throw new Error(
+            `Unsupported token standard for bulk transfer: ${asset.tokenStandard}`,
+          );
+      }
+
+      transferItems.push({
+        itemType,
+        token: asset.tokenAddress,
+        identifier,
+        amount: transferAmount,
+        recipient: toAddress,
+      });
+    }
+
+    // Create TransferHelper contract instance
+    const transferHelper = new Contract(
+      TRANSFER_HELPER_ADDRESS,
+      [
+        "function bulkTransfer(tuple(uint8 itemType, address token, uint256 identifier, uint256 amount, address recipient)[] items, bytes32 conduitKey) external returns (bytes4)",
+      ],
+      this._signerOrProvider,
+    );
+
+    this._dispatch(EventType.Transfer, {
+      accountAddress: fromAddress,
+      assets,
+    });
+
+    try {
+      // Use OpenSea conduit key for bulk transfers
+      const transaction = await transferHelper.bulkTransfer(
+        transferItems,
+        OPENSEA_CONDUIT_KEY_2,
+        { ...overrides, from: fromAddress },
+      );
+
+      await this._confirmTransaction(
+        transaction.hash,
+        EventType.Transfer,
+        `Bulk transferring ${assets.length} asset(s)`,
+      );
+
+      return transaction.hash;
+    } catch (error) {
+      console.error(error);
+      this._dispatch(EventType.TransactionDenied, {
+        error,
+        accountAddress: fromAddress,
+      });
+      throw error;
     }
   }
 
