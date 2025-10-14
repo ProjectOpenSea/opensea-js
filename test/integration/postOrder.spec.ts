@@ -3,7 +3,7 @@ import { suite, test } from "mocha";
 import { Chain } from "../../src/types";
 import { getOfferPaymentToken } from "../../src/utils";
 import { OFFER_AMOUNT } from "../utils/env";
-import { ensureVarsOrSkip, normalizeChain } from "../utils/runtime";
+import { ensureVarsOrSkip } from "../utils/runtime";
 import {
   LISTING_AMOUNT,
   CREATE_LISTING_CHAIN,
@@ -131,7 +131,7 @@ suite("SDK: order posting", () => {
     }
 
     const chain = CREATE_LISTING_CHAIN;
-    const sdk = getSdkForChain(chain!);
+    const sdk = getSdkForChain(chain);
     const expirationTime = getRandomExpiration();
 
     // Get the NFT to retrieve its collection
@@ -167,8 +167,8 @@ suite("SDK: order posting", () => {
     }
   });
 
-  test.skip("Post Collection Offer - Mainnet", async () => {
-    const chain = normalizeChain("ethereum")!;
+  test("Post Collection Offer - Mainnet", async () => {
+    const chain = Chain.Mainnet;
     const sdk = getSdkForChain(chain);
     const collection = await sdk.api.getCollection("cool-cats-nft");
     const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
@@ -186,22 +186,28 @@ suite("SDK: order posting", () => {
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");
     expect(offerResponse).to.exist.and.to.have.property("order_hash");
 
+    // Wait to ensure the order is indexed
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     // Cancel the order using self serve API key tied to the offerer
     const { protocol_address, order_hash } = offerResponse!;
     const cancelResponse = await sdk.offchainCancelOrder(
       protocol_address,
       order_hash,
+      undefined,
+      undefined,
+      true,
     );
     expect(cancelResponse).to.exist.and.to.have.property(
       "last_signature_issued_valid_until",
     );
   });
 
-  test.skip("Post Collection Offer - Polygon", async () => {
-    const chain2 = normalizeChain("polygon")!;
-    const sdk2 = getSdkForChain(chain2);
-    const collection = await sdk2.api.getCollection("arttoken-1155-4");
-    const paymentTokenAddress = getOfferPaymentToken(sdk2.chain);
+  test("Post Collection Offer - Polygon", async () => {
+    const chain = Chain.Polygon;
+    const sdk = getSdkForChain(chain);
+    const collection = await sdk.api.getCollection("arttoken-1155-4");
+    const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
     const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,
@@ -211,14 +217,17 @@ suite("SDK: order posting", () => {
       paymentTokenAddress,
       expirationTime,
     };
-    const offerResponse = await sdk2.createCollectionOffer(postOrderRequest);
+    const offerResponse = await sdk.createCollectionOffer(postOrderRequest);
     expect(offerResponse).to.exist.and.to.have.property("protocol_address");
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");
     expect(offerResponse).to.exist.and.to.have.property("order_hash");
 
+    // Wait to ensure the order is indexed
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
     // Cancel the order using the offerer signature, deriving it from the ethers signer
     const { protocol_address, order_hash } = offerResponse!;
-    const cancelResponse = await sdk2.offchainCancelOrder(
+    const cancelResponse = await sdk.offchainCancelOrder(
       protocol_address,
       order_hash,
       undefined,
@@ -231,7 +240,7 @@ suite("SDK: order posting", () => {
   });
 
   test("Post Trait Offer - Ethereum", async () => {
-    const chain = normalizeChain("ethereum")!;
+    const chain = Chain.Mainnet;
     const sdk = getSdkForChain(chain);
     const collection = await sdk.api.getCollection("cool-cats-nft");
     const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
