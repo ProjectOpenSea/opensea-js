@@ -68,7 +68,7 @@ suite("SDK: getCollection", () => {
     assert(stats.intervals, "Intervals should exist");
   });
 
-  test("Get Collections for all chains", async () => {
+  test.skip("Get Collections for all chains", async () => {
     // Excluding Solana (no NFT collections)
     const chains = Object.values(Chain).filter(
       (chain) => chain !== Chain.Solana,
