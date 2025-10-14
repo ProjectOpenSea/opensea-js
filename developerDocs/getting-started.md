@@ -166,6 +166,20 @@ const { orders, count } = await openseaSDK.api.getOrders({
 
 Note that the listing price of an asset is equal to the `currentPrice` of the **lowest listing** on the asset. Users can lower their listing price without invalidating previous listing, so all get shipped down until they're canceled, or one is fulfilled.
 
+#### Fetching an Order by Hash
+
+If you have an order hash, you can fetch the full order details directly:
+
+```typescript
+const order = await openseaSDK.api.getOrderByHash(
+  orderHash,
+  protocolAddress, // Seaport contract address
+  chain, // Optional: defaults to the chain configured in the SDK
+);
+```
+
+This is useful when you need to retrieve order details for operations like order cancellation or fulfillment when you only have the order hash.
+
 #### Fetching All Offers and Best Listings for a given collection
 
 There are two endpoints that return all offers and listings for a given collection, `getAllOffers` and `getAllListings`.

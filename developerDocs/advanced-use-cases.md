@@ -11,6 +11,7 @@ hidden: false
 - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
 - [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
 - [Private Auctions](#private-auctions)
+- [Canceling Orders](#canceling-orders)
 - [Listening to Events](#listening-to-events)
 
 ## Advanced
@@ -101,6 +102,56 @@ const listing = await openseaSDK.createListing({
   buyerAddress,
 });
 ```
+
+### Canceling Orders
+
+The SDK provides flexible options for canceling orders both onchain and offchain.
+
+#### Onchain Order Cancellation
+
+Cancel multiple orders in a single transaction using `cancelOrders()`. This method accepts:
+
+- Full `OrderV2` objects from the API
+- Lightweight `OrderComponents`
+- Just order hashes (automatically fetches full order data)
+
+```typescript
+// Cancel using order hashes (automatically fetches from API)
+await openseaSDK.cancelOrders({
+  orderHashes: ["0x123...", "0x456...", "0x789..."],
+  accountAddress: "0x...",
+  protocolAddress: "0x00000000000000adc04c56bf30ac9d3c0aaf14dc", // Seaport address
+});
+
+// Cancel using full OrderV2 objects
+const orders = await openseaSDK.api.getOrders({ maker: accountAddress });
+await openseaSDK.cancelOrders({
+  orders: orders.orders.slice(0, 3),
+  accountAddress: "0x...",
+});
+```
+
+When providing order hashes, the SDK automatically fetches the full order data from the OpenSea API, making it easier to cancel orders without manually fetching order details first.
+
+#### Offchain Order Cancellation
+
+For orders protected by SignedZone, you can cancel them offchain (no gas required):
+
+```typescript
+await openseaSDK.offchainCancelOrder(
+  protocolAddress,
+  orderHash,
+  chain,
+  offererSignature, // Optional: derived from signer if not provided
+);
+```
+
+Offchain cancellation is:
+
+- **Gas-free**: No transaction fees
+- **Instant**: No waiting for block confirmation
+- **Limited**: Only works for SignedZone-protected orders
+- **Note**: Cancellation is only assured if no fulfillment signature was vended before cancellation
 
 ### Listening to Events
 
