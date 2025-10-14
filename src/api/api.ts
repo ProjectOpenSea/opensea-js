@@ -330,6 +330,8 @@ export class OpenSeaAPI {
    * @param orderHash The hash of the order to fulfill
    * @param protocolAddress The address of the seaport contract
    * @side The side of the order (buy or sell)
+   * @param assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers)
+   * @param tokenId Optional token ID for criteria offers (e.g., collection offers)
    * @returns The {@link FulfillmentDataResponse}
    */
   public async generateFulfillmentData(
@@ -337,6 +339,8 @@ export class OpenSeaAPI {
     orderHash: string,
     protocolAddress: string,
     side: OrderSide,
+    assetContractAddress?: string,
+    tokenId?: string,
   ): Promise<FulfillmentDataResponse> {
     let payload: object | null = null;
     if (side === OrderSide.LISTING) {
@@ -345,6 +349,8 @@ export class OpenSeaAPI {
         orderHash,
         protocolAddress,
         this.chain,
+        assetContractAddress,
+        tokenId,
       );
     } else {
       payload = getFulfillOfferPayload(
@@ -352,6 +358,8 @@ export class OpenSeaAPI {
         orderHash,
         protocolAddress,
         this.chain,
+        assetContractAddress,
+        tokenId,
       );
     }
     const response = await this.post<FulfillmentDataResponse>(

@@ -937,6 +937,8 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the wallet taking the offer.
    * @param options.recipientAddress The optional address to receive the order's item(s) or currencies. If not specified, defaults to accountAddress.
    * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
+   * @param options.assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
+   * @param options.tokenId Optional token ID for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
    * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.
    *
@@ -950,6 +952,8 @@ export class OpenSeaSDK {
     recipientAddress,
     unitsToFill,
     domain,
+    assetContractAddress,
+    tokenId,
     overrides,
   }: {
     order: OrderV2 | Order | Listing | Offer;
@@ -957,6 +961,8 @@ export class OpenSeaSDK {
     recipientAddress?: string;
     unitsToFill?: BigNumberish;
     domain?: string;
+    assetContractAddress?: string;
+    tokenId?: string;
     overrides?: Overrides;
   }): Promise<string> {
     await this._requireAccountIsAvailable(accountAddress);
@@ -986,6 +992,8 @@ export class OpenSeaSDK {
         orderHash,
         protocolAddress,
         side,
+        assetContractAddress,
+        tokenId,
       );
 
       // If the order is using offer protection, the extraData
