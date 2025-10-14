@@ -28,7 +28,6 @@ export const OPENSEA_FEE_RECIPIENT =
 export const OPENSEA_CONDUIT_KEY =
   "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000";
 
-// eslint-disable-next-line import/no-unused-modules
 export const OPENSEA_CONDUIT_ADDRESS =
   "0x1e0049783f008a0085193e00003d00cd54003c71";
 
@@ -43,7 +42,6 @@ export const WPOL_ADDRESS = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270";
 export const GUNZILLA_FEE_RECIPIENT =
   "0xd9f68d28e451a83affdb7c71cc2c20552555b07f";
 
-// eslint-disable-next-line import/no-unused-modules
 export const GUNZILLA_CONDUIT_ADDRESS =
   "0x00000000001566479594a2e05532d81afa09bc52";
 
