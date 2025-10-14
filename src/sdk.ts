@@ -1123,10 +1123,7 @@ export class OpenSeaSDK {
     domain?: string;
     overrides?: Overrides;
   }): Promise<string> {
-    await this._requireAccountIsAvailable(accountAddress);
-    requireValidProtocol(protocolAddress);
-
-    // Validate input
+    // Validate input before making any external calls
     if (!orders && !orderHashes) {
       throw new Error(
         "Either orders or orderHashes must be provided to cancel orders",
@@ -1140,6 +1137,10 @@ export class OpenSeaSDK {
     if (orderHashes && orderHashes.length === 0) {
       throw new Error("At least one order hash must be provided");
     }
+
+    // Check account availability after basic validation
+    await this._requireAccountIsAvailable(accountAddress);
+    requireValidProtocol(protocolAddress);
 
     let orderComponents: OrderComponents[];
     let effectiveProtocolAddress = protocolAddress;
