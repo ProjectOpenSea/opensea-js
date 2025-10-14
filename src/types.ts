@@ -48,6 +48,10 @@ export enum EventType {
    * Emitted when the {@link OpenSeaSDK.transfer} method is called.
    */
   Transfer = "Transfer",
+  /**
+   * Emitted when the {@link OpenSeaSDK.batchApproveAssets} method is called.
+   */
+  ApproveAllAssets = "ApproveAllAssets",
 }
 
 /**
@@ -79,6 +83,14 @@ export interface EventData {
    * The {@link OrderV2} object.
    */
   orderV2?: OrderV2;
+  /**
+   * Array of assets for bulk transfer and batch approval operations.
+   */
+  assets?: Array<{
+    asset: AssetWithTokenStandard;
+    toAddress?: string;
+    amount?: BigNumberish;
+  }>;
 }
 
 /**

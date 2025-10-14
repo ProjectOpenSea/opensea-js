@@ -11,6 +11,7 @@ hidden: false
 - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
 - [Private Orders](#private-orders)
 - [Canceling Orders](#canceling-orders)
+- [Bulk Transfers](#bulk-transfers)
 - [Listening to Events](#listening-to-events)
 
 ## Advanced
@@ -121,6 +122,89 @@ Offchain cancellation is:
 - **Limited**: Only works for SignedZone-protected orders
 - **Authentication**: If `offererSignature` is not provided, the API key used to initialize the SDK must belong to the order's offerer
 - **Note**: Cancellation is only assured if no fulfillment signature was vended before cancellation
+### Bulk Transfers
+
+The SDK provides gas-efficient methods for transferring multiple assets in a single transaction using OpenSea's TransferHelper contract.
+
+#### Batch Approving Assets
+
+Before transferring assets, you need to approve them for transfer to the OpenSea conduit. The `batchApproveAssets()` method intelligently batches multiple approval transactions:
+
+```typescript
+// Approve multiple assets in a single transaction
+const txHash = await openseaSDK.batchApproveAssets({
+  assets: [
+    {
+      asset: {
+        tokenAddress: "0x...",
+        tokenId: "1",
+        tokenStandard: TokenStandard.ERC721,
+      },
+    },
+    {
+      asset: {
+        tokenAddress: "0x...",
+        tokenId: "2",
+        tokenStandard: TokenStandard.ERC1155,
+      },
+      amount: "10",
+    },
+  ],
+  fromAddress: accountAddress,
+});
+```
+
+The method uses intelligent batching:
+
+- **0 approvals needed**: Returns `undefined` (no transaction)
+- **1 approval needed**: Sends a single direct approval
+- **2+ approvals needed**: Uses Multicall3 to batch all approvals in one transaction
+
+This is significantly more gas-efficient than approving each asset separately.
+
+#### Bulk Transfer
+
+After assets are approved, use `bulkTransfer()` to transfer multiple assets to different recipients:
+
+```typescript
+const txHash = await openseaSDK.bulkTransfer({
+  assets: [
+    {
+      asset: {
+        tokenAddress: "0x...",
+        tokenId: "1",
+        tokenStandard: TokenStandard.ERC721,
+      },
+      toAddress: "0xrecipient1...",
+    },
+    {
+      asset: {
+        tokenAddress: "0x...",
+        tokenId: "2",
+        tokenStandard: TokenStandard.ERC1155,
+      },
+      toAddress: "0xrecipient2...",
+      amount: "5",
+    },
+    {
+      asset: {
+        tokenAddress: "0x...", // ERC20 token
+        tokenStandard: TokenStandard.ERC20,
+      },
+      toAddress: "0xrecipient3...",
+      amount: "1000000000000000000", // 1 token in wei
+    },
+  ],
+  fromAddress: accountAddress,
+});
+```
+
+**Important notes:**
+
+- All assets must be approved before calling `bulkTransfer()`
+- If any asset is not approved, the method will throw a helpful error message suggesting you use `batchApproveAssets()`
+- Supports ERC20, ERC721, and ERC1155 tokens
+- Each asset can be sent to a different recipient
 
 ### Listening to Events
 
