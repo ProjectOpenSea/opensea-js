@@ -3,7 +3,7 @@ import { suite, test } from "mocha";
 import { Chain } from "../../src/types";
 import { getOfferPaymentToken } from "../../src/utils";
 import { OFFER_AMOUNT } from "../utils/env";
-import { ensureVarsOrSkip, normalizeChain } from "../utils/runtime";
+import { ensureVarsOrSkip } from "../utils/runtime";
 import {
   LISTING_AMOUNT,
   CREATE_LISTING_CHAIN,
