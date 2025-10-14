@@ -7,7 +7,6 @@ order: 2
 hidden: false
 ---
 
-- [Scheduling Future Listings](#scheduling-future-listings)
 - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
 - [Private Orders](#private-orders)
 - [Canceling Orders](#canceling-orders)
@@ -17,20 +16,6 @@ hidden: false
 ## Advanced
 
 Interested in purchasing for users server-side or with a bot, scheduling future orders, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
-
-### Scheduling Future Listings
-
-You can create listings that aren't fulfillable until a future date. Just pass in a `listingTime` (a UTC timestamp in seconds) to your SDK instance:
-
-```typescript
-const listingTime = Math.round(Date.now() / 1000 + 60 * 60 * 24); // One day from now
-const order = await openseaSDK.createListing({
-  asset: { tokenAddress, tokenId },
-  accountAddress,
-  startAmount: 1,
-  listingTime,
-});
-```
 
 ### Purchasing Items for Other Users
 
