@@ -1208,6 +1208,78 @@ export class OpenSeaSDK {
   }
 
   /**
+   * Offchain cancel multiple orders by their order hashes when protected by the SignedZone.
+   * This is a gas-free alternative to onchain cancellation for orders using the SignedZone.
+   * Protocol and Chain are required to prevent hash collisions.
+   * Please note cancellation is only assured if a fulfillment signature was not vended prior to cancellation.
+   * @param options
+   * @param options.protocolAddress The Seaport address for the orders. All orders must use the same protocol.
+   * @param options.orderHashes Array of order hashes to cancel.
+   * @param options.chain The chain where the orders are located. Defaults to the SDK's configured chain.
+   * @param options.offererSignatures Optional array of EIP-712 signatures from the offerer, one for each order hash.
+   *                                  If not provided, the user associated with the API Key will be checked instead.
+   * @param options.useSignerToDeriveOffererSignatures If true, derive the offererSignatures from the Ethers signer passed into this sdk.
+   * @returns Array of responses from the API, one for each order.
+   *
+   * @throws Error if orderHashes and offererSignatures arrays have different lengths.
+   */
+  public async offchainCancelOrders({
+    protocolAddress = DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+    orderHashes,
+    chain = this.chain,
+    offererSignatures,
+    useSignerToDeriveOffererSignatures = false,
+  }: {
+    protocolAddress?: string;
+    orderHashes: string[];
+    chain?: Chain;
+    offererSignatures?: string[];
+    useSignerToDeriveOffererSignatures?: boolean;
+  }) {
+    requireValidProtocol(protocolAddress);
+
+    if (orderHashes.length === 0) {
+      throw new Error("At least one order hash must be provided");
+    }
+
+    if (offererSignatures && offererSignatures.length !== orderHashes.length) {
+      throw new Error(
+        "offererSignatures array must have the same length as orderHashes array",
+      );
+    }
+
+    const results = [];
+    for (let i = 0; i < orderHashes.length; i++) {
+      const orderHash = orderHashes[i];
+      let offererSignature = offererSignatures?.[i];
+
+      if (useSignerToDeriveOffererSignatures) {
+        offererSignature = await this._getOffererSignature(
+          protocolAddress,
+          orderHash,
+          chain,
+        );
+      }
+
+      try {
+        const result = await this.api.offchainCancelOrder(
+          protocolAddress,
+          orderHash,
+          chain,
+          offererSignature,
+        );
+        results.push(result);
+      } catch (error) {
+        throw new Error(
+          `Failed to cancel order with hash ${orderHash}: ${error}`,
+        );
+      }
+    }
+
+    return results;
+  }
+
+  /**
    * Returns whether an order is fulfillable.
    * An order may not be fulfillable if a target item's transfer function
    * is locked for some reason, e.g. an item is being rented within a game
