@@ -186,11 +186,17 @@ suite("SDK: order posting", () => {
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");
     expect(offerResponse).to.exist.and.to.have.property("order_hash");
 
+    // Wait to ensure the order is indexed
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     // Cancel the order using self serve API key tied to the offerer
     const { protocol_address, order_hash } = offerResponse!;
     const cancelResponse = await sdk.offchainCancelOrder(
       protocol_address,
       order_hash,
+      undefined,
+      undefined,
+      true,
     );
     expect(cancelResponse).to.exist.and.to.have.property(
       "last_signature_issued_valid_until",
@@ -215,6 +221,9 @@ suite("SDK: order posting", () => {
     expect(offerResponse).to.exist.and.to.have.property("protocol_address");
     expect(offerResponse).to.exist.and.to.have.property("protocol_data");
     expect(offerResponse).to.exist.and.to.have.property("order_hash");
+
+    // Wait to ensure the order is indexed
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 
     // Cancel the order using the offerer signature, deriving it from the ethers signer
     const { protocol_address, order_hash } = offerResponse!;
