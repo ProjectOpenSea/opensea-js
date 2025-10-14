@@ -1303,7 +1303,7 @@ export class OpenSeaSDK {
    * @param orderHash The order hash, or external identifier, of the order.
    * @param chain The chain where the order is located.
    * @param offererSignature An EIP-712 signature from the offerer of the order.
-   *                         If this is not provided, the user associated with the API Key will be checked instead.
+   *                         If this is not provided, the API key used to initialize the SDK must belong to the order's offerer.
    *                         The signature must be a EIP-712 signature consisting of the order's Seaport contract's
    *                         name, version, address, and chain. The struct to sign is `OrderHash` containing a
    *                         single bytes32 field.
