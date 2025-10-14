@@ -140,9 +140,13 @@ export type Price = {
  * Listing order type.
  * @category API Models
  */
-export type Listing = Order & {
+export type Listing = Omit<Order, "price"> & {
   /** The order type of the listing. */
   type: OrderType;
+  /** The price of the listing with current price nested. */
+  price: {
+    current: Price;
+  };
 };
 
 /**
