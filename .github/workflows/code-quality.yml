@@ -37,18 +37,10 @@ jobs:
         run: npm install
 
       - name: Run tests
-        run: npm run test
+        run: npm run test:ci
         env:
           OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-
-      - name: Create code coverage report
-        run: npm run coverage-report
-
-      - name: Upload code coverage
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   test-integration:
     runs-on: ubuntu-latest
@@ -63,7 +55,7 @@ jobs:
         run: npm install
 
       - name: Run integration tests
-        run: npm run test:integration
+        run: npm run test:integration:ci
         env:
           OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
