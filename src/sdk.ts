@@ -1428,38 +1428,13 @@ export class OpenSeaSDK {
     fromAddress: string;
     overrides?: Overrides;
   }): Promise<string> {
-    await this._requireAccountIsAvailable(fromAddress);
-
+    // Validate basic parameters before making any blockchain calls
     if (assets.length === 0) {
       throw new Error("At least one asset must be provided");
     }
 
-    // Check approvals for all assets before attempting transfer
-    const unapprovedAssets: string[] = [];
-    for (const { asset, amount } of assets) {
-      const isApproved = await this._checkAssetApproval(
-        asset,
-        fromAddress,
-        OPENSEA_CONDUIT_ADDRESS_2,
-        amount,
-      );
-      if (!isApproved) {
-        const assetIdentifier =
-          asset.tokenId !== undefined
-            ? `${asset.tokenAddress}:${asset.tokenId}`
-            : asset.tokenAddress;
-        unapprovedAssets.push(assetIdentifier);
-      }
-    }
-
-    if (unapprovedAssets.length > 0) {
-      throw new Error(
-        `The following asset(s) are not approved for transfer to the OpenSea conduit:\n${unapprovedAssets.join("\n")}\n\n` +
-          `Please approve these assets before transferring. You can use the batchApproveAssets() method to approve multiple assets efficiently in a single transaction.`,
-      );
-    }
-
-    // Build transfer items array for TransferHelper
+    // Validate asset data and build transfer items array for TransferHelper
+    // This validation happens before any blockchain calls to ensure proper error messages
     const transferItems: Array<{
       itemType: number;
       token: string;
@@ -1517,6 +1492,34 @@ export class OpenSeaSDK {
         amount: transferAmount,
         recipient: toAddress,
       });
+    }
+
+    // Check account availability after basic validation
+    await this._requireAccountIsAvailable(fromAddress);
+
+    // Check approvals for all assets before attempting transfer
+    const unapprovedAssets: string[] = [];
+    for (const { asset, amount } of assets) {
+      const isApproved = await this._checkAssetApproval(
+        asset,
+        fromAddress,
+        OPENSEA_CONDUIT_ADDRESS_2,
+        amount,
+      );
+      if (!isApproved) {
+        const assetIdentifier =
+          asset.tokenId !== undefined
+            ? `${asset.tokenAddress}:${asset.tokenId}`
+            : asset.tokenAddress;
+        unapprovedAssets.push(assetIdentifier);
+      }
+    }
+
+    if (unapprovedAssets.length > 0) {
+      throw new Error(
+        `The following asset(s) are not approved for transfer to the OpenSea conduit:\n${unapprovedAssets.join("\n")}\n\n` +
+          `Please approve these assets before transferring. You can use the batchApproveAssets() method to approve multiple assets efficiently in a single transaction.`,
+      );
     }
 
     // Create TransferHelper contract instance
@@ -1579,11 +1582,22 @@ export class OpenSeaSDK {
     fromAddress: string;
     overrides?: Overrides;
   }): Promise<string | undefined> {
-    await this._requireAccountIsAvailable(fromAddress);
-
+    // Validate basic parameters before making any blockchain calls
     if (assets.length === 0) {
       return undefined;
     }
+
+    // Validate ERC20 assets have amounts before making any blockchain calls
+    for (const { asset, amount } of assets) {
+      if (asset.tokenStandard === TokenStandard.ERC20 && !amount) {
+        throw new Error(
+          `Amount required for ERC20 approval: ${asset.tokenAddress}`,
+        );
+      }
+    }
+
+    // Check account availability after basic validation
+    await this._requireAccountIsAvailable(fromAddress);
 
     // Check which assets need approval and build approval calldata
     const approvalsNeeded: Array<{ target: string; callData: string }> = [];
@@ -1621,11 +1635,6 @@ export class OpenSeaSDK {
             callData,
           });
         } else if (asset.tokenStandard === TokenStandard.ERC20) {
-          if (!amount) {
-            throw new Error(
-              `Amount required for ERC20 approval: ${asset.tokenAddress}`,
-            );
-          }
           // approve(spender, amount) - use max uint256 for unlimited
           const iface = new ethers.Interface([
             "function approve(address spender, uint256 amount) returns (bool)",
