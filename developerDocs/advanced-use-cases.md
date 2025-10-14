@@ -149,6 +149,7 @@ Offchain cancellation is:
 - **Limited**: Only works for SignedZone-protected orders
 - **Authentication**: If `offererSignature` is not provided, the API key used to initialize the SDK must belong to the order's offerer
 - **Note**: Cancellation is only assured if no fulfillment signature was vended before cancellation
+
 ### Bulk Transfers
 
 The SDK provides gas-efficient methods for transferring multiple assets in a single transaction using OpenSea's TransferHelper contract.
