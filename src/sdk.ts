@@ -1167,13 +1167,31 @@ export class OpenSeaSDK {
         });
       }
     } else if (orderHashes) {
-      // For order hashes, we need to explain that full order data is required for onchain cancellation
-      throw new Error(
-        "Onchain order cancellation requires full order data (OrderComponents). " +
-          "Order hashes alone are insufficient because Seaport's cancel() function needs the complete order parameters. " +
-          "Please provide the full OrderV2 objects or OrderComponents instead. " +
-          "If you only have order hashes and want to cancel orders protected by SignedZone, use offchainCancelOrder() instead.",
-      );
+      // Fetch orders from the API using order hashes
+      const fetchedOrders: OrderV2[] = [];
+      for (const orderHash of orderHashes) {
+        const order = await this.api.getOrderByHash(
+          orderHash,
+          protocolAddress,
+          this.chain,
+        );
+        fetchedOrders.push(order);
+      }
+
+      // Extract OrderComponents from the fetched orders
+      orderComponents = fetchedOrders.map((order) => {
+        requireValidProtocol(order.protocolAddress);
+        effectiveProtocolAddress = order.protocolAddress;
+        return order.protocolData.parameters;
+      });
+
+      // Dispatch event for the first order (for backwards compatibility)
+      if (fetchedOrders[0]) {
+        this._dispatch(EventType.CancelOrder, {
+          orderV2: fetchedOrders[0],
+          accountAddress,
+        });
+      }
     } else {
       // Should never reach here due to earlier validation
       throw new Error("Invalid input");

@@ -1,8 +1,9 @@
+import { OrderComponents } from "@opensea/seaport-js/lib/types";
 import { expect } from "chai";
 import { ethers } from "ethers";
 import { suite, test } from "mocha";
+import { OrderV2 } from "../../src/orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../../src/orders/utils";
-import { OrderV2, OrderComponents } from "../../src/orders/types";
 import { sdk } from "../utils/sdk";
 
 suite("SDK: cancelOrders", () => {
@@ -15,8 +16,8 @@ suite("SDK: cancelOrders", () => {
         accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include(
+    } catch (e) {
+      expect((e as Error).message).to.include(
         "Either orders or orderHashes must be provided",
       );
     }
@@ -29,8 +30,10 @@ suite("SDK: cancelOrders", () => {
         accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include("At least one order must be provided");
+    } catch (e) {
+      expect((e as Error).message).to.include(
+        "At least one order must be provided",
+      );
     }
   });
 
@@ -41,12 +44,14 @@ suite("SDK: cancelOrders", () => {
         accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include("At least one order hash must be provided");
+    } catch (e) {
+      expect((e as Error).message).to.include(
+        "At least one order hash must be provided",
+      );
     }
   });
 
-  test("Should throw an error when using orderHashes (onchain cancellation requires full order data)", async () => {
+  test("Should attempt to fetch orders from API when using orderHashes", async () => {
     try {
       await sdk.cancelOrders({
         orderHashes: ["0x123"],
@@ -54,11 +59,16 @@ suite("SDK: cancelOrders", () => {
         protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include(
-        "Onchain order cancellation requires full order data",
+    } catch (e) {
+      // Should fail when trying to fetch the order from the API
+      // Either "Not found" or network error depending on the API state
+      expect((e as Error).message).to.satisfy(
+        (msg: string) =>
+          msg.includes("Not found") ||
+          msg.includes("Server Error") ||
+          msg.includes("Unauthorized") ||
+          msg.includes("accountAddress is not available"),
       );
-      expect(e.message).to.include("offchainCancelOrder");
     }
   });
 
@@ -94,6 +104,7 @@ suite("SDK: cancelOrders", () => {
         },
         signature: "0x",
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
     const expectedErrorMessage = `Specified accountAddress is not available through wallet or provider: ${accountAddress}`;
@@ -104,8 +115,8 @@ suite("SDK: cancelOrders", () => {
         accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include(expectedErrorMessage);
+    } catch (e) {
+      expect((e as Error).message).to.include(expectedErrorMessage);
     }
   });
 
@@ -133,9 +144,11 @@ suite("SDK: cancelOrders", () => {
         accountAddress,
       });
       throw new Error("should have thrown wallet error");
-    } catch (e: any) {
+    } catch (e) {
       // We expect it to fail on wallet check, not on input validation
-      expect(e.message).to.include("accountAddress is not available");
+      expect((e as Error).message).to.include(
+        "accountAddress is not available",
+      );
     }
   });
 });
