@@ -139,6 +139,19 @@ export class OpenSeaAPI {
     orderBy = "created_date",
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
+    // Validate eth_price orderBy requires additional parameters
+    if (orderBy === "eth_price") {
+      if (
+        !restOptions.assetContractAddress ||
+        !restOptions.tokenIds ||
+        restOptions.tokenIds.length === 0
+      ) {
+        throw new Error(
+          'When using orderBy: "eth_price", you must provide both asset_contract_address and token_ids parameters',
+        );
+      }
+    }
+
     const { orders } = await this.get<OrdersQueryResponse>(
       getOrdersAPIPath(this.chain, protocol, side),
       serializeOrdersQueryOptions({
@@ -177,6 +190,19 @@ export class OpenSeaAPI {
     orderBy = "created_date",
     ...restOptions
   }: Omit<OrdersQueryOptions, "limit">): Promise<GetOrdersResponse> {
+    // Validate eth_price orderBy requires additional parameters
+    if (orderBy === "eth_price") {
+      if (
+        !restOptions.assetContractAddress ||
+        !restOptions.tokenIds ||
+        restOptions.tokenIds.length === 0
+      ) {
+        throw new Error(
+          'When using orderBy: "eth_price", you must provide both asset_contract_address and token_ids parameters',
+        );
+      }
+    }
+
     const response = await this.get<OrdersQueryResponse>(
       getOrdersAPIPath(this.chain, protocol, side),
       serializeOrdersQueryOptions({
