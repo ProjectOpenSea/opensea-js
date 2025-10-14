@@ -1094,6 +1094,12 @@ export class OpenSeaSDK {
   /**
    * Cancel multiple orders onchain, preventing them from being fulfilled.
    * This method accepts either full OrderV2 objects, OrderComponents, or order hashes with protocol address.
+   *
+   * **Event Behavior**: For backwards compatibility with the singular `cancelOrder` method,
+   * this method dispatches a `CancelOrder` event for the first order only, and only when
+   * an OrderV2 object is available (either provided directly or fetched via orderHashes).
+   * No event is dispatched when using OrderComponents directly, as they lack the full order data.
+   *
    * @param options
    * @param options.orders Array of orders to cancel. Can be OrderV2 objects or OrderComponents.
    * @param options.orderHashes Optional array of order hashes to cancel. Must provide protocolAddress if using this.
@@ -1144,6 +1150,7 @@ export class OpenSeaSDK {
 
     let orderComponents: OrderComponents[];
     let effectiveProtocolAddress = protocolAddress;
+    let firstOrderV2: OrderV2 | undefined;
 
     if (orders) {
       // Extract OrderComponents from either OrderV2 objects or use OrderComponents directly
@@ -1153,20 +1160,16 @@ export class OpenSeaSDK {
           const orderV2 = order as OrderV2;
           requireValidProtocol(orderV2.protocolAddress);
           effectiveProtocolAddress = orderV2.protocolAddress;
+          // Save the first OrderV2 for event dispatching
+          if (!firstOrderV2) {
+            firstOrderV2 = orderV2;
+          }
           return orderV2.protocolData.parameters;
         } else {
           // It's already OrderComponents
           return order as OrderComponents;
         }
       });
-
-      // Dispatch event for the first order (for backwards compatibility)
-      if (orders[0] && "protocolData" in orders[0]) {
-        this._dispatch(EventType.CancelOrder, {
-          orderV2: orders[0] as OrderV2,
-          accountAddress,
-        });
-      }
     } else if (orderHashes) {
       // Fetch orders from the API using order hashes
       const fetchedOrders: OrderV2[] = [];
@@ -1186,16 +1189,19 @@ export class OpenSeaSDK {
         return order.protocolData.parameters;
       });
 
-      // Dispatch event for the first order (for backwards compatibility)
-      if (fetchedOrders[0]) {
-        this._dispatch(EventType.CancelOrder, {
-          orderV2: fetchedOrders[0],
-          accountAddress,
-        });
-      }
+      // Save the first order for event dispatching
+      firstOrderV2 = fetchedOrders[0];
     } else {
       // Should never reach here due to earlier validation
       throw new Error("Invalid input");
+    }
+
+    // Dispatch event for the first order if available (for backwards compatibility with cancelOrder)
+    if (firstOrderV2) {
+      this._dispatch(EventType.CancelOrder, {
+        orderV2: firstOrderV2,
+        accountAddress,
+      });
     }
 
     // Transact and get the transaction hash
