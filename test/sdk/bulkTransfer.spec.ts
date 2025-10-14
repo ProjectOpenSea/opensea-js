@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "ethers";
 import { suite, test } from "mocha";
+import { TokenStandard } from "../../src/types";
 import { BAYC_CONTRACT_ADDRESS } from "../utils/constants";
 import { sdk } from "../utils/sdk";
 
@@ -19,7 +20,7 @@ suite("SDK: bulkTransfer", () => {
             asset: {
               tokenAddress: BAYC_CONTRACT_ADDRESS,
               tokenId: "1",
-              tokenStandard: "erc721",
+              tokenStandard: TokenStandard.ERC721,
             },
             toAddress: recipientAddress,
           },
@@ -27,8 +28,8 @@ suite("SDK: bulkTransfer", () => {
         fromAddress: accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include(expectedErrorMessage);
+    } catch (e) {
+      expect((e as Error).message).to.include(expectedErrorMessage);
     }
   });
 
@@ -39,8 +40,10 @@ suite("SDK: bulkTransfer", () => {
         fromAddress: accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include("At least one asset must be provided");
+    } catch (e) {
+      expect((e as Error).message).to.include(
+        "At least one asset must be provided",
+      );
     }
   });
 
@@ -51,7 +54,8 @@ suite("SDK: bulkTransfer", () => {
           {
             asset: {
               tokenAddress: "0x0f5d2fb29fb7d3cfee444a200298f468908cc942", // MANA
-              tokenStandard: "erc20",
+              tokenId: null,
+              tokenStandard: TokenStandard.ERC20,
             },
             toAddress: recipientAddress,
           },
@@ -59,8 +63,10 @@ suite("SDK: bulkTransfer", () => {
         fromAddress: accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include("Missing ERC20 amount for bulk transfer");
+    } catch (e) {
+      expect((e as Error).message).to.include(
+        "Missing ERC20 amount for bulk transfer",
+      );
     }
   });
 
@@ -71,7 +77,8 @@ suite("SDK: bulkTransfer", () => {
           {
             asset: {
               tokenAddress: BAYC_CONTRACT_ADDRESS,
-              tokenStandard: "erc721",
+              tokenId: null,
+              tokenStandard: TokenStandard.ERC721,
             },
             toAddress: recipientAddress,
           },
@@ -79,8 +86,10 @@ suite("SDK: bulkTransfer", () => {
         fromAddress: accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include("Missing ERC721 tokenId for bulk transfer");
+    } catch (e) {
+      expect((e as Error).message).to.include(
+        "Missing ERC721 tokenId for bulk transfer",
+      );
     }
   });
 
@@ -91,7 +100,8 @@ suite("SDK: bulkTransfer", () => {
           {
             asset: {
               tokenAddress: "0x495f947276749ce646f68ac8c248420045cb7b5e",
-              tokenStandard: "erc1155",
+              tokenId: null,
+              tokenStandard: TokenStandard.ERC1155,
             },
             toAddress: recipientAddress,
             amount: "1",
@@ -100,8 +110,8 @@ suite("SDK: bulkTransfer", () => {
         fromAddress: accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include(
+    } catch (e) {
+      expect((e as Error).message).to.include(
         "Missing ERC1155 tokenId for bulk transfer",
       );
     }
@@ -115,7 +125,7 @@ suite("SDK: bulkTransfer", () => {
             asset: {
               tokenAddress: "0x495f947276749ce646f68ac8c248420045cb7b5e",
               tokenId: "1",
-              tokenStandard: "erc1155",
+              tokenStandard: TokenStandard.ERC1155,
             },
             toAddress: recipientAddress,
           },
@@ -123,8 +133,8 @@ suite("SDK: bulkTransfer", () => {
         fromAddress: accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include(
+    } catch (e) {
+      expect((e as Error).message).to.include(
         "Missing ERC1155 amount for bulk transfer",
       );
     }
@@ -140,7 +150,7 @@ suite("SDK: bulkTransfer", () => {
             asset: {
               tokenAddress: BAYC_CONTRACT_ADDRESS,
               tokenId: "1",
-              tokenStandard: "erc721",
+              tokenStandard: TokenStandard.ERC721,
             },
             toAddress: recipientAddress,
           },
@@ -148,12 +158,13 @@ suite("SDK: bulkTransfer", () => {
         fromAddress: accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
+    } catch (e) {
       // Should fail on either account check or approval check
       // Both are expected since we're using random wallets
-      expect(e.message).to.satisfy((msg: string) =>
-        msg.includes("accountAddress is not available") ||
-        msg.includes("not approved for transfer"),
+      expect((e as Error).message).to.satisfy(
+        (msg: string) =>
+          msg.includes("accountAddress is not available") ||
+          msg.includes("not approved for transfer"),
       );
     }
   });
@@ -173,15 +184,15 @@ suite("SDK: batchApproveAssets", () => {
             asset: {
               tokenAddress: BAYC_CONTRACT_ADDRESS,
               tokenId: "1",
-              tokenStandard: "erc721",
+              tokenStandard: TokenStandard.ERC721,
             },
           },
         ],
         fromAddress: accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.include(expectedErrorMessage);
+    } catch (e) {
+      expect((e as Error).message).to.include(expectedErrorMessage);
     }
   });
 
@@ -200,17 +211,19 @@ suite("SDK: batchApproveAssets", () => {
           {
             asset: {
               tokenAddress: "0x0f5d2fb29fb7d3cfee444a200298f468908cc942", // MANA
-              tokenStandard: "erc20",
+              tokenId: null,
+              tokenStandard: TokenStandard.ERC20,
             },
           },
         ],
         fromAddress: accountAddress,
       });
       throw new Error("should have thrown");
-    } catch (e: any) {
-      expect(e.message).to.satisfy((msg: string) =>
-        msg.includes("accountAddress is not available") ||
-        msg.includes("Amount required for ERC20 approval"),
+    } catch (e) {
+      expect((e as Error).message).to.satisfy(
+        (msg: string) =>
+          msg.includes("accountAddress is not available") ||
+          msg.includes("Amount required for ERC20 approval"),
       );
     }
   });
