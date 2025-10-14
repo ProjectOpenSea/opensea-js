@@ -9,8 +9,7 @@ hidden: false
 
 - [Scheduling Future Listings](#scheduling-future-listings)
 - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
-- [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether)
-- [Private Auctions](#private-auctions)
+- [Private Orders](#private-orders)
 - [Canceling Orders](#canceling-orders)
 - [Listening to Events](#listening-to-events)
 
@@ -49,38 +48,7 @@ If the order is a listing (sell order, ask, `OrderSide.LISTING`), the taker is t
 
 This will automatically approve the assets for trading and confirm the transaction for sending them.
 
-### Using ERC-20 Tokens Instead of Ether
-
-Here's an example of listing the Genesis CryptoKitty for $100! No more needing to worry about the exchange rate:
-
-```typescript
-// CryptoKitties
-const tokenAddress = "0x06012c8cf97bead5deae237070f9587f8e7a266d";
-// Token address for the DAI stablecoin, which is pegged to $1 USD
-const paymentTokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
-
-// The units for `startAmount` and `endAmount` are now in DAI, so $100 USD
-const order = await openseaSDK.createListing({
-  tokenAddress,
-  tokenId: "1",
-  accountAddress: OWNERS_WALLET_ADDRESS,
-  startAmount: 100,
-  paymentTokenAddress,
-});
-```
-
-You can use `getPaymentToken` to search for payment tokens by address. And you can even list all orders for a specific ERC-20 token by querying the API:
-
-```typescript
-const token = await openseaSDK.api.getPaymentToken(paymentTokenAddress);
-
-const order = await openseaSDK.api.getOrders({
-  side: OrderSide.LISTING,
-  paymentTokenAddress: token.address,
-});
-```
-
-### Private Auctions
+### Private Orders
 
 You can make offers and listings that can only be fulfilled by an address or email of your choosing. This allows you to negotiate a price in some channel and sell for your chosen price on OpenSea, **without having to trust that the counterparty will abide by your terms!**
 
