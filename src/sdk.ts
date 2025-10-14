@@ -27,9 +27,9 @@ import {
   ENGLISH_AUCTION_ZONE_MAINNETS,
   WPOL_ADDRESS,
   GUNZILLA_SEAPORT_1_6_ADDRESS,
+  TRANSFER_HELPER_ADDRESS,
+  MULTICALL3_ADDRESS,
 } from "./constants";
-
-const TRANSFER_HELPER_ADDRESS = "0x0000000000c2d145a2526bd8c716263bfebe1a72";
 import {
   constructPrivateListingCounterOrder,
   getPrivateListingConsiderations,
@@ -1455,9 +1455,7 @@ export class OpenSeaSDK {
     if (unapprovedAssets.length > 0) {
       throw new Error(
         `The following asset(s) are not approved for transfer to the OpenSea conduit:\n${unapprovedAssets.join("\n")}\n\n` +
-          `Please approve these assets for the OpenSea conduit at ${OPENSEA_CONDUIT_ADDRESS_2}.\n` +
-          `For ERC20 tokens, call approve() with sufficient allowance.\n` +
-          `For ERC721/ERC1155 tokens, call setApprovalForAll(${OPENSEA_CONDUIT_ADDRESS_2}, true).`,
+          `Please approve these assets before transferring. You can use the batchApproveAssets() method to approve multiple assets efficiently in a single transaction.`,
       );
     }
 
@@ -1522,13 +1520,7 @@ export class OpenSeaSDK {
     }
 
     // Create TransferHelper contract instance
-    const transferHelper = new Contract(
-      TRANSFER_HELPER_ADDRESS,
-      [
-        "function bulkTransfer(tuple(uint8 itemType, address token, uint256 identifier, uint256 amount, address recipient)[] items, bytes32 conduitKey) external returns (bytes4)",
-      ],
-      this._signerOrProvider,
-    );
+    const transferHelper = this._getTransferHelperContract();
 
     this._dispatch(EventType.Transfer, {
       accountAddress: fromAddress,
@@ -1547,6 +1539,153 @@ export class OpenSeaSDK {
         transaction.hash,
         EventType.Transfer,
         `Bulk transferring ${assets.length} asset(s)`,
+      );
+
+      return transaction.hash;
+    } catch (error) {
+      console.error(error);
+      this._dispatch(EventType.TransactionDenied, {
+        error,
+        accountAddress: fromAddress,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Batch approve multiple assets for transfer to the OpenSea conduit.
+   * This method checks which assets need approval and batches them efficiently:
+   * - 0 approvals needed: Returns early
+   * - 1 approval needed: Sends single transaction
+   * - 2+ approvals needed: Uses Multicall3 to batch all approvals in one transaction
+   *
+   * @param options
+   * @param options.assets Array of assets to approve for transfer
+   * @param options.fromAddress The address that owns the assets
+   * @param options.overrides Transaction overrides, ignored if not set.
+   * @returns Transaction hash of the approval transaction, or undefined if no approvals needed
+   *
+   * @throws Error if the fromAddress is not available through wallet or provider.
+   */
+  public async batchApproveAssets({
+    assets,
+    fromAddress,
+    overrides,
+  }: {
+    assets: Array<{
+      asset: AssetWithTokenStandard;
+      amount?: BigNumberish;
+    }>;
+    fromAddress: string;
+    overrides?: Overrides;
+  }): Promise<string | undefined> {
+    await this._requireAccountIsAvailable(fromAddress);
+
+    if (assets.length === 0) {
+      return undefined;
+    }
+
+    // Check which assets need approval and build approval calldata
+    const approvalsNeeded: Array<{ target: string; callData: string }> = [];
+    const processedContracts = new Set<string>();
+
+    for (const { asset, amount } of assets) {
+      const isApproved = await this._checkAssetApproval(
+        asset,
+        fromAddress,
+        OPENSEA_CONDUIT_ADDRESS_2,
+        amount,
+      );
+
+      if (!isApproved) {
+        // For ERC721/ERC1155, only approve once per contract
+        if (
+          asset.tokenStandard === TokenStandard.ERC721 ||
+          asset.tokenStandard === TokenStandard.ERC1155
+        ) {
+          if (processedContracts.has(asset.tokenAddress.toLowerCase())) {
+            continue;
+          }
+          processedContracts.add(asset.tokenAddress.toLowerCase());
+
+          // setApprovalForAll(operator, true)
+          const iface = new ethers.Interface([
+            "function setApprovalForAll(address operator, bool approved)",
+          ]);
+          const callData = iface.encodeFunctionData("setApprovalForAll", [
+            OPENSEA_CONDUIT_ADDRESS_2,
+            true,
+          ]);
+          approvalsNeeded.push({
+            target: asset.tokenAddress,
+            callData,
+          });
+        } else if (asset.tokenStandard === TokenStandard.ERC20) {
+          if (!amount) {
+            throw new Error(
+              `Amount required for ERC20 approval: ${asset.tokenAddress}`,
+            );
+          }
+          // approve(spender, amount) - use max uint256 for unlimited
+          const iface = new ethers.Interface([
+            "function approve(address spender, uint256 amount) returns (bool)",
+          ]);
+          const callData = iface.encodeFunctionData("approve", [
+            OPENSEA_CONDUIT_ADDRESS_2,
+            ethers.MaxUint256, // Approve max for convenience
+          ]);
+          approvalsNeeded.push({
+            target: asset.tokenAddress,
+            callData,
+          });
+        }
+      }
+    }
+
+    // No approvals needed
+    if (approvalsNeeded.length === 0) {
+      return undefined;
+    }
+
+    // Single approval: send directly
+    if (approvalsNeeded.length === 1) {
+      const { target, callData } = approvalsNeeded[0];
+      const signer = this._signerOrProvider as Signer;
+      const tx = await signer.sendTransaction({
+        to: target,
+        data: callData,
+        ...overrides,
+        from: fromAddress,
+      });
+
+      await this._confirmTransaction(
+        tx.hash,
+        EventType.ApproveAllAssets,
+        "Approving asset for transfer",
+      );
+
+      return tx.hash;
+    }
+
+    // Multiple approvals: use Multicall3
+    const multicall3 = this._getMulticall3Contract();
+
+    const calls = approvalsNeeded.map(({ target, callData }) => ({
+      target,
+      allowFailure: false,
+      callData,
+    }));
+
+    try {
+      const transaction = await multicall3.aggregate3(calls, {
+        ...overrides,
+        from: fromAddress,
+      });
+
+      await this._confirmTransaction(
+        transaction.hash,
+        EventType.ApproveAllAssets,
+        `Batch approving ${approvalsNeeded.length} asset(s) for transfer`,
       );
 
       return transaction.hash;
@@ -1900,6 +2039,34 @@ export class OpenSeaSDK {
       );
       return false;
     }
+  }
+
+  /**
+   * Get a TransferHelper contract instance.
+   * @returns Contract instance for TransferHelper
+   */
+  private _getTransferHelperContract(): Contract {
+    return new Contract(
+      TRANSFER_HELPER_ADDRESS,
+      [
+        "function bulkTransfer(tuple(uint8 itemType, address token, uint256 identifier, uint256 amount, address recipient)[] items, bytes32 conduitKey) external returns (bytes4)",
+      ],
+      this._signerOrProvider,
+    );
+  }
+
+  /**
+   * Get a Multicall3 contract instance.
+   * @returns Contract instance for Multicall3
+   */
+  private _getMulticall3Contract(): Contract {
+    return new Contract(
+      MULTICALL3_ADDRESS,
+      [
+        "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)",
+      ],
+      this._signerOrProvider,
+    );
   }
 
   /**

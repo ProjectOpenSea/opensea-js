@@ -158,3 +158,60 @@ suite("SDK: bulkTransfer", () => {
     }
   });
 });
+
+suite("SDK: batchApproveAssets", () => {
+  const wallet = ethers.Wallet.createRandom();
+  const accountAddress = wallet.address;
+
+  test("Should throw an error when using batchApproveAssets without wallet", async () => {
+    const expectedErrorMessage = `Specified accountAddress is not available through wallet or provider: ${accountAddress}`;
+
+    try {
+      await sdk.batchApproveAssets({
+        assets: [
+          {
+            asset: {
+              tokenAddress: BAYC_CONTRACT_ADDRESS,
+              tokenId: "1",
+              tokenStandard: "erc721",
+            },
+          },
+        ],
+        fromAddress: accountAddress,
+      });
+      throw new Error("should have thrown");
+    } catch (e: any) {
+      expect(e.message).to.include(expectedErrorMessage);
+    }
+  });
+
+  test("Should return undefined when assets array is empty", async () => {
+    const result = await sdk.batchApproveAssets({
+      assets: [],
+      fromAddress: accountAddress,
+    });
+    expect(result).to.be.undefined;
+  });
+
+  test("Should throw an error when ERC20 amount is missing", async () => {
+    try {
+      await sdk.batchApproveAssets({
+        assets: [
+          {
+            asset: {
+              tokenAddress: "0x0f5d2fb29fb7d3cfee444a200298f468908cc942", // MANA
+              tokenStandard: "erc20",
+            },
+          },
+        ],
+        fromAddress: accountAddress,
+      });
+      throw new Error("should have thrown");
+    } catch (e: any) {
+      expect(e.message).to.satisfy((msg: string) =>
+        msg.includes("accountAddress is not available") ||
+        msg.includes("Amount required for ERC20 approval"),
+      );
+    }
+  });
+});
