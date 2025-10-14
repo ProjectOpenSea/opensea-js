@@ -30,8 +30,8 @@ suite("SDK: fulfill best listing", () => {
 
     const sdkClient = getSdkForChain(BUY_LISTING_CHAIN);
     const chain = BUY_LISTING_CHAIN;
-    const contractAddress = BUY_LISTING_CONTRACT_ADDRESS!;
-    const tokenId = BUY_LISTING_TOKEN_ID!;
+    const contractAddress = BUY_LISTING_CONTRACT_ADDRESS;
+    const tokenId = BUY_LISTING_TOKEN_ID;
 
     const { nft } = await sdkClient.api.getNFT(contractAddress, tokenId, chain);
     expect(nft).to.exist;

@@ -28,6 +28,13 @@ export const expectValidOrder = (order: OrderV2) => {
   }
 };
 
+/**
+ * Generates a random expiration timestamp between 15 minutes and 1 hour from now.
+ * Uses cryptographically secure random bytes with rejection sampling to ensure
+ * uniform distribution and avoid modulo bias.
+ *
+ * @returns Unix timestamp in seconds representing a future expiration time
+ */
 export const getRandomExpiration = (): number => {
   const now = Math.floor(Date.now() / 1000);
   const fifteenMinutes = 15 * 60;
