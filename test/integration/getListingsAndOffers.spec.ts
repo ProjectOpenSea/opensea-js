@@ -40,6 +40,24 @@ suite("SDK: getAllListings", () => {
       response.listings[0].protocol_data,
       "Protocol data should not be null",
     );
+    // Verify listing has nested price.current structure
+    assert.isObject(response.listings[0].price, "Price should be an object");
+    assert.isObject(
+      response.listings[0].price.current,
+      "Price.current should be an object",
+    );
+    assert.isString(
+      response.listings[0].price.current.currency,
+      "Currency should be a string",
+    );
+    assert.isNumber(
+      response.listings[0].price.current.decimals,
+      "Decimals should be a number",
+    );
+    assert.isString(
+      response.listings[0].price.current.value,
+      "Price value should be a string",
+    );
     assert(response.next, "Cursor for next page should not be null");
 
     // Should get the next page of listings
@@ -100,6 +118,24 @@ suite("SDK: getBestListing", () => {
     assert(response.chain, "Chain should not be null");
     assert(response.protocol_address, "Protocol address should not be null");
     assert(response.protocol_data, "Protocol data should not be null");
+    // Verify listing has nested price.current structure
+    assert.isObject(response.price, "Price should be an object");
+    assert.isObject(
+      response.price.current,
+      "Price.current should be an object",
+    );
+    assert.isString(
+      response.price.current.currency,
+      "Currency should be a string",
+    );
+    assert.isNumber(
+      response.price.current.decimals,
+      "Decimals should be a number",
+    );
+    assert.isString(
+      response.price.current.value,
+      "Price value should be a string",
+    );
     assert.equal(
       listing.order_hash,
       response.order_hash,
