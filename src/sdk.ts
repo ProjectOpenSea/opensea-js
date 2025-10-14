@@ -19,7 +19,7 @@ import {
   ZeroAddress,
 } from "ethers";
 import { OpenSeaAPI } from "./api/api";
-import { CollectionOffer, Listing, NFT, Order } from "./api/types";
+import { CollectionOffer, Listing, NFT, Offer, Order } from "./api/types";
 import {
   OPENSEA_CONDUIT_ADDRESS_2,
   OPENSEA_CONDUIT_KEY_2,
@@ -952,7 +952,7 @@ export class OpenSeaSDK {
     domain,
     overrides,
   }: {
-    order: OrderV2 | Order;
+    order: OrderV2 | Order | Listing | Offer;
     accountAddress: string;
     recipientAddress?: string;
     unitsToFill?: BigNumberish;
@@ -970,7 +970,8 @@ export class OpenSeaSDK {
 
     const side =
       (order as OrderV2).side ??
-      ([OrderType.BASIC, OrderType.ENGLISH].includes((order as Listing).type)
+      ("type" in order &&
+      [OrderType.BASIC, OrderType.ENGLISH].includes(order.type as OrderType)
         ? OrderSide.LISTING
         : OrderSide.OFFER);
 
