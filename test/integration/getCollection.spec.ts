@@ -69,19 +69,10 @@ suite("SDK: getCollection", () => {
   });
 
   test("Get Collections for all chains", async () => {
-    // Excluding Abstract, ApeChain, Blast, Zora (Internal Server Error) and Solana (no NFT collections)
+    // Excluding Solana (no NFT collections)
     const chains = Object.values(Chain).filter(
-      (chain) =>
-        chain !== Chain.Abstract &&
-        chain !== Chain.ApeChain &&
-        chain !== Chain.Blast &&
-        chain !== Chain.Zora &&
-        chain !== Chain.Solana,
+      (chain) => chain !== Chain.Solana,
     );
-    console.log(
-      "Skipping Abstract, ApeChain, Blast, Zora due to internal server errors - skipping should be removed when resolved",
-    );
-
     const sdk = getSdkForChain(Chain.Mainnet);
 
     await processInBatches(chains, 3, async (chain) => {
