@@ -4,6 +4,11 @@ import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { OrdersManager } from "../../src/sdk/orders";
 import { Chain } from "../../src/types";
+import {
+  getCurrentUnixTimestamp,
+  getUnixTimestampInSeconds,
+  TimeInSeconds,
+} from "../../src/utils";
 import { createMockContext } from "../fixtures/context";
 
 suite("SDK: OrdersManager", () => {
@@ -154,7 +159,7 @@ suite("SDK: OrdersManager", () => {
     });
 
     test("creates offer with expiration time", async () => {
-      const expirationTime = Math.floor(Date.now() / 1000) + 86400; // 1 day
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
@@ -267,8 +272,8 @@ suite("SDK: OrdersManager", () => {
     });
 
     test("creates listing with listing time and expiration", async () => {
-      const listingTime = Math.floor(Date.now() / 1000);
-      const expirationTime = listingTime + 86400;
+      const listingTime = getCurrentUnixTimestamp();
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
@@ -410,7 +415,7 @@ suite("SDK: OrdersManager", () => {
     });
 
     test("creates collection offer with expiration time", async () => {
-      const expirationTime = Math.floor(Date.now() / 1000) + 86400;
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
       await ordersManager.createCollectionOffer({
         collectionSlug: "test-collection",
@@ -531,8 +536,8 @@ suite("SDK: OrdersManager", () => {
     });
 
     test("builds listing components with all parameters", async () => {
-      const listingTime = Math.floor(Date.now() / 1000);
-      const expirationTime = listingTime + 86400;
+      const listingTime = getCurrentUnixTimestamp();
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
       const result = await ordersManager.buildListingOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
@@ -706,7 +711,7 @@ suite("SDK: OrdersManager", () => {
         executeAllActions: sinon.stub().resolves(mockBulkOrders),
       });
 
-      const expirationTime = Math.floor(Date.now() / 1000) + 86400;
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
       await ordersManager.createBulkListings({
         listings: [
@@ -971,7 +976,7 @@ suite("SDK: OrdersManager", () => {
         executeAllActions: sinon.stub().resolves(mockBulkOrders),
       });
 
-      const expirationTime = Math.floor(Date.now() / 1000) + 86400;
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
       await ordersManager.createBulkOffers({
         offers: [

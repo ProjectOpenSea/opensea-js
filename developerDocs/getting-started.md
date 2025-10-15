@@ -79,9 +79,10 @@ Note: The total value of offers must not exceed 1000x wallet balance.
 To sell an asset, call `createListing`:
 
 ```typescript
-// Expire this auction one day from now.
-// Note that we convert from the JavaScript timestamp (milliseconds) to seconds:
-const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24);
+import { getUnixTimestampInSeconds, TimeInSeconds } from "opensea-js";
+
+// Expire this listing one day from now
+const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
 const listing = await openseaSDK.createListing({
   asset: {

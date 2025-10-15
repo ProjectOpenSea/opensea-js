@@ -1,6 +1,7 @@
 import { randomBytes } from "crypto";
 import { expect } from "chai";
 import { OrderV2 } from "../../src/orders/types";
+import { getCurrentUnixTimestamp, TimeInSeconds } from "../../src/utils";
 
 export const expectValidOrder = (order: OrderV2) => {
   const requiredFields = [
@@ -36,9 +37,9 @@ export const expectValidOrder = (order: OrderV2) => {
  * @returns Unix timestamp in seconds representing a future expiration time
  */
 export const getRandomExpiration = (): number => {
-  const now = Math.floor(Date.now() / 1000);
-  const fifteenMinutes = 15 * 60;
-  const oneHour = 60 * 60;
+  const now = getCurrentUnixTimestamp();
+  const fifteenMinutes = TimeInSeconds.MINUTE * 15;
+  const oneHour = TimeInSeconds.HOUR;
   const range = oneHour - fifteenMinutes + 1;
 
   const maxValue = 0xffffffff; // 2^32 - 1

@@ -145,6 +145,8 @@ The SDK provides efficient methods for creating multiple listings or offers with
 Use `createBulkListings()` to create multiple listings with a single signature:
 
 ```typescript
+import { getUnixTimestampInSeconds, TimeInSeconds } from "opensea-js";
+
 const listings = await openseaSDK.createBulkListings({
   listings: [
     {
@@ -154,7 +156,7 @@ const listings = await openseaSDK.createBulkListings({
     {
       asset: { tokenAddress: "0x...", tokenId: "2" },
       startAmount: "2.0",
-      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24 * 7), // 7 days
+      expirationTime: getUnixTimestampInSeconds(TimeInSeconds.WEEK), // 7 days
     },
     {
       asset: { tokenAddress: "0x...", tokenId: "3" },
@@ -180,6 +182,8 @@ const listings = await openseaSDK.createBulkListings({
 Use `createBulkOffers()` to create multiple offers with a single signature:
 
 ```typescript
+import { getUnixTimestampInSeconds, TimeInSeconds } from "opensea-js";
+
 const offers = await openseaSDK.createBulkOffers({
   offers: [
     {
@@ -189,7 +193,7 @@ const offers = await openseaSDK.createBulkOffers({
     {
       asset: { tokenAddress: "0x...", tokenId: "2" },
       startAmount: "1.2",
-      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24), // 1 day
+      expirationTime: getUnixTimestampInSeconds(TimeInSeconds.DAY), // 1 day
     },
     {
       asset: { tokenAddress: "0x...", tokenId: "3" },
@@ -240,13 +244,15 @@ This applies to all API operations, not just bulk orders. If a request fails aft
 **Example with All Options:**
 
 ```typescript
+import { getUnixTimestampInSeconds, TimeInSeconds } from "opensea-js";
+
 const listings = await openseaSDK.createBulkListings({
   listings: [
     {
       asset: { tokenAddress: "0x...", tokenId: "1" },
       startAmount: "1.5",
       quantity: 1,
-      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24 * 30), // 30 days
+      expirationTime: getUnixTimestampInSeconds(TimeInSeconds.MONTH), // 30 days
       paymentTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
       domain: "mymarketplace.com",
       includeOptionalCreatorFees: true,
