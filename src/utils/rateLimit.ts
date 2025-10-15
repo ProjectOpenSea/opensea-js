@@ -1,8 +1,11 @@
 import { OpenSeaRateLimitError } from "../types";
 
 /**
- * Options for handling rate-limited operations with retries
+ * Options for handling rate-limited operations with retries.
+ * This is exported for SDK consumers who may want to use executeWithRateLimit
+ * for their own OpenSea API integrations.
  */
+// eslint-disable-next-line import/no-unused-modules
 export interface RateLimitOptions {
   /** Logger function for logging progress */
   logger?: (message: string) => void;
