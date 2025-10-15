@@ -1,4 +1,4 @@
-import { NFT } from "../../src/api/types";
+import { NFT, TraitDisplayType } from "../../src/api/types";
 
 export const mockNFT: NFT = {
   identifier: "1",
@@ -40,7 +40,7 @@ export const mockNFTDetailed: NFT = {
   traits: [
     {
       trait_type: "Background",
-      display_type: "None" as const,
+      display_type: TraitDisplayType.NONE,
       max_value: "0",
       value: "Blue",
     },
@@ -66,7 +66,7 @@ export const mockNFTDetailed: NFT = {
   },
 };
 
-export const mockNFTMinimal: Partial<NFT> & Pick<NFT, "identifier" | "contract"> = {
-  identifier: "1",
-  contract: "0xabc123",
-};
+export const createMockNFT = (overrides: Partial<NFT> = {}): NFT => ({
+  ...mockNFT,
+  ...overrides,
+});

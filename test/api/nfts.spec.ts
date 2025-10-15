@@ -4,7 +4,7 @@ import * as sinon from "sinon";
 import { NFTsAPI } from "../../src/api/nfts";
 import { ListNFTsResponse, GetNFTResponse } from "../../src/api/types";
 import { Chain } from "../../src/types";
-import { mockNFT, mockNFTDetailed, mockNFTMinimal } from "../fixtures/nfts";
+import { mockNFT, mockNFTDetailed, createMockNFT } from "../fixtures/nfts";
 
 suite("API: NFTsAPI", () => {
   let mockGet: sinon.SinonStub;
@@ -45,10 +45,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with limit parameter", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -61,10 +61,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with pagination cursor", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -81,10 +81,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with both limit and pagination", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -97,10 +97,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("handles empty NFTs array", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -123,10 +123,10 @@ suite("API: NFTsAPI", () => {
 
   suite("getNFTsByContract", () => {
     test("fetches NFTs for a contract without optional parameters", async () => {
-      const mockResponse: ListNFTsResponse = {
-        nfts: [{ ...mockNFTMinimal, identifier: "1", contract: "0xabc123" }],
+      const mockResponse = {
+        nfts: [createMockNFT({ identifier: "1", contract: "0xabc123" })],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -144,10 +144,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with limit parameter", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -160,10 +160,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with pagination cursor", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -176,10 +176,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with custom chain parameter", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -196,10 +196,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("uses default chain when not specified", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -209,10 +209,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with all parameters", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -246,13 +246,13 @@ suite("API: NFTsAPI", () => {
 
   suite("getNFTsByAccount", () => {
     test("fetches NFTs owned by an account without optional parameters", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [
-          { ...mockNFTMinimal, identifier: "1", contract: "0x123" },
-          { ...mockNFTMinimal, identifier: "2", contract: "0x456" },
+          createMockNFT({ identifier: "1", contract: "0x123" }),
+          createMockNFT({ identifier: "2", contract: "0x456" }),
         ],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -270,10 +270,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with limit parameter", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -286,10 +286,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with pagination cursor", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -302,10 +302,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with custom chain parameter", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -322,10 +322,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("uses default chain when not specified", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -335,10 +335,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("fetches NFTs with all parameters", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -359,10 +359,10 @@ suite("API: NFTsAPI", () => {
     });
 
     test("handles empty NFTs array", async () => {
-      const mockResponse: ListNFTsResponse = {
+      const mockResponse = {
         nfts: [],
         next: undefined,
-      };
+      } as unknown as ListNFTsResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -404,7 +404,7 @@ suite("API: NFTsAPI", () => {
 
     test("fetches NFT with custom chain parameter", async () => {
       const mockResponse: GetNFTResponse = {
-        nft: { ...mockNFTMinimal, identifier: "5678", contract: "0xcontract456" },
+        nft: createMockNFT({ identifier: "5678", contract: "0xcontract456" }),
       };
 
       mockGet.resolves(mockResponse);
@@ -418,7 +418,7 @@ suite("API: NFTsAPI", () => {
 
     test("uses default chain when not specified", async () => {
       const mockResponse: GetNFTResponse = {
-        nft: { ...mockNFTMinimal, identifier: "1", contract: "0xcontract123" },
+        nft: createMockNFT({ identifier: "1", contract: "0xcontract123" }),
       };
 
       mockGet.resolves(mockResponse);
@@ -430,7 +430,10 @@ suite("API: NFTsAPI", () => {
 
     test("handles large token identifiers", async () => {
       const mockResponse: GetNFTResponse = {
-        nft: { ...mockNFTMinimal, identifier: "99999999999999999999", contract: "0xcontract123" },
+        nft: createMockNFT({
+          identifier: "99999999999999999999",
+          contract: "0xcontract123",
+        }),
       };
 
       mockGet.resolves(mockResponse);
@@ -466,7 +469,7 @@ suite("API: NFTsAPI", () => {
 
   suite("refreshNFTMetadata", () => {
     test("refreshes metadata for an NFT", async () => {
-      const mockResponse = { success: true } as any;
+      const mockResponse = { success: true } as unknown;
 
       mockPost.resolves(mockResponse);
 
@@ -481,7 +484,7 @@ suite("API: NFTsAPI", () => {
     });
 
     test("refreshes metadata with custom chain parameter", async () => {
-      const mockResponse = { success: true } as any;
+      const mockResponse = { success: true } as unknown;
 
       mockPost.resolves(mockResponse);
 
@@ -493,7 +496,7 @@ suite("API: NFTsAPI", () => {
     });
 
     test("uses default chain when not specified", async () => {
-      const mockResponse = { success: true } as any;
+      const mockResponse = { success: true } as unknown;
 
       mockPost.resolves(mockResponse);
 
@@ -503,7 +506,7 @@ suite("API: NFTsAPI", () => {
     });
 
     test("sends empty body in POST request", async () => {
-      const mockResponse = { success: true } as any;
+      const mockResponse = { success: true } as unknown;
 
       mockPost.resolves(mockResponse);
 
@@ -513,7 +516,7 @@ suite("API: NFTsAPI", () => {
     });
 
     test("handles large token identifiers", async () => {
-      const mockResponse = { success: true } as any;
+      const mockResponse = { success: true } as unknown;
 
       mockPost.resolves(mockResponse);
 
