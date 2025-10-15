@@ -26,15 +26,15 @@ export function getUnixTimestampInSeconds(seconds: number): number {
 /**
  * Common time durations in seconds for convenience
  */
-export const TimeInSeconds = {
+export enum TimeInSeconds {
   /** 1 minute = 60 seconds */
-  MINUTE: 60,
+  MINUTE = 60,
   /** 1 hour = 3600 seconds */
-  HOUR: 60 * 60,
+  HOUR = 3600,
   /** 1 day = 86400 seconds */
-  DAY: 60 * 60 * 24,
+  DAY = 86400,
   /** 1 week = 604800 seconds */
-  WEEK: 60 * 60 * 24 * 7,
+  WEEK = 604800,
   /** 30 days = 2592000 seconds */
-  MONTH: 60 * 60 * 24 * 30,
-} as const;
+  MONTH = 2592000,
+}

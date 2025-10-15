@@ -7,7 +7,7 @@ import { BigNumberish, ZeroAddress } from "ethers";
 import { CollectionOffer, NFT } from "../api/types";
 import { INVERSE_BASIS_POINT } from "../constants";
 import { SDKContext } from "./context";
-import { OrderV2 } from "../orders/types";
+import { OrderV2, ProtocolData } from "../orders/types";
 import {
   Fee,
   OpenSeaCollection,
@@ -26,6 +26,26 @@ import {
   getListingPaymentToken,
   getSignedZone,
 } from "../utils/utils";
+
+/**
+ * Result type for bulk operations that may partially succeed.
+ * Contains successfully submitted orders and any failures with error information.
+ * This is exported for future error recovery feature - not currently used.
+ */
+// eslint-disable-next-line import/no-unused-modules
+export interface BulkOrderResult {
+  /** Successfully submitted orders */
+  successful: OrderV2[];
+  /** Failed order submissions with error information */
+  failed: Array<{
+    /** Index of the failed order in the original input array */
+    index: number;
+    /** The signed order that failed to submit */
+    order: ProtocolData;
+    /** The error that occurred during submission */
+    error: Error;
+  }>;
+}
 
 /**
  * Manager for order building and creation operations.
@@ -712,7 +732,7 @@ export class OrdersManager {
     // Submit each order individually to the OpenSea API
     // Rate limiting is handled automatically by the API client
     this.context.logger(
-      `Submitting ${orders.length} bulk-signed listings to OpenSea API...`,
+      `Starting submission of ${orders.length} bulk-signed listing${orders.length !== 1 ? "s" : ""} to OpenSea API...`,
     );
 
     const submittedOrders: OrderV2[] = [];
@@ -724,10 +744,11 @@ export class OrdersManager {
         side: OrderSide.LISTING,
       });
       submittedOrders.push(submittedOrder);
+      this.context.logger(`Completed listing ${i + 1}/${orders.length}`);
     }
 
     this.context.logger(
-      `Successfully submitted all ${submittedOrders.length} listings`,
+      `Successfully submitted all ${submittedOrders.length} listing${submittedOrders.length !== 1 ? "s" : ""}`,
     );
 
     return submittedOrders;
@@ -890,7 +911,7 @@ export class OrdersManager {
     // Submit each order individually to the OpenSea API
     // Rate limiting is handled automatically by the API client
     this.context.logger(
-      `Submitting ${orders.length} bulk-signed offers to OpenSea API...`,
+      `Starting submission of ${orders.length} bulk-signed offer${orders.length !== 1 ? "s" : ""} to OpenSea API...`,
     );
 
     const submittedOrders: OrderV2[] = [];
@@ -902,10 +923,11 @@ export class OrdersManager {
         side: OrderSide.OFFER,
       });
       submittedOrders.push(submittedOrder);
+      this.context.logger(`Completed offer ${i + 1}/${orders.length}`);
     }
 
     this.context.logger(
-      `Successfully submitted all ${submittedOrders.length} offers`,
+      `Successfully submitted all ${submittedOrders.length} offer${submittedOrders.length !== 1 ? "s" : ""}`,
     );
 
     return submittedOrders;

@@ -1,6 +1,20 @@
 import { OpenSeaRateLimitError } from "../types";
 
 /**
+ * Default configuration for rate limit handling
+ */
+const DEFAULT_MAX_RETRIES = 3;
+const DEFAULT_BASE_RETRY_DELAY_MS = 1000;
+const EXPONENTIAL_BACKOFF_BASE = 2;
+const MILLISECONDS_PER_SECOND = 1000;
+
+/**
+ * HTTP status codes that indicate rate limiting
+ */
+const RATE_LIMIT_STATUS_CODE = 429;
+const CUSTOM_RATE_LIMIT_STATUS_CODE = 599;
+
+/**
  * Options for handling rate-limited operations with retries.
  * This is exported for SDK consumers who may want to use executeWithRateLimit
  * for their own OpenSea API integrations.
@@ -36,7 +50,11 @@ export async function executeWithRateLimit<T>(
   operation: () => Promise<T>,
   options: RateLimitOptions = {},
 ): Promise<T> {
-  const { logger = () => {}, maxRetries = 3, baseRetryDelay = 1000 } = options;
+  const {
+    logger = () => {},
+    maxRetries = DEFAULT_MAX_RETRIES,
+    baseRetryDelay = DEFAULT_BASE_RETRY_DELAY_MS,
+  } = options;
 
   let lastError: Error | undefined;
 
@@ -49,8 +67,8 @@ export async function executeWithRateLimit<T>(
 
       // Check if this is a rate limit error by status code (robust) or retry-after header
       const isRateLimitError =
-        rateLimitError.statusCode === 429 ||
-        rateLimitError.statusCode === 599 ||
+        rateLimitError.statusCode === RATE_LIMIT_STATUS_CODE ||
+        rateLimitError.statusCode === CUSTOM_RATE_LIMIT_STATUS_CODE ||
         rateLimitError.retryAfter !== undefined;
 
       if (!isRateLimitError || attempt === maxRetries) {
@@ -61,13 +79,13 @@ export async function executeWithRateLimit<T>(
       // Calculate delay
       let delayMs: number;
       if (rateLimitError.retryAfter !== undefined) {
-        delayMs = rateLimitError.retryAfter * 1000;
+        delayMs = rateLimitError.retryAfter * MILLISECONDS_PER_SECOND;
         logger(
           `Rate limit hit. Waiting ${rateLimitError.retryAfter} seconds before retry (attempt ${attempt + 1}/${maxRetries})...`,
         );
       } else {
         // Exponential backoff
-        delayMs = baseRetryDelay * Math.pow(2, attempt);
+        delayMs = baseRetryDelay * Math.pow(EXPONENTIAL_BACKOFF_BASE, attempt);
         logger(
           `Rate limit hit. Waiting ${delayMs}ms before retry (attempt ${attempt + 1}/${maxRetries})...`,
         );
