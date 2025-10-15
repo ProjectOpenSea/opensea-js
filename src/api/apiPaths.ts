@@ -115,3 +115,23 @@ export const getCancelOrderPath = (
 export const getTraitOffersPath = (collectionSlug: string) => {
   return `/api/v2/offers/collection/${collectionSlug}/traits`;
 };
+
+export const getEventsAPIPath = () => {
+  return "/api/v2/events";
+};
+
+export const getEventsByAccountAPIPath = (address: string) => {
+  return `/api/v2/events/accounts/${address}`;
+};
+
+export const getEventsByCollectionAPIPath = (collectionSlug: string) => {
+  return `/api/v2/events/collection/${collectionSlug}`;
+};
+
+export const getEventsByNFTAPIPath = (
+  chain: Chain,
+  address: string,
+  identifier: string,
+) => {
+  return `/api/v2/events/chain/${chain}/contract/${address}/nfts/${identifier}`;
+};

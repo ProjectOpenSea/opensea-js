@@ -314,3 +314,181 @@ export enum TraitDisplayType {
   /** "None" is used for string traits */
   NONE = "None",
 }
+
+/**
+ * Asset event type returned by OpenSea API.
+ * @category API Models
+ */
+export enum AssetEventType {
+  ORDER = "order",
+  SALE = "sale",
+  TRANSFER = "transfer",
+  CANCEL = "cancel",
+  REDEMPTION = "redemption",
+}
+
+/**
+ * Order type for events.
+ * @category API Models
+ */
+export enum EventOrderType {
+  LISTING = "listing",
+  ITEM_OFFER = "item_offer",
+  COLLECTION_OFFER = "collection_offer",
+  TRAIT_OFFER = "trait_offer",
+}
+
+/**
+ * Payment information for an event.
+ * @category API Models
+ */
+export type EventPayment = {
+  /** Quantity of the payment token */
+  quantity: string;
+  /** Address of the payment token (0x0...0 for ETH) */
+  token_address: string;
+  /** Decimals of the payment token */
+  decimals: number;
+  /** Symbol of the payment token */
+  symbol: string;
+};
+
+/**
+ * Asset information in an event.
+ * @category API Models
+ */
+export type EventAsset = {
+  identifier: string;
+  collection: string;
+  contract: string;
+  token_standard: string;
+  name: string;
+  description: string;
+  image_url: string;
+  display_image_url: string;
+  display_animation_url: string | null;
+  metadata_url: string;
+  opensea_url: string;
+  updated_at: string;
+  is_disabled: boolean;
+  is_nsfw: boolean;
+};
+
+/**
+ * Base event type.
+ * @category API Models
+ */
+type BaseEvent = {
+  /** Type of the event */
+  event_type: AssetEventType | string;
+  /** Timestamp of the event */
+  event_timestamp: number;
+  /** Chain the event occurred on */
+  chain: string;
+  /** Quantity involved in the event */
+  quantity: number;
+};
+
+/**
+ * Order event type.
+ * @category API Models
+ */
+export type OrderEvent = BaseEvent & {
+  event_type: AssetEventType.ORDER | "order";
+  /** Payment information */
+  payment: EventPayment;
+  /** Type of order */
+  order_type: EventOrderType | string;
+  /** Start date of the order */
+  start_date: number | null;
+  /** Expiration date of the order */
+  expiration_date: number;
+  /** Asset involved in the order, null for collection/trait offers */
+  asset: EventAsset | null;
+  /** Maker of the order */
+  maker: string;
+  /** Taker of the order */
+  taker: string;
+  /** Criteria for collection/trait offers */
+  criteria: Record<string, unknown> | null;
+  /** Whether the listing is private */
+  is_private_listing: boolean;
+  /** Order hash (optional) */
+  order_hash?: string;
+  /** Protocol address (optional) */
+  protocol_address?: string;
+};
+
+/**
+ * Sale event type.
+ * @category API Models
+ */
+export type SaleEvent = BaseEvent & {
+  event_type: AssetEventType.SALE | "sale";
+  /** Transaction hash */
+  transaction: string;
+  /** Order hash */
+  order_hash: string;
+  /** Protocol address */
+  protocol_address: string;
+  /** Payment information */
+  payment: EventPayment;
+  /** Closing date of the sale */
+  closing_date: number;
+  /** Seller address */
+  seller: string;
+  /** Buyer address */
+  buyer: string;
+  /** NFT involved in the sale */
+  nft: EventAsset;
+};
+
+/**
+ * Transfer event type.
+ * @category API Models
+ */
+export type TransferEvent = BaseEvent & {
+  event_type: AssetEventType.TRANSFER | "transfer";
+  /** Transaction hash */
+  transaction: string;
+  /** Address the NFT was transferred from */
+  from_address: string;
+  /** Address the NFT was transferred to */
+  to_address: string;
+  /** NFT involved in the transfer */
+  nft: EventAsset;
+};
+
+/**
+ * Generic event type that can be any event type.
+ * @category API Models
+ */
+export type AssetEvent = OrderEvent | SaleEvent | TransferEvent;
+
+/**
+ * Query args for Get Events endpoints.
+ * @category API Query Args
+ */
+export interface GetEventsArgs {
+  /** Type of event to filter by */
+  event_type?: AssetEventType | string;
+  /** Filter events after this timestamp */
+  after?: number;
+  /** Filter events before this timestamp */
+  before?: number;
+  /** Limit the number of results */
+  limit?: number;
+  /** Cursor for pagination */
+  next?: string;
+  /** Chain to filter by */
+  chain?: string;
+}
+
+/**
+ * Response from OpenSea API for fetching events.
+ * @category API Response Types
+ */
+export type GetEventsResponse = QueryCursorsV2 & {
+  /** List of {@link AssetEvent} */
+  asset_events: AssetEvent[];
+};
