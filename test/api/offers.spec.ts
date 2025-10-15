@@ -46,7 +46,6 @@ suite("API: OffersAPI", () => {
           } as any,
         ],
         next: "cursor-123",
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -68,8 +67,7 @@ suite("API: OffersAPI", () => {
     test("fetches all offers with limit parameter", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -86,7 +84,6 @@ suite("API: OffersAPI", () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: "cursor-456",
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -102,8 +99,7 @@ suite("API: OffersAPI", () => {
     test("fetches all offers with both limit and pagination", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -119,8 +115,7 @@ suite("API: OffersAPI", () => {
     test("handles empty offers array", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -150,8 +145,7 @@ suite("API: OffersAPI", () => {
             order_hash: "0xabc",
           } as any,
         ],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -180,8 +174,7 @@ suite("API: OffersAPI", () => {
     test("fetches trait offers with limit parameter", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -203,8 +196,7 @@ suite("API: OffersAPI", () => {
     test("fetches trait offers with pagination cursor", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -227,8 +219,7 @@ suite("API: OffersAPI", () => {
     test("fetches trait offers with float value", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -252,8 +243,7 @@ suite("API: OffersAPI", () => {
     test("fetches trait offers with int value", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -278,8 +268,7 @@ suite("API: OffersAPI", () => {
     test("fetches trait offers with all parameters", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -307,8 +296,7 @@ suite("API: OffersAPI", () => {
     test("handles empty offers array", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);

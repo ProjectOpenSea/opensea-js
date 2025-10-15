@@ -1,9 +1,14 @@
-import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import { expect } from "chai";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { FulfillmentManager } from "../../src/sdk/fulfillment";
-import { EventType, OrderSide } from "../../src/types";
+import { EventType } from "../../src/types";
+import {
+  mockOrderV2,
+  mockOrderComponents,
+  mockOfferOrderV2,
+  mockPrivateListingOrderV2,
+} from "../fixtures/orders";
 
 suite("SDK: FulfillmentManager", () => {
   let mockOrdersManager: any;
@@ -13,42 +18,6 @@ suite("SDK: FulfillmentManager", () => {
   let mockConfirmTransaction: sinon.SinonStub;
   let mockRequireAccountIsAvailable: sinon.SinonStub;
   let fulfillmentManager: FulfillmentManager;
-
-  const mockOrderComponents = {
-    offerer: "0xOfferer",
-    offer: [],
-    consideration: [],
-    orderType: 0,
-    startTime: "0",
-    endTime: "1000000000000",
-    zone: "0x0000000000000000000000000000000000000000",
-    zoneHash: "0x",
-    salt: "0",
-    conduitKey: "0x",
-    totalOriginalConsiderationItems: 0,
-    counter: "0",
-  };
-
-  const mockOrderV2 = {
-    createdDate: "2024-01-01T00:00:00Z",
-    closingDate: null,
-    listingTime: 0,
-    expirationTime: 1000000000000,
-    orderHash: "0xOrderHash",
-    maker: { address: "0xMaker" },
-    taker: null,
-    protocolData: {
-      parameters: mockOrderComponents,
-      signature: "0xSignature",
-    },
-    protocolAddress: CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
-    currentPrice: BigInt("1000000000000000000"),
-    makerFees: [],
-    takerFees: [],
-    side: OrderSide.LISTING,
-    orderType: 0,
-    cancelled: false,
-  };
 
   const mockTransaction = {
     hash: "0xTxHash",
@@ -123,13 +92,8 @@ suite("SDK: FulfillmentManager", () => {
     });
 
     test("fulfills an offer order successfully", async () => {
-      const offerOrder = {
-        ...mockOrderV2,
-        side: OrderSide.OFFER,
-      };
-
       const result = await fulfillmentManager.fulfillOrder({
-        order: offerOrder,
+        order: mockOfferOrderV2,
         accountAddress: "0xSeller",
       });
 
@@ -206,13 +170,8 @@ suite("SDK: FulfillmentManager", () => {
     });
 
     test("fulfills private listing successfully", async () => {
-      const privateOrder = {
-        ...mockOrderV2,
-        taker: { address: "0xPrivateBuyer" },
-      };
-
       const result = await fulfillmentManager.fulfillOrder({
-        order: privateOrder,
+        order: mockPrivateListingOrderV2,
         accountAddress: "0xPrivateBuyer",
       });
 
@@ -222,14 +181,9 @@ suite("SDK: FulfillmentManager", () => {
     });
 
     test("throws error for private listing with recipient address", async () => {
-      const privateOrder = {
-        ...mockOrderV2,
-        taker: { address: "0xPrivateBuyer" },
-      };
-
       try {
         await fulfillmentManager.fulfillOrder({
-          order: privateOrder,
+          order: mockPrivateListingOrderV2,
           accountAddress: "0xPrivateBuyer",
           recipientAddress: "0xRecipient",
         });

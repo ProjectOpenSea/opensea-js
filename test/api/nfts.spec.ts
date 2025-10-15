@@ -4,6 +4,7 @@ import * as sinon from "sinon";
 import { NFTsAPI } from "../../src/api/nfts";
 import { ListNFTsResponse, GetNFTResponse } from "../../src/api/types";
 import { Chain } from "../../src/types";
+import { mockNFT, mockNFTDetailed, mockNFTMinimal } from "../fixtures/nfts";
 
 suite("API: NFTsAPI", () => {
   let mockGet: sinon.SinonStub;
@@ -23,21 +24,7 @@ suite("API: NFTsAPI", () => {
   suite("getNFTsByCollection", () => {
     test("fetches NFTs for a collection without parameters", async () => {
       const mockResponse: ListNFTsResponse = {
-        nfts: [
-          {
-            identifier: "1",
-            collection: "test-collection",
-            contract: "0x123",
-            token_standard: "erc721",
-            name: "Test NFT #1",
-            description: "A test NFT",
-            image_url: "https://example.com/1.png",
-            metadata_url: "https://example.com/metadata/1",
-            updated_at: "2024-01-01T00:00:00Z",
-            is_disabled: false,
-            is_nsfw: false,
-          },
-        ],
+        nfts: [mockNFT],
         next: "cursor-123",
       };
 
@@ -137,12 +124,7 @@ suite("API: NFTsAPI", () => {
   suite("getNFTsByContract", () => {
     test("fetches NFTs for a contract without optional parameters", async () => {
       const mockResponse: ListNFTsResponse = {
-        nfts: [
-          {
-            identifier: "1",
-            contract: "0xabc123",
-          } as any,
-        ],
+        nfts: [{ ...mockNFTMinimal, identifier: "1", contract: "0xabc123" }],
         next: undefined,
       };
 
@@ -266,14 +248,8 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs owned by an account without optional parameters", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [
-          {
-            identifier: "1",
-            contract: "0x123",
-          } as any,
-          {
-            identifier: "2",
-            contract: "0x456",
-          } as any,
+          { ...mockNFTMinimal, identifier: "1", contract: "0x123" },
+          { ...mockNFTMinimal, identifier: "2", contract: "0x456" },
         ],
         next: undefined,
       };
@@ -410,19 +386,7 @@ suite("API: NFTsAPI", () => {
   suite("getNFT", () => {
     test("fetches a single NFT by contract and identifier", async () => {
       const mockResponse: GetNFTResponse = {
-        nft: {
-          identifier: "1234",
-          collection: "test-collection",
-          contract: "0xcontract123",
-          token_standard: "erc721",
-          name: "Test NFT #1234",
-          description: "A unique test NFT",
-          image_url: "https://example.com/nft/1234.png",
-          metadata_url: "https://example.com/metadata/1234",
-          updated_at: "2024-01-01T00:00:00Z",
-          is_disabled: false,
-          is_nsfw: false,
-        },
+        nft: mockNFTDetailed,
       };
 
       mockGet.resolves(mockResponse);
@@ -440,9 +404,7 @@ suite("API: NFTsAPI", () => {
 
     test("fetches NFT with custom chain parameter", async () => {
       const mockResponse: GetNFTResponse = {
-        nft: {
-          identifier: "5678",
-        } as any,
+        nft: { ...mockNFTMinimal, identifier: "5678", contract: "0xcontract456" },
       };
 
       mockGet.resolves(mockResponse);
@@ -456,7 +418,7 @@ suite("API: NFTsAPI", () => {
 
     test("uses default chain when not specified", async () => {
       const mockResponse: GetNFTResponse = {
-        nft: {} as any,
+        nft: { ...mockNFTMinimal, identifier: "1", contract: "0xcontract123" },
       };
 
       mockGet.resolves(mockResponse);
@@ -468,9 +430,7 @@ suite("API: NFTsAPI", () => {
 
     test("handles large token identifiers", async () => {
       const mockResponse: GetNFTResponse = {
-        nft: {
-          identifier: "99999999999999999999",
-        } as any,
+        nft: { ...mockNFTMinimal, identifier: "99999999999999999999", contract: "0xcontract123" },
       };
 
       mockGet.resolves(mockResponse);
