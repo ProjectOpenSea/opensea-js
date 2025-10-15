@@ -39,8 +39,8 @@ export interface BulkOrderResult {
   failed: Array<{
     /** Index of the failed order in the original input array */
     index: number;
-    /** The signed order that failed to submit */
-    order: ProtocolData;
+    /** The signed order that failed to submit (undefined if order creation failed before signing) */
+    order?: ProtocolData;
     /** The error that occurred during submission */
     error: Error;
   }>;
