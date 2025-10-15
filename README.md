@@ -24,6 +24,7 @@ Happy seafaring! ⛵️
 
 - [Quick Start Guide](developerDocs/quick-start.md)
 - [Getting Started Guide](developerDocs/getting-started.md)
+- [API Reference](developerDocs/api-reference.md) - Complete reference for all SDK methods
 - [Advanced Use Cases](developerDocs/advanced-use-cases.md)
 - [SDK Reference](https://projectopensea.github.io/opensea-js/)
 - [Frequently Asked Questions](developerDocs/faq.md)

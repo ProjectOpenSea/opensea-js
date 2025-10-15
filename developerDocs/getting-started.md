@@ -7,6 +7,8 @@ order: 1
 hidden: false
 ---
 
+> 📖 **For a complete reference of all SDK methods with detailed parameters and return types, see the [API Reference](api-reference.md).**
+
 - [Fetching Assets](#fetching-assets)
   - [Checking Balances and Ownerships](#checking-balances-and-ownerships)
 - [Making Offers](#making-offers)

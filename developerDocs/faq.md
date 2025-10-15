@@ -23,4 +23,6 @@ Please use methods in the v2 API for multichain capabilities.
 
 ## Why is there no SDK method for the API request I am trying to call?
 
+First, check the [API Reference](api-reference.md) to see all available SDK methods - many OpenSea API v2 endpoints are now supported.
+
 If the SDK does not currently have a specific API, you can use the generic [GET and POST methods](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/api/api.ts#L612-L636) to make any API Request. This repository is also open source, so please feel free to create a pull request.
