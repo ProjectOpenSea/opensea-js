@@ -67,6 +67,8 @@ const offer = await openseaSDK.createOffer({
 
 When you make an offer on an item owned by an OpenSea user, **that user will automatically get an email notifying them with the offer amount**, if it's above their desired threshold.
 
+**Creating Multiple Offers:** To create multiple offers efficiently with a single signature, see [Bulk Order Creation](advanced-use-cases.md#bulk-order-creation) in the Advanced Use Cases guide.
+
 #### Offer Limits
 
 Note: The total value of offers must not exceed 1000x wallet balance.
@@ -94,6 +96,8 @@ const listing = await openseaSDK.createListing({
 The units for `startAmount` are Ether (ETH). If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
 
 See [Listening to Events](#listening-to-events) to respond to the setup transactions that occur the first time a user sells an item.
+
+**Creating Multiple Listings:** To create multiple listings efficiently with a single signature, see [Bulk Order Creation](advanced-use-cases.md#bulk-order-creation) in the Advanced Use Cases guide.
 
 ### Creating Collection and Trait Offers
 

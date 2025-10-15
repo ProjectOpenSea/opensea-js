@@ -10,6 +10,7 @@ hidden: false
 - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
 - [Private Orders](#private-orders)
 - [Canceling Orders](#canceling-orders)
+- [Bulk Order Creation](#bulk-order-creation)
 - [Bulk Transfers](#bulk-transfers)
 - [Listening to Events](#listening-to-events)
 
@@ -134,6 +135,131 @@ Offchain cancellation is:
 - **Limited**: Only works for SignedZone-protected orders
 - **Authentication**: If `offererSignature` is not provided, the API key used to initialize the SDK must belong to the order's offerer
 - **Note**: Cancellation is only assured if no fulfillment signature was vended before cancellation
+
+### Bulk Order Creation
+
+The SDK provides efficient methods for creating multiple listings or offers with a single signature using Seaport's bulk order functionality. This is significantly more gas-efficient and faster than creating orders individually.
+
+#### Creating Multiple Listings
+
+Use `createBulkListings()` to create multiple listings with a single signature:
+
+```typescript
+const listings = await openseaSDK.createBulkListings({
+  listings: [
+    {
+      asset: { tokenAddress: "0x...", tokenId: "1" },
+      startAmount: "1.5", // Price in ETH
+    },
+    {
+      asset: { tokenAddress: "0x...", tokenId: "2" },
+      startAmount: "2.0",
+      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24 * 7), // 7 days
+    },
+    {
+      asset: { tokenAddress: "0x...", tokenId: "3" },
+      startAmount: "0.5",
+      paymentTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+    },
+  ],
+  accountAddress: "0x...",
+});
+```
+
+**Key Features:**
+
+- **Single signature**: All listings are signed together using Seaport's merkle tree signature
+- **Individual customization**: Each listing can have different prices, payment tokens, expiration times, etc.
+- **Automatic rate limiting**: API submissions are handled sequentially with automatic retry on rate limits
+- **Efficient**: Uses normal signature for single listing to avoid bulk signature overhead
+
+**Performance Note:** If you only provide one listing, the method automatically uses `createListing()` internally since bulk signatures are more expensive to decode on-chain.
+
+#### Creating Multiple Offers
+
+Use `createBulkOffers()` to create multiple offers with a single signature:
+
+```typescript
+const offers = await openseaSDK.createBulkOffers({
+  offers: [
+    {
+      asset: { tokenAddress: "0x...", tokenId: "1" },
+      startAmount: "0.8", // Offer price in WETH
+    },
+    {
+      asset: { tokenAddress: "0x...", tokenId: "2" },
+      startAmount: "1.2",
+      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24), // 1 day
+    },
+    {
+      asset: { tokenAddress: "0x...", tokenId: "3" },
+      startAmount: "2.5",
+      paymentTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+      quantity: 5, // For ERC1155 tokens
+    },
+  ],
+  accountAddress: "0x...",
+});
+```
+
+**Key Features:**
+
+- **Single signature**: All offers are signed together
+- **Flexible payment tokens**: Each offer can use different ERC20 tokens
+- **Automatic zone handling**: Uses signed zone for offer protection by default
+- **Collection requirements**: Automatically applies collection-required zones when needed
+
+**Common Parameters for Both Methods:**
+
+Each listing or offer in the bulk array supports:
+
+- `asset`: The NFT to list/offer on (required)
+  - `tokenAddress`: Contract address (required)
+  - `tokenId`: Token ID (required)
+- `startAmount`: Price in token units (required)
+- `quantity`: Number of items (default: 1, for semi-fungible tokens)
+- `expirationTime`: When the order expires in Unix seconds
+- `paymentTokenAddress`: ERC20 token address (defaults to ETH for listings, WETH for offers)
+- `domain`: Domain for order attribution
+- `salt`: Custom salt for the order
+- `buyerAddress`: For private listings only
+- `includeOptionalCreatorFees`: Include optional creator fees (listings only)
+- `zone`: Custom zone address
+
+**Error Handling:**
+
+The methods include automatic rate limit handling with exponential backoff. If the OpenSea API rate limits your requests, the SDK will:
+
+1. Log the rate limit encounter with retry delay
+2. Wait for the specified delay
+3. Retry the failed request
+4. Continue with remaining submissions
+
+If a submission fails after all retries, the entire operation will throw an error.
+
+**Example with All Options:**
+
+```typescript
+const listings = await openseaSDK.createBulkListings({
+  listings: [
+    {
+      asset: { tokenAddress: "0x...", tokenId: "1" },
+      startAmount: "1.5",
+      quantity: 1,
+      expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * 24 * 30), // 30 days
+      paymentTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
+      domain: "mymarketplace.com",
+      includeOptionalCreatorFees: true,
+    },
+    {
+      asset: { tokenAddress: "0x...", tokenId: "2" },
+      startAmount: "2.0",
+      buyerAddress: "0xSpecificBuyer...", // Private listing
+    },
+  ],
+  accountAddress: "0x...",
+});
+```
 
 ### Bulk Transfers
 

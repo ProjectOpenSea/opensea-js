@@ -346,7 +346,6 @@ export class FulfillmentManager {
     asset,
     accountAddress,
     startAmount,
-    endAmount,
     quantity = 1,
     domain,
     salt,
@@ -354,14 +353,12 @@ export class FulfillmentManager {
     expirationTime,
     paymentTokenAddress,
     buyerAddress,
-    englishAuction,
     includeOptionalCreatorFees = false,
     zone,
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
     startAmount: BigNumberish;
-    endAmount?: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -369,7 +366,6 @@ export class FulfillmentManager {
     expirationTime?: number;
     paymentTokenAddress?: string;
     buyerAddress?: string;
-    englishAuction?: boolean;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<string> {
@@ -378,7 +374,6 @@ export class FulfillmentManager {
         asset,
         accountAddress,
         startAmount,
-        endAmount,
         quantity,
         domain,
         salt,
@@ -386,7 +381,6 @@ export class FulfillmentManager {
         expirationTime,
         paymentTokenAddress,
         buyerAddress,
-        englishAuction,
         includeOptionalCreatorFees,
         zone,
       });
