@@ -5,6 +5,7 @@ import {
   getBestOfferAPIPath,
   getAllOffersAPIPath,
   getTraitOffersPath,
+  getOrdersAPIPath,
 } from "./apiPaths";
 import {
   BuildOfferResponse,
@@ -17,19 +18,18 @@ import { ProtocolData } from "../orders/types";
 import {
   getBuildCollectionOfferPayload,
   getPostCollectionOfferPayload,
+  serializeOrdersQueryOptions,
 } from "../orders/utils";
+import { Chain, OrderSide } from "../types";
+import { Fetcher } from "./fetcher";
 
 /**
  * Offer-related API operations
  */
 export class OffersAPI {
   constructor(
-    private get: <T>(apiPath: string, query?: object) => Promise<T>,
-    private post: <T>(
-      apiPath: string,
-      body?: object,
-      opts?: object,
-    ) => Promise<T>,
+    private fetcher: Fetcher,
+    private chain: Chain,
   ) {}
 
   /**
@@ -40,7 +40,7 @@ export class OffersAPI {
     limit?: number,
     next?: string,
   ): Promise<GetOffersResponse> {
-    const response = await this.get<GetOffersResponse>(
+    const response = await this.fetcher.get<GetOffersResponse>(
       getAllOffersAPIPath(collectionSlug),
       {
         limit,
@@ -62,7 +62,7 @@ export class OffersAPI {
     floatValue?: number,
     intValue?: number,
   ): Promise<GetOffersResponse> {
-    const response = await this.get<GetOffersResponse>(
+    const response = await this.fetcher.get<GetOffersResponse>(
       getTraitOffersPath(collectionSlug),
       {
         type,
@@ -83,7 +83,7 @@ export class OffersAPI {
     collectionSlug: string,
     tokenId: string | number,
   ): Promise<GetBestOfferResponse> {
-    const response = await this.get<GetBestOfferResponse>(
+    const response = await this.fetcher.get<GetBestOfferResponse>(
       getBestOfferAPIPath(collectionSlug, tokenId),
     );
     return response;
@@ -115,7 +115,7 @@ export class OffersAPI {
       traitType,
       traitValue,
     );
-    const response = await this.post<BuildOfferResponse>(
+    const response = await this.fetcher.post<BuildOfferResponse>(
       getBuildOfferPath(),
       payload,
     );
@@ -128,7 +128,7 @@ export class OffersAPI {
   async getCollectionOffers(
     slug: string,
   ): Promise<ListCollectionOffersResponse | null> {
-    return await this.get<ListCollectionOffersResponse>(
+    return await this.fetcher.get<ListCollectionOffersResponse>(
       getCollectionOffersPath(slug),
     );
   }
@@ -148,9 +148,31 @@ export class OffersAPI {
       traitType,
       traitValue,
     );
-    return await this.post<CollectionOffer>(
+    return await this.fetcher.post<CollectionOffer>(
       getPostCollectionOfferPath(),
       payload,
     );
+  }
+
+  /**
+   * Gets all active offers for a specific NFT.
+   */
+  async getNFTOffers(
+    assetContractAddress: string,
+    tokenId: string,
+    limit?: number,
+    next?: string,
+    chain: Chain = this.chain,
+  ): Promise<GetOffersResponse> {
+    const response = await this.fetcher.get<GetOffersResponse>(
+      getOrdersAPIPath(chain, "seaport", OrderSide.OFFER),
+      serializeOrdersQueryOptions({
+        assetContractAddress,
+        tokenIds: [tokenId],
+        limit,
+        next,
+      }),
+    );
+    return response;
   }
 }

@@ -8,14 +8,17 @@ import {
   Listing,
 } from "../../src/api/types";
 import { OrderV2 } from "../../src/orders/types";
+import { Chain } from "../../src/types";
+import { createMockFetcher } from "../fixtures/fetcher";
 
 suite("API: ListingsAPI", () => {
   let mockGet: sinon.SinonStub;
   let listingsAPI: ListingsAPI;
 
   beforeEach(() => {
-    mockGet = sinon.stub();
-    listingsAPI = new ListingsAPI(mockGet);
+    const { fetcher, mockGet: getMock } = createMockFetcher();
+    mockGet = getMock;
+    listingsAPI = new ListingsAPI(fetcher, Chain.Mainnet);
   });
 
   afterEach(() => {
@@ -28,7 +31,7 @@ suite("API: ListingsAPI", () => {
         listings: [
           {
             order_hash: "0x123",
-            chain: "ethereum",
+            chain: Chain.Mainnet,
             type: "basic",
             price: {
               current: {
@@ -184,7 +187,7 @@ suite("API: ListingsAPI", () => {
     test("fetches best listing for a token with string tokenId", async () => {
       const mockResponse: GetBestListingResponse = {
         order_hash: "0xabc123",
-        chain: "ethereum",
+        chain: Chain.Mainnet,
         type: "basic",
         price: {
           current: {
@@ -431,10 +434,187 @@ suite("API: ListingsAPI", () => {
     });
   });
 
+  suite("getNFTListings", () => {
+    test("fetches listings for a specific NFT", async () => {
+      const mockResponse: GetListingsResponse = {
+        listings: [
+          {
+            order_hash: "0xabc123",
+            chain: Chain.Mainnet,
+            type: "basic",
+            price: {
+              current: {
+                currency: "ETH",
+                decimals: 18,
+                value: "1000000000000000000",
+              },
+            },
+            protocol_data: {} as unknown as OrderV2,
+            protocol_address: "0xprotocol",
+          } as unknown as Listing,
+        ],
+        next: "cursor-123",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await listingsAPI.getNFTListings(
+        "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+        "1",
+      );
+
+      expect(mockGet.calledOnce).to.be.true;
+      expect(mockGet.firstCall.args[0]).to.equal(
+        "/api/v2/orders/ethereum/seaport/listings",
+      );
+      expect(mockGet.firstCall.args[1]).to.deep.include({
+        asset_contract_address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+        token_ids: ["1"],
+      });
+      expect(result.listings).to.have.length(1);
+      expect(result.listings[0].order_hash).to.equal("0xabc123");
+      expect(result.next).to.equal("cursor-123");
+    });
+
+    test("fetches listings with limit parameter", async () => {
+      const mockResponse: GetListingsResponse = {
+        listings: [],
+        next: undefined,
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await listingsAPI.getNFTListings("0xContract", "100", 50);
+
+      expect(mockGet.firstCall.args[1]).to.deep.include({
+        asset_contract_address: "0xContract",
+        token_ids: ["100"],
+        limit: 50,
+      });
+    });
+
+    test("fetches listings with pagination cursor", async () => {
+      const mockResponse: GetListingsResponse = {
+        listings: [
+          {
+            order_hash: "0xdef456",
+          } as unknown as Listing,
+        ],
+        next: "cursor-next",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await listingsAPI.getNFTListings(
+        "0xContract",
+        "200",
+        undefined,
+        "cursor-prev",
+      );
+
+      expect(mockGet.firstCall.args[1]).to.deep.include({
+        asset_contract_address: "0xContract",
+        token_ids: ["200"],
+        cursor: "cursor-prev",
+      });
+    });
+
+    test("fetches listings with custom chain parameter", async () => {
+      const mockResponse: GetListingsResponse = {
+        listings: [],
+        next: undefined,
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await listingsAPI.getNFTListings(
+        "0xContract",
+        "1",
+        undefined,
+        undefined,
+        Chain.Polygon,
+      );
+
+      expect(mockGet.firstCall.args[0]).to.equal(
+        "/api/v2/orders/polygon/seaport/listings",
+      );
+    });
+
+    test("fetches listings with all parameters", async () => {
+      const mockResponse: GetListingsResponse = {
+        listings: [
+          { order_hash: "0x111" } as unknown as Listing,
+          { order_hash: "0x222" } as unknown as Listing,
+        ],
+        next: "cursor-abc",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await listingsAPI.getNFTListings(
+        "0xContract",
+        "999",
+        20,
+        "cursor-xyz",
+        Chain.Arbitrum,
+      );
+
+      expect(mockGet.firstCall.args[0]).to.equal(
+        "/api/v2/orders/arbitrum/seaport/listings",
+      );
+      expect(mockGet.firstCall.args[1]).to.deep.include({
+        asset_contract_address: "0xContract",
+        token_ids: ["999"],
+        limit: 20,
+        cursor: "cursor-xyz",
+      });
+    });
+
+    test("handles empty listings array", async () => {
+      const mockResponse: GetListingsResponse = {
+        listings: [],
+        next: undefined,
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await listingsAPI.getNFTListings("0xContract", "1");
+
+      expect(result.listings).to.be.an("array").that.is.empty;
+    });
+
+    test("handles large token IDs", async () => {
+      const mockResponse: GetListingsResponse = {
+        listings: [],
+        next: undefined,
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const largeTokenId = "999999999999999999999999";
+      await listingsAPI.getNFTListings("0xContract", largeTokenId);
+
+      expect(mockGet.firstCall.args[1]).to.deep.include({
+        token_ids: [largeTokenId],
+      });
+    });
+
+    test("throws error on API failure", async () => {
+      mockGet.rejects(new Error("API Error"));
+
+      try {
+        await listingsAPI.getNFTListings("0xContract", "1");
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include("API Error");
+      }
+    });
+  });
+
   suite("Constructor", () => {
-    test("initializes with get function", () => {
-      const getFunc = sinon.stub();
-      const api = new ListingsAPI(getFunc);
+    test("initializes with get function and chain", () => {
+      const { fetcher } = createMockFetcher();
+      const api = new ListingsAPI(fetcher, Chain.Mainnet);
 
       expect(api).to.be.instanceOf(ListingsAPI);
     });
@@ -444,7 +624,7 @@ suite("API: ListingsAPI", () => {
     test("getBestListing includes remaining_quantity in response", async () => {
       const mockResponse: GetBestListingResponse = {
         order_hash: "0xabc123",
-        chain: "ethereum",
+        chain: Chain.Mainnet,
         type: "basic",
         price: {
           current: {

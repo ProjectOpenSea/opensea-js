@@ -2,12 +2,15 @@ import {
   getCollectionPath,
   getCollectionsPath,
   getCollectionStatsPath,
+  getTraitsPath,
 } from "./apiPaths";
+import { Fetcher } from "./fetcher";
 import {
   GetCollectionResponse,
   GetCollectionsResponse,
   CollectionOrderByOption,
   GetCollectionsArgs,
+  GetTraitsResponse,
 } from "./types";
 import { Chain, OpenSeaCollection, OpenSeaCollectionStats } from "../types";
 import { collectionFromJSON } from "../utils/converters";
@@ -16,16 +19,14 @@ import { collectionFromJSON } from "../utils/converters";
  * Collection-related API operations
  */
 export class CollectionsAPI {
-  constructor(
-    private get: <T>(apiPath: string, query?: object) => Promise<T>,
-  ) {}
+  constructor(private fetcher: Fetcher) {}
 
   /**
    * Fetch an OpenSea collection.
    */
   async getCollection(slug: string): Promise<OpenSeaCollection> {
     const path = getCollectionPath(slug);
-    const response = await this.get<GetCollectionResponse>(path);
+    const response = await this.fetcher.get<GetCollectionResponse>(path);
     return collectionFromJSON(response);
   }
 
@@ -49,7 +50,7 @@ export class CollectionsAPI {
       limit,
       next,
     };
-    const response = await this.get<GetCollectionsResponse>(path, args);
+    const response = await this.fetcher.get<GetCollectionsResponse>(path, args);
     response.collections = response.collections.map((collection) =>
       collectionFromJSON(collection),
     );
@@ -61,7 +62,16 @@ export class CollectionsAPI {
    */
   async getCollectionStats(slug: string): Promise<OpenSeaCollectionStats> {
     const path = getCollectionStatsPath(slug);
-    const response = await this.get<OpenSeaCollectionStats>(path);
+    const response = await this.fetcher.get<OpenSeaCollectionStats>(path);
     return response as OpenSeaCollectionStats;
+  }
+
+  /**
+   * Fetch all traits for a collection with their possible values and counts.
+   */
+  async getTraits(collectionSlug: string): Promise<GetTraitsResponse> {
+    const path = getTraitsPath(collectionSlug);
+    const response = await this.fetcher.get<GetTraitsResponse>(path);
+    return response;
   }
 }

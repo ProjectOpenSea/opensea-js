@@ -4,21 +4,18 @@ import {
   getNFTPath,
   getRefreshMetadataPath,
   getListNFTsByAccountPath,
+  getContractPath,
 } from "./apiPaths";
-import { ListNFTsResponse, GetNFTResponse } from "./types";
+import { ListNFTsResponse, GetNFTResponse, GetContractResponse } from "./types";
 import { Chain } from "../types";
+import { Fetcher } from "./fetcher";
 
 /**
  * NFT-related API operations
  */
 export class NFTsAPI {
   constructor(
-    private get: <T>(apiPath: string, query?: object) => Promise<T>,
-    private post: <T>(
-      apiPath: string,
-      body?: object,
-      opts?: object,
-    ) => Promise<T>,
+    private fetcher: Fetcher,
     private chain: Chain,
   ) {}
 
@@ -30,7 +27,7 @@ export class NFTsAPI {
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
   ): Promise<ListNFTsResponse> {
-    const response = await this.get<ListNFTsResponse>(
+    const response = await this.fetcher.get<ListNFTsResponse>(
       getListNFTsByCollectionPath(slug),
       {
         limit,
@@ -49,7 +46,7 @@ export class NFTsAPI {
     next: string | undefined = undefined,
     chain: Chain = this.chain,
   ): Promise<ListNFTsResponse> {
-    const response = await this.get<ListNFTsResponse>(
+    const response = await this.fetcher.get<ListNFTsResponse>(
       getListNFTsByContractPath(chain, address),
       {
         limit,
@@ -68,7 +65,7 @@ export class NFTsAPI {
     next: string | undefined = undefined,
     chain = this.chain,
   ): Promise<ListNFTsResponse> {
-    const response = await this.get<ListNFTsResponse>(
+    const response = await this.fetcher.get<ListNFTsResponse>(
       getListNFTsByAccountPath(chain, address),
       {
         limit,
@@ -87,7 +84,7 @@ export class NFTsAPI {
     identifier: string,
     chain = this.chain,
   ): Promise<GetNFTResponse> {
-    const response = await this.get<GetNFTResponse>(
+    const response = await this.fetcher.get<GetNFTResponse>(
       getNFTPath(chain, address, identifier),
     );
     return response;
@@ -101,11 +98,24 @@ export class NFTsAPI {
     identifier: string,
     chain: Chain = this.chain,
   ): Promise<Response> {
-    const response = await this.post<Response>(
+    const response = await this.fetcher.post<Response>(
       getRefreshMetadataPath(chain, address, identifier),
       {},
     );
 
+    return response;
+  }
+
+  /**
+   * Fetch smart contract information for a given chain and address.
+   */
+  async getContract(
+    address: string,
+    chain: Chain = this.chain,
+  ): Promise<GetContractResponse> {
+    const response = await this.fetcher.get<GetContractResponse>(
+      getContractPath(chain, address),
+    );
     return response;
   }
 }

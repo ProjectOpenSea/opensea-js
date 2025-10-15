@@ -21,18 +21,14 @@ import {
   getFulfillOfferPayload,
 } from "../orders/utils";
 import { Chain, OrderSide } from "../types";
+import { Fetcher } from "./fetcher";
 
 /**
  * Order-related API operations
  */
 export class OrdersAPI {
   constructor(
-    private get: <T>(apiPath: string, query?: object) => Promise<T>,
-    private post: <T>(
-      apiPath: string,
-      body?: object,
-      opts?: object,
-    ) => Promise<T>,
+    private fetcher: Fetcher,
     private chain: Chain,
   ) {}
 
@@ -59,7 +55,7 @@ export class OrdersAPI {
       }
     }
 
-    const { orders } = await this.get<OrdersQueryResponse>(
+    const { orders } = await this.fetcher.get<OrdersQueryResponse>(
       getOrdersAPIPath(this.chain, protocol, side),
       serializeOrdersQueryOptions({
         limit: 1,
@@ -82,7 +78,7 @@ export class OrdersAPI {
     protocolAddress: string,
     chain: Chain = this.chain,
   ): Promise<OrderV2> {
-    const response = await this.get<{
+    const response = await this.fetcher.get<{
       order: OrdersQueryResponse["orders"][0];
     }>(getOrderByHashPath(chain, protocolAddress, orderHash));
     return deserializeOrder(response.order);
@@ -114,7 +110,7 @@ export class OrdersAPI {
       }
     }
 
-    const response = await this.get<OrdersQueryResponse>(
+    const response = await this.fetcher.get<OrdersQueryResponse>(
       getOrdersAPIPath(this.chain, protocol, side),
       serializeOrdersQueryOptions({
         limit: pageSize,
@@ -160,7 +156,7 @@ export class OrdersAPI {
         tokenId,
       );
     }
-    const response = await this.post<FulfillmentDataResponse>(
+    const response = await this.fetcher.post<FulfillmentDataResponse>(
       getFulfillmentDataPath(side),
       payload,
     );
@@ -202,7 +198,7 @@ export class OrdersAPI {
       throw new Error("Invalid protocol address format");
     }
 
-    const response = await this.post<OrdersPostQueryResponse>(
+    const response = await this.fetcher.post<OrdersPostQueryResponse>(
       getOrdersAPIPath(this.chain, protocol, side),
       { ...order, protocol_address: protocolAddress },
     );
@@ -218,7 +214,7 @@ export class OrdersAPI {
     chain: Chain = this.chain,
     offererSignature?: string,
   ): Promise<CancelOrderResponse> {
-    const response = await this.post<CancelOrderResponse>(
+    const response = await this.fetcher.post<CancelOrderResponse>(
       getCancelOrderPath(chain, protocolAddress, orderHash),
       { offererSignature },
     );

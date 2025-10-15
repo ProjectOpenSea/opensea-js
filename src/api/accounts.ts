@@ -1,4 +1,5 @@
 import { getPaymentTokenPath, getAccountPath } from "./apiPaths";
+import { Fetcher } from "./fetcher";
 import { Chain, OpenSeaAccount, OpenSeaPaymentToken } from "../types";
 import { paymentTokenFromJSON, accountFromJSON } from "../utils/converters";
 
@@ -7,7 +8,7 @@ import { paymentTokenFromJSON, accountFromJSON } from "../utils/converters";
  */
 export class AccountsAPI {
   constructor(
-    private get: <T>(apiPath: string, query?: object) => Promise<T>,
+    private fetcher: Fetcher,
     private chain: Chain,
   ) {}
 
@@ -18,7 +19,7 @@ export class AccountsAPI {
     address: string,
     chain = this.chain,
   ): Promise<OpenSeaPaymentToken> {
-    const json = await this.get<OpenSeaPaymentToken>(
+    const json = await this.fetcher.get<OpenSeaPaymentToken>(
       getPaymentTokenPath(chain, address),
     );
     return paymentTokenFromJSON(json);
@@ -28,7 +29,9 @@ export class AccountsAPI {
    * Fetch account for an address.
    */
   async getAccount(address: string): Promise<OpenSeaAccount> {
-    const json = await this.get<OpenSeaAccount>(getAccountPath(address));
+    const json = await this.fetcher.get<OpenSeaAccount>(
+      getAccountPath(address),
+    );
     return accountFromJSON(json);
   }
 }

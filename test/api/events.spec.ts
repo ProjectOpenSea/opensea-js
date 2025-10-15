@@ -11,14 +11,16 @@ import {
   TransferEvent,
 } from "../../src/api/types";
 import { Chain } from "../../src/types";
+import { createMockFetcher } from "../fixtures/fetcher";
 
 suite("API: EventsAPI", () => {
   let mockGet: sinon.SinonStub;
   let eventsAPI: EventsAPI;
 
   beforeEach(() => {
-    mockGet = sinon.stub();
-    eventsAPI = new EventsAPI(mockGet);
+    const { fetcher, mockGet: getMock } = createMockFetcher();
+    mockGet = getMock;
+    eventsAPI = new EventsAPI(fetcher);
   });
 
   afterEach(() => {
@@ -487,8 +489,8 @@ suite("API: EventsAPI", () => {
 
   suite("Constructor", () => {
     test("initializes with get function", () => {
-      const getFunc = sinon.stub();
-      const api = new EventsAPI(getFunc);
+      const { fetcher } = createMockFetcher();
+      const api = new EventsAPI(fetcher);
 
       expect(api).to.be.instanceOf(EventsAPI);
     });

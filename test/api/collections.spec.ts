@@ -6,20 +6,23 @@ import {
   GetCollectionResponse,
   GetCollectionsResponse,
   CollectionOrderByOption,
+  GetTraitsResponse,
 } from "../../src/api/types";
 import {
   Chain,
   OpenSeaCollection,
   OpenSeaCollectionStats,
 } from "../../src/types";
+import { createMockFetcher } from "../fixtures/fetcher";
 
 suite("API: CollectionsAPI", () => {
   let mockGet: sinon.SinonStub;
   let collectionsAPI: CollectionsAPI;
 
   beforeEach(() => {
-    mockGet = sinon.stub();
-    collectionsAPI = new CollectionsAPI(mockGet);
+    const { fetcher, mockGet: getMock } = createMockFetcher();
+    mockGet = getMock;
+    collectionsAPI = new CollectionsAPI(fetcher);
   });
 
   afterEach(() => {
@@ -419,10 +422,230 @@ suite("API: CollectionsAPI", () => {
     });
   });
 
+  suite("getTraits", () => {
+    test("fetches traits for a collection", async () => {
+      const mockResponse: GetTraitsResponse = {
+        categories: {
+          Background: "string",
+          Fur: "string",
+          Eyes: "string",
+          Mouth: "string",
+          Hat: "string",
+        },
+        counts: {
+          Background: {
+            Blue: 1234,
+            Green: 2345,
+            Red: 987,
+          },
+          Fur: {
+            Brown: 1500,
+            Black: 1200,
+            "Golden Brown": 456,
+          },
+          Eyes: {
+            Bored: 2500,
+            Angry: 1800,
+          },
+        },
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await collectionsAPI.getTraits("boredapeyachtclub");
+
+      expect(mockGet.calledOnce).to.be.true;
+      expect(mockGet.firstCall.args[0]).to.equal(
+        "/api/v2/traits/boredapeyachtclub",
+      );
+      expect(result.categories).to.have.property("Background");
+      expect(result.categories).to.have.property("Fur");
+      expect(result.counts).to.have.property("Background");
+      expect(result.counts.Background).to.have.property("Blue");
+      expect(result.counts.Background.Blue).to.equal(1234);
+      expect(result.counts.Fur["Golden Brown"]).to.equal(456);
+    });
+
+    test("handles collection with no traits", async () => {
+      const mockResponse: GetTraitsResponse = {
+        categories: {},
+        counts: {},
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await collectionsAPI.getTraits("no-traits-collection");
+
+      expect(result.categories).to.be.an("object").that.is.empty;
+      expect(result.counts).to.be.an("object").that.is.empty;
+    });
+
+    test("handles numeric traits", async () => {
+      const mockResponse: GetTraitsResponse = {
+        categories: {
+          Level: "number",
+          Power: "number",
+        },
+        counts: {
+          Level: {
+            "1": 100,
+            "2": 200,
+            "3": 300,
+          },
+          Power: {
+            "100": 50,
+            "200": 75,
+            "300": 25,
+          },
+        },
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await collectionsAPI.getTraits(
+        "numeric-traits-collection",
+      );
+
+      expect(result.categories.Level).to.equal("number");
+      expect(result.categories.Power).to.equal("number");
+      expect(result.counts.Level["1"]).to.equal(100);
+      expect(result.counts.Power["100"]).to.equal(50);
+    });
+
+    test("handles date traits", async () => {
+      const mockResponse: GetTraitsResponse = {
+        categories: {
+          CreatedDate: "date",
+        },
+        counts: {
+          CreatedDate: {
+            "2024-01-01": 50,
+            "2024-01-02": 75,
+          },
+        },
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await collectionsAPI.getTraits("date-traits-collection");
+
+      expect(result.categories.CreatedDate).to.equal("date");
+      expect(result.counts.CreatedDate["2024-01-01"]).to.equal(50);
+    });
+
+    test("handles traits with special characters in values", async () => {
+      const mockResponse: GetTraitsResponse = {
+        categories: {
+          Type: "string",
+        },
+        counts: {
+          Type: {
+            "Special-Character_123": 100,
+            "With Spaces": 200,
+            "With/Slash": 50,
+          },
+        },
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await collectionsAPI.getTraits("special-chars-collection");
+
+      expect(result.counts.Type["Special-Character_123"]).to.equal(100);
+      expect(result.counts.Type["With Spaces"]).to.equal(200);
+      expect(result.counts.Type["With/Slash"]).to.equal(50);
+    });
+
+    test("handles large trait counts", async () => {
+      const mockResponse: GetTraitsResponse = {
+        categories: {
+          Color: "string",
+        },
+        counts: {
+          Color: {
+            Blue: 999999,
+            Red: 1000000,
+            Green: 500000,
+          },
+        },
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await collectionsAPI.getTraits("large-collection");
+
+      expect(result.counts.Color.Blue).to.equal(999999);
+      expect(result.counts.Color.Red).to.equal(1000000);
+    });
+
+    test("handles collection slugs with special characters", async () => {
+      const mockResponse: GetTraitsResponse = {
+        categories: {},
+        counts: {},
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await collectionsAPI.getTraits("collection-with-dashes-123");
+
+      expect(mockGet.firstCall.args[0]).to.equal(
+        "/api/v2/traits/collection-with-dashes-123",
+      );
+    });
+
+    test("handles many trait categories", async () => {
+      const categories: Record<string, "string" | "number" | "date"> = {};
+      const counts: Record<string, Record<string, number>> = {};
+
+      for (let i = 0; i < 20; i++) {
+        const traitName = `Trait${i}`;
+        categories[traitName] = "string";
+        counts[traitName] = {
+          Value1: 10,
+          Value2: 20,
+        };
+      }
+
+      const mockResponse: GetTraitsResponse = {
+        categories,
+        counts,
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await collectionsAPI.getTraits("many-traits-collection");
+
+      expect(Object.keys(result.categories)).to.have.length(20);
+      expect(Object.keys(result.counts)).to.have.length(20);
+    });
+
+    test("throws error when collection not found", async () => {
+      mockGet.rejects(new Error("Collection not found"));
+
+      try {
+        await collectionsAPI.getTraits("nonexistent-collection");
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include("Collection not found");
+      }
+    });
+
+    test("throws error on API failure", async () => {
+      mockGet.rejects(new Error("Server Error"));
+
+      try {
+        await collectionsAPI.getTraits("test-collection");
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include("Server Error");
+      }
+    });
+  });
+
   suite("Constructor", () => {
-    test("initializes with get function", () => {
-      const getFunc = sinon.stub();
-      const api = new CollectionsAPI(getFunc);
+    test("initializes with fetcher", () => {
+      const { fetcher } = createMockFetcher();
+      const api = new CollectionsAPI(fetcher);
 
       expect(api).to.be.instanceOf(CollectionsAPI);
     });
