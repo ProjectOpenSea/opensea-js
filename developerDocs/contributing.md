@@ -66,7 +66,7 @@ Run all tests (unit + integration):
 npm run test:all
 ```
 
-Note that integration tests require access to a blockchain RPC provider (via Alchemy or Infura) and the OpenSea API. Set up your environment variables in a `.env` file:
+Note that integration tests require access to a blockchain RPC provider (via Alchemy) and the OpenSea API. Set up your environment variables in a `.env` file:
 
 ```bash
 ALCHEMY_API_KEY=your_alchemy_key
@@ -126,18 +126,18 @@ The pre-commit hooks will automatically format your code and run linting checks.
 
 ```
 opensea-js/
-├── src/                    # Source code
+├── src/                   # Source code
 │   ├── api/               # API client implementation
 │   ├── orders/            # Order creation and utilities
 │   ├── sdk/               # Core SDK functionality
 │   ├── utils/             # Utility functions
 │   └── sdk.ts             # Main SDK entry point
 ├── test/                  # Test files
-│   ├── api/              # API tests
-│   ├── fixtures/         # Test fixtures and mocks
+│   ├── api/               # API tests
+│   ├── fixtures/          # Test fixtures and mocks
 │   └── ...
-├── developerDocs/        # Developer documentation
-└── lib/                  # Compiled output (generated)
+├── developerDocs/         # Developer documentation
+└── lib/                   # Compiled output (generated)
 ```
 
 ## Adding New Features

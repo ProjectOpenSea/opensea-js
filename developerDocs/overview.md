@@ -47,10 +47,12 @@ Happy seafaring! ⛵️
 
 ```typescript
 import { ethers } from "ethers";
-import { OpenSeaSDK, Chain } from "opensea-js";
+import { OpenSeaSDK, Chain, OrderSide } from "opensea-js";
 
 // Initialize the SDK
-const provider = new ethers.JsonRpcProvider("https://mainnet.infura.io");
+const provider = new ethers.JsonRpcProvider(
+  "https://eth-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY",
+);
 const sdk = new OpenSeaSDK(provider, {
   chain: Chain.Mainnet,
   apiKey: "your-api-key",
@@ -67,7 +69,10 @@ await sdk.createOffer({
 });
 
 // Fulfill a listing
-const order = await sdk.api.getOrder({ side: OrderSide.LISTING, ... });
+const order = await sdk.api.getOrder({
+  side: OrderSide.LISTING,
+  orderHash: "0x...",
+});
 await sdk.fulfillOrder({ order, accountAddress: walletAddress });
 ```
 
