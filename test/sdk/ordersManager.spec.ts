@@ -608,7 +608,8 @@ suite("SDK: OrdersManager", () => {
       expect(mockAPI.getCollection.calledTwice).to.be.true;
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
       expect(mockAPI.postOrder.calledTwice).to.be.true;
-      expect(result).to.have.lengthOf(2);
+      expect(result.successful).to.have.lengthOf(2);
+      expect(result.failed).to.have.lengthOf(0);
     });
 
     test("creates single listing with normal signature (not bulk)", async () => {
@@ -626,7 +627,8 @@ suite("SDK: OrdersManager", () => {
       expect(mockSeaport.createOrder.calledOnce).to.be.true;
       expect(mockSeaport.createBulkOrders?.called).to.be.undefined;
       expect(mockAPI.postOrder.calledOnce).to.be.true;
-      expect(result).to.have.lengthOf(1);
+      expect(result.successful).to.have.lengthOf(1);
+      expect(result.failed).to.have.lengthOf(0);
     });
 
     test("throws error for empty listings array", async () => {
@@ -687,7 +689,8 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xSeller",
       });
 
-      expect(result).to.have.lengthOf(3);
+      expect(result.successful).to.have.lengthOf(3);
+      expect(result.failed).to.have.lengthOf(0);
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
       expect(mockAPI.postOrder.calledThrice).to.be.true;
     });
@@ -857,7 +860,8 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xSeller",
       });
 
-      expect(result).to.have.lengthOf(25);
+      expect(result.successful).to.have.lengthOf(25);
+      expect(result.failed).to.have.lengthOf(0);
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
       expect(mockAPI.postOrder.callCount).to.equal(25);
     });
@@ -1022,7 +1026,8 @@ suite("SDK: OrdersManager", () => {
       expect(mockAPI.getCollection.calledTwice).to.be.true;
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
       expect(mockAPI.postOrder.calledTwice).to.be.true;
-      expect(result).to.have.lengthOf(2);
+      expect(result.successful).to.have.lengthOf(2);
+      expect(result.failed).to.have.lengthOf(0);
     });
 
     test("creates single offer with normal signature (not bulk)", async () => {
@@ -1040,7 +1045,8 @@ suite("SDK: OrdersManager", () => {
       expect(mockSeaport.createOrder.calledOnce).to.be.true;
       expect(mockSeaport.createBulkOrders?.called).to.be.undefined;
       expect(mockAPI.postOrder.calledOnce).to.be.true;
-      expect(result).to.have.lengthOf(1);
+      expect(result.successful).to.have.lengthOf(1);
+      expect(result.failed).to.have.lengthOf(0);
     });
 
     test("throws error for empty offers array", async () => {
@@ -1101,7 +1107,8 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      expect(result).to.have.lengthOf(3);
+      expect(result.successful).to.have.lengthOf(3);
+      expect(result.failed).to.have.lengthOf(0);
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
       expect(mockAPI.postOrder.calledThrice).to.be.true;
     });
@@ -1311,7 +1318,8 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      expect(result).to.have.lengthOf(25);
+      expect(result.successful).to.have.lengthOf(25);
+      expect(result.failed).to.have.lengthOf(0);
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
       expect(mockAPI.postOrder.callCount).to.equal(25);
     });
