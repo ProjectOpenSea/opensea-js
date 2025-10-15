@@ -1,7 +1,6 @@
 import { Seaport } from "@opensea/seaport-js";
-import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import { OrderComponents } from "@opensea/seaport-js/lib/types";
-import { Overrides, Signer, ethers, JsonRpcProvider } from "ethers";
+import { Overrides, Signer, JsonRpcProvider } from "ethers";
 import { OpenSeaAPI } from "../api/api";
 import { OrderV2 } from "../orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils";
@@ -11,7 +10,6 @@ import {
   getChainId,
   getSeaportVersion,
 } from "../utils/utils";
-import { GUNZILLA_SEAPORT_1_6_ADDRESS } from "../constants";
 
 /**
  * Order cancellation operations
@@ -281,9 +279,7 @@ export class CancellationManager {
     const name = "Seaport";
     const version = getSeaportVersion(protocolAddress);
 
-    if (
-      typeof (this.signerOrProvider as Signer).signTypedData == "undefined"
-    ) {
+    if (typeof (this.signerOrProvider as Signer).signTypedData == "undefined") {
       throw new Error(
         "Please pass an ethers Signer into this sdk to derive an offerer signature",
       );

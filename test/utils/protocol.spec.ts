@@ -234,7 +234,7 @@ suite("Utils: protocol", () => {
     let mockSeaport: Seaport;
 
     test("returns seaport_v1_6 for CROSS_CHAIN_SEAPORT_V1_6_ADDRESS", () => {
-      const provider = ethers.getDefaultProvider();
+      const provider = new ethers.JsonRpcProvider();
       mockSeaport = new Seaport(provider);
 
       const result = getSeaportInstance(
@@ -245,7 +245,7 @@ suite("Utils: protocol", () => {
     });
 
     test("returns seaport_v1_6 for GUNZILLA_SEAPORT_1_6_ADDRESS", () => {
-      const provider = ethers.getDefaultProvider();
+      const provider = new ethers.JsonRpcProvider();
       mockSeaport = new Seaport(provider);
 
       const result = getSeaportInstance(
@@ -256,7 +256,7 @@ suite("Utils: protocol", () => {
     });
 
     test("throws error for unsupported protocol address", () => {
-      const provider = ethers.getDefaultProvider();
+      const provider = new ethers.JsonRpcProvider();
       mockSeaport = new Seaport(provider);
       const randomAddress = ethers.Wallet.createRandom().address;
 
@@ -266,7 +266,7 @@ suite("Utils: protocol", () => {
     });
 
     test("works with lowercase address", () => {
-      const provider = ethers.getDefaultProvider();
+      const provider = new ethers.JsonRpcProvider();
       mockSeaport = new Seaport(provider);
 
       const result = getSeaportInstance(

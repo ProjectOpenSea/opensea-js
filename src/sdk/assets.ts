@@ -7,6 +7,7 @@ import {
   ContractTransactionResponse,
   ethers,
 } from "ethers";
+import { TRANSFER_HELPER_ADDRESS, MULTICALL3_ADDRESS } from "../constants";
 import {
   ERC1155__factory,
   ERC20__factory,
@@ -19,10 +20,6 @@ import {
   Chain,
 } from "../types";
 import { getDefaultConduit } from "../utils/utils";
-import {
-  TRANSFER_HELPER_ADDRESS,
-  MULTICALL3_ADDRESS,
-} from "../constants";
 
 /**
  * Asset transfer and approval operations

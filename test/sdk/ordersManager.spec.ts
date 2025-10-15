@@ -1,9 +1,9 @@
 import { expect } from "chai";
+import { ZeroAddress } from "ethers";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { OrdersManager } from "../../src/sdk/orders";
 import { Chain, OrderSide } from "../../src/types";
-import { ZeroAddress } from "ethers";
 
 suite("SDK: OrdersManager", () => {
   let mockSeaport: any;
@@ -157,7 +157,9 @@ suite("SDK: OrdersManager", () => {
       });
 
       const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
-      expect(createOrderCall.endTime).to.equal(BigInt(expirationTime).toString());
+      expect(createOrderCall.endTime).to.equal(
+        BigInt(expirationTime).toString(),
+      );
     });
 
     test("creates offer with custom zone", async () => {
@@ -187,9 +189,7 @@ suite("SDK: OrdersManager", () => {
     });
 
     test("throws when account is not available", async () => {
-      mockRequireAccountIsAvailable.rejects(
-        new Error("Account not available"),
-      );
+      mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
 
       try {
         await ordersManager.createOffer({
@@ -480,9 +480,7 @@ suite("SDK: OrdersManager", () => {
     });
 
     test("throws when account is not available", async () => {
-      mockRequireAccountIsAvailable.rejects(
-        new Error("Account not available"),
-      );
+      mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
 
       try {
         await ordersManager.createCollectionOffer({

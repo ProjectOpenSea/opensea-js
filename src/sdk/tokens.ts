@@ -5,8 +5,7 @@ import {
   parseEther,
   JsonRpcProvider,
 } from "ethers";
-import { EventType } from "../types";
-import { Chain } from "../types";
+import { EventType, Chain } from "../types";
 
 /**
  * Token wrapping and unwrapping operations

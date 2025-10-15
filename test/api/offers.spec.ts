@@ -326,11 +326,7 @@ suite("API: OffersAPI", () => {
       mockGet.rejects(new Error("Trait not found"));
 
       try {
-        await offersAPI.getTraitOffers(
-          "test-collection",
-          "Invalid",
-          "Trait",
-        );
+        await offersAPI.getTraitOffers("test-collection", "Invalid", "Trait");
         expect.fail("Expected error to be thrown");
       } catch (error) {
         expect((error as Error).message).to.include("Trait not found");
@@ -448,12 +444,7 @@ suite("API: OffersAPI", () => {
 
       mockPost.resolves(mockResponse);
 
-      await offersAPI.buildOffer(
-        "0xofferer123",
-        10,
-        "test-collection",
-        false,
-      );
+      await offersAPI.buildOffer("0xofferer123", 10, "test-collection", false);
 
       expect(mockPost.calledOnce).to.be.true;
     });
@@ -517,12 +508,7 @@ suite("API: OffersAPI", () => {
       mockPost.rejects(new Error("Build failed"));
 
       try {
-        await offersAPI.buildOffer(
-          "0xofferer123",
-          5,
-          "test-collection",
-          true,
-        );
+        await offersAPI.buildOffer("0xofferer123", 5, "test-collection", true);
         expect.fail("Expected error to be thrown");
       } catch (error) {
         expect((error as Error).message).to.include("Build failed");

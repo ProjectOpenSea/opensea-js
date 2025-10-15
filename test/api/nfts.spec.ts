@@ -2,10 +2,7 @@ import { expect } from "chai";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { NFTsAPI } from "../../src/api/nfts";
-import {
-  ListNFTsResponse,
-  GetNFTResponse,
-} from "../../src/api/types";
+import { ListNFTsResponse, GetNFTResponse } from "../../src/api/types";
 import { Chain } from "../../src/types";
 
 suite("API: NFTsAPI", () => {
@@ -36,7 +33,6 @@ suite("API: NFTsAPI", () => {
             description: "A test NFT",
             image_url: "https://example.com/1.png",
             metadata_url: "https://example.com/metadata/1",
-            created_at: "2024-01-01T00:00:00Z",
             updated_at: "2024-01-01T00:00:00Z",
             is_disabled: false,
             is_nsfw: false,
@@ -64,7 +60,7 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with limit parameter", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -80,12 +76,16 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with pagination cursor", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
 
-      await nftsAPI.getNFTsByCollection("test-collection", undefined, "cursor-abc");
+      await nftsAPI.getNFTsByCollection(
+        "test-collection",
+        undefined,
+        "cursor-abc",
+      );
 
       expect(mockGet.firstCall.args[1]).to.deep.equal({
         limit: undefined,
@@ -96,7 +96,7 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with both limit and pagination", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -112,7 +112,7 @@ suite("API: NFTsAPI", () => {
     test("handles empty NFTs array", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -143,7 +143,7 @@ suite("API: NFTsAPI", () => {
             contract: "0xabc123",
           } as any,
         ],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -164,7 +164,7 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with limit parameter", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -180,7 +180,7 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with pagination cursor", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -196,22 +196,27 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with custom chain parameter", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
 
-      await nftsAPI.getNFTsByContract("0xabc123", undefined, undefined, Chain.Sepolia);
+      await nftsAPI.getNFTsByContract(
+        "0xabc123",
+        undefined,
+        undefined,
+        Chain.Polygon,
+      );
 
       expect(mockGet.firstCall.args[0]).to.equal(
-        `/api/v2/chain/${Chain.Sepolia}/contract/0xabc123/nfts`,
+        `/api/v2/chain/${Chain.Polygon}/contract/0xabc123/nfts`,
       );
     });
 
     test("uses default chain when not specified", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -224,15 +229,20 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with all parameters", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
 
-      await nftsAPI.getNFTsByContract("0xabc123", 20, "cursor-123", Chain.Sepolia);
+      await nftsAPI.getNFTsByContract(
+        "0xabc123",
+        20,
+        "cursor-123",
+        Chain.Polygon,
+      );
 
       expect(mockGet.firstCall.args[0]).to.equal(
-        `/api/v2/chain/${Chain.Sepolia}/contract/0xabc123/nfts`,
+        `/api/v2/chain/${Chain.Polygon}/contract/0xabc123/nfts`,
       );
       expect(mockGet.firstCall.args[1]).to.deep.equal({
         limit: 20,
@@ -265,7 +275,7 @@ suite("API: NFTsAPI", () => {
             contract: "0x456",
           } as any,
         ],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -286,7 +296,7 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with limit parameter", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -302,7 +312,7 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with pagination cursor", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -318,12 +328,17 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with custom chain parameter", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
 
-      await nftsAPI.getNFTsByAccount("0xowner123", undefined, undefined, Chain.Polygon);
+      await nftsAPI.getNFTsByAccount(
+        "0xowner123",
+        undefined,
+        undefined,
+        Chain.Polygon,
+      );
 
       expect(mockGet.firstCall.args[0]).to.equal(
         `/api/v2/chain/${Chain.Polygon}/account/0xowner123/nfts`,
@@ -333,7 +348,7 @@ suite("API: NFTsAPI", () => {
     test("uses default chain when not specified", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -346,12 +361,17 @@ suite("API: NFTsAPI", () => {
     test("fetches NFTs with all parameters", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
 
-      await nftsAPI.getNFTsByAccount("0xowner123", 10, "cursor-next", Chain.Base);
+      await nftsAPI.getNFTsByAccount(
+        "0xowner123",
+        10,
+        "cursor-next",
+        Chain.Base,
+      );
 
       expect(mockGet.firstCall.args[0]).to.equal(
         `/api/v2/chain/${Chain.Base}/account/0xowner123/nfts`,
@@ -365,7 +385,7 @@ suite("API: NFTsAPI", () => {
     test("handles empty NFTs array", async () => {
       const mockResponse: ListNFTsResponse = {
         nfts: [],
-        next: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -399,7 +419,6 @@ suite("API: NFTsAPI", () => {
           description: "A unique test NFT",
           image_url: "https://example.com/nft/1234.png",
           metadata_url: "https://example.com/metadata/1234",
-          created_at: "2024-01-01T00:00:00Z",
           updated_at: "2024-01-01T00:00:00Z",
           is_disabled: false,
           is_nsfw: false,

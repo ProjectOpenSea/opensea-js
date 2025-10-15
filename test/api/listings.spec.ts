@@ -40,7 +40,6 @@ suite("API: ListingsAPI", () => {
           } as any,
         ],
         next: "cursor-123",
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -62,8 +61,7 @@ suite("API: ListingsAPI", () => {
     test("fetches all listings with limit parameter", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -80,7 +78,6 @@ suite("API: ListingsAPI", () => {
       const mockResponse: GetListingsResponse = {
         listings: [],
         next: "cursor-456",
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -100,8 +97,7 @@ suite("API: ListingsAPI", () => {
     test("fetches all listings with both limit and pagination", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -117,8 +113,7 @@ suite("API: ListingsAPI", () => {
     test("handles collection slug with special characters", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -133,8 +128,7 @@ suite("API: ListingsAPI", () => {
     test("handles empty listings array", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -151,8 +145,7 @@ suite("API: ListingsAPI", () => {
           { order_hash: "0x2" } as any,
           { order_hash: "0x3" } as any,
         ],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -302,8 +295,7 @@ suite("API: ListingsAPI", () => {
             },
           } as any,
         ],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -324,8 +316,7 @@ suite("API: ListingsAPI", () => {
     test("fetches best listings with limit parameter", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -342,7 +333,6 @@ suite("API: ListingsAPI", () => {
       const mockResponse: GetListingsResponse = {
         listings: [],
         next: "cursor-next",
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -362,8 +352,7 @@ suite("API: ListingsAPI", () => {
     test("fetches best listings with both limit and pagination", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -379,8 +368,7 @@ suite("API: ListingsAPI", () => {
     test("handles collection slug with dashes", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -395,8 +383,7 @@ suite("API: ListingsAPI", () => {
     test("handles empty listings array", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [],
-        next: null,
-        previous: null,
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
@@ -410,7 +397,6 @@ suite("API: ListingsAPI", () => {
       const mockResponse: GetListingsResponse = {
         listings: [{ order_hash: "0x1" } as any],
         next: "next-cursor-value",
-        previous: "prev-cursor-value",
       };
 
       mockGet.resolves(mockResponse);
@@ -418,7 +404,6 @@ suite("API: ListingsAPI", () => {
       const result = await listingsAPI.getBestListings("test-collection");
 
       expect(result.next).to.equal("next-cursor-value");
-      expect(result.previous).to.equal("prev-cursor-value");
     });
 
     test("throws error on API failure", async () => {

@@ -1,9 +1,9 @@
+import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import { expect } from "chai";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { FulfillmentManager } from "../../src/sdk/fulfillment";
 import { EventType, OrderSide } from "../../src/types";
-import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
 
 suite("SDK: FulfillmentManager", () => {
   let mockOrdersManager: any;
@@ -26,18 +26,28 @@ suite("SDK: FulfillmentManager", () => {
     salt: "0",
     conduitKey: "0x",
     totalOriginalConsiderationItems: 0,
+    counter: "0",
   };
 
   const mockOrderV2 = {
+    createdDate: "2024-01-01T00:00:00Z",
+    closingDate: null,
+    listingTime: 0,
+    expirationTime: 1000000000000,
     orderHash: "0xOrderHash",
-    protocolAddress: CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
-    side: OrderSide.LISTING,
     maker: { address: "0xMaker" },
     taker: null,
     protocolData: {
       parameters: mockOrderComponents,
       signature: "0xSignature",
     },
+    protocolAddress: CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
+    currentPrice: BigInt("1000000000000000000"),
+    makerFees: [],
+    takerFees: [],
+    side: OrderSide.LISTING,
+    orderType: 0,
+    cancelled: false,
   };
 
   const mockTransaction = {
@@ -232,9 +242,7 @@ suite("SDK: FulfillmentManager", () => {
     });
 
     test("throws when account is not available", async () => {
-      mockRequireAccountIsAvailable.rejects(
-        new Error("Account not available"),
-      );
+      mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
 
       try {
         await fulfillmentManager.fulfillOrder({
@@ -266,9 +274,7 @@ suite("SDK: FulfillmentManager", () => {
 
     test("handles transaction response as ContractTransactionResponse", async () => {
       mockSeaport.fulfillOrder.returns({
-        executeAllActions: sinon
-          .stub()
-          .resolves({ hash: "0xContractTxHash" }),
+        executeAllActions: sinon.stub().resolves({ hash: "0xContractTxHash" }),
       });
 
       const result = await fulfillmentManager.fulfillOrder({
@@ -383,9 +389,7 @@ suite("SDK: FulfillmentManager", () => {
     });
 
     test("throws when account is not available", async () => {
-      mockRequireAccountIsAvailable.rejects(
-        new Error("Account not available"),
-      );
+      mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
 
       try {
         await fulfillmentManager.approveOrder(mockOrderV2);
@@ -449,9 +453,7 @@ suite("SDK: FulfillmentManager", () => {
     });
 
     test("throws when account is not available", async () => {
-      mockRequireAccountIsAvailable.rejects(
-        new Error("Account not available"),
-      );
+      mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
 
       try {
         await fulfillmentManager.validateOrderOnchain(
@@ -496,8 +498,8 @@ suite("SDK: FulfillmentManager", () => {
         zone: "0xZone",
       });
 
-      const buildCall = mockOrdersManager.buildListingOrderComponents.firstCall
-        .args[0];
+      const buildCall =
+        mockOrdersManager.buildListingOrderComponents.firstCall.args[0];
       expect(buildCall.asset.tokenAddress).to.equal("0xNFT");
       expect(buildCall.startAmount).to.equal("2000000000000000000");
       expect(buildCall.endAmount).to.equal("1000000000000000000");
@@ -533,8 +535,8 @@ suite("SDK: FulfillmentManager", () => {
         zone: "0xSignedZone",
       });
 
-      const buildCall = mockOrdersManager.buildOfferOrderComponents.firstCall
-        .args[0];
+      const buildCall =
+        mockOrdersManager.buildOfferOrderComponents.firstCall.args[0];
       expect(buildCall.asset.tokenAddress).to.equal("0xNFT");
       expect(buildCall.startAmount).to.equal("1500000000000000000");
       expect(buildCall.quantity).to.equal(3);

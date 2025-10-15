@@ -1,15 +1,13 @@
-import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import { Seaport } from "@opensea/seaport-js";
 import { AdvancedOrder, OrderComponents } from "@opensea/seaport-js/lib/types";
 import {
   BigNumberish,
   ContractTransactionResponse,
   Overrides,
-  ethers,
 } from "ethers";
 import { OpenSeaAPI } from "../api/api";
 import { Listing, Offer, Order } from "../api/types";
-import { GUNZILLA_SEAPORT_1_6_ADDRESS } from "../constants";
+import { OrdersManager } from "./orders";
 import {
   constructPrivateListingCounterOrder,
   getPrivateListingFulfillments,
@@ -22,7 +20,6 @@ import {
   requireValidProtocol,
   getSeaportInstance,
 } from "../utils/utils";
-import { OrdersManager } from "./orders";
 
 /**
  * Manager for order fulfillment and validation operations.
@@ -73,7 +70,10 @@ export class FulfillmentManager {
       order.taker.address,
     );
     const fulfillments = getPrivateListingFulfillments(order.protocolData);
-    const seaport = getSeaportInstance(order.protocolAddress, this.seaport_v1_6);
+    const seaport = getSeaportInstance(
+      order.protocolAddress,
+      this.seaport_v1_6,
+    );
     const transaction = await seaport
       .matchOrders({
         orders: [order.protocolData, counterOrder],
@@ -234,7 +234,10 @@ export class FulfillmentManager {
   }): Promise<boolean> {
     requireValidProtocol(order.protocolAddress);
 
-    const seaport = getSeaportInstance(order.protocolAddress, this.seaport_v1_6);
+    const seaport = getSeaportInstance(
+      order.protocolAddress,
+      this.seaport_v1_6,
+    );
 
     try {
       const isValid = await seaport
@@ -268,7 +271,10 @@ export class FulfillmentManager {
       accountAddress: order.maker.address,
     });
 
-    const seaport = getSeaportInstance(order.protocolAddress, this.seaport_v1_6);
+    const seaport = getSeaportInstance(
+      order.protocolAddress,
+      this.seaport_v1_6,
+    );
     const transaction = await seaport
       .validate([order.protocolData], order.maker.address, domain)
       .transact();

@@ -104,7 +104,6 @@ suite("API: CollectionsAPI", () => {
           } as any,
         ],
         next: "cursor-123",
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -128,15 +127,11 @@ suite("API: CollectionsAPI", () => {
     test("fetches collections with orderBy parameter", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-        next: null,
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
 
-      await collectionsAPI.getCollections(
-        CollectionOrderByOption.MARKET_CAP,
-      );
+      await collectionsAPI.getCollections(CollectionOrderByOption.MARKET_CAP);
 
       expect(mockGet.firstCall.args[1]).to.deep.include({
         order_by: CollectionOrderByOption.MARKET_CAP,
@@ -146,27 +141,23 @@ suite("API: CollectionsAPI", () => {
     test("fetches collections filtered by chain", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-        next: null,
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
 
       await collectionsAPI.getCollections(
         CollectionOrderByOption.CREATED_DATE,
-        Chain.Sepolia,
+        Chain.Polygon,
       );
 
       expect(mockGet.firstCall.args[1]).to.deep.include({
-        chain: Chain.Sepolia,
+        chain: Chain.Polygon,
       });
     });
 
     test("fetches collections filtered by creator username", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-        next: null,
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -185,8 +176,6 @@ suite("API: CollectionsAPI", () => {
     test("fetches collections with includeHidden set to true", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-        next: null,
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -206,8 +195,6 @@ suite("API: CollectionsAPI", () => {
     test("fetches collections with limit parameter", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-        next: null,
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -229,7 +216,6 @@ suite("API: CollectionsAPI", () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
         next: "cursor-456",
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -251,8 +237,6 @@ suite("API: CollectionsAPI", () => {
     test("fetches collections with all parameters", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-        next: null,
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -284,8 +268,6 @@ suite("API: CollectionsAPI", () => {
             name: "Collection 1",
           } as any,
         ],
-        next: null,
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -300,8 +282,6 @@ suite("API: CollectionsAPI", () => {
     test("handles empty collections list", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-        next: null,
-        previous: null,
       };
 
       mockGet.resolves(mockResponse);
@@ -350,9 +330,7 @@ suite("API: CollectionsAPI", () => {
 
       mockGet.resolves(mockResponse);
 
-      const result = await collectionsAPI.getCollectionStats(
-        "test-collection",
-      );
+      const result = await collectionsAPI.getCollectionStats("test-collection");
 
       expect(mockGet.calledOnce).to.be.true;
       expect(mockGet.firstCall.args[0]).to.equal(

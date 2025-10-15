@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
+import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import {
   getChainId,
   getOfferPaymentToken,
@@ -11,7 +12,6 @@ import {
 } from "../../src/utils/chain";
 import { Chain } from "../../src/types";
 import {
-  CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
   OPENSEA_CONDUIT_KEY,
   OPENSEA_CONDUIT_ADDRESS,
   OPENSEA_CONDUIT_KEY_2,

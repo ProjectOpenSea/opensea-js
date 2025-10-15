@@ -11,8 +11,8 @@ import {
   ENGLISH_AUCTION_ZONE_MAINNETS,
   INVERSE_BASIS_POINT,
 } from "../constants";
-import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils";
 import { OrderV2 } from "../orders/types";
+import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils";
 import {
   Chain,
   Fee,

@@ -1,6 +1,6 @@
 import EventEmitter = require("events");
 import { Seaport } from "@opensea/seaport-js";
-import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
+import { OrderComponents } from "@opensea/seaport-js/lib/types";
 import {
   BigNumberish,
   Overrides,
@@ -10,8 +10,13 @@ import {
 } from "ethers";
 import { OpenSeaAPI } from "./api/api";
 import { CollectionOffer, Listing, Offer, Order } from "./api/types";
-import { WPOL_ADDRESS, GUNZILLA_SEAPORT_1_6_ADDRESS } from "./constants";
+import { WPOL_ADDRESS } from "./constants";
 import { OrderV2 } from "./orders/types";
+import { AssetsManager } from "./sdk/assets";
+import { CancellationManager } from "./sdk/cancellation";
+import { FulfillmentManager } from "./sdk/fulfillment";
+import { OrdersManager } from "./sdk/orders";
+import { TokensManager } from "./sdk/tokens";
 import {
   EventData,
   EventType,
@@ -24,15 +29,8 @@ import {
 import {
   getDefaultConduit,
   getOfferPaymentToken,
-  getChainId,
   getSeaportInstance,
 } from "./utils/utils";
-import { TokensManager } from "./sdk/tokens";
-import { AssetsManager } from "./sdk/assets";
-import { CancellationManager } from "./sdk/cancellation";
-import { OrdersManager } from "./sdk/orders";
-import { FulfillmentManager } from "./sdk/fulfillment";
-import { OrderComponents } from "@opensea/seaport-js/lib/types";
 
 /**
  * The OpenSea SDK main class.
