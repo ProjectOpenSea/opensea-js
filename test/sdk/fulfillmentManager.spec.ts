@@ -302,7 +302,7 @@ suite("SDK: FulfillmentManager", () => {
     });
 
     test("passes undefined to seaport when neither unitsToFill nor remaining_quantity available", async () => {
-      // Use a plain Order type which doesn't have remainingQuantity or remaining_quantity
+      // Use mockOrderV2 but ensure neither field is checked by fulfillment logic
       const orderWithoutRemainingQty = {
         order_hash: "0x789",
         chain: "ethereum",
@@ -310,7 +310,7 @@ suite("SDK: FulfillmentManager", () => {
           parameters: mockOrderComponents,
           signature: "0xSignature",
         },
-        protocol_address: "0x00000000000068F116a894984e2DB1123eB395",
+        protocol_address: mockOrderV2.protocolAddress,
         price: {
           currency: "ETH",
           decimals: 18,
