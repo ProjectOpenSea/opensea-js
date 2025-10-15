@@ -54,7 +54,7 @@ const { tokenId, tokenAddress } = YOUR_ASSET;
 // The offerer's wallet address:
 const accountAddress = "0x1234...";
 // Value of the offer, in units of the payment token (or wrapped ETH if none is specified)
-const startAmount = 1.2;
+const amount = 1.2;
 
 const offer = await openseaSDK.createOffer({
   asset: {
@@ -62,7 +62,7 @@ const offer = await openseaSDK.createOffer({
     tokenAddress,
   },
   accountAddress,
-  startAmount,
+  amount,
 });
 ```
 
@@ -90,12 +90,12 @@ const listing = await openseaSDK.createListing({
     tokenAddress,
   },
   accountAddress,
-  startAmount: 3,
+  amount: 3,
   expirationTime,
 });
 ```
 
-The units for `startAmount` are Ether (ETH). If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
+The units for `amount` are Ether (ETH). If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
 
 See [Listening to Events](#listening-to-events) to respond to the setup transactions that occur the first time a user sells an item.
 
@@ -133,7 +133,7 @@ const offer = await openseaSDK.createCollectionOffer({
 const paymentTokenAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 const englishAuction = true;
 // The minimum amount to start the auction at, in normal units (e.g. ETH)
-const startAmount = 0;
+const amount = 0;
 
 const auction = await openseaSDK.createListing({
   asset: {
@@ -141,7 +141,7 @@ const auction = await openseaSDK.createListing({
     tokenAddress,
   },
   accountAddress,
-  startAmount,
+  amount,
   expirationTime,
   paymentTokenAddress,
   englishAuction,

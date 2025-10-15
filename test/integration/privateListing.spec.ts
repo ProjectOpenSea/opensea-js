@@ -39,7 +39,7 @@ suite(
 
       const privateListing = {
         accountAddress: walletAddress,
-        startAmount: LISTING_AMOUNT,
+        amount: LISTING_AMOUNT,
         asset: {
           tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS,
           tokenId: CREATE_LISTING_TOKEN_ID,
@@ -78,7 +78,7 @@ suite(
       const expirationTime = getRandomExpiration();
       const regularListing = {
         accountAddress: walletAddress,
-        startAmount: LISTING_AMOUNT,
+        amount: LISTING_AMOUNT,
         asset: {
           tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS,
           tokenId: CREATE_LISTING_TOKEN_ID,

@@ -199,7 +199,7 @@ export class OpenSeaSDK {
    * @param options
    * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
    * @param options.accountAddress Address of the wallet making the offer.
-   * @param options.startAmount Value of the offer in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
+   * @param options.amount Value in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
    * @param options.quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1.
    * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt.
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
@@ -211,13 +211,13 @@ export class OpenSeaSDK {
    *
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
-   * @throws Error if the startAmount is not greater than 0.
+   * @throws Error if the amount is not greater than 0.
    * @throws Error if paymentTokenAddress is not WETH on anything other than Ethereum mainnet.
    */
   public async createOffer({
     asset,
     accountAddress,
-    startAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -227,7 +227,7 @@ export class OpenSeaSDK {
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -238,7 +238,7 @@ export class OpenSeaSDK {
     return this._ordersManager.createOffer({
       asset,
       accountAddress,
-      startAmount,
+      amount,
       quantity,
       domain,
       salt,
@@ -253,7 +253,7 @@ export class OpenSeaSDK {
    * @param options
    * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
    * @param options.accountAddress  Address of the wallet making the listing
-   * @param options.startAmount Value of the listing in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
+   * @param options.amount Value in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
    * @param options.quantity The number of assets to list (if fungible or semi-fungible). Defaults to 1.
    * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt. This can be used for on-chain order attribution to assist with analytics.
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
@@ -267,13 +267,13 @@ export class OpenSeaSDK {
    *
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
-   * @throws Error if the startAmount is not greater than 0.
+   * @throws Error if the amount is not greater than 0.
    * @throws Error if paymentTokenAddress is not WETH on anything other than Ethereum mainnet.
    */
   public async createListing({
     asset,
     accountAddress,
-    startAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -286,7 +286,7 @@ export class OpenSeaSDK {
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -300,7 +300,7 @@ export class OpenSeaSDK {
     return this._ordersManager.createListing({
       asset,
       accountAddress,
-      startAmount,
+      amount,
       quantity,
       domain,
       salt,
@@ -322,7 +322,7 @@ export class OpenSeaSDK {
    * as bulk signatures are more expensive to decode on-chain due to the merkle proof verification.
    *
    * @param options
-   * @param options.listings Array of listing parameters. Each listing requires asset, startAmount, and optionally other listing parameters.
+   * @param options.listings Array of listing parameters. Each listing requires asset, amount, and optionally other listing parameters.
    * @param options.accountAddress Address of the wallet making the listings
    * @returns Array of {@link OrderV2} objects that were created.
    *
@@ -336,7 +336,7 @@ export class OpenSeaSDK {
   }: {
     listings: Array<{
       asset: AssetWithTokenId;
-      startAmount: BigNumberish;
+      amount: BigNumberish;
       quantity?: BigNumberish;
       domain?: string;
       salt?: BigNumberish;
@@ -364,7 +364,7 @@ export class OpenSeaSDK {
    * as bulk signatures are more expensive to decode on-chain due to the merkle proof verification.
    *
    * @param options
-   * @param options.offers Array of offer parameters. Each offer requires asset, startAmount, and optionally other offer parameters.
+   * @param options.offers Array of offer parameters. Each offer requires asset, amount, and optionally other offer parameters.
    * @param options.accountAddress Address of the wallet making the offers
    * @returns Array of {@link OrderV2} objects that were created.
    *
@@ -378,7 +378,7 @@ export class OpenSeaSDK {
   }: {
     offers: Array<{
       asset: AssetWithTokenId;
-      startAmount: BigNumberish;
+      amount: BigNumberish;
       quantity?: BigNumberish;
       domain?: string;
       salt?: BigNumberish;
@@ -815,7 +815,7 @@ export class OpenSeaSDK {
   public async createListingAndValidateOnchain({
     asset,
     accountAddress,
-    startAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -828,7 +828,7 @@ export class OpenSeaSDK {
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -842,7 +842,7 @@ export class OpenSeaSDK {
     return this._fulfillmentManager.createListingAndValidateOnchain({
       asset,
       accountAddress,
-      startAmount,
+      amount,
       quantity,
       domain,
       salt,
@@ -864,7 +864,7 @@ export class OpenSeaSDK {
   public async createOfferAndValidateOnchain({
     asset,
     accountAddress,
-    startAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -874,7 +874,7 @@ export class OpenSeaSDK {
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -885,7 +885,7 @@ export class OpenSeaSDK {
     return this._fulfillmentManager.createOfferAndValidateOnchain({
       asset,
       accountAddress,
-      startAmount,
+      amount,
       quantity,
       domain,
       salt,
@@ -899,12 +899,12 @@ export class OpenSeaSDK {
    * Compute the `basePrice` parameter to be used to price an order.
    * Also validates the price and token address.
    * @param tokenAddress Address of the ERC-20 token to use for trading. Use the null address for ETH.
-   * @param startAmount The value for the order, in the token's main units (e.g. ETH instead of wei)
+   * @param amount The value for the order, in the token's main units (e.g. ETH instead of wei)
    */
   private async _getPriceParameters(
     orderSide: OrderSide,
     tokenAddress: string,
-    startAmount: BigNumberish,
+    amount: BigNumberish,
   ) {
     tokenAddress = tokenAddress.toLowerCase();
     const isEther = tokenAddress === ethers.ZeroAddress;
@@ -919,11 +919,11 @@ export class OpenSeaSDK {
       }
     }
 
-    const startAmountWei = ethers.parseUnits(startAmount.toString(), decimals);
-    const basePrice = startAmountWei;
+    const amountWei = ethers.parseUnits(amount.toString(), decimals);
+    const basePrice = amountWei;
 
     // Validation
-    if (startAmount == null || startAmountWei < 0) {
+    if (amount == null || amountWei < 0) {
       throw new Error("Starting price must be a number >= 0");
     }
     if (isEther && orderSide === OrderSide.OFFER) {

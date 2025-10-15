@@ -53,7 +53,7 @@ const listing = await openseaSDK.createListing({
   tokenAddress,
   tokenId,
   accountAddress: OWNERS_WALLET_ADDRESS,
-  startAmount: 10,
+  amount: 10,
   buyerAddress,
 });
 ```
@@ -151,16 +151,16 @@ const listings = await openseaSDK.createBulkListings({
   listings: [
     {
       asset: { tokenAddress: "0x...", tokenId: "1" },
-      startAmount: "1.5", // Price in ETH
+      amount: "1.5", // Price in ETH
     },
     {
       asset: { tokenAddress: "0x...", tokenId: "2" },
-      startAmount: "2.0",
+      amount: "2.0",
       expirationTime: getUnixTimestampInSeconds(TimeInSeconds.WEEK), // 7 days
     },
     {
       asset: { tokenAddress: "0x...", tokenId: "3" },
-      startAmount: "0.5",
+      amount: "0.5",
       paymentTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
     },
   ],
@@ -188,16 +188,16 @@ const offers = await openseaSDK.createBulkOffers({
   offers: [
     {
       asset: { tokenAddress: "0x...", tokenId: "1" },
-      startAmount: "0.8", // Offer price in WETH
+      amount: "0.8", // Offer price in WETH
     },
     {
       asset: { tokenAddress: "0x...", tokenId: "2" },
-      startAmount: "1.2",
+      amount: "1.2",
       expirationTime: getUnixTimestampInSeconds(TimeInSeconds.DAY), // 1 day
     },
     {
       asset: { tokenAddress: "0x...", tokenId: "3" },
-      startAmount: "2.5",
+      amount: "2.5",
       paymentTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
       quantity: 5, // For ERC1155 tokens
     },
@@ -220,7 +220,7 @@ Each listing or offer in the bulk array supports:
 - `asset`: The NFT to list/offer on (required)
   - `tokenAddress`: Contract address (required)
   - `tokenId`: Token ID (required)
-- `startAmount`: Price in token units (required)
+- `amount`: Price in token units (required)
 - `quantity`: Number of items (default: 1, for semi-fungible tokens)
 - `expirationTime`: When the order expires in Unix seconds
 - `paymentTokenAddress`: ERC20 token address (defaults to ETH for listings, WETH for offers)
@@ -250,7 +250,7 @@ const listings = await openseaSDK.createBulkListings({
   listings: [
     {
       asset: { tokenAddress: "0x...", tokenId: "1" },
-      startAmount: "1.5",
+      amount: "1.5",
       quantity: 1,
       expirationTime: getUnixTimestampInSeconds(TimeInSeconds.MONTH), // 30 days
       paymentTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
@@ -259,7 +259,7 @@ const listings = await openseaSDK.createBulkListings({
     },
     {
       asset: { tokenAddress: "0x...", tokenId: "2" },
-      startAmount: "2.0",
+      amount: "2.0",
       buyerAddress: "0xSpecificBuyer...", // Private listing
     },
   ],

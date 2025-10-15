@@ -77,14 +77,14 @@ suite("SDK: misc", () => {
     const asset = {} as any;
 
     try {
-      await sdk.createOffer({ asset, startAmount: 1, accountAddress });
+      await sdk.createOffer({ asset, amount: 1, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
       expect(e.message).to.include(expectedErrorMessage);
     }
 
     try {
-      await sdk.createListing({ asset, startAmount: 1, accountAddress });
+      await sdk.createListing({ asset, amount: 1, accountAddress });
       throw new Error("should have thrown");
     } catch (e: any) {
       expect(e.message).to.include(expectedErrorMessage);

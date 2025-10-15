@@ -41,7 +41,7 @@ suite(
       };
       const txHash = await sdk.createListingAndValidateOnchain({
         accountAddress: walletAddress,
-        startAmount: LISTING_AMOUNT,
+        amount: LISTING_AMOUNT,
         asset,
         expirationTime: getRandomExpiration(),
         salt: getRandomSalt(),
@@ -76,7 +76,7 @@ suite(
       };
       const txHash = await sdk2.createOfferAndValidateOnchain({
         accountAddress: walletAddress,
-        startAmount: +OFFER_AMOUNT, // Use the same constant as other tests
+        amount: +OFFER_AMOUNT, // Use the same constant as other tests
         asset,
         expirationTime: getRandomExpiration(),
         salt: getRandomSalt(),

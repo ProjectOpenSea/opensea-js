@@ -30,7 +30,7 @@ suite("SDK: order posting", () => {
     const expirationTime = getRandomExpiration();
     const offer = {
       accountAddress: walletAddress,
-      startAmount: +OFFER_AMOUNT,
+      amount: +OFFER_AMOUNT,
       asset: {
         tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
         tokenId: "2288",
@@ -55,7 +55,7 @@ suite("SDK: order posting", () => {
     const expirationTime = getRandomExpiration();
     const offer = {
       accountAddress: walletAddress,
-      startAmount: +OFFER_AMOUNT,
+      amount: +OFFER_AMOUNT,
       asset: {
         tokenAddress: "0x251be3a17af4892035c37ebf5890f4a4d889dcad",
         tokenId:
@@ -82,7 +82,7 @@ suite("SDK: order posting", () => {
     const expirationTime = getRandomExpiration();
     const listing = {
       accountAddress: walletAddress,
-      startAmount: LISTING_AMOUNT,
+      amount: LISTING_AMOUNT,
       asset: {
         tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS,
         tokenId: CREATE_LISTING_TOKEN_ID,
@@ -109,7 +109,7 @@ suite("SDK: order posting", () => {
     const listing = {
       accountAddress: walletAddress,
       paymentTokenAddress: getOfferPaymentToken(sdk2.chain),
-      startAmount: +LISTING_AMOUNT * 1_000_000,
+      amount: +LISTING_AMOUNT * 1_000_000,
       asset: {
         tokenAddress: CREATE_LISTING_2_CONTRACT_ADDRESS as string,
         tokenId: CREATE_LISTING_2_TOKEN_ID as string,
@@ -143,7 +143,7 @@ suite("SDK: order posting", () => {
 
     const listing = {
       accountAddress: walletAddress,
-      startAmount: LISTING_AMOUNT,
+      amount: LISTING_AMOUNT,
       asset: {
         tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS,
         tokenId: CREATE_LISTING_TOKEN_ID,

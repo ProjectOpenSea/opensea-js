@@ -517,7 +517,7 @@ suite("SDK: FulfillmentManager", () => {
       const result = await fulfillmentManager.createListingAndValidateOnchain({
         asset: { tokenAddress: "0xNFT", tokenId: "123" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockOrdersManager.buildListingOrderComponents.calledOnce).to.be
@@ -530,7 +530,7 @@ suite("SDK: FulfillmentManager", () => {
       await fulfillmentManager.createListingAndValidateOnchain({
         asset: { tokenAddress: "0xNFT", tokenId: "123" },
         accountAddress: "0xSeller",
-        startAmount: "2000000000000000000",
+        amount: "2000000000000000000",
         quantity: 5,
         domain: "opensea.io",
         salt: "12345",
@@ -545,7 +545,7 @@ suite("SDK: FulfillmentManager", () => {
       const buildCall =
         mockOrdersManager.buildListingOrderComponents.firstCall.args[0];
       expect(buildCall.asset.tokenAddress).to.equal("0xNFT");
-      expect(buildCall.startAmount).to.equal("2000000000000000000");
+      expect(buildCall.amount).to.equal("2000000000000000000");
       expect(buildCall.quantity).to.equal(5);
       expect(buildCall.domain).to.equal("opensea.io");
       expect(buildCall.buyerAddress).to.equal("0xBuyer");
@@ -557,7 +557,7 @@ suite("SDK: FulfillmentManager", () => {
       const result = await fulfillmentManager.createOfferAndValidateOnchain({
         asset: { tokenAddress: "0xNFT", tokenId: "123" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockOrdersManager.buildOfferOrderComponents.calledOnce).to.be.true;
@@ -569,7 +569,7 @@ suite("SDK: FulfillmentManager", () => {
       await fulfillmentManager.createOfferAndValidateOnchain({
         asset: { tokenAddress: "0xNFT", tokenId: "123" },
         accountAddress: "0xBuyer",
-        startAmount: "1500000000000000000",
+        amount: "1500000000000000000",
         quantity: 3,
         domain: "test.io",
         salt: "67890",
@@ -581,7 +581,7 @@ suite("SDK: FulfillmentManager", () => {
       const buildCall =
         mockOrdersManager.buildOfferOrderComponents.firstCall.args[0];
       expect(buildCall.asset.tokenAddress).to.equal("0xNFT");
-      expect(buildCall.startAmount).to.equal("1500000000000000000");
+      expect(buildCall.amount).to.equal("1500000000000000000");
       expect(buildCall.quantity).to.equal(3);
       expect(buildCall.domain).to.equal("test.io");
       expect(buildCall.paymentTokenAddress).to.equal("0xWETH");

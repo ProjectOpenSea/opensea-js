@@ -345,7 +345,7 @@ export class FulfillmentManager {
   async createListingAndValidateOnchain({
     asset,
     accountAddress,
-    startAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -358,7 +358,7 @@ export class FulfillmentManager {
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -373,7 +373,7 @@ export class FulfillmentManager {
       await this.ordersManager.buildListingOrderComponents({
         asset,
         accountAddress,
-        startAmount,
+        amount,
         quantity,
         domain,
         salt,
@@ -397,7 +397,7 @@ export class FulfillmentManager {
   async createOfferAndValidateOnchain({
     asset,
     accountAddress,
-    startAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -407,7 +407,7 @@ export class FulfillmentManager {
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -418,7 +418,7 @@ export class FulfillmentManager {
     const orderComponents = await this.ordersManager.buildOfferOrderComponents({
       asset,
       accountAddress,
-      startAmount,
+      amount,
       quantity,
       domain,
       salt,

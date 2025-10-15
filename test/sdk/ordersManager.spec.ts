@@ -81,7 +81,7 @@ suite("SDK: OrdersManager", () => {
               itemType: 2,
               token: "0xNFTContract",
               identifierOrCriteria: "0",
-              startAmount: "1",
+              amount: "1",
               endAmount: "1",
             },
           ],
@@ -121,7 +121,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
@@ -139,7 +139,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         paymentTokenAddress: "0xCustomToken",
       });
 
@@ -151,7 +151,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         quantity: 5,
       });
 
@@ -164,7 +164,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         expirationTime,
       });
 
@@ -178,7 +178,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         zone: "0xCustomZone",
       });
 
@@ -190,7 +190,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         domain: "opensea.io",
         salt: "12345",
       });
@@ -207,7 +207,7 @@ suite("SDK: OrdersManager", () => {
         await ordersManager.createOffer({
           asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
           accountAddress: "0xBuyer",
-          startAmount: "1000000000000000000",
+          amount: "1000000000000000000",
         });
         expect.fail("Expected error to be thrown");
       } catch (error) {
@@ -224,7 +224,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
@@ -237,7 +237,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
@@ -252,7 +252,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         paymentTokenAddress: "0xUSDC",
       });
 
@@ -264,7 +264,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         buyerAddress: "0xPrivateBuyer",
       });
 
@@ -278,7 +278,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         listingTime,
         expirationTime,
       });
@@ -300,7 +300,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         includeOptionalCreatorFees: true,
       });
 
@@ -311,7 +311,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         zone: "0xCustomZone",
       });
 
@@ -328,7 +328,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
@@ -339,7 +339,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         quantity: 10,
       });
 
@@ -482,7 +482,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.buildOfferOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
@@ -496,7 +496,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.buildOfferOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         quantity: 3,
         domain: "test.io",
         salt: "999",
@@ -513,7 +513,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.buildOfferOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockAPI.postOrder.called).to.be.false;
@@ -525,7 +525,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.buildListingOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
@@ -542,7 +542,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.buildListingOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "2000000000000000000",
+        amount: "2000000000000000000",
         quantity: 5,
         domain: "opensea.io",
         salt: "12345",
@@ -562,7 +562,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.buildListingOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockAPI.postOrder.called).to.be.false;
@@ -593,11 +593,11 @@ suite("SDK: OrdersManager", () => {
         listings: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "5678" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
           },
         ],
         accountAddress: "0xSeller",
@@ -616,7 +616,7 @@ suite("SDK: OrdersManager", () => {
         listings: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
           },
         ],
         accountAddress: "0xSeller",
@@ -673,15 +673,15 @@ suite("SDK: OrdersManager", () => {
         listings: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
-            startAmount: "3000000000000000000",
+            amount: "3000000000000000000",
           },
         ],
         accountAddress: "0xSeller",
@@ -717,13 +717,13 @@ suite("SDK: OrdersManager", () => {
         listings: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
             domain: "opensea.io",
             expirationTime,
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
             quantity: 5,
             includeOptionalCreatorFees: true,
           },
@@ -757,12 +757,12 @@ suite("SDK: OrdersManager", () => {
         listings: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
             paymentTokenAddress: "0xUSDC",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
             paymentTokenAddress: "0xUSDC",
           },
         ],
@@ -780,11 +780,11 @@ suite("SDK: OrdersManager", () => {
           listings: [
             {
               asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-              startAmount: "1000000000000000000",
+              amount: "1000000000000000000",
             },
             {
               asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-              startAmount: "2000000000000000000",
+              amount: "2000000000000000000",
             },
           ],
           accountAddress: "0xSeller",
@@ -818,12 +818,12 @@ suite("SDK: OrdersManager", () => {
         listings: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
             buyerAddress: "0xBuyer1",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
             buyerAddress: "0xBuyer2",
           },
         ],
@@ -849,7 +849,7 @@ suite("SDK: OrdersManager", () => {
 
       const listings = Array.from({ length: 25 }, (_, i) => ({
         asset: { tokenAddress: "0xNFTContract", tokenId: i.toString() },
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       }));
 
       const result = await ordersManager.createBulkListings({
@@ -892,17 +892,17 @@ suite("SDK: OrdersManager", () => {
         listings: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
             paymentTokenAddress: "0xETH",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
             paymentTokenAddress: "0xUSDC",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
-            startAmount: "3000000000000000000",
+            amount: "3000000000000000000",
             paymentTokenAddress: "0xWETH",
           },
         ],
@@ -961,15 +961,15 @@ suite("SDK: OrdersManager", () => {
           listings: [
             {
               asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-              startAmount: "1000000000000000000",
+              amount: "1000000000000000000",
             },
             {
               asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-              startAmount: "2000000000000000000",
+              amount: "2000000000000000000",
             },
             {
               asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
-              startAmount: "3000000000000000000",
+              amount: "3000000000000000000",
             },
           ],
           accountAddress: "0xSeller",
@@ -1007,11 +1007,11 @@ suite("SDK: OrdersManager", () => {
         offers: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "5678" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
           },
         ],
         accountAddress: "0xBuyer",
@@ -1030,7 +1030,7 @@ suite("SDK: OrdersManager", () => {
         offers: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
           },
         ],
         accountAddress: "0xBuyer",
@@ -1087,15 +1087,15 @@ suite("SDK: OrdersManager", () => {
         offers: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
-            startAmount: "3000000000000000000",
+            amount: "3000000000000000000",
           },
         ],
         accountAddress: "0xBuyer",
@@ -1131,13 +1131,13 @@ suite("SDK: OrdersManager", () => {
         offers: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
             domain: "opensea.io",
             expirationTime,
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
             quantity: 5,
           },
         ],
@@ -1170,12 +1170,12 @@ suite("SDK: OrdersManager", () => {
         offers: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
             paymentTokenAddress: "0xWETH",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
             paymentTokenAddress: "0xWETH",
           },
         ],
@@ -1193,11 +1193,11 @@ suite("SDK: OrdersManager", () => {
           offers: [
             {
               asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-              startAmount: "1000000000000000000",
+              amount: "1000000000000000000",
             },
             {
               asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-              startAmount: "2000000000000000000",
+              amount: "2000000000000000000",
             },
           ],
           accountAddress: "0xBuyer",
@@ -1231,12 +1231,12 @@ suite("SDK: OrdersManager", () => {
         offers: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
             zone: "0xCustomZone1",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
             zone: "0xCustomZone2",
           },
         ],
@@ -1274,11 +1274,11 @@ suite("SDK: OrdersManager", () => {
         offers: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
           },
         ],
         accountAddress: "0xBuyer",
@@ -1303,7 +1303,7 @@ suite("SDK: OrdersManager", () => {
 
       const offers = Array.from({ length: 25 }, (_, i) => ({
         asset: { tokenAddress: "0xNFTContract", tokenId: i.toString() },
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       }));
 
       const result = await ordersManager.createBulkOffers({
@@ -1346,17 +1346,17 @@ suite("SDK: OrdersManager", () => {
         offers: [
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
+            amount: "1000000000000000000",
             paymentTokenAddress: "0xWETH",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
+            amount: "2000000000000000000",
             paymentTokenAddress: "0xUSDC",
           },
           {
             asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
-            startAmount: "3000000000000000000",
+            amount: "3000000000000000000",
             paymentTokenAddress: "0xDAI",
           },
         ],
@@ -1415,15 +1415,15 @@ suite("SDK: OrdersManager", () => {
           offers: [
             {
               asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-              startAmount: "1000000000000000000",
+              amount: "1000000000000000000",
             },
             {
               asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-              startAmount: "2000000000000000000",
+              amount: "2000000000000000000",
             },
             {
               asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
-              startAmount: "3000000000000000000",
+              amount: "3000000000000000000",
             },
           ],
           accountAddress: "0xBuyer",
