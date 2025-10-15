@@ -14,6 +14,7 @@ hidden: false
 - [Making Listings / Selling Items](#making-listings--selling-items)
   - [Creating English Auctions](#creating-english-auctions)
 - [Fetching Orders](#fetching-orders)
+- [Fetching Events](#fetching-events)
 - [Buying Items](#buying-items)
 - [Accepting Offers](#accepting-offers)
 
@@ -184,7 +185,7 @@ const order = await openseaSDK.api.getOrderByHash(
 
 This is useful when you need to retrieve order details for operations like order cancellation or fulfillment when you only have the order hash.
 
-#### Fetching All Offers and Best Listings for a given collection
+#### Fetching All Offers and Listings for a given collection
 
 There are two endpoints that return all offers and listings for a given collection, `getAllOffers` and `getAllListings`.
 
@@ -198,6 +199,130 @@ There are two endpoints that return the best offer or listing, `getBestOffer` an
 
 ```typescript
 const offer = await openseaSDK.api.getBestOffer(collectionSlug, tokenId);
+```
+
+### Fetching Events
+
+The SDK provides methods to retrieve historical events for NFTs, collections, and accounts. Events include sales, transfers, listings, offers, and cancellations.
+
+#### Get All Events
+
+Fetch all events with optional filters:
+
+```typescript
+import { AssetEventType } from "opensea-js";
+
+const { asset_events, next } = await openseaSDK.api.getEvents({
+  event_type: AssetEventType.SALE, // Optional: filter by event type
+  limit: 50, // Optional: limit results (default: 50)
+  after: 1672531200, // Optional: filter events after timestamp
+  before: 1675209600, // Optional: filter events before timestamp
+  chain: "ethereum", // Optional: filter by chain
+  next: "cursor", // Optional: cursor for pagination
+});
+```
+
+**Event Types:**
+
+- `AssetEventType.SALE` - Sales of NFTs
+- `AssetEventType.TRANSFER` - Transfers of NFTs
+- `AssetEventType.ORDER` - New listings and offers
+- `AssetEventType.CANCEL` - Canceled orders
+- `AssetEventType.REDEMPTION` - NFT redemptions
+
+#### Get Events by Account
+
+Fetch events for a specific account address:
+
+```typescript
+const { asset_events } = await openseaSDK.api.getEventsByAccount(
+  "0x...", // Account address
+  {
+    event_type: AssetEventType.SALE,
+    limit: 20,
+  },
+);
+```
+
+#### Get Events by Collection
+
+Fetch events for a specific collection:
+
+```typescript
+const { asset_events } = await openseaSDK.api.getEventsByCollection(
+  "cool-cats-nft", // Collection slug
+  {
+    event_type: AssetEventType.ORDER,
+    limit: 100,
+  },
+);
+```
+
+#### Get Events by NFT
+
+Fetch events for a specific NFT:
+
+```typescript
+import { Chain } from "opensea-js";
+
+const { asset_events } = await openseaSDK.api.getEventsByNFT(
+  Chain.Mainnet, // Chain
+  "0x...", // Contract address
+  "1", // Token ID
+  {
+    event_type: AssetEventType.SALE,
+  },
+);
+```
+
+**Event Data:**
+
+Each event includes:
+
+- `event_type`: Type of event (sale, transfer, order, etc.)
+- `event_timestamp`: When the event occurred (Unix timestamp)
+- `chain`: Which blockchain the event occurred on
+- `quantity`: Number of items involved
+
+For **sale events**, additional fields include:
+
+- `transaction`: Transaction hash
+- `seller` and `buyer`: Wallet addresses
+- `payment`: Payment amount and token details
+- `nft`: NFT details
+
+For **order events** (listings/offers), additional fields include:
+
+- `order_type`: "listing", "item_offer", "collection_offer", or "trait_offer"
+- `maker` and `taker`: Wallet addresses
+- `payment`: Offer/listing amount
+- `expiration_date`: When the order expires
+- `is_private_listing`: Whether it's a private listing
+
+For **transfer events**, additional fields include:
+
+- `from_address` and `to_address`: Wallet addresses
+- `transaction`: Transaction hash
+- `nft`: NFT details
+
+**Pagination:**
+
+Use the `next` cursor to fetch additional pages:
+
+```typescript
+let cursor: string | undefined;
+const allEvents: AssetEvent[] = [];
+
+do {
+  const response = await openseaSDK.api.getEvents({
+    event_type: AssetEventType.SALE,
+    limit: 50,
+    next: cursor,
+  });
+
+  allEvents.push(...response.asset_events);
+  cursor = response.next;
+} while (cursor);
 ```
 
 ### Buying Items
