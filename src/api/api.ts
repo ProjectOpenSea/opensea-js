@@ -1,31 +1,30 @@
 import { ethers } from "ethers";
+import { API_BASE_MAINNET } from "../constants";
+import { AccountsAPI } from "./accounts";
+import { CollectionsAPI } from "./collections";
+import { ListingsAPI } from "./listings";
+import { NFTsAPI } from "./nfts";
+import { OffersAPI } from "./offers";
 import {
-  getCollectionPath,
-  getCollectionsPath,
-  getOrdersAPIPath,
-  getPostCollectionOfferPath,
-  getBuildOfferPath,
-  getListNFTsByCollectionPath,
-  getListNFTsByContractPath,
-  getNFTPath,
-  getRefreshMetadataPath,
-  getCollectionOffersPath,
-  getListNFTsByAccountPath,
-  getBestOfferAPIPath,
-  getBestListingAPIPath,
-  getAllOffersAPIPath,
-  getAllListingsAPIPath,
-  getPaymentTokenPath,
-  getAccountPath,
-  getCollectionStatsPath,
-  getBestListingsAPIPath,
-  getOrderByHashPath,
-  getCancelOrderPath,
-  getTraitOffersPath,
-} from "./apiPaths";
+  FulfillmentDataResponse,
+  OrderAPIOptions,
+  OrdersQueryOptions,
+  OrderV2,
+  ProtocolData,
+} from "../orders/types";
+import {
+  Chain,
+  OpenSeaAPIConfig,
+  OpenSeaAccount,
+  OpenSeaCollection,
+  OpenSeaCollectionStats,
+  OpenSeaPaymentToken,
+  OpenSeaRateLimitError,
+  OrderSide,
+} from "../types";
+import { OrdersAPI } from "./orders";
 import {
   BuildOfferResponse,
-  GetCollectionResponse,
   GetCollectionsResponse,
   ListNFTsResponse,
   GetNFTResponse,
@@ -38,42 +37,7 @@ import {
   CollectionOffer,
   CollectionOrderByOption,
   CancelOrderResponse,
-  GetCollectionsArgs,
 } from "./types";
-import { API_BASE_MAINNET } from "../constants";
-import {
-  FulfillmentDataResponse,
-  OrderAPIOptions,
-  OrdersPostQueryResponse,
-  OrdersQueryOptions,
-  OrdersQueryResponse,
-  OrderV2,
-  ProtocolData,
-} from "../orders/types";
-import {
-  serializeOrdersQueryOptions,
-  deserializeOrder,
-  getFulfillmentDataPath,
-  getFulfillListingPayload,
-  getFulfillOfferPayload,
-  getBuildCollectionOfferPayload,
-  getPostCollectionOfferPayload,
-} from "../orders/utils";
-import {
-  Chain,
-  OpenSeaAPIConfig,
-  OpenSeaAccount,
-  OpenSeaCollection,
-  OpenSeaCollectionStats,
-  OpenSeaPaymentToken,
-  OpenSeaRateLimitError,
-  OrderSide,
-} from "../types";
-import {
-  paymentTokenFromJSON,
-  collectionFromJSON,
-  accountFromJSON,
-} from "../utils/utils";
 
 /**
  * The API class for the OpenSea SDK.
@@ -96,6 +60,14 @@ export class OpenSeaAPI {
   private apiKey: string | undefined;
   private chain: Chain;
 
+  // Specialized API clients
+  private ordersAPI: OrdersAPI;
+  private offersAPI: OffersAPI;
+  private listingsAPI: ListingsAPI;
+  private collectionsAPI: CollectionsAPI;
+  private nftsAPI: NFTsAPI;
+  private accountsAPI: AccountsAPI;
+
   /**
    * Create an instance of the OpenSeaAPI
    * @param config OpenSeaAPIConfig for setting up the API, including an optional API key, Chain name, and base URL
@@ -113,59 +85,35 @@ export class OpenSeaAPI {
 
     // Debugging: default to nothing
     this.logger = logger ?? ((arg: string) => arg);
+
+    // Initialize specialized API clients
+    this.ordersAPI = new OrdersAPI(
+      this.get.bind(this),
+      this.post.bind(this),
+      this.chain,
+    );
+    this.offersAPI = new OffersAPI(this.get.bind(this), this.post.bind(this));
+    this.listingsAPI = new ListingsAPI(this.get.bind(this));
+    this.collectionsAPI = new CollectionsAPI(this.get.bind(this));
+    this.nftsAPI = new NFTsAPI(
+      this.get.bind(this),
+      this.post.bind(this),
+      this.chain,
+    );
+    this.accountsAPI = new AccountsAPI(this.get.bind(this), this.chain);
   }
 
   /**
    * Gets an order from API based on query options.
-   * @param options
-   * @param options.side The side of the order (listing or offer)
-   * @param options.protocol The protocol, typically seaport, to query orders for
-   * @param options.orderDirection The direction to sort the orders
-   * @param options.orderBy The field to sort the orders by. Note: If using "eth_price", you must also provide asset_contract_address and token_ids parameters.
-   * @param options.limit The number of orders to retrieve
-   * @param options.maker Filter by the wallet address of the order maker
-   * @param options.taker Filter by  wallet address of the order taker
-   * @param options.asset_contract_address Address of the NFT's contract (required when orderBy is "eth_price")
-   * @param options.token_ids String array of token IDs to filter by (required when orderBy is "eth_price")
-   * @param options.listed_after Filter by orders listed after the Unix epoch timestamp in seconds
-   * @param options.listed_before Filter by orders listed before the Unix epoch timestamp in seconds
+   * @param options Query options for fetching an order
    * @returns The first {@link OrderV2} returned by the API
    *
    * @throws An error if there are no matching orders.
    */
-  public async getOrder({
-    side,
-    protocol = "seaport",
-    orderDirection = "desc",
-    orderBy = "created_date",
-    ...restOptions
-  }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
-    // Validate eth_price orderBy requires additional parameters
-    if (orderBy === "eth_price") {
-      if (
-        !restOptions.assetContractAddress ||
-        !restOptions.tokenIds ||
-        restOptions.tokenIds.length === 0
-      ) {
-        throw new Error(
-          'When using orderBy: "eth_price", you must provide both asset_contract_address and token_ids parameters',
-        );
-      }
-    }
-
-    const { orders } = await this.get<OrdersQueryResponse>(
-      getOrdersAPIPath(this.chain, protocol, side),
-      serializeOrdersQueryOptions({
-        limit: 1,
-        orderBy,
-        orderDirection,
-        ...restOptions,
-      }),
-    );
-    if (orders.length === 0) {
-      throw new Error("Not found: no matching order found");
-    }
-    return deserializeOrder(orders[0]);
+  public async getOrder(
+    options: Omit<OrdersQueryOptions, "limit">,
+  ): Promise<OrderV2> {
+    return this.ordersAPI.getOrder(options);
   }
 
   /**
@@ -181,61 +129,18 @@ export class OpenSeaAPI {
     protocolAddress: string,
     chain: Chain = this.chain,
   ): Promise<OrderV2> {
-    const response = await this.get<{
-      order: OrdersQueryResponse["orders"][0];
-    }>(getOrderByHashPath(chain, protocolAddress, orderHash));
-    return deserializeOrder(response.order);
+    return this.ordersAPI.getOrderByHash(orderHash, protocolAddress, chain);
   }
 
   /**
    * Gets a list of orders from API based on query options.
-   * @param options
-   * @param options.side The side of the order (buy or sell)
-   * @param options.protocol The protocol, typically seaport, to query orders for
-   * @param options.orderDirection The direction to sort the orders
-   * @param options.orderBy The field to sort the orders by. Note: If using "eth_price", you must also provide asset_contract_address and token_ids parameters.
-   * @param options.limit The number of orders to retrieve
-   * @param options.maker Filter by the wallet address of the order maker
-   * @param options.taker Filter by  wallet address of the order taker
-   * @param options.asset_contract_address Address of the NFT's contract (required when orderBy is "eth_price")
-   * @param options.token_ids String array of token IDs to filter by (required when orderBy is "eth_price")
-   * @param options.listed_after Filter by orders listed after the Unix epoch timestamp in seconds
-   * @param options.listed_before Filter by orders listed before the Unix epoch timestamp in seconds
+   * @param options Query options for fetching orders
    * @returns The {@link GetOrdersResponse} returned by the API.
    */
-  public async getOrders({
-    side,
-    protocol = "seaport",
-    orderDirection = "desc",
-    orderBy = "created_date",
-    ...restOptions
-  }: Omit<OrdersQueryOptions, "limit">): Promise<GetOrdersResponse> {
-    // Validate eth_price orderBy requires additional parameters
-    if (orderBy === "eth_price") {
-      if (
-        !restOptions.assetContractAddress ||
-        !restOptions.tokenIds ||
-        restOptions.tokenIds.length === 0
-      ) {
-        throw new Error(
-          'When using orderBy: "eth_price", you must provide both asset_contract_address and token_ids parameters',
-        );
-      }
-    }
-
-    const response = await this.get<OrdersQueryResponse>(
-      getOrdersAPIPath(this.chain, protocol, side),
-      serializeOrdersQueryOptions({
-        limit: this.pageSize,
-        orderBy,
-        orderDirection,
-        ...restOptions,
-      }),
-    );
-    return {
-      ...response,
-      orders: response.orders.map(deserializeOrder),
-    };
+  public async getOrders(
+    options: Omit<OrdersQueryOptions, "limit">,
+  ): Promise<GetOrdersResponse> {
+    return this.ordersAPI.getOrders({ ...options, pageSize: this.pageSize });
   }
 
   /**
@@ -250,14 +155,7 @@ export class OpenSeaAPI {
     limit?: number,
     next?: string,
   ): Promise<GetOffersResponse> {
-    const response = await this.get<GetOffersResponse>(
-      getAllOffersAPIPath(collectionSlug),
-      {
-        limit,
-        next,
-      },
-    );
-    return response;
+    return this.offersAPI.getAllOffers(collectionSlug, limit, next);
   }
 
   /**
@@ -272,14 +170,7 @@ export class OpenSeaAPI {
     limit?: number,
     next?: string,
   ): Promise<GetListingsResponse> {
-    const response = await this.get<GetListingsResponse>(
-      getAllListingsAPIPath(collectionSlug),
-      {
-        limit,
-        next,
-      },
-    );
-    return response;
+    return this.listingsAPI.getAllListings(collectionSlug, limit, next);
   }
 
   /**
@@ -302,18 +193,15 @@ export class OpenSeaAPI {
     floatValue?: number,
     intValue?: number,
   ): Promise<GetOffersResponse> {
-    const response = await this.get<GetOffersResponse>(
-      getTraitOffersPath(collectionSlug),
-      {
-        type,
-        value,
-        limit,
-        next,
-        float_value: floatValue,
-        int_value: intValue,
-      },
+    return this.offersAPI.getTraitOffers(
+      collectionSlug,
+      type,
+      value,
+      limit,
+      next,
+      floatValue,
+      intValue,
     );
-    return response;
   }
 
   /**
@@ -326,10 +214,7 @@ export class OpenSeaAPI {
     collectionSlug: string,
     tokenId: string | number,
   ): Promise<GetBestOfferResponse> {
-    const response = await this.get<GetBestOfferResponse>(
-      getBestOfferAPIPath(collectionSlug, tokenId),
-    );
-    return response;
+    return this.offersAPI.getBestOffer(collectionSlug, tokenId);
   }
 
   /**
@@ -342,10 +227,7 @@ export class OpenSeaAPI {
     collectionSlug: string,
     tokenId: string | number,
   ): Promise<GetBestListingResponse> {
-    const response = await this.get<GetBestListingResponse>(
-      getBestListingAPIPath(collectionSlug, tokenId),
-    );
-    return response;
+    return this.listingsAPI.getBestListing(collectionSlug, tokenId);
   }
 
   /**
@@ -360,14 +242,7 @@ export class OpenSeaAPI {
     limit?: number,
     next?: string,
   ): Promise<GetListingsResponse> {
-    const response = await this.get<GetListingsResponse>(
-      getBestListingsAPIPath(collectionSlug),
-      {
-        limit,
-        next,
-      },
-    );
-    return response;
+    return this.listingsAPI.getBestListings(collectionSlug, limit, next);
   }
 
   /**
@@ -388,80 +263,27 @@ export class OpenSeaAPI {
     assetContractAddress?: string,
     tokenId?: string,
   ): Promise<FulfillmentDataResponse> {
-    let payload: object | null = null;
-    if (side === OrderSide.LISTING) {
-      payload = getFulfillListingPayload(
-        fulfillerAddress,
-        orderHash,
-        protocolAddress,
-        this.chain,
-        assetContractAddress,
-        tokenId,
-      );
-    } else {
-      payload = getFulfillOfferPayload(
-        fulfillerAddress,
-        orderHash,
-        protocolAddress,
-        this.chain,
-        assetContractAddress,
-        tokenId,
-      );
-    }
-    const response = await this.post<FulfillmentDataResponse>(
-      getFulfillmentDataPath(side),
-      payload,
+    return this.ordersAPI.generateFulfillmentData(
+      fulfillerAddress,
+      orderHash,
+      protocolAddress,
+      side,
+      assetContractAddress,
+      tokenId,
     );
-    return response;
   }
 
   /**
    * Post an order to OpenSea.
    * @param order The order to post
-   * @param apiOptions
-   * @param apiOptions.protocol The protocol, typically seaport, to post the order to.
-   * @param apiOptions.side The side of the order (buy or sell).
-   * @param apiOptions.protocolAddress The address of the seaport contract.
-   * @param options
+   * @param apiOptions API options for the order
    * @returns The {@link OrderV2} posted to the API.
    */
   public async postOrder(
     order: ProtocolData,
     apiOptions: OrderAPIOptions,
   ): Promise<OrderV2> {
-    const { protocol = "seaport", side, protocolAddress } = apiOptions;
-
-    // Validate required fields
-    if (!side) {
-      throw new Error("apiOptions.side is required");
-    }
-    if (!protocolAddress) {
-      throw new Error("apiOptions.protocolAddress is required");
-    }
-    if (!order) {
-      throw new Error("order data is required");
-    }
-
-    // Validate protocol value
-    if (protocol !== "seaport") {
-      throw new Error("Currently only 'seaport' protocol is supported");
-    }
-
-    // Validate side value
-    if (side !== "ask" && side !== "bid") {
-      throw new Error("side must be either 'ask' or 'bid'");
-    }
-
-    // Validate protocolAddress format
-    if (!/^0x[a-fA-F0-9]{40}$/.test(protocolAddress)) {
-      throw new Error("Invalid protocol address format");
-    }
-
-    const response = await this.post<OrdersPostQueryResponse>(
-      getOrdersAPIPath(this.chain, protocol, side),
-      { ...order, protocol_address: protocolAddress },
-    );
-    return deserializeOrder(response.order);
+    return this.ordersAPI.postOrder(order, apiOptions);
   }
 
   /**
@@ -482,14 +304,7 @@ export class OpenSeaAPI {
     traitType?: string,
     traitValue?: string,
   ): Promise<BuildOfferResponse> {
-    if (traitType || traitValue) {
-      if (!traitType || !traitValue) {
-        throw new Error(
-          "Both traitType and traitValue must be defined if one is defined.",
-        );
-      }
-    }
-    const payload = getBuildCollectionOfferPayload(
+    return this.offersAPI.buildOffer(
       offererAddress,
       quantity,
       collectionSlug,
@@ -497,11 +312,6 @@ export class OpenSeaAPI {
       traitType,
       traitValue,
     );
-    const response = await this.post<BuildOfferResponse>(
-      getBuildOfferPath(),
-      payload,
-    );
-    return response;
   }
 
   /**
@@ -512,9 +322,7 @@ export class OpenSeaAPI {
   public async getCollectionOffers(
     slug: string,
   ): Promise<ListCollectionOffersResponse | null> {
-    return await this.get<ListCollectionOffersResponse>(
-      getCollectionOffersPath(slug),
-    );
+    return this.offersAPI.getCollectionOffers(slug);
   }
 
   /**
@@ -531,15 +339,11 @@ export class OpenSeaAPI {
     traitType?: string,
     traitValue?: string,
   ): Promise<CollectionOffer | null> {
-    const payload = getPostCollectionOfferPayload(
-      slug,
+    return this.offersAPI.postCollectionOffer(
       order,
+      slug,
       traitType,
       traitValue,
-    );
-    return await this.post<CollectionOffer>(
-      getPostCollectionOfferPath(),
-      payload,
     );
   }
 
@@ -555,14 +359,7 @@ export class OpenSeaAPI {
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
   ): Promise<ListNFTsResponse> {
-    const response = await this.get<ListNFTsResponse>(
-      getListNFTsByCollectionPath(slug),
-      {
-        limit,
-        next,
-      },
-    );
-    return response;
+    return this.nftsAPI.getNFTsByCollection(slug, limit, next);
   }
 
   /**
@@ -579,14 +376,7 @@ export class OpenSeaAPI {
     next: string | undefined = undefined,
     chain: Chain = this.chain,
   ): Promise<ListNFTsResponse> {
-    const response = await this.get<ListNFTsResponse>(
-      getListNFTsByContractPath(chain, address),
-      {
-        limit,
-        next,
-      },
-    );
-    return response;
+    return this.nftsAPI.getNFTsByContract(address, limit, next, chain);
   }
 
   /**
@@ -603,15 +393,7 @@ export class OpenSeaAPI {
     next: string | undefined = undefined,
     chain = this.chain,
   ): Promise<ListNFTsResponse> {
-    const response = await this.get<ListNFTsResponse>(
-      getListNFTsByAccountPath(chain, address),
-      {
-        limit,
-        next,
-      },
-    );
-
-    return response;
+    return this.nftsAPI.getNFTsByAccount(address, limit, next, chain);
   }
 
   /**
@@ -626,10 +408,7 @@ export class OpenSeaAPI {
     identifier: string,
     chain = this.chain,
   ): Promise<GetNFTResponse> {
-    const response = await this.get<GetNFTResponse>(
-      getNFTPath(chain, address, identifier),
-    );
-    return response;
+    return this.nftsAPI.getNFT(address, identifier, chain);
   }
 
   /**
@@ -638,9 +417,7 @@ export class OpenSeaAPI {
    * @returns The {@link OpenSeaCollection} returned by the API.
    */
   public async getCollection(slug: string): Promise<OpenSeaCollection> {
-    const path = getCollectionPath(slug);
-    const response = await this.get<GetCollectionResponse>(path);
-    return collectionFromJSON(response);
+    return this.collectionsAPI.getCollection(slug);
   }
 
   /**
@@ -661,20 +438,14 @@ export class OpenSeaAPI {
     limit?: number,
     next?: string,
   ): Promise<GetCollectionsResponse> {
-    const path = getCollectionsPath();
-    const args: GetCollectionsArgs = {
-      order_by: orderBy,
+    return this.collectionsAPI.getCollections(
+      orderBy,
       chain,
-      creator_username: creatorUsername,
-      include_hidden: includeHidden,
+      creatorUsername,
+      includeHidden,
       limit,
       next,
-    };
-    const response = await this.get<GetCollectionsResponse>(path, args);
-    response.collections = response.collections.map((collection) =>
-      collectionFromJSON(collection),
     );
-    return response;
   }
 
   /**
@@ -685,36 +456,29 @@ export class OpenSeaAPI {
   public async getCollectionStats(
     slug: string,
   ): Promise<OpenSeaCollectionStats> {
-    const path = getCollectionStatsPath(slug);
-    const response = await this.get<OpenSeaCollectionStats>(path);
-    return response as OpenSeaCollectionStats;
+    return this.collectionsAPI.getCollectionStats(slug);
   }
 
   /**
    * Fetch a payment token.
-   * @param query Query to use for getting tokens. See {@link OpenSeaPaymentTokenQuery}.
-   * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @param address The address of the payment token
+   * @param chain The chain of the payment token
    * @returns The {@link OpenSeaPaymentToken} returned by the API.
    */
   public async getPaymentToken(
     address: string,
     chain = this.chain,
   ): Promise<OpenSeaPaymentToken> {
-    const json = await this.get<OpenSeaPaymentToken>(
-      getPaymentTokenPath(chain, address),
-    );
-    return paymentTokenFromJSON(json);
+    return this.accountsAPI.getPaymentToken(address, chain);
   }
 
   /**
    * Fetch account for an address.
-   * @param query Query to use for getting tokens. See {@link OpenSeaPaymentTokenQuery}.
-   * @param next The cursor for the next page of results. This is returned from a previous request.
-   * @returns The {@link GetAccountResponse} returned by the API.
+   * @param address The address to fetch the account for
+   * @returns The {@link OpenSeaAccount} returned by the API.
    */
   public async getAccount(address: string): Promise<OpenSeaAccount> {
-    const json = await this.get<OpenSeaAccount>(getAccountPath(address));
-    return accountFromJSON(json);
+    return this.accountsAPI.getAccount(address);
   }
 
   /**
@@ -729,12 +493,7 @@ export class OpenSeaAPI {
     identifier: string,
     chain: Chain = this.chain,
   ): Promise<Response> {
-    const response = await this.post<Response>(
-      getRefreshMetadataPath(chain, address, identifier),
-      {},
-    );
-
-    return response;
+    return this.nftsAPI.refreshNFTMetadata(address, identifier, chain);
   }
 
   /**
@@ -757,11 +516,12 @@ export class OpenSeaAPI {
     chain: Chain = this.chain,
     offererSignature?: string,
   ): Promise<CancelOrderResponse> {
-    const response = await this.post<CancelOrderResponse>(
-      getCancelOrderPath(chain, protocolAddress, orderHash),
-      { offererSignature },
+    return this.ordersAPI.offchainCancelOrder(
+      protocolAddress,
+      orderHash,
+      chain,
+      offererSignature,
     );
-    return response;
   }
 
   /**

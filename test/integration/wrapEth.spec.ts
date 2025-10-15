@@ -2,6 +2,7 @@ import { assert } from "chai";
 import { parseEther } from "ethers";
 import { describe, test } from "mocha";
 import { TokenStandard, Chain } from "../../src/types";
+import { getNativeWrapTokenAddress } from "../../src/utils/chain";
 import {
   ETH_TO_WRAP,
   getSdkForChain,
@@ -22,9 +23,7 @@ describe("SDK: WETH", () => {
     const startingBalance = await getSdkForChain(Chain.Mainnet).getBalance({
       accountAddress: walletAddress,
       asset: {
-        tokenAddress: getSdkForChain(Chain.Mainnet).getNativeWrapTokenAddress(
-          getSdkForChain(Chain.Mainnet).chain,
-        ),
+        tokenAddress: getNativeWrapTokenAddress(Chain.Mainnet),
         tokenId: null,
         tokenStandard: TokenStandard.ERC20,
       },
@@ -37,9 +36,7 @@ describe("SDK: WETH", () => {
     });
 
     const wethAsset = {
-      tokenAddress: getSdkForChain(Chain.Mainnet).getNativeWrapTokenAddress(
-        getSdkForChain(Chain.Mainnet).chain,
-      ),
+      tokenAddress: getNativeWrapTokenAddress(Chain.Mainnet),
       tokenId: null,
       tokenStandard: TokenStandard.ERC20,
     };
