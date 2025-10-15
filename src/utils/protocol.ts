@@ -73,20 +73,20 @@ export const requireValidProtocol = (protocolAddress: string) => {
  * Get the Seaport instance for a given protocol address.
  * This is a shared utility to avoid duplicating the logic across multiple SDK manager classes.
  * @param protocolAddress The protocol address
- * @param seaport_v1_6 The Seaport 1.6 instance
+ * @param seaport The Seaport instance
  * @returns The Seaport instance for the given protocol address
  * @throws Error if the protocol address is not supported
  */
 export const getSeaportInstance = (
   protocolAddress: string,
-  seaport_v1_6: Seaport,
+  seaport: Seaport,
 ): Seaport => {
   try {
     const checksummedProtocolAddress = ethers.getAddress(protocolAddress);
     switch (checksummedProtocolAddress) {
       case CROSS_CHAIN_SEAPORT_V1_6_ADDRESS:
       case GUNZILLA_SEAPORT_1_6_ADDRESS:
-        return seaport_v1_6;
+        return seaport;
       default:
         throw new Error(`Unsupported protocol address: ${protocolAddress}`);
     }

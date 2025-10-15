@@ -1,8 +1,7 @@
-import { Seaport } from "@opensea/seaport-js";
 import { AdvancedOrder, OrderComponents } from "@opensea/seaport-js/lib/types";
 import { BigNumberish, ContractTransactionResponse, Overrides } from "ethers";
+import { SDKContext } from "./context";
 import { OrdersManager } from "./orders";
-import { OpenSeaAPI } from "../api/api";
 import { Listing, Offer, Order } from "../api/types";
 import {
   constructPrivateListingCounterOrder,
@@ -10,7 +9,7 @@ import {
 } from "../orders/privateListings";
 import { OrderType, OrderV2 } from "../orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils";
-import { EventData, EventType, OrderSide, AssetWithTokenId } from "../types";
+import { EventType, OrderSide, AssetWithTokenId } from "../types";
 import {
   hasErrorCode,
   requireValidProtocol,
@@ -23,16 +22,8 @@ import {
  */
 export class FulfillmentManager {
   constructor(
+    private context: SDKContext,
     private ordersManager: OrdersManager,
-    private api: OpenSeaAPI,
-    private seaport_v1_6: Seaport,
-    private dispatch: (event: EventType, data: EventData) => void,
-    private confirmTransaction: (
-      hash: string,
-      event: EventType,
-      description: string,
-    ) => Promise<void>,
-    private requireAccountIsAvailable: (address: string) => Promise<void>,
   ) {}
 
   /**
@@ -68,7 +59,7 @@ export class FulfillmentManager {
     const fulfillments = getPrivateListingFulfillments(order.protocolData);
     const seaport = getSeaportInstance(
       order.protocolAddress,
-      this.seaport_v1_6,
+      this.context.seaport,
     );
     const transaction = await seaport
       .matchOrders({
@@ -87,7 +78,7 @@ export class FulfillmentManager {
       throw new Error("Missing transaction receipt");
     }
 
-    await this.confirmTransaction(
+    await this.context.confirmTransaction(
       transactionReceipt.hash,
       EventType.MatchOrders,
       "Fulfilling order",
@@ -130,7 +121,7 @@ export class FulfillmentManager {
     tokenId?: string;
     overrides?: Overrides;
   }): Promise<string> {
-    await this.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress);
 
     const protocolAddress =
       (order as OrderV2).protocolAddress ?? (order as Order).protocol_address;
@@ -152,7 +143,7 @@ export class FulfillmentManager {
       (order as OrderV2).protocolData ?? (order as Order).protocol_data;
 
     if (orderHash) {
-      const result = await this.api.generateFulfillmentData(
+      const result = await this.context.api.generateFulfillmentData(
         accountAddress,
         orderHash,
         protocolAddress,
@@ -186,7 +177,7 @@ export class FulfillmentManager {
       });
     }
 
-    const seaport = getSeaportInstance(protocolAddress, this.seaport_v1_6);
+    const seaport = getSeaportInstance(protocolAddress, this.context.seaport);
     const { executeAllActions } = await seaport.fulfillOrder({
       order: protocolData,
       accountAddress,
@@ -201,7 +192,7 @@ export class FulfillmentManager {
       | string;
     const transactionHash = typeof result === "string" ? result : result.hash;
 
-    await this.confirmTransaction(
+    await this.context.confirmTransaction(
       transactionHash,
       EventType.MatchOrders,
       "Fulfilling order",
@@ -232,7 +223,7 @@ export class FulfillmentManager {
 
     const seaport = getSeaportInstance(
       order.protocolAddress,
-      this.seaport_v1_6,
+      this.context.seaport,
     );
 
     try {
@@ -259,23 +250,23 @@ export class FulfillmentManager {
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    */
   async approveOrder(order: OrderV2, domain?: string) {
-    await this.requireAccountIsAvailable(order.maker.address);
+    await this.context.requireAccountIsAvailable(order.maker.address);
     requireValidProtocol(order.protocolAddress);
 
-    this.dispatch(EventType.ApproveOrder, {
+    this.context.dispatch(EventType.ApproveOrder, {
       orderV2: order,
       accountAddress: order.maker.address,
     });
 
     const seaport = getSeaportInstance(
       order.protocolAddress,
-      this.seaport_v1_6,
+      this.context.seaport,
     );
     const transaction = await seaport
       .validate([order.protocolData], order.maker.address, domain)
       .transact();
 
-    await this.confirmTransaction(
+    await this.context.confirmTransaction(
       transaction.hash,
       EventType.ApproveOrder,
       "Approving order",
@@ -299,16 +290,16 @@ export class FulfillmentManager {
     orderComponents: OrderComponents,
     accountAddress: string,
   ) {
-    await this.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress);
 
-    this.dispatch(EventType.ApproveOrder, {
+    this.context.dispatch(EventType.ApproveOrder, {
       orderV2: { protocolData: orderComponents } as unknown as OrderV2,
       accountAddress,
     });
 
     const seaport = getSeaportInstance(
       DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      this.seaport_v1_6,
+      this.context.seaport,
     );
     const transaction = await seaport
       .validate(
@@ -317,7 +308,7 @@ export class FulfillmentManager {
       )
       .transact();
 
-    await this.confirmTransaction(
+    await this.context.confirmTransaction(
       transaction.hash,
       EventType.ApproveOrder,
       "Validating order onchain",

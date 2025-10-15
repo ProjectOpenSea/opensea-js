@@ -4,6 +4,7 @@ import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { OrdersManager } from "../../src/sdk/orders";
 import { Chain } from "../../src/types";
+import { createMockContext } from "../fixtures/context";
 
 suite("SDK: OrdersManager", () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,14 +93,16 @@ suite("SDK: OrdersManager", () => {
       endPrice: undefined,
     });
 
-    // Create OrdersManager instance
-    ordersManager = new OrdersManager(
-      mockSeaport,
-      mockAPI,
-      Chain.Mainnet,
-      mockRequireAccountIsAvailable,
-      mockGetPriceParameters,
-    );
+    // Create SDKContext mock using fixture
+    const mockContext = createMockContext({
+      chain: Chain.Mainnet,
+      api: mockAPI,
+      seaport: mockSeaport,
+      requireAccountIsAvailable: mockRequireAccountIsAvailable,
+    });
+
+    // Create OrdersManager instance with new signature
+    ordersManager = new OrdersManager(mockContext, mockGetPriceParameters);
   });
 
   afterEach(() => {
@@ -610,11 +613,15 @@ suite("SDK: OrdersManager", () => {
 
   suite("Constructor", () => {
     test("initializes with all required dependencies", () => {
+      const mockContextPolygon = createMockContext({
+        chain: Chain.Polygon,
+        api: mockAPI,
+        seaport: mockSeaport,
+        requireAccountIsAvailable: mockRequireAccountIsAvailable,
+      });
+
       const manager = new OrdersManager(
-        mockSeaport,
-        mockAPI,
-        Chain.Polygon,
-        mockRequireAccountIsAvailable,
+        mockContextPolygon,
         mockGetPriceParameters,
       );
 

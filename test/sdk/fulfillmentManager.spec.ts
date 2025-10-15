@@ -2,7 +2,8 @@ import { expect } from "chai";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { FulfillmentManager } from "../../src/sdk/fulfillment";
-import { EventType } from "../../src/types";
+import { Chain, EventType } from "../../src/types";
+import { createMockContext } from "../fixtures/context";
 import {
   mockOrderV2,
   mockOrderComponents,
@@ -65,15 +66,18 @@ suite("SDK: FulfillmentManager", () => {
     mockConfirmTransaction = sinon.stub().resolves();
     mockRequireAccountIsAvailable = sinon.stub().resolves();
 
+    // Create SDKContext mock using fixture
+    const mockContext = createMockContext({
+      chain: Chain.Mainnet,
+      api: mockAPI,
+      seaport: mockSeaport,
+      dispatch: mockDispatch,
+      confirmTransaction: mockConfirmTransaction,
+      requireAccountIsAvailable: mockRequireAccountIsAvailable,
+    });
+
     // Create FulfillmentManager instance
-    fulfillmentManager = new FulfillmentManager(
-      mockOrdersManager,
-      mockAPI,
-      mockSeaport,
-      mockDispatch,
-      mockConfirmTransaction,
-      mockRequireAccountIsAvailable,
-    );
+    fulfillmentManager = new FulfillmentManager(mockContext, mockOrdersManager);
   });
 
   afterEach(() => {
@@ -507,14 +511,16 @@ suite("SDK: FulfillmentManager", () => {
 
   suite("Constructor", () => {
     test("initializes with all required dependencies", () => {
-      const manager = new FulfillmentManager(
-        mockOrdersManager,
-        mockAPI,
-        mockSeaport,
-        mockDispatch,
-        mockConfirmTransaction,
-        mockRequireAccountIsAvailable,
-      );
+      const mockContext = createMockContext({
+        chain: Chain.Mainnet,
+        api: mockAPI,
+        seaport: mockSeaport,
+        dispatch: mockDispatch,
+        confirmTransaction: mockConfirmTransaction,
+        requireAccountIsAvailable: mockRequireAccountIsAvailable,
+      });
+
+      const manager = new FulfillmentManager(mockContext, mockOrdersManager);
 
       expect(manager).to.be.instanceOf(FulfillmentManager);
     });

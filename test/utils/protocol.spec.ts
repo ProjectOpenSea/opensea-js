@@ -236,7 +236,7 @@ suite("Utils: protocol", () => {
   suite("getSeaportInstance", () => {
     let mockSeaport: Seaport;
 
-    test("returns seaport_v1_6 for CROSS_CHAIN_SEAPORT_V1_6_ADDRESS", () => {
+    test("returns seaport for CROSS_CHAIN_SEAPORT_V1_6_ADDRESS", () => {
       const provider = new ethers.JsonRpcProvider();
       mockSeaport = new Seaport(provider);
 
@@ -247,7 +247,7 @@ suite("Utils: protocol", () => {
       expect(result).to.equal(mockSeaport);
     });
 
-    test("returns seaport_v1_6 for GUNZILLA_SEAPORT_1_6_ADDRESS", () => {
+    test("returns seaport for GUNZILLA_SEAPORT_1_6_ADDRESS", () => {
       const provider = new ethers.JsonRpcProvider();
       mockSeaport = new Seaport(provider);
 

@@ -1,20 +1,18 @@
-import { Seaport } from "@opensea/seaport-js";
 import {
   ConsiderationInputItem,
   CreateInputItem,
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumberish, ZeroAddress, ethers } from "ethers";
-import { OpenSeaAPI } from "../api/api";
 import { CollectionOffer, NFT } from "../api/types";
 import {
   ENGLISH_AUCTION_ZONE_MAINNETS,
   INVERSE_BASIS_POINT,
 } from "../constants";
+import { SDKContext } from "./context";
 import { OrderV2 } from "../orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils";
 import {
-  Chain,
   Fee,
   OpenSeaCollection,
   OrderSide,
@@ -39,10 +37,7 @@ import {
  */
 export class OrdersManager {
   constructor(
-    private seaport: Seaport,
-    private api: OpenSeaAPI,
-    private chain: Chain,
-    private requireAccountIsAvailable: (address: string) => Promise<void>,
+    private context: SDKContext,
     private getPriceParametersCallback: (
       orderSide: OrderSide,
       tokenAddress: string,
@@ -61,7 +56,8 @@ export class OrdersManager {
 
   private isNotMarketplaceFee(fee: Fee): boolean {
     return (
-      fee.recipient.toLowerCase() !== getFeeRecipient(this.chain).toLowerCase()
+      fee.recipient.toLowerCase() !==
+      getFeeRecipient(this.context.chain).toLowerCase()
     );
   }
 
@@ -152,7 +148,7 @@ export class OrdersManager {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress = getListingPaymentToken(this.chain),
+    paymentTokenAddress = getListingPaymentToken(this.context.chain),
     buyerAddress,
     englishAuction,
     includeOptionalCreatorFees = false,
@@ -173,9 +169,12 @@ export class OrdersManager {
     includeOptionalCreatorFees?: boolean;
     zone?: string;
   }) {
-    await this.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress);
 
-    const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
+    const { nft } = await this.context.api.getNFT(
+      asset.tokenAddress,
+      asset.tokenId,
+    );
     const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)]);
 
     if (englishAuction) {
@@ -195,7 +194,7 @@ export class OrdersManager {
       endAmount ?? undefined,
     );
 
-    const collection = await this.api.getCollection(nft.collection);
+    const collection = await this.context.api.getCollection(nft.collection);
 
     const considerationFeeItems = await this.getFees({
       collection,
@@ -222,7 +221,7 @@ export class OrdersManager {
       zone = collection.requiredZone;
     }
 
-    const { executeAllActions } = await this.seaport.createOrder(
+    const { executeAllActions } = await this.context.seaport.createOrder(
       {
         offer: offerAssetItems,
         consideration: considerationFeeItems,
@@ -257,7 +256,7 @@ export class OrdersManager {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress = getListingPaymentToken(this.chain),
+    paymentTokenAddress = getListingPaymentToken(this.context.chain),
     buyerAddress,
     englishAuction,
     includeOptionalCreatorFees = false,
@@ -310,8 +309,8 @@ export class OrdersManager {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress = getOfferPaymentToken(this.chain),
-    zone = getSignedZone(this.chain),
+    paymentTokenAddress = getOfferPaymentToken(this.context.chain),
+    zone = getSignedZone(this.context.chain),
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -323,9 +322,12 @@ export class OrdersManager {
     paymentTokenAddress?: string;
     zone?: string;
   }) {
-    await this.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress);
 
-    const { nft } = await this.api.getNFT(asset.tokenAddress, asset.tokenId);
+    const { nft } = await this.context.api.getNFT(
+      asset.tokenAddress,
+      asset.tokenId,
+    );
     const considerationAssetItems = this.getNFTItems(
       [nft],
       [BigInt(quantity ?? 1)],
@@ -338,7 +340,7 @@ export class OrdersManager {
       startAmount,
     );
 
-    const collection = await this.api.getCollection(nft.collection);
+    const collection = await this.context.api.getCollection(nft.collection);
 
     const considerationFeeItems = await this.getFees({
       collection,
@@ -350,7 +352,7 @@ export class OrdersManager {
       zone = collection.requiredZone;
     }
 
-    const { executeAllActions } = await this.seaport.createOrder(
+    const { executeAllActions } = await this.context.seaport.createOrder(
       {
         offer: [
           {
@@ -388,8 +390,8 @@ export class OrdersManager {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress = getOfferPaymentToken(this.chain),
-    zone = getSignedZone(this.chain),
+    paymentTokenAddress = getOfferPaymentToken(this.context.chain),
+    zone = getSignedZone(this.context.chain),
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -443,8 +445,8 @@ export class OrdersManager {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress = getOfferPaymentToken(this.chain),
-    zone = getSignedZone(this.chain),
+    paymentTokenAddress = getOfferPaymentToken(this.context.chain),
+    zone = getSignedZone(this.context.chain),
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
@@ -468,7 +470,7 @@ export class OrdersManager {
       zone,
     });
 
-    return this.api.postOrder(order, {
+    return this.context.api.postOrder(order, {
       protocol: "seaport",
       protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
       side: OrderSide.OFFER,
@@ -509,7 +511,7 @@ export class OrdersManager {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress = getListingPaymentToken(this.chain),
+    paymentTokenAddress = getListingPaymentToken(this.context.chain),
     buyerAddress,
     englishAuction,
     includeOptionalCreatorFees = false,
@@ -547,7 +549,7 @@ export class OrdersManager {
       zone,
     });
 
-    return this.api.postOrder(order, {
+    return this.context.api.postOrder(order, {
       protocol: "seaport",
       protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
       side: OrderSide.LISTING,
@@ -578,7 +580,7 @@ export class OrdersManager {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress = getOfferPaymentToken(this.chain),
+    paymentTokenAddress = getOfferPaymentToken(this.context.chain),
     offerProtectionEnabled = true,
     traitType,
     traitValue,
@@ -595,10 +597,10 @@ export class OrdersManager {
     traitType?: string;
     traitValue?: string;
   }): Promise<CollectionOffer | null> {
-    await this.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress);
 
-    const collection = await this.api.getCollection(collectionSlug);
-    const buildOfferResult = await this.api.buildOffer(
+    const collection = await this.context.api.getCollection(collectionSlug);
+    const buildOfferResult = await this.context.api.buildOffer(
       accountAddress,
       quantity,
       collectionSlug,
@@ -651,13 +653,13 @@ export class OrdersManager {
       allowPartialFills: true,
     };
 
-    const { executeAllActions } = await this.seaport.createOrder(
+    const { executeAllActions } = await this.context.seaport.createOrder(
       payload,
       accountAddress,
     );
     const order = await executeAllActions();
 
-    return this.api.postCollectionOffer(
+    return this.context.api.postCollectionOffer(
       order,
       collectionSlug,
       traitType,

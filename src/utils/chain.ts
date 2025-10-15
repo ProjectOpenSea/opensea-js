@@ -11,6 +11,7 @@ import {
   OPENSEA_CONDUIT_KEY_2,
   OPENSEA_FEE_RECIPIENT,
   SIGNED_ZONE,
+  WPOL_ADDRESS,
 } from "../constants";
 import { Chain } from "../types";
 
@@ -223,5 +224,20 @@ export const getFeeRecipient = (chain: Chain): string => {
       return GUNZILLA_FEE_RECIPIENT;
     default:
       return OPENSEA_FEE_RECIPIENT;
+  }
+};
+
+/**
+ * Get the appropriate token address for wrap/unwrap operations.
+ * For Polygon, use WPOL. For other chains, use the wrapped native asset.
+ * @param chain The chain to get the token address for
+ * @returns The token address for wrap/unwrap operations
+ */
+export const getNativeWrapTokenAddress = (chain: Chain): string => {
+  switch (chain) {
+    case Chain.Polygon:
+      return WPOL_ADDRESS;
+    default:
+      return getOfferPaymentToken(chain);
   }
 };

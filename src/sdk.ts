@@ -10,7 +10,6 @@ import {
 } from "ethers";
 import { OpenSeaAPI } from "./api/api";
 import { CollectionOffer, Listing, Offer, Order } from "./api/types";
-import { WPOL_ADDRESS } from "./constants";
 import { OrderV2 } from "./orders/types";
 import { AssetsManager } from "./sdk/assets";
 import { CancellationManager } from "./sdk/cancellation";
@@ -26,11 +25,7 @@ import {
   AssetWithTokenStandard,
   AssetWithTokenId,
 } from "./types";
-import {
-  getDefaultConduit,
-  getOfferPaymentToken,
-  getSeaportInstance,
-} from "./utils/utils";
+import { getDefaultConduit, getOfferPaymentToken } from "./utils/utils";
 
 /**
  * The OpenSea SDK main class.
@@ -39,8 +34,8 @@ import {
 export class OpenSeaSDK {
   /** Provider to use for transactions. */
   public provider: JsonRpcProvider;
-  /** Seaport v1.6 client @see {@link https://github.com/ProjectOpenSea/seaport-js} */
-  public seaport_v1_6: Seaport;
+  /** Seaport client @see {@link https://github.com/ProjectOpenSea/seaport-js} */
+  public seaport: Seaport;
   /** Logger function to use when debugging */
   public logger: (arg: string) => void;
   /** API instance */
@@ -83,7 +78,7 @@ export class OpenSeaSDK {
     this._signerOrProvider = signerOrProvider ?? this.provider;
 
     const defaultConduit = getDefaultConduit(this.chain);
-    this.seaport_v1_6 = new Seaport(this._signerOrProvider, {
+    this.seaport = new Seaport(this._signerOrProvider, {
       conduitKeyToConduit: {
         [defaultConduit.key]: defaultConduit.address,
       },
@@ -102,51 +97,30 @@ export class OpenSeaSDK {
     this._cachedPaymentTokenDecimals[offerPaymentToken] = 18;
     this._cachedPaymentTokenDecimals[listingPaymentToken] = 18;
 
+    // Create shared context for all managers
+    const context = {
+      chain: this.chain,
+      signerOrProvider: this._signerOrProvider,
+      provider: this.provider,
+      api: this.api,
+      seaport: this.seaport,
+      logger: this.logger,
+      dispatch: this._dispatch.bind(this),
+      confirmTransaction: this._confirmTransaction.bind(this),
+      requireAccountIsAvailable: this._requireAccountIsAvailable.bind(this),
+    };
+
     // Initialize manager instances
-    this._tokensManager = new TokensManager(
-      this._signerOrProvider,
-      this.chain,
-      this._dispatch.bind(this),
-      this._confirmTransaction.bind(this),
-      this._requireAccountIsAvailable.bind(this),
-      this.getNativeWrapTokenAddress.bind(this),
-    );
-
-    this._assetsManager = new AssetsManager(
-      this._signerOrProvider,
-      this.provider,
-      this.chain,
-      this._dispatch.bind(this),
-      this._confirmTransaction.bind(this),
-      this._requireAccountIsAvailable.bind(this),
-      this.logger,
-    );
-
-    this._cancellationManager = new CancellationManager(
-      this.api,
-      this.chain,
-      this._signerOrProvider,
-      this._dispatch.bind(this),
-      this._confirmTransaction.bind(this),
-      (protocolAddress: string) =>
-        getSeaportInstance(protocolAddress, this.seaport_v1_6),
-    );
-
+    this._tokensManager = new TokensManager(context);
+    this._assetsManager = new AssetsManager(context);
+    this._cancellationManager = new CancellationManager(context);
     this._ordersManager = new OrdersManager(
-      this.seaport_v1_6,
-      this.api,
-      this.chain,
-      this._requireAccountIsAvailable.bind(this),
+      context,
       this._getPriceParameters.bind(this),
     );
-
     this._fulfillmentManager = new FulfillmentManager(
+      context,
       this._ordersManager,
-      this.api,
-      this.seaport_v1_6,
-      this._dispatch.bind(this),
-      this._confirmTransaction.bind(this),
-      this._requireAccountIsAvailable.bind(this),
     );
   }
 
@@ -184,22 +158,6 @@ export class OpenSeaSDK {
    */
   public removeAllListeners(event?: EventType) {
     this._emitter.removeAllListeners(event);
-  }
-
-  /**
-   * Get the appropriate token address for wrap/unwrap operations.
-   * For Polygon, use WPOL. For other chains, use getOfferPaymentToken,
-   * which is the wrapped native asset for the chain.
-   * @param chain The chain to get the token address for
-   * @returns The token address for wrap/unwrap operations
-   */
-  public getNativeWrapTokenAddress(chain: Chain): string {
-    switch (chain) {
-      case Chain.Polygon:
-        return WPOL_ADDRESS;
-      default:
-        return getOfferPaymentToken(chain);
-    }
   }
 
   /**
@@ -936,15 +894,22 @@ export class OpenSeaSDK {
   private async _getAvailableAccounts() {
     const availableAccounts: string[] = [];
 
-    if ("address" in this._signerOrProvider) {
-      availableAccounts.push(this._signerOrProvider.address as string);
-    } else if ("listAccounts" in this._signerOrProvider) {
-      const addresses = (await this._signerOrProvider.listAccounts()).map(
-        (acct) => acct.address,
+    try {
+      if ("address" in this._signerOrProvider) {
+        availableAccounts.push(this._signerOrProvider.address as string);
+      } else if ("listAccounts" in this._signerOrProvider) {
+        const addresses = (await this._signerOrProvider.listAccounts()).map(
+          (acct) => acct.address,
+        );
+        availableAccounts.push(...addresses);
+      } else if ("getAddress" in this._signerOrProvider) {
+        availableAccounts.push(await this._signerOrProvider.getAddress());
+      }
+    } catch (error) {
+      // If we can't get accounts (e.g., RPC error), treat as no accounts available
+      this.logger(
+        `Failed to get available accounts: ${error instanceof Error ? error.message : error}`,
       );
-      availableAccounts.push(...addresses);
-    } else if ("getAddress" in this._signerOrProvider) {
-      availableAccounts.push(await this._signerOrProvider.getAddress());
     }
 
     return availableAccounts;
