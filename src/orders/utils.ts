@@ -160,7 +160,7 @@ export const serializeOrdersQueryOptions = (
 ) => {
   return {
     limit: options.limit,
-    cursor: options.cursor,
+    cursor: options.cursor ?? options.next,
 
     payment_token_address: options.paymentTokenAddress,
     maker: options.maker,

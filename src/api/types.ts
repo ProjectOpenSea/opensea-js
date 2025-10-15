@@ -492,3 +492,55 @@ export type GetEventsResponse = QueryCursorsV2 & {
   /** List of {@link AssetEvent} */
   asset_events: AssetEvent[];
 };
+
+/**
+ * Contract information returned by OpenSea API.
+ * @category API Models
+ */
+export type Contract = {
+  /** Contract address */
+  address: string;
+  /** Chain the contract is deployed on */
+  chain: string;
+  /** Associated collection slug (if any) */
+  collection: string | null;
+  /** Contract name */
+  name: string;
+  /** Contract standard (e.g., erc721, erc1155) */
+  contract_standard: string;
+};
+
+/**
+ * Response from OpenSea API for fetching a contract.
+ * @category API Response Types
+ */
+export type GetContractResponse = Contract;
+
+/**
+ * Trait counts for a specific trait type.
+ * @category API Models
+ */
+export type TraitCounts = {
+  [traitValue: string]: number;
+};
+
+/**
+ * Trait categories in a collection.
+ * @category API Models
+ */
+export type TraitCategories = {
+  [traitType: string]: "string" | "number" | "date";
+};
+
+/**
+ * Response from OpenSea API for fetching collection traits.
+ * @category API Response Types
+ */
+export type GetTraitsResponse = {
+  /** Trait categories with their data types */
+  categories: TraitCategories;
+  /** Trait counts for each category */
+  counts: {
+    [traitType: string]: TraitCounts;
+  };
+};

@@ -6,20 +6,19 @@ import {
 } from "./apiPaths";
 import { GetEventsArgs, GetEventsResponse } from "./types";
 import { Chain } from "../types";
+import { Fetcher } from "./fetcher";
 
 /**
  * Events-related API operations
  */
 export class EventsAPI {
-  constructor(
-    private get: <T>(apiPath: string, query?: object) => Promise<T>,
-  ) {}
+  constructor(private fetcher: Fetcher) {}
 
   /**
    * Gets a list of events based on query parameters.
    */
   async getEvents(args?: GetEventsArgs): Promise<GetEventsResponse> {
-    const response = await this.get<GetEventsResponse>(
+    const response = await this.fetcher.get<GetEventsResponse>(
       getEventsAPIPath(),
       args,
     );
@@ -33,7 +32,7 @@ export class EventsAPI {
     address: string,
     args?: GetEventsArgs,
   ): Promise<GetEventsResponse> {
-    const response = await this.get<GetEventsResponse>(
+    const response = await this.fetcher.get<GetEventsResponse>(
       getEventsByAccountAPIPath(address),
       args,
     );
@@ -47,7 +46,7 @@ export class EventsAPI {
     collectionSlug: string,
     args?: GetEventsArgs,
   ): Promise<GetEventsResponse> {
-    const response = await this.get<GetEventsResponse>(
+    const response = await this.fetcher.get<GetEventsResponse>(
       getEventsByCollectionAPIPath(collectionSlug),
       args,
     );
@@ -63,7 +62,7 @@ export class EventsAPI {
     identifier: string,
     args?: GetEventsArgs,
   ): Promise<GetEventsResponse> {
-    const response = await this.get<GetEventsResponse>(
+    const response = await this.fetcher.get<GetEventsResponse>(
       getEventsByNFTAPIPath(chain, address, identifier),
       args,
     );

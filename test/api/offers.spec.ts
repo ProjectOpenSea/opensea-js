@@ -12,6 +12,8 @@ import {
   Offer,
 } from "../../src/api/types";
 import { ProtocolData } from "../../src/orders/types";
+import { Chain } from "../../src/types";
+import { createMockFetcher } from "../fixtures/fetcher";
 
 suite("API: OffersAPI", () => {
   let mockGet: sinon.SinonStub;
@@ -19,9 +21,14 @@ suite("API: OffersAPI", () => {
   let offersAPI: OffersAPI;
 
   beforeEach(() => {
-    mockGet = sinon.stub();
-    mockPost = sinon.stub();
-    offersAPI = new OffersAPI(mockGet, mockPost);
+    const {
+      fetcher,
+      mockGet: getMock,
+      mockPost: postMock,
+    } = createMockFetcher();
+    mockGet = getMock;
+    mockPost = postMock;
+    offersAPI = new OffersAPI(fetcher, Chain.Mainnet);
   });
 
   afterEach(() => {
@@ -34,7 +41,7 @@ suite("API: OffersAPI", () => {
         offers: [
           {
             order_hash: "0x123",
-            chain: "ethereum",
+            chain: Chain.Mainnet,
             type: "basic",
             price: {
               current: {
@@ -328,7 +335,7 @@ suite("API: OffersAPI", () => {
     test("fetches best offer with string tokenId", async () => {
       const mockResponse: GetBestOfferResponse = {
         order_hash: "0xbest123",
-        chain: "ethereum",
+        chain: Chain.Mainnet,
         type: "basic",
         price: {
           current: {
@@ -646,11 +653,90 @@ suite("API: OffersAPI", () => {
     });
   });
 
+  suite("getNFTOffers", () => {
+    test("fetches offers for a specific NFT", async () => {
+      const mockResponse: GetOffersResponse = {
+        offers: [
+          {
+            order_hash: "0x123",
+            chain: Chain.Mainnet,
+            protocol_data: {} as unknown as ProtocolData,
+            protocol_address: "0xabc",
+            price: {
+              currency: "WETH",
+              decimals: 18,
+              value: "500000000000000000",
+            },
+          } as unknown as Offer,
+        ],
+        next: "cursor-123",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await offersAPI.getNFTOffers(
+        "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+        "1",
+      );
+
+      expect(mockGet.calledOnce).to.be.true;
+      expect(result.offers).to.have.length(1);
+      expect(result.next).to.equal("cursor-123");
+    });
+
+    test("fetches offers with limit parameter", async () => {
+      const mockResponse: GetOffersResponse = {
+        offers: [],
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await offersAPI.getNFTOffers("0xContract", "1", 50);
+
+      expect(mockGet.calledOnce).to.be.true;
+    });
+
+    test("fetches offers with pagination cursor", async () => {
+      const mockResponse: GetOffersResponse = {
+        offers: [],
+        next: "cursor-next",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await offersAPI.getNFTOffers("0xContract", "1", undefined, "cursor-prev");
+
+      expect(mockGet.calledOnce).to.be.true;
+    });
+
+    test("handles empty offers array", async () => {
+      const mockResponse: GetOffersResponse = {
+        offers: [],
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await offersAPI.getNFTOffers("0xContract", "1");
+
+      expect(result.offers).to.be.an("array").that.is.empty;
+    });
+
+    test("throws error on API failure", async () => {
+      mockGet.rejects(new Error("NFT not found"));
+
+      try {
+        await offersAPI.getNFTOffers("0xContract", "999");
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include("NFT not found");
+      }
+    });
+  });
+
   suite("Constructor", () => {
     test("initializes with get and post functions", () => {
-      const getFunc = sinon.stub();
-      const postFunc = sinon.stub();
-      const api = new OffersAPI(getFunc, postFunc);
+      const { fetcher } = createMockFetcher();
+      const api = new OffersAPI(fetcher, Chain.Mainnet);
 
       expect(api).to.be.instanceOf(OffersAPI);
     });

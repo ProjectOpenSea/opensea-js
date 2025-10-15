@@ -135,3 +135,11 @@ export const getEventsByNFTAPIPath = (
 ) => {
   return `/api/v2/events/chain/${chain}/contract/${address}/nfts/${identifier}`;
 };
+
+export const getContractPath = (chain: Chain, address: string) => {
+  return `/api/v2/chain/${chain}/contract/${address}`;
+};
+
+export const getTraitsPath = (collectionSlug: string) => {
+  return `/api/v2/traits/${collectionSlug}`;
+};

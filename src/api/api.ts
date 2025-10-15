@@ -40,6 +40,8 @@ import {
   CancelOrderResponse,
   GetEventsArgs,
   GetEventsResponse,
+  GetContractResponse,
+  GetTraitsResponse,
 } from "./types";
 import { executeWithRateLimit } from "../utils/rateLimit";
 
@@ -91,22 +93,20 @@ export class OpenSeaAPI {
     // Debugging: default to nothing
     this.logger = logger ?? ((arg: string) => arg);
 
+    // Create fetcher context
+    const fetcher = {
+      get: this.get.bind(this),
+      post: this.post.bind(this),
+    };
+
     // Initialize specialized API clients
-    this.ordersAPI = new OrdersAPI(
-      this.get.bind(this),
-      this.post.bind(this),
-      this.chain,
-    );
-    this.offersAPI = new OffersAPI(this.get.bind(this), this.post.bind(this));
-    this.listingsAPI = new ListingsAPI(this.get.bind(this));
-    this.collectionsAPI = new CollectionsAPI(this.get.bind(this));
-    this.nftsAPI = new NFTsAPI(
-      this.get.bind(this),
-      this.post.bind(this),
-      this.chain,
-    );
-    this.accountsAPI = new AccountsAPI(this.get.bind(this), this.chain);
-    this.eventsAPI = new EventsAPI(this.get.bind(this));
+    this.ordersAPI = new OrdersAPI(fetcher, this.chain);
+    this.offersAPI = new OffersAPI(fetcher, this.chain);
+    this.listingsAPI = new ListingsAPI(fetcher, this.chain);
+    this.collectionsAPI = new CollectionsAPI(fetcher);
+    this.nftsAPI = new NFTsAPI(fetcher, this.chain);
+    this.accountsAPI = new AccountsAPI(fetcher, this.chain);
+    this.eventsAPI = new EventsAPI(fetcher);
   }
 
   /**
@@ -580,6 +580,78 @@ export class OpenSeaAPI {
     args?: GetEventsArgs,
   ): Promise<GetEventsResponse> {
     return this.eventsAPI.getEventsByNFT(chain, address, identifier, args);
+  }
+
+  /**
+   * Fetch smart contract information for a given chain and address.
+   * @param address The contract address.
+   * @param chain The chain where the contract is deployed. Defaults to the chain set in the constructor.
+   * @returns The {@link GetContractResponse} returned by the API.
+   */
+  public async getContract(
+    address: string,
+    chain: Chain = this.chain,
+  ): Promise<GetContractResponse> {
+    return this.nftsAPI.getContract(address, chain);
+  }
+
+  /**
+   * Fetch all traits for a collection with their possible values and counts.
+   * @param collectionSlug The slug (identifier) of the collection.
+   * @returns The {@link GetTraitsResponse} returned by the API.
+   */
+  public async getTraits(collectionSlug: string): Promise<GetTraitsResponse> {
+    return this.collectionsAPI.getTraits(collectionSlug);
+  }
+
+  /**
+   * Gets all active offers for a specific NFT (not just the best offer).
+   * @param assetContractAddress The NFT contract address.
+   * @param tokenId The token identifier.
+   * @param limit The number of offers to return. Must be between 1 and 100.
+   * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @param chain The chain where the NFT is located. Defaults to the chain set in the constructor.
+   * @returns The {@link GetOffersResponse} returned by the API.
+   */
+  public async getNFTOffers(
+    assetContractAddress: string,
+    tokenId: string,
+    limit?: number,
+    next?: string,
+    chain: Chain = this.chain,
+  ): Promise<GetOffersResponse> {
+    return this.offersAPI.getNFTOffers(
+      assetContractAddress,
+      tokenId,
+      limit,
+      next,
+      chain,
+    );
+  }
+
+  /**
+   * Gets all active listings for a specific NFT (not just the best listing).
+   * @param assetContractAddress The NFT contract address.
+   * @param tokenId The token identifier.
+   * @param limit The number of listings to return. Must be between 1 and 100.
+   * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @param chain The chain where the NFT is located. Defaults to the chain set in the constructor.
+   * @returns The {@link GetListingsResponse} returned by the API.
+   */
+  public async getNFTListings(
+    assetContractAddress: string,
+    tokenId: string,
+    limit?: number,
+    next?: string,
+    chain: Chain = this.chain,
+  ): Promise<GetListingsResponse> {
+    return this.listingsAPI.getNFTListings(
+      assetContractAddress,
+      tokenId,
+      limit,
+      next,
+      chain,
+    );
   }
 
   /**

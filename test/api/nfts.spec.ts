@@ -2,8 +2,13 @@ import { expect } from "chai";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { NFTsAPI } from "../../src/api/nfts";
-import { ListNFTsResponse, GetNFTResponse } from "../../src/api/types";
+import {
+  ListNFTsResponse,
+  GetNFTResponse,
+  GetContractResponse,
+} from "../../src/api/types";
 import { Chain } from "../../src/types";
+import { createMockFetcher } from "../fixtures/fetcher";
 import { mockNFT, mockNFTDetailed, createMockNFT } from "../fixtures/nfts";
 
 suite("API: NFTsAPI", () => {
@@ -12,9 +17,14 @@ suite("API: NFTsAPI", () => {
   let nftsAPI: NFTsAPI;
 
   beforeEach(() => {
-    mockGet = sinon.stub();
-    mockPost = sinon.stub();
-    nftsAPI = new NFTsAPI(mockGet, mockPost, Chain.Mainnet);
+    const {
+      fetcher,
+      mockGet: getMock,
+      mockPost: postMock,
+    } = createMockFetcher();
+    mockGet = getMock;
+    mockPost = postMock;
+    nftsAPI = new NFTsAPI(fetcher, Chain.Mainnet);
   });
 
   afterEach(() => {
@@ -549,19 +559,181 @@ suite("API: NFTsAPI", () => {
     });
   });
 
+  suite("getContract", () => {
+    test("fetches contract information without optional chain parameter", async () => {
+      const mockResponse: GetContractResponse = {
+        address: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+        chain: "ethereum",
+        collection: "boredapeyachtclub",
+        name: "Bored Ape Yacht Club",
+        contract_standard: "erc721",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await nftsAPI.getContract(
+        "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+      );
+
+      expect(mockGet.calledOnce).to.be.true;
+      expect(mockGet.firstCall.args[0]).to.equal(
+        `/api/v2/chain/${Chain.Mainnet}/contract/0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d`,
+      );
+      expect(result.address).to.equal(
+        "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+      );
+      expect(result.collection).to.equal("boredapeyachtclub");
+      expect(result.name).to.equal("Bored Ape Yacht Club");
+      expect(result.contract_standard).to.equal("erc721");
+    });
+
+    test("fetches contract with custom chain parameter", async () => {
+      const mockResponse: GetContractResponse = {
+        address: "0xabc123",
+        chain: "polygon",
+        collection: "test-collection",
+        name: "Test Contract",
+        contract_standard: "erc1155",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await nftsAPI.getContract("0xabc123", Chain.Polygon);
+
+      expect(mockGet.firstCall.args[0]).to.equal(
+        `/api/v2/chain/${Chain.Polygon}/contract/0xabc123`,
+      );
+      expect(result.chain).to.equal("polygon");
+    });
+
+    test("uses default chain when not specified", async () => {
+      const mockResponse: GetContractResponse = {
+        address: "0xtest",
+        chain: "ethereum",
+        collection: null,
+        name: "Test",
+        contract_standard: "erc721",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await nftsAPI.getContract("0xtest");
+
+      expect(mockGet.firstCall.args[0]).to.include(Chain.Mainnet);
+    });
+
+    test("handles contract without associated collection", async () => {
+      const mockResponse: GetContractResponse = {
+        address: "0xnoCollection",
+        chain: "ethereum",
+        collection: null,
+        name: "Standalone Contract",
+        contract_standard: "erc721",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await nftsAPI.getContract("0xnoCollection");
+
+      expect(result.collection).to.be.null;
+      expect(result.name).to.equal("Standalone Contract");
+    });
+
+    test("handles ERC1155 contracts", async () => {
+      const mockResponse: GetContractResponse = {
+        address: "0xerc1155",
+        chain: "ethereum",
+        collection: "multi-token-collection",
+        name: "Multi Token Contract",
+        contract_standard: "erc1155",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await nftsAPI.getContract("0xerc1155");
+
+      expect(result.contract_standard).to.equal("erc1155");
+    });
+
+    test("handles different chains", async () => {
+      const chains = [
+        Chain.Mainnet,
+        Chain.Polygon,
+        Chain.Arbitrum,
+        Chain.Optimism,
+        Chain.Base,
+      ];
+
+      for (const chain of chains) {
+        mockGet.reset();
+        const mockResponse: GetContractResponse = {
+          address: "0xtest",
+          chain: chain.toLowerCase(),
+          collection: "test",
+          name: "Test",
+          contract_standard: "erc721",
+        };
+
+        mockGet.resolves(mockResponse);
+
+        await nftsAPI.getContract("0xtest", chain);
+
+        expect(mockGet.firstCall.args[0]).to.equal(
+          `/api/v2/chain/${chain}/contract/0xtest`,
+        );
+      }
+    });
+
+    test("preserves contract address case", async () => {
+      const mockResponse: GetContractResponse = {
+        address: "0xAbC123DeF456",
+        chain: "ethereum",
+        collection: "test",
+        name: "Test",
+        contract_standard: "erc721",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await nftsAPI.getContract("0xAbC123DeF456");
+
+      expect(mockGet.firstCall.args[0]).to.include("0xAbC123DeF456");
+    });
+
+    test("throws error when contract not found", async () => {
+      mockGet.rejects(new Error("Contract not found"));
+
+      try {
+        await nftsAPI.getContract("0xinvalid");
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include("Contract not found");
+      }
+    });
+
+    test("throws error on API failure", async () => {
+      mockGet.rejects(new Error("Server Error"));
+
+      try {
+        await nftsAPI.getContract("0xtest");
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include("Server Error");
+      }
+    });
+  });
+
   suite("Constructor", () => {
     test("initializes with get, post, and chain parameters", () => {
-      const getFunc = sinon.stub();
-      const postFunc = sinon.stub();
-      const api = new NFTsAPI(getFunc, postFunc, Chain.Mainnet);
+      const { fetcher } = createMockFetcher();
+      const api = new NFTsAPI(fetcher, Chain.Mainnet);
 
       expect(api).to.be.instanceOf(NFTsAPI);
     });
 
     test("initializes with different chain", () => {
-      const getFunc = sinon.stub();
-      const postFunc = sinon.stub();
-      const api = new NFTsAPI(getFunc, postFunc, Chain.Polygon);
+      const { fetcher } = createMockFetcher();
+      const api = new NFTsAPI(fetcher, Chain.Polygon);
 
       expect(api).to.be.instanceOf(NFTsAPI);
     });
