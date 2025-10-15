@@ -2,7 +2,6 @@ import { mockOrderComponents } from "./orders";
 import { Listing } from "../../src/api/types";
 import { OrderType } from "../../src/orders/types";
 
-// eslint-disable-next-line import/no-unused-modules
 export const mockListing: Listing = {
   order_hash: "0x123",
   chain: "ethereum",
@@ -19,6 +18,13 @@ export const mockListing: Listing = {
     signature: "0xSignature",
   },
   protocol_address: "0xabc",
+  remaining_quantity: 1,
+};
+
+export const mockListingPartiallyFilled: Listing = {
+  ...mockListing,
+  order_hash: "0x456",
+  remaining_quantity: 3,
 };
 
 // eslint-disable-next-line import/no-unused-modules

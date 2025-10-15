@@ -177,12 +177,31 @@ export class FulfillmentManager {
       });
     }
 
+    // If unitsToFill is not explicitly provided, default to remaining_quantity when available
+    // This prevents errors when trying to fulfill more than what's available in partially filled orders
+    let effectiveUnitsToFill = unitsToFill;
+    if (effectiveUnitsToFill === undefined) {
+      if (
+        "remaining_quantity" in order &&
+        order.remaining_quantity !== undefined
+      ) {
+        // For Listing type (API response)
+        effectiveUnitsToFill = order.remaining_quantity;
+      } else if (
+        "remainingQuantity" in order &&
+        order.remainingQuantity !== undefined
+      ) {
+        // For OrderV2 type
+        effectiveUnitsToFill = order.remainingQuantity;
+      }
+    }
+
     const seaport = getSeaportInstance(protocolAddress, this.context.seaport);
     const { executeAllActions } = await seaport.fulfillOrder({
       order: protocolData,
       accountAddress,
       recipientAddress,
-      unitsToFill,
+      unitsToFill: effectiveUnitsToFill,
       extraData,
       domain,
       overrides,

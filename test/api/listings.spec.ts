@@ -439,4 +439,74 @@ suite("API: ListingsAPI", () => {
       expect(api).to.be.instanceOf(ListingsAPI);
     });
   });
+
+  suite("remaining_quantity field", () => {
+    test("getBestListing includes remaining_quantity in response", async () => {
+      const mockResponse: GetBestListingResponse = {
+        order_hash: "0xabc123",
+        chain: "ethereum",
+        type: "basic",
+        price: {
+          current: {
+            currency: "ETH",
+            decimals: 18,
+            value: "1500000000000000000",
+          },
+        },
+        protocol_data: {} as unknown as OrderV2,
+        protocol_address: "0xdef456",
+        remaining_quantity: 1,
+      } as unknown as Listing;
+
+      mockGet.resolves(mockResponse);
+
+      const result = await listingsAPI.getBestListing(
+        "test-collection",
+        "1234",
+      );
+
+      expect(result.remaining_quantity).to.equal(1);
+    });
+
+    test("getAllListings includes remaining_quantity for each listing", async () => {
+      const mockResponse: GetListingsResponse = {
+        listings: [
+          {
+            order_hash: "0x111",
+            remaining_quantity: 1,
+          } as unknown as Listing,
+          {
+            order_hash: "0x222",
+            remaining_quantity: 5,
+          } as unknown as Listing,
+        ],
+        next: undefined,
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await listingsAPI.getAllListings("test-collection");
+
+      expect(result.listings[0].remaining_quantity).to.equal(1);
+      expect(result.listings[1].remaining_quantity).to.equal(5);
+    });
+
+    test("getBestListings includes remaining_quantity for partially filled orders", async () => {
+      const mockResponse: GetListingsResponse = {
+        listings: [
+          {
+            order_hash: "0x333",
+            remaining_quantity: 3,
+          } as unknown as Listing,
+        ],
+        next: undefined,
+      };
+
+      mockGet.resolves(mockResponse);
+
+      const result = await listingsAPI.getBestListings("test-collection");
+
+      expect(result.listings[0].remaining_quantity).to.equal(3);
+    });
+  });
 });

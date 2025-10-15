@@ -4,6 +4,7 @@ import * as sinon from "sinon";
 import { FulfillmentManager } from "../../src/sdk/fulfillment";
 import { Chain, EventType } from "../../src/types";
 import { createMockContext } from "../fixtures/context";
+import { mockListing, mockListingPartiallyFilled } from "../fixtures/listings";
 import {
   mockOrderV2,
   mockOrderComponents,
@@ -244,6 +245,86 @@ suite("SDK: FulfillmentManager", () => {
       });
 
       expect(result).to.equal("0xContractTxHash");
+    });
+  });
+
+  suite("fulfillOrder with remaining_quantity", () => {
+    test("uses remaining_quantity from Listing when unitsToFill not specified", async () => {
+      await fulfillmentManager.fulfillOrder({
+        order: mockListing,
+        accountAddress: "0xBuyer",
+      });
+
+      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
+      expect(fulfillCall.unitsToFill).to.equal(1);
+    });
+
+    test("uses remaining_quantity from partially filled Listing", async () => {
+      await fulfillmentManager.fulfillOrder({
+        order: mockListingPartiallyFilled,
+        accountAddress: "0xBuyer",
+      });
+
+      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
+      expect(fulfillCall.unitsToFill).to.equal(3);
+    });
+
+    test("uses remainingQuantity from OrderV2 when unitsToFill not specified", async () => {
+      await fulfillmentManager.fulfillOrder({
+        order: mockOrderV2,
+        accountAddress: "0xBuyer",
+      });
+
+      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
+      expect(fulfillCall.unitsToFill).to.equal(1);
+    });
+
+    test("explicit unitsToFill overrides remaining_quantity from Listing", async () => {
+      await fulfillmentManager.fulfillOrder({
+        order: mockListingPartiallyFilled,
+        accountAddress: "0xBuyer",
+        unitsToFill: 2,
+      });
+
+      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
+      expect(fulfillCall.unitsToFill).to.equal(2);
+    });
+
+    test("explicit unitsToFill overrides remainingQuantity from OrderV2", async () => {
+      await fulfillmentManager.fulfillOrder({
+        order: mockOrderV2,
+        accountAddress: "0xBuyer",
+        unitsToFill: 10,
+      });
+
+      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
+      expect(fulfillCall.unitsToFill).to.equal(10);
+    });
+
+    test("passes undefined to seaport when neither unitsToFill nor remaining_quantity available", async () => {
+      // Use a plain Order type which doesn't have remainingQuantity or remaining_quantity
+      const orderWithoutRemainingQty = {
+        order_hash: "0x789",
+        chain: "ethereum",
+        protocol_data: {
+          parameters: mockOrderComponents,
+          signature: "0xSignature",
+        },
+        protocol_address: "0x00000000000068F116a894984e2DB1123eB395",
+        price: {
+          currency: "ETH",
+          decimals: 18,
+          value: "1000000000000000000",
+        },
+      };
+
+      await fulfillmentManager.fulfillOrder({
+        order: orderWithoutRemainingQty,
+        accountAddress: "0xBuyer",
+      });
+
+      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
+      expect(fulfillCall.unitsToFill).to.be.undefined;
     });
   });
 
