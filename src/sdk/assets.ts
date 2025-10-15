@@ -36,6 +36,7 @@ export class AssetsManager {
       event: EventType,
       description: string,
     ) => Promise<void>,
+    private requireAccountIsAvailable: (address: string) => Promise<void>,
     private logger: (arg: string) => void,
   ) {}
 
@@ -287,6 +288,9 @@ export class AssetsManager {
       });
     }
 
+    // Check account availability after parameter validation
+    await this.requireAccountIsAvailable(fromAddress);
+
     // Get the chain-specific default conduit
     const defaultConduit = getDefaultConduit(this.chain);
 
@@ -388,6 +392,9 @@ export class AssetsManager {
         );
       }
     }
+
+    // Check account availability after parameter validation
+    await this.requireAccountIsAvailable(fromAddress);
 
     // Get the chain-specific default conduit
     const defaultConduit = getDefaultConduit(this.chain);

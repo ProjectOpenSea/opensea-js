@@ -108,6 +108,7 @@ export class OpenSeaSDK {
       this.chain,
       this._dispatch.bind(this),
       this._confirmTransaction.bind(this),
+      this._requireAccountIsAvailable.bind(this),
       this.getNativeWrapTokenAddress.bind(this),
     );
 
@@ -117,6 +118,7 @@ export class OpenSeaSDK {
       this.chain,
       this._dispatch.bind(this),
       this._confirmTransaction.bind(this),
+      this._requireAccountIsAvailable.bind(this),
       this.logger,
     );
 

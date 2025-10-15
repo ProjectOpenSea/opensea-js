@@ -65,7 +65,12 @@ suite("API: CollectionsAPI", () => {
       expect(mockGet.firstCall.args[0]).to.equal(
         "/api/v2/collections/test-collection",
       );
-      expect(result).to.deep.equal(mockResponse);
+      // Verify the collection was transformed from snake_case to camelCase
+      expect(result.collection).to.equal("test-collection");
+      expect(result.name).to.equal("Test Collection");
+      expect(result.imageUrl).to.equal("https://example.com/image.png");
+      expect(result.bannerImageUrl).to.equal("https://example.com/banner.png");
+      expect(result.safelistStatus).to.equal("verified");
     });
 
     test("handles slug with special characters", async () => {

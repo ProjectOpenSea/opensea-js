@@ -20,6 +20,7 @@ export class TokensManager {
       event: EventType,
       description: string,
     ) => Promise<void>,
+    private requireAccountIsAvailable: (address: string) => Promise<void>,
     private getNativeWrapTokenAddress: (chain: Chain) => string,
   ) {}
 
@@ -37,6 +38,8 @@ export class TokensManager {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
+    await this.requireAccountIsAvailable(accountAddress);
+
     const value = parseEther(amountInEth.toString());
 
     this.dispatch(EventType.WrapEth, { accountAddress, amount: value });
@@ -74,6 +77,8 @@ export class TokensManager {
     amountInEth: BigNumberish;
     accountAddress: string;
   }) {
+    await this.requireAccountIsAvailable(accountAddress);
+
     const amount = parseEther(amountInEth.toString());
 
     this.dispatch(EventType.UnwrapWeth, { accountAddress, amount });

@@ -5,8 +5,33 @@ import { OrderSide } from "../../src/types";
 
 export const mockOrderComponents: OrderComponents = {
   offerer: "0xOfferer",
-  offer: [],
-  consideration: [],
+  offer: [
+    {
+      itemType: 2, // ERC721
+      token: "0xNFTContract",
+      identifierOrCriteria: "123",
+      startAmount: "1",
+      endAmount: "1",
+    },
+  ],
+  consideration: [
+    {
+      itemType: 0, // NATIVE (ETH)
+      token: "0x0000000000000000000000000000000000000000",
+      identifierOrCriteria: "0",
+      startAmount: "1000000000000000000",
+      endAmount: "1000000000000000000",
+      recipient: "0xSeller",
+    },
+    {
+      itemType: 0, // NATIVE (ETH) - marketplace fee
+      token: "0x0000000000000000000000000000000000000000",
+      identifierOrCriteria: "0",
+      startAmount: "25000000000000000",
+      endAmount: "25000000000000000",
+      recipient: "0xMarketplace",
+    },
+  ],
   orderType: 0,
   startTime: "0",
   endTime: "1000000000000",
@@ -16,8 +41,39 @@ export const mockOrderComponents: OrderComponents = {
   salt: "0",
   conduitKey:
     "0x0000000000000000000000000000000000000000000000000000000000000000",
-  totalOriginalConsiderationItems: 0,
+  totalOriginalConsiderationItems: 2,
   counter: "0",
+};
+
+const mockPrivateListingOrderComponents: OrderComponents = {
+  ...mockOrderComponents,
+  consideration: [
+    {
+      itemType: 2, // ERC721 going to private buyer
+      token: "0xNFTContract",
+      identifierOrCriteria: "123",
+      startAmount: "1",
+      endAmount: "1",
+      recipient: "0xPrivateBuyer",
+    },
+    {
+      itemType: 0, // NATIVE (ETH) payment from buyer
+      token: "0x0000000000000000000000000000000000000000",
+      identifierOrCriteria: "0",
+      startAmount: "1000000000000000000",
+      endAmount: "1000000000000000000",
+      recipient: "0xSeller",
+    },
+    {
+      itemType: 0, // NATIVE (ETH) - marketplace fee
+      token: "0x0000000000000000000000000000000000000000",
+      identifierOrCriteria: "0",
+      startAmount: "25000000000000000",
+      endAmount: "25000000000000000",
+      recipient: "0xMarketplace",
+    },
+  ],
+  totalOriginalConsiderationItems: 3,
 };
 
 const mockMakerAccount = {
@@ -75,4 +131,8 @@ export const mockOfferOrderV2: OrderV2 = {
 export const mockPrivateListingOrderV2: OrderV2 = {
   ...mockOrderV2,
   taker: mockTakerAccount,
+  protocolData: {
+    parameters: mockPrivateListingOrderComponents,
+    signature: "0xSignature",
+  },
 };
