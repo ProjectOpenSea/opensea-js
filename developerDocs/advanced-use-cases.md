@@ -213,6 +213,37 @@ const offers = await openseaSDK.createBulkOffers({
 - **Automatic zone handling**: Uses signed zone for offer protection by default
 - **Collection requirements**: Automatically applies collection-required zones when needed
 
+#### Error Handling in Bulk Operations
+
+By default, bulk operations will throw an error if any order fails to submit. Use `continueOnError: true` to attempt all orders:
+
+```typescript
+const result = await openseaSDK.createBulkListings({
+  listings: [
+    { asset: { tokenAddress: "0x...", tokenId: "1" }, amount: "1.5" },
+    { asset: { tokenAddress: "0x...", tokenId: "2" }, amount: "2.0" },
+    { asset: { tokenAddress: "0x...", tokenId: "3" }, amount: "0.5" },
+  ],
+  accountAddress: "0x...",
+  continueOnError: true, // Continue even if some fail
+  onProgress: (completed, total) => {
+    console.log(`${completed}/${total} orders processed`);
+  },
+});
+
+console.log(`✅ ${result.successful.length} orders created`);
+console.log(`❌ ${result.failed.length} orders failed`);
+
+// Handle failures
+result.failed.forEach(({ index, error }) => {
+  console.error(`Order ${index} failed:`, error.message);
+});
+```
+
+**Progress Tracking:**
+
+The `onProgress` callback is invoked after each order is processed (whether successful or failed), allowing you to update UI progress indicators during long-running bulk operations.
+
 **Common Parameters for Both Methods:**
 
 Each listing or offer in the bulk array supports:
