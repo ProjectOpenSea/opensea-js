@@ -14,7 +14,7 @@ import { OrderV2 } from "./orders/types";
 import { AssetsManager } from "./sdk/assets";
 import { CancellationManager } from "./sdk/cancellation";
 import { FulfillmentManager } from "./sdk/fulfillment";
-import { OrdersManager } from "./sdk/orders";
+import { BulkOrderResult, OrdersManager } from "./sdk/orders";
 import { TokensManager } from "./sdk/tokens";
 import {
   EventData,
@@ -324,15 +324,20 @@ export class OpenSeaSDK {
    * @param options
    * @param options.listings Array of listing parameters. Each listing requires asset, amount, and optionally other listing parameters.
    * @param options.accountAddress Address of the wallet making the listings
-   * @returns Array of {@link OrderV2} objects that were created.
+   * @param options.continueOnError If true, continue submitting remaining listings even if some fail. Default: false (throw on first error).
+   * @param options.onProgress Optional callback for progress updates. Called after each listing is submitted (successfully or not).
+   * @returns {@link BulkOrderResult} containing successful orders and any failures.
    *
    * @throws Error if listings array is empty
    * @throws Error if the accountAddress is not available through wallet or provider.
    * @throws Error if any asset does not contain a token id.
+   * @throws Error if continueOnError is false and any submission fails.
    */
   public async createBulkListings({
     listings,
     accountAddress,
+    continueOnError,
+    onProgress,
   }: {
     listings: Array<{
       asset: AssetWithTokenId;
@@ -348,10 +353,14 @@ export class OpenSeaSDK {
       zone?: string;
     }>;
     accountAddress: string;
-  }): Promise<OrderV2[]> {
+    continueOnError?: boolean;
+    onProgress?: (completed: number, total: number) => void;
+  }): Promise<BulkOrderResult> {
     return this._ordersManager.createBulkListings({
       listings,
       accountAddress,
+      continueOnError,
+      onProgress,
     });
   }
 
@@ -366,15 +375,20 @@ export class OpenSeaSDK {
    * @param options
    * @param options.offers Array of offer parameters. Each offer requires asset, amount, and optionally other offer parameters.
    * @param options.accountAddress Address of the wallet making the offers
-   * @returns Array of {@link OrderV2} objects that were created.
+   * @param options.continueOnError If true, continue submitting remaining offers even if some fail. Default: false (throw on first error).
+   * @param options.onProgress Optional callback for progress updates. Called after each offer is submitted (successfully or not).
+   * @returns {@link BulkOrderResult} containing successful orders and any failures.
    *
    * @throws Error if offers array is empty
    * @throws Error if the accountAddress is not available through wallet or provider.
    * @throws Error if any asset does not contain a token id.
+   * @throws Error if continueOnError is false and any submission fails.
    */
   public async createBulkOffers({
     offers,
     accountAddress,
+    continueOnError,
+    onProgress,
   }: {
     offers: Array<{
       asset: AssetWithTokenId;
@@ -387,10 +401,14 @@ export class OpenSeaSDK {
       zone?: string;
     }>;
     accountAddress: string;
-  }): Promise<OrderV2[]> {
+    continueOnError?: boolean;
+    onProgress?: (completed: number, total: number) => void;
+  }): Promise<BulkOrderResult> {
     return this._ordersManager.createBulkOffers({
       offers,
       accountAddress,
+      continueOnError,
+      onProgress,
     });
   }
 
