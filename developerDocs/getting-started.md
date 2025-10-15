@@ -14,6 +14,7 @@ hidden: false
 - [Making Listings / Selling Items](#making-listings--selling-items)
   - [Creating English Auctions](#creating-english-auctions)
 - [Fetching Orders](#fetching-orders)
+- [Fetching Events](#fetching-events)
 - [Buying Items](#buying-items)
 - [Accepting Offers](#accepting-offers)
 
@@ -53,7 +54,7 @@ const { tokenId, tokenAddress } = YOUR_ASSET;
 // The offerer's wallet address:
 const accountAddress = "0x1234...";
 // Value of the offer, in units of the payment token (or wrapped ETH if none is specified)
-const startAmount = 1.2;
+const amount = 1.2;
 
 const offer = await openseaSDK.createOffer({
   asset: {
@@ -61,11 +62,13 @@ const offer = await openseaSDK.createOffer({
     tokenAddress,
   },
   accountAddress,
-  startAmount,
+  amount,
 });
 ```
 
 When you make an offer on an item owned by an OpenSea user, **that user will automatically get an email notifying them with the offer amount**, if it's above their desired threshold.
+
+**Creating Multiple Offers:** To create multiple offers efficiently with a single signature, see [Bulk Order Creation](advanced-use-cases.md#bulk-order-creation) in the Advanced Use Cases guide.
 
 #### Offer Limits
 
@@ -76,9 +79,10 @@ Note: The total value of offers must not exceed 1000x wallet balance.
 To sell an asset, call `createListing`:
 
 ```typescript
-// Expire this auction one day from now.
-// Note that we convert from the JavaScript timestamp (milliseconds) to seconds:
-const expirationTime = Math.round(Date.now() / 1000 + 60 * 60 * 24);
+import { getUnixTimestampInSeconds, TimeInSeconds } from "opensea-js";
+
+// Expire this listing one day from now
+const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
 const listing = await openseaSDK.createListing({
   asset: {
@@ -86,14 +90,16 @@ const listing = await openseaSDK.createListing({
     tokenAddress,
   },
   accountAddress,
-  startAmount: 3,
+  amount: 3,
   expirationTime,
 });
 ```
 
-The units for `startAmount` are Ether (ETH). If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
+The units for `amount` are Ether (ETH). If you want to specify another ERC-20 token to use, see [Using ERC-20 Tokens Instead of Ether](#using-erc-20-tokens-instead-of-ether).
 
 See [Listening to Events](#listening-to-events) to respond to the setup transactions that occur the first time a user sells an item.
+
+**Creating Multiple Listings:** To create multiple listings efficiently with a single signature, see [Bulk Order Creation](advanced-use-cases.md#bulk-order-creation) in the Advanced Use Cases guide.
 
 ### Creating Collection and Trait Offers
 
@@ -127,7 +133,7 @@ const offer = await openseaSDK.createCollectionOffer({
 const paymentTokenAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 const englishAuction = true;
 // The minimum amount to start the auction at, in normal units (e.g. ETH)
-const startAmount = 0;
+const amount = 0;
 
 const auction = await openseaSDK.createListing({
   asset: {
@@ -135,7 +141,7 @@ const auction = await openseaSDK.createListing({
     tokenAddress,
   },
   accountAddress,
-  startAmount,
+  amount,
   expirationTime,
   paymentTokenAddress,
   englishAuction,
@@ -180,7 +186,7 @@ const order = await openseaSDK.api.getOrderByHash(
 
 This is useful when you need to retrieve order details for operations like order cancellation or fulfillment when you only have the order hash.
 
-#### Fetching All Offers and Best Listings for a given collection
+#### Fetching All Offers and Listings for a given collection
 
 There are two endpoints that return all offers and listings for a given collection, `getAllOffers` and `getAllListings`.
 
@@ -194,6 +200,130 @@ There are two endpoints that return the best offer or listing, `getBestOffer` an
 
 ```typescript
 const offer = await openseaSDK.api.getBestOffer(collectionSlug, tokenId);
+```
+
+### Fetching Events
+
+The SDK provides methods to retrieve historical events for NFTs, collections, and accounts. Events include sales, transfers, listings, offers, and cancellations.
+
+#### Get All Events
+
+Fetch all events with optional filters:
+
+```typescript
+import { AssetEventType } from "opensea-js";
+
+const { asset_events, next } = await openseaSDK.api.getEvents({
+  event_type: AssetEventType.SALE, // Optional: filter by event type
+  limit: 50, // Optional: limit results (default: 50)
+  after: 1672531200, // Optional: filter events after timestamp
+  before: 1675209600, // Optional: filter events before timestamp
+  chain: "ethereum", // Optional: filter by chain
+  next: "cursor", // Optional: cursor for pagination
+});
+```
+
+**Event Types:**
+
+- `AssetEventType.SALE` - Sales of NFTs
+- `AssetEventType.TRANSFER` - Transfers of NFTs
+- `AssetEventType.ORDER` - New listings and offers
+- `AssetEventType.CANCEL` - Canceled orders
+- `AssetEventType.REDEMPTION` - NFT redemptions
+
+#### Get Events by Account
+
+Fetch events for a specific account address:
+
+```typescript
+const { asset_events } = await openseaSDK.api.getEventsByAccount(
+  "0x...", // Account address
+  {
+    event_type: AssetEventType.SALE,
+    limit: 20,
+  },
+);
+```
+
+#### Get Events by Collection
+
+Fetch events for a specific collection:
+
+```typescript
+const { asset_events } = await openseaSDK.api.getEventsByCollection(
+  "cool-cats-nft", // Collection slug
+  {
+    event_type: AssetEventType.ORDER,
+    limit: 100,
+  },
+);
+```
+
+#### Get Events by NFT
+
+Fetch events for a specific NFT:
+
+```typescript
+import { Chain } from "opensea-js";
+
+const { asset_events } = await openseaSDK.api.getEventsByNFT(
+  Chain.Mainnet, // Chain
+  "0x...", // Contract address
+  "1", // Token ID
+  {
+    event_type: AssetEventType.SALE,
+  },
+);
+```
+
+**Event Data:**
+
+Each event includes:
+
+- `event_type`: Type of event (sale, transfer, order, etc.)
+- `event_timestamp`: When the event occurred (Unix timestamp)
+- `chain`: Which blockchain the event occurred on
+- `quantity`: Number of items involved
+
+For **sale events**, additional fields include:
+
+- `transaction`: Transaction hash
+- `seller` and `buyer`: Wallet addresses
+- `payment`: Payment amount and token details
+- `nft`: NFT details
+
+For **order events** (listings/offers), additional fields include:
+
+- `order_type`: "listing", "item_offer", "collection_offer", or "trait_offer"
+- `maker` and `taker`: Wallet addresses
+- `payment`: Offer/listing amount
+- `expiration_date`: When the order expires
+- `is_private_listing`: Whether it's a private listing
+
+For **transfer events**, additional fields include:
+
+- `from_address` and `to_address`: Wallet addresses
+- `transaction`: Transaction hash
+- `nft`: NFT details
+
+**Pagination:**
+
+Use the `next` cursor to fetch additional pages:
+
+```typescript
+let cursor: string | undefined;
+const allEvents: AssetEvent[] = [];
+
+do {
+  const response = await openseaSDK.api.getEvents({
+    event_type: AssetEventType.SALE,
+    limit: 50,
+    next: cursor,
+  });
+
+  allEvents.push(...response.asset_events);
+  cursor = response.next;
+} while (cursor);
 ```
 
 ### Buying Items

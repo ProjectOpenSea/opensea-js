@@ -345,8 +345,7 @@ export class FulfillmentManager {
   async createListingAndValidateOnchain({
     asset,
     accountAddress,
-    startAmount,
-    endAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -354,14 +353,12 @@ export class FulfillmentManager {
     expirationTime,
     paymentTokenAddress,
     buyerAddress,
-    englishAuction,
     includeOptionalCreatorFees = false,
     zone,
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
-    endAmount?: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -369,7 +366,6 @@ export class FulfillmentManager {
     expirationTime?: number;
     paymentTokenAddress?: string;
     buyerAddress?: string;
-    englishAuction?: boolean;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<string> {
@@ -377,8 +373,7 @@ export class FulfillmentManager {
       await this.ordersManager.buildListingOrderComponents({
         asset,
         accountAddress,
-        startAmount,
-        endAmount,
+        amount,
         quantity,
         domain,
         salt,
@@ -386,7 +381,6 @@ export class FulfillmentManager {
         expirationTime,
         paymentTokenAddress,
         buyerAddress,
-        englishAuction,
         includeOptionalCreatorFees,
         zone,
       });
@@ -403,7 +397,7 @@ export class FulfillmentManager {
   async createOfferAndValidateOnchain({
     asset,
     accountAddress,
-    startAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -413,7 +407,7 @@ export class FulfillmentManager {
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -424,7 +418,7 @@ export class FulfillmentManager {
     const orderComponents = await this.ordersManager.buildOfferOrderComponents({
       asset,
       accountAddress,
-      startAmount,
+      amount,
       quantity,
       domain,
       salt,

@@ -4,6 +4,11 @@ import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { OrdersManager } from "../../src/sdk/orders";
 import { Chain } from "../../src/types";
+import {
+  getCurrentUnixTimestamp,
+  getUnixTimestampInSeconds,
+  TimeInSeconds,
+} from "../../src/utils";
 import { createMockContext } from "../fixtures/context";
 
 suite("SDK: OrdersManager", () => {
@@ -52,6 +57,9 @@ suite("SDK: OrdersManager", () => {
   beforeEach(() => {
     // Mock Seaport
     mockSeaport = {
+      contract: {
+        target: "0xSeaportAddress",
+      },
       createOrder: sinon.stub().resolves({
         executeAllActions: sinon.stub().resolves(mockOrder),
       }),
@@ -73,7 +81,7 @@ suite("SDK: OrdersManager", () => {
               itemType: 2,
               token: "0xNFTContract",
               identifierOrCriteria: "0",
-              startAmount: "1",
+              amount: "1",
               endAmount: "1",
             },
           ],
@@ -90,7 +98,6 @@ suite("SDK: OrdersManager", () => {
     mockRequireAccountIsAvailable = sinon.stub().resolves();
     mockGetPriceParameters = sinon.stub().resolves({
       basePrice: BigInt("1000000000000000000"), // 1 ETH
-      endPrice: undefined,
     });
 
     // Create SDKContext mock using fixture
@@ -114,7 +121,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
@@ -132,7 +139,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         paymentTokenAddress: "0xCustomToken",
       });
 
@@ -144,7 +151,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         quantity: 5,
       });
 
@@ -152,12 +159,12 @@ suite("SDK: OrdersManager", () => {
     });
 
     test("creates offer with expiration time", async () => {
-      const expirationTime = Math.floor(Date.now() / 1000) + 86400; // 1 day
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         expirationTime,
       });
 
@@ -171,7 +178,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         zone: "0xCustomZone",
       });
 
@@ -183,7 +190,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         domain: "opensea.io",
         salt: "12345",
       });
@@ -200,7 +207,7 @@ suite("SDK: OrdersManager", () => {
         await ordersManager.createOffer({
           asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
           accountAddress: "0xBuyer",
-          startAmount: "1000000000000000000",
+          amount: "1000000000000000000",
         });
         expect.fail("Expected error to be thrown");
       } catch (error) {
@@ -217,7 +224,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
@@ -230,7 +237,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
@@ -241,43 +248,11 @@ suite("SDK: OrdersManager", () => {
       expect(result.orderHash).to.equal("0xOrderHash");
     });
 
-    test("creates listing with declining price (Dutch auction)", async () => {
-      mockGetPriceParameters.resolves({
-        basePrice: BigInt("2000000000000000000"), // 2 ETH start
-        endPrice: BigInt("1000000000000000000"), // 1 ETH end
-      });
-
-      await ordersManager.createListing({
-        asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
-        accountAddress: "0xSeller",
-        startAmount: "2000000000000000000",
-        endAmount: "1000000000000000000",
-      });
-
-      expect(mockSeaport.createOrder.calledOnce).to.be.true;
-    });
-
-    test("throws error for English auctions", async () => {
-      try {
-        await ordersManager.createListing({
-          asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
-          accountAddress: "0xSeller",
-          startAmount: "1000000000000000000",
-          englishAuction: true,
-        });
-        expect.fail("Expected error to be thrown");
-      } catch (error) {
-        expect((error as Error).message).to.include(
-          "English auctions are no longer supported",
-        );
-      }
-    });
-
     test("creates listing with custom payment token", async () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         paymentTokenAddress: "0xUSDC",
       });
 
@@ -289,7 +264,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         buyerAddress: "0xPrivateBuyer",
       });
 
@@ -297,13 +272,13 @@ suite("SDK: OrdersManager", () => {
     });
 
     test("creates listing with listing time and expiration", async () => {
-      const listingTime = Math.floor(Date.now() / 1000);
-      const expirationTime = listingTime + 86400;
+      const listingTime = getCurrentUnixTimestamp();
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         listingTime,
         expirationTime,
       });
@@ -325,7 +300,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         includeOptionalCreatorFees: true,
       });
 
@@ -336,7 +311,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         zone: "0xCustomZone",
       });
 
@@ -353,7 +328,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
@@ -364,7 +339,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.createListing({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         quantity: 10,
       });
 
@@ -440,7 +415,7 @@ suite("SDK: OrdersManager", () => {
     });
 
     test("creates collection offer with expiration time", async () => {
-      const expirationTime = Math.floor(Date.now() / 1000) + 86400;
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
       await ordersManager.createCollectionOffer({
         collectionSlug: "test-collection",
@@ -507,7 +482,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.buildOfferOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
@@ -521,7 +496,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.buildOfferOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
         quantity: 3,
         domain: "test.io",
         salt: "999",
@@ -538,7 +513,7 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.buildOfferOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xBuyer",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockAPI.postOrder.called).to.be.false;
@@ -550,7 +525,7 @@ suite("SDK: OrdersManager", () => {
       const result = await ordersManager.buildListingOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
@@ -561,14 +536,13 @@ suite("SDK: OrdersManager", () => {
     });
 
     test("builds listing components with all parameters", async () => {
-      const listingTime = Math.floor(Date.now() / 1000);
-      const expirationTime = listingTime + 86400;
+      const listingTime = getCurrentUnixTimestamp();
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 
       const result = await ordersManager.buildListingOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "2000000000000000000",
-        endAmount: "1000000000000000000",
+        amount: "2000000000000000000",
         quantity: 5,
         domain: "opensea.io",
         salt: "12345",
@@ -588,25 +562,885 @@ suite("SDK: OrdersManager", () => {
       await ordersManager.buildListingOrderComponents({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
         accountAddress: "0xSeller",
-        startAmount: "1000000000000000000",
+        amount: "1000000000000000000",
       });
 
       expect(mockAPI.postOrder.called).to.be.false;
     });
+  });
 
-    test("throws error for English auctions", async () => {
+  suite("createBulkListings", () => {
+    test("creates multiple listings successfully with bulk signature", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      const result = await ordersManager.createBulkListings({
+        listings: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+            amount: "1000000000000000000",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "5678" },
+            amount: "2000000000000000000",
+          },
+        ],
+        accountAddress: "0xSeller",
+      });
+
+      expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
+      expect(mockAPI.getNFT.calledTwice).to.be.true;
+      expect(mockAPI.getCollection.calledTwice).to.be.true;
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+      expect(mockAPI.postOrder.calledTwice).to.be.true;
+      expect(result.successful).to.have.lengthOf(2);
+      expect(result.failed).to.have.lengthOf(0);
+    });
+
+    test("creates single listing with normal signature (not bulk)", async () => {
+      const result = await ordersManager.createBulkListings({
+        listings: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+            amount: "1000000000000000000",
+          },
+        ],
+        accountAddress: "0xSeller",
+      });
+
+      // Should use createListing, not createBulkOrders
+      expect(mockSeaport.createOrder.calledOnce).to.be.true;
+      expect(mockSeaport.createBulkOrders?.called).to.be.undefined;
+      expect(mockAPI.postOrder.calledOnce).to.be.true;
+      expect(result.successful).to.have.lengthOf(1);
+      expect(result.failed).to.have.lengthOf(0);
+    });
+
+    test("throws error for empty listings array", async () => {
       try {
-        await ordersManager.buildListingOrderComponents({
-          asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+        await ordersManager.createBulkListings({
+          listings: [],
           accountAddress: "0xSeller",
-          startAmount: "1000000000000000000",
-          englishAuction: true,
         });
         expect.fail("Expected error to be thrown");
       } catch (error) {
         expect((error as Error).message).to.include(
-          "English auctions are no longer supported",
+          "Listings array cannot be empty",
         );
+      }
+    });
+
+    test("creates bulk listings with different prices", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "2",
+          },
+          signature: "0xBulkSignature3",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      const result = await ordersManager.createBulkListings({
+        listings: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
+            amount: "3000000000000000000",
+          },
+        ],
+        accountAddress: "0xSeller",
+      });
+
+      expect(result.successful).to.have.lengthOf(3);
+      expect(result.failed).to.have.lengthOf(0);
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+      expect(mockAPI.postOrder.calledThrice).to.be.true;
+    });
+
+    test("creates bulk listings with different parameters", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
+
+      await ordersManager.createBulkListings({
+        listings: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+            domain: "opensea.io",
+            expirationTime,
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+            quantity: 5,
+            includeOptionalCreatorFees: true,
+          },
+        ],
+        accountAddress: "0xSeller",
+      });
+
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+    });
+
+    test("creates bulk listings with custom payment token", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      await ordersManager.createBulkListings({
+        listings: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+            paymentTokenAddress: "0xUSDC",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+            paymentTokenAddress: "0xUSDC",
+          },
+        ],
+        accountAddress: "0xSeller",
+      });
+
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+    });
+
+    test("throws when account is not available", async () => {
+      mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
+
+      try {
+        await ordersManager.createBulkListings({
+          listings: [
+            {
+              asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+              amount: "1000000000000000000",
+            },
+            {
+              asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+              amount: "2000000000000000000",
+            },
+          ],
+          accountAddress: "0xSeller",
+        });
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include("Account not available");
+      }
+    });
+
+    test("creates bulk listings with private buyers", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      await ordersManager.createBulkListings({
+        listings: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+            buyerAddress: "0xBuyer1",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+            buyerAddress: "0xBuyer2",
+          },
+        ],
+        accountAddress: "0xSeller",
+      });
+
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+    });
+
+    test("handles bulk operations with more than 20 orders", async () => {
+      // Create 25 mock orders
+      const mockBulkOrders = Array.from({ length: 25 }, (_, i) => ({
+        parameters: {
+          ...mockOrder.parameters,
+          salt: i.toString(),
+        },
+        signature: `0xBulkSignature${i}`,
+      }));
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      const listings = Array.from({ length: 25 }, (_, i) => ({
+        asset: { tokenAddress: "0xNFTContract", tokenId: i.toString() },
+        amount: "1000000000000000000",
+      }));
+
+      const result = await ordersManager.createBulkListings({
+        listings,
+        accountAddress: "0xSeller",
+      });
+
+      expect(result.successful).to.have.lengthOf(25);
+      expect(result.failed).to.have.lengthOf(0);
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+      expect(mockAPI.postOrder.callCount).to.equal(25);
+    });
+
+    test("handles mixed payment tokens in bulk operations", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "2",
+          },
+          signature: "0xBulkSignature3",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      await ordersManager.createBulkListings({
+        listings: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+            paymentTokenAddress: "0xETH",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+            paymentTokenAddress: "0xUSDC",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
+            amount: "3000000000000000000",
+            paymentTokenAddress: "0xWETH",
+          },
+        ],
+        accountAddress: "0xSeller",
+      });
+
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+      expect(mockAPI.postOrder.calledThrice).to.be.true;
+    });
+
+    test("handles network failures during bulk submission", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "2",
+          },
+          signature: "0xBulkSignature3",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      // Make the second API call fail
+      mockAPI.postOrder
+        .onFirstCall()
+        .resolves({
+          orderHash: "0xOrderHash1",
+          protocolData: mockOrder,
+          protocolAddress: "0xProtocol",
+        })
+        .onSecondCall()
+        .rejects(new Error("Network error"))
+        .onThirdCall()
+        .resolves({
+          orderHash: "0xOrderHash3",
+          protocolData: mockOrder,
+          protocolAddress: "0xProtocol",
+        });
+
+      try {
+        await ordersManager.createBulkListings({
+          listings: [
+            {
+              asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+              amount: "1000000000000000000",
+            },
+            {
+              asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+              amount: "2000000000000000000",
+            },
+            {
+              asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
+              amount: "3000000000000000000",
+            },
+          ],
+          accountAddress: "0xSeller",
+        });
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include("Network error");
+        // Should have called postOrder twice before failing
+        expect(mockAPI.postOrder.callCount).to.equal(2);
+      }
+    });
+  });
+
+  suite("createBulkOffers", () => {
+    test("creates multiple offers successfully with bulk signature", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      const result = await ordersManager.createBulkOffers({
+        offers: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+            amount: "1000000000000000000",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "5678" },
+            amount: "2000000000000000000",
+          },
+        ],
+        accountAddress: "0xBuyer",
+      });
+
+      expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
+      expect(mockAPI.getNFT.calledTwice).to.be.true;
+      expect(mockAPI.getCollection.calledTwice).to.be.true;
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+      expect(mockAPI.postOrder.calledTwice).to.be.true;
+      expect(result.successful).to.have.lengthOf(2);
+      expect(result.failed).to.have.lengthOf(0);
+    });
+
+    test("creates single offer with normal signature (not bulk)", async () => {
+      const result = await ordersManager.createBulkOffers({
+        offers: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+            amount: "1000000000000000000",
+          },
+        ],
+        accountAddress: "0xBuyer",
+      });
+
+      // Should use createOffer, not createBulkOrders
+      expect(mockSeaport.createOrder.calledOnce).to.be.true;
+      expect(mockSeaport.createBulkOrders?.called).to.be.undefined;
+      expect(mockAPI.postOrder.calledOnce).to.be.true;
+      expect(result.successful).to.have.lengthOf(1);
+      expect(result.failed).to.have.lengthOf(0);
+    });
+
+    test("throws error for empty offers array", async () => {
+      try {
+        await ordersManager.createBulkOffers({
+          offers: [],
+          accountAddress: "0xBuyer",
+        });
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Offers array cannot be empty",
+        );
+      }
+    });
+
+    test("creates bulk offers with different prices", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "2",
+          },
+          signature: "0xBulkSignature3",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      const result = await ordersManager.createBulkOffers({
+        offers: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
+            amount: "3000000000000000000",
+          },
+        ],
+        accountAddress: "0xBuyer",
+      });
+
+      expect(result.successful).to.have.lengthOf(3);
+      expect(result.failed).to.have.lengthOf(0);
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+      expect(mockAPI.postOrder.calledThrice).to.be.true;
+    });
+
+    test("creates bulk offers with different parameters", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
+
+      await ordersManager.createBulkOffers({
+        offers: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+            domain: "opensea.io",
+            expirationTime,
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+            quantity: 5,
+          },
+        ],
+        accountAddress: "0xBuyer",
+      });
+
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+    });
+
+    test("creates bulk offers with custom payment token", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      await ordersManager.createBulkOffers({
+        offers: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+            paymentTokenAddress: "0xWETH",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+            paymentTokenAddress: "0xWETH",
+          },
+        ],
+        accountAddress: "0xBuyer",
+      });
+
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+    });
+
+    test("throws when account is not available", async () => {
+      mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
+
+      try {
+        await ordersManager.createBulkOffers({
+          offers: [
+            {
+              asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+              amount: "1000000000000000000",
+            },
+            {
+              asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+              amount: "2000000000000000000",
+            },
+          ],
+          accountAddress: "0xBuyer",
+        });
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include("Account not available");
+      }
+    });
+
+    test("creates bulk offers with custom zones", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      await ordersManager.createBulkOffers({
+        offers: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+            zone: "0xCustomZone1",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+            zone: "0xCustomZone2",
+          },
+        ],
+        accountAddress: "0xBuyer",
+      });
+
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+    });
+
+    test("uses collection's required zone when specified", async () => {
+      mockAPI.getCollection.resolves({
+        ...mockCollection,
+        requiredZone: "0xRequiredZone",
+      });
+
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      await ordersManager.createBulkOffers({
+        offers: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+          },
+        ],
+        accountAddress: "0xBuyer",
+      });
+
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+    });
+
+    test("handles bulk operations with more than 20 orders", async () => {
+      // Create 25 mock orders
+      const mockBulkOrders = Array.from({ length: 25 }, (_, i) => ({
+        parameters: {
+          ...mockOrder.parameters,
+          salt: i.toString(),
+        },
+        signature: `0xBulkSignature${i}`,
+      }));
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      const offers = Array.from({ length: 25 }, (_, i) => ({
+        asset: { tokenAddress: "0xNFTContract", tokenId: i.toString() },
+        amount: "1000000000000000000",
+      }));
+
+      const result = await ordersManager.createBulkOffers({
+        offers,
+        accountAddress: "0xBuyer",
+      });
+
+      expect(result.successful).to.have.lengthOf(25);
+      expect(result.failed).to.have.lengthOf(0);
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+      expect(mockAPI.postOrder.callCount).to.equal(25);
+    });
+
+    test("handles mixed payment tokens in bulk operations", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "2",
+          },
+          signature: "0xBulkSignature3",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      await ordersManager.createBulkOffers({
+        offers: [
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+            amount: "1000000000000000000",
+            paymentTokenAddress: "0xWETH",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+            amount: "2000000000000000000",
+            paymentTokenAddress: "0xUSDC",
+          },
+          {
+            asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
+            amount: "3000000000000000000",
+            paymentTokenAddress: "0xDAI",
+          },
+        ],
+        accountAddress: "0xBuyer",
+      });
+
+      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
+      expect(mockAPI.postOrder.calledThrice).to.be.true;
+    });
+
+    test("handles network failures during bulk submission", async () => {
+      const mockBulkOrders = [
+        {
+          parameters: mockOrder.parameters,
+          signature: "0xBulkSignature1",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "1",
+          },
+          signature: "0xBulkSignature2",
+        },
+        {
+          parameters: {
+            ...mockOrder.parameters,
+            salt: "2",
+          },
+          signature: "0xBulkSignature3",
+        },
+      ];
+
+      mockSeaport.createBulkOrders = sinon.stub().resolves({
+        executeAllActions: sinon.stub().resolves(mockBulkOrders),
+      });
+
+      // Make the second API call fail
+      mockAPI.postOrder
+        .onFirstCall()
+        .resolves({
+          orderHash: "0xOrderHash1",
+          protocolData: mockOrder,
+          protocolAddress: "0xProtocol",
+        })
+        .onSecondCall()
+        .rejects(new Error("Network error"))
+        .onThirdCall()
+        .resolves({
+          orderHash: "0xOrderHash3",
+          protocolData: mockOrder,
+          protocolAddress: "0xProtocol",
+        });
+
+      try {
+        await ordersManager.createBulkOffers({
+          offers: [
+            {
+              asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
+              amount: "1000000000000000000",
+            },
+            {
+              asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
+              amount: "2000000000000000000",
+            },
+            {
+              asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
+              amount: "3000000000000000000",
+            },
+          ],
+          accountAddress: "0xBuyer",
+        });
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include("Network error");
+        // Should have called postOrder twice before failing
+        expect(mockAPI.postOrder.callCount).to.equal(2);
       }
     });
   });

@@ -14,7 +14,7 @@ import { OrderV2 } from "./orders/types";
 import { AssetsManager } from "./sdk/assets";
 import { CancellationManager } from "./sdk/cancellation";
 import { FulfillmentManager } from "./sdk/fulfillment";
-import { OrdersManager } from "./sdk/orders";
+import { BulkOrderResult, OrdersManager } from "./sdk/orders";
 import { TokensManager } from "./sdk/tokens";
 import {
   EventData,
@@ -199,7 +199,7 @@ export class OpenSeaSDK {
    * @param options
    * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
    * @param options.accountAddress Address of the wallet making the offer.
-   * @param options.startAmount Value of the offer in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
+   * @param options.amount Value in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
    * @param options.quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1.
    * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt.
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
@@ -211,13 +211,13 @@ export class OpenSeaSDK {
    *
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
-   * @throws Error if the startAmount is not greater than 0.
+   * @throws Error if the amount is not greater than 0.
    * @throws Error if paymentTokenAddress is not WETH on anything other than Ethereum mainnet.
    */
   public async createOffer({
     asset,
     accountAddress,
-    startAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -227,7 +227,7 @@ export class OpenSeaSDK {
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -238,7 +238,7 @@ export class OpenSeaSDK {
     return this._ordersManager.createOffer({
       asset,
       accountAddress,
-      startAmount,
+      amount,
       quantity,
       domain,
       salt,
@@ -253,8 +253,7 @@ export class OpenSeaSDK {
    * @param options
    * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
    * @param options.accountAddress  Address of the wallet making the listing
-   * @param options.startAmount Value of the listing at the start of the auction in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
-   * @param options.endAmount Value of the listing at the end of the auction. If specified, price will change linearly between startAmount and endAmount as time progresses.
+   * @param options.amount Value in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
    * @param options.quantity The number of assets to list (if fungible or semi-fungible). Defaults to 1.
    * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt. This can be used for on-chain order attribution to assist with analytics.
    * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
@@ -262,21 +261,19 @@ export class OpenSeaSDK {
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to ETH
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
-   * @param options.englishAuction If true, the order will be listed as an English auction.
    * @param options.includeOptionalCreatorFees If true, optional creator fees will be included in the listing. Default: false.
    * @param options.zone The zone to use for the order. For order protection, pass SIGNED_ZONE. If unspecified, defaults to no zone.
    * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
-   * @throws Error if the startAmount is not greater than 0.
+   * @throws Error if the amount is not greater than 0.
    * @throws Error if paymentTokenAddress is not WETH on anything other than Ethereum mainnet.
    */
   public async createListing({
     asset,
     accountAddress,
-    startAmount,
-    endAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -284,14 +281,12 @@ export class OpenSeaSDK {
     expirationTime,
     paymentTokenAddress,
     buyerAddress,
-    englishAuction,
     includeOptionalCreatorFees = false,
     zone,
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
-    endAmount?: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -299,15 +294,13 @@ export class OpenSeaSDK {
     expirationTime?: number;
     paymentTokenAddress?: string;
     buyerAddress?: string;
-    englishAuction?: boolean;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<OrderV2> {
     return this._ordersManager.createListing({
       asset,
       accountAddress,
-      startAmount,
-      endAmount,
+      amount,
       quantity,
       domain,
       salt,
@@ -315,9 +308,107 @@ export class OpenSeaSDK {
       expirationTime,
       paymentTokenAddress,
       buyerAddress,
-      englishAuction,
       includeOptionalCreatorFees,
       zone,
+    });
+  }
+
+  /**
+   * Create and submit multiple listings using Seaport's bulk order creation.
+   * This method uses a single signature for all listings and submits them individually to the OpenSea API with rate limit handling.
+   * All listings must be from the same account address.
+   *
+   * Note: If only one listing is provided, this method will use a normal order signature instead of a bulk signature,
+   * as bulk signatures are more expensive to decode on-chain due to the merkle proof verification.
+   *
+   * @param options
+   * @param options.listings Array of listing parameters. Each listing requires asset, amount, and optionally other listing parameters.
+   * @param options.accountAddress Address of the wallet making the listings
+   * @param options.continueOnError If true, continue submitting remaining listings even if some fail. Default: false (throw on first error).
+   * @param options.onProgress Optional callback for progress updates. Called after each listing is submitted (successfully or not).
+   * @returns {@link BulkOrderResult} containing successful orders and any failures.
+   *
+   * @throws Error if listings array is empty
+   * @throws Error if the accountAddress is not available through wallet or provider.
+   * @throws Error if any asset does not contain a token id.
+   * @throws Error if continueOnError is false and any submission fails.
+   */
+  public async createBulkListings({
+    listings,
+    accountAddress,
+    continueOnError,
+    onProgress,
+  }: {
+    listings: Array<{
+      asset: AssetWithTokenId;
+      amount: BigNumberish;
+      quantity?: BigNumberish;
+      domain?: string;
+      salt?: BigNumberish;
+      listingTime?: number;
+      expirationTime?: number;
+      paymentTokenAddress?: string;
+      buyerAddress?: string;
+      includeOptionalCreatorFees?: boolean;
+      zone?: string;
+    }>;
+    accountAddress: string;
+    continueOnError?: boolean;
+    onProgress?: (completed: number, total: number) => void;
+  }): Promise<BulkOrderResult> {
+    return this._ordersManager.createBulkListings({
+      listings,
+      accountAddress,
+      continueOnError,
+      onProgress,
+    });
+  }
+
+  /**
+   * Create and submit multiple offers using Seaport's bulk order creation.
+   * This method uses a single signature for all offers and submits them individually to the OpenSea API with rate limit handling.
+   * All offers must be from the same account address.
+   *
+   * Note: If only one offer is provided, this method will use a normal order signature instead of a bulk signature,
+   * as bulk signatures are more expensive to decode on-chain due to the merkle proof verification.
+   *
+   * @param options
+   * @param options.offers Array of offer parameters. Each offer requires asset, amount, and optionally other offer parameters.
+   * @param options.accountAddress Address of the wallet making the offers
+   * @param options.continueOnError If true, continue submitting remaining offers even if some fail. Default: false (throw on first error).
+   * @param options.onProgress Optional callback for progress updates. Called after each offer is submitted (successfully or not).
+   * @returns {@link BulkOrderResult} containing successful orders and any failures.
+   *
+   * @throws Error if offers array is empty
+   * @throws Error if the accountAddress is not available through wallet or provider.
+   * @throws Error if any asset does not contain a token id.
+   * @throws Error if continueOnError is false and any submission fails.
+   */
+  public async createBulkOffers({
+    offers,
+    accountAddress,
+    continueOnError,
+    onProgress,
+  }: {
+    offers: Array<{
+      asset: AssetWithTokenId;
+      amount: BigNumberish;
+      quantity?: BigNumberish;
+      domain?: string;
+      salt?: BigNumberish;
+      expirationTime?: BigNumberish;
+      paymentTokenAddress?: string;
+      zone?: string;
+    }>;
+    accountAddress: string;
+    continueOnError?: boolean;
+    onProgress?: (completed: number, total: number) => void;
+  }): Promise<BulkOrderResult> {
+    return this._ordersManager.createBulkOffers({
+      offers,
+      accountAddress,
+      continueOnError,
+      onProgress,
     });
   }
 
@@ -742,8 +833,7 @@ export class OpenSeaSDK {
   public async createListingAndValidateOnchain({
     asset,
     accountAddress,
-    startAmount,
-    endAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -751,14 +841,12 @@ export class OpenSeaSDK {
     expirationTime,
     paymentTokenAddress,
     buyerAddress,
-    englishAuction,
     includeOptionalCreatorFees = false,
     zone,
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
-    endAmount?: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -766,15 +854,13 @@ export class OpenSeaSDK {
     expirationTime?: number;
     paymentTokenAddress?: string;
     buyerAddress?: string;
-    englishAuction?: boolean;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
   }): Promise<string> {
     return this._fulfillmentManager.createListingAndValidateOnchain({
       asset,
       accountAddress,
-      startAmount,
-      endAmount,
+      amount,
       quantity,
       domain,
       salt,
@@ -782,7 +868,6 @@ export class OpenSeaSDK {
       expirationTime,
       paymentTokenAddress,
       buyerAddress,
-      englishAuction,
       includeOptionalCreatorFees,
       zone,
     });
@@ -797,7 +882,7 @@ export class OpenSeaSDK {
   public async createOfferAndValidateOnchain({
     asset,
     accountAddress,
-    startAmount,
+    amount,
     quantity = 1,
     domain,
     salt,
@@ -807,7 +892,7 @@ export class OpenSeaSDK {
   }: {
     asset: AssetWithTokenId;
     accountAddress: string;
-    startAmount: BigNumberish;
+    amount: BigNumberish;
     quantity?: BigNumberish;
     domain?: string;
     salt?: BigNumberish;
@@ -818,7 +903,7 @@ export class OpenSeaSDK {
     return this._fulfillmentManager.createOfferAndValidateOnchain({
       asset,
       accountAddress,
-      startAmount,
+      amount,
       quantity,
       domain,
       salt,
@@ -829,19 +914,15 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Compute the `basePrice` and `endPrice` parameters to be used to price an order.
-   * Also validates the expiration time and auction type.
+   * Compute the `basePrice` parameter to be used to price an order.
+   * Also validates the price and token address.
    * @param tokenAddress Address of the ERC-20 token to use for trading. Use the null address for ETH.
-   * @param expirationTime When the auction expires, or 0 if never.
-   * @param startAmount The base value for the order, in the token's main units (e.g. ETH instead of wei)
-   * @param endAmount The end value for the order, in the token's main units (e.g. ETH instead of wei)
+   * @param amount The value for the order, in the token's main units (e.g. ETH instead of wei)
    */
   private async _getPriceParameters(
     orderSide: OrderSide,
     tokenAddress: string,
-    expirationTime: BigNumberish,
-    startAmount: BigNumberish,
-    endAmount?: BigNumberish,
+    amount: BigNumberish,
   ) {
     tokenAddress = tokenAddress.toLowerCase();
     const isEther = tokenAddress === ethers.ZeroAddress;
@@ -856,34 +937,17 @@ export class OpenSeaSDK {
       }
     }
 
-    const startAmountWei = ethers.parseUnits(startAmount.toString(), decimals);
-    const endAmountWei = endAmount
-      ? ethers.parseUnits(endAmount.toString(), decimals)
-      : undefined;
-    const priceDiffWei =
-      endAmountWei !== undefined ? startAmountWei - endAmountWei : 0n;
-
-    const basePrice = startAmountWei;
-    const endPrice = endAmountWei;
+    const amountWei = ethers.parseUnits(amount.toString(), decimals);
+    const basePrice = amountWei;
 
     // Validation
-    if (startAmount == null || startAmountWei < 0) {
+    if (amount == null || amountWei < 0) {
       throw new Error("Starting price must be a number >= 0");
     }
     if (isEther && orderSide === OrderSide.OFFER) {
       throw new Error("Offers must use wrapped ETH or an ERC-20 token.");
     }
-    if (priceDiffWei < 0) {
-      throw new Error(
-        "End price must be less than or equal to the start price.",
-      );
-    }
-    if (priceDiffWei > 0 && BigInt(expirationTime) === 0n) {
-      throw new Error(
-        "Expiration time must be set if order will change in price.",
-      );
-    }
-    return { basePrice, endPrice };
+    return { basePrice };
   }
 
   private _dispatch(event: EventType, data: EventData) {

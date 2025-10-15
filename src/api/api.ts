@@ -41,6 +41,7 @@ import {
   GetEventsArgs,
   GetEventsResponse,
 } from "./types";
+import { executeWithRateLimit } from "../utils/rateLimit";
 
 /**
  * The API class for the OpenSea SDK.
@@ -582,19 +583,24 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Generic fetch method for any API endpoint
+   * Generic fetch method for any API endpoint with automatic rate limit retry
    * @param apiPath Path to URL endpoint under API
    * @param query URL query params. Will be used to create a URLSearchParams object.
    * @returns @typeParam T The response from the API.
    */
   public async get<T>(apiPath: string, query: object = {}): Promise<T> {
-    const qs = this.objectToSearchParams(query);
-    const url = `${this.apiBaseUrl}${apiPath}?${qs}`;
-    return await this._fetch(url);
+    return executeWithRateLimit(
+      async () => {
+        const qs = this.objectToSearchParams(query);
+        const url = `${this.apiBaseUrl}${apiPath}?${qs}`;
+        return await this._fetch(url);
+      },
+      { logger: this.logger },
+    );
   }
 
   /**
-   * Generic post method for any API endpoint.
+   * Generic post method for any API endpoint with automatic rate limit retry
    * @param apiPath Path to URL endpoint under API
    * @param body Data to send.
    * @param opts ethers ConnectionInfo, similar to Fetch API.
@@ -605,8 +611,13 @@ export class OpenSeaAPI {
     body?: object,
     opts?: object,
   ): Promise<T> {
-    const url = `${this.apiBaseUrl}${apiPath}`;
-    return await this._fetch(url, opts, body);
+    return executeWithRateLimit(
+      async () => {
+        const url = `${this.apiBaseUrl}${apiPath}`;
+        return await this._fetch(url, opts, body);
+      },
+      { logger: this.logger },
+    );
   }
 
   private objectToSearchParams(params: object = {}) {
@@ -696,9 +707,9 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Creates a rate limit error with retry-after information for backwards compatibility.
+   * Creates a rate limit error with status code and retry-after information.
    * @param response The HTTP response object from the API
-   * @returns An enhanced Error object with retryAfter and responseBody properties
+   * @returns An enhanced Error object with statusCode, retryAfter and responseBody properties
    */
   private _createRateLimitError(
     response: ethers.FetchResponse,
@@ -708,7 +719,8 @@ export class OpenSeaAPI {
       `${response.statusCode} ${response.statusMessage}`,
     ) as OpenSeaRateLimitError;
 
-    // Add retry-after information to the error object for backwards compatibility
+    // Add status code and retry-after information to the error object
+    error.statusCode = response.statusCode;
     error.retryAfter = retryAfter;
     error.responseBody = response.bodyJson;
     return error;
