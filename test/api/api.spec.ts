@@ -70,6 +70,7 @@ suite("API", () => {
     const rateLimitError = new Error(
       "429 Too Many Requests",
     ) as OpenSeaRateLimitError;
+    rateLimitError.statusCode = 429;
     rateLimitError.retryAfter = 1; // 1 second retry delay
     rateLimitError.responseBody = { error: "Rate limited" };
 
@@ -110,6 +111,7 @@ suite("API", () => {
     const rateLimitError = new Error(
       "599 Network Connect Timeout Error",
     ) as OpenSeaRateLimitError;
+    rateLimitError.statusCode = 599;
     rateLimitError.retryAfter = 1; // 1 second retry delay
     rateLimitError.responseBody = { message: "Custom rate limit" };
 
@@ -150,6 +152,7 @@ suite("API", () => {
     const rateLimitError = new Error(
       "429 Too Many Requests",
     ) as OpenSeaRateLimitError;
+    rateLimitError.statusCode = 429;
     rateLimitError.retryAfter = undefined; // Simulate invalid header parsing
     rateLimitError.responseBody = { error: "Rate limited" };
 

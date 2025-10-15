@@ -707,9 +707,9 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Creates a rate limit error with retry-after information for backwards compatibility.
+   * Creates a rate limit error with status code and retry-after information.
    * @param response The HTTP response object from the API
-   * @returns An enhanced Error object with retryAfter and responseBody properties
+   * @returns An enhanced Error object with statusCode, retryAfter and responseBody properties
    */
   private _createRateLimitError(
     response: ethers.FetchResponse,
@@ -719,7 +719,8 @@ export class OpenSeaAPI {
       `${response.statusCode} ${response.statusMessage}`,
     ) as OpenSeaRateLimitError;
 
-    // Add retry-after information to the error object for backwards compatibility
+    // Add status code and retry-after information to the error object
+    error.statusCode = response.statusCode;
     error.retryAfter = retryAfter;
     error.responseBody = response.bodyJson;
     return error;

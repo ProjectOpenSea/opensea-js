@@ -364,6 +364,8 @@ export interface SocialMediaAccount {
  * @category API Models
  */
 export interface OpenSeaRateLimitError extends Error {
+  /** The HTTP status code of the error response */
+  statusCode?: number;
   /** The number of seconds to wait before retrying the request */
   retryAfter?: number;
   /** The response body from the API */

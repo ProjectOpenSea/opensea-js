@@ -33,6 +33,7 @@ suite("Utils: rateLimit", () => {
       const rateLimitError: OpenSeaRateLimitError = Object.assign(
         new Error("429 Too Many Requests"),
         {
+          statusCode: 429,
           retryAfter: 2, // 2 seconds
         },
       );
@@ -60,7 +61,10 @@ suite("Utils: rateLimit", () => {
     });
 
     test("retries on rate limit error with exponential backoff", async () => {
-      const rateLimitError = new Error("429 Too Many Requests");
+      const rateLimitError = new Error(
+        "429 Too Many Requests",
+      ) as OpenSeaRateLimitError;
+      rateLimitError.statusCode = 429;
 
       const operation = sinon
         .stub()
@@ -88,7 +92,10 @@ suite("Utils: rateLimit", () => {
     });
 
     test("respects maxRetries and throws after exhausting retries", async () => {
-      const rateLimitError = new Error("429 Too Many Requests");
+      const rateLimitError = new Error(
+        "429 Too Many Requests",
+      ) as OpenSeaRateLimitError;
+      rateLimitError.statusCode = 429;
 
       const operation = sinon.stub().rejects(rateLimitError);
       const logger = sinon.stub();
@@ -127,7 +134,10 @@ suite("Utils: rateLimit", () => {
     });
 
     test("handles 599 custom rate limit code", async () => {
-      const rateLimitError = new Error("599 Rate Limit");
+      const rateLimitError = new Error(
+        "599 Rate Limit",
+      ) as OpenSeaRateLimitError;
+      rateLimitError.statusCode = 599;
 
       const operation = sinon
         .stub()
@@ -191,7 +201,10 @@ suite("Utils: rateLimit", () => {
     });
 
     test("handles rate limit errors in sequential operations", async () => {
-      const rateLimitError = new Error("429 Too Many Requests");
+      const rateLimitError = new Error(
+        "429 Too Many Requests",
+      ) as OpenSeaRateLimitError;
+      rateLimitError.statusCode = 429;
 
       const operations = [
         sinon.stub().resolves("result1"),
@@ -225,7 +238,10 @@ suite("Utils: rateLimit", () => {
     });
 
     test("stops execution if operation fails after retries", async () => {
-      const rateLimitError = new Error("429 Too Many Requests");
+      const rateLimitError = new Error(
+        "429 Too Many Requests",
+      ) as OpenSeaRateLimitError;
+      rateLimitError.statusCode = 429;
 
       const operations = [
         sinon.stub().resolves("result1"),

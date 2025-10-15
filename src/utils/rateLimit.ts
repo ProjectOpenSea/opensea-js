@@ -47,11 +47,11 @@ export async function executeWithRateLimit<T>(
       lastError = error as Error;
       const rateLimitError = error as OpenSeaRateLimitError;
 
-      // Check if this is a rate limit error
+      // Check if this is a rate limit error by status code (robust) or retry-after header
       const isRateLimitError =
-        rateLimitError.retryAfter !== undefined ||
-        (error as Error).message.includes("429") ||
-        (error as Error).message.includes("599");
+        rateLimitError.statusCode === 429 ||
+        rateLimitError.statusCode === 599 ||
+        rateLimitError.retryAfter !== undefined;
 
       if (!isRateLimitError || attempt === maxRetries) {
         // Not a rate limit error or out of retries, throw the error
