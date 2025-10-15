@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { API_BASE_MAINNET } from "../constants";
 import { AccountsAPI } from "./accounts";
 import { CollectionsAPI } from "./collections";
+import { EventsAPI } from "./events";
 import { ListingsAPI } from "./listings";
 import { NFTsAPI } from "./nfts";
 import { OffersAPI } from "./offers";
@@ -37,6 +38,8 @@ import {
   CollectionOffer,
   CollectionOrderByOption,
   CancelOrderResponse,
+  GetEventsArgs,
+  GetEventsResponse,
 } from "./types";
 
 /**
@@ -67,6 +70,7 @@ export class OpenSeaAPI {
   private collectionsAPI: CollectionsAPI;
   private nftsAPI: NFTsAPI;
   private accountsAPI: AccountsAPI;
+  private eventsAPI: EventsAPI;
 
   /**
    * Create an instance of the OpenSeaAPI
@@ -101,6 +105,7 @@ export class OpenSeaAPI {
       this.chain,
     );
     this.accountsAPI = new AccountsAPI(this.get.bind(this), this.chain);
+    this.eventsAPI = new EventsAPI(this.get.bind(this));
   }
 
   /**
@@ -522,6 +527,58 @@ export class OpenSeaAPI {
       chain,
       offererSignature,
     );
+  }
+
+  /**
+   * Gets a list of events based on query parameters.
+   * @param args Query parameters for filtering events.
+   * @returns The {@link GetEventsResponse} returned by the API.
+   */
+  public async getEvents(args?: GetEventsArgs): Promise<GetEventsResponse> {
+    return this.eventsAPI.getEvents(args);
+  }
+
+  /**
+   * Gets a list of events for a specific account.
+   * @param address The account address.
+   * @param args Query parameters for filtering events.
+   * @returns The {@link GetEventsResponse} returned by the API.
+   */
+  public async getEventsByAccount(
+    address: string,
+    args?: GetEventsArgs,
+  ): Promise<GetEventsResponse> {
+    return this.eventsAPI.getEventsByAccount(address, args);
+  }
+
+  /**
+   * Gets a list of events for a specific collection.
+   * @param collectionSlug The slug (identifier) of the collection.
+   * @param args Query parameters for filtering events.
+   * @returns The {@link GetEventsResponse} returned by the API.
+   */
+  public async getEventsByCollection(
+    collectionSlug: string,
+    args?: GetEventsArgs,
+  ): Promise<GetEventsResponse> {
+    return this.eventsAPI.getEventsByCollection(collectionSlug, args);
+  }
+
+  /**
+   * Gets a list of events for a specific NFT.
+   * @param chain The chain where the NFT is located.
+   * @param address The contract address of the NFT.
+   * @param identifier The token identifier.
+   * @param args Query parameters for filtering events.
+   * @returns The {@link GetEventsResponse} returned by the API.
+   */
+  public async getEventsByNFT(
+    chain: Chain,
+    address: string,
+    identifier: string,
+    args?: GetEventsArgs,
+  ): Promise<GetEventsResponse> {
+    return this.eventsAPI.getEventsByNFT(chain, address, identifier, args);
   }
 
   /**
