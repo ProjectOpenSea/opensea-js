@@ -7,6 +7,8 @@ order: 2
 hidden: false
 ---
 
+> 📖 **For a complete reference of all SDK methods with detailed parameters and return types, see the [API Reference](api-reference.md).**
+
 - [Purchasing Items for Other Users](#purchasing-items-for-other-users)
 - [Private Orders](#private-orders)
 - [Canceling Orders](#canceling-orders)

@@ -7,9 +7,11 @@ order: 0
 hidden: false
 ---
 
+> 📖 **For a complete reference of all SDK methods with detailed parameters and return types, see the [API Reference](api-reference.md).**
+
 # Installation
 
-Node.js version 16 is the minimum required for the SDK. If you have Node Version Manager (nvm), run `nvm use 16`.
+Node.js version 20 or higher is required for the SDK. If you have Node Version Manager (nvm), run `nvm use 20`.
 
 Then in your project, run:
 
@@ -30,7 +32,9 @@ import { ethers } from "ethers";
 import { OpenSeaSDK, Chain } from "opensea-js";
 
 // This example provider won't let you make transactions, only read-only calls:
-const provider = new ethers.JsonRpcProvider("https://mainnet.infura.io");
+const provider = new ethers.JsonRpcProvider(
+  "https://eth-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY",
+);
 
 const openseaSDK = new OpenSeaSDK(provider, {
   chain: Chain.Mainnet,
