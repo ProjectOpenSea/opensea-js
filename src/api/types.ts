@@ -147,6 +147,8 @@ export type Listing = Omit<Order, "price"> & {
   price: {
     current: Price;
   };
+  /** The remaining quantity available for the listing. This is important for partially filled orders. */
+  remaining_quantity: number;
 };
 
 /**
