@@ -1,3 +1,4 @@
+import { OrderComponents } from "@opensea/seaport-js/lib/types";
 import { expect } from "chai";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
@@ -8,6 +9,7 @@ import {
   GetBestOfferResponse,
   GetOffersResponse,
   CollectionOffer,
+  Offer,
 } from "../../src/api/types";
 import { ProtocolData } from "../../src/orders/types";
 
@@ -41,9 +43,9 @@ suite("API: OffersAPI", () => {
                 value: "500000000000000000",
               },
             },
-            protocol_data: {} as unknown,
+            protocol_data: {} as unknown as ProtocolData,
             protocol_address: "0xabc",
-          } as unknown,
+          } as unknown as Offer,
         ],
         next: "cursor-123",
       };
@@ -143,7 +145,7 @@ suite("API: OffersAPI", () => {
         offers: [
           {
             order_hash: "0xabc",
-          } as unknown,
+          } as unknown as Offer,
         ],
         next: undefined,
       };
@@ -335,9 +337,9 @@ suite("API: OffersAPI", () => {
             value: "750000000000000000",
           },
         },
-        protocol_data: {} as unknown,
+        protocol_data: {} as unknown as ProtocolData,
         protocol_address: "0xdef456",
-      } as unknown;
+      } as unknown as GetBestOfferResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -354,7 +356,7 @@ suite("API: OffersAPI", () => {
     test("fetches best offer with number tokenId", async () => {
       const mockResponse: GetBestOfferResponse = {
         order_hash: "0xdef",
-      } as unknown;
+      } as unknown as GetBestOfferResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -368,7 +370,7 @@ suite("API: OffersAPI", () => {
     test("handles large token IDs", async () => {
       const mockResponse: GetBestOfferResponse = {
         order_hash: "0x123",
-      } as unknown;
+      } as unknown as GetBestOfferResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -408,7 +410,7 @@ suite("API: OffersAPI", () => {
           offerer: "0xofferer123",
           offer: [],
           consideration: [],
-        } as unknown,
+        } as unknown as BuildOfferResponse["partialParameters"],
       };
 
       mockPost.resolves(mockResponse);
@@ -427,7 +429,8 @@ suite("API: OffersAPI", () => {
 
     test("builds collection offer with offerProtectionEnabled false", async () => {
       const mockResponse: BuildOfferResponse = {
-        partialParameters: {} as unknown,
+        partialParameters:
+          {} as unknown as BuildOfferResponse["partialParameters"],
       };
 
       mockPost.resolves(mockResponse);
@@ -439,7 +442,8 @@ suite("API: OffersAPI", () => {
 
     test("builds collection offer with trait type and value", async () => {
       const mockResponse: BuildOfferResponse = {
-        partialParameters: {} as unknown,
+        partialParameters:
+          {} as unknown as BuildOfferResponse["partialParameters"],
       };
 
       mockPost.resolves(mockResponse);
@@ -509,9 +513,9 @@ suite("API: OffersAPI", () => {
       const mockResponse: ListCollectionOffersResponse = {
         offers: [
           {
-            protocol_data: {} as unknown,
+            protocol_data: {} as unknown as ProtocolData,
             protocol_address: "0xabc",
-          } as unknown,
+          } as unknown as CollectionOffer,
         ],
       };
 
@@ -566,14 +570,14 @@ suite("API: OffersAPI", () => {
           offerer: "0xofferer123",
           offer: [],
           consideration: [],
-        } as unknown,
+        } as unknown as OrderComponents,
         signature: "0xsig123",
       };
 
       const mockResponse: CollectionOffer = {
         protocol_data: mockOrder,
         protocol_address: "0xabc",
-      } as unknown;
+      } as unknown as CollectionOffer;
 
       mockPost.resolves(mockResponse);
 
@@ -589,13 +593,13 @@ suite("API: OffersAPI", () => {
 
     test("posts collection offer with trait type and value", async () => {
       const mockOrder: ProtocolData = {
-        parameters: {} as unknown,
+        parameters: {} as unknown as OrderComponents,
         signature: "0xsig456",
       };
 
       const mockResponse: CollectionOffer = {
         protocol_data: mockOrder,
-      } as unknown;
+      } as unknown as CollectionOffer;
 
       mockPost.resolves(mockResponse);
 
@@ -611,7 +615,7 @@ suite("API: OffersAPI", () => {
 
     test("returns null when appropriate", async () => {
       const mockOrder: ProtocolData = {
-        parameters: {} as unknown,
+        parameters: {} as unknown as OrderComponents,
         signature: "0xsig",
       };
 
@@ -627,7 +631,7 @@ suite("API: OffersAPI", () => {
 
     test("throws error on API failure", async () => {
       const mockOrder: ProtocolData = {
-        parameters: {} as unknown,
+        parameters: {} as unknown as OrderComponents,
         signature: "0xsig",
       };
 
