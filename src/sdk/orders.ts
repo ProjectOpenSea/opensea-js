@@ -15,6 +15,7 @@ import {
   TokenStandard,
   AssetWithTokenId,
 } from "../types";
+import { pluralize } from "../utils/stringHelper";
 import {
   getMaxOrderExpirationTimestamp,
   getAssetItemType,
@@ -732,7 +733,7 @@ export class OrdersManager {
     // Submit each order individually to the OpenSea API
     // Rate limiting is handled automatically by the API client
     this.context.logger(
-      `Starting submission of ${orders.length} bulk-signed listing${orders.length !== 1 ? "s" : ""} to OpenSea API...`,
+      `Starting submission of ${orders.length} bulk-signed ${pluralize(orders.length, "listing")} to OpenSea API...`,
     );
 
     const submittedOrders: OrderV2[] = [];
@@ -748,7 +749,7 @@ export class OrdersManager {
     }
 
     this.context.logger(
-      `Successfully submitted all ${submittedOrders.length} listing${submittedOrders.length !== 1 ? "s" : ""}`,
+      `Successfully submitted all ${submittedOrders.length} ${pluralize(submittedOrders.length, "listing")}`,
     );
 
     return submittedOrders;
@@ -911,7 +912,7 @@ export class OrdersManager {
     // Submit each order individually to the OpenSea API
     // Rate limiting is handled automatically by the API client
     this.context.logger(
-      `Starting submission of ${orders.length} bulk-signed offer${orders.length !== 1 ? "s" : ""} to OpenSea API...`,
+      `Starting submission of ${orders.length} bulk-signed ${pluralize(orders.length, "offer")} to OpenSea API...`,
     );
 
     const submittedOrders: OrderV2[] = [];
@@ -927,7 +928,7 @@ export class OrdersManager {
     }
 
     this.context.logger(
-      `Successfully submitted all ${submittedOrders.length} offer${submittedOrders.length !== 1 ? "s" : ""}`,
+      `Successfully submitted all ${submittedOrders.length} ${pluralize(submittedOrders.length, "offer")}`,
     );
 
     return submittedOrders;

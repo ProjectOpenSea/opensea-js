@@ -1,4 +1,5 @@
 import { OpenSeaRateLimitError } from "../types";
+import { pluralize } from "./stringHelper";
 
 /**
  * Default configuration for rate limit handling
@@ -123,7 +124,7 @@ export async function executeSequentialWithRateLimit<T>(
   const results: T[] = [];
   const total = operations.length;
 
-  logger(`Starting ${total} ${operationName}${total !== 1 ? "s" : ""}...`);
+  logger(`Starting ${total} ${pluralize(total, operationName)}...`);
 
   for (let i = 0; i < operations.length; i++) {
     const operation = operations[i];
@@ -139,7 +140,7 @@ export async function executeSequentialWithRateLimit<T>(
   }
 
   logger(
-    `All ${total} ${operationName}${total !== 1 ? "s" : ""} completed successfully`,
+    `All ${total} ${pluralize(total, operationName)} completed successfully`,
   );
 
   return results;
