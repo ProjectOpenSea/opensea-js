@@ -8,6 +8,16 @@ import { OPENSEA_API_KEY } from "../utils/env";
 import { api } from "../utils/sdk";
 
 suite("API", () => {
+  let fetchStub: sinon.SinonStub | undefined;
+
+  afterEach(() => {
+    // Restore any stubs after each test
+    if (fetchStub) {
+      fetchStub.restore();
+      fetchStub = undefined;
+    }
+  });
+
   test("API has correct base url", () => {
     assert.equal(api.apiBaseUrl, "https://api.opensea.io");
   });
@@ -42,66 +52,84 @@ suite("API", () => {
     }
   });
 
-  test("API handles rate limit errors with retry-after", async () => {
-    // Mock the _fetch method directly to simulate rate limit response
+  test("API handles rate limit errors with retry-after", async function () {
+    // Set longer timeout since this test involves retry delays
+    this.timeout(10000);
+
+    // Mock the _fetch method directly to simulate rate limit response followed by success
     const rateLimitError = new Error(
       "429 Too Many Requests",
     ) as OpenSeaRateLimitError;
-    rateLimitError.retryAfter = 60;
+    rateLimitError.retryAfter = 1; // Use 1 second to keep test fast
     rateLimitError.responseBody = { error: "Rate limited" };
 
-    // Stub the private _fetch method to throw our rate limit error
-    const fetchStub = sinon
-      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
-      .rejects(rateLimitError);
+    const successResponse = {
+      address: "0x0000000000000000000000000000000000000000",
+      decimals: 18,
+      eth_price: "1",
+      name: "Ether",
+      symbol: "ETH",
+      usd_price: "1800",
+    };
 
-    try {
-      // This should trigger a rate limit error
-      await api.getPaymentToken("0x0000000000000000000000000000000000000000");
-      assert.fail("Expected rate limit error to be thrown");
-    } catch (error) {
-      const rateLimitError = error as OpenSeaRateLimitError;
-      assert.equal(rateLimitError.retryAfter, 60);
-      assert.deepEqual(rateLimitError.responseBody, { error: "Rate limited" });
-      assert.include(rateLimitError.message, "429 Too Many Requests");
-    } finally {
-      fetchStub.restore();
-    }
+    // First call fails with rate limit, second call succeeds
+    fetchStub = sinon
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .onFirstCall()
+      .rejects(rateLimitError)
+      .onSecondCall()
+      .resolves(successResponse);
+
+    // This should auto-retry and eventually succeed
+    const result = await api.getPaymentToken(
+      "0x0000000000000000000000000000000000000000",
+    );
+
+    assert.equal(fetchStub.callCount, 2); // Should have retried once
+    assert.equal(result.address, "0x0000000000000000000000000000000000000000");
   });
 
-  test("API handles custom 599 rate limit errors with retry-after", async () => {
-    // Mock the _fetch method directly to simulate 599 rate limit response
+  test("API handles custom 599 rate limit errors with retry-after", async function () {
+    // Set longer timeout since this test involves retry delays
+    this.timeout(10000);
+
+    // Mock the _fetch method to simulate 599 rate limit response followed by success
     const rateLimitError = new Error(
       "599 Network Connect Timeout Error",
     ) as OpenSeaRateLimitError;
-    rateLimitError.retryAfter = 30;
+    rateLimitError.retryAfter = 1; // Use 1 second to keep test fast
     rateLimitError.responseBody = { message: "Custom rate limit" };
 
-    // Stub the private _fetch method to throw our rate limit error
-    const fetchStub = sinon
-      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
-      .rejects(rateLimitError);
+    const successResponse = {
+      address: "0x0000000000000000000000000000000000000000",
+      decimals: 18,
+      eth_price: "1",
+      name: "Ether",
+      symbol: "ETH",
+      usd_price: "1800",
+    };
 
-    try {
-      // This should trigger a rate limit error
-      await api.getPaymentToken("0x0000000000000000000000000000000000000000");
-      assert.fail("Expected rate limit error to be thrown");
-    } catch (error) {
-      const rateLimitError = error as OpenSeaRateLimitError;
-      assert.equal(rateLimitError.retryAfter, 30);
-      assert.deepEqual(rateLimitError.responseBody, {
-        message: "Custom rate limit",
-      });
-      assert.include(
-        rateLimitError.message,
-        "599 Network Connect Timeout Error",
-      );
-    } finally {
-      fetchStub.restore();
-    }
+    // First call fails with 599, second call succeeds
+    fetchStub = sinon
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .onFirstCall()
+      .rejects(rateLimitError)
+      .onSecondCall()
+      .resolves(successResponse);
+
+    // This should auto-retry and eventually succeed
+    const result = await api.getPaymentToken(
+      "0x0000000000000000000000000000000000000000",
+    );
+
+    assert.equal(fetchStub.callCount, 2); // Should have retried once
+    assert.equal(result.address, "0x0000000000000000000000000000000000000000");
   });
 
-  test("API handles invalid retry-after header gracefully", async () => {
+  test("API handles invalid retry-after header gracefully", async function () {
+    // Set longer timeout since this test involves retry delays (exponential backoff)
+    this.timeout(10000);
+
     // Test the robust header parsing by simulating an invalid retry-after header
     const rateLimitError = new Error(
       "429 Too Many Requests",
@@ -109,22 +137,29 @@ suite("API", () => {
     rateLimitError.retryAfter = undefined; // Simulate invalid header parsing
     rateLimitError.responseBody = { error: "Rate limited" };
 
-    // Stub the private _fetch method to throw our rate limit error
-    const fetchStub = sinon
-      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
-      .rejects(rateLimitError);
+    const successResponse = {
+      address: "0x0000000000000000000000000000000000000000",
+      decimals: 18,
+      eth_price: "1",
+      name: "Ether",
+      symbol: "ETH",
+      usd_price: "1800",
+    };
 
-    try {
-      // This should trigger a rate limit error
-      await api.getPaymentToken("0x0000000000000000000000000000000000000000");
-      assert.fail("Expected rate limit error to be thrown");
-    } catch (error) {
-      const rateLimitError = error as OpenSeaRateLimitError;
-      assert.equal(rateLimitError.retryAfter, undefined);
-      assert.deepEqual(rateLimitError.responseBody, { error: "Rate limited" });
-      assert.include(rateLimitError.message, "429 Too Many Requests");
-    } finally {
-      fetchStub.restore();
-    }
+    // First call fails, second call succeeds (tests exponential backoff)
+    fetchStub = sinon
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .onFirstCall()
+      .rejects(rateLimitError)
+      .onSecondCall()
+      .resolves(successResponse);
+
+    // This should auto-retry with exponential backoff and eventually succeed
+    const result = await api.getPaymentToken(
+      "0x0000000000000000000000000000000000000000",
+    );
+
+    assert.equal(fetchStub.callCount, 2); // Should have retried once
+    assert.equal(result.address, "0x0000000000000000000000000000000000000000");
   });
 });

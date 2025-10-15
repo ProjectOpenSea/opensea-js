@@ -790,65 +790,6 @@ suite("SDK: OrdersManager", () => {
       }
     });
 
-    test("handles rate limit errors during API submission", async () => {
-      const rateLimitError = Object.assign(new Error("429 Too Many Requests"), {
-        retryAfter: 1,
-      });
-
-      const mockBulkOrders = [
-        {
-          parameters: mockOrder.parameters,
-          signature: "0xBulkSignature1",
-        },
-        {
-          parameters: {
-            ...mockOrder.parameters,
-            salt: "1",
-          },
-          signature: "0xBulkSignature2",
-        },
-      ];
-
-      mockSeaport.createBulkOrders = sinon.stub().resolves({
-        executeAllActions: sinon.stub().resolves(mockBulkOrders),
-      });
-
-      // First postOrder call hits rate limit, second call succeeds, third succeeds
-      mockAPI.postOrder
-        .onFirstCall()
-        .rejects(rateLimitError)
-        .onSecondCall()
-        .resolves({
-          orderHash: "0xOrderHash1",
-          protocolData: mockBulkOrders[0],
-          protocolAddress: "0xProtocol",
-        })
-        .onThirdCall()
-        .resolves({
-          orderHash: "0xOrderHash2",
-          protocolData: mockBulkOrders[1],
-          protocolAddress: "0xProtocol",
-        });
-
-      const result = await ordersManager.createBulkListings({
-        listings: [
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
-          },
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
-          },
-        ],
-        accountAddress: "0xSeller",
-      });
-
-      // Should successfully submit both after retry
-      expect(result).to.have.lengthOf(2);
-      expect(mockAPI.postOrder.callCount).to.equal(3); // 1 failed + 2 successful
-    });
-
     test("creates bulk listings with private buyers", async () => {
       const mockBulkOrders = [
         {
@@ -1111,65 +1052,6 @@ suite("SDK: OrdersManager", () => {
       } catch (error) {
         expect((error as Error).message).to.include("Account not available");
       }
-    });
-
-    test("handles rate limit errors during API submission", async () => {
-      const rateLimitError = Object.assign(new Error("429 Too Many Requests"), {
-        retryAfter: 1,
-      });
-
-      const mockBulkOrders = [
-        {
-          parameters: mockOrder.parameters,
-          signature: "0xBulkSignature1",
-        },
-        {
-          parameters: {
-            ...mockOrder.parameters,
-            salt: "1",
-          },
-          signature: "0xBulkSignature2",
-        },
-      ];
-
-      mockSeaport.createBulkOrders = sinon.stub().resolves({
-        executeAllActions: sinon.stub().resolves(mockBulkOrders),
-      });
-
-      // First postOrder call hits rate limit, second call succeeds, third succeeds
-      mockAPI.postOrder
-        .onFirstCall()
-        .rejects(rateLimitError)
-        .onSecondCall()
-        .resolves({
-          orderHash: "0xOrderHash1",
-          protocolData: mockBulkOrders[0],
-          protocolAddress: "0xProtocol",
-        })
-        .onThirdCall()
-        .resolves({
-          orderHash: "0xOrderHash2",
-          protocolData: mockBulkOrders[1],
-          protocolAddress: "0xProtocol",
-        });
-
-      const result = await ordersManager.createBulkOffers({
-        offers: [
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            startAmount: "1000000000000000000",
-          },
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            startAmount: "2000000000000000000",
-          },
-        ],
-        accountAddress: "0xBuyer",
-      });
-
-      // Should successfully submit both after retry
-      expect(result).to.have.lengthOf(2);
-      expect(mockAPI.postOrder.callCount).to.equal(3); // 1 failed + 2 successful
     });
 
     test("creates bulk offers with custom zones", async () => {
