@@ -9,6 +9,11 @@ import { api } from "../utils/sdk";
 
 suite("API", () => {
   let fetchStub: sinon.SinonStub | undefined;
+  let clock: sinon.SinonFakeTimers;
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+  });
 
   afterEach(() => {
     // Restore any stubs after each test
@@ -16,6 +21,8 @@ suite("API", () => {
       fetchStub.restore();
       fetchStub = undefined;
     }
+    clock.restore();
+    sinon.restore();
   });
 
   test("API has correct base url", () => {
@@ -23,6 +30,9 @@ suite("API", () => {
   });
 
   test("Includes API key in request", async () => {
+    // Restore real timers for this test since it makes a real API call
+    clock.restore();
+
     const oldLogger = api.logger;
 
     const logPromise = new Promise<void>((resolve, reject) => {
@@ -44,6 +54,9 @@ suite("API", () => {
   });
 
   test("API handles errors", async () => {
+    // Restore real timers for this test since it makes a real API call
+    clock.restore();
+
     // 404 Not found for random token id
     try {
       await api.getNFT(BAYC_CONTRACT_ADDRESS, "404040");
@@ -52,15 +65,12 @@ suite("API", () => {
     }
   });
 
-  test("API handles rate limit errors with retry-after", async function () {
-    // Set longer timeout since this test involves retry delays
-    this.timeout(10000);
-
+  test("API handles rate limit errors with retry-after", async () => {
     // Mock the _fetch method directly to simulate rate limit response followed by success
     const rateLimitError = new Error(
       "429 Too Many Requests",
     ) as OpenSeaRateLimitError;
-    rateLimitError.retryAfter = 1; // Use 1 second to keep test fast
+    rateLimitError.retryAfter = 1; // 1 second retry delay
     rateLimitError.responseBody = { error: "Rate limited" };
 
     const successResponse = {
@@ -80,24 +90,27 @@ suite("API", () => {
       .onSecondCall()
       .resolves(successResponse);
 
-    // This should auto-retry and eventually succeed
-    const result = await api.getPaymentToken(
+    // Start the operation (will hit rate limit and start waiting)
+    const promise = api.getPaymentToken(
       "0x0000000000000000000000000000000000000000",
     );
+
+    // Advance time by 1 second to complete the retry delay
+    await clock.tickAsync(1000);
+
+    // This should auto-retry and eventually succeed
+    const result = await promise;
 
     assert.equal(fetchStub.callCount, 2); // Should have retried once
     assert.equal(result.address, "0x0000000000000000000000000000000000000000");
   });
 
-  test("API handles custom 599 rate limit errors with retry-after", async function () {
-    // Set longer timeout since this test involves retry delays
-    this.timeout(10000);
-
+  test("API handles custom 599 rate limit errors with retry-after", async () => {
     // Mock the _fetch method to simulate 599 rate limit response followed by success
     const rateLimitError = new Error(
       "599 Network Connect Timeout Error",
     ) as OpenSeaRateLimitError;
-    rateLimitError.retryAfter = 1; // Use 1 second to keep test fast
+    rateLimitError.retryAfter = 1; // 1 second retry delay
     rateLimitError.responseBody = { message: "Custom rate limit" };
 
     const successResponse = {
@@ -117,19 +130,22 @@ suite("API", () => {
       .onSecondCall()
       .resolves(successResponse);
 
-    // This should auto-retry and eventually succeed
-    const result = await api.getPaymentToken(
+    // Start the operation (will hit rate limit and start waiting)
+    const promise = api.getPaymentToken(
       "0x0000000000000000000000000000000000000000",
     );
+
+    // Advance time by 1 second to complete the retry delay
+    await clock.tickAsync(1000);
+
+    // This should auto-retry and eventually succeed
+    const result = await promise;
 
     assert.equal(fetchStub.callCount, 2); // Should have retried once
     assert.equal(result.address, "0x0000000000000000000000000000000000000000");
   });
 
-  test("API handles invalid retry-after header gracefully", async function () {
-    // Set longer timeout since this test involves retry delays (exponential backoff)
-    this.timeout(10000);
-
+  test("API handles invalid retry-after header gracefully", async () => {
     // Test the robust header parsing by simulating an invalid retry-after header
     const rateLimitError = new Error(
       "429 Too Many Requests",
@@ -154,10 +170,16 @@ suite("API", () => {
       .onSecondCall()
       .resolves(successResponse);
 
-    // This should auto-retry with exponential backoff and eventually succeed
-    const result = await api.getPaymentToken(
+    // Start the operation (will hit rate limit and use exponential backoff)
+    const promise = api.getPaymentToken(
       "0x0000000000000000000000000000000000000000",
     );
+
+    // Advance time by 1 second (default baseRetryDelay for first retry)
+    await clock.tickAsync(1000);
+
+    // This should auto-retry with exponential backoff and eventually succeed
+    const result = await promise;
 
     assert.equal(fetchStub.callCount, 2); // Should have retried once
     assert.equal(result.address, "0x0000000000000000000000000000000000000000");
