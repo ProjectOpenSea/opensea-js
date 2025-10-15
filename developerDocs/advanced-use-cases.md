@@ -226,16 +226,16 @@ Each listing or offer in the bulk array supports:
 - `includeOptionalCreatorFees`: Include optional creator fees (listings only)
 - `zone`: Custom zone address
 
-**Error Handling:**
+**Automatic Rate Limiting:**
 
-The methods include automatic rate limit handling with exponential backoff. If the OpenSea API rate limits your requests, the SDK will:
+All OpenSea API calls in the SDK include automatic rate limit handling with exponential backoff. If the API rate limits your requests (429/599 status codes), the SDK will:
 
 1. Log the rate limit encounter with retry delay
-2. Wait for the specified delay
-3. Retry the failed request
-4. Continue with remaining submissions
+2. Wait for the specified delay (respects `retry-after` header when present)
+3. Retry the failed request (up to 3 times by default)
+4. Continue with the operation
 
-If a submission fails after all retries, the entire operation will throw an error.
+This applies to all API operations, not just bulk orders. If a request fails after all retries, the operation will throw an error.
 
 **Example with All Options:**
 

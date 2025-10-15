@@ -15,7 +15,6 @@ import {
   TokenStandard,
   AssetWithTokenId,
 } from "../types";
-import { executeSequentialWithRateLimit } from "../utils/rateLimit";
 import {
   getMaxOrderExpirationTimestamp,
   getAssetItemType,
@@ -710,28 +709,22 @@ export class OrdersManager {
 
     const orders = await executeAllActions();
 
-    // Submit each order individually to the OpenSea API with rate limit handling
+    // Submit each order individually to the OpenSea API
+    // Rate limiting is handled automatically by the API client
     this.context.logger(
       `Submitting ${orders.length} bulk-signed listings to OpenSea API...`,
     );
 
-    const postOrderOperations = orders.map((order) => {
-      return () =>
-        this.context.api.postOrder(order, {
-          protocol: "seaport",
-          protocolAddress: this.context.seaport.contract.target as string,
-          side: OrderSide.LISTING,
-        });
-    });
-
-    const submittedOrders = await executeSequentialWithRateLimit(
-      postOrderOperations,
-      {
-        logger: this.context.logger,
-        operationName: "listing submission",
-        maxRetries: 3,
-      },
-    );
+    const submittedOrders: OrderV2[] = [];
+    for (let i = 0; i < orders.length; i++) {
+      this.context.logger(`Submitting listing ${i + 1}/${orders.length}...`);
+      const submittedOrder = await this.context.api.postOrder(orders[i], {
+        protocol: "seaport",
+        protocolAddress: this.context.seaport.contract.target as string,
+        side: OrderSide.LISTING,
+      });
+      submittedOrders.push(submittedOrder);
+    }
 
     this.context.logger(
       `Successfully submitted all ${submittedOrders.length} listings`,
@@ -894,28 +887,22 @@ export class OrdersManager {
 
     const orders = await executeAllActions();
 
-    // Submit each order individually to the OpenSea API with rate limit handling
+    // Submit each order individually to the OpenSea API
+    // Rate limiting is handled automatically by the API client
     this.context.logger(
       `Submitting ${orders.length} bulk-signed offers to OpenSea API...`,
     );
 
-    const postOrderOperations = orders.map((order) => {
-      return () =>
-        this.context.api.postOrder(order, {
-          protocol: "seaport",
-          protocolAddress: this.context.seaport.contract.target as string,
-          side: OrderSide.OFFER,
-        });
-    });
-
-    const submittedOrders = await executeSequentialWithRateLimit(
-      postOrderOperations,
-      {
-        logger: this.context.logger,
-        operationName: "offer submission",
-        maxRetries: 3,
-      },
-    );
+    const submittedOrders: OrderV2[] = [];
+    for (let i = 0; i < orders.length; i++) {
+      this.context.logger(`Submitting offer ${i + 1}/${orders.length}...`);
+      const submittedOrder = await this.context.api.postOrder(orders[i], {
+        protocol: "seaport",
+        protocolAddress: this.context.seaport.contract.target as string,
+        side: OrderSide.OFFER,
+      });
+      submittedOrders.push(submittedOrder);
+    }
 
     this.context.logger(
       `Successfully submitted all ${submittedOrders.length} offers`,
