@@ -5,10 +5,7 @@ import {
   getRefreshMetadataPath,
   getListNFTsByAccountPath,
 } from "./apiPaths";
-import {
-  ListNFTsResponse,
-  GetNFTResponse,
-} from "./types";
+import { ListNFTsResponse, GetNFTResponse } from "./types";
 import { Chain } from "../types";
 
 /**
@@ -17,7 +14,11 @@ import { Chain } from "../types";
 export class NFTsAPI {
   constructor(
     private get: <T>(apiPath: string, query?: object) => Promise<T>,
-    private post: <T>(apiPath: string, body?: object, opts?: object) => Promise<T>,
+    private post: <T>(
+      apiPath: string,
+      body?: object,
+      opts?: object,
+    ) => Promise<T>,
     private chain: Chain,
   ) {}
 

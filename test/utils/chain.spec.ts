@@ -1,16 +1,6 @@
+import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import { expect } from "chai";
 import { suite, test } from "mocha";
-import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
-import {
-  getChainId,
-  getOfferPaymentToken,
-  getListingPaymentToken,
-  getDefaultConduit,
-  getSeaportAddress,
-  getSignedZone,
-  getFeeRecipient,
-} from "../../src/utils/chain";
-import { Chain } from "../../src/types";
 import {
   OPENSEA_CONDUIT_KEY,
   OPENSEA_CONDUIT_ADDRESS,
@@ -24,6 +14,16 @@ import {
   OPENSEA_FEE_RECIPIENT,
   GUNZILLA_FEE_RECIPIENT,
 } from "../../src/constants";
+import { Chain } from "../../src/types";
+import {
+  getChainId,
+  getOfferPaymentToken,
+  getListingPaymentToken,
+  getDefaultConduit,
+  getSeaportAddress,
+  getSignedZone,
+  getFeeRecipient,
+} from "../../src/utils/chain";
 
 suite("Utils: chain", () => {
   suite("getChainId", () => {
@@ -364,9 +364,7 @@ suite("Utils: chain", () => {
     });
 
     test("returns Gunzilla fee recipient for Gunzilla", () => {
-      expect(getFeeRecipient(Chain.Gunzilla)).to.equal(
-        GUNZILLA_FEE_RECIPIENT,
-      );
+      expect(getFeeRecipient(Chain.Gunzilla)).to.equal(GUNZILLA_FEE_RECIPIENT);
     });
 
     test("returns OpenSea fee recipient for other chains", () => {

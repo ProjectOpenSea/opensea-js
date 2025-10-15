@@ -4,7 +4,7 @@ import { Overrides, Signer, JsonRpcProvider } from "ethers";
 import { OpenSeaAPI } from "../api/api";
 import { OrderV2 } from "../orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils";
-import { EventType, Chain } from "../types";
+import { EventData, EventType, Chain } from "../types";
 import {
   requireValidProtocol,
   getChainId,
@@ -19,7 +19,7 @@ export class CancellationManager {
     private api: OpenSeaAPI,
     private chain: Chain,
     private signerOrProvider: Signer | JsonRpcProvider,
-    private dispatch: (event: EventType, data: any) => void,
+    private dispatch: (event: EventType, data: EventData) => void,
     private confirmTransaction: (
       hash: string,
       event: EventType,

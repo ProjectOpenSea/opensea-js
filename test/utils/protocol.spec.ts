@@ -1,12 +1,18 @@
+import { Seaport } from "@opensea/seaport-js";
 import {
   CROSS_CHAIN_SEAPORT_V1_5_ADDRESS,
   CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
-import { Seaport } from "@opensea/seaport-js";
 import { expect } from "chai";
 import { ethers } from "ethers";
 import { suite, test } from "mocha";
+import {
+  SHARED_STOREFRONT_ADDRESSES,
+  SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+  GUNZILLA_SEAPORT_1_6_ADDRESS,
+} from "../../src/constants";
+import { TokenStandard } from "../../src/types";
 import {
   isValidProtocol,
   requireValidProtocol,
@@ -16,12 +22,6 @@ import {
   getSeaportInstance,
   getSeaportVersion,
 } from "../../src/utils/protocol";
-import { TokenStandard } from "../../src/types";
-import {
-  SHARED_STOREFRONT_ADDRESSES,
-  SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-  GUNZILLA_SEAPORT_1_6_ADDRESS,
-} from "../../src/constants";
 
 suite("Utils: protocol", () => {
   suite("isValidProtocol", () => {
@@ -111,41 +111,44 @@ suite("Utils: protocol", () => {
     });
   });
 
-  suite("getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress", () => {
-    test("returns lazy mint adapter address for shared storefront address", () => {
-      for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
+  suite(
+    "getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress",
+    () => {
+      test("returns lazy mint adapter address for shared storefront address", () => {
+        for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
+          const result =
+            getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
+              sharedStorefrontAddress,
+            );
+          expect(result).to.equal(
+            SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+          );
+        }
+      });
+
+      test("returns lazy mint adapter address for uppercase shared storefront address", () => {
+        for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
+          const upperCaseAddress = sharedStorefrontAddress.toUpperCase();
+          const result =
+            getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
+              upperCaseAddress,
+            );
+          expect(result).to.equal(
+            SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+          );
+        }
+      });
+
+      test("returns original address for non-shared storefront address", () => {
+        const randomAddress = ethers.Wallet.createRandom().address;
         const result =
           getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-            sharedStorefrontAddress,
+            randomAddress,
           );
-        expect(result).to.equal(
-          SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-        );
-      }
-    });
-
-    test("returns lazy mint adapter address for uppercase shared storefront address", () => {
-      for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
-        const upperCaseAddress = sharedStorefrontAddress.toUpperCase();
-        const result =
-          getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-            upperCaseAddress,
-          );
-        expect(result).to.equal(
-          SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-        );
-      }
-    });
-
-    test("returns original address for non-shared storefront address", () => {
-      const randomAddress = ethers.Wallet.createRandom().address;
-      const result =
-        getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-          randomAddress,
-        );
-      expect(result).to.equal(randomAddress);
-    });
-  });
+        expect(result).to.equal(randomAddress);
+      });
+    },
+  );
 
   suite("decodeTokenIds", () => {
     test("returns ['*'] when given '*' as input", () => {
@@ -260,9 +263,9 @@ suite("Utils: protocol", () => {
       mockSeaport = new Seaport(provider);
       const randomAddress = ethers.Wallet.createRandom().address;
 
-      expect(() =>
-        getSeaportInstance(randomAddress, mockSeaport),
-      ).to.throw(`Unsupported protocol address: ${randomAddress}`);
+      expect(() => getSeaportInstance(randomAddress, mockSeaport)).to.throw(
+        `Unsupported protocol address: ${randomAddress}`,
+      );
     });
 
     test("works with lowercase address", () => {

@@ -5,7 +5,9 @@ import { ListingsAPI } from "../../src/api/listings";
 import {
   GetBestListingResponse,
   GetListingsResponse,
+  Listing,
 } from "../../src/api/types";
+import { OrderV2 } from "../../src/orders/types";
 
 suite("API: ListingsAPI", () => {
   let mockGet: sinon.SinonStub;
@@ -35,9 +37,9 @@ suite("API: ListingsAPI", () => {
                 value: "1000000000000000000",
               },
             },
-            protocol_data: {} as any,
+            protocol_data: {} as unknown as OrderV2,
             protocol_address: "0xabc",
-          } as any,
+          } as unknown as Listing,
         ],
         next: "cursor-123",
       };
@@ -141,9 +143,9 @@ suite("API: ListingsAPI", () => {
     test("handles multiple listings in response", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [
-          { order_hash: "0x1" } as any,
-          { order_hash: "0x2" } as any,
-          { order_hash: "0x3" } as any,
+          { order_hash: "0x1" } as unknown as Listing,
+          { order_hash: "0x2" } as unknown as Listing,
+          { order_hash: "0x3" } as unknown as Listing,
         ],
         next: undefined,
       };
@@ -191,9 +193,9 @@ suite("API: ListingsAPI", () => {
             value: "1500000000000000000",
           },
         },
-        protocol_data: {} as any,
+        protocol_data: {} as unknown as OrderV2,
         protocol_address: "0xdef456",
-      } as any;
+      } as unknown as Listing;
 
       mockGet.resolves(mockResponse);
 
@@ -213,7 +215,7 @@ suite("API: ListingsAPI", () => {
     test("fetches best listing for a token with number tokenId", async () => {
       const mockResponse: GetBestListingResponse = {
         order_hash: "0xdef",
-      } as any;
+      } as unknown as Listing;
 
       mockGet.resolves(mockResponse);
 
@@ -227,7 +229,7 @@ suite("API: ListingsAPI", () => {
     test("handles large token IDs", async () => {
       const mockResponse: GetBestListingResponse = {
         order_hash: "0x123",
-      } as any;
+      } as unknown as Listing;
 
       mockGet.resolves(mockResponse);
 
@@ -240,7 +242,7 @@ suite("API: ListingsAPI", () => {
     test("handles collection slug with special characters", async () => {
       const mockResponse: GetBestListingResponse = {
         order_hash: "0x456",
-      } as any;
+      } as unknown as Listing;
 
       mockGet.resolves(mockResponse);
 
@@ -285,7 +287,7 @@ suite("API: ListingsAPI", () => {
                 value: "1000000000000000000",
               },
             },
-          } as any,
+          } as unknown as Listing,
           {
             order_hash: "0x222",
             price: {
@@ -293,7 +295,7 @@ suite("API: ListingsAPI", () => {
                 value: "1100000000000000000",
               },
             },
-          } as any,
+          } as unknown as Listing,
         ],
         next: undefined,
       };
@@ -395,7 +397,7 @@ suite("API: ListingsAPI", () => {
 
     test("handles response with pagination cursor", async () => {
       const mockResponse: GetListingsResponse = {
-        listings: [{ order_hash: "0x1" } as any],
+        listings: [{ order_hash: "0x1" } as unknown as Listing],
         next: "next-cursor-value",
       };
 

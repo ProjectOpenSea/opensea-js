@@ -1,8 +1,8 @@
+import { Seaport } from "@opensea/seaport-js";
 import {
   CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants";
-import { Seaport } from "@opensea/seaport-js";
 import { ethers } from "ethers";
 import {
   GUNZILLA_SEAPORT_1_6_ADDRESS,

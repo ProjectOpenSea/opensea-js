@@ -9,11 +9,7 @@ import {
   CollectionOrderByOption,
   GetCollectionsArgs,
 } from "./types";
-import {
-  Chain,
-  OpenSeaCollection,
-  OpenSeaCollectionStats,
-} from "../types";
+import { Chain, OpenSeaCollection, OpenSeaCollectionStats } from "../types";
 import { collectionFromJSON } from "../utils/converters";
 
 /**
@@ -63,9 +59,7 @@ export class CollectionsAPI {
   /**
    * Fetch stats for an OpenSea collection.
    */
-  async getCollectionStats(
-    slug: string,
-  ): Promise<OpenSeaCollectionStats> {
+  async getCollectionStats(slug: string): Promise<OpenSeaCollectionStats> {
     const path = getCollectionStatsPath(slug);
     const response = await this.get<OpenSeaCollectionStats>(path);
     return response as OpenSeaCollectionStats;

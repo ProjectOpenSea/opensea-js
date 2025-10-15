@@ -28,7 +28,11 @@ import { Chain, OrderSide } from "../types";
 export class OrdersAPI {
   constructor(
     private get: <T>(apiPath: string, query?: object) => Promise<T>,
-    private post: <T>(apiPath: string, body?: object, opts?: object) => Promise<T>,
+    private post: <T>(
+      apiPath: string,
+      body?: object,
+      opts?: object,
+    ) => Promise<T>,
     private chain: Chain,
   ) {}
 
@@ -94,7 +98,9 @@ export class OrdersAPI {
     orderBy = "created_date",
     pageSize = 20,
     ...restOptions
-  }: Omit<OrdersQueryOptions, "limit"> & { pageSize?: number }): Promise<GetOrdersResponse> {
+  }: Omit<OrdersQueryOptions, "limit"> & {
+    pageSize?: number;
+  }): Promise<GetOrdersResponse> {
     // Validate eth_price orderBy requires additional parameters
     if (orderBy === "eth_price") {
       if (

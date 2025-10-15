@@ -25,7 +25,11 @@ import {
 export class OffersAPI {
   constructor(
     private get: <T>(apiPath: string, query?: object) => Promise<T>,
-    private post: <T>(apiPath: string, body?: object, opts?: object) => Promise<T>,
+    private post: <T>(
+      apiPath: string,
+      body?: object,
+      opts?: object,
+    ) => Promise<T>,
   ) {}
 
   /**

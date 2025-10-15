@@ -3,10 +3,12 @@ import { ZeroAddress } from "ethers";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { OrdersManager } from "../../src/sdk/orders";
-import { Chain, OrderSide } from "../../src/types";
+import { Chain } from "../../src/types";
 
 suite("SDK: OrdersManager", () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockSeaport: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockAPI: any;
   let mockRequireAccountIsAvailable: sinon.SinonStub;
   let mockGetPriceParameters: sinon.SinonStub;

@@ -1,20 +1,16 @@
 import { Seaport } from "@opensea/seaport-js";
 import { AdvancedOrder, OrderComponents } from "@opensea/seaport-js/lib/types";
-import {
-  BigNumberish,
-  ContractTransactionResponse,
-  Overrides,
-} from "ethers";
+import { BigNumberish, ContractTransactionResponse, Overrides } from "ethers";
+import { OrdersManager } from "./orders";
 import { OpenSeaAPI } from "../api/api";
 import { Listing, Offer, Order } from "../api/types";
-import { OrdersManager } from "./orders";
 import {
   constructPrivateListingCounterOrder,
   getPrivateListingFulfillments,
 } from "../orders/privateListings";
 import { OrderType, OrderV2 } from "../orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils";
-import { EventType, OrderSide, AssetWithTokenId } from "../types";
+import { EventData, EventType, OrderSide, AssetWithTokenId } from "../types";
 import {
   hasErrorCode,
   requireValidProtocol,
@@ -30,7 +26,7 @@ export class FulfillmentManager {
     private ordersManager: OrdersManager,
     private api: OpenSeaAPI,
     private seaport_v1_6: Seaport,
-    private dispatch: (event: EventType, data: any) => void,
+    private dispatch: (event: EventType, data: EventData) => void,
     private confirmTransaction: (
       hash: string,
       event: EventType,

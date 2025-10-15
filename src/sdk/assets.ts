@@ -14,6 +14,7 @@ import {
   ERC721__factory,
 } from "../typechain/contracts";
 import {
+  EventData,
   EventType,
   TokenStandard,
   AssetWithTokenStandard,
@@ -29,7 +30,7 @@ export class AssetsManager {
     private signerOrProvider: Signer | JsonRpcProvider,
     private provider: JsonRpcProvider,
     private chain: Chain,
-    private dispatch: (event: EventType, data: any) => void,
+    private dispatch: (event: EventType, data: EventData) => void,
     private confirmTransaction: (
       hash: string,
       event: EventType,

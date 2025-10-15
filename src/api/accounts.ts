@@ -1,16 +1,6 @@
-import {
-  getPaymentTokenPath,
-  getAccountPath,
-} from "./apiPaths";
-import {
-  Chain,
-  OpenSeaAccount,
-  OpenSeaPaymentToken,
-} from "../types";
-import {
-  paymentTokenFromJSON,
-  accountFromJSON,
-} from "../utils/converters";
+import { getPaymentTokenPath, getAccountPath } from "./apiPaths";
+import { Chain, OpenSeaAccount, OpenSeaPaymentToken } from "../types";
+import { paymentTokenFromJSON, accountFromJSON } from "../utils/converters";
 
 /**
  * Account and payment token related API operations

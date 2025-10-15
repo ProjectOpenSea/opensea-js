@@ -3,10 +3,7 @@ import {
   getAllListingsAPIPath,
   getBestListingsAPIPath,
 } from "./apiPaths";
-import {
-  GetBestListingResponse,
-  GetListingsResponse,
-} from "./types";
+import { GetBestListingResponse, GetListingsResponse } from "./types";
 
 /**
  * Listing-related API operations

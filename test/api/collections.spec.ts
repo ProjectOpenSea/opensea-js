@@ -7,7 +7,11 @@ import {
   GetCollectionsResponse,
   CollectionOrderByOption,
 } from "../../src/api/types";
-import { Chain, OpenSeaCollectionStats } from "../../src/types";
+import {
+  Chain,
+  OpenSeaCollection,
+  OpenSeaCollectionStats,
+} from "../../src/types";
 
 suite("API: CollectionsAPI", () => {
   let mockGet: sinon.SinonStub;
@@ -51,7 +55,7 @@ suite("API: CollectionsAPI", () => {
         payment_tokens: [],
         total_supply: 10000,
         created_date: "2024-01-01T00:00:00Z",
-      } as any;
+      } as unknown as GetCollectionResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -67,7 +71,7 @@ suite("API: CollectionsAPI", () => {
     test("handles slug with special characters", async () => {
       const mockResponse: GetCollectionResponse = {
         collection: "test-collection-123",
-      } as any;
+      } as unknown as GetCollectionResponse;
 
       mockGet.resolves(mockResponse);
 
@@ -97,11 +101,11 @@ suite("API: CollectionsAPI", () => {
           {
             collection: "collection-1",
             name: "Collection 1",
-          } as any,
+          } as unknown as OpenSeaCollection,
           {
             collection: "collection-2",
             name: "Collection 2",
-          } as any,
+          } as unknown as OpenSeaCollection,
         ],
         next: "cursor-123",
       };
@@ -266,7 +270,7 @@ suite("API: CollectionsAPI", () => {
           {
             collection: "collection-1",
             name: "Collection 1",
-          } as any,
+          } as unknown as OpenSeaCollection,
         ],
       };
 

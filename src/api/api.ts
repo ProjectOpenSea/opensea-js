@@ -1,5 +1,10 @@
 import { ethers } from "ethers";
 import { API_BASE_MAINNET } from "../constants";
+import { AccountsAPI } from "./accounts";
+import { CollectionsAPI } from "./collections";
+import { ListingsAPI } from "./listings";
+import { NFTsAPI } from "./nfts";
+import { OffersAPI } from "./offers";
 import {
   FulfillmentDataResponse,
   OrderAPIOptions,
@@ -18,11 +23,6 @@ import {
   OrderSide,
 } from "../types";
 import { OrdersAPI } from "./orders";
-import { OffersAPI } from "./offers";
-import { ListingsAPI } from "./listings";
-import { CollectionsAPI } from "./collections";
-import { NFTsAPI } from "./nfts";
-import { AccountsAPI } from "./accounts";
 import {
   BuildOfferResponse,
   GetCollectionsResponse,
@@ -92,25 +92,15 @@ export class OpenSeaAPI {
       this.post.bind(this),
       this.chain,
     );
-    this.offersAPI = new OffersAPI(
-      this.get.bind(this),
-      this.post.bind(this),
-    );
-    this.listingsAPI = new ListingsAPI(
-      this.get.bind(this),
-    );
-    this.collectionsAPI = new CollectionsAPI(
-      this.get.bind(this),
-    );
+    this.offersAPI = new OffersAPI(this.get.bind(this), this.post.bind(this));
+    this.listingsAPI = new ListingsAPI(this.get.bind(this));
+    this.collectionsAPI = new CollectionsAPI(this.get.bind(this));
     this.nftsAPI = new NFTsAPI(
       this.get.bind(this),
       this.post.bind(this),
       this.chain,
     );
-    this.accountsAPI = new AccountsAPI(
-      this.get.bind(this),
-      this.chain,
-    );
+    this.accountsAPI = new AccountsAPI(this.get.bind(this), this.chain);
   }
 
   /**
@@ -121,7 +111,7 @@ export class OpenSeaAPI {
    * @throws An error if there are no matching orders.
    */
   public async getOrder(
-    options: Omit<OrdersQueryOptions, "limit">
+    options: Omit<OrdersQueryOptions, "limit">,
   ): Promise<OrderV2> {
     return this.ordersAPI.getOrder(options);
   }
@@ -148,7 +138,7 @@ export class OpenSeaAPI {
    * @returns The {@link GetOrdersResponse} returned by the API.
    */
   public async getOrders(
-    options: Omit<OrdersQueryOptions, "limit">
+    options: Omit<OrdersQueryOptions, "limit">,
   ): Promise<GetOrdersResponse> {
     return this.ordersAPI.getOrders({ ...options, pageSize: this.pageSize });
   }
@@ -349,7 +339,12 @@ export class OpenSeaAPI {
     traitType?: string,
     traitValue?: string,
   ): Promise<CollectionOffer | null> {
-    return this.offersAPI.postCollectionOffer(order, slug, traitType, traitValue);
+    return this.offersAPI.postCollectionOffer(
+      order,
+      slug,
+      traitType,
+      traitValue,
+    );
   }
 
   /**

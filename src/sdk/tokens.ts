@@ -5,7 +5,7 @@ import {
   parseEther,
   JsonRpcProvider,
 } from "ethers";
-import { EventType, Chain } from "../types";
+import { EventData, EventType, Chain } from "../types";
 
 /**
  * Token wrapping and unwrapping operations
@@ -14,7 +14,7 @@ export class TokensManager {
   constructor(
     private signerOrProvider: Signer | JsonRpcProvider,
     private chain: Chain,
-    private dispatch: (event: EventType, data: any) => void,
+    private dispatch: (event: EventType, data: EventData) => void,
     private confirmTransaction: (
       hash: string,
       event: EventType,

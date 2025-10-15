@@ -1,7 +1,10 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
-import { totalBasisPointsForFees, basisPointsForFee } from "../../src/utils/fees";
 import { Fee } from "../../src/types";
+import {
+  totalBasisPointsForFees,
+  basisPointsForFee,
+} from "../../src/utils/fees";
 
 suite("Utils: fees", () => {
   suite("basisPointsForFee", () => {

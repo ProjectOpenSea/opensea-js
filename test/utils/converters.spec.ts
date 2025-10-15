@@ -195,7 +195,10 @@ suite("Utils: converters", () => {
         twitter_username: "testcollection",
         instagram_username: "testcollection_ig",
         contracts: [
-          { address: "0x1234567890123456789012345678901234567890", chain: "ethereum" },
+          {
+            address: "0x1234567890123456789012345678901234567890",
+            chain: "ethereum",
+          },
         ],
         editors: ["0x0987654321098765432109876543210987654321"],
         fees: [
@@ -233,7 +236,9 @@ suite("Utils: converters", () => {
       expect(result.description).to.equal("A test collection");
       expect(result.imageUrl).to.equal("https://example.com/image.png");
       expect(result.bannerImageUrl).to.equal("https://example.com/banner.png");
-      expect(result.owner).to.equal("0x1234567890123456789012345678901234567890");
+      expect(result.owner).to.equal(
+        "0x1234567890123456789012345678901234567890",
+      );
       expect(result.safelistStatus).to.equal("verified");
       expect(result.category).to.equal("art");
       expect(result.isDisabled).to.be.false;
@@ -279,16 +284,26 @@ suite("Utils: converters", () => {
         name: "Multi Contract Collection",
         collection: "multi-contract",
         contracts: [
-          { address: "0x1111111111111111111111111111111111111111", chain: "ethereum" },
-          { address: "0x2222222222222222222222222222222222222222", chain: "polygon" },
+          {
+            address: "0x1111111111111111111111111111111111111111",
+            chain: "ethereum",
+          },
+          {
+            address: "0x2222222222222222222222222222222222222222",
+            chain: "polygon",
+          },
         ],
       };
 
       const result = collectionFromJSON(collectionJSON);
 
       expect(result.contracts).to.have.length(2);
-      expect(result.contracts[0].address).to.equal("0x1111111111111111111111111111111111111111");
-      expect(result.contracts[1].address).to.equal("0x2222222222222222222222222222222222222222");
+      expect(result.contracts[0].address).to.equal(
+        "0x1111111111111111111111111111111111111111",
+      );
+      expect(result.contracts[1].address).to.equal(
+        "0x2222222222222222222222222222222222222222",
+      );
     });
 
     test("converts multiple fees", () => {
@@ -296,8 +311,16 @@ suite("Utils: converters", () => {
         name: "Multi Fee Collection",
         collection: "multi-fee",
         fees: [
-          { fee: 2.5, recipient: "0x1111111111111111111111111111111111111111", required: false },
-          { fee: 1.0, recipient: "0x2222222222222222222222222222222222222222", required: true },
+          {
+            fee: 2.5,
+            recipient: "0x1111111111111111111111111111111111111111",
+            required: false,
+          },
+          {
+            fee: 1.0,
+            recipient: "0x2222222222222222222222222222222222222222",
+            required: true,
+          },
         ],
       };
 

@@ -11,8 +11,11 @@ import {
 } from "../fixtures/orders";
 
 suite("SDK: FulfillmentManager", () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockOrdersManager: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockAPI: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockSeaport: any;
   let mockDispatch: sinon.SinonStub;
   let mockConfirmTransaction: sinon.SinonStub;
@@ -265,7 +268,10 @@ suite("SDK: FulfillmentManager", () => {
     });
 
     test("returns false on CALL_EXCEPTION error", async () => {
-      const error = new Error("CALL_EXCEPTION") as any;
+      const error = new Error("CALL_EXCEPTION") as unknown as {
+        code: string;
+        message: string;
+      };
       error.code = "CALL_EXCEPTION";
 
       mockSeaport.validate.returns({

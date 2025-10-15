@@ -1,5 +1,6 @@
 import { OpenSeaCollection, SafelistStatus } from "../../src/types";
 
+// eslint-disable-next-line import/no-unused-modules
 export const mockCollection: OpenSeaCollection = {
   collection: "test-collection",
   name: "Test Collection",
@@ -29,6 +30,7 @@ export const mockCollection: OpenSeaCollection = {
   createdDate: "2024-01-01T00:00:00Z",
 };
 
+// eslint-disable-next-line import/no-unused-modules
 export const mockCollectionMinimal: Partial<OpenSeaCollection> &
   Pick<OpenSeaCollection, "collection"> = {
   collection: "test-collection",
