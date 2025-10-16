@@ -68,15 +68,6 @@ Bulk orders allow signing multiple orders with a single wallet signature, reduci
 - **Order Index** (3 bytes): Position in the merkle tree
 - **Merkle Proof** (variable): ABI-encoded array of sibling hashes
 
-### Test Coverage
-
-1. **Post Bulk Offers - Mainnet**: Creates 3 offers with bulk signature, validates unique signatures
-2. **Post Bulk Offers with continueOnError**: Tests error handling when some orders fail
-3. **Post Bulk Listings**: Creates multiple listings with bulk signature
-4. **Post Bulk Listings with different parameters**: Tests varying prices, expirations, optional fees
-5. **Post Single Listing via Bulk API**: Verifies optimization (uses normal signature, not bulk)
-6. **Verify bulk signature structure**: Analyzes signature encoding and merkle proof structure
-
 ### Notes
 
 - Single orders use normal signatures to avoid merkle proof overhead

@@ -23,7 +23,6 @@ suite("SDK: bulk order posting", () => {
   });
 
   test("Post Bulk Offers - Mainnet", async function () {
-    // NOTE: Uses CREATE_LISTING and CREATE_LISTING_3 (both on mainnet) for cross-collection orders
     if (
       !ensureVarsOrSkip(this, {
         CREATE_LISTING_CONTRACT_ADDRESS,
@@ -33,6 +32,15 @@ suite("SDK: bulk order posting", () => {
       })
     ) {
       return;
+    }
+
+    // Verify CREATE_LISTING_3 is on the same chain as CREATE_LISTING
+    // NOTE: This test requires both NFTs to be on the same chain to demonstrate
+    // cross-collection bulk orders on a single chain
+    if (CREATE_LISTING_3_CHAIN !== CREATE_LISTING_CHAIN) {
+      throw new Error(
+        `CREATE_LISTING_3 must be on the same chain as CREATE_LISTING (${CREATE_LISTING_CHAIN}), but got ${CREATE_LISTING_3_CHAIN}`,
+      );
     }
 
     const chain = Chain.Mainnet;
@@ -47,14 +55,14 @@ suite("SDK: bulk order posting", () => {
           tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
           tokenId: CREATE_LISTING_TOKEN_ID as string,
         },
-        amount: +OFFER_AMOUNT,
+        amount: +OFFER_AMOUNT / 2,
       },
       {
         asset: {
           tokenAddress: CREATE_LISTING_3_CONTRACT_ADDRESS as string,
           tokenId: CREATE_LISTING_3_TOKEN_ID as string,
         },
-        amount: +OFFER_AMOUNT * 1.1, // Slightly different price
+        amount: +OFFER_AMOUNT / 2,
       },
     ];
 
@@ -168,8 +176,6 @@ suite("SDK: bulk order posting", () => {
   });
 
   test("Post Bulk Listings - Chain A", async function () {
-    // NOTE: CREATE_LISTING and CREATE_LISTING_3 must be on the same chain (CREATE_LISTING_CHAIN)
-    // to test cross-collection bulk orders on a single chain
     if (
       !ensureVarsOrSkip(this, {
         CREATE_LISTING_CONTRACT_ADDRESS,
@@ -401,7 +407,6 @@ suite("SDK: bulk order posting", () => {
   });
 
   test("Verify bulk signature structure and merkle proofs", async function () {
-    // NOTE: Uses CREATE_LISTING and CREATE_LISTING_3 (both on mainnet) for cross-collection orders
     if (
       !ensureVarsOrSkip(this, {
         CREATE_LISTING_CONTRACT_ADDRESS,
@@ -411,6 +416,15 @@ suite("SDK: bulk order posting", () => {
       })
     ) {
       return;
+    }
+
+    // Verify CREATE_LISTING_3 is on the same chain as CREATE_LISTING
+    // NOTE: This test requires both NFTs to be on the same chain to demonstrate
+    // cross-collection bulk orders on a single chain
+    if (CREATE_LISTING_3_CHAIN !== CREATE_LISTING_CHAIN) {
+      throw new Error(
+        `CREATE_LISTING_3 must be on the same chain as CREATE_LISTING (${CREATE_LISTING_CHAIN}), but got ${CREATE_LISTING_3_CHAIN}`,
+      );
     }
 
     const chain = Chain.Mainnet;
@@ -478,90 +492,5 @@ suite("SDK: bulk order posting", () => {
     });
 
     console.log("\n✓ Bulk signature structure verified successfully");
-  });
-
-  test("Post Bulk Offers - Cross-Collection Orders", async function () {
-    if (
-      !ensureVarsOrSkip(this, {
-        CREATE_LISTING_CONTRACT_ADDRESS,
-        CREATE_LISTING_TOKEN_ID,
-      })
-    ) {
-      return;
-    }
-
-    const chain = Chain.Mainnet;
-    const sdk = getSdkForChain(chain);
-
-    // Create offers across DIFFERENT collections to demonstrate cross-collection bulk orders
-    const offers = [
-      {
-        asset: {
-          tokenAddress: "0x61cfce882d8b92583b05f306c3d420d247d5f758", // testhree collection
-          tokenId: "3",
-        },
-        amount: +OFFER_AMOUNT,
-      },
-      {
-        asset: {
-          tokenAddress: "0xb46275ce53d478c4b75aad0aec2cb41b2616f302", // azuki-mizuki-anime-shorts
-          tokenId: "3",
-        },
-        amount: +OFFER_AMOUNT * 1.2,
-      },
-      {
-        asset: {
-          tokenAddress: "0x76be3b62873462d2142405439777e971754e8e77", // parallelalpha
-          tokenId: "10307",
-        },
-        amount: +OFFER_AMOUNT * 0.8,
-      },
-      {
-        asset: {
-          tokenAddress: "0xb46275ce53d478c4b75aad0aec2cb41b2616f302", // azuki-mizuki-anime-shorts (different token)
-          tokenId: "7",
-        },
-        amount: +OFFER_AMOUNT * 1.5,
-      },
-    ];
-
-    console.log(
-      `Creating ${offers.length} bulk offers across ${new Set(offers.map((o) => o.asset.tokenAddress)).size} different collections...`,
-    );
-
-    const result = await sdk.createBulkOffers({
-      offers,
-      accountAddress: walletAddress,
-      continueOnError: false,
-      onProgress: (completed, total) => {
-        console.log(
-          `Progress: ${completed}/${total} cross-collection offers submitted`,
-        );
-      },
-    });
-
-    // Verify all orders were created successfully
-    expect(result.successful).to.have.lengthOf(offers.length);
-    expect(result.failed).to.have.lengthOf(0);
-
-    // Validate each order and verify they're from different collections
-    const collections = new Set<string>();
-    result.successful.forEach((order, index) => {
-      console.log(`Order ${index + 1}:`, {
-        collection: offers[index].asset.tokenAddress,
-        tokenId: offers[index].asset.tokenId,
-        hash: order.orderHash?.substring(0, 10) + "...",
-      });
-      expectValidOrder(order);
-      collections.add(offers[index].asset.tokenAddress);
-    });
-
-    console.log(
-      `\n✓ Successfully created bulk orders across ${collections.size} different collections`,
-    );
-    expect(collections.size).to.be.greaterThan(
-      1,
-      "Should have orders from multiple collections",
-    );
   });
 });
