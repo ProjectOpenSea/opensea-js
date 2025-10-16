@@ -56,7 +56,9 @@ export const getRandomExpiration = (): number => {
   const futureTimestamp = now + randomSeconds;
 
   // Round down to the nearest minute for cleaner test values
-  return Math.floor(futureTimestamp / TimeInSeconds.MINUTE) * TimeInSeconds.MINUTE;
+  return (
+    Math.floor(futureTimestamp / TimeInSeconds.MINUTE) * TimeInSeconds.MINUTE
+  );
 };
 
 export const getRandomSalt = (): bigint => {
