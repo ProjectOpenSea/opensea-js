@@ -175,7 +175,7 @@ suite("SDK: bulk order posting", () => {
     console.log("✓ Bulk offers with error handling completed");
   });
 
-  test("Post Bulk Listings - Chain A", async function () {
+  test("Post Bulk Listings", async function () {
     if (
       !ensureVarsOrSkip(this, {
         CREATE_LISTING_CONTRACT_ADDRESS,
