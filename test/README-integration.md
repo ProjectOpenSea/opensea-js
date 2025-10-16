@@ -45,3 +45,41 @@ If you would like to run this test, you need to add `ETH_TO_WRAP = "0.001"` to y
 ```
 npm run test:integration
 ```
+
+To run specific test suites:
+
+```bash
+# Run only bulk order tests
+npm run test:integration -- --grep "bulk order posting"
+
+# Run specific test
+npm run test:integration -- --grep "Post Bulk Offers"
+```
+
+## Bulk Order Tests
+
+The bulk order tests (`test/integration/bulkOrders.spec.ts`) verify bulk order signing and submission functionality using Seaport's merkle tree signature mechanism.
+
+### What are Bulk Orders?
+
+Bulk orders allow signing multiple orders with a single wallet signature, reducing gas costs and improving UX. Each order receives a unique signature composed of:
+
+- **Base Signature** (64 bytes): Compact ECDSA signature of the merkle root
+- **Order Index** (3 bytes): Position in the merkle tree
+- **Merkle Proof** (variable): ABI-encoded array of sibling hashes
+
+### Test Coverage
+
+1. **Post Bulk Offers - Mainnet**: Creates 3 offers with bulk signature, validates unique signatures
+2. **Post Bulk Offers with continueOnError**: Tests error handling when some orders fail
+3. **Post Bulk Listings**: Creates multiple listings with bulk signature
+4. **Post Bulk Listings with different parameters**: Tests varying prices, expirations, optional fees
+5. **Post Single Listing via Bulk API**: Verifies optimization (uses normal signature, not bulk)
+6. **Verify bulk signature structure**: Analyzes signature encoding and merkle proof structure
+
+### Notes
+
+- Orders are padded to next power of 2 for merkle tree (e.g., 3 orders → 4 with padding)
+- Single orders use normal signatures to avoid merkle proof overhead
+- Tests include detailed logging of order hashes and signature lengths
+- Test timeouts: 120s for bulk operations, 60s for single orders
