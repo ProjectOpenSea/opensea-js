@@ -53,12 +53,7 @@ export const getRandomExpiration = (): number => {
   } while (randomValue >= rejectionThreshold);
 
   const randomSeconds = (randomValue % range) + fifteenMinutes;
-  const futureTimestamp = now + randomSeconds;
-
-  // Round down to the nearest minute for cleaner test values
-  return (
-    Math.floor(futureTimestamp / TimeInSeconds.MINUTE) * TimeInSeconds.MINUTE
-  );
+  return now + randomSeconds;
 };
 
 export const getRandomSalt = (): bigint => {
