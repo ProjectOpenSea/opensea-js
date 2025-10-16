@@ -11,6 +11,7 @@ import {
   OPENSEA_CONDUIT_KEY_2,
   OPENSEA_FEE_RECIPIENT,
   SIGNED_ZONE,
+  SOMNIA_FEE_RECIPIENT,
   WPOL_ADDRESS,
 } from "../constants";
 import { Chain } from "../types";
@@ -193,6 +194,7 @@ export const getDefaultConduit = (
 export const getSeaportAddress = (chain: Chain): string => {
   switch (chain) {
     case Chain.Gunzilla:
+    case Chain.Somnia:
       return GUNZILLA_SEAPORT_1_6_ADDRESS;
     default:
       return CROSS_CHAIN_SEAPORT_V1_6_ADDRESS;
@@ -207,6 +209,7 @@ export const getSeaportAddress = (chain: Chain): string => {
 export const getSignedZone = (chain: Chain): string => {
   switch (chain) {
     case Chain.Gunzilla:
+    case Chain.Somnia:
       return GUNZILLA_SIGNED_ZONE_V2_ADDRESS;
     default:
       return SIGNED_ZONE;
@@ -222,6 +225,8 @@ export const getFeeRecipient = (chain: Chain): string => {
   switch (chain) {
     case Chain.Gunzilla:
       return GUNZILLA_FEE_RECIPIENT;
+    case Chain.Somnia:
+      return SOMNIA_FEE_RECIPIENT;
     default:
       return OPENSEA_FEE_RECIPIENT;
   }
