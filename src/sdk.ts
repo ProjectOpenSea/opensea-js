@@ -25,7 +25,11 @@ import {
   AssetWithTokenStandard,
   AssetWithTokenId,
 } from "./types";
-import { getDefaultConduit, getOfferPaymentToken } from "./utils/utils";
+import {
+  getDefaultConduit,
+  getOfferPaymentToken,
+  getSeaportAddress,
+} from "./utils/utils";
 
 /**
  * The OpenSea SDK main class.
@@ -78,11 +82,15 @@ export class OpenSeaSDK {
     this._signerOrProvider = signerOrProvider ?? this.provider;
 
     const defaultConduit = getDefaultConduit(this.chain);
+    const seaportAddress = getSeaportAddress(this.chain);
     this.seaport = new Seaport(this._signerOrProvider, {
       conduitKeyToConduit: {
         [defaultConduit.key]: defaultConduit.address,
       },
-      overrides: { defaultConduitKey: defaultConduit.key },
+      overrides: {
+        defaultConduitKey: defaultConduit.key,
+        contractAddress: seaportAddress,
+      },
     });
 
     // Emit events
