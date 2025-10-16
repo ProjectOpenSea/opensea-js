@@ -15,9 +15,9 @@ import {
   TokenStandard,
   AssetWithTokenId,
 } from "../types";
+import { oneMonthFromNowInSeconds } from "../utils/dateHelper";
 import { pluralize } from "../utils/stringHelper";
 import {
-  getMaxOrderExpirationTimestamp,
   getAssetItemType,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
   basisPointsForFee,
@@ -26,7 +26,6 @@ import {
   getOfferPaymentToken,
   getListingPaymentToken,
   getSignedZone,
-  getNextPowerOfTwo,
 } from "../utils/utils";
 
 /**
@@ -217,8 +216,7 @@ export class OrdersManager {
         consideration: considerationFeeItems,
         startTime: listingTime?.toString(),
         endTime:
-          expirationTime?.toString() ??
-          getMaxOrderExpirationTimestamp().toString(),
+          expirationTime?.toString() ?? oneMonthFromNowInSeconds().toString(),
         zone,
         domain,
         salt: BigInt(salt ?? 0).toString(),
@@ -347,7 +345,7 @@ export class OrdersManager {
         endTime:
           expirationTime !== undefined
             ? BigInt(expirationTime).toString()
-            : getMaxOrderExpirationTimestamp().toString(),
+            : oneMonthFromNowInSeconds().toString(),
         zone,
         domain,
         salt: BigInt(salt ?? 0).toString(),
@@ -731,8 +729,7 @@ export class OrdersManager {
           consideration: considerationFeeItems,
           startTime: listingTime?.toString(),
           endTime:
-            expirationTime?.toString() ??
-            getMaxOrderExpirationTimestamp().toString(),
+            expirationTime?.toString() ?? oneMonthFromNowInSeconds().toString(),
           zone: metadata.zone,
           domain: metadata.domain,
           salt: metadata.salt
@@ -746,35 +743,6 @@ export class OrdersManager {
 
     const resolvedInputs = await Promise.all(createOrderInputsForSeaport);
 
-    // Pad orders to next power of 2 for Seaport's merkle tree requirements
-    const actualOrderCount = resolvedInputs.length;
-    const paddedOrderCount = getNextPowerOfTwo(actualOrderCount);
-    const paddingCount = paddedOrderCount - actualOrderCount;
-
-    if (paddingCount > 0) {
-      this.context.logger(
-        `Padding ${actualOrderCount} ${pluralize(actualOrderCount, "listing")} to ${paddedOrderCount} for merkle tree (adding ${paddingCount} empty ${pluralize(paddingCount, "order")})`,
-      );
-
-      // Create empty unfulfillable orders for padding
-      // These orders have zero amounts and will never be actionable
-      const emptyOrder = {
-        offer: [],
-        consideration: [],
-        startTime: "0",
-        endTime: "1", // Already expired
-        zone: ZeroAddress,
-        domain: undefined,
-        salt: undefined,
-        restrictedByZone: false,
-        allowPartialFills: false,
-      };
-
-      for (let i = 0; i < paddingCount; i++) {
-        resolvedInputs.push(emptyOrder);
-      }
-    }
-
     const { executeAllActions } = await this.context.seaport.createBulkOrders(
       resolvedInputs,
       accountAddress,
@@ -782,43 +750,33 @@ export class OrdersManager {
 
     const orders = await executeAllActions();
 
-    // Only submit the actual orders (not padding) to the OpenSea API
-    const actualOrders = orders.slice(0, actualOrderCount);
-
     // Submit each order individually to the OpenSea API
     // Rate limiting is handled automatically by the API client
     this.context.logger(
-      `Starting submission of ${actualOrders.length} bulk-signed ${pluralize(actualOrders.length, "listing")} to OpenSea API...`,
+      `Starting submission of ${orders.length} bulk-signed ${pluralize(orders.length, "listing")} to OpenSea API...`,
     );
 
     const submittedOrders: OrderV2[] = [];
     const failedOrders: BulkOrderResult["failed"] = [];
 
-    for (let i = 0; i < actualOrders.length; i++) {
-      this.context.logger(
-        `Submitting listing ${i + 1}/${actualOrders.length}...`,
-      );
+    for (let i = 0; i < orders.length; i++) {
+      this.context.logger(`Submitting listing ${i + 1}/${orders.length}...`);
       try {
-        const submittedOrder = await this.context.api.postOrder(
-          actualOrders[i],
-          {
-            protocol: "seaport",
-            protocolAddress: this.context.seaport.contract.target as string,
-            side: OrderSide.LISTING,
-          },
-        );
+        const submittedOrder = await this.context.api.postOrder(orders[i], {
+          protocol: "seaport",
+          protocolAddress: this.context.seaport.contract.target as string,
+          side: OrderSide.LISTING,
+        });
         submittedOrders.push(submittedOrder);
-        this.context.logger(
-          `Completed listing ${i + 1}/${actualOrders.length}`,
-        );
+        this.context.logger(`Completed listing ${i + 1}/${orders.length}`);
       } catch (error) {
         const errorMessage = (error as Error).message;
         this.context.logger(
-          `Failed listing ${i + 1}/${actualOrders.length}: ${errorMessage}`,
+          `Failed listing ${i + 1}/${orders.length}: ${errorMessage}`,
         );
         failedOrders.push({
           index: i,
-          order: actualOrders[i],
+          order: orders[i],
           error: error as Error,
         });
 
@@ -829,18 +787,18 @@ export class OrdersManager {
       }
 
       // Call progress callback after each listing (successful or failed)
-      onProgress?.(i + 1, actualOrders.length);
+      onProgress?.(i + 1, orders.length);
     }
 
     if (submittedOrders.length > 0) {
       this.context.logger(
-        `Successfully submitted ${submittedOrders.length}/${actualOrders.length} ${pluralize(submittedOrders.length, "listing")}`,
+        `Successfully submitted ${submittedOrders.length}/${orders.length} ${pluralize(submittedOrders.length, "listing")}`,
       );
     }
 
     if (failedOrders.length > 0) {
       this.context.logger(
-        `Failed to submit ${failedOrders.length}/${actualOrders.length} ${pluralize(failedOrders.length, "listing")}`,
+        `Failed to submit ${failedOrders.length}/${orders.length} ${pluralize(failedOrders.length, "listing")}`,
       );
     }
 
@@ -1001,7 +959,7 @@ export class OrdersManager {
           endTime:
             metadata.expirationTime !== undefined
               ? BigInt(metadata.expirationTime).toString()
-              : getMaxOrderExpirationTimestamp().toString(),
+              : oneMonthFromNowInSeconds().toString(),
           zone: metadata.zone,
           domain: metadata.domain,
           salt: metadata.salt
@@ -1015,35 +973,6 @@ export class OrdersManager {
 
     const resolvedInputs = await Promise.all(createOrderInputsForSeaport);
 
-    // Pad orders to next power of 2 for Seaport's merkle tree requirements
-    const actualOrderCount = resolvedInputs.length;
-    const paddedOrderCount = getNextPowerOfTwo(actualOrderCount);
-    const paddingCount = paddedOrderCount - actualOrderCount;
-
-    if (paddingCount > 0) {
-      this.context.logger(
-        `Padding ${actualOrderCount} ${pluralize(actualOrderCount, "offer")} to ${paddedOrderCount} for merkle tree (adding ${paddingCount} empty ${pluralize(paddingCount, "order")})`,
-      );
-
-      // Create empty unfulfillable orders for padding
-      // These orders have zero amounts and will never be actionable
-      const emptyOrder = {
-        offer: [],
-        consideration: [],
-        startTime: "0",
-        endTime: "1", // Already expired
-        zone: ZeroAddress,
-        domain: undefined,
-        salt: undefined,
-        restrictedByZone: false,
-        allowPartialFills: false,
-      };
-
-      for (let i = 0; i < paddingCount; i++) {
-        resolvedInputs.push(emptyOrder);
-      }
-    }
-
     const { executeAllActions } = await this.context.seaport.createBulkOrders(
       resolvedInputs,
       accountAddress,
@@ -1051,41 +980,33 @@ export class OrdersManager {
 
     const orders = await executeAllActions();
 
-    // Only submit the actual orders (not padding) to the OpenSea API
-    const actualOrders = orders.slice(0, actualOrderCount);
-
     // Submit each order individually to the OpenSea API
     // Rate limiting is handled automatically by the API client
     this.context.logger(
-      `Starting submission of ${actualOrders.length} bulk-signed ${pluralize(actualOrders.length, "offer")} to OpenSea API...`,
+      `Starting submission of ${orders.length} bulk-signed ${pluralize(orders.length, "offer")} to OpenSea API...`,
     );
 
     const submittedOrders: OrderV2[] = [];
     const failedOrders: BulkOrderResult["failed"] = [];
 
-    for (let i = 0; i < actualOrders.length; i++) {
-      this.context.logger(
-        `Submitting offer ${i + 1}/${actualOrders.length}...`,
-      );
+    for (let i = 0; i < orders.length; i++) {
+      this.context.logger(`Submitting offer ${i + 1}/${orders.length}...`);
       try {
-        const submittedOrder = await this.context.api.postOrder(
-          actualOrders[i],
-          {
-            protocol: "seaport",
-            protocolAddress: this.context.seaport.contract.target as string,
-            side: OrderSide.OFFER,
-          },
-        );
+        const submittedOrder = await this.context.api.postOrder(orders[i], {
+          protocol: "seaport",
+          protocolAddress: this.context.seaport.contract.target as string,
+          side: OrderSide.OFFER,
+        });
         submittedOrders.push(submittedOrder);
-        this.context.logger(`Completed offer ${i + 1}/${actualOrders.length}`);
+        this.context.logger(`Completed offer ${i + 1}/${orders.length}`);
       } catch (error) {
         const errorMessage = (error as Error).message;
         this.context.logger(
-          `Failed offer ${i + 1}/${actualOrders.length}: ${errorMessage}`,
+          `Failed offer ${i + 1}/${orders.length}: ${errorMessage}`,
         );
         failedOrders.push({
           index: i,
-          order: actualOrders[i],
+          order: orders[i],
           error: error as Error,
         });
 
@@ -1096,18 +1017,18 @@ export class OrdersManager {
       }
 
       // Call progress callback after each offer (successful or failed)
-      onProgress?.(i + 1, actualOrders.length);
+      onProgress?.(i + 1, orders.length);
     }
 
     if (submittedOrders.length > 0) {
       this.context.logger(
-        `Successfully submitted ${submittedOrders.length}/${actualOrders.length} ${pluralize(submittedOrders.length, "offer")}`,
+        `Successfully submitted ${submittedOrders.length}/${orders.length} ${pluralize(submittedOrders.length, "offer")}`,
       );
     }
 
     if (failedOrders.length > 0) {
       this.context.logger(
-        `Failed to submit ${failedOrders.length}/${actualOrders.length} ${pluralize(failedOrders.length, "offer")}`,
+        `Failed to submit ${failedOrders.length}/${orders.length} ${pluralize(failedOrders.length, "offer")}`,
       );
     }
 
@@ -1203,8 +1124,7 @@ export class OrdersManager {
       ],
       consideration: considerationItems,
       endTime:
-        expirationTime?.toString() ??
-        getMaxOrderExpirationTimestamp().toString(),
+        expirationTime?.toString() ?? oneMonthFromNowInSeconds().toString(),
       zone: buildOfferResult.partialParameters.zone,
       domain,
       salt: BigInt(salt ?? 0).toString(),

@@ -120,7 +120,7 @@ suite("SDK: order posting", () => {
     expectValidOrder(order);
   });
 
-  test("Post Listing with Optional Creator Fees - Chain A", async function () {
+  test("Post Listing with Optional Creator Fees", async function () {
     if (
       !ensureVarsOrSkip(this, {
         CREATE_LISTING_CONTRACT_ADDRESS,
