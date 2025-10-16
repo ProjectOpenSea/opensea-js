@@ -22,35 +22,41 @@ suite("SDK: bulk order posting", () => {
   });
 
   test("Post Bulk Offers - Mainnet", async function () {
-    this.timeout(120000); // 2 minutes timeout for bulk operations
-    this.skip(); // Skip: requires WETH balance and specific NFT availability
+    if (
+      !ensureVarsOrSkip(this, {
+        CREATE_LISTING_CONTRACT_ADDRESS,
+        CREATE_LISTING_TOKEN_ID,
+      })
+    ) {
+      return;
+    }
 
     const chain = Chain.Mainnet;
     const sdk = getSdkForChain(chain);
 
     const expirationTime = getRandomExpiration();
 
-    // Create multiple offers on different NFTs
-    // NOTE: These NFTs must exist and wallet must have WETH balance
+    // Create multiple offers on the same collection with different token IDs
+    const baseTokenId = parseInt(CREATE_LISTING_TOKEN_ID as string);
     const offers = [
       {
         asset: {
-          tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c", // Cool Cats
-          tokenId: "2288",
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
+          tokenId: String(baseTokenId),
         },
         amount: +OFFER_AMOUNT,
       },
       {
         asset: {
-          tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
-          tokenId: "2289",
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
+          tokenId: String(baseTokenId + 1),
         },
         amount: +OFFER_AMOUNT,
       },
       {
         asset: {
-          tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
-          tokenId: "2290",
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
+          tokenId: String(baseTokenId + 2),
         },
         amount: +OFFER_AMOUNT * 1.1, // Slightly different price
       },
@@ -97,25 +103,30 @@ suite("SDK: bulk order posting", () => {
   });
 
   test("Post Bulk Offers with continueOnError - Mainnet", async function () {
-    this.timeout(120000);
-    this.skip(); // Skip: requires WETH balance and specific NFT availability
+    if (
+      !ensureVarsOrSkip(this, {
+        CREATE_LISTING_CONTRACT_ADDRESS,
+        CREATE_LISTING_TOKEN_ID,
+      })
+    ) {
+      return;
+    }
 
     const chain = Chain.Mainnet;
     const sdk = getSdkForChain(chain);
 
     // Create offers including one that might fail (invalid token ID)
-    // NOTE: First NFT must exist, second is intentionally invalid to test error handling
     const offers = [
       {
         asset: {
-          tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
-          tokenId: "2288",
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
+          tokenId: CREATE_LISTING_TOKEN_ID as string,
         },
         amount: +OFFER_AMOUNT,
       },
       {
         asset: {
-          tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
           tokenId: "999999999", // This does not exist
         },
         amount: +OFFER_AMOUNT,
@@ -158,9 +169,6 @@ suite("SDK: bulk order posting", () => {
   });
 
   test("Post Bulk Listings - Chain A", async function () {
-    this.timeout(120000);
-    this.skip(); // Skip: requires NFTs owned by test wallet
-
     if (
       !ensureVarsOrSkip(this, {
         CREATE_LISTING_CONTRACT_ADDRESS,
@@ -181,8 +189,8 @@ suite("SDK: bulk order posting", () => {
     const listings = [
       {
         asset: {
-          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS,
-          tokenId: CREATE_LISTING_TOKEN_ID,
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
+          tokenId: CREATE_LISTING_TOKEN_ID as string,
         },
         amount: LISTING_AMOUNT,
       },
@@ -192,8 +200,8 @@ suite("SDK: bulk order posting", () => {
     if (CREATE_LISTING_2_CONTRACT_ADDRESS && CREATE_LISTING_2_TOKEN_ID) {
       listings.push({
         asset: {
-          tokenAddress: CREATE_LISTING_2_CONTRACT_ADDRESS,
-          tokenId: CREATE_LISTING_2_TOKEN_ID,
+          tokenAddress: CREATE_LISTING_2_CONTRACT_ADDRESS as string,
+          tokenId: CREATE_LISTING_2_TOKEN_ID as string,
         },
         amount: LISTING_AMOUNT,
       });
@@ -241,13 +249,12 @@ suite("SDK: bulk order posting", () => {
   });
 
   test("Post Bulk Listings with different prices and parameters", async function () {
-    this.timeout(120000);
-    this.skip(); // Skip: requires NFTs owned by test wallet
-
     if (
       !ensureVarsOrSkip(this, {
         CREATE_LISTING_CONTRACT_ADDRESS,
         CREATE_LISTING_TOKEN_ID,
+        CREATE_LISTING_2_CONTRACT_ADDRESS,
+        CREATE_LISTING_2_TOKEN_ID,
       })
     ) {
       return;
@@ -268,8 +275,8 @@ suite("SDK: bulk order posting", () => {
     }> = [
       {
         asset: {
-          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS,
-          tokenId: CREATE_LISTING_TOKEN_ID,
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
+          tokenId: CREATE_LISTING_TOKEN_ID as string,
         },
         amount: LISTING_AMOUNT,
         expirationTime,
@@ -280,8 +287,8 @@ suite("SDK: bulk order posting", () => {
     if (CREATE_LISTING_2_CONTRACT_ADDRESS && CREATE_LISTING_2_TOKEN_ID) {
       listings.push({
         asset: {
-          tokenAddress: CREATE_LISTING_2_CONTRACT_ADDRESS,
-          tokenId: CREATE_LISTING_2_TOKEN_ID,
+          tokenAddress: CREATE_LISTING_2_CONTRACT_ADDRESS as string,
+          tokenId: CREATE_LISTING_2_TOKEN_ID as string,
         },
         amount: String(+LISTING_AMOUNT * 1.5), // Different price
         expirationTime: expirationTime2, // Different expiration
@@ -321,9 +328,6 @@ suite("SDK: bulk order posting", () => {
   });
 
   test("Post Single Listing via Bulk API - uses normal signature", async function () {
-    this.timeout(60000);
-    this.skip(); // Skip: requires NFTs owned by test wallet
-
     if (
       !ensureVarsOrSkip(this, {
         CREATE_LISTING_CONTRACT_ADDRESS,
@@ -382,33 +386,39 @@ suite("SDK: bulk order posting", () => {
   });
 
   test("Verify bulk signature structure and merkle proofs", async function () {
-    this.timeout(120000);
-    this.skip(); // Skip: requires WETH balance and triggers API 500 error
+    if (
+      !ensureVarsOrSkip(this, {
+        CREATE_LISTING_CONTRACT_ADDRESS,
+        CREATE_LISTING_TOKEN_ID,
+      })
+    ) {
+      return;
+    }
 
     const chain = Chain.Mainnet;
     const sdk = getSdkForChain(chain);
 
     // Create 3 offers to test power-of-2 padding (will be padded to 4)
-    // NOTE: These NFTs must exist and wallet must have WETH balance
+    const baseTokenId = parseInt(CREATE_LISTING_TOKEN_ID as string);
     const offers = [
       {
         asset: {
-          tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
-          tokenId: "2288",
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
+          tokenId: String(baseTokenId),
         },
         amount: +OFFER_AMOUNT,
       },
       {
         asset: {
-          tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
-          tokenId: "2289",
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
+          tokenId: String(baseTokenId + 1),
         },
         amount: +OFFER_AMOUNT,
       },
       {
         asset: {
-          tokenAddress: "0x1a92f7381b9f03921564a437210bb9396471050c",
-          tokenId: "2290",
+          tokenAddress: CREATE_LISTING_CONTRACT_ADDRESS as string,
+          tokenId: String(baseTokenId + 2),
         },
         amount: +OFFER_AMOUNT,
       },
