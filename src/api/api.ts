@@ -735,10 +735,22 @@ export class OpenSeaAPI {
 
     this.logger(
       `Sending request: ${url} ${JSON.stringify({
-        request: req,
+        method: body ? "POST" : "GET",
         headers: req.headers,
+        body: body ? JSON.stringify(body, null, 2) : undefined,
       })}`,
     );
+
+    // DEBUG: Log offer and listing requests
+    if ((url.includes("/offers") || url.includes("/listings")) && body) {
+      const type = url.includes("/offers") ? "OFFER" : "LISTING";
+      console.log("\n" + "=".repeat(80));
+      console.log(`DEBUG: ${type} REQUEST`);
+      console.log("=".repeat(80));
+      console.log("URL:", url);
+      console.log("BODY:", JSON.stringify(body, null, 2));
+      console.log("=".repeat(80) + "\n");
+    }
 
     const response = await req.send();
     if (!response.ok()) {

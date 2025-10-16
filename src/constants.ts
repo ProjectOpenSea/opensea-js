@@ -1,23 +1,21 @@
 import { FixedNumber } from "ethers";
 
+// =============================================================================
+// Math & Calculation Constants
+// =============================================================================
+
 export const FIXED_NUMBER_100 = FixedNumber.fromValue(100);
 export const INVERSE_BASIS_POINT = 10_000n; // 100 basis points per 1%
-export const MAX_EXPIRATION_MONTHS = 6;
+
+// =============================================================================
+// API Configuration
+// =============================================================================
 
 export const API_BASE_MAINNET = "https://api.opensea.io";
 
-export const SIGNED_ZONE = "0x000056f7000000ece9003ca63978907a00ffd100";
-
-const SHARED_STOREFRONT_ADDRESS_MAINNET =
-  "0x495f947276749ce646f68ac8c248420045cb7b5e";
-const SHARED_STOREFRONT_ADDRESS_POLYGON =
-  "0x2953399124f0cbb46d2cbacd8a89cf0599974963";
-export const SHARED_STOREFRONT_ADDRESSES = [
-  SHARED_STOREFRONT_ADDRESS_MAINNET,
-  SHARED_STOREFRONT_ADDRESS_POLYGON,
-].map((address) => address.toLowerCase());
-export const SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS =
-  "0xa604060890923ff400e8c6f5290461a83aedacec";
+// =============================================================================
+// OpenSea Protocol Addresses
+// =============================================================================
 
 export const OPENSEA_FEE_RECIPIENT =
   "0x0000a26b00c1f0df003000390027140000faa719";
@@ -34,7 +32,11 @@ export const OPENSEA_CONDUIT_KEY_2 =
 export const OPENSEA_CONDUIT_ADDRESS_2 =
   "0x963f00d3ff000064ffcba824b800c0000000c300";
 
-export const WPOL_ADDRESS = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270";
+export const SIGNED_ZONE = "0x000056f7000000ece9003ca63978907a00ffd100";
+
+// =============================================================================
+// Gunzilla-Specific Constants
+// =============================================================================
 
 export const GUNZILLA_FEE_RECIPIENT =
   "0xd9f68d28e451a83affdb7c71cc2c20552555b07f";
@@ -51,7 +53,28 @@ export const GUNZILLA_SEAPORT_1_6_ADDRESS =
 export const GUNZILLA_SIGNED_ZONE_V2_ADDRESS =
   "0xdfe0000000005ce3008800300037e4c803ed08c7";
 
+// =============================================================================
+// Token & Helper Addresses
+// =============================================================================
+
+export const WPOL_ADDRESS = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270";
+
 export const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
 
 export const TRANSFER_HELPER_ADDRESS =
   "0x0000000000c2d145a2526bd8c716263bfebe1a72";
+
+// =============================================================================
+// Shared Storefront Addresses
+// =============================================================================
+
+const SHARED_STOREFRONT_ADDRESS_MAINNET =
+  "0x495f947276749ce646f68ac8c248420045cb7b5e";
+const SHARED_STOREFRONT_ADDRESS_POLYGON =
+  "0x2953399124f0cbb46d2cbacd8a89cf0599974963";
+export const SHARED_STOREFRONT_ADDRESSES = [
+  SHARED_STOREFRONT_ADDRESS_MAINNET,
+  SHARED_STOREFRONT_ADDRESS_POLYGON,
+].map((address) => address.toLowerCase());
+export const SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS =
+  "0xa604060890923ff400e8c6f5290461a83aedacec";

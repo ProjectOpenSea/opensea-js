@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import { MAX_EXPIRATION_MONTHS } from "../constants";
 
 // Re-export all utilities from specialized modules
 export * from "./converters";
@@ -26,21 +25,6 @@ export async function estimateGas(
     data,
   });
 }
-
-/**
- * The longest time that an order is valid for is one month from the current date
- * @returns unix timestamp
- */
-export const getMaxOrderExpirationTimestamp = () => {
-  const maxExpirationDate = new Date();
-
-  maxExpirationDate.setMonth(
-    maxExpirationDate.getMonth() + MAX_EXPIRATION_MONTHS,
-  );
-  maxExpirationDate.setDate(maxExpirationDate.getDate() - 1);
-
-  return Math.round(maxExpirationDate.getTime() / 1000);
-};
 
 interface ErrorWithCode extends Error {
   code: string;

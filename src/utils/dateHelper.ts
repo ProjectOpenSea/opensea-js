@@ -38,3 +38,11 @@ export enum TimeInSeconds {
   /** 30 days = 2592000 seconds */
   MONTH = 2592000,
 }
+
+/**
+ * Get Unix timestamp for one month from now (30 days)
+ * @returns Unix timestamp (seconds since epoch) for 30 days in the future
+ */
+export const oneMonthFromNowInSeconds = (): number => {
+  return getUnixTimestampInSeconds(TimeInSeconds.MONTH);
+};

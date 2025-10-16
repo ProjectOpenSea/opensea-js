@@ -15,9 +15,9 @@ import {
   TokenStandard,
   AssetWithTokenId,
 } from "../types";
+import { oneMonthFromNowInSeconds } from "../utils/dateHelper";
 import { pluralize } from "../utils/stringHelper";
 import {
-  getMaxOrderExpirationTimestamp,
   getAssetItemType,
   getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
   basisPointsForFee,
@@ -216,8 +216,7 @@ export class OrdersManager {
         consideration: considerationFeeItems,
         startTime: listingTime?.toString(),
         endTime:
-          expirationTime?.toString() ??
-          getMaxOrderExpirationTimestamp().toString(),
+          expirationTime?.toString() ?? oneMonthFromNowInSeconds().toString(),
         zone,
         domain,
         salt: BigInt(salt ?? 0).toString(),
@@ -346,7 +345,7 @@ export class OrdersManager {
         endTime:
           expirationTime !== undefined
             ? BigInt(expirationTime).toString()
-            : getMaxOrderExpirationTimestamp().toString(),
+            : oneMonthFromNowInSeconds().toString(),
         zone,
         domain,
         salt: BigInt(salt ?? 0).toString(),
@@ -730,8 +729,7 @@ export class OrdersManager {
           consideration: considerationFeeItems,
           startTime: listingTime?.toString(),
           endTime:
-            expirationTime?.toString() ??
-            getMaxOrderExpirationTimestamp().toString(),
+            expirationTime?.toString() ?? oneMonthFromNowInSeconds().toString(),
           zone: metadata.zone,
           domain: metadata.domain,
           salt: metadata.salt
@@ -961,7 +959,7 @@ export class OrdersManager {
           endTime:
             metadata.expirationTime !== undefined
               ? BigInt(metadata.expirationTime).toString()
-              : getMaxOrderExpirationTimestamp().toString(),
+              : oneMonthFromNowInSeconds().toString(),
           zone: metadata.zone,
           domain: metadata.domain,
           salt: metadata.salt
@@ -1126,8 +1124,7 @@ export class OrdersManager {
       ],
       consideration: considerationItems,
       endTime:
-        expirationTime?.toString() ??
-        getMaxOrderExpirationTimestamp().toString(),
+        expirationTime?.toString() ?? oneMonthFromNowInSeconds().toString(),
       zone: buildOfferResult.partialParameters.zone,
       domain,
       salt: BigInt(salt ?? 0).toString(),
