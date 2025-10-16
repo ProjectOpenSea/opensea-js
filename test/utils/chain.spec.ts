@@ -13,6 +13,7 @@ import {
   SIGNED_ZONE,
   OPENSEA_FEE_RECIPIENT,
   GUNZILLA_FEE_RECIPIENT,
+  SOMNIA_FEE_RECIPIENT,
 } from "../../src/constants";
 import { Chain } from "../../src/types";
 import {
@@ -379,8 +380,8 @@ suite("Utils: chain", () => {
       expect(getFeeRecipient(Chain.Gunzilla)).to.equal(GUNZILLA_FEE_RECIPIENT);
     });
 
-    test("returns Gunzilla fee recipient for Somnia", () => {
-      expect(getFeeRecipient(Chain.Somnia)).to.equal(GUNZILLA_FEE_RECIPIENT);
+    test("returns Somnia fee recipient for Somnia", () => {
+      expect(getFeeRecipient(Chain.Somnia)).to.equal(SOMNIA_FEE_RECIPIENT);
     });
 
     test("returns OpenSea fee recipient for other chains", () => {

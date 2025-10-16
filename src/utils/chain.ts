@@ -11,6 +11,7 @@ import {
   OPENSEA_CONDUIT_KEY_2,
   OPENSEA_FEE_RECIPIENT,
   SIGNED_ZONE,
+  SOMNIA_FEE_RECIPIENT,
   WPOL_ADDRESS,
 } from "../constants";
 import { Chain } from "../types";
@@ -223,8 +224,9 @@ export const getSignedZone = (chain: Chain): string => {
 export const getFeeRecipient = (chain: Chain): string => {
   switch (chain) {
     case Chain.Gunzilla:
-    case Chain.Somnia:
       return GUNZILLA_FEE_RECIPIENT;
+    case Chain.Somnia:
+      return SOMNIA_FEE_RECIPIENT;
     default:
       return OPENSEA_FEE_RECIPIENT;
   }
