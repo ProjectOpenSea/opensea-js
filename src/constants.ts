@@ -14,21 +14,11 @@ export const INVERSE_BASIS_POINT = 10_000n; // 100 basis points per 1%
 export const API_BASE_MAINNET = "https://api.opensea.io";
 
 // =============================================================================
-// Fee Recipients
+// OpenSea Protocol Addresses
 // =============================================================================
 
 export const OPENSEA_FEE_RECIPIENT =
   "0x0000a26b00c1f0df003000390027140000faa719";
-
-export const GUNZILLA_FEE_RECIPIENT =
-  "0xd9f68d28e451a83affdb7c71cc2c20552555b07f";
-
-export const SOMNIA_FEE_RECIPIENT =
-  "0xdfe1593dca6ad8a20eeb418643e48577c1626f7c";
-
-// =============================================================================
-// OpenSea Protocol Addresses
-// =============================================================================
 
 export const OPENSEA_CONDUIT_KEY =
   "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000";
@@ -48,6 +38,9 @@ export const SIGNED_ZONE = "0x000056f7000000ece9003ca63978907a00ffd100";
 // Gunzilla-Specific Constants
 // =============================================================================
 
+export const GUNZILLA_FEE_RECIPIENT =
+  "0xd9f68d28e451a83affdb7c71cc2c20552555b07f";
+
 export const GUNZILLA_CONDUIT_ADDRESS =
   "0x00000000001566479594a2e05532d81afa09bc52";
 
@@ -59,6 +52,13 @@ export const GUNZILLA_SEAPORT_1_6_ADDRESS =
 
 export const GUNZILLA_SIGNED_ZONE_V2_ADDRESS =
   "0xdfe0000000005ce3008800300037e4c803ed08c7";
+
+// =============================================================================
+// Somnia-Specific Constants
+// =============================================================================
+
+export const SOMNIA_FEE_RECIPIENT =
+  "0xdfe1593dca6ad8a20eeb418643e48577c1626f7c";
 
 // =============================================================================
 // Token & Helper Addresses
