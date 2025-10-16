@@ -316,6 +316,12 @@ suite("Utils: chain", () => {
       );
     });
 
+    test("returns Gunzilla Seaport 1.6 for Somnia", () => {
+      expect(getSeaportAddress(Chain.Somnia)).to.equal(
+        GUNZILLA_SEAPORT_1_6_ADDRESS,
+      );
+    });
+
     test("returns cross-chain Seaport 1.6 for other chains", () => {
       const otherChains = [
         Chain.Polygon,
@@ -344,6 +350,12 @@ suite("Utils: chain", () => {
       );
     });
 
+    test("returns Gunzilla signed zone for Somnia", () => {
+      expect(getSignedZone(Chain.Somnia)).to.equal(
+        GUNZILLA_SIGNED_ZONE_V2_ADDRESS,
+      );
+    });
+
     test("returns OpenSea signed zone for other chains", () => {
       const otherChains = [
         Chain.Polygon,
@@ -365,6 +377,10 @@ suite("Utils: chain", () => {
 
     test("returns Gunzilla fee recipient for Gunzilla", () => {
       expect(getFeeRecipient(Chain.Gunzilla)).to.equal(GUNZILLA_FEE_RECIPIENT);
+    });
+
+    test("returns Gunzilla fee recipient for Somnia", () => {
+      expect(getFeeRecipient(Chain.Somnia)).to.equal(GUNZILLA_FEE_RECIPIENT);
     });
 
     test("returns OpenSea fee recipient for other chains", () => {
