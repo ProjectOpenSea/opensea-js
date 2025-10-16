@@ -16,6 +16,9 @@ export const CREATE_LISTING_TOKEN_ID = process.env
 export const CREATE_LISTING_2_CONTRACT_ADDRESS =
   process.env.CREATE_LISTING_2_CONTRACT_ADDRESS;
 export const CREATE_LISTING_2_TOKEN_ID = process.env.CREATE_LISTING_2_TOKEN_ID;
+export const CREATE_LISTING_3_CONTRACT_ADDRESS =
+  process.env.CREATE_LISTING_3_CONTRACT_ADDRESS;
+export const CREATE_LISTING_3_TOKEN_ID = process.env.CREATE_LISTING_3_TOKEN_ID;
 export const LISTING_AMOUNT = process.env.LISTING_AMOUNT ?? "40";
 export const ETH_TO_WRAP = process.env.ETH_TO_WRAP;
 
@@ -24,6 +27,9 @@ export const CREATE_LISTING_CHAIN = normalizeChain(
 );
 export const CREATE_LISTING_2_CHAIN = normalizeChain(
   process.env.CREATE_LISTING_2_CHAIN ?? Chain.Polygon,
+);
+export const CREATE_LISTING_3_CHAIN = normalizeChain(
+  process.env.CREATE_LISTING_3_CHAIN ?? Chain.Mainnet,
 );
 
 export const BUY_LISTING_CHAIN = normalizeChain(

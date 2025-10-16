@@ -79,7 +79,6 @@ Bulk orders allow signing multiple orders with a single wallet signature, reduci
 
 ### Notes
 
-- Orders are padded to next power of 2 for merkle tree (e.g., 3 orders → 4 with padding)
 - Single orders use normal signatures to avoid merkle proof overhead
 - Tests include detailed logging of order hashes and signature lengths
 - Test timeouts: 120s for bulk operations, 60s for single orders
