@@ -741,17 +741,6 @@ export class OpenSeaAPI {
       })}`,
     );
 
-    // DEBUG: Log offer and listing requests
-    if ((url.includes("/offers") || url.includes("/listings")) && body) {
-      const type = url.includes("/offers") ? "OFFER" : "LISTING";
-      console.log("\n" + "=".repeat(80));
-      console.log(`DEBUG: ${type} REQUEST`);
-      console.log("=".repeat(80));
-      console.log("URL:", url);
-      console.log("BODY:", JSON.stringify(body, null, 2));
-      console.log("=".repeat(80) + "\n");
-    }
-
     const response = await req.send();
     if (!response.ok()) {
       // Handle rate limit errors (429 Too Many Requests and 599 custom rate limit)
