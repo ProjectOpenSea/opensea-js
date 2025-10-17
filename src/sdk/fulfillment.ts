@@ -136,7 +136,6 @@ export class FulfillmentManager {
       return this.fulfillPrivateOrder({
         order: order as OrderV2,
         accountAddress,
-        domain: undefined,
         overrides,
       });
     }
