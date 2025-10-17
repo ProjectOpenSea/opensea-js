@@ -158,16 +158,6 @@ export class FulfillmentManager {
     const transaction = fulfillmentData.fulfillment_data.transaction;
     const inputData = transaction.input_data;
 
-    // Get the signer from the context
-    const signerOrProvider = this.context.signerOrProvider;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (typeof (signerOrProvider as any).sendTransaction !== "function") {
-      throw new Error(
-        "A signer is required to fulfill orders. Please provide a Signer instance, not a read-only provider.",
-      );
-    }
-    const signer = signerOrProvider as Signer;
-
     // Encode the transaction data using ethers Interface
     const seaportInterface = new ethers.Interface([
       `function ${transaction.function}`,
@@ -180,7 +170,8 @@ export class FulfillmentManager {
       Object.values(inputData),
     );
 
-    // Send the transaction
+    // Send the transaction using the signer from context
+    const signer = this.context.signerOrProvider as Signer;
     const tx = await signer.sendTransaction({
       to: transaction.to,
       value: transaction.value,
