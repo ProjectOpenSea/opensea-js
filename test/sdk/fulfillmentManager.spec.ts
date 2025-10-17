@@ -122,42 +122,6 @@ suite("SDK: FulfillmentManager", () => {
       expect(result).to.equal("0xFulfillTxHash");
     });
 
-    test("fulfills order with recipient address", async () => {
-      await fulfillmentManager.fulfillOrder({
-        order: mockOrderV2,
-        accountAddress: "0xBuyer",
-        recipientAddress: "0xRecipient",
-      });
-
-      // recipientAddress is now deprecated and ignored
-      // The API transaction data determines the recipient
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-    });
-
-    test("fulfills order with unitsToFill", async () => {
-      await fulfillmentManager.fulfillOrder({
-        order: mockOrderV2,
-        accountAddress: "0xBuyer",
-        unitsToFill: 5,
-      });
-
-      // unitsToFill is now deprecated and ignored
-      // The API transaction data determines the quantity
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-    });
-
-    test("fulfills order with domain", async () => {
-      await fulfillmentManager.fulfillOrder({
-        order: mockOrderV2,
-        accountAddress: "0xBuyer",
-        domain: "opensea.io",
-      });
-
-      // domain is now deprecated and ignored
-      // The API transaction data includes all necessary data
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-    });
-
     test("fulfills criteria order with contract and tokenId", async () => {
       await fulfillmentManager.fulfillOrder({
         order: mockOrderV2,
@@ -205,21 +169,6 @@ suite("SDK: FulfillmentManager", () => {
       expect(mockSeaport.matchOrders.calledOnce).to.be.true;
       expect(mockSeaport.fulfillOrder.called).to.be.false;
       expect(result).to.equal("0xTxHash");
-    });
-
-    test("throws error for private listing with recipient address", async () => {
-      try {
-        await fulfillmentManager.fulfillOrder({
-          order: mockPrivateListingOrderV2,
-          accountAddress: "0xPrivateBuyer",
-          recipientAddress: "0xRecipient",
-        });
-        expect.fail("Expected error to be thrown");
-      } catch (error) {
-        expect((error as Error).message).to.include(
-          "Private listings cannot be fulfilled with a recipient address",
-        );
-      }
     });
 
     test("throws when account is not available", async () => {
@@ -292,30 +241,6 @@ suite("SDK: FulfillmentManager", () => {
       });
 
       // remainingQuantity is now handled by the API transaction data
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-    });
-
-    test("explicit unitsToFill overrides remaining_quantity from Listing", async () => {
-      await fulfillmentManager.fulfillOrder({
-        order: mockListingPartiallyFilled,
-        accountAddress: "0xBuyer",
-        unitsToFill: 2,
-      });
-
-      // unitsToFill is now deprecated and ignored
-      // The API transaction data determines the quantity
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-    });
-
-    test("explicit unitsToFill overrides remainingQuantity from OrderV2", async () => {
-      await fulfillmentManager.fulfillOrder({
-        order: mockOrderV2,
-        accountAddress: "0xBuyer",
-        unitsToFill: 10,
-      });
-
-      // unitsToFill is now deprecated and ignored
-      // The API transaction data determines the quantity
       expect(mockSigner.sendTransaction.calledOnce).to.be.true;
     });
 

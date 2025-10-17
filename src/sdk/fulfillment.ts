@@ -101,49 +101,21 @@ export class FulfillmentManager {
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    * @throws Error if a signer is not provided (read-only providers cannot fulfill orders).
    * @throws Error if the order hash is not available.
-   *
-   * @deprecated The following parameters are deprecated and no longer used:
-   * - recipientAddress: The API-generated transaction determines the recipient
-   * - unitsToFill: The API-generated transaction determines the quantity
-   * - domain: The API-generated transaction includes all necessary data
    */
   async fulfillOrder({
     order,
     accountAddress,
-    recipientAddress,
-    unitsToFill,
-    domain,
     assetContractAddress,
     tokenId,
     overrides,
   }: {
     order: OrderV2 | Order | Listing | Offer;
     accountAddress: string;
-    recipientAddress?: string;
-    unitsToFill?: BigNumberish;
-    domain?: string;
     assetContractAddress?: string;
     tokenId?: string;
     overrides?: Overrides;
   }): Promise<string> {
     await this.context.requireAccountIsAvailable(accountAddress);
-
-    // Warn about deprecated parameters
-    if (recipientAddress !== undefined) {
-      this.context.logger(
-        "Warning: recipientAddress parameter is deprecated and will be ignored. The API-generated transaction determines the recipient.",
-      );
-    }
-    if (unitsToFill !== undefined) {
-      this.context.logger(
-        "Warning: unitsToFill parameter is deprecated and will be ignored. The API-generated transaction determines the quantity.",
-      );
-    }
-    if (domain !== undefined) {
-      this.context.logger(
-        "Warning: domain parameter is deprecated and will be ignored. The API-generated transaction includes all necessary data.",
-      );
-    }
 
     const protocolAddress =
       (order as OrderV2).protocolAddress ?? (order as Order).protocol_address;
@@ -161,15 +133,10 @@ export class FulfillmentManager {
 
     const isPrivateListing = "taker" in order ? !!order.taker : false;
     if (isPrivateListing) {
-      if (recipientAddress) {
-        throw new Error(
-          "Private listings cannot be fulfilled with a recipient address",
-        );
-      }
       return this.fulfillPrivateOrder({
         order: order as OrderV2,
         accountAddress,
-        domain,
+        domain: undefined,
         overrides,
       });
     }
