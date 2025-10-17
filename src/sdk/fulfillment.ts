@@ -163,11 +163,36 @@ export class FulfillmentManager {
       `function ${transaction.function}`,
     ]);
 
-    // Extract function name and encode the parameters
+    // Extract function name and build parameters array in correct order
     const functionName = transaction.function.split("(")[0];
+    let params: unknown[];
+
+    // Order parameters based on the function being called
+    if (functionName === "fulfillAdvancedOrder") {
+      params = [
+        inputData.advancedOrder,
+        inputData.criteriaResolvers || [],
+        inputData.fulfillerConduitKey ||
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        inputData.recipient,
+      ];
+    } else if (functionName === "fulfillBasicOrder") {
+      params = [inputData.basicOrderParameters];
+    } else if (functionName === "fulfillOrder") {
+      params = [
+        inputData.order,
+        inputData.fulfillerConduitKey ||
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        inputData.recipient,
+      ];
+    } else {
+      // Fallback: try to use values in object order
+      params = Object.values(inputData);
+    }
+
     const encodedData = seaportInterface.encodeFunctionData(
       functionName,
-      Object.values(inputData),
+      params,
     );
 
     // Send the transaction using the signer from context
