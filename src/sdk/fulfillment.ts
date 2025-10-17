@@ -1,4 +1,8 @@
-import { AdvancedOrder, OrderComponents } from "@opensea/seaport-js/lib/types";
+import {
+  AdvancedOrder,
+  OrderComponents,
+  OrderWithCounter,
+} from "@opensea/seaport-js/lib/types";
 import { BigNumberish, ContractTransactionResponse, Overrides } from "ethers";
 import { SDKContext } from "./context";
 import { OrdersManager } from "./orders";
@@ -15,6 +19,30 @@ import {
   requireValidProtocol,
   getSeaportInstance,
 } from "../utils/utils";
+
+/**
+ * Normalizes protocol data by converting identifierOrCriteria to strings.
+ * This is needed because the API may return identifierOrCriteria as numbers,
+ * but seaport-js expects them to be strings and calls .toLowerCase() on them.
+ */
+function normalizeProtocolData(
+  protocolData: OrderWithCounter,
+): OrderWithCounter {
+  return {
+    ...protocolData,
+    parameters: {
+      ...protocolData.parameters,
+      offer: protocolData.parameters.offer.map((item) => ({
+        ...item,
+        identifierOrCriteria: item.identifierOrCriteria.toString(),
+      })),
+      consideration: protocolData.parameters.consideration.map((item) => ({
+        ...item,
+        identifierOrCriteria: item.identifierOrCriteria.toString(),
+      })),
+    },
+  };
+}
 
 /**
  * Manager for order fulfillment and validation operations.
@@ -52,18 +80,19 @@ export class FulfillmentManager {
         "Order is not a private listing - must have a taker address",
       );
     }
+    const normalizedProtocolData = normalizeProtocolData(order.protocolData);
     const counterOrder = constructPrivateListingCounterOrder(
-      order.protocolData,
+      normalizedProtocolData,
       order.taker.address,
     );
-    const fulfillments = getPrivateListingFulfillments(order.protocolData);
+    const fulfillments = getPrivateListingFulfillments(normalizedProtocolData);
     const seaport = getSeaportInstance(
       order.protocolAddress,
       this.context.seaport,
     );
     const transaction = await seaport
       .matchOrders({
-        orders: [order.protocolData, counterOrder],
+        orders: [normalizedProtocolData, counterOrder],
         fulfillments,
         overrides: {
           ...overrides,
@@ -198,7 +227,7 @@ export class FulfillmentManager {
 
     const seaport = getSeaportInstance(protocolAddress, this.context.seaport);
     const { executeAllActions } = await seaport.fulfillOrder({
-      order: protocolData,
+      order: normalizeProtocolData(protocolData),
       accountAddress,
       recipientAddress,
       unitsToFill: effectiveUnitsToFill,
