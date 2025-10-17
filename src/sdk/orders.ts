@@ -1094,7 +1094,7 @@ export class OrdersManager {
     const convertedConsiderationItem = {
       itemType: item.itemType,
       token: item.token,
-      identifier: item.identifierOrCriteria,
+      identifier: item.identifierOrCriteria.toString(),
       amount: item.startAmount,
     };
 
