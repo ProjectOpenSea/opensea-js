@@ -168,7 +168,9 @@ export const serializeOrdersQueryOptions = (
     owner: options.owner,
     listed_after: options.listedAfter,
     listed_before: options.listedBefore,
-    token_ids: options.tokenIds ?? [options.tokenId],
+    token_ids:
+      options.tokenIds ??
+      (options.tokenId !== undefined ? [options.tokenId] : undefined),
     asset_contract_address: options.assetContractAddress,
     order_by: options.orderBy,
     order_direction: options.orderDirection,
