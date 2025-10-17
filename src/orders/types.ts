@@ -81,7 +81,18 @@ type Transaction = {
   to: string;
   value: number;
   input_data: {
-    orders: OrderWithCounter[] | AdvancedOrder[] | BasicOrderParametersStruct[];
+    orders?:
+      | OrderWithCounter[]
+      | AdvancedOrder[]
+      | BasicOrderParametersStruct[];
+    advancedOrder?: AdvancedOrder;
+    criteriaResolvers?: unknown[];
+    fulfillerConduitKey?: string;
+    recipient?: string;
+    basicOrderParameters?: BasicOrderParametersStruct;
+    order?: OrderWithCounter;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   };
 };
 

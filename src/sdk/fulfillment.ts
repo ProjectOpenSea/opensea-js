@@ -1,5 +1,5 @@
 import { OrderComponents } from "@opensea/seaport-js/lib/types";
-import { BigNumberish, Overrides, Signer } from "ethers";
+import { BigNumberish, Overrides, Signer, ethers } from "ethers";
 import { SDKContext } from "./context";
 import { OrdersManager } from "./orders";
 import { Listing, Offer, Order } from "../api/types";
@@ -154,10 +154,11 @@ export class FulfillmentManager {
       tokenId,
     );
 
-    // Use the transaction data returned by the API directly
+    // Use the transaction data returned by the API
     const transaction = fulfillmentData.fulfillment_data.transaction;
+    const inputData = transaction.input_data;
 
-    // Get the signer from the context - check if it has a sendTransaction method
+    // Get the signer from the context
     const signerOrProvider = this.context.signerOrProvider;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (typeof (signerOrProvider as any).sendTransaction !== "function") {
@@ -167,11 +168,23 @@ export class FulfillmentManager {
     }
     const signer = signerOrProvider as Signer;
 
-    // Send the transaction with the exact data from the API
+    // Encode the transaction data using ethers Interface
+    const seaportInterface = new ethers.Interface([
+      `function ${transaction.function}`,
+    ]);
+
+    // Extract function name and encode the parameters
+    const functionName = transaction.function.split("(")[0];
+    const encodedData = seaportInterface.encodeFunctionData(
+      functionName,
+      Object.values(inputData),
+    );
+
+    // Send the transaction
     const tx = await signer.sendTransaction({
       to: transaction.to,
       value: transaction.value,
-      data: transaction.function,
+      data: encodedData,
       ...overrides,
     });
 

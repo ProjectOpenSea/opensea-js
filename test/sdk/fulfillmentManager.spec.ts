@@ -52,8 +52,21 @@ suite("SDK: FulfillmentManager", () => {
           transaction: {
             to: "0xSeaportAddress",
             value: 0,
-            function: "0xabcdef",
-            input_data: {},
+            function:
+              "fulfillAdvancedOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256),uint120,uint120,bytes,bytes),(uint256,uint8,uint256,uint256,bytes32[])[],bytes32,address)",
+            input_data: {
+              advancedOrder: {
+                parameters: {},
+                numerator: 1,
+                denominator: 1,
+                signature: "0x",
+                extraData: "0x",
+              },
+              criteriaResolvers: [],
+              fulfillerConduitKey:
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+              recipient: "0x0000000000000000000000000000000000000000",
+            },
           },
           orders: [{ signature: "0xNewSignature" }],
         },
@@ -142,9 +155,20 @@ suite("SDK: FulfillmentManager", () => {
           transaction: {
             to: "0xSeaportAddress",
             value: 0,
-            function: "0xabcdef",
+            function:
+              "fulfillAdvancedOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256),uint120,uint120,bytes,bytes),(uint256,uint8,uint256,uint256,bytes32[])[],bytes32,address)",
             input_data: {
-              orders: [{ extraData: "0xExtraData" }],
+              advancedOrder: {
+                parameters: {},
+                numerator: 1,
+                denominator: 1,
+                signature: "0x",
+                extraData: "0xExtraData",
+              },
+              criteriaResolvers: [],
+              fulfillerConduitKey:
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+              recipient: "0x0000000000000000000000000000000000000000",
             },
           },
           orders: [{ signature: "0xNewSignature" }],
