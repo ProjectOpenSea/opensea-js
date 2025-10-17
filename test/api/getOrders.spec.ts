@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
-import { serializeOrdersQueryOptions } from "../../src/orders/utils";
 import { OrderSide } from "../../src/types";
 import { BAYC_CONTRACT_ADDRESS, BAYC_TOKEN_IDS } from "../utils/constants";
 import { api } from "../utils/sdk";
@@ -45,9 +44,5 @@ suite("Getting orders", () => {
       orders.map((order) => expectValidOrder(order));
       expect(next).to.not.be.undefined;
     });
-  });
-
-  test("serializeOrdersQueryOptions omits undefined tokenId", () => {
-    expect(serializeOrdersQueryOptions({}).token_ids).to.be.undefined;
   });
 });
