@@ -58,6 +58,10 @@ suite("SDK: fulfill trait offer", () => {
       value: traitValue,
     });
 
+    if (!offerResponse) {
+      throw new Error("Failed to create trait offer");
+    }
+
     // Wait to ensure the order is indexed
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
@@ -81,7 +85,7 @@ suite("SDK: fulfill trait offer", () => {
         order: offerResponse,
         accountAddress: walletAddress,
         assetContractAddress: contractAddress,
-        tokenId: tokenId,
+        tokenId,
       });
 
       expect(txHash).to.match(/^0x[0-9a-fA-F]{64}$/);
