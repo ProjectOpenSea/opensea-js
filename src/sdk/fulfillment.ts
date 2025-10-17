@@ -88,19 +88,48 @@ export class FulfillmentManager {
 
   /**
    * Fulfill an order for an asset. The order can be either a listing or an offer.
-   * @param options
-   * @param options.order The order to fulfill, a.k.a. "take"
-   * @param options.accountAddress Address of the wallet taking the offer.
-   * @param options.recipientAddress The optional address to receive the order's item(s) or currencies. If not specified, defaults to accountAddress.
-   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
-   * @param options.assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
-   * @param options.tokenId Optional token ID for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
-   * @param options.overrides Transaction overrides, ignored if not set.
-   * @returns Transaction hash of the order.
    *
-   * @throws Error if the accountAddress is not available through wallet or provider.
-   * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
-   * @throws Error if attempting to fulfill the order with a recipient address which does not match a private listing.
+   * For criteria-based orders (like collection offers), this method will:
+   * 1. Call the OpenSea API to generate fulfillment data with the specific asset details
+   * 2. Use the API-returned order parameters and extraData for Seaport fulfillment
+   * 3. Automatically handle remaining quantity from partially filled orders
+   *
+   * @param options Configuration options for order fulfillment
+   * @param options.order The order to fulfill, a.k.a. "take". Can be OrderV2, Order, Listing, or Offer
+   * @param options.accountAddress Address of the wallet taking the offer
+   * @param options.recipientAddress Optional address to receive the order's item(s) or currencies.
+   *                                 If not specified, defaults to accountAddress. Not supported for private listings.
+   * @param options.unitsToFill Optional number of units to fill. If not specified, uses remaining_quantity
+   *                            from the order (for partially filled orders) or defaults to 1
+   * @param options.domain Optional domain to be hashed and included at the end of fulfillment calldata.
+   *                      This can be used for on-chain order attribution to assist with analytics
+   * @param options.assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers).
+   *                                    Required when fulfilling collection offers to specify which NFT to fulfill
+   * @param options.tokenId Optional token ID for criteria offers (e.g., collection offers).
+   *                       Required when fulfilling collection offers to specify which NFT to fulfill
+   * @param options.overrides Optional transaction overrides (gas price, gas limit, etc.)
+   * @returns Promise resolving to the transaction hash of the fulfillment transaction
+   *
+   * @throws Error if the accountAddress is not available through wallet or provider
+   * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}
+   * @throws Error if attempting to fulfill a private listing with a recipient address
+   *
+   * @example
+   * ```typescript
+   * // Fulfill a basic listing
+   * const txHash = await fulfillmentManager.fulfillOrder({
+   *   order: listing,
+   *   accountAddress: "0xBuyer"
+   * });
+   *
+   * // Fulfill a collection offer for a specific NFT
+   * const txHash = await fulfillmentManager.fulfillOrder({
+   *   order: collectionOffer,
+   *   accountAddress: "0xSeller",
+   *   assetContractAddress: "0xNFT",
+   *   tokenId: "123"
+   * });
+   * ```
    */
   async fulfillOrder({
     order,
@@ -139,7 +168,7 @@ export class FulfillmentManager {
 
     let extraData: string | undefined = undefined;
 
-    const protocolData =
+    let protocolData =
       (order as OrderV2).protocolData ?? (order as Order).protocol_data;
 
     if (orderHash) {
@@ -152,14 +181,47 @@ export class FulfillmentManager {
         tokenId,
       );
 
-      // If the order is using offer protection, the extraData
-      // must be included with the order to successfully fulfill.
-      const inputData = result.fulfillment_data.transaction.input_data;
-      if ("orders" in inputData && "extraData" in inputData.orders[0]) {
-        extraData = (inputData.orders[0] as AdvancedOrder).extraData;
+      // Extract full fulfillment data from API response
+      const { fulfillment_data } = result;
+      const { orders, transaction } = fulfillment_data;
+
+      // Extract extraData from API response (compatible with both advancedOrder and orders formats)
+      if (
+        transaction?.input_data &&
+        typeof transaction.input_data === "object" &&
+        transaction.input_data !== null
+      ) {
+        if ("advancedOrder" in transaction.input_data) {
+          const inputDataOrder = (
+            transaction.input_data as { advancedOrder: AdvancedOrder }
+          ).advancedOrder;
+          if (
+            inputDataOrder != null &&
+            typeof inputDataOrder === "object" &&
+            "extraData" in inputDataOrder &&
+            typeof inputDataOrder.extraData === "string"
+          ) {
+            extraData = inputDataOrder.extraData;
+          }
+        } else if ("orders" in transaction.input_data) {
+          const inputDataOrder = (
+            transaction.input_data as { orders: AdvancedOrder[] }
+          ).orders?.[0];
+          if (
+            inputDataOrder != null &&
+            typeof inputDataOrder === "object" &&
+            "extraData" in inputDataOrder &&
+            typeof inputDataOrder.extraData === "string"
+          ) {
+            extraData = inputDataOrder.extraData;
+          }
+        }
       }
-      const signature = result.fulfillment_data.orders[0].signature;
-      protocolData.signature = signature;
+
+      // Use API-returned order as protocolData for criteria-based fulfillments
+      if (orders && orders[0]) {
+        protocolData = orders[0];
+      }
     }
 
     const isPrivateListing = "taker" in order ? !!order.taker : false;
@@ -197,6 +259,22 @@ export class FulfillmentManager {
     }
 
     const seaport = getSeaportInstance(protocolAddress, this.context.seaport);
+
+    // Build criteria arrays for Seaport's fulfillOrder.
+    // For collection/criteria-based offers, we need to provide the token details
+    const considerationCriteria =
+      assetContractAddress && tokenId
+        ? [
+            {
+              identifier: tokenId,
+              proof: [],
+            },
+          ]
+        : undefined;
+
+    const offerCriteria: { identifier: string; proof: string[] }[] = []; // Empty array for offer criteria as per Seaport requirements
+
+    // Get the full order parameters for Seaport
     const { executeAllActions } = await seaport.fulfillOrder({
       order: protocolData,
       accountAddress,
@@ -205,6 +283,8 @@ export class FulfillmentManager {
       extraData,
       domain,
       overrides,
+      offerCriteria,
+      considerationCriteria,
     });
     const result = (await executeAllActions()) as
       | ContractTransactionResponse

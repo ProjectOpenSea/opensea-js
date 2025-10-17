@@ -246,6 +246,174 @@ suite("SDK: FulfillmentManager", () => {
 
       expect(result).to.equal("0xContractTxHash");
     });
+
+    test("uses API returned order as protocolData for criteria fulfillment", async () => {
+      // Mock API returning complete order object
+      const apiOrder = {
+        parameters: {
+          offer: [{ itemType: 2, token: "0xNFT", identifier: "123" }],
+          consideration: [
+            {
+              itemType: 1,
+              token: "0xWETH",
+              identifier: "0",
+              recipient: "0xBuyer",
+            },
+          ],
+          zone: "0xZone",
+          extraData: "0xApiExtraData",
+        },
+        signature: "0xApiSignature",
+      };
+      mockAPI.generateFulfillmentData.resolves({
+        fulfillment_data: {
+          transaction: {
+            input_data: {
+              orders: [{ extraData: "0xApiExtraData" }],
+            },
+          },
+          orders: [apiOrder],
+        },
+      });
+
+      await fulfillmentManager.fulfillOrder({
+        order: mockOrderV2,
+        accountAddress: "0xBuyer",
+        assetContractAddress: "0xNFT",
+        tokenId: "123",
+      });
+
+      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
+      // Assert that seaport.fulfillOrder receives parameters consistent with API response
+      expect(fulfillCall.order.parameters).to.deep.equal(apiOrder.parameters);
+      expect(fulfillCall.order.signature).to.equal(apiOrder.signature);
+      expect(fulfillCall.extraData).to.equal("0xApiExtraData");
+      expect(fulfillCall.considerationCriteria[0].identifier).to.equal("123");
+    });
+
+    test("handles API response with advancedOrder format", async () => {
+      const apiOrder = {
+        parameters: {
+          offer: [{ itemType: 2, token: "0xNFT", identifier: "456" }],
+          consideration: [
+            {
+              itemType: 1,
+              token: "0xWETH",
+              identifier: "0",
+              recipient: "0xBuyer",
+            },
+          ],
+          zone: "0xZone",
+          extraData: "0xAdvancedExtraData",
+        },
+        signature: "0xAdvancedSignature",
+      };
+
+      mockAPI.generateFulfillmentData.resolves({
+        fulfillment_data: {
+          transaction: {
+            input_data: {
+              advancedOrder: {
+                extraData: "0xAdvancedExtraData",
+              },
+            },
+          },
+          orders: [apiOrder],
+        },
+      });
+
+      await fulfillmentManager.fulfillOrder({
+        order: mockOrderV2,
+        accountAddress: "0xBuyer",
+        assetContractAddress: "0xNFT",
+        tokenId: "456",
+      });
+
+      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
+      expect(fulfillCall.order.parameters).to.deep.equal(apiOrder.parameters);
+      expect(fulfillCall.order.signature).to.equal(apiOrder.signature);
+      expect(fulfillCall.extraData).to.equal("0xAdvancedExtraData");
+    });
+
+    test("handles API response without extraData", async () => {
+      const apiOrder = {
+        parameters: {
+          offer: [{ itemType: 2, token: "0xNFT", identifier: "789" }],
+          consideration: [
+            {
+              itemType: 1,
+              token: "0xWETH",
+              identifier: "0",
+              recipient: "0xBuyer",
+            },
+          ],
+          zone: "0xZone",
+        },
+        signature: "0xNoExtraDataSignature",
+      };
+
+      mockAPI.generateFulfillmentData.resolves({
+        fulfillment_data: {
+          transaction: {
+            input_data: {},
+          },
+          orders: [apiOrder],
+        },
+      });
+
+      await fulfillmentManager.fulfillOrder({
+        order: mockOrderV2,
+        accountAddress: "0xBuyer",
+        assetContractAddress: "0xNFT",
+        tokenId: "789",
+      });
+
+      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
+      expect(fulfillCall.order.parameters).to.deep.equal(apiOrder.parameters);
+      expect(fulfillCall.order.signature).to.equal(apiOrder.signature);
+      expect(fulfillCall.extraData).to.be.undefined;
+    });
+
+    test("handles API response with invalid extraData type", async () => {
+      const apiOrder = {
+        parameters: {
+          offer: [{ itemType: 2, token: "0xNFT", identifier: "999" }],
+          consideration: [
+            {
+              itemType: 1,
+              token: "0xWETH",
+              identifier: "0",
+              recipient: "0xBuyer",
+            },
+          ],
+          zone: "0xZone",
+        },
+        signature: "0xInvalidExtraDataSignature",
+      };
+
+      mockAPI.generateFulfillmentData.resolves({
+        fulfillment_data: {
+          transaction: {
+            input_data: {
+              orders: [{ extraData: 123 }], // Invalid type - should be string
+            },
+          },
+          orders: [apiOrder],
+        },
+      });
+
+      await fulfillmentManager.fulfillOrder({
+        order: mockOrderV2,
+        accountAddress: "0xBuyer",
+        assetContractAddress: "0xNFT",
+        tokenId: "999",
+      });
+
+      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
+      expect(fulfillCall.order.parameters).to.deep.equal(apiOrder.parameters);
+      expect(fulfillCall.order.signature).to.equal(apiOrder.signature);
+      expect(fulfillCall.extraData).to.be.undefined;
+    });
   });
 
   suite("fulfillOrder with remaining_quantity", () => {
