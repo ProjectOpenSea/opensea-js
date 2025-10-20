@@ -156,8 +156,7 @@ export class FulfillmentManager {
 
     // Use the transaction data returned by the API
     const transaction = fulfillmentData.fulfillment_data.transaction;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const inputData = transaction.input_data as any;
+    const inputData = transaction.input_data;
 
     // Encode the transaction data using ethers Interface
     const seaportInterface = new ethers.Interface([
@@ -169,7 +168,10 @@ export class FulfillmentManager {
     let params: unknown[];
 
     // Order parameters based on the function being called
-    if (functionName === "fulfillAdvancedOrder") {
+    if (
+      functionName === "fulfillAdvancedOrder" &&
+      "advancedOrder" in inputData
+    ) {
       params = [
         inputData.advancedOrder,
         inputData.criteriaResolvers || [],
@@ -177,9 +179,12 @@ export class FulfillmentManager {
           "0x0000000000000000000000000000000000000000000000000000000000000000",
         inputData.recipient,
       ];
-    } else if (functionName === "fulfillBasicOrder") {
+    } else if (
+      functionName === "fulfillBasicOrder" &&
+      "basicOrderParameters" in inputData
+    ) {
       params = [inputData.basicOrderParameters];
-    } else if (functionName === "fulfillOrder") {
+    } else if (functionName === "fulfillOrder" && "order" in inputData) {
       params = [
         inputData.order,
         inputData.fulfillerConduitKey ||
