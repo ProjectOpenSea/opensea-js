@@ -156,7 +156,8 @@ export class FulfillmentManager {
 
     // Use the transaction data returned by the API
     const transaction = fulfillmentData.fulfillment_data.transaction;
-    const inputData = transaction.input_data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const inputData = transaction.input_data as any;
 
     // Encode the transaction data using ethers Interface
     const seaportInterface = new ethers.Interface([
