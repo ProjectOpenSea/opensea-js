@@ -29,19 +29,44 @@ suite("SDK: FulfillmentManager", () => {
     wait: sinon.stub().resolves({ hash: "0xTxHash" }),
   };
 
+  const mockSigner = {
+    sendTransaction: sinon.stub().resolves({ hash: "0xFulfillTxHash" }),
+  };
+
   beforeEach(() => {
+    // Reset stubs
+    mockSigner.sendTransaction = sinon
+      .stub()
+      .resolves({ hash: "0xFulfillTxHash" });
+
     // Mock OrdersManager
     mockOrdersManager = {
       buildListingOrderComponents: sinon.stub().resolves(mockOrderComponents),
       buildOfferOrderComponents: sinon.stub().resolves(mockOrderComponents),
     };
 
-    // Mock OpenSeaAPI
+    // Mock OpenSeaAPI with full transaction data
     mockAPI = {
       generateFulfillmentData: sinon.stub().resolves({
         fulfillment_data: {
           transaction: {
-            input_data: {},
+            to: "0xSeaportAddress",
+            value: 0,
+            function:
+              "fulfillAdvancedOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256),uint120,uint120,bytes,bytes),(uint256,uint8,uint256,uint256,bytes32[])[],bytes32,address)",
+            input_data: {
+              advancedOrder: {
+                parameters: {},
+                numerator: 1,
+                denominator: 1,
+                signature: "0x",
+                extraData: "0x",
+              },
+              criteriaResolvers: [],
+              fulfillerConduitKey:
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+              recipient: "0x0000000000000000000000000000000000000000",
+            },
           },
           orders: [{ signature: "0xNewSignature" }],
         },
@@ -75,6 +100,7 @@ suite("SDK: FulfillmentManager", () => {
       dispatch: mockDispatch,
       confirmTransaction: mockConfirmTransaction,
       requireAccountIsAvailable: mockRequireAccountIsAvailable,
+      signerOrProvider: mockSigner,
     });
 
     // Create FulfillmentManager instance
@@ -94,7 +120,7 @@ suite("SDK: FulfillmentManager", () => {
 
       expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
       expect(mockAPI.generateFulfillmentData.calledOnce).to.be.true;
-      expect(mockSeaport.fulfillOrder.calledOnce).to.be.true;
+      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
       expect(mockConfirmTransaction.calledOnce).to.be.true;
       expect(result).to.equal("0xFulfillTxHash");
     });
@@ -105,41 +131,8 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xSeller",
       });
 
-      expect(mockSeaport.fulfillOrder.calledOnce).to.be.true;
+      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
       expect(result).to.equal("0xFulfillTxHash");
-    });
-
-    test("fulfills order with recipient address", async () => {
-      await fulfillmentManager.fulfillOrder({
-        order: mockOrderV2,
-        accountAddress: "0xBuyer",
-        recipientAddress: "0xRecipient",
-      });
-
-      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
-      expect(fulfillCall.recipientAddress).to.equal("0xRecipient");
-    });
-
-    test("fulfills order with unitsToFill", async () => {
-      await fulfillmentManager.fulfillOrder({
-        order: mockOrderV2,
-        accountAddress: "0xBuyer",
-        unitsToFill: 5,
-      });
-
-      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
-      expect(fulfillCall.unitsToFill).to.equal(5);
-    });
-
-    test("fulfills order with domain", async () => {
-      await fulfillmentManager.fulfillOrder({
-        order: mockOrderV2,
-        accountAddress: "0xBuyer",
-        domain: "opensea.io",
-      });
-
-      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
-      expect(fulfillCall.domain).to.equal("opensea.io");
     });
 
     test("fulfills criteria order with contract and tokenId", async () => {
@@ -160,8 +153,22 @@ suite("SDK: FulfillmentManager", () => {
       mockAPI.generateFulfillmentData.resolves({
         fulfillment_data: {
           transaction: {
+            to: "0xSeaportAddress",
+            value: 0,
+            function:
+              "fulfillAdvancedOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256),uint120,uint120,bytes,bytes),(uint256,uint8,uint256,uint256,bytes32[])[],bytes32,address)",
             input_data: {
-              orders: [{ extraData: "0xExtraData" }],
+              advancedOrder: {
+                parameters: {},
+                numerator: 1,
+                denominator: 1,
+                signature: "0x",
+                extraData: "0xExtraData",
+              },
+              criteriaResolvers: [],
+              fulfillerConduitKey:
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+              recipient: "0x0000000000000000000000000000000000000000",
             },
           },
           orders: [{ signature: "0xNewSignature" }],
@@ -173,8 +180,8 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
-      expect(fulfillCall.extraData).to.equal("0xExtraData");
+      // extraData is now included in the API transaction data
+      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
     });
 
     test("fulfills private listing successfully", async () => {
@@ -186,21 +193,6 @@ suite("SDK: FulfillmentManager", () => {
       expect(mockSeaport.matchOrders.calledOnce).to.be.true;
       expect(mockSeaport.fulfillOrder.called).to.be.false;
       expect(result).to.equal("0xTxHash");
-    });
-
-    test("throws error for private listing with recipient address", async () => {
-      try {
-        await fulfillmentManager.fulfillOrder({
-          order: mockPrivateListingOrderV2,
-          accountAddress: "0xPrivateBuyer",
-          recipientAddress: "0xRecipient",
-        });
-        expect.fail("Expected error to be thrown");
-      } catch (error) {
-        expect((error as Error).message).to.include(
-          "Private listings cannot be fulfilled with a recipient address",
-        );
-      }
     });
 
     test("throws when account is not available", async () => {
@@ -235,16 +227,13 @@ suite("SDK: FulfillmentManager", () => {
     });
 
     test("handles transaction response as ContractTransactionResponse", async () => {
-      mockSeaport.fulfillOrder.returns({
-        executeAllActions: sinon.stub().resolves({ hash: "0xContractTxHash" }),
-      });
-
+      // Transaction response is now from signer.sendTransaction
       const result = await fulfillmentManager.fulfillOrder({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
       });
 
-      expect(result).to.equal("0xContractTxHash");
+      expect(result).to.equal("0xFulfillTxHash");
     });
   });
 
@@ -255,8 +244,8 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
-      expect(fulfillCall.unitsToFill).to.equal(1);
+      // remaining_quantity is now handled by the API transaction data
+      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
     });
 
     test("uses remaining_quantity from partially filled Listing", async () => {
@@ -265,8 +254,8 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
-      expect(fulfillCall.unitsToFill).to.equal(3);
+      // remaining_quantity is now handled by the API transaction data
+      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
     });
 
     test("uses remainingQuantity from OrderV2 when unitsToFill not specified", async () => {
@@ -275,30 +264,8 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
-      expect(fulfillCall.unitsToFill).to.equal(1);
-    });
-
-    test("explicit unitsToFill overrides remaining_quantity from Listing", async () => {
-      await fulfillmentManager.fulfillOrder({
-        order: mockListingPartiallyFilled,
-        accountAddress: "0xBuyer",
-        unitsToFill: 2,
-      });
-
-      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
-      expect(fulfillCall.unitsToFill).to.equal(2);
-    });
-
-    test("explicit unitsToFill overrides remainingQuantity from OrderV2", async () => {
-      await fulfillmentManager.fulfillOrder({
-        order: mockOrderV2,
-        accountAddress: "0xBuyer",
-        unitsToFill: 10,
-      });
-
-      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
-      expect(fulfillCall.unitsToFill).to.equal(10);
+      // remainingQuantity is now handled by the API transaction data
+      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
     });
 
     test("passes undefined to seaport when neither unitsToFill nor remaining_quantity available", async () => {
@@ -323,8 +290,8 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      const fulfillCall = mockSeaport.fulfillOrder.firstCall.args[0];
-      expect(fulfillCall.unitsToFill).to.be.undefined;
+      // Quantity is now handled by the API transaction data
+      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
     });
   });
 

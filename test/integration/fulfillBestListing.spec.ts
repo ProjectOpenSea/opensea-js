@@ -61,7 +61,6 @@ suite("SDK: fulfill best listing", () => {
       const txHash = await sdkClient.fulfillOrder({
         order: listing,
         accountAddress: walletAddress,
-        unitsToFill: 1,
       });
 
       expect(txHash).to.match(/^0x[0-9a-fA-F]{64}$/);

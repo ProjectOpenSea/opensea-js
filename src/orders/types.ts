@@ -80,9 +80,31 @@ type Transaction = {
   chain: number;
   to: string;
   value: number;
-  input_data: {
-    orders: OrderWithCounter[] | AdvancedOrder[] | BasicOrderParametersStruct[];
-  };
+  input_data:
+    | {
+        // For fulfillAdvancedOrder
+        advancedOrder: AdvancedOrder;
+        criteriaResolvers?: unknown[];
+        fulfillerConduitKey?: string;
+        recipient: string;
+      }
+    | {
+        // For fulfillBasicOrder
+        basicOrderParameters: BasicOrderParametersStruct;
+      }
+    | {
+        // For fulfillOrder
+        order: OrderWithCounter;
+        fulfillerConduitKey?: string;
+        recipient: string;
+      }
+    | {
+        // Legacy: for backward compatibility
+        orders:
+          | OrderWithCounter[]
+          | AdvancedOrder[]
+          | BasicOrderParametersStruct[];
+      };
 };
 
 // API query types
