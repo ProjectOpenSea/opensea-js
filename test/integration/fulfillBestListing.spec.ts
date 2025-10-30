@@ -38,7 +38,7 @@ suite("SDK: fulfill best listing", () => {
     expect(nft.collection).to.be.a("string");
     const slug = nft.collection;
 
-    const listing = await sdkClient.api.getBestListing(slug, tokenId);
+    const listing = await sdkClient.api.getBestListing(slug, tokenId, true);
     expect(listing).to.exist;
     expect(listing.chain).to.equal(chain);
     expect(listing.order_hash).to.be.a("string");

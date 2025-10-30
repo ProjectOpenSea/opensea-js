@@ -227,13 +227,19 @@ export class OpenSeaAPI {
    * Gets the best listing for a given token.
    * @param collectionSlug The slug of the collection.
    * @param tokenId The token identifier.
+   * @param includePrivateListings Whether to include private listings (default: false)
    * @returns The {@link GetBestListingResponse} returned by the API.
    */
   public async getBestListing(
     collectionSlug: string,
     tokenId: string | number,
+    includePrivateListings?: boolean,
   ): Promise<GetBestListingResponse> {
-    return this.listingsAPI.getBestListing(collectionSlug, tokenId);
+    return this.listingsAPI.getBestListing(
+      collectionSlug,
+      tokenId,
+      includePrivateListings,
+    );
   }
 
   /**

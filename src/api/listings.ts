@@ -38,13 +38,20 @@ export class ListingsAPI {
 
   /**
    * Gets the best listing for a given token.
+   * @param collectionSlug The collection slug
+   * @param tokenId The token ID
+   * @param includePrivateListings Whether to include private listings (default: false)
    */
   async getBestListing(
     collectionSlug: string,
     tokenId: string | number,
+    includePrivateListings?: boolean,
   ): Promise<GetBestListingResponse> {
     const response = await this.fetcher.get<GetBestListingResponse>(
       getBestListingAPIPath(collectionSlug, tokenId),
+      includePrivateListings !== undefined
+        ? { include_private_listings: includePrivateListings }
+        : undefined,
     );
     return response;
   }
