@@ -98,7 +98,7 @@ export enum CollectionOrderByOption {
  * Order status enum.
  * @category API Models
  */
-export enum RestOrderStatus {
+export enum OrderStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
   FULFILLED = "fulfilled",
@@ -131,7 +131,7 @@ export type Offer = Order & {
   /** The criteria for the offer if it is a collection or trait offer. */
   criteria?: Criteria;
   /** The status of the offer. */
-  status: RestOrderStatus;
+  status: OrderStatus;
 };
 
 /**
@@ -164,7 +164,7 @@ export type Listing = Omit<Order, "price"> & {
   /** The remaining quantity available for the listing. This is important for partially filled orders. */
   remaining_quantity: number;
   /** The status of the listing. */
-  status: RestOrderStatus;
+  status: OrderStatus;
 };
 
 /**
