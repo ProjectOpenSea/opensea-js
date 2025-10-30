@@ -135,6 +135,8 @@ export class OrdersAPI {
     side: OrderSide,
     assetContractAddress?: string,
     tokenId?: string,
+    unitsToFill?: string,
+    recipientAddress?: string,
   ): Promise<FulfillmentDataResponse> {
     let payload: object | null = null;
     if (side === OrderSide.LISTING) {
@@ -145,6 +147,8 @@ export class OrdersAPI {
         this.chain,
         assetContractAddress,
         tokenId,
+        unitsToFill,
+        recipientAddress,
       );
     } else {
       payload = getFulfillOfferPayload(
@@ -154,6 +158,7 @@ export class OrdersAPI {
         this.chain,
         assetContractAddress,
         tokenId,
+        unitsToFill,
       );
     }
     const response = await this.fetcher.post<FulfillmentDataResponse>(

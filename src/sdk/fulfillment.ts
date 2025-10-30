@@ -1,5 +1,6 @@
-import { AdvancedOrder, OrderComponents } from "@opensea/seaport-js/lib/types";
-import { BigNumberish, ContractTransactionResponse, Overrides } from "ethers";
+import { SeaportABI } from "@opensea/seaport-js/lib/abi/Seaport";
+import { OrderComponents } from "@opensea/seaport-js/lib/types";
+import { BigNumberish, Overrides, Signer, ethers } from "ethers";
 import { SDKContext } from "./context";
 import { OrdersManager } from "./orders";
 import { Listing, Offer, Order } from "../api/types";
@@ -88,37 +89,37 @@ export class FulfillmentManager {
 
   /**
    * Fulfill an order for an asset. The order can be either a listing or an offer.
+   * Uses the OpenSea API to generate fulfillment transaction data and executes it directly.
    * @param options
    * @param options.order The order to fulfill, a.k.a. "take"
    * @param options.accountAddress Address of the wallet taking the offer.
-   * @param options.recipientAddress The optional address to receive the order's item(s) or currencies. If not specified, defaults to accountAddress.
-   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
    * @param options.assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
    * @param options.tokenId Optional token ID for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
+   * @param options.unitsToFill Optional number of units to fill. For listings, defaults to remaining quantity. For offers, defaults to 1.
+   * @param options.recipientAddress Optional recipient address for the NFT when fulfilling a listing. Not applicable for offers.
    * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.
    *
    * @throws Error if the accountAddress is not available through wallet or provider.
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
-   * @throws Error if attempting to fulfill the order with a recipient address which does not match a private listing.
+   * @throws Error if a signer is not provided (read-only providers cannot fulfill orders).
+   * @throws Error if the order hash is not available.
    */
   async fulfillOrder({
     order,
     accountAddress,
-    recipientAddress,
-    unitsToFill,
-    domain,
     assetContractAddress,
     tokenId,
+    unitsToFill,
+    recipientAddress,
     overrides,
   }: {
     order: OrderV2 | Order | Listing | Offer;
     accountAddress: string;
-    recipientAddress?: string;
-    unitsToFill?: BigNumberish;
-    domain?: string;
     assetContractAddress?: string;
     tokenId?: string;
+    unitsToFill?: BigNumberish;
+    recipientAddress?: string;
     overrides?: Overrides;
   }): Promise<string> {
     await this.context.requireAccountIsAvailable(accountAddress);
@@ -137,86 +138,95 @@ export class FulfillmentManager {
         ? OrderSide.LISTING
         : OrderSide.OFFER);
 
-    let extraData: string | undefined = undefined;
-
-    const protocolData =
-      (order as OrderV2).protocolData ?? (order as Order).protocol_data;
-
-    if (orderHash) {
-      const result = await this.context.api.generateFulfillmentData(
-        accountAddress,
-        orderHash,
-        protocolAddress,
-        side,
-        assetContractAddress,
-        tokenId,
-      );
-
-      // If the order is using offer protection, the extraData
-      // must be included with the order to successfully fulfill.
-      const inputData = result.fulfillment_data.transaction.input_data;
-      if ("orders" in inputData && "extraData" in inputData.orders[0]) {
-        extraData = (inputData.orders[0] as AdvancedOrder).extraData;
-      }
-      const signature = result.fulfillment_data.orders[0].signature;
-      protocolData.signature = signature;
-    }
-
     const isPrivateListing = "taker" in order ? !!order.taker : false;
     if (isPrivateListing) {
-      if (recipientAddress) {
-        throw new Error(
-          "Private listings cannot be fulfilled with a recipient address",
-        );
-      }
       return this.fulfillPrivateOrder({
         order: order as OrderV2,
         accountAddress,
-        domain,
         overrides,
       });
     }
 
-    // If unitsToFill is not explicitly provided, default to remaining_quantity when available
-    // This prevents errors when trying to fulfill more than what's available in partially filled orders
-    let effectiveUnitsToFill = unitsToFill;
-    if (effectiveUnitsToFill === undefined) {
-      if (
-        "remaining_quantity" in order &&
-        order.remaining_quantity !== undefined
-      ) {
-        // For Listing type (API response)
-        effectiveUnitsToFill = order.remaining_quantity;
-      } else if (
-        "remainingQuantity" in order &&
-        order.remainingQuantity !== undefined
-      ) {
-        // For OrderV2 type
-        effectiveUnitsToFill = order.remainingQuantity;
-      }
+    // Get fulfillment data from the API
+    if (!orderHash) {
+      throw new Error("Order hash is required to fulfill an order");
     }
 
-    const seaport = getSeaportInstance(protocolAddress, this.context.seaport);
-    const { executeAllActions } = await seaport.fulfillOrder({
-      order: protocolData,
+    // Convert unitsToFill to string if provided
+    const unitsToFillStr =
+      unitsToFill !== undefined ? unitsToFill.toString() : undefined;
+
+    const fulfillmentData = await this.context.api.generateFulfillmentData(
       accountAddress,
+      orderHash,
+      protocolAddress,
+      side,
+      assetContractAddress,
+      tokenId,
+      unitsToFillStr,
       recipientAddress,
-      unitsToFill: effectiveUnitsToFill,
-      extraData,
-      domain,
-      overrides,
+    );
+
+    // Use the transaction data returned by the API
+    const transaction = fulfillmentData.fulfillment_data.transaction;
+    const inputData = transaction.input_data;
+
+    // Use Seaport ABI to encode the transaction
+    const seaportInterface = new ethers.Interface(SeaportABI);
+
+    // Extract function name and build parameters array in correct order
+    const functionName = transaction.function.split("(")[0];
+    let params: unknown[];
+
+    // Order parameters based on the function being called
+    if (
+      functionName === "fulfillAdvancedOrder" &&
+      "advancedOrder" in inputData
+    ) {
+      params = [
+        inputData.advancedOrder,
+        inputData.criteriaResolvers || [],
+        inputData.fulfillerConduitKey ||
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        inputData.recipient,
+      ];
+    } else if (
+      functionName === "fulfillBasicOrder" &&
+      "basicOrderParameters" in inputData
+    ) {
+      params = [inputData.basicOrderParameters];
+    } else if (functionName === "fulfillOrder" && "order" in inputData) {
+      params = [
+        inputData.order,
+        inputData.fulfillerConduitKey ||
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        inputData.recipient,
+      ];
+    } else {
+      // Fallback: try to use values in object order
+      params = Object.values(inputData);
+    }
+
+    const encodedData = seaportInterface.encodeFunctionData(
+      functionName,
+      params,
+    );
+
+    // Send the transaction using the signer from context
+    const signer = this.context.signerOrProvider as Signer;
+    const tx = await signer.sendTransaction({
+      to: transaction.to,
+      value: transaction.value,
+      data: encodedData,
+      ...overrides,
     });
-    const result = (await executeAllActions()) as
-      | ContractTransactionResponse
-      | string;
-    const transactionHash = typeof result === "string" ? result : result.hash;
 
     await this.context.confirmTransaction(
-      transactionHash,
+      tx.hash,
       EventType.MatchOrders,
       "Fulfilling order",
     );
-    return transactionHash;
+    return tx.hash;
   }
 
   /**

@@ -478,47 +478,46 @@ export class OpenSeaSDK {
 
   /**
    * Fulfill an order for an asset. The order can be either a listing or an offer.
+   * Uses the OpenSea API to generate fulfillment transaction data and executes it directly.
    * @param options
    * @param options.order The order to fulfill, a.k.a. "take"
    * @param options.accountAddress Address of the wallet taking the offer.
-   * @param options.recipientAddress The optional address to receive the order's item(s) or currencies. If not specified, defaults to accountAddress.
-   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
    * @param options.assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
    * @param options.tokenId Optional token ID for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
+   * @param options.unitsToFill Optional number of units to fill. For listings, defaults to remaining quantity. For offers, defaults to 1.
+   * @param options.recipientAddress Optional recipient address for the NFT when fulfilling a listing. Not applicable for offers.
    * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.
    *
    * @throws Error if the accountAddress is not available through wallet or provider.
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
-   * @throws Error if attempting to fulfill the order with a recipient address which does not match a private listing.
+   * @throws Error if a signer is not provided (read-only providers cannot fulfill orders).
+   * @throws Error if the order hash is not available.
    */
   public async fulfillOrder({
     order,
     accountAddress,
-    recipientAddress,
-    unitsToFill,
-    domain,
     assetContractAddress,
     tokenId,
+    unitsToFill,
+    recipientAddress,
     overrides,
   }: {
     order: OrderV2 | Order | Listing | Offer;
     accountAddress: string;
-    recipientAddress?: string;
-    unitsToFill?: BigNumberish;
-    domain?: string;
     assetContractAddress?: string;
     tokenId?: string;
+    unitsToFill?: BigNumberish;
+    recipientAddress?: string;
     overrides?: Overrides;
   }): Promise<string> {
     return this._fulfillmentManager.fulfillOrder({
       order,
       accountAddress,
-      recipientAddress,
-      unitsToFill,
-      domain,
       assetContractAddress,
       tokenId,
+      unitsToFill,
+      recipientAddress,
       overrides,
     });
   }
