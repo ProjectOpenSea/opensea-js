@@ -75,7 +75,7 @@ export const getFulfillListingPayload = (
   chain: Chain,
   assetContractAddress?: string,
   tokenId?: string,
-  unitsToFill?: string,
+  unitsToFill: string = "1",
   recipientAddress?: string,
 ) => {
   const payload: {
@@ -91,7 +91,7 @@ export const getFulfillListingPayload = (
       asset_contract_address: string;
       token_id: string;
     };
-    units_to_fill?: string;
+    units_to_fill: string;
     recipient?: string;
   } = {
     listing: {
@@ -102,6 +102,7 @@ export const getFulfillListingPayload = (
     fulfiller: {
       address: fulfillerAddress,
     },
+    units_to_fill: unitsToFill,
   };
 
   // Add consideration for criteria listings if needed
@@ -110,11 +111,6 @@ export const getFulfillListingPayload = (
       asset_contract_address: assetContractAddress,
       token_id: tokenId,
     };
-  }
-
-  // Add optional units_to_fill
-  if (unitsToFill !== undefined) {
-    payload.units_to_fill = unitsToFill;
   }
 
   // Add optional recipient for listings
@@ -132,7 +128,7 @@ export const getFulfillOfferPayload = (
   chain: Chain,
   assetContractAddress?: string,
   tokenId?: string,
-  unitsToFill?: string,
+  unitsToFill: string = "1",
 ) => {
   const payload: {
     offer: {
@@ -147,7 +143,7 @@ export const getFulfillOfferPayload = (
       asset_contract_address: string;
       token_id: string;
     };
-    units_to_fill?: string;
+    units_to_fill: string;
   } = {
     offer: {
       hash: order_hash,
@@ -157,6 +153,7 @@ export const getFulfillOfferPayload = (
     fulfiller: {
       address: fulfillerAddress,
     },
+    units_to_fill: unitsToFill,
   };
 
   // Add consideration for criteria offers (e.g., collection offers)
@@ -165,11 +162,6 @@ export const getFulfillOfferPayload = (
       asset_contract_address: assetContractAddress,
       token_id: tokenId,
     };
-  }
-
-  // Add optional units_to_fill for offers
-  if (unitsToFill !== undefined) {
-    payload.units_to_fill = unitsToFill;
   }
 
   return payload;

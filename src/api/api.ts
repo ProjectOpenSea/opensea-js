@@ -169,14 +169,21 @@ export class OpenSeaAPI {
    * @param collectionSlug The slug of the collection.
    * @param limit The number of listings to return. Must be between 1 and 100. Default: 100
    * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @param includePrivateListings Whether to include private listings (default: false)
    * @returns The {@link GetListingsResponse} returned by the API.
    */
   public async getAllListings(
     collectionSlug: string,
     limit?: number,
     next?: string,
+    includePrivateListings?: boolean,
   ): Promise<GetListingsResponse> {
-    return this.listingsAPI.getAllListings(collectionSlug, limit, next);
+    return this.listingsAPI.getAllListings(
+      collectionSlug,
+      limit,
+      next,
+      includePrivateListings,
+    );
   }
 
   /**
@@ -227,13 +234,19 @@ export class OpenSeaAPI {
    * Gets the best listing for a given token.
    * @param collectionSlug The slug of the collection.
    * @param tokenId The token identifier.
+   * @param includePrivateListings Whether to include private listings (default: false)
    * @returns The {@link GetBestListingResponse} returned by the API.
    */
   public async getBestListing(
     collectionSlug: string,
     tokenId: string | number,
+    includePrivateListings?: boolean,
   ): Promise<GetBestListingResponse> {
-    return this.listingsAPI.getBestListing(collectionSlug, tokenId);
+    return this.listingsAPI.getBestListing(
+      collectionSlug,
+      tokenId,
+      includePrivateListings,
+    );
   }
 
   /**
@@ -241,14 +254,21 @@ export class OpenSeaAPI {
    * @param collectionSlug The slug of the collection.
    * @param limit The number of listings to return. Must be between 1 and 100. Default: 100
    * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @param includePrivateListings Whether to include private listings (default: false)
    * @returns The {@link GetListingsResponse} returned by the API.
    */
   public async getBestListings(
     collectionSlug: string,
     limit?: number,
     next?: string,
+    includePrivateListings?: boolean,
   ): Promise<GetListingsResponse> {
-    return this.listingsAPI.getBestListings(collectionSlug, limit, next);
+    return this.listingsAPI.getBestListings(
+      collectionSlug,
+      limit,
+      next,
+      includePrivateListings,
+    );
   }
 
   /**
@@ -259,7 +279,7 @@ export class OpenSeaAPI {
    * @side The side of the order (buy or sell)
    * @param assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers)
    * @param tokenId Optional token ID for criteria offers (e.g., collection offers)
-   * @param unitsToFill Optional number of units to fill. For listings, defaults to remaining quantity. For offers, defaults to 1.
+   * @param unitsToFill Optional number of units to fill. Defaults to 1 for both listings and offers.
    * @param recipientAddress Optional recipient address for the NFT when fulfilling a listing. Not applicable for offers.
    * @returns The {@link FulfillmentDataResponse}
    */
@@ -642,6 +662,7 @@ export class OpenSeaAPI {
    * @param limit The number of listings to return. Must be between 1 and 100.
    * @param next The cursor for the next page of results. This is returned from a previous request.
    * @param chain The chain where the NFT is located. Defaults to the chain set in the constructor.
+   * @param includePrivateListings Whether to include private listings (default: false)
    * @returns The {@link GetListingsResponse} returned by the API.
    */
   public async getNFTListings(
@@ -650,6 +671,7 @@ export class OpenSeaAPI {
     limit?: number,
     next?: string,
     chain: Chain = this.chain,
+    includePrivateListings?: boolean,
   ): Promise<GetListingsResponse> {
     return this.listingsAPI.getNFTListings(
       assetContractAddress,
@@ -657,6 +679,7 @@ export class OpenSeaAPI {
       limit,
       next,
       chain,
+      includePrivateListings,
     );
   }
 

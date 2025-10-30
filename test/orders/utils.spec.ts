@@ -233,6 +233,7 @@ suite("Orders: utils", () => {
         fulfiller: {
           address: "0xFulfiller",
         },
+        units_to_fill: "1",
       });
       expect(result.consideration).to.be.undefined;
     });
@@ -297,6 +298,7 @@ suite("Orders: utils", () => {
         fulfiller: {
           address: "0xFulfiller",
         },
+        units_to_fill: "1",
       });
       expect(result.consideration).to.be.undefined;
     });
