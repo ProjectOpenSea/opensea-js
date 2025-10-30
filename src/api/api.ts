@@ -169,14 +169,21 @@ export class OpenSeaAPI {
    * @param collectionSlug The slug of the collection.
    * @param limit The number of listings to return. Must be between 1 and 100. Default: 100
    * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @param includePrivateListings Whether to include private listings (default: false)
    * @returns The {@link GetListingsResponse} returned by the API.
    */
   public async getAllListings(
     collectionSlug: string,
     limit?: number,
     next?: string,
+    includePrivateListings?: boolean,
   ): Promise<GetListingsResponse> {
-    return this.listingsAPI.getAllListings(collectionSlug, limit, next);
+    return this.listingsAPI.getAllListings(
+      collectionSlug,
+      limit,
+      next,
+      includePrivateListings,
+    );
   }
 
   /**
@@ -247,14 +254,21 @@ export class OpenSeaAPI {
    * @param collectionSlug The slug of the collection.
    * @param limit The number of listings to return. Must be between 1 and 100. Default: 100
    * @param next The cursor for the next page of results. This is returned from a previous request.
+   * @param includePrivateListings Whether to include private listings (default: false)
    * @returns The {@link GetListingsResponse} returned by the API.
    */
   public async getBestListings(
     collectionSlug: string,
     limit?: number,
     next?: string,
+    includePrivateListings?: boolean,
   ): Promise<GetListingsResponse> {
-    return this.listingsAPI.getBestListings(collectionSlug, limit, next);
+    return this.listingsAPI.getBestListings(
+      collectionSlug,
+      limit,
+      next,
+      includePrivateListings,
+    );
   }
 
   /**
@@ -648,6 +662,7 @@ export class OpenSeaAPI {
    * @param limit The number of listings to return. Must be between 1 and 100.
    * @param next The cursor for the next page of results. This is returned from a previous request.
    * @param chain The chain where the NFT is located. Defaults to the chain set in the constructor.
+   * @param includePrivateListings Whether to include private listings (default: false)
    * @returns The {@link GetListingsResponse} returned by the API.
    */
   public async getNFTListings(
@@ -656,6 +671,7 @@ export class OpenSeaAPI {
     limit?: number,
     next?: string,
     chain: Chain = this.chain,
+    includePrivateListings?: boolean,
   ): Promise<GetListingsResponse> {
     return this.listingsAPI.getNFTListings(
       assetContractAddress,
@@ -663,6 +679,7 @@ export class OpenSeaAPI {
       limit,
       next,
       chain,
+      includePrivateListings,
     );
   }
 
