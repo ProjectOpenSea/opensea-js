@@ -95,7 +95,7 @@ export class FulfillmentManager {
    * @param options.accountAddress Address of the wallet taking the offer.
    * @param options.assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
    * @param options.tokenId Optional token ID for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
-   * @param options.unitsToFill Optional number of units to fill. For listings, defaults to remaining quantity. For offers, defaults to 1.
+   * @param options.unitsToFill Optional number of units to fill. Defaults to 1 for both listings and offers.
    * @param options.recipientAddress Optional recipient address for the NFT when fulfilling a listing. Not applicable for offers.
    * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.
@@ -152,9 +152,9 @@ export class FulfillmentManager {
       throw new Error("Order hash is required to fulfill an order");
     }
 
-    // Convert unitsToFill to string if provided
+    // Convert unitsToFill to string, defaulting to "1" if not provided
     const unitsToFillStr =
-      unitsToFill !== undefined ? unitsToFill.toString() : undefined;
+      unitsToFill !== undefined ? unitsToFill.toString() : "1";
 
     const fulfillmentData = await this.context.api.generateFulfillmentData(
       accountAddress,

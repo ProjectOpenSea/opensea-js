@@ -259,7 +259,7 @@ export class OpenSeaAPI {
    * @side The side of the order (buy or sell)
    * @param assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers)
    * @param tokenId Optional token ID for criteria offers (e.g., collection offers)
-   * @param unitsToFill Optional number of units to fill. For listings, defaults to remaining quantity. For offers, defaults to 1.
+   * @param unitsToFill Optional number of units to fill. Defaults to 1 for both listings and offers.
    * @param recipientAddress Optional recipient address for the NFT when fulfilling a listing. Not applicable for offers.
    * @returns The {@link FulfillmentDataResponse}
    */

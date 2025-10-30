@@ -311,40 +311,40 @@ suite("SDK: FulfillmentManager", () => {
   });
 
   suite("fulfillOrder with remaining_quantity", () => {
-    test("uses remaining_quantity from Listing when unitsToFill not specified", async () => {
+    test("defaults to 1 when unitsToFill not specified for Listing", async () => {
       await fulfillmentManager.fulfillOrder({
         order: mockListing,
         accountAddress: "0xBuyer",
       });
 
-      // API defaults unitsToFill to remaining_quantity for listings
+      // SDK defaults unitsToFill to "1" for both listings and offers
       expect(mockSigner.sendTransaction.calledOnce).to.be.true;
       const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
-      expect(apiCall[6]).to.be.undefined; // unitsToFill not specified
+      expect(apiCall[6]).to.equal("1"); // unitsToFill defaults to "1"
     });
 
-    test("uses remaining_quantity from partially filled Listing", async () => {
+    test("defaults to 1 when unitsToFill not specified for partially filled Listing", async () => {
       await fulfillmentManager.fulfillOrder({
         order: mockListingPartiallyFilled,
         accountAddress: "0xBuyer",
       });
 
-      // API defaults unitsToFill to remaining_quantity for listings
+      // SDK defaults unitsToFill to "1" for both listings and offers
       expect(mockSigner.sendTransaction.calledOnce).to.be.true;
       const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
-      expect(apiCall[6]).to.be.undefined; // unitsToFill not specified
+      expect(apiCall[6]).to.equal("1"); // unitsToFill defaults to "1"
     });
 
-    test("uses remainingQuantity from OrderV2 when unitsToFill not specified", async () => {
+    test("defaults to 1 when unitsToFill not specified for OrderV2", async () => {
       await fulfillmentManager.fulfillOrder({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
       });
 
-      // API defaults unitsToFill to remaining_quantity for listings
+      // SDK defaults unitsToFill to "1" for both listings and offers
       expect(mockSigner.sendTransaction.calledOnce).to.be.true;
       const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
-      expect(apiCall[6]).to.be.undefined; // unitsToFill not specified
+      expect(apiCall[6]).to.equal("1"); // unitsToFill defaults to "1"
     });
 
     test("passes unitsToFill when specified", async () => {
