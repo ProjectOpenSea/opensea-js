@@ -1,5 +1,5 @@
 import { mockOrderComponents } from "./orders";
-import { Offer } from "../../src/api/types";
+import { Offer, RestOrderStatus } from "../../src/api/types";
 
 // eslint-disable-next-line import/no-unused-modules
 export const mockOffer: Offer = {
@@ -15,6 +15,7 @@ export const mockOffer: Offer = {
     decimals: 18,
     value: "1500000000000000000",
   },
+  status: RestOrderStatus.ACTIVE,
 };
 
 // eslint-disable-next-line import/no-unused-modules

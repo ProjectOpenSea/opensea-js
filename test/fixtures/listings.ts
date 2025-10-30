@@ -1,6 +1,6 @@
 import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
 import { mockOrderComponents } from "./orders";
-import { Listing } from "../../src/api/types";
+import { Listing, RestOrderStatus } from "../../src/api/types";
 import { OrderType } from "../../src/orders/types";
 
 export const mockListing: Listing = {
@@ -20,6 +20,7 @@ export const mockListing: Listing = {
   },
   protocol_address: CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
   remaining_quantity: 1,
+  status: RestOrderStatus.ACTIVE,
 };
 
 export const mockListingPartiallyFilled: Listing = {
