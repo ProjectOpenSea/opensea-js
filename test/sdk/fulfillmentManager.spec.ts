@@ -56,7 +56,38 @@ suite("SDK: FulfillmentManager", () => {
               "fulfillAdvancedOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256),uint120,uint120,bytes,bytes),(uint256,uint8,uint256,uint256,bytes32[])[],bytes32,address)",
             input_data: {
               advancedOrder: {
-                parameters: {},
+                parameters: {
+                  offerer: "0xfba662e1a8e91a350702cf3b87d0c2d2fb4ba57f",
+                  zone: "0x0000000000000000000000000000000000000000",
+                  offer: [
+                    {
+                      itemType: 3,
+                      token: "0x88d381e3c65221abea498c69e990d1deb7bd3863",
+                      identifierOrCriteria: "1",
+                      startAmount: "10000",
+                      endAmount: "10000",
+                    },
+                  ],
+                  consideration: [
+                    {
+                      itemType: 0,
+                      token: "0x0000000000000000000000000000000000000000",
+                      identifierOrCriteria: "0",
+                      startAmount: "99000000",
+                      endAmount: "99000000",
+                      recipient: "0xfba662e1a8e91a350702cf3b87d0c2d2fb4ba57f",
+                    },
+                  ],
+                  orderType: 1,
+                  startTime: "1759963495",
+                  endTime: "1775515495",
+                  zoneHash:
+                    "0x0000000000000000000000000000000000000000000000000000000000000000",
+                  salt: "27855337018906766782546881864045825683096516384821792734247163280454785126732",
+                  conduitKey:
+                    "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000",
+                  totalOriginalConsiderationItems: "2",
+                },
                 numerator: 1,
                 denominator: 1,
                 signature: "0x",
@@ -159,11 +190,42 @@ suite("SDK: FulfillmentManager", () => {
               "fulfillAdvancedOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256),uint120,uint120,bytes,bytes),(uint256,uint8,uint256,uint256,bytes32[])[],bytes32,address)",
             input_data: {
               advancedOrder: {
-                parameters: {},
+                parameters: {
+                  offerer: "0xfba662e1a8e91a350702cf3b87d0c2d2fb4ba57f",
+                  zone: "0x0000000000000000000000000000000000000000",
+                  offer: [
+                    {
+                      itemType: 3,
+                      token: "0x88d381e3c65221abea498c69e990d1deb7bd3863",
+                      identifierOrCriteria: "1",
+                      startAmount: "10000",
+                      endAmount: "10000",
+                    },
+                  ],
+                  consideration: [
+                    {
+                      itemType: 0,
+                      token: "0x0000000000000000000000000000000000000000",
+                      identifierOrCriteria: "0",
+                      startAmount: "99000000",
+                      endAmount: "99000000",
+                      recipient: "0xfba662e1a8e91a350702cf3b87d0c2d2fb4ba57f",
+                    },
+                  ],
+                  orderType: 1,
+                  startTime: "1759963495",
+                  endTime: "1775515495",
+                  zoneHash:
+                    "0x0000000000000000000000000000000000000000000000000000000000000000",
+                  salt: "27855337018906766782546881864045825683096516384821792734247163280454785126732",
+                  conduitKey:
+                    "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000",
+                  totalOriginalConsiderationItems: "2",
+                },
                 numerator: 1,
                 denominator: 1,
                 signature: "0x",
-                extraData: "0xExtraData",
+                extraData: "0x1234567890abcdef",
               },
               criteriaResolvers: [],
               fulfillerConduitKey:
@@ -180,8 +242,20 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      // extraData is now included in the API transaction data
       expect(mockSigner.sendTransaction.calledOnce).to.be.true;
+    });
+
+    test("fulfills order with recipient address", async () => {
+      const recipientAddress = "0xRecipient123";
+      await fulfillmentManager.fulfillOrder({
+        order: mockOrderV2,
+        accountAddress: "0xBuyer",
+        recipientAddress,
+      });
+
+      expect(mockAPI.generateFulfillmentData.calledOnce).to.be.true;
+      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
+      expect(apiCall[7]).to.equal(recipientAddress);
     });
 
     test("fulfills private listing successfully", async () => {
@@ -227,7 +301,6 @@ suite("SDK: FulfillmentManager", () => {
     });
 
     test("handles transaction response as ContractTransactionResponse", async () => {
-      // Transaction response is now from signer.sendTransaction
       const result = await fulfillmentManager.fulfillOrder({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
@@ -244,8 +317,10 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      // remaining_quantity is now handled by the API transaction data
+      // API defaults unitsToFill to remaining_quantity for listings
       expect(mockSigner.sendTransaction.calledOnce).to.be.true;
+      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
+      expect(apiCall[6]).to.be.undefined; // unitsToFill not specified
     });
 
     test("uses remaining_quantity from partially filled Listing", async () => {
@@ -254,8 +329,10 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      // remaining_quantity is now handled by the API transaction data
+      // API defaults unitsToFill to remaining_quantity for listings
       expect(mockSigner.sendTransaction.calledOnce).to.be.true;
+      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
+      expect(apiCall[6]).to.be.undefined; // unitsToFill not specified
     });
 
     test("uses remainingQuantity from OrderV2 when unitsToFill not specified", async () => {
@@ -264,12 +341,13 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xBuyer",
       });
 
-      // remainingQuantity is now handled by the API transaction data
+      // API defaults unitsToFill to remaining_quantity for listings
       expect(mockSigner.sendTransaction.calledOnce).to.be.true;
+      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
+      expect(apiCall[6]).to.be.undefined; // unitsToFill not specified
     });
 
-    test("passes undefined to seaport when neither unitsToFill nor remaining_quantity available", async () => {
-      // Use mockOrderV2 but ensure neither field is checked by fulfillment logic
+    test("passes unitsToFill when specified", async () => {
       const orderWithoutRemainingQty = {
         order_hash: "0x789",
         chain: "ethereum",
@@ -288,10 +366,12 @@ suite("SDK: FulfillmentManager", () => {
       await fulfillmentManager.fulfillOrder({
         order: orderWithoutRemainingQty,
         accountAddress: "0xBuyer",
+        unitsToFill: 5,
       });
 
-      // Quantity is now handled by the API transaction data
       expect(mockSigner.sendTransaction.calledOnce).to.be.true;
+      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
+      expect(apiCall[6]).to.equal("5"); // unitsToFill passed to API
     });
   });
 

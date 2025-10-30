@@ -1,3 +1,4 @@
+import { SeaportABI } from "@opensea/seaport-js/lib/abi/Seaport";
 import { OrderComponents } from "@opensea/seaport-js/lib/types";
 import { BigNumberish, Overrides, Signer, ethers } from "ethers";
 import { SDKContext } from "./context";
@@ -94,6 +95,8 @@ export class FulfillmentManager {
    * @param options.accountAddress Address of the wallet taking the offer.
    * @param options.assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
    * @param options.tokenId Optional token ID for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
+   * @param options.unitsToFill Optional number of units to fill. For listings, defaults to remaining quantity. For offers, defaults to 1.
+   * @param options.recipientAddress Optional recipient address for the NFT when fulfilling a listing. Not applicable for offers.
    * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.
    *
@@ -107,12 +110,16 @@ export class FulfillmentManager {
     accountAddress,
     assetContractAddress,
     tokenId,
+    unitsToFill,
+    recipientAddress,
     overrides,
   }: {
     order: OrderV2 | Order | Listing | Offer;
     accountAddress: string;
     assetContractAddress?: string;
     tokenId?: string;
+    unitsToFill?: BigNumberish;
+    recipientAddress?: string;
     overrides?: Overrides;
   }): Promise<string> {
     await this.context.requireAccountIsAvailable(accountAddress);
@@ -145,6 +152,10 @@ export class FulfillmentManager {
       throw new Error("Order hash is required to fulfill an order");
     }
 
+    // Convert unitsToFill to string if provided
+    const unitsToFillStr =
+      unitsToFill !== undefined ? unitsToFill.toString() : undefined;
+
     const fulfillmentData = await this.context.api.generateFulfillmentData(
       accountAddress,
       orderHash,
@@ -152,16 +163,16 @@ export class FulfillmentManager {
       side,
       assetContractAddress,
       tokenId,
+      unitsToFillStr,
+      recipientAddress,
     );
 
     // Use the transaction data returned by the API
     const transaction = fulfillmentData.fulfillment_data.transaction;
     const inputData = transaction.input_data;
 
-    // Encode the transaction data using ethers Interface
-    const seaportInterface = new ethers.Interface([
-      `function ${transaction.function}`,
-    ]);
+    // Use Seaport ABI to encode the transaction
+    const seaportInterface = new ethers.Interface(SeaportABI);
 
     // Extract function name and build parameters array in correct order
     const functionName = transaction.function.split("(")[0];
