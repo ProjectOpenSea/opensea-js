@@ -207,13 +207,13 @@ export class OpenSeaSDK {
    * @param options
    * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
    * @param options.accountAddress Address of the wallet making the offer.
-   * @param options.amount Value in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
-   * @param options.quantity The number of assets to bid for (if fungible or semi-fungible). Defaults to 1.
-   * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt.
-   * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
+   * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
+   * @param options.quantity Number of assets to bid for. Defaults to 1.
+   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH
-   * @param options.zone The zone to use for the order. If unspecified, defaults to the chain's signed zone for order protection.
+   * @param options.zone Zone for order protection. Defaults to chain's signed zone.
    *
    * @returns The {@link OrderV2} that was created.
    *
@@ -261,16 +261,16 @@ export class OpenSeaSDK {
    * @param options
    * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
    * @param options.accountAddress  Address of the wallet making the listing
-   * @param options.amount Value in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified)
-   * @param options.quantity The number of assets to list (if fungible or semi-fungible). Defaults to 1.
-   * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt. This can be used for on-chain order attribution to assist with analytics.
-   * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
+   * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
+   * @param options.quantity Number of assets to list. Defaults to 1.
+   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to ETH
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.includeOptionalCreatorFees If true, optional creator fees will be included in the listing. Default: false.
-   * @param options.zone The zone to use for the order. For order protection, pass SIGNED_ZONE. If unspecified, defaults to no zone.
+   * @param options.zone Zone for order protection. Defaults to no zone.
    * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
@@ -425,13 +425,13 @@ export class OpenSeaSDK {
    * @param options
    * @param options.collectionSlug Identifier for the collection.
    * @param options.accountAddress Address of the wallet making the offer.
-   * @param options.amount Value of the offer in units, not base units e.g. not wei, of the payment token (or WETH if no payment token address specified).
-   * @param options.quantity The number of assets to bid for (if fungible or semi-fungible).
-   * @param options.domain An optional domain to be hashed and included in the first four bytes of the random salt. This can be used for on-chain order attribution to assist with analytics.
-   * @param options.salt Arbitrary salt. If not passed in, a random salt will be generated with the first four bytes being the domain hash or empty.
-   * @param options.expirationTime Expiration time for the order, in UTC seconds.
-   * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH.
-   * @param options.offerProtectionEnabled Build the offer on OpenSea's signed zone to provide offer protections from receiving an item which is disabled from trading.
+   * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
+   * @param options.quantity Number of assets to bid for.
+   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.salt Arbitrary salt. Auto-generated if not provided.
+   * @param options.expirationTime Expiration time (UTC seconds).
+   * @param options.paymentTokenAddress Payment token address. Defaults to WETH.
+   * @param options.offerProtectionEnabled Use signed zone for protection against disabled items. Default: true.
    * @param options.traitType If defined, the trait name to create the collection offer for.
    * @param options.traitValue If defined, the trait value to create the collection offer for.
    * @returns The {@link CollectionOffer} that was created.
@@ -536,7 +536,7 @@ export class OpenSeaSDK {
    * @param options.orderHashes Optional array of order hashes to cancel. Must provide protocolAddress if using this.
    * @param options.accountAddress The account address cancelling the orders.
    * @param options.protocolAddress Required when using orderHashes. The Seaport protocol address for the orders.
-   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.
+   * @param options.domain Optional domain for on-chain attribution. Hashed and included in calldata.
    * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the cancellation.
    *
@@ -579,7 +579,7 @@ export class OpenSeaSDK {
    * @param options.orderHash Optional order hash to cancel. Must provide protocolAddress if using this.
    * @param options.accountAddress The account address that will be cancelling the order.
    * @param options.protocolAddress Required when using orderHash. The Seaport protocol address for the order.
-   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
+   * @param options.domain Optional domain for on-chain attribution. Hashed and included in calldata.
    *
    * @throws Error if neither order nor orderHash is provided.
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -832,10 +832,24 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Create and validate a listing onchain using Seaport's validate() method. This combines
-   * order building with onchain validation in a single call.
-   * @param options Listing parameters
-   * @returns Transaction hash of the validation transaction
+   * Create and validate a listing onchain. Combines order building with onchain validation.
+   * Validation costs gas upfront but makes fulfillment cheaper (no signature verification needed).
+   * @param options
+   * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
+   * @param options.accountAddress Address of the wallet making the listing
+   * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
+   * @param options.quantity Number of assets to list. Defaults to 1.
+   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.salt Arbitrary salt. Auto-generated if not provided.
+   * @param options.listingTime When order becomes fulfillable (UTC seconds). Defaults to now.
+   * @param options.expirationTime Expiration time (UTC seconds).
+   * @param options.paymentTokenAddress Payment token address. Defaults to ETH.
+   * @param options.buyerAddress Optional buyer restriction. Only this address can purchase.
+   * @param options.includeOptionalCreatorFees Include optional creator fees. Default: false.
+   * @param options.zone Zone for order protection. Defaults to no zone.
+   * @returns Transaction hash
+   *
+   * @throws Error if asset missing token id or accountAddress unavailable.
    */
   public async createListingAndValidateOnchain({
     asset,
@@ -881,10 +895,21 @@ export class OpenSeaSDK {
   }
 
   /**
-   * Create and validate an offer onchain using Seaport's validate() method. This combines
-   * order building with onchain validation in a single call.
-   * @param options Offer parameters
-   * @returns Transaction hash of the validation transaction
+   * Create and validate an offer onchain. Combines order building with onchain validation.
+   * Validation costs gas upfront but makes fulfillment cheaper (no signature verification needed).
+   * @param options
+   * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
+   * @param options.accountAddress Address of the wallet making the offer.
+   * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
+   * @param options.quantity Number of assets to bid for. Defaults to 1.
+   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.salt Arbitrary salt. Auto-generated if not provided.
+   * @param options.expirationTime Expiration time (UTC seconds).
+   * @param options.paymentTokenAddress Payment token address. Defaults to WETH.
+   * @param options.zone Zone for order protection. Defaults to chain's signed zone.
+   * @returns Transaction hash
+   *
+   * @throws Error if asset missing token id or accountAddress unavailable.
    */
   public async createOfferAndValidateOnchain({
     asset,

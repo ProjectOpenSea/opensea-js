@@ -347,10 +347,24 @@ export class FulfillmentManager {
   }
 
   /**
-   * Create and validate a listing onchain using Seaport's validate() method. This combines
-   * order building with onchain validation in a single call.
-   * @param options Listing parameters
-   * @returns Transaction hash of the validation transaction
+   * Create and validate a listing onchain. Combines order building with onchain validation.
+   * Validation costs gas upfront but makes fulfillment cheaper (no signature verification needed).
+   * @param options
+   * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
+   * @param options.accountAddress Address of the wallet making the listing
+   * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
+   * @param options.quantity Number of assets to list. Defaults to 1.
+   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.salt Arbitrary salt. Auto-generated if not provided.
+   * @param options.listingTime When order becomes fulfillable (UTC seconds). Defaults to now.
+   * @param options.expirationTime Expiration time (UTC seconds).
+   * @param options.paymentTokenAddress Payment token address. Defaults to ETH.
+   * @param options.buyerAddress Optional buyer restriction. Only this address can purchase.
+   * @param options.includeOptionalCreatorFees Include optional creator fees. Default: false.
+   * @param options.zone Zone for order protection. Defaults to no zone.
+   * @returns Transaction hash
+   *
+   * @throws Error if asset missing token id or accountAddress unavailable.
    */
   async createListingAndValidateOnchain({
     asset,
@@ -399,10 +413,21 @@ export class FulfillmentManager {
   }
 
   /**
-   * Create and validate an offer onchain using Seaport's validate() method. This combines
-   * order building with onchain validation in a single call.
-   * @param options Offer parameters
-   * @returns Transaction hash of the validation transaction
+   * Create and validate an offer onchain. Combines order building with onchain validation.
+   * Validation costs gas upfront but makes fulfillment cheaper (no signature verification needed).
+   * @param options
+   * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
+   * @param options.accountAddress Address of the wallet making the offer.
+   * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
+   * @param options.quantity Number of assets to bid for. Defaults to 1.
+   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.salt Arbitrary salt. Auto-generated if not provided.
+   * @param options.expirationTime Expiration time (UTC seconds).
+   * @param options.paymentTokenAddress Payment token address. Defaults to WETH.
+   * @param options.zone Zone for order protection. Defaults to chain's signed zone.
+   * @returns Transaction hash
+   *
+   * @throws Error if asset missing token id or accountAddress unavailable.
    */
   async createOfferAndValidateOnchain({
     asset,
