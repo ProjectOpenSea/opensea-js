@@ -276,7 +276,7 @@ export class OpenSeaAPI {
    * @param fulfillerAddress The wallet address which will be used to fulfill the order
    * @param orderHash The hash of the order to fulfill
    * @param protocolAddress The address of the seaport contract
-   * @side The side of the order (buy or sell)
+   * @param side The side of the order (buy or sell)
    * @param assetContractAddress Optional address of the NFT contract for criteria offers (e.g., collection offers)
    * @param tokenId Optional token ID for criteria offers (e.g., collection offers)
    * @param unitsToFill Optional number of units to fill. Defaults to 1 for both listings and offers.
