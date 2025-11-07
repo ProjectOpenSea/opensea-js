@@ -1052,6 +1052,7 @@ export class OrdersManager {
    * @param options.offerProtectionEnabled Build the offer on OpenSea's signed zone to provide offer protections from receiving an item which is disabled from trading.
    * @param options.traitType If defined, the trait name to create the collection offer for.
    * @param options.traitValue If defined, the trait value to create the collection offer for.
+   * @param options.traits If defined, an array of traits to create the multi-trait collection offer for.
    * @returns The {@link CollectionOffer} that was created.
    */
   async createCollectionOffer({
@@ -1066,6 +1067,7 @@ export class OrdersManager {
     offerProtectionEnabled = true,
     traitType,
     traitValue,
+    traits,
   }: {
     collectionSlug: string;
     accountAddress: string;
@@ -1078,6 +1080,7 @@ export class OrdersManager {
     offerProtectionEnabled?: boolean;
     traitType?: string;
     traitValue?: string;
+    traits?: Array<{ type: string; value: string }>;
   }): Promise<CollectionOffer | null> {
     await this.context.requireAccountIsAvailable(accountAddress);
 
@@ -1089,6 +1092,7 @@ export class OrdersManager {
       offerProtectionEnabled,
       traitType,
       traitValue,
+      traits,
     );
     const item = buildOfferResult.partialParameters.consideration[0];
     const convertedConsiderationItem = {
@@ -1143,6 +1147,7 @@ export class OrdersManager {
       collectionSlug,
       traitType,
       traitValue,
+      traits,
     );
   }
 }

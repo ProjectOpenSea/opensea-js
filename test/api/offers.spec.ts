@@ -503,6 +503,104 @@ suite("API: OffersAPI", () => {
       }
     });
 
+    test("builds collection offer with multiple traits", async () => {
+      const mockResponse: BuildOfferResponse = {
+        partialParameters:
+          {} as unknown as BuildOfferResponse["partialParameters"],
+      };
+
+      mockPost.resolves(mockResponse);
+
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "Hat", value: "Beanie" },
+      ];
+
+      await offersAPI.buildOffer(
+        "0xofferer123",
+        2,
+        "test-collection",
+        true,
+        undefined,
+        undefined,
+        traits,
+      );
+
+      expect(mockPost.calledOnce).to.be.true;
+    });
+
+    test("throws error when both traits array and traitType/traitValue are provided", async () => {
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "Hat", value: "Beanie" },
+      ];
+
+      try {
+        await offersAPI.buildOffer(
+          "0xofferer123",
+          5,
+          "test-collection",
+          true,
+          "Fur",
+          "Golden",
+          traits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Cannot use both 'traits' array and individual 'traitType'/'traitValue' parameters",
+        );
+      }
+    });
+
+    test("throws error when trait in array is missing type", async () => {
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "", value: "Beanie" },
+      ];
+
+      try {
+        await offersAPI.buildOffer(
+          "0xofferer123",
+          5,
+          "test-collection",
+          true,
+          undefined,
+          undefined,
+          traits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Each trait must have both 'type' and 'value' properties",
+        );
+      }
+    });
+
+    test("throws error when trait in array is missing value", async () => {
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "Hat", value: "" },
+      ];
+
+      try {
+        await offersAPI.buildOffer(
+          "0xofferer123",
+          5,
+          "test-collection",
+          true,
+          undefined,
+          undefined,
+          traits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Each trait must have both 'type' and 'value' properties",
+        );
+      }
+    });
+
     test("throws error on API failure", async () => {
       mockPost.rejects(new Error("Build failed"));
 
@@ -615,6 +713,34 @@ suite("API: OffersAPI", () => {
         "test-collection",
         "Background",
         "Red",
+      );
+
+      expect(mockPost.calledOnce).to.be.true;
+    });
+
+    test("posts collection offer with multiple traits", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig789",
+      };
+
+      const mockResponse: CollectionOffer = {
+        protocol_data: mockOrder,
+      } as unknown as CollectionOffer;
+
+      mockPost.resolves(mockResponse);
+
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "Hat", value: "Beanie" },
+      ];
+
+      await offersAPI.postCollectionOffer(
+        mockOrder,
+        "test-collection",
+        undefined,
+        undefined,
+        traits,
       );
 
       expect(mockPost.calledOnce).to.be.true;

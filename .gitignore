@@ -78,3 +78,5 @@ yarn.lock
 
 # Local Claude settings
 .claude/settings.local.json
+
+examples/

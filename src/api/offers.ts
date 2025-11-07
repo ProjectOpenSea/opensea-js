@@ -99,12 +99,29 @@ export class OffersAPI {
     offerProtectionEnabled = true,
     traitType?: string,
     traitValue?: string,
+    traits?: Array<{ type: string; value: string }>,
   ): Promise<BuildOfferResponse> {
+    // Validate trait parameters
+    if (traits && traits.length > 0 && (traitType || traitValue)) {
+      throw new Error(
+        "Cannot use both 'traits' array and individual 'traitType'/'traitValue' parameters. Please use only one approach.",
+      );
+    }
     if (traitType || traitValue) {
       if (!traitType || !traitValue) {
         throw new Error(
           "Both traitType and traitValue must be defined if one is defined.",
         );
+      }
+    }
+    if (traits && traits.length > 0) {
+      // Validate each trait in the array has both type and value
+      for (const trait of traits) {
+        if (!trait.type || !trait.value) {
+          throw new Error(
+            "Each trait must have both 'type' and 'value' properties.",
+          );
+        }
       }
     }
     const payload = getBuildCollectionOfferPayload(
@@ -114,6 +131,7 @@ export class OffersAPI {
       offerProtectionEnabled,
       traitType,
       traitValue,
+      traits,
     );
     const response = await this.fetcher.post<BuildOfferResponse>(
       getBuildOfferPath(),
@@ -141,12 +159,14 @@ export class OffersAPI {
     slug: string,
     traitType?: string,
     traitValue?: string,
+    traits?: Array<{ type: string; value: string }>,
   ): Promise<CollectionOffer | null> {
     const payload = getPostCollectionOfferPayload(
       slug,
       order,
       traitType,
       traitValue,
+      traits,
     );
     return await this.fetcher.post<CollectionOffer>(
       getPostCollectionOfferPath(),

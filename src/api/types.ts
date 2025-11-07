@@ -33,8 +33,10 @@ type Criteria = {
   contract: ContractCriteria;
   /** Represents a list of token ids which can be used to fulfill the criteria offer. */
   encoded_token_ids?: string;
-  /** The trait for the criteria */
+  /** The trait for the criteria (single trait) */
   trait?: TraitCriteria;
+  /** Multiple traits for the criteria (multi-trait offers) */
+  traits?: TraitCriteria[];
 };
 
 /**
