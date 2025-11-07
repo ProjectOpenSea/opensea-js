@@ -171,6 +171,65 @@ suite("Orders: utils", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((result.criteria as any).trait).to.be.undefined;
     });
+
+    test("should add traits array when provided", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const protocolData = { parameters: {} } as any as ProtocolData;
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "Hat", value: "Beanie" },
+      ];
+      const result = getPostCollectionOfferPayload(
+        "boredapeyachtclub",
+        protocolData,
+        undefined,
+        undefined,
+        traits,
+      );
+
+      expect(result.criteria).to.have.property("traits");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).traits).to.deep.equal(traits);
+    });
+
+    test("should prioritize traits array over individual traitType/traitValue", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const protocolData = { parameters: {} } as any as ProtocolData;
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "Hat", value: "Beanie" },
+      ];
+      const result = getPostCollectionOfferPayload(
+        "boredapeyachtclub",
+        protocolData,
+        "Fur",
+        "Brown",
+        traits,
+      );
+
+      expect(result.criteria).to.have.property("traits");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).traits).to.deep.equal(traits);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).trait).to.be.undefined;
+    });
+
+    test("should not add traits when empty array is provided", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const protocolData = { parameters: {} } as any as ProtocolData;
+      const result = getPostCollectionOfferPayload(
+        "boredapeyachtclub",
+        protocolData,
+        undefined,
+        undefined,
+        [],
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).traits).to.be.undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).trait).to.be.undefined;
+    });
   });
 
   suite("getBuildCollectionOfferPayload", () => {
@@ -212,6 +271,65 @@ suite("Orders: utils", () => {
         value: "Crown",
       });
       expect(result.offer_protection_enabled).to.be.false;
+    });
+
+    test("should add traits array when provided", () => {
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "Hat", value: "Beanie" },
+      ];
+      const result = getBuildCollectionOfferPayload(
+        "0xOfferer",
+        2,
+        "boredapeyachtclub",
+        true,
+        undefined,
+        undefined,
+        traits,
+      );
+
+      expect(result.criteria).to.have.property("traits");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).traits).to.deep.equal(traits);
+    });
+
+    test("should prioritize traits array over individual traitType/traitValue", () => {
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "Fur", value: "Golden" },
+      ];
+      const result = getBuildCollectionOfferPayload(
+        "0xOfferer",
+        1,
+        "boredapeyachtclub",
+        false,
+        "Hat",
+        "Crown",
+        traits,
+      );
+
+      expect(result.criteria).to.have.property("traits");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).traits).to.deep.equal(traits);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).trait).to.be.undefined;
+    });
+
+    test("should not add traits when empty array is provided", () => {
+      const result = getBuildCollectionOfferPayload(
+        "0xOfferer",
+        5,
+        "boredapeyachtclub",
+        true,
+        undefined,
+        undefined,
+        [],
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).traits).to.be.undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).trait).to.be.undefined;
     });
   });
 

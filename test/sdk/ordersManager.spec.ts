@@ -414,6 +414,28 @@ suite("SDK: OrdersManager", () => {
       expect(postOfferArgs[3]).to.equal("Blue");
     });
 
+    test("creates collection offer with multiple traits", async () => {
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "Hat", value: "Beanie" },
+      ];
+
+      await ordersManager.createCollectionOffer({
+        collectionSlug: "test-collection",
+        accountAddress: "0xBuyer",
+        amount: "1000000000000000000",
+        quantity: 1,
+        paymentTokenAddress: "0xWETH",
+        traits,
+      });
+
+      const buildOfferArgs = mockAPI.buildOffer.firstCall.args;
+      expect(buildOfferArgs[6]).to.deep.equal(traits);
+
+      const postOfferArgs = mockAPI.postCollectionOffer.firstCall.args;
+      expect(postOfferArgs[4]).to.deep.equal(traits);
+    });
+
     test("creates collection offer with expiration time", async () => {
       const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
 

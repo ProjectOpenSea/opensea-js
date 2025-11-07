@@ -434,6 +434,7 @@ export class OpenSeaSDK {
    * @param options.offerProtectionEnabled Use signed zone for protection against disabled items. Default: true.
    * @param options.traitType If defined, the trait name to create the collection offer for.
    * @param options.traitValue If defined, the trait value to create the collection offer for.
+   * @param options.traits If defined, an array of traits to create the multi-trait collection offer for.
    * @returns The {@link CollectionOffer} that was created.
    */
   public async createCollectionOffer({
@@ -448,6 +449,7 @@ export class OpenSeaSDK {
     offerProtectionEnabled = true,
     traitType,
     traitValue,
+    traits,
   }: {
     collectionSlug: string;
     accountAddress: string;
@@ -460,6 +462,7 @@ export class OpenSeaSDK {
     offerProtectionEnabled?: boolean;
     traitType?: string;
     traitValue?: string;
+    traits?: Array<{ type: string; value: string }>;
   }): Promise<CollectionOffer | null> {
     return this._ordersManager.createCollectionOffer({
       collectionSlug,
@@ -473,6 +476,7 @@ export class OpenSeaSDK {
       offerProtectionEnabled,
       traitType,
       traitValue,
+      traits,
     });
   }
 

@@ -16,6 +16,7 @@ export const getPostCollectionOfferPayload = (
   protocol_data: ProtocolData,
   traitType?: string,
   traitValue?: string,
+  traits?: Array<{ type: string; value: string }>,
 ) => {
   const payload = {
     criteria: {
@@ -24,7 +25,13 @@ export const getPostCollectionOfferPayload = (
     protocol_data,
     protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
   };
-  if (traitType && traitValue) {
+
+  // Prioritize traits array if provided
+  if (traits && traits.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (payload.criteria as any).traits = traits;
+  } else if (traitType && traitValue) {
+    // Fallback to single trait for backward compatibility
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (payload.criteria as any).trait = {
       type: traitType,
@@ -41,6 +48,7 @@ export const getBuildCollectionOfferPayload = (
   offerProtectionEnabled: boolean,
   traitType?: string,
   traitValue?: string,
+  traits?: Array<{ type: string; value: string }>,
 ) => {
   const payload = {
     offerer: offererAddress,
@@ -53,7 +61,13 @@ export const getBuildCollectionOfferPayload = (
     protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
     offer_protection_enabled: offerProtectionEnabled,
   };
-  if (traitType && traitValue) {
+
+  // Prioritize traits array if provided
+  if (traits && traits.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (payload.criteria as any).traits = traits;
+  } else if (traitType && traitValue) {
+    // Fallback to single trait for backward compatibility
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (payload.criteria as any).trait = {
       type: traitType,

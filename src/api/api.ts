@@ -326,6 +326,7 @@ export class OpenSeaAPI {
    * @param offerProtectionEnabled Build the offer on OpenSea's signed zone to provide offer protections from receiving an item which is disabled from trading.
    * @param traitType If defined, the trait name to create the collection offer for.
    * @param traitValue If defined, the trait value to create the collection offer for.
+   * @param traits If defined, an array of traits to create the multi-trait collection offer for.
    * @returns The {@link BuildOfferResponse} returned by the API.
    */
   public async buildOffer(
@@ -335,6 +336,7 @@ export class OpenSeaAPI {
     offerProtectionEnabled = true,
     traitType?: string,
     traitValue?: string,
+    traits?: Array<{ type: string; value: string }>,
   ): Promise<BuildOfferResponse> {
     return this.offersAPI.buildOffer(
       offererAddress,
@@ -343,6 +345,7 @@ export class OpenSeaAPI {
       offerProtectionEnabled,
       traitType,
       traitValue,
+      traits,
     );
   }
 
@@ -363,6 +366,7 @@ export class OpenSeaAPI {
    * @param slug The slug (identifier) of the collection to post the offer for.
    * @param traitType If defined, the trait name to create the collection offer for.
    * @param traitValue If defined, the trait value to create the collection offer for.
+   * @param traits If defined, an array of traits to create the multi-trait collection offer for.
    * @returns The {@link Offer} returned to the API.
    */
   public async postCollectionOffer(
@@ -370,12 +374,14 @@ export class OpenSeaAPI {
     slug: string,
     traitType?: string,
     traitValue?: string,
+    traits?: Array<{ type: string; value: string }>,
   ): Promise<CollectionOffer | null> {
     return this.offersAPI.postCollectionOffer(
       order,
       slug,
       traitType,
       traitValue,
+      traits,
     );
   }
 
