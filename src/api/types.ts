@@ -341,8 +341,6 @@ export enum AssetEventType {
   ORDER = "order",
   SALE = "sale",
   TRANSFER = "transfer",
-  CANCEL = "cancel",
-  REDEMPTION = "redemption",
 }
 
 /**

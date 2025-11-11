@@ -9,7 +9,6 @@ import {
 } from "./apiPaths";
 import {
   BuildOfferResponse,
-  ListCollectionOffersResponse,
   GetBestOfferResponse,
   GetOffersResponse,
   CollectionOffer,
@@ -141,13 +140,19 @@ export class OffersAPI {
   }
 
   /**
-   * Get a list collection offers for a given slug.
+   * Get a list of collection offers for a given slug.
    */
   async getCollectionOffers(
     slug: string,
-  ): Promise<ListCollectionOffersResponse | null> {
-    return await this.fetcher.get<ListCollectionOffersResponse>(
+    limit?: number,
+    next?: string,
+  ): Promise<GetOffersResponse> {
+    return await this.fetcher.get<GetOffersResponse>(
       getCollectionOffersPath(slug),
+      {
+        limit,
+        next,
+      },
     );
   }
 

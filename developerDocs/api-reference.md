@@ -964,11 +964,9 @@ asset_events.forEach((event) => {
 
 **Event Types:**
 
-- `AssetEventType.SALE` - NFT sales
-- `AssetEventType.TRANSFER` - NFT transfers
 - `AssetEventType.ORDER` - New listings and offers
-- `AssetEventType.CANCEL` - Canceled orders
-- `AssetEventType.REDEMPTION` - NFT redemptions
+- `AssetEventType.SALE` - NFT sales
+- `AssetEventType.TRANSFER` - NFT transfers (including mints from 0x0 address)
 
 **Returns:** `GetEventsResponse` containing:
 

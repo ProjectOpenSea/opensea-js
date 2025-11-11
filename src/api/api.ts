@@ -29,7 +29,6 @@ import {
   GetCollectionsResponse,
   ListNFTsResponse,
   GetNFTResponse,
-  ListCollectionOffersResponse,
   GetOrdersResponse,
   GetBestOfferResponse,
   GetBestListingResponse,
@@ -352,12 +351,16 @@ export class OpenSeaAPI {
   /**
    * Get a list collection offers for a given slug.
    * @param slug The slug (identifier) of the collection to list offers for
-   * @returns The {@link ListCollectionOffersResponse} returned by the API.
+   * @param limit Optional limit for number of results.
+   * @param next Optional cursor for pagination.
+   * @returns The {@link GetOffersResponse} returned by the API.
    */
   public async getCollectionOffers(
     slug: string,
-  ): Promise<ListCollectionOffersResponse | null> {
-    return this.offersAPI.getCollectionOffers(slug);
+    limit?: number,
+    next?: string,
+  ): Promise<GetOffersResponse> {
+    return this.offersAPI.getCollectionOffers(slug, limit, next);
   }
 
   /**

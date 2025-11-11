@@ -250,11 +250,9 @@ const { asset_events, next } = await openseaSDK.api.getEvents({
 
 **Event Types:**
 
-- `AssetEventType.SALE` - Sales of NFTs
-- `AssetEventType.TRANSFER` - Transfers of NFTs
 - `AssetEventType.ORDER` - New listings and offers
-- `AssetEventType.CANCEL` - Canceled orders
-- `AssetEventType.REDEMPTION` - NFT redemptions
+- `AssetEventType.SALE` - Sales of NFTs
+- `AssetEventType.TRANSFER` - Transfers of NFTs (including mints from 0x0 address)
 
 ### Get Events by Account
 
