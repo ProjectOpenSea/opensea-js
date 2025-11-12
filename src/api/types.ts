@@ -338,16 +338,16 @@ export enum TraitDisplayType {
  * @category API Models
  */
 export enum AssetEventType {
-  ORDER = "order",
   SALE = "sale",
   TRANSFER = "transfer",
+  ORDER = "order",
 }
 
 /**
- * Order type for events.
+ * Order type for order events.
  * @category API Models
  */
-export enum EventOrderType {
+export enum OrderEventType {
   LISTING = "listing",
   ITEM_OFFER = "item_offer",
   COLLECTION_OFFER = "collection_offer",
@@ -406,7 +406,7 @@ type BaseEvent = {
 };
 
 /**
- * Order event type.
+ * Order event type (includes listings, offers, trait offers, and collection offers).
  * @category API Models
  */
 export type OrderEvent = BaseEvent & {
@@ -414,7 +414,7 @@ export type OrderEvent = BaseEvent & {
   /** Payment information */
   payment: EventPayment;
   /** Type of order */
-  order_type: EventOrderType | string;
+  order_type: OrderEventType | string;
   /** Start date of the order */
   start_date: number | null;
   /** Expiration date of the order */

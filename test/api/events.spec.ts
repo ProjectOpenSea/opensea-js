@@ -45,7 +45,7 @@ suite("API: EventsAPI", () => {
             order_type: "listing",
             start_date: null,
             expiration_date: 1234567990,
-            asset: null,
+            asset: {} as EventAsset,
             maker: "0x123",
             taker: "",
             criteria: null,

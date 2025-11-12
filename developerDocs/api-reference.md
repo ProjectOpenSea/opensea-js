@@ -964,9 +964,9 @@ asset_events.forEach((event) => {
 
 **Event Types:**
 
-- `AssetEventType.ORDER` - New listings and offers
-- `AssetEventType.SALE` - NFT sales
-- `AssetEventType.TRANSFER` - NFT transfers (including mints from the null address)
+- `AssetEventType.SALE` - NFT sales (can be used as filter)
+- `AssetEventType.TRANSFER` - NFT transfers, including mints when `from_address` is the zero address (can be used as filter)
+- `AssetEventType.ORDER` - New listings and offers (includes listings, item offers, trait offers, and collection offers). Check the `order_type` field to distinguish between types. **Note: This appears in responses but cannot be used as a filter parameter. To get order events, omit the `event_type` filter.**
 
 **Returns:** `GetEventsResponse` containing:
 

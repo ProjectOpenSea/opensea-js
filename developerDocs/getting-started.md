@@ -250,9 +250,9 @@ const { asset_events, next } = await openseaSDK.api.getEvents({
 
 **Event Types:**
 
-- `AssetEventType.ORDER` - New listings and offers
-- `AssetEventType.SALE` - Sales of NFTs
-- `AssetEventType.TRANSFER` - Transfers of NFTs (including mints from the null address)
+- `AssetEventType.SALE` - Sales of NFTs (can be used as filter)
+- `AssetEventType.TRANSFER` - Transfers of NFTs, including mints when `from_address` is the zero address (can be used as filter)
+- `AssetEventType.ORDER` - New listings and offers (includes listings, item offers, trait offers, and collection offers). Check the `order_type` field to distinguish between types. **Note: This appears in responses but cannot be used as a filter parameter. To get order events, omit the `event_type` filter.**
 
 ### Get Events by Account
 
@@ -276,7 +276,7 @@ Fetch events for a specific collection:
 const { asset_events } = await openseaSDK.api.getEventsByCollection(
   "cool-cats-nft", // Collection slug
   {
-    event_type: AssetEventType.ORDER,
+    // Omit event_type to get order events (listings, offers, etc.)
     limit: 100,
   },
 );
