@@ -10,6 +10,9 @@ on:
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for OIDC trusted publishing
+      contents: read
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v6
@@ -21,6 +24,4 @@ jobs:
         env:
           OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - run: npm publish --provenance --access public
