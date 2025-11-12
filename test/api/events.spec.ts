@@ -6,7 +6,8 @@ import {
   AssetEventType,
   EventAsset,
   GetEventsResponse,
-  OrderEvent,
+  ListingEvent,
+  OfferEvent,
   SaleEvent,
   TransferEvent,
 } from "../../src/api/types";
@@ -32,7 +33,7 @@ suite("API: EventsAPI", () => {
       const mockResponse: GetEventsResponse = {
         asset_events: [
           {
-            event_type: AssetEventType.ORDER,
+            event_type: AssetEventType.LISTING,
             event_timestamp: 1234567890,
             chain: "ethereum",
             quantity: 1,
@@ -42,15 +43,13 @@ suite("API: EventsAPI", () => {
               decimals: 18,
               symbol: "ETH",
             },
-            order_type: "listing",
             start_date: null,
             expiration_date: 1234567990,
             asset: {} as EventAsset,
             maker: "0x123",
             taker: "",
-            criteria: null,
             is_private_listing: false,
-          } as OrderEvent,
+          } as ListingEvent,
         ],
         next: "cursor-123",
       };
@@ -195,7 +194,7 @@ suite("API: EventsAPI", () => {
     test("handles multiple events in response", async () => {
       const mockResponse: GetEventsResponse = {
         asset_events: [
-          { event_type: AssetEventType.ORDER } as OrderEvent,
+          { event_type: AssetEventType.LISTING } as ListingEvent,
           { event_type: AssetEventType.SALE } as SaleEvent,
           { event_type: AssetEventType.TRANSFER } as TransferEvent,
         ],
@@ -393,7 +392,7 @@ suite("API: EventsAPI", () => {
       const mockResponse: GetEventsResponse = {
         asset_events: [
           {
-            event_type: AssetEventType.ORDER,
+            event_type: AssetEventType.OFFER,
             event_timestamp: 1234567890,
             chain: "ethereum",
             quantity: 1,
@@ -403,15 +402,12 @@ suite("API: EventsAPI", () => {
               decimals: 18,
               symbol: "ETH",
             },
-            order_type: "item_offer",
             start_date: 1234567890,
             expiration_date: 1234567990,
             asset: {} as EventAsset,
             maker: "0x123",
             taker: "",
-            criteria: null,
-            is_private_listing: false,
-          } as OrderEvent,
+          } as OfferEvent,
         ],
         next: "cursor-123",
       };
@@ -497,11 +493,11 @@ suite("API: EventsAPI", () => {
   });
 
   suite("Event Types", () => {
-    test("handles order events", async () => {
+    test("handles listing events", async () => {
       const mockResponse: GetEventsResponse = {
         asset_events: [
           {
-            event_type: AssetEventType.ORDER,
+            event_type: AssetEventType.LISTING,
             event_timestamp: 1234567890,
             chain: "ethereum",
             quantity: 1,
@@ -511,7 +507,6 @@ suite("API: EventsAPI", () => {
               decimals: 18,
               symbol: "ETH",
             },
-            order_type: "listing",
             start_date: null,
             expiration_date: 1234567990,
             asset: {
@@ -532,9 +527,8 @@ suite("API: EventsAPI", () => {
             },
             maker: "0x123",
             taker: "",
-            criteria: null,
             is_private_listing: false,
-          } as OrderEvent,
+          } as ListingEvent,
         ],
         next: undefined,
       };
@@ -543,8 +537,10 @@ suite("API: EventsAPI", () => {
 
       const result = await eventsAPI.getEvents();
 
-      expect(result.asset_events[0].event_type).to.equal(AssetEventType.ORDER);
-      expect((result.asset_events[0] as OrderEvent).maker).to.equal("0x123");
+      expect(result.asset_events[0].event_type).to.equal(
+        AssetEventType.LISTING,
+      );
+      expect((result.asset_events[0] as ListingEvent).maker).to.equal("0x123");
     });
 
     test("handles sale events", async () => {
