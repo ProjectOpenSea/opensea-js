@@ -279,7 +279,6 @@ Fetch events for a specific collection:
 const { asset_events } = await openseaSDK.api.getEventsByCollection(
   "cool-cats-nft", // Collection slug
   {
-    // Omit event_type to get order events (listings, offers, etc.)
     limit: 100,
   },
 );
