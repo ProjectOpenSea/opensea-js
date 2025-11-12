@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { ethers } from "ethers";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { FulfillmentManager } from "../../src/sdk/fulfillment";
@@ -256,6 +257,47 @@ suite("SDK: FulfillmentManager", () => {
       expect(mockAPI.generateFulfillmentData.calledOnce).to.be.true;
       const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
       expect(apiCall[7]).to.equal(recipientAddress);
+    });
+
+    test("encodes fulfillBasicOrder alias using supported fragment", async () => {
+      mockAPI.generateFulfillmentData.resolves({
+        fulfillment_data: {
+          transaction: {
+            to: "0xSeaportAddress",
+            value: 0,
+            function: "fulfillBasicOrder_efficient_6GL6yc((uint256))",
+            input_data: {
+              basicOrderParameters: {
+                offerer: "0xOfferer",
+                zone: "0x0000000000000000000000000000000000000000",
+              },
+            },
+          },
+          orders: [{ signature: "0xAliasSignature" }],
+        },
+      });
+
+      const encodeStub = sinon.stub(
+        ethers.Interface.prototype,
+        "encodeFunctionData",
+      );
+      encodeStub.callsFake(() => "0xAliasEncoded");
+
+      try {
+        const result = await fulfillmentManager.fulfillOrder({
+          order: mockOrderV2,
+          accountAddress: "0xBuyer",
+        });
+
+        expect(result).to.equal("0xFulfillTxHash");
+        expect(mockSigner.sendTransaction.calledOnce).to.be.true;
+        expect(encodeStub.firstCall.args[0]).to.equal("fulfillBasicOrder");
+        expect(mockSigner.sendTransaction.firstCall.args[0].data).to.equal(
+          "0xAliasEncoded",
+        );
+      } finally {
+        encodeStub.restore();
+      }
     });
 
     test("fulfills private listing successfully", async () => {
