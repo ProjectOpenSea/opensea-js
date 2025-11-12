@@ -17,6 +17,8 @@ import {
   getSeaportInstance,
 } from "../utils/utils";
 
+const FULFILL_BASIC_ORDER_ALIAS = "fulfillBasicOrder_efficient_6GL6yc";
+
 /**
  * Manager for order fulfillment and validation operations.
  * Handles fulfilling orders, validating orders onchain, and approving orders.
@@ -175,7 +177,11 @@ export class FulfillmentManager {
     const seaportInterface = new ethers.Interface(SeaportABI);
 
     // Extract function name and build parameters array in correct order
-    const functionName = transaction.function.split("(")[0];
+    const rawFunctionName = transaction.function.split("(")[0];
+    const functionName =
+      rawFunctionName === FULFILL_BASIC_ORDER_ALIAS
+        ? "fulfillBasicOrder"
+        : rawFunctionName;
     let params: unknown[];
 
     // Order parameters based on the function being called
@@ -191,7 +197,8 @@ export class FulfillmentManager {
         inputData.recipient,
       ];
     } else if (
-      functionName === "fulfillBasicOrder" &&
+      (functionName === "fulfillBasicOrder" ||
+        rawFunctionName === FULFILL_BASIC_ORDER_ALIAS) &&
       "basicOrderParameters" in inputData
     ) {
       params = [inputData.basicOrderParameters];
