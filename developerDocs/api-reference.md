@@ -964,11 +964,13 @@ asset_events.forEach((event) => {
 
 **Event Types:**
 
-- `AssetEventType.SALE` - NFT sales
-- `AssetEventType.TRANSFER` - NFT transfers
-- `AssetEventType.ORDER` - New listings and offers
-- `AssetEventType.CANCEL` - Canceled orders
-- `AssetEventType.REDEMPTION` - NFT redemptions
+- `"sale"` - NFT sales
+- `"transfer"` - NFT transfers
+- `"mint"` - NFT mints
+- `"listing"` - Item listings
+- `"offer"` - Item offers
+- `"trait_offer"` - Trait-based offers
+- `"collection_offer"` - Collection offers
 
 **Returns:** `GetEventsResponse` containing:
 

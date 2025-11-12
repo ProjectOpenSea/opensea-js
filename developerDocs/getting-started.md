@@ -250,11 +250,13 @@ const { asset_events, next } = await openseaSDK.api.getEvents({
 
 **Event Types:**
 
-- `AssetEventType.SALE` - Sales of NFTs
-- `AssetEventType.TRANSFER` - Transfers of NFTs
-- `AssetEventType.ORDER` - New listings and offers
-- `AssetEventType.CANCEL` - Canceled orders
-- `AssetEventType.REDEMPTION` - NFT redemptions
+- `"sale"` - NFT sales
+- `"transfer"` - NFT transfers
+- `"mint"` - NFT mints
+- `"listing"` - Item listings
+- `"offer"` - Item offers
+- `"trait_offer"` - Trait-based offers
+- `"collection_offer"` - Collection offers
 
 ### Get Events by Account
 
@@ -278,7 +280,6 @@ Fetch events for a specific collection:
 const { asset_events } = await openseaSDK.api.getEventsByCollection(
   "cool-cats-nft", // Collection slug
   {
-    event_type: AssetEventType.ORDER,
     limit: 100,
   },
 );

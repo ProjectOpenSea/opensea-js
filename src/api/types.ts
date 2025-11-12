@@ -338,18 +338,20 @@ export enum TraitDisplayType {
  * @category API Models
  */
 export enum AssetEventType {
-  ORDER = "order",
   SALE = "sale",
   TRANSFER = "transfer",
-  CANCEL = "cancel",
-  REDEMPTION = "redemption",
+  MINT = "mint",
+  LISTING = "listing",
+  OFFER = "offer",
+  TRAIT_OFFER = "trait_offer",
+  COLLECTION_OFFER = "collection_offer",
 }
 
 /**
- * Order type for events.
+ * Order type for order events.
  * @category API Models
  */
-export enum EventOrderType {
+export enum OrderEventType {
   LISTING = "listing",
   ITEM_OFFER = "item_offer",
   COLLECTION_OFFER = "collection_offer",
@@ -408,33 +410,115 @@ type BaseEvent = {
 };
 
 /**
- * Order event type.
+ * Listing event type.
  * @category API Models
  */
-export type OrderEvent = BaseEvent & {
-  event_type: AssetEventType.ORDER | "order";
+export type ListingEvent = BaseEvent & {
+  event_type: AssetEventType.LISTING | "listing";
   /** Payment information */
   payment: EventPayment;
-  /** Type of order */
-  order_type: EventOrderType | string;
-  /** Start date of the order */
+  /** Start date of the listing */
   start_date: number | null;
-  /** Expiration date of the order */
+  /** Expiration date of the listing */
   expiration_date: number;
-  /** Asset involved in the order, null for collection/trait offers */
-  asset: EventAsset | null;
-  /** Maker of the order */
+  /** Asset involved in the listing */
+  asset: EventAsset;
+  /** Maker of the listing */
   maker: string;
-  /** Taker of the order */
+  /** Taker of the listing */
   taker: string;
-  /** Criteria for collection/trait offers */
-  criteria: Record<string, unknown> | null;
   /** Whether the listing is private */
   is_private_listing: boolean;
   /** Order hash (optional) */
   order_hash?: string;
   /** Protocol address (optional) */
   protocol_address?: string;
+};
+
+/**
+ * Offer event type.
+ * @category API Models
+ */
+export type OfferEvent = BaseEvent & {
+  event_type: AssetEventType.OFFER | "offer";
+  /** Payment information */
+  payment: EventPayment;
+  /** Start date of the offer */
+  start_date: number | null;
+  /** Expiration date of the offer */
+  expiration_date: number;
+  /** Asset involved in the offer */
+  asset: EventAsset;
+  /** Maker of the offer */
+  maker: string;
+  /** Taker of the offer */
+  taker: string;
+  /** Order hash (optional) */
+  order_hash?: string;
+  /** Protocol address (optional) */
+  protocol_address?: string;
+};
+
+/**
+ * Trait offer event type.
+ * @category API Models
+ */
+export type TraitOfferEvent = BaseEvent & {
+  event_type: AssetEventType.TRAIT_OFFER | "trait_offer";
+  /** Payment information */
+  payment: EventPayment;
+  /** Start date of the offer */
+  start_date: number | null;
+  /** Expiration date of the offer */
+  expiration_date: number;
+  /** Criteria for trait offers */
+  criteria: Record<string, unknown>;
+  /** Maker of the offer */
+  maker: string;
+  /** Taker of the offer */
+  taker: string;
+  /** Order hash (optional) */
+  order_hash?: string;
+  /** Protocol address (optional) */
+  protocol_address?: string;
+};
+
+/**
+ * Collection offer event type.
+ * @category API Models
+ */
+export type CollectionOfferEvent = BaseEvent & {
+  event_type: AssetEventType.COLLECTION_OFFER | "collection_offer";
+  /** Payment information */
+  payment: EventPayment;
+  /** Start date of the offer */
+  start_date: number | null;
+  /** Expiration date of the offer */
+  expiration_date: number;
+  /** Criteria for collection offers */
+  criteria: Record<string, unknown>;
+  /** Maker of the offer */
+  maker: string;
+  /** Taker of the offer */
+  taker: string;
+  /** Order hash (optional) */
+  order_hash?: string;
+  /** Protocol address (optional) */
+  protocol_address?: string;
+};
+
+/**
+ * Mint event type.
+ * @category API Models
+ */
+export type MintEvent = BaseEvent & {
+  event_type: AssetEventType.MINT | "mint";
+  /** Transaction hash */
+  transaction: string;
+  /** Address the NFT was minted to */
+  to_address: string;
+  /** NFT that was minted */
+  nft: EventAsset;
 };
 
 /**
@@ -481,7 +565,14 @@ export type TransferEvent = BaseEvent & {
  * Generic event type that can be any event type.
  * @category API Models
  */
-export type AssetEvent = OrderEvent | SaleEvent | TransferEvent;
+export type AssetEvent =
+  | ListingEvent
+  | OfferEvent
+  | TraitOfferEvent
+  | CollectionOfferEvent
+  | SaleEvent
+  | TransferEvent
+  | MintEvent;
 
 /**
  * Query args for Get Events endpoints.

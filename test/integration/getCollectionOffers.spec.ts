@@ -16,8 +16,9 @@ suite("SDK: getCollectionOffers", () => {
     assert(response.offers.length > 0, "Collection offers should not be empty");
     const offer = response.offers[0];
     assert(offer.order_hash, "Order hash should not be null");
+    assert(offer.criteria, "Criteria should not be undefined");
     const tokens = offer.criteria.encoded_token_ids;
-    assert(tokens, "Criteria should not be null");
+    assert(tokens, "Encoded token ids should not be null");
 
     const encodedTokenIds = offer.criteria.encoded_token_ids;
     assert(encodedTokenIds, "Encoded tokens should not be null");

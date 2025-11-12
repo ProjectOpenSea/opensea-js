@@ -5,7 +5,6 @@ import * as sinon from "sinon";
 import { OffersAPI } from "../../src/api/offers";
 import {
   BuildOfferResponse,
-  ListCollectionOffersResponse,
   GetBestOfferResponse,
   GetOffersResponse,
   CollectionOffer,
@@ -614,14 +613,17 @@ suite("API: OffersAPI", () => {
   });
 
   suite("getCollectionOffers", () => {
-    test("fetches collection offers for a slug", async () => {
-      const mockResponse: ListCollectionOffersResponse = {
+    test("fetches collection offers for a slug without parameters", async () => {
+      const mockResponse: GetOffersResponse = {
         offers: [
           {
+            order_hash: "0x123",
+            chain: Chain.Mainnet,
             protocol_data: {} as unknown as ProtocolData,
             protocol_address: "0xabc",
-          } as unknown as CollectionOffer,
+          } as unknown as Offer,
         ],
+        next: "cursor-123",
       };
 
       mockGet.resolves(mockResponse);
@@ -632,28 +634,61 @@ suite("API: OffersAPI", () => {
       expect(mockGet.firstCall.args[0]).to.equal(
         "/api/v2/offers/collection/test-collection",
       );
-      expect(result).to.deep.equal(mockResponse);
-      expect(result?.offers).to.have.length(1);
+      expect(mockGet.firstCall.args[1]).to.deep.equal({
+        limit: undefined,
+        next: undefined,
+      });
+      expect(result.offers).to.have.length(1);
+      expect(result.next).to.equal("cursor-123");
+    });
+
+    test("fetches collection offers with limit parameter", async () => {
+      const mockResponse: GetOffersResponse = {
+        offers: [],
+        next: undefined,
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await offersAPI.getCollectionOffers("test-collection", 50);
+
+      expect(mockGet.firstCall.args[1]).to.deep.equal({
+        limit: 50,
+        next: undefined,
+      });
+    });
+
+    test("fetches collection offers with pagination cursor", async () => {
+      const mockResponse: GetOffersResponse = {
+        offers: [],
+        next: "cursor-next",
+      };
+
+      mockGet.resolves(mockResponse);
+
+      await offersAPI.getCollectionOffers(
+        "test-collection",
+        undefined,
+        "cursor-prev",
+      );
+
+      expect(mockGet.firstCall.args[1]).to.deep.equal({
+        limit: undefined,
+        next: "cursor-prev",
+      });
     });
 
     test("handles empty offers list", async () => {
-      const mockResponse: ListCollectionOffersResponse = {
+      const mockResponse: GetOffersResponse = {
         offers: [],
+        next: undefined,
       };
 
       mockGet.resolves(mockResponse);
 
       const result = await offersAPI.getCollectionOffers("test-collection");
 
-      expect(result?.offers).to.be.an("array").that.is.empty;
-    });
-
-    test("returns null when appropriate", async () => {
-      mockGet.resolves(null);
-
-      const result = await offersAPI.getCollectionOffers("test-collection");
-
-      expect(result).to.be.null;
+      expect(result.offers).to.be.an("array").that.is.empty;
     });
 
     test("throws error on API failure", async () => {
