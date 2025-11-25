@@ -1,4 +1,5 @@
 import { assert } from "chai";
+import { ethers } from "ethers";
 import { suite, test } from "mocha";
 import { OrderSide } from "../../src/types";
 import { api } from "../utils/sdk";
@@ -15,7 +16,7 @@ suite("Generating fulfillment data", () => {
     }
 
     const fulfillment = await api.generateFulfillmentData(
-      "0x000000000000000000000000000000000000dEaD",
+      ethers.Wallet.createRandom().address,
       order.orderHash,
       order.protocolAddress,
       order.side,
@@ -35,7 +36,7 @@ suite("Generating fulfillment data", () => {
     }
 
     const fulfillment = await api.generateFulfillmentData(
-      "0x000000000000000000000000000000000000dEaD",
+      ethers.Wallet.createRandom().address,
       order.orderHash,
       order.protocolAddress,
       order.side,
@@ -64,7 +65,7 @@ suite("Generating fulfillment data", () => {
     try {
       // Test with consideration parameters for criteria offers
       const fulfillment = await api.generateFulfillmentData(
-        "0x000000000000000000000000000000000000dEaD",
+        ethers.Wallet.createRandom().address,
         collectionOffer.order_hash,
         collectionOffer.protocol_address,
         OrderSide.OFFER,
