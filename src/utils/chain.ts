@@ -63,6 +63,8 @@ export const getChainId = (chain: Chain) => {
       return "999";
     case Chain.Somnia:
       return "5031";
+    case Chain.Monad:
+      return "143";
     default:
       throw new Error(`Unknown chainId for ${chain}`);
   }
@@ -111,6 +113,8 @@ export const getOfferPaymentToken = (chain: Chain) => {
       return "0x5555555555555555555555555555555555555555"; // WHYPE
     case Chain.Somnia:
       return "0x046ede9564a72571df6f5e44d0405360c0f4dcab"; // WSOMI
+    case Chain.Monad:
+      return "0x3bd359c1119da7da1d913d1c4d2b7c461115433a"; // WMON
     default:
       throw new Error(`Unknown offer currency for ${chain}`);
   }
@@ -135,6 +139,7 @@ export const getListingPaymentToken = (chain: Chain) => {
     case Chain.Abstract:
     case Chain.Shape:
     case Chain.Unichain:
+    case Chain.Monad:
       return "0x0000000000000000000000000000000000000000"; // ETH
     case Chain.Polygon:
       return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
@@ -168,6 +173,7 @@ export const getDefaultConduit = (
   switch (chain) {
     case Chain.Abstract:
     case Chain.HyperEVM:
+    case Chain.Monad:
       return {
         key: OPENSEA_CONDUIT_KEY_2,
         address: OPENSEA_CONDUIT_ADDRESS_2,

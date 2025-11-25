@@ -135,6 +135,7 @@ export enum Chain {
   Gunzilla = "gunzilla",
   HyperEVM = "hyperevm",
   Somnia = "somnia",
+  Monad = "monad",
 }
 
 /**
