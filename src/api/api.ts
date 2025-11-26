@@ -280,6 +280,7 @@ export class OpenSeaAPI {
    * @param tokenId Optional token ID for criteria offers (e.g., collection offers)
    * @param unitsToFill Optional number of units to fill. Defaults to 1 for both listings and offers.
    * @param recipientAddress Optional recipient address for the NFT when fulfilling a listing. Not applicable for offers.
+   * @param includeOptionalCreatorFees Whether to include optional creator fees in the fulfillment. If creator fees are already required, this is a no-op. Defaults to false.
    * @returns The {@link FulfillmentDataResponse}
    */
   public async generateFulfillmentData(
@@ -291,6 +292,7 @@ export class OpenSeaAPI {
     tokenId?: string,
     unitsToFill?: string,
     recipientAddress?: string,
+    includeOptionalCreatorFees: boolean = false,
   ): Promise<FulfillmentDataResponse> {
     return this.ordersAPI.generateFulfillmentData(
       fulfillerAddress,
@@ -301,6 +303,7 @@ export class OpenSeaAPI {
       tokenId,
       unitsToFill,
       recipientAddress,
+      includeOptionalCreatorFees,
     );
   }
 
