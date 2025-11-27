@@ -99,6 +99,7 @@ export class FulfillmentManager {
    * @param options.tokenId Optional token ID for criteria offers (e.g., collection offers). Required when fulfilling collection offers.
    * @param options.unitsToFill Optional number of units to fill. Defaults to 1 for both listings and offers.
    * @param options.recipientAddress Optional recipient address for the NFT when fulfilling a listing. Not applicable for offers.
+   * @param options.includeOptionalCreatorFees Whether to include optional creator fees in the fulfillment. If creator fees are already required, this is a no-op. Defaults to false.
    * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.
    *
@@ -114,6 +115,7 @@ export class FulfillmentManager {
     tokenId,
     unitsToFill,
     recipientAddress,
+    includeOptionalCreatorFees = false,
     overrides,
   }: {
     order: OrderV2 | Order | Listing | Offer;
@@ -122,6 +124,7 @@ export class FulfillmentManager {
     tokenId?: string;
     unitsToFill?: BigNumberish;
     recipientAddress?: string;
+    includeOptionalCreatorFees?: boolean;
     overrides?: Overrides;
   }): Promise<string> {
     await this.context.requireAccountIsAvailable(accountAddress);
@@ -167,6 +170,7 @@ export class FulfillmentManager {
       tokenId,
       unitsToFillStr,
       recipientAddress,
+      includeOptionalCreatorFees,
     );
 
     // Use the transaction data returned by the API

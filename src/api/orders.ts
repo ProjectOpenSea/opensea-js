@@ -137,6 +137,7 @@ export class OrdersAPI {
     tokenId?: string,
     unitsToFill?: string,
     recipientAddress?: string,
+    includeOptionalCreatorFees: boolean = false,
   ): Promise<FulfillmentDataResponse> {
     let payload: object | null = null;
     if (side === OrderSide.LISTING) {
@@ -149,6 +150,7 @@ export class OrdersAPI {
         tokenId,
         unitsToFill,
         recipientAddress,
+        includeOptionalCreatorFees,
       );
     } else {
       payload = getFulfillOfferPayload(
@@ -159,6 +161,7 @@ export class OrdersAPI {
         assetContractAddress,
         tokenId,
         unitsToFill,
+        includeOptionalCreatorFees,
       );
     }
     const response = await this.fetcher.post<FulfillmentDataResponse>(

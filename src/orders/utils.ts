@@ -91,6 +91,7 @@ export const getFulfillListingPayload = (
   tokenId?: string,
   unitsToFill: string = "1",
   recipientAddress?: string,
+  includeOptionalCreatorFees: boolean = false,
 ) => {
   const payload: {
     listing: {
@@ -107,6 +108,7 @@ export const getFulfillListingPayload = (
     };
     units_to_fill: string;
     recipient?: string;
+    include_optional_creator_fees: boolean;
   } = {
     listing: {
       hash: order_hash,
@@ -117,6 +119,7 @@ export const getFulfillListingPayload = (
       address: fulfillerAddress,
     },
     units_to_fill: unitsToFill,
+    include_optional_creator_fees: includeOptionalCreatorFees,
   };
 
   // Add consideration for criteria listings if needed
@@ -143,6 +146,7 @@ export const getFulfillOfferPayload = (
   assetContractAddress?: string,
   tokenId?: string,
   unitsToFill: string = "1",
+  includeOptionalCreatorFees: boolean = false,
 ) => {
   const payload: {
     offer: {
@@ -158,6 +162,7 @@ export const getFulfillOfferPayload = (
       token_id: string;
     };
     units_to_fill: string;
+    include_optional_creator_fees: boolean;
   } = {
     offer: {
       hash: order_hash,
@@ -168,6 +173,7 @@ export const getFulfillOfferPayload = (
       address: fulfillerAddress,
     },
     units_to_fill: unitsToFill,
+    include_optional_creator_fees: includeOptionalCreatorFees,
   };
 
   // Add consideration for criteria offers (e.g., collection offers)

@@ -352,8 +352,25 @@ suite("Orders: utils", () => {
           address: "0xFulfiller",
         },
         units_to_fill: "1",
+        include_optional_creator_fees: false,
       });
       expect(result.consideration).to.be.undefined;
+    });
+
+    test("should include includeOptionalCreatorFees when set to true", () => {
+      const result = getFulfillListingPayload(
+        "0xFulfiller",
+        "0xOrderHash",
+        "0xProtocol",
+        Chain.Mainnet,
+        undefined,
+        undefined,
+        "1",
+        undefined,
+        true,
+      );
+
+      expect(result.include_optional_creator_fees).to.be.true;
     });
 
     test("should add consideration for criteria listings", () => {
@@ -417,6 +434,7 @@ suite("Orders: utils", () => {
           address: "0xFulfiller",
         },
         units_to_fill: "1",
+        include_optional_creator_fees: false,
       });
       expect(result.consideration).to.be.undefined;
     });
@@ -435,6 +453,21 @@ suite("Orders: utils", () => {
         asset_contract_address: "0xAssetContract",
         token_id: "456",
       });
+    });
+
+    test("should include includeOptionalCreatorFees when set to true", () => {
+      const result = getFulfillOfferPayload(
+        "0xFulfiller",
+        "0xOrderHash",
+        "0xProtocol",
+        Chain.Polygon,
+        undefined,
+        undefined,
+        "1",
+        true,
+      );
+
+      expect(result.include_optional_creator_fees).to.be.true;
     });
   });
 
