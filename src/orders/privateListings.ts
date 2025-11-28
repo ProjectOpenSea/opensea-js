@@ -1,3 +1,4 @@
+import { ItemType } from "@opensea/seaport-js/lib/constants";
 import {
   ConsiderationInputItem,
   CreateInputItem,
@@ -7,6 +8,28 @@ import {
 } from "@opensea/seaport-js/lib/types";
 import { isCurrencyItem } from "@opensea/seaport-js/lib/utils/item";
 import { generateRandomSalt } from "@opensea/seaport-js/lib/utils/order";
+import { ZeroAddress } from "ethers";
+
+/**
+ * Compute the native currency (ETH) value required to fulfill a private listing.
+ * Sums all native currency consideration items not going to the taker.
+ * @param order The private listing order
+ * @param takerAddress The address of the private listing recipient
+ * @returns The total native currency value as a bigint
+ */
+export const computePrivateListingValue = (
+  order: OrderWithCounter,
+  takerAddress: string,
+): bigint => {
+  return order.parameters.consideration
+    .filter(
+      (item) =>
+        item.recipient.toLowerCase() !== takerAddress.toLowerCase() &&
+        item.token.toLowerCase() === ZeroAddress.toLowerCase() &&
+        item.itemType === ItemType.NATIVE,
+    )
+    .reduce((sum, item) => sum + BigInt(item.startAmount), 0n);
+};
 
 export const getPrivateListingConsiderations = (
   offer: CreateInputItem[],
@@ -28,15 +51,18 @@ export const constructPrivateListingCounterOrder = (
       item.recipient.toLowerCase() !== privateSaleRecipient.toLowerCase(),
   );
 
-  if (!paymentItems.every((item) => isCurrencyItem(item))) {
-    throw new Error(
-      "The consideration for the private listing did not contain only currency items",
-    );
-  }
-  if (
-    !paymentItems.every((item) => item.itemType === paymentItems[0].itemType)
-  ) {
-    throw new Error("Not all currency items were the same for private order");
+  // Only validate payment items if there are any (zero-payment private listings are valid)
+  if (paymentItems.length > 0) {
+    if (!paymentItems.every((item) => isCurrencyItem(item))) {
+      throw new Error(
+        "The consideration for the private listing did not contain only currency items",
+      );
+    }
+    if (
+      !paymentItems.every((item) => item.itemType === paymentItems[0].itemType)
+    ) {
+      throw new Error("Not all currency items were the same for private order");
+    }
   }
 
   const { aggregatedStartAmount, aggregatedEndAmount } = paymentItems.reduce(
@@ -54,15 +80,19 @@ export const constructPrivateListingCounterOrder = (
     parameters: {
       ...order.parameters,
       offerer: privateSaleRecipient,
-      offer: [
-        {
-          itemType: paymentItems[0].itemType,
-          token: paymentItems[0].token,
-          identifierOrCriteria: paymentItems[0].identifierOrCriteria,
-          startAmount: aggregatedStartAmount.toString(),
-          endAmount: aggregatedEndAmount.toString(),
-        },
-      ],
+      // Empty offer for zero-payment private listings, single aggregated item otherwise
+      offer:
+        paymentItems.length > 0
+          ? [
+              {
+                itemType: paymentItems[0].itemType,
+                token: paymentItems[0].token,
+                identifierOrCriteria: paymentItems[0].identifierOrCriteria,
+                startAmount: aggregatedStartAmount.toString(),
+                endAmount: aggregatedEndAmount.toString(),
+              },
+            ]
+          : [],
       // The consideration here is empty as the original private listing order supplies
       // the taker address to receive the desired items.
       consideration: [],

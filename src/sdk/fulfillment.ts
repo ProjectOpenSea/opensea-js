@@ -5,6 +5,7 @@ import { SDKContext } from "./context";
 import { OrdersManager } from "./orders";
 import { Listing, Offer, Order } from "../api/types";
 import {
+  computePrivateListingValue,
   constructPrivateListingCounterOrder,
   getPrivateListingFulfillments,
 } from "../orders/privateListings";
@@ -60,6 +61,14 @@ export class FulfillmentManager {
       order.taker.address,
     );
     const fulfillments = getPrivateListingFulfillments(order.protocolData);
+
+    // Compute ETH value from original order's consideration items
+    // This handles both standard private listings and zero-payment listings (e.g., rewards)
+    const value = computePrivateListingValue(
+      order.protocolData,
+      order.taker.address,
+    );
+
     const seaport = getSeaportInstance(
       order.protocolAddress,
       this.context.seaport,
@@ -70,7 +79,7 @@ export class FulfillmentManager {
         fulfillments,
         overrides: {
           ...overrides,
-          value: counterOrder.parameters.offer[0].startAmount,
+          value,
         },
         accountAddress,
         domain,
