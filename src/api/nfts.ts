@@ -6,9 +6,9 @@ import {
   getListNFTsByAccountPath,
   getContractPath,
 } from "./apiPaths";
+import { Fetcher } from "./fetcher";
 import { ListNFTsResponse, GetNFTResponse, GetContractResponse } from "./types";
 import { Chain } from "../types";
-import { Fetcher } from "./fetcher";
 
 /**
  * NFT-related API operations

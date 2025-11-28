@@ -1,9 +1,9 @@
 import { OrderComponents } from "@opensea/seaport-js/lib/types";
 import { Overrides, Signer } from "ethers";
+import { SDKContext } from "./context";
 import { OrderV2 } from "../orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils";
 import { Chain, EventType } from "../types";
-import { SDKContext } from "./context";
 import {
   requireValidProtocol,
   getChainId,

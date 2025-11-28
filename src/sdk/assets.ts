@@ -7,13 +7,13 @@ import {
   ethers,
 } from "ethers";
 import { TRANSFER_HELPER_ADDRESS, MULTICALL3_ADDRESS } from "../constants";
+import { SDKContext } from "./context";
 import {
   ERC1155__factory,
   ERC20__factory,
   ERC721__factory,
 } from "../typechain/contracts";
 import { EventType, TokenStandard, AssetWithTokenStandard } from "../types";
-import { SDKContext } from "./context";
 import { getDefaultConduit } from "../utils/utils";
 
 /**

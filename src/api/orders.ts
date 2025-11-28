@@ -3,6 +3,7 @@ import {
   getOrderByHashPath,
   getCancelOrderPath,
 } from "./apiPaths";
+import { Fetcher } from "./fetcher";
 import { GetOrdersResponse, CancelOrderResponse } from "./types";
 import {
   FulfillmentDataResponse,
@@ -21,7 +22,6 @@ import {
   getFulfillOfferPayload,
 } from "../orders/utils";
 import { Chain, OrderSide } from "../types";
-import { Fetcher } from "./fetcher";
 
 /**
  * Order-related API operations

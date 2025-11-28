@@ -4,9 +4,9 @@ import {
   getEventsByCollectionAPIPath,
   getEventsByNFTAPIPath,
 } from "./apiPaths";
+import { Fetcher } from "./fetcher";
 import { GetEventsArgs, GetEventsResponse } from "./types";
 import { Chain } from "../types";
-import { Fetcher } from "./fetcher";
 
 /**
  * Events-related API operations

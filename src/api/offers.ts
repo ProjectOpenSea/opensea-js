@@ -7,6 +7,7 @@ import {
   getTraitOffersPath,
   getOrdersAPIPath,
 } from "./apiPaths";
+import { Fetcher } from "./fetcher";
 import {
   BuildOfferResponse,
   GetBestOfferResponse,
@@ -20,7 +21,6 @@ import {
   serializeOrdersQueryOptions,
 } from "../orders/utils";
 import { Chain, OrderSide } from "../types";
-import { Fetcher } from "./fetcher";
 
 /**
  * Offer-related API operations

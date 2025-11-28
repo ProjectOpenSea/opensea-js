@@ -4,10 +4,10 @@ import {
   getBestListingsAPIPath,
   getOrdersAPIPath,
 } from "./apiPaths";
+import { Fetcher } from "./fetcher";
 import { GetBestListingResponse, GetListingsResponse } from "./types";
 import { serializeOrdersQueryOptions } from "../orders/utils";
 import { Chain, OrderSide } from "../types";
-import { Fetcher } from "./fetcher";
 
 /**
  * Listing-related API operations
