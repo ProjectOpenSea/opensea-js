@@ -28,6 +28,12 @@ export const constructPrivateListingCounterOrder = (
       item.recipient.toLowerCase() !== privateSaleRecipient.toLowerCase(),
   );
 
+  if (paymentItems.length === 0) {
+    throw new Error(
+      "The consideration for the private listing did not contain any payment items",
+    );
+  }
+
   if (!paymentItems.every((item) => isCurrencyItem(item))) {
     throw new Error(
       "The consideration for the private listing did not contain only currency items",
