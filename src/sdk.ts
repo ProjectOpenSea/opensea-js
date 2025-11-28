@@ -28,6 +28,7 @@ import {
 import {
   getDefaultConduit,
   getOfferPaymentToken,
+  getListingPaymentToken,
   getSeaportAddress,
 } from "./utils/utils";
 
@@ -101,7 +102,9 @@ export class OpenSeaSDK {
 
     // Cache decimals for offer and listing payment tokens to skip network request
     const offerPaymentToken = getOfferPaymentToken(this.chain).toLowerCase();
-    const listingPaymentToken = getOfferPaymentToken(this.chain).toLowerCase();
+    const listingPaymentToken = getListingPaymentToken(
+      this.chain,
+    ).toLowerCase();
     this._cachedPaymentTokenDecimals[offerPaymentToken] = 18;
     this._cachedPaymentTokenDecimals[listingPaymentToken] = 18;
 
