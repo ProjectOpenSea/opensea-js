@@ -43,6 +43,7 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     rarity: rarityFromJSON(collection.rarity),
     paymentTokens: (collection.payment_tokens ?? []).map(paymentTokenFromJSON),
     totalSupply: collection.total_supply,
+    uniqueItemCount: collection.unique_item_count,
     createdDate: collection.created_date,
     requiredZone: collection.required_zone,
   };

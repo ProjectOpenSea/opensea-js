@@ -306,6 +306,8 @@ export interface OpenSeaCollection {
   paymentTokens: OpenSeaPaymentToken[];
   /** The total supply of the collection (minted minus burned) */
   totalSupply: number;
+  /** The number of unique items in the collection */
+  uniqueItemCount: number;
   /** The created date of the collection */
   createdDate: string;
   /** When defined, the zone required for orders for the collection */
