@@ -79,7 +79,7 @@ type Transaction = {
   function: string;
   chain: number;
   to: string;
-  value: number;
+  value: string;
   input_data:
     | {
         // For fulfillAdvancedOrder
