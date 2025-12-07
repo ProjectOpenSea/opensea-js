@@ -299,6 +299,9 @@ export class FulfillmentManager {
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    */
   async approveOrder(order: OrderV2, domain?: string) {
+    if (!order.maker) {
+      throw new Error("Order maker is required to approve an order");
+    }
     await this.context.requireAccountIsAvailable(order.maker.address);
     requireValidProtocol(order.protocolAddress);
 
