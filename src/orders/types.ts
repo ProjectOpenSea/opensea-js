@@ -17,7 +17,7 @@ export enum OrderType {
 }
 
 type OrderFee = {
-  account: OpenSeaAccount | null;
+  account: OpenSeaAccount;
   basisPoints: string;
 };
 
