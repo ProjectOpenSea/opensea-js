@@ -17,7 +17,7 @@ export enum OrderType {
 }
 
 type OrderFee = {
-  account: OpenSeaAccount;
+  account: OpenSeaAccount | null;
   basisPoints: string;
 };
 
@@ -36,7 +36,7 @@ export type OrderV2 = {
   /** The hash of the order. */
   orderHash: string | null;
   /** The account that created the order. */
-  maker: OpenSeaAccount;
+  maker: OpenSeaAccount | null;
   /** The account that filled the order. */
   taker: OpenSeaAccount | null;
   /** The protocol data for the order. Only 'seaport' is currently supported. */
