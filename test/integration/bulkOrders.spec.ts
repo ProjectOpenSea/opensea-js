@@ -94,7 +94,7 @@ suite("SDK: bulk order posting", () => {
       }
       expectValidOrder(order);
       expect(order.expirationTime).to.equal(expirationTime);
-      expect(order.maker.address.toLowerCase()).to.equal(
+      expect(order.maker!.address.toLowerCase()).to.equal(
         walletAddress.toLowerCase(),
       );
     });
@@ -273,7 +273,7 @@ suite("SDK: bulk order posting", () => {
       }
       expectValidOrder(order);
       expect(order.expirationTime).to.equal(expirationTime);
-      expect(order.maker.address.toLowerCase()).to.equal(
+      expect(order.maker!.address.toLowerCase()).to.equal(
         walletAddress.toLowerCase(),
       );
       expect(order.side).to.equal("ask");

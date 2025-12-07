@@ -518,7 +518,7 @@ suite("Orders: utils", () => {
       expect(result.listingTime).to.equal(1704067200);
       expect(result.expirationTime).to.equal(1735689599);
       expect(result.orderHash).to.equal("0xOrderHash");
-      expect(result.maker.address).to.equal("0xMaker");
+      expect(result.maker!.address).to.equal("0xMaker");
       expect(result.taker?.address).to.equal("0xTaker");
       expect(result.protocolAddress).to.equal("0xProtocol");
       expect(result.currentPrice).to.equal(BigInt("1000000000000000000"));
@@ -609,13 +609,13 @@ suite("Orders: utils", () => {
       const result = deserializeOrder(serializedOrder);
 
       expect(result.makerFees).to.have.length(2);
-      expect(result.makerFees[0].account.address).to.equal("0xFee1");
-      expect(result.makerFees[0].basisPoints).to.equal("100");
-      expect(result.makerFees[1].account.address).to.equal("0xFee2");
-      expect(result.makerFees[1].basisPoints).to.equal("200");
+      expect(result.makerFees[0]!.account.address).to.equal("0xFee1");
+      expect(result.makerFees[0]!.basisPoints).to.equal("100");
+      expect(result.makerFees[1]!.account.address).to.equal("0xFee2");
+      expect(result.makerFees[1]!.basisPoints).to.equal("200");
 
       expect(result.takerFees).to.have.length(1);
-      expect(result.takerFees[0].account.address).to.equal("0xFee3");
+      expect(result.takerFees[0]!.account.address).to.equal("0xFee3");
       expect(result.takerFees[0].basisPoints).to.equal("300");
     });
   });
