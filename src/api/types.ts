@@ -244,6 +244,13 @@ export type GetBestOfferResponse = Offer | CollectionOffer;
 export type GetBestListingResponse = Listing;
 
 /**
+ * Response from OpenSea API for fetching an order by hash.
+ * Can be either an Offer or a Listing.
+ * @category API Response Types
+ */
+export type GetOrderByHashResponse = Offer | Listing;
+
+/**
  * Response from OpenSea API for offchain canceling an order.
  * @category API Response Types
  */
