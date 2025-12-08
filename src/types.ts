@@ -1,4 +1,5 @@
 import { BigNumberish } from "ethers";
+import type { Offer, Listing } from "./api/types";
 import type { OrderV2 } from "./orders/types";
 
 /**
@@ -83,6 +84,10 @@ export interface EventData {
    * The {@link OrderV2} object.
    */
   orderV2?: OrderV2;
+  /**
+   * The order as returned by the API ({@link Offer} or {@link Listing}).
+   */
+  order?: Offer | Listing;
   /**
    * Array of assets for bulk transfer and batch approval operations.
    */

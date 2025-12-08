@@ -1,6 +1,6 @@
 import { OrderComponents } from "@opensea/seaport-js/lib/types";
 import { Overrides, Signer } from "ethers";
-import { GetOrderByHashResponse } from "../api/types";
+import { Offer, Listing } from "../api/types";
 import { OrderV2 } from "../orders/types";
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils";
 import { Chain, EventType } from "../types";
@@ -64,7 +64,6 @@ export class CancellationManager {
       requireValidProtocol(order.protocolAddress);
       effectiveProtocolAddress = order.protocolAddress;
       orderComponents = order.protocolData.parameters;
-
       this.context.dispatch(EventType.CancelOrder, {
         orderV2: order,
         accountAddress,
@@ -80,6 +79,10 @@ export class CancellationManager {
       requireValidProtocol(fetchedOrder.protocol_address);
       effectiveProtocolAddress = fetchedOrder.protocol_address;
       orderComponents = fetchedOrder.protocol_data.parameters;
+      this.context.dispatch(EventType.CancelOrder, {
+        order: fetchedOrder,
+        accountAddress,
+      });
     } else {
       // Should never reach here due to earlier validation
       throw new Error("Invalid input");
@@ -161,17 +164,16 @@ export class CancellationManager {
 
     let orderComponents: OrderComponents[];
     let effectiveProtocolAddress = protocolAddress;
-    let firstOrderV2: OrderV2 | undefined;
 
     if (orders) {
       // Extract OrderComponents from either OrderV2 objects or use OrderComponents directly
+      let firstOrderV2: OrderV2 | undefined;
       orderComponents = orders.map((order) => {
         if ("protocolData" in order) {
           // It's an OrderV2 object
           const orderV2 = order as OrderV2;
           requireValidProtocol(orderV2.protocolAddress);
           effectiveProtocolAddress = orderV2.protocolAddress;
-          // Save the first OrderV2 for event dispatching
           if (!firstOrderV2) {
             firstOrderV2 = orderV2;
           }
@@ -181,8 +183,7 @@ export class CancellationManager {
           return order as OrderComponents;
         }
       });
-
-      // Dispatch event for the first order if available (for backwards compatibility with cancelOrder)
+      // Dispatch event for the first OrderV2 if available
       if (firstOrderV2) {
         this.context.dispatch(EventType.CancelOrder, {
           orderV2: firstOrderV2,
@@ -191,22 +192,30 @@ export class CancellationManager {
       }
     } else if (orderHashes) {
       // Fetch orders from the API using order hashes
-      const fetchedOrders: GetOrderByHashResponse[] = [];
-      for (const orderHash of orderHashes) {
-        const order = await this.context.api.getOrderByHash(
-          orderHash,
+      const fetchedOrders: (Offer | Listing)[] = [];
+      for (const hash of orderHashes) {
+        const fetched = await this.context.api.getOrderByHash(
+          hash,
           protocolAddress,
           this.context.chain,
         );
-        fetchedOrders.push(order);
+        fetchedOrders.push(fetched);
       }
 
       // Extract OrderComponents from the fetched orders
-      orderComponents = fetchedOrders.map((order) => {
-        requireValidProtocol(order.protocol_address);
-        effectiveProtocolAddress = order.protocol_address;
-        return order.protocol_data.parameters;
+      orderComponents = fetchedOrders.map((fetched) => {
+        requireValidProtocol(fetched.protocol_address);
+        effectiveProtocolAddress = fetched.protocol_address;
+        return fetched.protocol_data.parameters;
       });
+
+      // Dispatch event for the first fetched order
+      if (fetchedOrders.length > 0) {
+        this.context.dispatch(EventType.CancelOrder, {
+          order: fetchedOrders[0],
+          accountAddress,
+        });
+      }
     } else {
       // Should never reach here due to earlier validation
       throw new Error("Invalid input");
