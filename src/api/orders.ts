@@ -3,7 +3,11 @@ import {
   getOrderByHashPath,
   getCancelOrderPath,
 } from "./apiPaths";
-import { GetOrdersResponse, CancelOrderResponse } from "./types";
+import {
+  GetOrdersResponse,
+  CancelOrderResponse,
+  GetOrderByHashResponse,
+} from "./types";
 import {
   FulfillmentDataResponse,
   OrderAPIOptions,
@@ -72,16 +76,17 @@ export class OrdersAPI {
 
   /**
    * Gets a single order by its order hash.
+   * Returns the raw API response which can be either an Offer or Listing.
    */
   async getOrderByHash(
     orderHash: string,
     protocolAddress: string,
     chain: Chain = this.chain,
-  ): Promise<OrderV2> {
+  ): Promise<GetOrderByHashResponse> {
     const response = await this.fetcher.get<{
-      order: OrdersQueryResponse["orders"][0];
+      order: GetOrderByHashResponse;
     }>(getOrderByHashPath(chain, protocolAddress, orderHash));
-    return deserializeOrder(response.order);
+    return response.order;
   }
 
   /**

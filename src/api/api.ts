@@ -34,6 +34,7 @@ import {
   GetBestListingResponse,
   GetOffersResponse,
   GetListingsResponse,
+  GetOrderByHashResponse,
   CollectionOffer,
   CollectionOrderByOption,
   CancelOrderResponse,
@@ -126,14 +127,14 @@ export class OpenSeaAPI {
    * @param orderHash The hash of the order to fetch
    * @param protocolAddress The address of the seaport contract
    * @param chain The chain where the order is located. Defaults to the chain set in the constructor.
-   * @returns The {@link OrderV2} returned by the API
+   * @returns The {@link GetOrderByHashResponse} returned by the API (can be Offer or Listing)
    * @throws An error if the order is not found
    */
   public async getOrderByHash(
     orderHash: string,
     protocolAddress: string,
     chain: Chain = this.chain,
-  ): Promise<OrderV2> {
+  ): Promise<GetOrderByHashResponse> {
     return this.ordersAPI.getOrderByHash(orderHash, protocolAddress, chain);
   }
 
