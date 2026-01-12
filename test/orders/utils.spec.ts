@@ -116,6 +116,7 @@ suite("Orders: utils", () => {
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
+        Chain.Mainnet,
       );
 
       expect(result).to.deep.equal({
@@ -133,6 +134,7 @@ suite("Orders: utils", () => {
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
+        Chain.Mainnet,
         "Background",
         "Blue",
       );
@@ -151,6 +153,7 @@ suite("Orders: utils", () => {
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
+        Chain.Mainnet,
         "Background",
       );
 
@@ -164,6 +167,7 @@ suite("Orders: utils", () => {
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
+        Chain.Mainnet,
         undefined,
         "Blue",
       );
@@ -182,6 +186,7 @@ suite("Orders: utils", () => {
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
+        Chain.Mainnet,
         undefined,
         undefined,
         traits,
@@ -202,6 +207,7 @@ suite("Orders: utils", () => {
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
+        Chain.Mainnet,
         "Fur",
         "Brown",
         traits,
@@ -220,6 +226,7 @@ suite("Orders: utils", () => {
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
+        Chain.Mainnet,
         undefined,
         undefined,
         [],
@@ -239,6 +246,7 @@ suite("Orders: utils", () => {
         5,
         "boredapeyachtclub",
         true,
+        Chain.Mainnet,
       );
 
       expect(result).to.deep.equal({
@@ -260,6 +268,7 @@ suite("Orders: utils", () => {
         3,
         "boredapeyachtclub",
         false,
+        Chain.Mainnet,
         "Hat",
         "Crown",
       );
@@ -283,6 +292,7 @@ suite("Orders: utils", () => {
         2,
         "boredapeyachtclub",
         true,
+        Chain.Mainnet,
         undefined,
         undefined,
         traits,
@@ -303,6 +313,7 @@ suite("Orders: utils", () => {
         1,
         "boredapeyachtclub",
         false,
+        Chain.Mainnet,
         "Hat",
         "Crown",
         traits,
@@ -321,6 +332,7 @@ suite("Orders: utils", () => {
         5,
         "boredapeyachtclub",
         true,
+        Chain.Mainnet,
         undefined,
         undefined,
         [],

@@ -6,7 +6,7 @@ import {
   ProtocolData,
 } from "./types";
 import { Chain, OrderSide } from "../types";
-import { accountFromJSON } from "../utils";
+import { accountFromJSON, getSeaportAddress } from "../utils";
 
 export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
   CROSS_CHAIN_SEAPORT_V1_6_ADDRESS;
@@ -14,6 +14,7 @@ export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
 export const getPostCollectionOfferPayload = (
   collectionSlug: string,
   protocol_data: ProtocolData,
+  chain: Chain,
   traitType?: string,
   traitValue?: string,
   traits?: Array<{ type: string; value: string }>,
@@ -23,7 +24,7 @@ export const getPostCollectionOfferPayload = (
       collection: { slug: collectionSlug },
     },
     protocol_data,
-    protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+    protocol_address: getSeaportAddress(chain),
   };
 
   // Prioritize traits array if provided
@@ -46,6 +47,7 @@ export const getBuildCollectionOfferPayload = (
   quantity: number,
   collectionSlug: string,
   offerProtectionEnabled: boolean,
+  chain: Chain,
   traitType?: string,
   traitValue?: string,
   traits?: Array<{ type: string; value: string }>,
@@ -58,7 +60,7 @@ export const getBuildCollectionOfferPayload = (
         slug: collectionSlug,
       },
     },
-    protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+    protocol_address: getSeaportAddress(chain),
     offer_protection_enabled: offerProtectionEnabled,
   };
 
