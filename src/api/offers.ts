@@ -128,6 +128,7 @@ export class OffersAPI {
       quantity,
       collectionSlug,
       offerProtectionEnabled,
+      this.chain,
       traitType,
       traitValue,
       traits,
@@ -169,6 +170,7 @@ export class OffersAPI {
     const payload = getPostCollectionOfferPayload(
       slug,
       order,
+      this.chain,
       traitType,
       traitValue,
       traits,
