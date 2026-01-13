@@ -83,9 +83,15 @@ export const getSeaportInstance = (
 ): Seaport => {
   try {
     const checksummedProtocolAddress = ethers.getAddress(protocolAddress);
+
+    const crossChainSeaportAddress = ethers.getAddress(
+      CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
+    );
+    const gunzillaSeaportAddress = ethers.getAddress(GUNZILLA_SEAPORT_1_6_ADDRESS);
+
     switch (checksummedProtocolAddress) {
-      case CROSS_CHAIN_SEAPORT_V1_6_ADDRESS:
-      case GUNZILLA_SEAPORT_1_6_ADDRESS:
+      case crossChainSeaportAddress:
+      case gunzillaSeaportAddress:
         return seaport;
       default:
         throw new Error(`Unsupported protocol address: ${protocolAddress}`);
@@ -111,9 +117,15 @@ export const getSeaportInstance = (
 export const getSeaportVersion = (protocolAddress: string): string => {
   try {
     const protocolAddressChecksummed = ethers.getAddress(protocolAddress);
+
+    const crossChainSeaportAddress = ethers.getAddress(
+      CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
+    );
+    const gunzillaSeaportAddress = ethers.getAddress(GUNZILLA_SEAPORT_1_6_ADDRESS);
+
     switch (protocolAddressChecksummed) {
-      case CROSS_CHAIN_SEAPORT_V1_6_ADDRESS:
-      case GUNZILLA_SEAPORT_1_6_ADDRESS:
+      case crossChainSeaportAddress:
+      case gunzillaSeaportAddress:
         return "1.6";
       default:
         throw new Error(
