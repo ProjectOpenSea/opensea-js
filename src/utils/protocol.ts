@@ -5,7 +5,7 @@ import {
 } from "@opensea/seaport-js/lib/constants";
 import { ethers } from "ethers";
 import {
-  GUNZILLA_SEAPORT_1_6_ADDRESS,
+  ALTERNATE_SEAPORT_V1_6_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
 } from "../constants";
@@ -14,7 +14,7 @@ import { TokenStandard } from "../types";
 // Pre-compute checksummed protocol addresses for consistent comparisons
 const VALID_PROTOCOL_ADDRESSES = new Set([
   ethers.getAddress(CROSS_CHAIN_SEAPORT_V1_6_ADDRESS),
-  ethers.getAddress(GUNZILLA_SEAPORT_1_6_ADDRESS),
+  ethers.getAddress(ALTERNATE_SEAPORT_V1_6_ADDRESS),
 ]);
 
 /**
