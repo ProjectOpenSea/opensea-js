@@ -10,7 +10,7 @@ import { suite, test } from "mocha";
 import {
   SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-  GUNZILLA_SEAPORT_1_6_ADDRESS,
+  ALTERNATE_SEAPORT_V1_6_ADDRESS,
 } from "../../src/constants";
 import { TokenStandard } from "../../src/types";
 import {
@@ -29,8 +29,8 @@ suite("Utils: protocol", () => {
       expect(isValidProtocol(CROSS_CHAIN_SEAPORT_V1_6_ADDRESS)).to.be.true;
     });
 
-    test("returns true for Gunzilla Seaport 1.6", () => {
-      expect(isValidProtocol(GUNZILLA_SEAPORT_1_6_ADDRESS)).to.be.true;
+    test("returns true for alternate Seaport 1.6", () => {
+      expect(isValidProtocol(ALTERNATE_SEAPORT_V1_6_ADDRESS)).to.be.true;
     });
 
     test("returns false for Seaport 1.5 (no longer supported)", () => {
@@ -48,7 +48,7 @@ suite("Utils: protocol", () => {
       // Mapping of [address, isValid]
       const addressesToCheck: [string, boolean][] = [
         [CROSS_CHAIN_SEAPORT_V1_6_ADDRESS, true],
-        [GUNZILLA_SEAPORT_1_6_ADDRESS, true],
+        [ALTERNATE_SEAPORT_V1_6_ADDRESS, true],
         [CROSS_CHAIN_SEAPORT_V1_5_ADDRESS, false],
         [randomAddress, false],
       ];
@@ -247,12 +247,12 @@ suite("Utils: protocol", () => {
       expect(result).to.equal(mockSeaport);
     });
 
-    test("returns seaport for GUNZILLA_SEAPORT_1_6_ADDRESS", () => {
+    test("returns seaport for ALTERNATE_SEAPORT_V1_6_ADDRESS", () => {
       const provider = new ethers.JsonRpcProvider();
       mockSeaport = new Seaport(provider);
 
       const result = getSeaportInstance(
-        GUNZILLA_SEAPORT_1_6_ADDRESS,
+        ALTERNATE_SEAPORT_V1_6_ADDRESS,
         mockSeaport,
       );
       expect(result).to.equal(mockSeaport);
@@ -287,21 +287,21 @@ suite("Utils: protocol", () => {
       );
     });
 
-    test("returns '1.6' for GUNZILLA_SEAPORT_1_6_ADDRESS", () => {
-      expect(getSeaportVersion(GUNZILLA_SEAPORT_1_6_ADDRESS)).to.equal("1.6");
+    test("returns '1.6' for ALTERNATE_SEAPORT_V1_6_ADDRESS", () => {
+      expect(getSeaportVersion(ALTERNATE_SEAPORT_V1_6_ADDRESS)).to.equal("1.6");
     });
 
     test("throws error for unsupported protocol address", () => {
       const randomAddress = ethers.Wallet.createRandom().address;
       expect(() => getSeaportVersion(randomAddress)).to.throw(
-        `Unknown or unsupported protocol address: ${randomAddress}`,
+        `Unsupported protocol address: ${randomAddress}`,
       );
     });
 
     test("throws error for Seaport 1.5", () => {
       expect(() =>
         getSeaportVersion(CROSS_CHAIN_SEAPORT_V1_5_ADDRESS),
-      ).to.throw("Unknown or unsupported protocol address");
+      ).to.throw("Unsupported protocol address");
     });
 
     test("works with lowercase address", () => {

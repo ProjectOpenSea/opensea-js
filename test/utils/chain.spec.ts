@@ -6,13 +6,13 @@ import {
   OPENSEA_CONDUIT_ADDRESS,
   OPENSEA_CONDUIT_KEY_2,
   OPENSEA_CONDUIT_ADDRESS_2,
-  GUNZILLA_CONDUIT_KEY,
-  GUNZILLA_CONDUIT_ADDRESS,
-  GUNZILLA_SEAPORT_1_6_ADDRESS,
-  GUNZILLA_SIGNED_ZONE_V2_ADDRESS,
+  ALTERNATE_CONDUIT_KEY,
+  ALTERNATE_CONDUIT_ADDRESS,
+  ALTERNATE_SEAPORT_V1_6_ADDRESS,
+  ALTERNATE_SIGNED_ZONE_V2_ADDRESS,
   SIGNED_ZONE,
   OPENSEA_FEE_RECIPIENT,
-  GUNZILLA_FEE_RECIPIENT,
+  ALTERNATE_FEE_RECIPIENT,
   SOMNIA_FEE_RECIPIENT,
 } from "../../src/constants";
 import { Chain } from "../../src/types";
@@ -276,16 +276,16 @@ suite("Utils: chain", () => {
       expect(result.address).to.equal(OPENSEA_CONDUIT_ADDRESS_2);
     });
 
-    test("returns Gunzilla conduit for Gunzilla", () => {
+    test("returns alternate conduit for Gunzilla", () => {
       const result = getDefaultConduit(Chain.Gunzilla);
-      expect(result.key).to.equal(GUNZILLA_CONDUIT_KEY);
-      expect(result.address).to.equal(GUNZILLA_CONDUIT_ADDRESS);
+      expect(result.key).to.equal(ALTERNATE_CONDUIT_KEY);
+      expect(result.address).to.equal(ALTERNATE_CONDUIT_ADDRESS);
     });
 
-    test("returns Gunzilla conduit for Somnia", () => {
+    test("returns alternate conduit for Somnia", () => {
       const result = getDefaultConduit(Chain.Somnia);
-      expect(result.key).to.equal(GUNZILLA_CONDUIT_KEY);
-      expect(result.address).to.equal(GUNZILLA_CONDUIT_ADDRESS);
+      expect(result.key).to.equal(ALTERNATE_CONDUIT_KEY);
+      expect(result.address).to.equal(ALTERNATE_CONDUIT_ADDRESS);
     });
 
     test("returns default OpenSea conduit for other chains", () => {
@@ -311,15 +311,15 @@ suite("Utils: chain", () => {
       );
     });
 
-    test("returns Gunzilla Seaport 1.6 for Gunzilla", () => {
+    test("returns alternate Seaport 1.6 for Gunzilla", () => {
       expect(getSeaportAddress(Chain.Gunzilla)).to.equal(
-        GUNZILLA_SEAPORT_1_6_ADDRESS,
+        ALTERNATE_SEAPORT_V1_6_ADDRESS,
       );
     });
 
-    test("returns Gunzilla Seaport 1.6 for Somnia", () => {
+    test("returns alternate Seaport 1.6 for Somnia", () => {
       expect(getSeaportAddress(Chain.Somnia)).to.equal(
-        GUNZILLA_SEAPORT_1_6_ADDRESS,
+        ALTERNATE_SEAPORT_V1_6_ADDRESS,
       );
     });
 
@@ -345,15 +345,15 @@ suite("Utils: chain", () => {
       expect(getSignedZone(Chain.Mainnet)).to.equal(SIGNED_ZONE);
     });
 
-    test("returns Gunzilla signed zone for Gunzilla", () => {
+    test("returns alternate signed zone for Gunzilla", () => {
       expect(getSignedZone(Chain.Gunzilla)).to.equal(
-        GUNZILLA_SIGNED_ZONE_V2_ADDRESS,
+        ALTERNATE_SIGNED_ZONE_V2_ADDRESS,
       );
     });
 
-    test("returns Gunzilla signed zone for Somnia", () => {
+    test("returns alternate signed zone for Somnia", () => {
       expect(getSignedZone(Chain.Somnia)).to.equal(
-        GUNZILLA_SIGNED_ZONE_V2_ADDRESS,
+        ALTERNATE_SIGNED_ZONE_V2_ADDRESS,
       );
     });
 
@@ -376,8 +376,8 @@ suite("Utils: chain", () => {
       expect(getFeeRecipient(Chain.Mainnet)).to.equal(OPENSEA_FEE_RECIPIENT);
     });
 
-    test("returns Gunzilla fee recipient for Gunzilla", () => {
-      expect(getFeeRecipient(Chain.Gunzilla)).to.equal(GUNZILLA_FEE_RECIPIENT);
+    test("returns alternate fee recipient for Gunzilla", () => {
+      expect(getFeeRecipient(Chain.Gunzilla)).to.equal(ALTERNATE_FEE_RECIPIENT);
     });
 
     test("returns Somnia fee recipient for Somnia", () => {

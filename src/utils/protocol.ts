@@ -5,11 +5,17 @@ import {
 } from "@opensea/seaport-js/lib/constants";
 import { ethers } from "ethers";
 import {
-  GUNZILLA_SEAPORT_1_6_ADDRESS,
+  ALTERNATE_SEAPORT_V1_6_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
 } from "../constants";
 import { TokenStandard } from "../types";
+
+// Pre-compute checksummed protocol addresses for consistent comparisons
+const VALID_PROTOCOL_ADDRESSES = new Set([
+  ethers.getAddress(CROSS_CHAIN_SEAPORT_V1_6_ADDRESS),
+  ethers.getAddress(ALTERNATE_SEAPORT_V1_6_ADDRESS),
+]);
 
 /**
  * Gets the appropriate ItemType for a given token standard.
@@ -48,12 +54,7 @@ export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAdd
  */
 export const isValidProtocol = (protocolAddress: string): boolean => {
   try {
-    const checkSumAddress = ethers.getAddress(protocolAddress);
-    const validProtocolAddresses = [
-      CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
-      GUNZILLA_SEAPORT_1_6_ADDRESS,
-    ].map((address) => ethers.getAddress(address));
-    return validProtocolAddresses.includes(checkSumAddress);
+    return VALID_PROTOCOL_ADDRESSES.has(ethers.getAddress(protocolAddress));
   } catch {
     return false;
   }
@@ -81,33 +82,8 @@ export const getSeaportInstance = (
   protocolAddress: string,
   seaport: Seaport,
 ): Seaport => {
-  try {
-    const checksummedProtocolAddress = ethers.getAddress(protocolAddress);
-
-    const crossChainSeaportAddress = ethers.getAddress(
-      CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
-    );
-    const gunzillaSeaportAddress = ethers.getAddress(
-      GUNZILLA_SEAPORT_1_6_ADDRESS,
-    );
-
-    switch (checksummedProtocolAddress) {
-      case crossChainSeaportAddress:
-      case gunzillaSeaportAddress:
-        return seaport;
-      default:
-        throw new Error(`Unsupported protocol address: ${protocolAddress}`);
-    }
-  } catch (error) {
-    // If ethers.getAddress fails, it's an invalid address format
-    if (
-      error instanceof Error &&
-      error.message.includes("Unsupported protocol")
-    ) {
-      throw error;
-    }
-    throw new Error(`Unsupported protocol address: ${protocolAddress}`);
-  }
+  requireValidProtocol(protocolAddress);
+  return seaport;
 };
 
 /**
@@ -117,36 +93,8 @@ export const getSeaportInstance = (
  * @throws Error if the protocol address is not supported
  */
 export const getSeaportVersion = (protocolAddress: string): string => {
-  try {
-    const protocolAddressChecksummed = ethers.getAddress(protocolAddress);
-
-    const crossChainSeaportAddress = ethers.getAddress(
-      CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
-    );
-    const gunzillaSeaportAddress = ethers.getAddress(
-      GUNZILLA_SEAPORT_1_6_ADDRESS,
-    );
-
-    switch (protocolAddressChecksummed) {
-      case crossChainSeaportAddress:
-      case gunzillaSeaportAddress:
-        return "1.6";
-      default:
-        throw new Error(
-          `Unknown or unsupported protocol address: ${protocolAddress}`,
-        );
-    }
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message.includes("Unknown or unsupported protocol")
-    ) {
-      throw error;
-    }
-    throw new Error(
-      `Unknown or unsupported protocol address: ${protocolAddress}`,
-    );
-  }
+  requireValidProtocol(protocolAddress);
+  return "1.6";
 };
 
 /**
