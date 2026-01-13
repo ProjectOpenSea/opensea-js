@@ -87,7 +87,9 @@ export const getSeaportInstance = (
     const crossChainSeaportAddress = ethers.getAddress(
       CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
     );
-    const gunzillaSeaportAddress = ethers.getAddress(GUNZILLA_SEAPORT_1_6_ADDRESS);
+    const gunzillaSeaportAddress = ethers.getAddress(
+      GUNZILLA_SEAPORT_1_6_ADDRESS,
+    );
 
     switch (checksummedProtocolAddress) {
       case crossChainSeaportAddress:
@@ -121,7 +123,9 @@ export const getSeaportVersion = (protocolAddress: string): string => {
     const crossChainSeaportAddress = ethers.getAddress(
       CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
     );
-    const gunzillaSeaportAddress = ethers.getAddress(GUNZILLA_SEAPORT_1_6_ADDRESS);
+    const gunzillaSeaportAddress = ethers.getAddress(
+      GUNZILLA_SEAPORT_1_6_ADDRESS,
+    );
 
     switch (protocolAddressChecksummed) {
       case crossChainSeaportAddress:
