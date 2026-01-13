@@ -19,7 +19,7 @@ import { oneMonthFromNowInSeconds } from "../utils/dateHelper";
 import { pluralize } from "../utils/stringHelper";
 import {
   getAssetItemType,
-  getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
+  remapSharedStorefrontAddress,
   basisPointsForFee,
   totalBasisPointsForFees,
   getFeeRecipient,
@@ -82,10 +82,7 @@ export class OrdersManager {
       itemType: getAssetItemType(
         nft.token_standard.toUpperCase() as TokenStandard,
       ),
-      token:
-        getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-          nft.contract,
-        ),
+      token: remapSharedStorefrontAddress(nft.contract),
       identifier: nft.identifier ?? undefined,
       amount: quantities[index].toString() ?? "1",
     }));

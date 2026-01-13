@@ -17,7 +17,7 @@ import {
   isValidProtocol,
   requireValidProtocol,
   getAssetItemType,
-  getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress,
+  remapSharedStorefrontAddress,
   decodeTokenIds,
   getSeaportInstance,
   getSeaportVersion,
@@ -111,44 +111,32 @@ suite("Utils: protocol", () => {
     });
   });
 
-  suite(
-    "getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress",
-    () => {
-      test("returns lazy mint adapter address for shared storefront address", () => {
-        for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
-          const result =
-            getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-              sharedStorefrontAddress,
-            );
-          expect(result).to.equal(
-            SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-          );
-        }
-      });
+  suite("remapSharedStorefrontAddress", () => {
+    test("returns lazy mint adapter address for shared storefront address", () => {
+      for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
+        const result = remapSharedStorefrontAddress(sharedStorefrontAddress);
+        expect(result).to.equal(
+          SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+        );
+      }
+    });
 
-      test("returns lazy mint adapter address for uppercase shared storefront address", () => {
-        for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
-          const upperCaseAddress = sharedStorefrontAddress.toUpperCase();
-          const result =
-            getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-              upperCaseAddress,
-            );
-          expect(result).to.equal(
-            SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-          );
-        }
-      });
+    test("returns lazy mint adapter address for uppercase shared storefront address", () => {
+      for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
+        const upperCaseAddress = sharedStorefrontAddress.toUpperCase();
+        const result = remapSharedStorefrontAddress(upperCaseAddress);
+        expect(result).to.equal(
+          SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+        );
+      }
+    });
 
-      test("returns original address for non-shared storefront address", () => {
-        const randomAddress = ethers.Wallet.createRandom().address;
-        const result =
-          getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress(
-            randomAddress,
-          );
-        expect(result).to.equal(randomAddress);
-      });
-    },
-  );
+    test("returns original address for non-shared storefront address", () => {
+      const randomAddress = ethers.Wallet.createRandom().address;
+      const result = remapSharedStorefrontAddress(randomAddress);
+      expect(result).to.equal(randomAddress);
+    });
+  });
 
   suite("decodeTokenIds", () => {
     test("returns ['*'] when given '*' as input", () => {

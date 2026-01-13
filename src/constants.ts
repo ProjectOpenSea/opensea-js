@@ -32,14 +32,12 @@ export const OPENSEA_CONDUIT_KEY_2 =
 export const OPENSEA_CONDUIT_ADDRESS_2 =
   "0x963f00d3ff000064ffcba824b800c0000000c300";
 
-export const SIGNED_ZONE = "0x000056f7000000ece9003ca63978907a00ffd100";
+export const OPENSEA_SIGNED_ZONE_V2 =
+  "0x000056f7000000ece9003ca63978907a00ffd100";
 
 // =============================================================================
-// Alternate Protocol Constants (used by Gunzilla, Somnia, etc.)
+// Alternate Protocol Constants (shared by Gunzilla, Somnia, etc.)
 // =============================================================================
-
-export const ALTERNATE_FEE_RECIPIENT =
-  "0xd9f68d28e451a83affdb7c71cc2c20552555b07f";
 
 export const ALTERNATE_CONDUIT_ADDRESS =
   "0x00000000001566479594a2e05532d81afa09bc52";
@@ -54,8 +52,11 @@ export const ALTERNATE_SIGNED_ZONE_V2_ADDRESS =
   "0xdfe0000000005ce3008800300037e4c803ed08c7";
 
 // =============================================================================
-// Somnia-Specific Constants
+// Chain-Specific Fee Recipients
 // =============================================================================
+
+export const GUNZILLA_FEE_RECIPIENT =
+  "0xd9f68d28e451a83affdb7c71cc2c20552555b07f";
 
 export const SOMNIA_FEE_RECIPIENT =
   "0xdfe1593dca6ad8a20eeb418643e48577c1626f7c";
