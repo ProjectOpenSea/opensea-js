@@ -294,14 +294,14 @@ suite("Utils: protocol", () => {
     test("throws error for unsupported protocol address", () => {
       const randomAddress = ethers.Wallet.createRandom().address;
       expect(() => getSeaportVersion(randomAddress)).to.throw(
-        `Unknown or unsupported protocol address: ${randomAddress}`,
+        `Unsupported protocol address: ${randomAddress}`,
       );
     });
 
     test("throws error for Seaport 1.5", () => {
       expect(() =>
         getSeaportVersion(CROSS_CHAIN_SEAPORT_V1_5_ADDRESS),
-      ).to.throw("Unknown or unsupported protocol address");
+      ).to.throw("Unsupported protocol address");
     });
 
     test("works with lowercase address", () => {
