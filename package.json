@@ -39,7 +39,7 @@
   },
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@opensea/seaport-js": "^4.0.5",
+    "@opensea/seaport-js": "^4.0.6",
     "ethers": "^6.9.0"
   },
   "devDependencies": {
