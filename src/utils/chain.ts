@@ -2,7 +2,7 @@ import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/consta
 import {
   ALTERNATE_CONDUIT_ADDRESS,
   ALTERNATE_CONDUIT_KEY,
-  ALTERNATE_FEE_RECIPIENT,
+  GUNZILLA_FEE_RECIPIENT,
   ALTERNATE_SEAPORT_V1_6_ADDRESS,
   ALTERNATE_SIGNED_ZONE_V2_ADDRESS,
   OPENSEA_CONDUIT_ADDRESS,
@@ -10,11 +10,20 @@ import {
   OPENSEA_CONDUIT_KEY,
   OPENSEA_CONDUIT_KEY_2,
   OPENSEA_FEE_RECIPIENT,
-  SIGNED_ZONE,
+  OPENSEA_SIGNED_ZONE_V2,
   SOMNIA_FEE_RECIPIENT,
   WPOL_ADDRESS,
 } from "../constants";
 import { Chain } from "../types";
+
+/**
+ * Checks if a chain uses the alternate protocol addresses.
+ * These chains use non-standard Seaport, conduit, and signed zone deployments.
+ * @param chain The chain to check
+ * @returns True if the chain uses alternate protocol addresses
+ */
+export const usesAlternateProtocol = (chain: Chain): boolean =>
+  chain === Chain.Gunzilla || chain === Chain.Somnia;
 
 /**
  * Gets the chain ID for a given chain.
@@ -178,13 +187,13 @@ export const getDefaultConduit = (
         key: OPENSEA_CONDUIT_KEY_2,
         address: OPENSEA_CONDUIT_ADDRESS_2,
       };
-    case Chain.Gunzilla:
-    case Chain.Somnia:
-      return {
-        key: ALTERNATE_CONDUIT_KEY,
-        address: ALTERNATE_CONDUIT_ADDRESS,
-      };
     default:
+      if (usesAlternateProtocol(chain)) {
+        return {
+          key: ALTERNATE_CONDUIT_KEY,
+          address: ALTERNATE_CONDUIT_ADDRESS,
+        };
+      }
       return {
         key: OPENSEA_CONDUIT_KEY,
         address: OPENSEA_CONDUIT_ADDRESS,
@@ -198,13 +207,9 @@ export const getDefaultConduit = (
  * @returns The Seaport 1.6 address for the chain
  */
 export const getSeaportAddress = (chain: Chain): string => {
-  switch (chain) {
-    case Chain.Gunzilla:
-    case Chain.Somnia:
-      return ALTERNATE_SEAPORT_V1_6_ADDRESS;
-    default:
-      return CROSS_CHAIN_SEAPORT_V1_6_ADDRESS;
-  }
+  return usesAlternateProtocol(chain)
+    ? ALTERNATE_SEAPORT_V1_6_ADDRESS
+    : CROSS_CHAIN_SEAPORT_V1_6_ADDRESS;
 };
 
 /**
@@ -213,13 +218,9 @@ export const getSeaportAddress = (chain: Chain): string => {
  * @returns The signed zone address for the chain
  */
 export const getSignedZone = (chain: Chain): string => {
-  switch (chain) {
-    case Chain.Gunzilla:
-    case Chain.Somnia:
-      return ALTERNATE_SIGNED_ZONE_V2_ADDRESS;
-    default:
-      return SIGNED_ZONE;
-  }
+  return usesAlternateProtocol(chain)
+    ? ALTERNATE_SIGNED_ZONE_V2_ADDRESS
+    : OPENSEA_SIGNED_ZONE_V2;
 };
 
 /**
@@ -230,7 +231,7 @@ export const getSignedZone = (chain: Chain): string => {
 export const getFeeRecipient = (chain: Chain): string => {
   switch (chain) {
     case Chain.Gunzilla:
-      return ALTERNATE_FEE_RECIPIENT;
+      return GUNZILLA_FEE_RECIPIENT;
     case Chain.Somnia:
       return SOMNIA_FEE_RECIPIENT;
     default:

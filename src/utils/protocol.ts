@@ -36,17 +36,21 @@ export const getAssetItemType = (tokenStandard: TokenStandard) => {
 };
 
 /**
- * Checks if the token address is the shared storefront address and if so replaces
- * that address with the lazy mint adapter address. Otherwise, returns the input token address
- * @param tokenAddress token address
- * @returns input token address or lazy mint adapter address
+ * Remaps shared storefront token addresses to the lazy mint adapter address.
+ *
+ * OpenSea's shared storefront contracts require special handling - when a token
+ * is from a shared storefront address, it must be remapped to the lazy mint
+ * adapter address for proper Seaport order creation.
+ *
+ * @param tokenAddress The token contract address to check
+ * @returns The lazy mint adapter address if the input is a shared storefront address,
+ *          otherwise returns the original address unchanged
  */
-export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress =
-  (tokenAddress: string): string => {
-    return SHARED_STOREFRONT_ADDRESSES.includes(tokenAddress.toLowerCase())
-      ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS
-      : tokenAddress;
-  };
+export const remapSharedStorefrontAddress = (tokenAddress: string): string => {
+  return SHARED_STOREFRONT_ADDRESSES.includes(tokenAddress.toLowerCase())
+    ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS
+    : tokenAddress;
+};
 
 /**
  * Returns if a protocol address is valid.

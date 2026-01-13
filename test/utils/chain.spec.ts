@@ -10,9 +10,9 @@ import {
   ALTERNATE_CONDUIT_ADDRESS,
   ALTERNATE_SEAPORT_V1_6_ADDRESS,
   ALTERNATE_SIGNED_ZONE_V2_ADDRESS,
-  SIGNED_ZONE,
+  OPENSEA_SIGNED_ZONE_V2,
   OPENSEA_FEE_RECIPIENT,
-  ALTERNATE_FEE_RECIPIENT,
+  GUNZILLA_FEE_RECIPIENT,
   SOMNIA_FEE_RECIPIENT,
 } from "../../src/constants";
 import { Chain } from "../../src/types";
@@ -342,7 +342,7 @@ suite("Utils: chain", () => {
 
   suite("getSignedZone", () => {
     test("returns OpenSea signed zone for Mainnet", () => {
-      expect(getSignedZone(Chain.Mainnet)).to.equal(SIGNED_ZONE);
+      expect(getSignedZone(Chain.Mainnet)).to.equal(OPENSEA_SIGNED_ZONE_V2);
     });
 
     test("returns alternate signed zone for Gunzilla", () => {
@@ -366,7 +366,7 @@ suite("Utils: chain", () => {
       ];
 
       for (const chain of otherChains) {
-        expect(getSignedZone(chain)).to.equal(SIGNED_ZONE);
+        expect(getSignedZone(chain)).to.equal(OPENSEA_SIGNED_ZONE_V2);
       }
     });
   });
@@ -376,8 +376,8 @@ suite("Utils: chain", () => {
       expect(getFeeRecipient(Chain.Mainnet)).to.equal(OPENSEA_FEE_RECIPIENT);
     });
 
-    test("returns alternate fee recipient for Gunzilla", () => {
-      expect(getFeeRecipient(Chain.Gunzilla)).to.equal(ALTERNATE_FEE_RECIPIENT);
+    test("returns Gunzilla fee recipient for Gunzilla", () => {
+      expect(getFeeRecipient(Chain.Gunzilla)).to.equal(GUNZILLA_FEE_RECIPIENT);
     });
 
     test("returns Somnia fee recipient for Somnia", () => {
