@@ -60,6 +60,9 @@ const listing = await openseaSDK.createListing({
 });
 ```
 
+**Important**  
+> Private orders restrict who can fulfill the order, but the order itself may still be visible onchain or via OpenSea APIs.
+
 ### Canceling Orders
 
 The SDK provides flexible options for canceling orders both onchain and offchain.
