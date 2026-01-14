@@ -140,6 +140,13 @@ export const decodeTokenIds = (encodedTokenIds: string): string[] => {
     return [];
   }
 
+  // Check for whitespace and provide helpful error message
+  if (/\s/.test(encodedTokenIds)) {
+    throw new Error(
+      "Invalid input format: whitespace is not allowed. Expected format: '1,2,3' or '1:5' or '1,3:5,8' (no spaces).",
+    );
+  }
+
   const validFormatRegex = /^(\d+(:\d+)?)(,\d+(:\d+)?)*$/;
 
   if (!validFormatRegex.test(encodedTokenIds)) {
