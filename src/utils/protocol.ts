@@ -38,7 +38,9 @@ export const getAssetItemType = (tokenStandard: TokenStandard) => {
 export const getAddressAfterRemappingSharedStorefrontAddressToLazyMintAdapterAddress =
   (tokenAddress: string): string => {
     return SHARED_STOREFRONT_ADDRESSES.includes(tokenAddress.toLowerCase())
-      ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS
+      ? ethers.getAddress(
+          SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+        )
       : tokenAddress;
   };
 
