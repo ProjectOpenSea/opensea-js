@@ -70,6 +70,15 @@ suite("Utils: fees", () => {
       };
       expect(basisPointsForFee(fee)).to.equal(1n);
     });
+
+    test("handles scientific notation percentages", () => {
+      const fee: Fee = {
+        fee: 1e-7,
+        recipient: "0x0000000000000000000000000000000000000000",
+        required: false,
+      };
+      expect(basisPointsForFee(fee)).to.equal(0n);
+    });
   });
 
   suite("totalBasisPointsForFees", () => {
