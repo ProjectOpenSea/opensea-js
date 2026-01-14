@@ -815,8 +815,18 @@ export class OpenSeaAPI {
     const retryAfterHeader =
       response.headers["retry-after"] || response.headers["Retry-After"];
     if (retryAfterHeader) {
-      const parsed = parseInt(retryAfterHeader, 10);
-      return isNaN(parsed) || parsed <= 0 ? undefined : parsed;
+      const trimmed = retryAfterHeader.trim();
+      const parsedSeconds = parseInt(trimmed, 10);
+      if (!isNaN(parsedSeconds) && parsedSeconds > 0) {
+        return parsedSeconds;
+      }
+
+      const parsedDateMs = Date.parse(trimmed);
+      if (isNaN(parsedDateMs)) {
+        return undefined;
+      }
+      const diffSeconds = Math.ceil((parsedDateMs - Date.now()) / 1000);
+      return diffSeconds <= 0 ? undefined : diffSeconds;
     }
     return undefined;
   }

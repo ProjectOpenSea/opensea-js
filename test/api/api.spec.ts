@@ -106,6 +106,39 @@ suite("API", () => {
     assert.equal(result.address, "0x0000000000000000000000000000000000000000");
   });
 
+  test("API parses Retry-After HTTP-date header", () => {
+    // Pin system time for deterministic date math
+    clock.setSystemTime(new Date("2020-01-01T00:00:00.000Z"));
+
+    const response = {
+      headers: {
+        "retry-after": "Wed, 01 Jan 2020 00:00:01 GMT",
+      },
+    };
+
+    const retryAfter = (
+      api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
+    )._parseRetryAfter(response);
+
+    assert.equal(retryAfter, 1);
+  });
+
+  test("API returns undefined for past Retry-After HTTP-date header", () => {
+    clock.setSystemTime(new Date("2020-01-01T00:00:10.000Z"));
+
+    const response = {
+      headers: {
+        "retry-after": "Wed, 01 Jan 2020 00:00:01 GMT",
+      },
+    };
+
+    const retryAfter = (
+      api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
+    )._parseRetryAfter(response);
+
+    assert.equal(retryAfter, undefined);
+  });
+
   test("API handles custom 599 rate limit errors with retry-after", async () => {
     // Mock the _fetch method to simulate 599 rate limit response followed by success
     const rateLimitError = new Error(
