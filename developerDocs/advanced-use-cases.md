@@ -60,7 +60,8 @@ const listing = await openseaSDK.createListing({
 });
 ```
 
-**Important**  
+**Important**
+
 > Private orders only restrict the taker address at the contract level. The order data remains public and discoverable via OpenSea APIs and on-chain indexers.
 
 ### Canceling Orders

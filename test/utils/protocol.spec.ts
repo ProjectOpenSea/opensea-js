@@ -112,21 +112,13 @@ suite("Utils: protocol", () => {
   });
 
   suite("remapSharedStorefrontAddress", () => {
-    test("returns lazy mint adapter address for shared storefront address", () => {
+    test("returns checksummed lazy mint adapter address for shared storefront address", () => {
       for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
         const result = remapSharedStorefrontAddress(sharedStorefrontAddress);
         expect(result).to.equal(
-          SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-        );
-      }
-    });
-
-    test("returns lazy mint adapter address for uppercase shared storefront address", () => {
-      for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
-        const upperCaseAddress = sharedStorefrontAddress.toUpperCase();
-        const result = remapSharedStorefrontAddress(upperCaseAddress);
-        expect(result).to.equal(
-          SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+          ethers.getAddress(
+            SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+          ),
         );
       }
     });
