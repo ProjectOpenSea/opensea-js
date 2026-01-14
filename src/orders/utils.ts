@@ -193,9 +193,10 @@ type OrdersQueryPathOptions = "protocol" | "side";
 export const serializeOrdersQueryOptions = (
   options: Omit<OrdersQueryOptions, OrdersQueryPathOptions>,
 ) => {
+  const normalizedCursor = options.cursor?.trim();
   return {
     limit: options.limit,
-    cursor: options.cursor ?? options.next,
+    cursor: normalizedCursor ? normalizedCursor : options.next,
 
     payment_token_address: options.paymentTokenAddress,
     maker: options.maker,

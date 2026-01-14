@@ -89,6 +89,14 @@ suite("Orders: utils", () => {
       expect(result.cursor).to.equal("next456");
     });
 
+    test("should use next when cursor is empty string", () => {
+      const result = serializeOrdersQueryOptions({
+        cursor: "",
+        next: "next456",
+      });
+      expect(result.cursor).to.equal("next456");
+    });
+
     test("should handle empty tokenIds array", () => {
       const result = serializeOrdersQueryOptions({
         tokenIds: [],
