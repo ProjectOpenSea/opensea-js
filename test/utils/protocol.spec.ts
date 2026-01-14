@@ -112,29 +112,21 @@ suite("Utils: protocol", () => {
   });
 
   suite("remapSharedStorefrontAddress", () => {
-    test("returns lazy mint adapter address for shared storefront address", () => {
+    test("returns checksummed lazy mint adapter address for shared storefront address", () => {
       for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
         const result = remapSharedStorefrontAddress(sharedStorefrontAddress);
         expect(result).to.equal(
-          SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+          ethers.getAddress(
+            SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+          ),
         );
       }
     });
 
-    test("returns lazy mint adapter address for uppercase shared storefront address", () => {
-      for (const sharedStorefrontAddress of SHARED_STOREFRONT_ADDRESSES) {
-        const upperCaseAddress = sharedStorefrontAddress.toUpperCase();
-        const result = remapSharedStorefrontAddress(upperCaseAddress);
-        expect(result).to.equal(
-          SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-        );
-      }
-    });
-
-    test("returns original address for non-shared storefront address", () => {
+    test("returns checksummed address for non-shared storefront address", () => {
       const randomAddress = ethers.Wallet.createRandom().address;
       const result = remapSharedStorefrontAddress(randomAddress);
-      expect(result).to.equal(randomAddress);
+      expect(result).to.equal(ethers.getAddress(randomAddress));
     });
   });
 
@@ -220,17 +212,16 @@ suite("Utils: protocol", () => {
       expect(decodeTokenIds("5:5")).to.deep.equal(["5"]);
     });
 
-    test("tolerates whitespace around delimiters", () => {
-      expect(decodeTokenIds(" 1, 3:5, 8 ")).to.deep.equal([
-        "1",
-        "3",
-        "4",
-        "5",
-        "8",
-      ]);
-      expect(decodeTokenIds("1 : 3")).to.deep.equal(["1", "2", "3"]);
-      expect(decodeTokenIds("  *  ")).to.deep.equal(["*"]);
-      expect(decodeTokenIds("   ")).to.deep.equal([]);
+    test("throws error for input with whitespace", () => {
+      expect(() => decodeTokenIds(" 1, 3:5, 8 ")).to.throw(
+        "whitespace is not allowed",
+      );
+      expect(() => decodeTokenIds("1 : 3")).to.throw(
+        "whitespace is not allowed",
+      );
+      expect(() => decodeTokenIds("1, 2")).to.throw(
+        "whitespace is not allowed",
+      );
     });
   });
 

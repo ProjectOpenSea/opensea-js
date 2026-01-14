@@ -47,9 +47,17 @@ export const getAssetItemType = (tokenStandard: TokenStandard) => {
  *          otherwise returns the original address unchanged
  */
 export const remapSharedStorefrontAddress = (tokenAddress: string): string => {
-  return SHARED_STOREFRONT_ADDRESSES.includes(tokenAddress.toLowerCase())
-    ? SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS
-    : tokenAddress;
+  try {
+    const lowercased = tokenAddress.toLowerCase();
+    if (SHARED_STOREFRONT_ADDRESSES.has(lowercased)) {
+      return ethers.getAddress(
+        SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
+      );
+    }
+    return ethers.getAddress(tokenAddress);
+  } catch {
+    return tokenAddress;
+  }
 };
 
 /**
@@ -129,29 +137,30 @@ export const getSeaportVersion = (protocolAddress: string): string => {
  * const decodedEmpty = decodeTokenIds(emptyEncoded); // Output: []
  */
 export const decodeTokenIds = (encodedTokenIds: string): string[] => {
-  // Normalize: trim and remove whitespace around delimiters
-  const normalized = encodedTokenIds
-    .trim()
-    .replace(/\s*,\s*/g, ",")
-    .replace(/\s*:\s*/g, ":");
-
-  if (normalized === "*") {
+  if (encodedTokenIds === "*") {
     return ["*"];
   }
 
-  if (normalized === "") {
+  if (encodedTokenIds === "") {
     return [];
+  }
+
+  // Check for whitespace and provide helpful error message
+  if (/\s/.test(encodedTokenIds)) {
+    throw new Error(
+      "Invalid input format: whitespace is not allowed. Expected format: '1,2,3' or '1:5' or '1,3:5,8' (no spaces).",
+    );
   }
 
   const validFormatRegex = /^(\d+(:\d+)?)(,\d+(:\d+)?)*$/;
 
-  if (!validFormatRegex.test(normalized)) {
+  if (!validFormatRegex.test(encodedTokenIds)) {
     throw new Error(
       "Invalid input format. Expected a valid comma-separated list of numbers and ranges.",
     );
   }
 
-  const ranges = normalized.split(",");
+  const ranges = encodedTokenIds.split(",");
   const tokenIds: string[] = [];
 
   for (const range of ranges) {
