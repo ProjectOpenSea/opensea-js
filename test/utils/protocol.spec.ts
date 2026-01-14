@@ -123,10 +123,10 @@ suite("Utils: protocol", () => {
       }
     });
 
-    test("returns checksummed address for non-shared storefront address", () => {
+    test("returns original address for non-shared storefront address", () => {
       const randomAddress = ethers.Wallet.createRandom().address;
       const result = remapSharedStorefrontAddress(randomAddress);
-      expect(result).to.equal(ethers.getAddress(randomAddress));
+      expect(result).to.equal(randomAddress);
     });
   });
 
