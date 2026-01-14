@@ -211,6 +211,18 @@ suite("Utils: protocol", () => {
     test("correctly decodes range where start = end", () => {
       expect(decodeTokenIds("5:5")).to.deep.equal(["5"]);
     });
+
+    test("throws error for input with whitespace", () => {
+      expect(() => decodeTokenIds(" 1,2,3")).to.throw(
+        "whitespace is not allowed",
+      );
+      expect(() => decodeTokenIds("1 : 3")).to.throw(
+        "whitespace is not allowed",
+      );
+      expect(() => decodeTokenIds("1, 2")).to.throw(
+        "whitespace is not allowed",
+      );
+    });
   });
 
   suite("getSeaportInstance", () => {
