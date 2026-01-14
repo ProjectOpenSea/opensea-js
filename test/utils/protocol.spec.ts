@@ -192,6 +192,16 @@ suite("Utils: protocol", () => {
       ]);
     });
 
+    test("supports whitespace around delimiters", () => {
+      expect(decodeTokenIds(" 1, 3:5, 8 ")).to.deep.equal([
+        "1",
+        "3",
+        "4",
+        "5",
+        "8",
+      ]);
+    });
+
     test("handles very large numbers", () => {
       const largeNum = "999999999999999999999999999999";
       expect(decodeTokenIds(largeNum)).to.deep.equal([largeNum]);

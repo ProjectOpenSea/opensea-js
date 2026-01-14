@@ -161,30 +161,34 @@ export const getSeaportVersion = (protocolAddress: string): string => {
  * const decodedEmpty = decodeTokenIds(emptyEncoded); // Output: []
  */
 export const decodeTokenIds = (encodedTokenIds: string): string[] => {
-  if (encodedTokenIds === "*") {
+  const trimmedEncodedTokenIds = encodedTokenIds.trim();
+
+  if (trimmedEncodedTokenIds === "*") {
     return ["*"];
   }
 
-  if (encodedTokenIds === "") {
+  if (trimmedEncodedTokenIds === "") {
     return [];
   }
 
-  const validFormatRegex = /^(\d+(:\d+)?)(,\d+(:\d+)?)*$/;
+  const validFormatRegex =
+    /^(\s*\d+\s*(\s*:\s*\d+\s*)?)(\s*,\s*\d+\s*(\s*:\s*\d+\s*)?)*\s*$/;
 
-  if (!validFormatRegex.test(encodedTokenIds)) {
+  if (!validFormatRegex.test(trimmedEncodedTokenIds)) {
     throw new Error(
       "Invalid input format. Expected a valid comma-separated list of numbers and ranges.",
     );
   }
 
-  const ranges = encodedTokenIds.split(",");
+  const ranges = trimmedEncodedTokenIds.split(",");
   const tokenIds: string[] = [];
 
   for (const range of ranges) {
-    if (range.includes(":")) {
-      const [startStr, endStr] = range.split(":");
-      const start = BigInt(startStr);
-      const end = BigInt(endStr);
+    const trimmedRange = range.trim();
+    if (trimmedRange.includes(":")) {
+      const [startStr, endStr] = trimmedRange.split(":");
+      const start = BigInt(startStr.trim());
+      const end = BigInt(endStr.trim());
       const diff = end - start + 1n;
 
       if (diff <= 0) {
@@ -197,7 +201,7 @@ export const decodeTokenIds = (encodedTokenIds: string): string[] => {
         tokenIds.push((start + i).toString());
       }
     } else {
-      const tokenId = BigInt(range);
+      const tokenId = BigInt(trimmedRange);
       tokenIds.push(tokenId.toString());
     }
   }
