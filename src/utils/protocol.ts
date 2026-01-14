@@ -129,23 +129,29 @@ export const getSeaportVersion = (protocolAddress: string): string => {
  * const decodedEmpty = decodeTokenIds(emptyEncoded); // Output: []
  */
 export const decodeTokenIds = (encodedTokenIds: string): string[] => {
-  if (encodedTokenIds === "*") {
+  // Normalize: trim and remove whitespace around delimiters
+  const normalized = encodedTokenIds
+    .trim()
+    .replace(/\s*,\s*/g, ",")
+    .replace(/\s*:\s*/g, ":");
+
+  if (normalized === "*") {
     return ["*"];
   }
 
-  if (encodedTokenIds === "") {
+  if (normalized === "") {
     return [];
   }
 
   const validFormatRegex = /^(\d+(:\d+)?)(,\d+(:\d+)?)*$/;
 
-  if (!validFormatRegex.test(encodedTokenIds)) {
+  if (!validFormatRegex.test(normalized)) {
     throw new Error(
       "Invalid input format. Expected a valid comma-separated list of numbers and ranges.",
     );
   }
 
-  const ranges = encodedTokenIds.split(",");
+  const ranges = normalized.split(",");
   const tokenIds: string[] = [];
 
   for (const range of ranges) {

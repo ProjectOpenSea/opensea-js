@@ -219,6 +219,19 @@ suite("Utils: protocol", () => {
     test("correctly decodes range where start = end", () => {
       expect(decodeTokenIds("5:5")).to.deep.equal(["5"]);
     });
+
+    test("tolerates whitespace around delimiters", () => {
+      expect(decodeTokenIds(" 1, 3:5, 8 ")).to.deep.equal([
+        "1",
+        "3",
+        "4",
+        "5",
+        "8",
+      ]);
+      expect(decodeTokenIds("1 : 3")).to.deep.equal(["1", "2", "3"]);
+      expect(decodeTokenIds("  *  ")).to.deep.equal(["*"]);
+      expect(decodeTokenIds("   ")).to.deep.equal([]);
+    });
   });
 
   suite("getSeaportInstance", () => {
