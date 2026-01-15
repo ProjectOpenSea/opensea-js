@@ -22,6 +22,7 @@ import {
   OpenSeaPaymentToken,
   OpenSeaRateLimitError,
   OrderSide,
+  RequestOptions,
 } from "../types";
 import { OrdersAPI } from "./orders";
 import {
@@ -700,14 +701,19 @@ export class OpenSeaAPI {
    * Generic fetch method for any API endpoint with automatic rate limit retry
    * @param apiPath Path to URL endpoint under API
    * @param query URL query params. Will be used to create a URLSearchParams object.
+   * @param options Request options like timeout and abort signal.
    * @returns @typeParam T The response from the API.
    */
-  public async get<T>(apiPath: string, query: object = {}): Promise<T> {
+  public async get<T>(
+    apiPath: string,
+    query: object = {},
+    options?: RequestOptions,
+  ): Promise<T> {
     return executeWithRateLimit(
       async () => {
         const qs = this.objectToSearchParams(query);
         const url = `${this.apiBaseUrl}${apiPath}?${qs}`;
-        return await this._fetch(url);
+        return await this._fetch(url, undefined, undefined, options);
       },
       { logger: this.logger },
     );
@@ -718,17 +724,19 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param body Data to send.
    * @param headers Additional headers to send with the request.
+   * @param options Request options like timeout and abort signal.
    * @returns @typeParam T The response from the API.
    */
   public async post<T>(
     apiPath: string,
     body?: object,
     headers?: object,
+    options?: RequestOptions,
   ): Promise<T> {
     return executeWithRateLimit(
       async () => {
         const url = `${this.apiBaseUrl}${apiPath}`;
-        return await this._fetch(url, headers, body);
+        return await this._fetch(url, headers, body, options);
       },
       { logger: this.logger },
     );
@@ -753,8 +761,14 @@ export class OpenSeaAPI {
    * @param url The URL to fetch
    * @param headers Additional headers to send with the request
    * @param body Optional body to send. If set, will POST, otherwise GET
+   * @param options Request options like timeout and abort signal
    */
-  private async _fetch(url: string, headers?: object, body?: object) {
+  private async _fetch(
+    url: string,
+    headers?: object,
+    body?: object,
+    options?: RequestOptions,
+  ) {
     // Create the fetch request
     const req = new ethers.FetchRequest(url);
 
@@ -773,6 +787,21 @@ export class OpenSeaAPI {
       req.body = body;
     }
 
+    // Apply request options
+    if (options?.timeout !== undefined) {
+      req.timeout = options.timeout;
+    }
+
+    // Set up abort signal handling
+    let abortHandler: (() => void) | undefined;
+    if (options?.signal) {
+      if (options.signal.aborted) {
+        throw new Error("Request aborted");
+      }
+      abortHandler = () => req.cancel();
+      options.signal.addEventListener("abort", abortHandler);
+    }
+
     // Set the throttle params
     req.setThrottleParams({ slotInterval: 1000 });
 
@@ -784,27 +813,34 @@ export class OpenSeaAPI {
       })}`,
     );
 
-    const response = await req.send();
-    if (!response.ok()) {
-      // Handle rate limit errors (429 Too Many Requests and 599 custom rate limit)
-      if (response.statusCode === 599 || response.statusCode === 429) {
-        throw this._createRateLimitError(response);
-      }
-      // If an errors array is returned, throw with the error messages.
-      const errors = response.bodyJson?.errors;
-      if (errors?.length > 0) {
-        let errorMessage = errors.join(", ");
-        if (errorMessage === "[object Object]") {
-          errorMessage = JSON.stringify(errors);
+    try {
+      const response = await req.send();
+      if (!response.ok()) {
+        // Handle rate limit errors (429 Too Many Requests and 599 custom rate limit)
+        if (response.statusCode === 599 || response.statusCode === 429) {
+          throw this._createRateLimitError(response);
         }
-        throw new Error(`Server Error: ${errorMessage}`);
-      } else {
-        // Otherwise, let ethers throw a SERVER_ERROR since it will include
-        // more context about the request and response.
-        response.assertOk();
+        // If an errors array is returned, throw with the error messages.
+        const errors = response.bodyJson?.errors;
+        if (errors?.length > 0) {
+          let errorMessage = errors.join(", ");
+          if (errorMessage === "[object Object]") {
+            errorMessage = JSON.stringify(errors);
+          }
+          throw new Error(`Server Error: ${errorMessage}`);
+        } else {
+          // Otherwise, let ethers throw a SERVER_ERROR since it will include
+          // more context about the request and response.
+          response.assertOk();
+        }
+      }
+      return response.bodyJson;
+    } finally {
+      // Clean up abort handler
+      if (abortHandler && options?.signal) {
+        options.signal.removeEventListener("abort", abortHandler);
       }
     }
-    return response.bodyJson;
   }
 
   /**

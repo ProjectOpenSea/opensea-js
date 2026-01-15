@@ -1,4 +1,5 @@
 import { assert } from "chai";
+import { ethers } from "ethers";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { Chain, OpenSeaRateLimitError } from "../../src";
@@ -306,5 +307,123 @@ suite("API", () => {
 
     assert.equal(fetchStub.callCount, 2); // Should have retried once
     assert.equal(result.address, "0x0000000000000000000000000000000000000000");
+  });
+
+  test("API post supports timeout option", async () => {
+    const setTimeoutSpy = sinon.spy();
+    const originalDescriptor = Object.getOwnPropertyDescriptor(
+      ethers.FetchRequest.prototype,
+      "timeout",
+    );
+
+    Object.defineProperty(ethers.FetchRequest.prototype, "timeout", {
+      set: setTimeoutSpy,
+      configurable: true,
+    });
+
+    const sendStub = sinon
+      .stub(ethers.FetchRequest.prototype, "send")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .resolves({ ok: () => true, bodyJson: { ok: true }, headers: {} } as any);
+
+    await api.post("/api/v2/test", undefined, undefined, { timeout: 5000 });
+
+    assert.isTrue(setTimeoutSpy.calledWith(5000));
+
+    sendStub.restore();
+    if (originalDescriptor) {
+      Object.defineProperty(
+        ethers.FetchRequest.prototype,
+        "timeout",
+        originalDescriptor,
+      );
+    }
+  });
+
+  test("API post registers abort signal handler", async () => {
+    const addEventListenerSpy = sinon.spy(
+      AbortSignal.prototype,
+      "addEventListener",
+    );
+    const removeEventListenerSpy = sinon.spy(
+      AbortSignal.prototype,
+      "removeEventListener",
+    );
+
+    const sendStub = sinon
+      .stub(ethers.FetchRequest.prototype, "send")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .resolves({ ok: () => true, bodyJson: { ok: true }, headers: {} } as any);
+
+    const controller = new AbortController();
+
+    await api.post("/api/v2/test", undefined, undefined, {
+      signal: controller.signal,
+    });
+
+    // Verify abort handler was registered and cleaned up
+    assert.isTrue(addEventListenerSpy.calledWith("abort", sinon.match.func));
+    assert.isTrue(removeEventListenerSpy.calledWith("abort", sinon.match.func));
+
+    sendStub.restore();
+    addEventListenerSpy.restore();
+    removeEventListenerSpy.restore();
+  });
+
+  test("API post throws immediately for pre-aborted signal", async () => {
+    const controller = new AbortController();
+    controller.abort();
+
+    try {
+      await api.post("/api/v2/test", undefined, undefined, {
+        signal: controller.signal,
+      });
+      assert.fail("Should have thrown");
+    } catch (error) {
+      assert.include((error as Error).message, "aborted");
+    }
+  });
+
+  test("API get supports timeout option", async () => {
+    const setTimeoutSpy = sinon.spy();
+    const originalDescriptor = Object.getOwnPropertyDescriptor(
+      ethers.FetchRequest.prototype,
+      "timeout",
+    );
+
+    Object.defineProperty(ethers.FetchRequest.prototype, "timeout", {
+      set: setTimeoutSpy,
+      configurable: true,
+    });
+
+    const sendStub = sinon
+      .stub(ethers.FetchRequest.prototype, "send")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .resolves({ ok: () => true, bodyJson: { ok: true }, headers: {} } as any);
+
+    await api.get("/api/v2/test", {}, { timeout: 3000 });
+
+    assert.isTrue(setTimeoutSpy.calledWith(3000));
+
+    sendStub.restore();
+    if (originalDescriptor) {
+      Object.defineProperty(
+        ethers.FetchRequest.prototype,
+        "timeout",
+        originalDescriptor,
+      );
+    }
+  });
+
+  test("API get throws immediately for pre-aborted signal", async () => {
+    const controller = new AbortController();
+    controller.abort();
+
+    try {
+      await api.get("/api/v2/test", {}, { signal: controller.signal });
+      assert.fail("Should have thrown");
+    } catch (error) {
+      assert.include((error as Error).message, "aborted");
+    }
   });
 });

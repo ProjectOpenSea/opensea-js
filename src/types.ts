@@ -379,3 +379,24 @@ export interface OpenSeaRateLimitError extends Error {
   /** The response body from the API */
   responseBody?: unknown;
 }
+
+/**
+ * Options for controlling HTTP request behavior.
+ * @category API Models
+ */
+export interface RequestOptions {
+  /**
+   * Request timeout in milliseconds.
+   * If the request takes longer than this, it will be aborted.
+   */
+  timeout?: number;
+  /**
+   * An AbortSignal to cancel the request.
+   * Useful for implementing custom cancellation logic or timeouts.
+   * @example
+   * const controller = new AbortController();
+   * setTimeout(() => controller.abort(), 5000);
+   * await api.post('/path', body, headers, { signal: controller.signal });
+   */
+  signal?: AbortSignal;
+}
