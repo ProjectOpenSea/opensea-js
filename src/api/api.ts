@@ -717,18 +717,18 @@ export class OpenSeaAPI {
    * Generic post method for any API endpoint with automatic rate limit retry
    * @param apiPath Path to URL endpoint under API
    * @param body Data to send.
-   * @param opts ethers ConnectionInfo, similar to Fetch API.
+   * @param headers Additional headers to send with the request.
    * @returns @typeParam T The response from the API.
    */
   public async post<T>(
     apiPath: string,
     body?: object,
-    opts?: object,
+    headers?: object,
   ): Promise<T> {
     return executeWithRateLimit(
       async () => {
         const url = `${this.apiBaseUrl}${apiPath}`;
-        return await this._fetch(url, opts, body);
+        return await this._fetch(url, headers, body);
       },
       { logger: this.logger },
     );
@@ -749,8 +749,9 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Get from an API Endpoint, sending auth token in headers
-   * @param opts ethers ConnectionInfo, similar to Fetch API
+   * Fetch from an API Endpoint, sending auth token in headers
+   * @param url The URL to fetch
+   * @param headers Additional headers to send with the request
    * @param body Optional body to send. If set, will POST, otherwise GET
    */
   private async _fetch(url: string, headers?: object, body?: object) {

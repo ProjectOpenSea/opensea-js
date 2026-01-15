@@ -15,8 +15,8 @@ export interface Fetcher {
    * Generic post method for POST requests with automatic rate limit retry
    * @param apiPath Path to URL endpoint under API
    * @param body Data to send.
-   * @param opts Optional connection options.
+   * @param headers Additional headers to send with the request.
    * @returns The response from the API.
    */
-  post<T>(apiPath: string, body?: object, opts?: object): Promise<T>;
+  post<T>(apiPath: string, body?: object, headers?: object): Promise<T>;
 }
