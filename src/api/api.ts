@@ -808,9 +808,15 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Maximum retry-after value in seconds (5 minutes).
+   * Prevents excessively long waits from buggy or malicious servers.
+   */
+  private static readonly MAX_RETRY_AFTER_SECONDS = 300;
+
+  /**
    * Parses the retry-after header from the response with robust error handling.
    * @param response The HTTP response object from the API
-   * @returns The retry-after value in seconds, or undefined if not present or invalid
+   * @returns The retry-after value in seconds (capped at 5 minutes), or undefined if not present or invalid
    */
   private _parseRetryAfter(response: ethers.FetchResponse): number | undefined {
     const retryAfterHeader =
@@ -818,16 +824,25 @@ export class OpenSeaAPI {
     if (retryAfterHeader) {
       const trimmed = retryAfterHeader.trim();
       const parsedSeconds = parseInt(trimmed, 10);
-      if (!isNaN(parsedSeconds) && parsedSeconds > 0) {
-        return parsedSeconds;
+
+      // If it looks like a number (starts with digit or minus sign), handle as numeric
+      if (/^-?\d/.test(trimmed)) {
+        if (isNaN(parsedSeconds) || parsedSeconds <= 0) {
+          return undefined;
+        }
+        return Math.min(parsedSeconds, OpenSeaAPI.MAX_RETRY_AFTER_SECONDS);
       }
 
+      // Otherwise, try to parse as HTTP-date
       const parsedDateMs = Date.parse(trimmed);
       if (isNaN(parsedDateMs)) {
         return undefined;
       }
       const diffSeconds = Math.ceil((parsedDateMs - Date.now()) / 1000);
-      return diffSeconds <= 0 ? undefined : diffSeconds;
+      if (diffSeconds <= 0) {
+        return undefined;
+      }
+      return Math.min(diffSeconds, OpenSeaAPI.MAX_RETRY_AFTER_SECONDS);
     }
     return undefined;
   }

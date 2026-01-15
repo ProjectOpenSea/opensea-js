@@ -14,6 +14,7 @@ import {
   OPENSEA_FEE_RECIPIENT,
   GUNZILLA_FEE_RECIPIENT,
   SOMNIA_FEE_RECIPIENT,
+  WPOL_ADDRESS,
 } from "../../src/constants";
 import { Chain } from "../../src/types";
 import {
@@ -24,6 +25,8 @@ import {
   getSeaportAddress,
   getSignedZone,
   getFeeRecipient,
+  usesAlternateProtocol,
+  getNativeWrapTokenAddress,
 } from "../../src/utils/chain";
 
 suite("Utils: chain", () => {
@@ -49,6 +52,7 @@ suite("Utils: chain", () => {
       [Chain.Gunzilla, "43419"],
       [Chain.HyperEVM, "999"],
       [Chain.Somnia, "5031"],
+      [Chain.Monad, "143"],
     ];
 
     for (const [chain, expectedId] of chainIdTests) {
@@ -395,6 +399,72 @@ suite("Utils: chain", () => {
 
       for (const chain of otherChains) {
         expect(getFeeRecipient(chain)).to.equal(OPENSEA_FEE_RECIPIENT);
+      }
+    });
+  });
+
+  suite("usesAlternateProtocol", () => {
+    test("returns true for Gunzilla", () => {
+      expect(usesAlternateProtocol(Chain.Gunzilla)).to.be.true;
+    });
+
+    test("returns true for Somnia", () => {
+      expect(usesAlternateProtocol(Chain.Somnia)).to.be.true;
+    });
+
+    test("returns false for Mainnet", () => {
+      expect(usesAlternateProtocol(Chain.Mainnet)).to.be.false;
+    });
+
+    test("returns false for other standard chains", () => {
+      const standardChains = [
+        Chain.Polygon,
+        Chain.Arbitrum,
+        Chain.Base,
+        Chain.Optimism,
+        Chain.Zora,
+        Chain.Avalanche,
+        Chain.Blast,
+        Chain.Sei,
+        Chain.BeraChain,
+        Chain.Abstract,
+        Chain.HyperEVM,
+        Chain.Monad,
+      ];
+
+      for (const chain of standardChains) {
+        expect(usesAlternateProtocol(chain)).to.be.false;
+      }
+    });
+  });
+
+  suite("getNativeWrapTokenAddress", () => {
+    test("returns WPOL for Polygon", () => {
+      expect(getNativeWrapTokenAddress(Chain.Polygon)).to.equal(WPOL_ADDRESS);
+    });
+
+    test("returns WETH for Mainnet (same as offer token)", () => {
+      expect(getNativeWrapTokenAddress(Chain.Mainnet)).to.equal(
+        getOfferPaymentToken(Chain.Mainnet),
+      );
+    });
+
+    test("returns offer payment token for non-Polygon chains", () => {
+      const nonPolygonChains = [
+        Chain.Mainnet,
+        Chain.Arbitrum,
+        Chain.Base,
+        Chain.Optimism,
+        Chain.Avalanche,
+        Chain.Blast,
+        Chain.Gunzilla,
+        Chain.Somnia,
+      ];
+
+      for (const chain of nonPolygonChains) {
+        expect(getNativeWrapTokenAddress(chain)).to.equal(
+          getOfferPaymentToken(chain),
+        );
       }
     });
   });

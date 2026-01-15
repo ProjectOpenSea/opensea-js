@@ -87,7 +87,7 @@ suite("Utils: rateLimit", () => {
 
       expect(result).to.equal("success");
       expect(operation.callCount).to.equal(2);
-      expect(logger.calledWith(sinon.match(/Rate limit hit.*1000ms/))).to.be
+      expect(logger.calledWith(sinon.match(/Rate limit hit.*1 seconds/))).to.be
         .true;
     });
 

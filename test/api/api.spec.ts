@@ -139,6 +139,93 @@ suite("API", () => {
     assert.equal(retryAfter, undefined);
   });
 
+  test("API caps numeric Retry-After at 5 minutes", () => {
+    const response = {
+      headers: {
+        "retry-after": "9999",
+      },
+    };
+
+    const retryAfter = (
+      api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
+    )._parseRetryAfter(response);
+
+    assert.equal(retryAfter, 300); // Capped at 5 minutes
+  });
+
+  test("API caps HTTP-date Retry-After at 5 minutes", () => {
+    clock.setSystemTime(new Date("2020-01-01T00:00:00.000Z"));
+
+    const response = {
+      headers: {
+        // 1 hour in the future
+        "retry-after": "Wed, 01 Jan 2020 01:00:00 GMT",
+      },
+    };
+
+    const retryAfter = (
+      api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
+    )._parseRetryAfter(response);
+
+    assert.equal(retryAfter, 300); // Capped at 5 minutes
+  });
+
+  test("API returns undefined for invalid Retry-After string", () => {
+    const response = {
+      headers: {
+        "retry-after": "invalid-string",
+      },
+    };
+
+    const retryAfter = (
+      api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
+    )._parseRetryAfter(response);
+
+    assert.equal(retryAfter, undefined);
+  });
+
+  test("API returns undefined for negative Retry-After", () => {
+    const response = {
+      headers: {
+        "retry-after": "-5",
+      },
+    };
+
+    const retryAfter = (
+      api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
+    )._parseRetryAfter(response);
+
+    assert.equal(retryAfter, undefined);
+  });
+
+  test("API returns undefined for zero Retry-After", () => {
+    const response = {
+      headers: {
+        "retry-after": "0",
+      },
+    };
+
+    const retryAfter = (
+      api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
+    )._parseRetryAfter(response);
+
+    assert.equal(retryAfter, undefined);
+  });
+
+  test("API trims whitespace from Retry-After header", () => {
+    const response = {
+      headers: {
+        "retry-after": "  5  ",
+      },
+    };
+
+    const retryAfter = (
+      api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
+    )._parseRetryAfter(response);
+
+    assert.equal(retryAfter, 5);
+  });
+
   test("API handles custom 599 rate limit errors with retry-after", async () => {
     // Mock the _fetch method to simulate 599 rate limit response followed by success
     const rateLimitError = new Error(
