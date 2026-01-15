@@ -753,18 +753,77 @@ export class OpenSeaAPI {
    * @param opts ethers ConnectionInfo, similar to Fetch API
    * @param body Optional body to send. If set, will POST, otherwise GET
    */
-  private async _fetch(url: string, headers?: object, body?: object) {
+  private async _fetch(url: string, opts?: object, body?: object) {
     // Create the fetch request
     const req = new ethers.FetchRequest(url);
 
+    const options = opts ?? {};
+    const optionEntries = Object.entries(options);
+    const knownRequestOptionKeys = new Set([
+      "headers",
+      "timeout",
+      "signal",
+      "method",
+      "credentials",
+      "mode",
+      "cache",
+      "redirect",
+      "referrer",
+      "referrerPolicy",
+      "integrity",
+      "keepalive",
+    ]);
+
+    const hasKnownRequestOptionKey = optionEntries.some(([key]) =>
+      knownRequestOptionKeys.has(key),
+    );
+
+    // Backward-compat:
+    // - historically we accepted a plain object and treated it as headers
+    // - now we also support ConnectionInfo-like objects with a nested `headers` field
+    const looksLikeHeaders =
+      optionEntries.length > 0 &&
+      !Object.prototype.hasOwnProperty.call(options, "headers") &&
+      !hasKnownRequestOptionKey;
+
+    const extraHeaders = (
+      looksLikeHeaders
+        ? options
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ((options as any).headers ?? {})
+    ) as Record<string, unknown>;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const requestOptions = looksLikeHeaders ? {} : ({ ...options } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (requestOptions as any).headers;
+
     // Set the headers
-    headers = {
+    const headers = {
       "x-app-id": "opensea-js",
       ...(this.apiKey ? { "X-API-KEY": this.apiKey } : {}),
-      ...headers,
+      ...extraHeaders,
     };
     for (const [key, value] of Object.entries(headers)) {
       req.setHeader(key, value);
+    }
+
+    // Apply a small, known-safe subset of request options.
+    for (const [key, value] of Object.entries(requestOptions)) {
+      if (value === undefined) {
+        continue;
+      }
+
+      if (!knownRequestOptionKeys.has(key)) {
+        continue;
+      }
+
+      if (key === "headers") {
+        continue;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (req as any)[key] = value;
     }
 
     // Set the body if provided

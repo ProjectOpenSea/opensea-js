@@ -1,4 +1,5 @@
 import { assert } from "chai";
+import { ethers } from "ethers";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { Chain, OpenSeaRateLimitError } from "../../src";
@@ -219,5 +220,48 @@ suite("API", () => {
 
     assert.equal(fetchStub.callCount, 2); // Should have retried once
     assert.equal(result.address, "0x0000000000000000000000000000000000000000");
+  });
+
+  test("API post opts should not be sent as headers", async () => {
+    const setHeaderSpy = sinon
+      .stub(ethers.FetchRequest.prototype, "setHeader")
+      .callThrough();
+
+    const sendStub = sinon
+      .stub(ethers.FetchRequest.prototype, "send")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .resolves({ ok: () => true, bodyJson: { ok: true }, headers: {} } as any);
+
+    await api.post("/api/v2/collections", undefined, { timeout: 123 });
+
+    const headerKeys = setHeaderSpy.getCalls().map((c) => String(c.args[0]));
+    assert.notInclude(headerKeys, "timeout");
+
+    sendStub.restore();
+    setHeaderSpy.restore();
+  });
+
+  test("API post supports plain headers object for backward compatibility", async () => {
+    const setHeaderSpy = sinon
+      .stub(ethers.FetchRequest.prototype, "setHeader")
+      .callThrough();
+
+    const sendStub = sinon
+      .stub(ethers.FetchRequest.prototype, "send")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .resolves({ ok: () => true, bodyJson: { ok: true }, headers: {} } as any);
+
+    await api.post("/api/v2/collections", undefined, {
+      Authorization: "Bearer test",
+    });
+
+    const headerPairs = setHeaderSpy
+      .getCalls()
+      .map((c) => [String(c.args[0]), String(c.args[1])]);
+
+    assert.deepInclude(headerPairs, ["Authorization", "Bearer test"]);
+
+    sendStub.restore();
+    setHeaderSpy.restore();
   });
 });
