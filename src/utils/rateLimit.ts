@@ -87,8 +87,9 @@ export async function executeWithRateLimit<T>(
       } else {
         // Exponential backoff
         delayMs = baseRetryDelay * Math.pow(EXPONENTIAL_BACKOFF_BASE, attempt);
+        const delaySeconds = delayMs / MILLISECONDS_PER_SECOND;
         logger(
-          `Rate limit hit. Waiting ${delayMs}ms before retry (attempt ${attempt + 1}/${maxRetries})...`,
+          `Rate limit hit. Waiting ${delaySeconds} seconds before retry (attempt ${attempt + 1}/${maxRetries})...`,
         );
       }
 
