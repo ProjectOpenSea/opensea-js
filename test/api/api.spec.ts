@@ -383,4 +383,47 @@ suite("API", () => {
       assert.include((error as Error).message, "aborted");
     }
   });
+
+  test("API get supports timeout option", async () => {
+    const setTimeoutSpy = sinon.spy();
+    const originalDescriptor = Object.getOwnPropertyDescriptor(
+      ethers.FetchRequest.prototype,
+      "timeout",
+    );
+
+    Object.defineProperty(ethers.FetchRequest.prototype, "timeout", {
+      set: setTimeoutSpy,
+      configurable: true,
+    });
+
+    const sendStub = sinon
+      .stub(ethers.FetchRequest.prototype, "send")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .resolves({ ok: () => true, bodyJson: { ok: true }, headers: {} } as any);
+
+    await api.get("/api/v2/test", {}, { timeout: 3000 });
+
+    assert.isTrue(setTimeoutSpy.calledWith(3000));
+
+    sendStub.restore();
+    if (originalDescriptor) {
+      Object.defineProperty(
+        ethers.FetchRequest.prototype,
+        "timeout",
+        originalDescriptor,
+      );
+    }
+  });
+
+  test("API get throws immediately for pre-aborted signal", async () => {
+    const controller = new AbortController();
+    controller.abort();
+
+    try {
+      await api.get("/api/v2/test", {}, { signal: controller.signal });
+      assert.fail("Should have thrown");
+    } catch (error) {
+      assert.include((error as Error).message, "aborted");
+    }
+  });
 });

@@ -9,9 +9,10 @@ export interface Fetcher {
    * Generic fetch method for GET requests with automatic rate limit retry
    * @param apiPath Path to URL endpoint under API
    * @param query URL query params. Will be used to create a URLSearchParams object.
+   * @param options Request options like timeout and abort signal.
    * @returns The response from the API.
    */
-  get<T>(apiPath: string, query?: object): Promise<T>;
+  get<T>(apiPath: string, query?: object, options?: RequestOptions): Promise<T>;
 
   /**
    * Generic post method for POST requests with automatic rate limit retry

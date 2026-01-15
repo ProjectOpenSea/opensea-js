@@ -701,14 +701,19 @@ export class OpenSeaAPI {
    * Generic fetch method for any API endpoint with automatic rate limit retry
    * @param apiPath Path to URL endpoint under API
    * @param query URL query params. Will be used to create a URLSearchParams object.
+   * @param options Request options like timeout and abort signal.
    * @returns @typeParam T The response from the API.
    */
-  public async get<T>(apiPath: string, query: object = {}): Promise<T> {
+  public async get<T>(
+    apiPath: string,
+    query: object = {},
+    options?: RequestOptions,
+  ): Promise<T> {
     return executeWithRateLimit(
       async () => {
         const qs = this.objectToSearchParams(query);
         const url = `${this.apiBaseUrl}${apiPath}?${qs}`;
-        return await this._fetch(url);
+        return await this._fetch(url, undefined, undefined, options);
       },
       { logger: this.logger },
     );
