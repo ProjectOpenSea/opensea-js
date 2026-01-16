@@ -394,7 +394,7 @@ Our recommendation is that you "forward" OpenSea events to your own store or sta
 import { OpenSeaSDK, EventType } from 'opensea-js'
 const sdk = new OpenSeaSDK(...);
 
-handleSDKEvents() {
+function handleSDKEvents() {
     sdk.addListener(EventType.TransactionCreated, ({ transactionHash, event }) => {
       console.info('Transaction created: ', { transactionHash, event })
     })
