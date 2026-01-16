@@ -20,11 +20,11 @@ hidden: false
 
 If you need to purchase on behalf of users (server-side or via a bot), schedule future orders, place bids in different ERC‑20 tokens, or perform other advanced operations, OpenSea provides the following capabilities:
 
-- **Purchase & instantly transfer NFTs** by specifying a recipientAddress when fulfilling orders.
-- **Create private orders** restricted to specific counterparties using buyerAddress or recipientAddress.
-- **Place bids in any ERC-20 token** by setting a paymentTokenAddress when creating offers.
+- **Purchase & instantly transfer NFTs** by specifying a `recipientAddress` when fulfilling orders.
+- **Create private orders** restricted to specific counterparties using `buyerAddress` or `recipientAddress`.
+- **Place bids in any ERC-20 token** by setting a `paymentTokenAddress` when creating offers.
 - **Cancel orders efficiently**, including gas-free offchain cancellation for supported zones.
-- **Create multiple listings or offers in bulk** with single-signature methods like createBulkListings() to save gas and time.
+- **Create multiple listings or offers in bulk** with single-signature methods like `createBulkListings()` to save gas and time.
 - **Batch transfer assets** to multiple recipients in one transaction after bulk approvals.
 - **Listen to real-time SDK events** (transaction statuses, wraps) for integration into your application state.
 
