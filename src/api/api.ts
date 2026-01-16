@@ -746,10 +746,14 @@ export class OpenSeaAPI {
     const urlSearchParams = new URLSearchParams();
 
     Object.entries(params).forEach(([key, value]) => {
-      if (value && Array.isArray(value)) {
-        value.forEach((item) => item && urlSearchParams.append(key, item));
-      } else if (value) {
-        urlSearchParams.append(key, value);
+      if (Array.isArray(value)) {
+        value.forEach((item) => {
+          if (item != null) {
+            urlSearchParams.append(key, String(item));
+          }
+        });
+      } else if (value != null) {
+        urlSearchParams.append(key, String(value));
       }
     });
 
