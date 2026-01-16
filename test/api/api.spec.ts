@@ -106,6 +106,28 @@ suite("API", () => {
     assert.equal(result.address, "0x0000000000000000000000000000000000000000");
   });
 
+  test("API get serializes falsy query params", async () => {
+    const successResponse = {
+      address: "0x0000000000000000000000000000000000000000",
+      decimals: 18,
+      eth_price: "1",
+      name: "Ether",
+      symbol: "ETH",
+      usd_price: "1800",
+    };
+
+    fetchStub = sinon
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .resolves(successResponse);
+
+    await api.get("/api/v2/test", { limit: 0, include: false });
+
+    assert.equal(fetchStub.callCount, 1);
+    const url = fetchStub.firstCall.args[0] as string;
+    assert.include(url, "limit=0");
+    assert.include(url, "include=false");
+  });
+
   test("API parses Retry-After HTTP-date header", () => {
     // Pin system time for deterministic date math
     clock.setSystemTime(new Date("2020-01-01T00:00:00.000Z"));

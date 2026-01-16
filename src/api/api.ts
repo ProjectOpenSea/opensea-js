@@ -738,10 +738,14 @@ export class OpenSeaAPI {
     const urlSearchParams = new URLSearchParams();
 
     Object.entries(params).forEach(([key, value]) => {
-      if (value && Array.isArray(value)) {
-        value.forEach((item) => item && urlSearchParams.append(key, item));
-      } else if (value) {
-        urlSearchParams.append(key, value);
+      if (value !== undefined && value !== null && Array.isArray(value)) {
+        value.forEach((item) => {
+          if (item !== undefined && item !== null) {
+            urlSearchParams.append(key, String(item));
+          }
+        });
+      } else if (value !== undefined && value !== null) {
+        urlSearchParams.append(key, String(value));
       }
     });
 
