@@ -426,4 +426,88 @@ suite("API", () => {
       assert.include((error as Error).message, "aborted");
     }
   });
+
+  test("API get serializes falsy query params (0 and false)", async () => {
+    const successResponse = { ok: true };
+
+    fetchStub = sinon
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .resolves(successResponse);
+
+    await api.get("/api/v2/test", { limit: 0, include: false });
+
+    assert.equal(fetchStub.callCount, 1);
+    const url = fetchStub.firstCall.args[0] as string;
+    assert.include(url, "limit=0");
+    assert.include(url, "include=false");
+  });
+
+  test("API get serializes empty string query params", async () => {
+    const successResponse = { ok: true };
+
+    fetchStub = sinon
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .resolves(successResponse);
+
+    await api.get("/api/v2/test", { name: "" });
+
+    assert.equal(fetchStub.callCount, 1);
+    const url = fetchStub.firstCall.args[0] as string;
+    assert.include(url, "name=");
+  });
+
+  test("API get excludes null and undefined query params", async () => {
+    const successResponse = { ok: true };
+
+    fetchStub = sinon
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .resolves(successResponse);
+
+    await api.get("/api/v2/test", {
+      valid: "value",
+      nullParam: null,
+      undefinedParam: undefined,
+    });
+
+    assert.equal(fetchStub.callCount, 1);
+    const url = fetchStub.firstCall.args[0] as string;
+    assert.include(url, "valid=value");
+    assert.notInclude(url, "nullParam");
+    assert.notInclude(url, "undefinedParam");
+  });
+
+  test("API get serializes arrays with falsy values", async () => {
+    const successResponse = { ok: true };
+
+    fetchStub = sinon
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .resolves(successResponse);
+
+    await api.get("/api/v2/test", { ids: [0, 1, 2] });
+
+    assert.equal(fetchStub.callCount, 1);
+    const url = fetchStub.firstCall.args[0] as string;
+    assert.include(url, "ids=0");
+    assert.include(url, "ids=1");
+    assert.include(url, "ids=2");
+  });
+
+  test("API get filters null and undefined from array params", async () => {
+    const successResponse = { ok: true };
+
+    fetchStub = sinon
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .resolves(successResponse);
+
+    await api.get("/api/v2/test", { ids: ["a", null, "b", undefined, "c"] });
+
+    assert.equal(fetchStub.callCount, 1);
+    const url = fetchStub.firstCall.args[0] as string;
+    assert.include(url, "ids=a");
+    assert.include(url, "ids=b");
+    assert.include(url, "ids=c");
+    // URL should not contain "null" or "undefined" as string values
+    assert.notInclude(url, "ids=null");
+    assert.notInclude(url, "ids=undefined");
+  });
 });
