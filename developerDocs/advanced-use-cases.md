@@ -123,7 +123,7 @@ When providing order hashes, the SDK automatically fetches the full order data f
 
 #### Offchain Order Cancellation
 
-For orders protected by SignedZone, you can cancel them offchain (no gas required):
+For orders protected by SignedZone (a Seaport zone that validates orders offchain before allowing onchain fills), you can cancel them offchain (no gas required):
 
 ```typescript
 await openseaSDK.offchainCancelOrder(
