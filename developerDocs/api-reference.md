@@ -869,7 +869,7 @@ console.log(
 - Only works for SignedZone-protected orders
 - No gas fees required
 - If signature not provided, API key must belong to order offerer
-- Cancellation only assured if no fulfillment signature was vended
+- Cancellation only assured if no fulfillment signature was vended (If a fulfillment signature was already generated, the order may still be fulfillable even after cancellation)
 
 ---
 
