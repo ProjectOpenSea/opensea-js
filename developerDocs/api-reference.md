@@ -19,6 +19,8 @@ This comprehensive reference documents all OpenSea API endpoints available throu
 - [Account Endpoints](#account-endpoints)
 - [Event Endpoints](#event-endpoints)
 
+**⚠️ Security Note:** This SDK requires an API key for initialization. Never expose your API key in client-side code. Always use the SDK on a secure backend server. See the [Security Warning](../README.md#security-warning) for details.
+
 ---
 
 ## NFT Endpoints
