@@ -9,7 +9,7 @@ hidden: false
 
 - [How do I access the source code?](#how-do-i-access-the-source-code)
 - [What chains are supported?](#what-chains-are-supported)
-- [There is no SDK method for the API request I am trying to call.](#there-is-no-sdk-method-for-the-api-request-i-am-trying-to-call)
+- [Why is there no SDK method for the API request I am trying to call?](#why-is-there-no-sdk-method-for-the-api-request-i-am-trying-to-call)
 
 ## How do I access the source code?
 
