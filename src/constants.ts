@@ -61,6 +61,9 @@ export const GUNZILLA_FEE_RECIPIENT =
 export const SOMNIA_FEE_RECIPIENT =
   "0xdfe1593dca6ad8a20eeb418643e48577c1626f7c";
 
+export const MEGAETH_FEE_RECIPIENT =
+  "0x07D3A100c3880830dD43FE5C938B5144721Ce9D6";
+
 // =============================================================================
 // Token & Helper Addresses
 // =============================================================================
