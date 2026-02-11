@@ -14,6 +14,7 @@ import {
   OPENSEA_FEE_RECIPIENT,
   GUNZILLA_FEE_RECIPIENT,
   SOMNIA_FEE_RECIPIENT,
+  ALTERNATE_FEE_RECIPIENT,
   WPOL_ADDRESS,
 } from "../../src/constants";
 import { Chain } from "../../src/types";
@@ -53,6 +54,7 @@ suite("Utils: chain", () => {
       [Chain.HyperEVM, "999"],
       [Chain.Somnia, "5031"],
       [Chain.Monad, "143"],
+      [Chain.MegaETH, "4326"],
     ];
 
     for (const [chain, expectedId] of chainIdTests) {
@@ -169,6 +171,12 @@ suite("Utils: chain", () => {
       );
     });
 
+    test("returns WETH for MegaETH", () => {
+      expect(getOfferPaymentToken(Chain.MegaETH)).to.equal(
+        "0x4200000000000000000000000000000000000006",
+      );
+    });
+
     test("throws for unknown chain", () => {
       expect(() => getOfferPaymentToken("UNKNOWN_CHAIN" as Chain)).to.throw(
         "Unknown offer currency for UNKNOWN_CHAIN",
@@ -197,6 +205,7 @@ suite("Utils: chain", () => {
         Chain.Abstract,
         Chain.Shape,
         Chain.Unichain,
+        Chain.MegaETH,
       ];
 
       for (const chain of ethChains) {
@@ -292,6 +301,12 @@ suite("Utils: chain", () => {
       expect(result.address).to.equal(ALTERNATE_CONDUIT_ADDRESS);
     });
 
+    test("returns alternate conduit for MegaETH", () => {
+      const result = getDefaultConduit(Chain.MegaETH);
+      expect(result.key).to.equal(ALTERNATE_CONDUIT_KEY);
+      expect(result.address).to.equal(ALTERNATE_CONDUIT_ADDRESS);
+    });
+
     test("returns default OpenSea conduit for other chains", () => {
       const otherChains = [
         Chain.Polygon,
@@ -323,6 +338,12 @@ suite("Utils: chain", () => {
 
     test("returns alternate Seaport 1.6 for Somnia", () => {
       expect(getSeaportAddress(Chain.Somnia)).to.equal(
+        ALTERNATE_SEAPORT_V1_6_ADDRESS,
+      );
+    });
+
+    test("returns alternate Seaport 1.6 for MegaETH", () => {
+      expect(getSeaportAddress(Chain.MegaETH)).to.equal(
         ALTERNATE_SEAPORT_V1_6_ADDRESS,
       );
     });
@@ -361,6 +382,12 @@ suite("Utils: chain", () => {
       );
     });
 
+    test("returns alternate signed zone for MegaETH", () => {
+      expect(getSignedZone(Chain.MegaETH)).to.equal(
+        ALTERNATE_SIGNED_ZONE_V2_ADDRESS,
+      );
+    });
+
     test("returns OpenSea signed zone for other chains", () => {
       const otherChains = [
         Chain.Polygon,
@@ -388,6 +415,10 @@ suite("Utils: chain", () => {
       expect(getFeeRecipient(Chain.Somnia)).to.equal(SOMNIA_FEE_RECIPIENT);
     });
 
+    test("returns alternate fee recipient for MegaETH", () => {
+      expect(getFeeRecipient(Chain.MegaETH)).to.equal(ALTERNATE_FEE_RECIPIENT);
+    });
+
     test("returns OpenSea fee recipient for other chains", () => {
       const otherChains = [
         Chain.Polygon,
@@ -410,6 +441,10 @@ suite("Utils: chain", () => {
 
     test("returns true for Somnia", () => {
       expect(usesAlternateProtocol(Chain.Somnia)).to.be.true;
+    });
+
+    test("returns true for MegaETH", () => {
+      expect(usesAlternateProtocol(Chain.MegaETH)).to.be.true;
     });
 
     test("returns false for Mainnet", () => {
@@ -459,6 +494,7 @@ suite("Utils: chain", () => {
         Chain.Blast,
         Chain.Gunzilla,
         Chain.Somnia,
+        Chain.MegaETH,
       ];
 
       for (const chain of nonPolygonChains) {

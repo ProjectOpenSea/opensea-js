@@ -12,6 +12,7 @@ import {
   OPENSEA_FEE_RECIPIENT,
   OPENSEA_SIGNED_ZONE_V2,
   SOMNIA_FEE_RECIPIENT,
+  ALTERNATE_FEE_RECIPIENT,
   WPOL_ADDRESS,
 } from "../constants";
 import { Chain } from "../types";
@@ -23,7 +24,7 @@ import { Chain } from "../types";
  * @returns True if the chain uses alternate protocol addresses
  */
 export const usesAlternateProtocol = (chain: Chain): boolean =>
-  chain === Chain.Gunzilla || chain === Chain.Somnia;
+  chain === Chain.Gunzilla || chain === Chain.Somnia || chain === Chain.MegaETH;
 
 /**
  * Gets the chain ID for a given chain.
@@ -74,6 +75,8 @@ export const getChainId = (chain: Chain) => {
       return "5031";
     case Chain.Monad:
       return "143";
+    case Chain.MegaETH:
+      return "4326";
     default:
       throw new Error(`Unknown chainId for ${chain}`);
   }
@@ -96,7 +99,8 @@ export const getOfferPaymentToken = (chain: Chain) => {
       return "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"; // WETH
     case Chain.Blast:
       return "0x4300000000000000000000000000000000000004"; // WETH
-    // OP Chains have WETH at the same address
+    // MegaETH and OP Chains have WETH at the same address
+    case Chain.MegaETH:
     case Chain.Base:
     case Chain.Optimism:
     case Chain.Zora:
@@ -149,6 +153,7 @@ export const getListingPaymentToken = (chain: Chain) => {
     case Chain.Shape:
     case Chain.Unichain:
     case Chain.Monad:
+    case Chain.MegaETH:
       return "0x0000000000000000000000000000000000000000"; // ETH
     case Chain.Polygon:
       return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
@@ -234,6 +239,8 @@ export const getFeeRecipient = (chain: Chain): string => {
       return GUNZILLA_FEE_RECIPIENT;
     case Chain.Somnia:
       return SOMNIA_FEE_RECIPIENT;
+    case Chain.MegaETH:
+      return ALTERNATE_FEE_RECIPIENT;
     default:
       return OPENSEA_FEE_RECIPIENT;
   }

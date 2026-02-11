@@ -141,6 +141,7 @@ export enum Chain {
   HyperEVM = "hyperevm",
   Somnia = "somnia",
   Monad = "monad",
+  MegaETH = "megaeth",
 }
 
 /**
