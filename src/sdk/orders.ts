@@ -23,8 +23,8 @@ import {
   basisPointsForFee,
   totalBasisPointsForFees,
   getFeeRecipient,
-  getOfferPaymentToken,
   getListingPaymentToken,
+  getOfferPaymentToken,
   getSignedZone,
 } from "../utils/utils";
 
@@ -151,7 +151,6 @@ export class OrdersManager {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress = getListingPaymentToken(this.context.chain),
     buyerAddress,
     includeOptionalCreatorFees = false,
     zone = ZeroAddress,
@@ -164,7 +163,6 @@ export class OrdersManager {
     salt?: BigNumberish;
     listingTime?: number;
     expirationTime?: number;
-    paymentTokenAddress?: string;
     buyerAddress?: string;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
@@ -177,13 +175,17 @@ export class OrdersManager {
     );
     const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)]);
 
+    const collection = await this.context.api.getCollection(nft.collection);
+
+    const paymentTokenAddress =
+      collection.pricingCurrencies?.listingCurrency?.address ??
+      getListingPaymentToken(this.context.chain);
+
     const { basePrice } = await this.getPriceParametersCallback(
       OrderSide.LISTING,
       paymentTokenAddress,
       amount,
     );
-
-    const collection = await this.context.api.getCollection(nft.collection);
 
     const considerationFeeItems = await this.getFees({
       collection,
@@ -240,7 +242,6 @@ export class OrdersManager {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress = getListingPaymentToken(this.context.chain),
     buyerAddress,
     includeOptionalCreatorFees = false,
     zone = ZeroAddress,
@@ -253,7 +254,6 @@ export class OrdersManager {
     salt?: BigNumberish;
     listingTime?: number;
     expirationTime?: number;
-    paymentTokenAddress?: string;
     buyerAddress?: string;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
@@ -267,7 +267,6 @@ export class OrdersManager {
       salt,
       listingTime,
       expirationTime,
-      paymentTokenAddress,
       buyerAddress,
       includeOptionalCreatorFees,
       zone,
@@ -288,7 +287,6 @@ export class OrdersManager {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress = getOfferPaymentToken(this.context.chain),
     zone = getSignedZone(this.context.chain),
   }: {
     asset: AssetWithTokenId;
@@ -298,7 +296,6 @@ export class OrdersManager {
     domain?: string;
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
-    paymentTokenAddress?: string;
     zone?: string;
   }) {
     await this.context.requireAccountIsAvailable(accountAddress);
@@ -312,13 +309,17 @@ export class OrdersManager {
       [BigInt(quantity ?? 1)],
     );
 
+    const collection = await this.context.api.getCollection(nft.collection);
+
+    const paymentTokenAddress =
+      collection.pricingCurrencies?.offerCurrency?.address ??
+      getOfferPaymentToken(this.context.chain);
+
     const { basePrice } = await this.getPriceParametersCallback(
       OrderSide.OFFER,
       paymentTokenAddress,
       amount,
     );
-
-    const collection = await this.context.api.getCollection(nft.collection);
 
     const considerationFeeItems = await this.getFees({
       collection,
@@ -368,7 +369,6 @@ export class OrdersManager {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress = getOfferPaymentToken(this.context.chain),
     zone = getSignedZone(this.context.chain),
   }: {
     asset: AssetWithTokenId;
@@ -378,7 +378,6 @@ export class OrdersManager {
     domain?: string;
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
-    paymentTokenAddress?: string;
     zone?: string;
   }): Promise<OrderComponents> {
     const order = await this._buildOfferOrder({
@@ -389,7 +388,6 @@ export class OrdersManager {
       domain,
       salt,
       expirationTime,
-      paymentTokenAddress,
       zone,
     });
     return order.parameters;
@@ -405,7 +403,6 @@ export class OrdersManager {
    * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time for the order, in UTC seconds
-   * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.
    *
    * @returns The {@link OrderV2} that was created.
@@ -413,7 +410,6 @@ export class OrdersManager {
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
    * @throws Error if the amount is not greater than 0.
-   * @throws Error if paymentTokenAddress is not WETH on anything other than Ethereum mainnet.
    */
   async createOffer({
     asset,
@@ -423,7 +419,6 @@ export class OrdersManager {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress = getOfferPaymentToken(this.context.chain),
     zone = getSignedZone(this.context.chain),
   }: {
     asset: AssetWithTokenId;
@@ -433,7 +428,6 @@ export class OrdersManager {
     domain?: string;
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
-    paymentTokenAddress?: string;
     zone?: string;
   }): Promise<OrderV2> {
     const order = await this._buildOfferOrder({
@@ -444,7 +438,6 @@ export class OrdersManager {
       domain,
       salt,
       expirationTime,
-      paymentTokenAddress,
       zone,
     });
 
@@ -466,7 +459,6 @@ export class OrdersManager {
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
-   * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to ETH
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.includeOptionalCreatorFees If true, optional creator fees will be included in the listing. Default: false.
    * @param options.zone Zone for order protection. Defaults to no zone.
@@ -475,7 +467,6 @@ export class OrdersManager {
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
    * @throws Error if the amount is not greater than 0.
-   * @throws Error if paymentTokenAddress is not WETH on anything other than Ethereum mainnet.
    */
   async createListing({
     asset,
@@ -486,7 +477,6 @@ export class OrdersManager {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress = getListingPaymentToken(this.context.chain),
     buyerAddress,
     includeOptionalCreatorFees = false,
     zone = ZeroAddress,
@@ -499,7 +489,6 @@ export class OrdersManager {
     salt?: BigNumberish;
     listingTime?: number;
     expirationTime?: number;
-    paymentTokenAddress?: string;
     buyerAddress?: string;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
@@ -513,7 +502,6 @@ export class OrdersManager {
       salt,
       listingTime,
       expirationTime,
-      paymentTokenAddress,
       buyerAddress,
       includeOptionalCreatorFees,
       zone,
@@ -560,7 +548,6 @@ export class OrdersManager {
       salt?: BigNumberish;
       listingTime?: number;
       expirationTime?: number;
-      paymentTokenAddress?: string;
       buyerAddress?: string;
       includeOptionalCreatorFees?: boolean;
       zone?: string;
@@ -625,7 +612,6 @@ export class OrdersManager {
         salt,
         listingTime,
         expirationTime,
-        paymentTokenAddress = getListingPaymentToken(this.context.chain),
         buyerAddress,
         includeOptionalCreatorFees = false,
         zone = ZeroAddress,
@@ -637,6 +623,10 @@ export class OrdersManager {
         asset.tokenId,
       );
       const collection = await this.context.api.getCollection(nft.collection);
+
+      const paymentTokenAddress =
+        collection.pricingCurrencies?.listingCurrency?.address ??
+        getListingPaymentToken(this.context.chain);
 
       const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)]);
 
@@ -838,7 +828,6 @@ export class OrdersManager {
       domain?: string;
       salt?: BigNumberish;
       expirationTime?: BigNumberish;
-      paymentTokenAddress?: string;
       zone?: string;
     }>;
     accountAddress: string;
@@ -897,7 +886,6 @@ export class OrdersManager {
         domain,
         salt,
         expirationTime,
-        paymentTokenAddress = getOfferPaymentToken(this.context.chain),
         zone = getSignedZone(this.context.chain),
       } = offer;
 
@@ -907,6 +895,10 @@ export class OrdersManager {
         asset.tokenId,
       );
       const collection = await this.context.api.getCollection(nft.collection);
+
+      const paymentTokenAddress =
+        collection.pricingCurrencies?.offerCurrency?.address ??
+        getOfferPaymentToken(this.context.chain);
 
       let finalZone = zone;
       if (collection.requiredZone) {
@@ -1045,7 +1037,6 @@ export class OrdersManager {
    * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt. This can be used for on-chain order attribution to assist with analytics.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
-   * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH.
    * @param options.offerProtectionEnabled Use signed zone for protection against disabled items. Default: true.
    * @param options.traitType If defined, the trait name to create the collection offer for.
    * @param options.traitValue If defined, the trait value to create the collection offer for.
@@ -1060,7 +1051,6 @@ export class OrdersManager {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress = getOfferPaymentToken(this.context.chain),
     offerProtectionEnabled = true,
     traitType,
     traitValue,
@@ -1073,7 +1063,6 @@ export class OrdersManager {
     domain?: string;
     salt?: BigNumberish;
     expirationTime?: number | string;
-    paymentTokenAddress: string;
     offerProtectionEnabled?: boolean;
     traitType?: string;
     traitValue?: string;
@@ -1082,6 +1071,11 @@ export class OrdersManager {
     await this.context.requireAccountIsAvailable(accountAddress);
 
     const collection = await this.context.api.getCollection(collectionSlug);
+
+    const paymentTokenAddress =
+      collection.pricingCurrencies?.offerCurrency?.address ??
+      getOfferPaymentToken(this.context.chain);
+
     const buildOfferResult = await this.context.api.buildOffer(
       accountAddress,
       quantity,

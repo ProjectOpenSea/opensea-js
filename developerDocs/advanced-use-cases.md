@@ -167,7 +167,6 @@ const listings = await openseaSDK.createBulkListings({
     {
       asset: { tokenAddress: "0x...", tokenId: "3" },
       amount: "0.5",
-      paymentTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
     },
   ],
   accountAddress: "0x...",
@@ -177,7 +176,7 @@ const listings = await openseaSDK.createBulkListings({
 **Key Features:**
 
 - **Single signature**: All listings are signed together using Seaport's merkle tree signature
-- **Individual customization**: Each listing can have different prices, payment tokens, expiration times, etc.
+- **Individual customization**: Each listing can have different prices, expiration times, etc.
 - **Automatic rate limiting**: API submissions are handled sequentially with automatic retry on rate limits
 - **Efficient**: Uses normal signature for single listing to avoid bulk signature overhead
 
@@ -204,7 +203,6 @@ const offers = await openseaSDK.createBulkOffers({
     {
       asset: { tokenAddress: "0x...", tokenId: "3" },
       amount: "2.5",
-      paymentTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
       quantity: 5, // For ERC1155 tokens
     },
   ],
@@ -215,7 +213,7 @@ const offers = await openseaSDK.createBulkOffers({
 **Key Features:**
 
 - **Single signature**: All offers are signed together
-- **Flexible payment tokens**: Each offer can use different ERC20 tokens
+- **Automatic payment tokens**: Payment tokens are resolved from collection pricing currencies
 - **Automatic zone handling**: Uses signed zone for offer protection by default
 - **Collection requirements**: Automatically applies collection-required zones when needed
 
@@ -260,7 +258,6 @@ Each listing or offer in the bulk array supports:
 - `amount`: Price in token units (required)
 - `quantity`: Number of items (default: 1, for semi-fungible tokens)
 - `expirationTime`: When the order expires in Unix seconds
-- `paymentTokenAddress`: ERC20 token address (defaults to ETH for listings, WETH for offers)
 - `domain`: Domain for order attribution
 - `salt`: Custom salt for the order
 - `buyerAddress`: For private listings only
@@ -290,7 +287,6 @@ const listings = await openseaSDK.createBulkListings({
       amount: "1.5",
       quantity: 1,
       expirationTime: getUnixTimestampInSeconds(TimeInSeconds.MONTH), // 30 days
-      paymentTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
       domain: "mymarketplace.com",
       includeOptionalCreatorFees: true,
     },

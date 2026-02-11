@@ -25,7 +25,6 @@ export const mockCollection: OpenSeaCollection = {
   editors: [],
   fees: [],
   rarity: null,
-  paymentTokens: [],
   totalSupply: 10000,
   uniqueItemCount: 10000,
   createdDate: "2024-01-01T00:00:00Z",

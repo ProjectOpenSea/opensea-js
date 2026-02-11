@@ -378,7 +378,6 @@ export class FulfillmentManager {
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.listingTime When order becomes fulfillable (UTC seconds). Defaults to now.
    * @param options.expirationTime Expiration time (UTC seconds).
-   * @param options.paymentTokenAddress Payment token address. Defaults to ETH.
    * @param options.buyerAddress Optional buyer restriction. Only this address can purchase.
    * @param options.includeOptionalCreatorFees Include optional creator fees. Default: false.
    * @param options.zone Zone for order protection. Defaults to no zone.
@@ -395,7 +394,6 @@ export class FulfillmentManager {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress,
     buyerAddress,
     includeOptionalCreatorFees = false,
     zone,
@@ -408,7 +406,6 @@ export class FulfillmentManager {
     salt?: BigNumberish;
     listingTime?: number;
     expirationTime?: number;
-    paymentTokenAddress?: string;
     buyerAddress?: string;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
@@ -423,7 +420,6 @@ export class FulfillmentManager {
         salt,
         listingTime,
         expirationTime,
-        paymentTokenAddress,
         buyerAddress,
         includeOptionalCreatorFees,
         zone,
@@ -443,7 +439,6 @@ export class FulfillmentManager {
    * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time (UTC seconds).
-   * @param options.paymentTokenAddress Payment token address. Defaults to WETH.
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.
    * @returns Transaction hash
    *
@@ -457,7 +452,6 @@ export class FulfillmentManager {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress,
     zone,
   }: {
     asset: AssetWithTokenId;
@@ -467,7 +461,6 @@ export class FulfillmentManager {
     domain?: string;
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
-    paymentTokenAddress?: string;
     zone?: string;
   }): Promise<string> {
     const orderComponents = await this.ordersManager.buildOfferOrderComponents({
@@ -478,7 +471,6 @@ export class FulfillmentManager {
       domain,
       salt,
       expirationTime,
-      paymentTokenAddress,
       zone,
     });
 

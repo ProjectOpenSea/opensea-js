@@ -307,8 +307,8 @@ export interface OpenSeaCollection {
   fees: Fee[];
   /** The rarity strategy for the collection */
   rarity: RarityStrategy | null;
-  /** Payment tokens allowed for orders for this collection */
-  paymentTokens: OpenSeaPaymentToken[];
+  /** Pricing currencies for listings and offers in this collection */
+  pricingCurrencies?: PricingCurrencies;
   /** The total supply of the collection (minted minus burned) */
   totalSupply: number;
   /** The number of unique items in the collection */
@@ -334,14 +334,12 @@ export interface OpenSeaPaymentToken {
 }
 
 /**
- * Query interface for payment tokens
+ * Pricing currencies for a collection, defining default currencies for listings and offers.
  * @category API Models
  */
-export interface OpenSeaPaymentTokensQuery {
-  symbol?: string;
-  address?: string;
-  limit?: number;
-  next?: string;
+export interface PricingCurrencies {
+  listingCurrency?: OpenSeaPaymentToken;
+  offerCurrency?: OpenSeaPaymentToken;
 }
 
 /**

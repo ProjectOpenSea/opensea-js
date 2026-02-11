@@ -113,19 +113,7 @@ const listing = await openseaSDK.createListing({
 
 The units for `amount` are in ETH.
 
-> **Note on Payment Tokens**: OpenSea currently supports one payment token for listings (typically the native token like ETH) and one for offers (typically the wrapped native token like WETH). Polygon is an exception where WETH is used for both listings and offers instead of POL/WPOL. To get the correct payment token for your chain, use `getListingPaymentToken(chain)` for listings and `getOfferPaymentToken(chain)` for offers.
-
-```typescript
-import { getListingPaymentToken } from "opensea-js";
-
-const listing = await openseaSDK.createListing({
-  asset: { tokenId, tokenAddress },
-  accountAddress,
-  amount: 3,
-  paymentTokenAddress: getListingPaymentToken(openseaSDK.chain), // Optional: defaults to chain's listing token
-  expirationTime,
-});
-```
+> **Note on Payment Tokens**: The SDK automatically determines the correct payment token for each order. If a collection has configured pricing currencies, those are used. Otherwise, the SDK falls back to chain defaults (typically the native token like ETH for listings and the wrapped native token like WETH for offers).
 
 **Creating Multiple Listings:** To create multiple listings efficiently with a single signature, see [Bulk Order Creation](advanced-use-cases.md#bulk-order-creation) in the Advanced Use Cases guide.
 
@@ -136,13 +124,10 @@ Collection offers and trait offers are supported with `openseaSDK.createCollecti
 For **collection offers**, provide the collection slug:
 
 ```typescript
-import { getOfferPaymentToken } from "opensea-js";
-
 const collection = await openseaSDK.api.getCollection("cool-cats-nft");
 const offer = await openseaSDK.createCollectionOffer({
   collectionSlug: collection.collection,
   accountAddress: walletAddress,
-  paymentTokenAddress: getOfferPaymentToken(openseaSDK.chain),
   amount: 7,
   quantity: 1,
 });
@@ -154,7 +139,6 @@ For **trait offers**, include `traitType` as the trait name and `traitValue` as 
 const offer = await openseaSDK.createCollectionOffer({
   collectionSlug: "cool-cats-nft",
   accountAddress: walletAddress,
-  paymentTokenAddress: getOfferPaymentToken(openseaSDK.chain),
   amount: 7,
   quantity: 1,
   traitType: "face",

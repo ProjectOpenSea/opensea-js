@@ -135,18 +135,6 @@ suite("SDK: OrdersManager", () => {
       expect(result.orderHash).to.equal("0xOrderHash");
     });
 
-    test("creates offer with custom payment token", async () => {
-      await ordersManager.createOffer({
-        asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
-        accountAddress: "0xBuyer",
-        amount: "1000000000000000000",
-        paymentTokenAddress: "0xCustomToken",
-      });
-
-      const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
-      expect(createOrderCall.offer[0].token).to.equal("0xCustomToken");
-    });
-
     test("creates offer with custom quantity", async () => {
       await ordersManager.createOffer({
         asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
@@ -230,6 +218,49 @@ suite("SDK: OrdersManager", () => {
       const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
       expect(createOrderCall.zone).to.equal("0xRequiredZone");
     });
+
+    test("uses collection's offer pricing currency when no explicit token", async () => {
+      mockAPI.getCollection.resolves({
+        ...mockCollection,
+        pricingCurrencies: {
+          offerCurrency: {
+            name: "USDC",
+            symbol: "USDC",
+            decimals: 6,
+            address: "0xUSDC",
+            chain: "ethereum",
+          },
+        },
+      });
+
+      await ordersManager.createOffer({
+        asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+        accountAddress: "0xBuyer",
+        amount: "1000000000000000000",
+      });
+
+      const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
+      expect(createOrderCall.offer[0].token).to.equal("0xUSDC");
+    });
+
+    test("falls back to chain default when no pricing currencies", async () => {
+      mockAPI.getCollection.resolves({
+        ...mockCollection,
+        pricingCurrencies: undefined,
+      });
+
+      await ordersManager.createOffer({
+        asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+        accountAddress: "0xBuyer",
+        amount: "1000000000000000000",
+      });
+
+      const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
+      // Chain default for Mainnet offers is WETH
+      expect(createOrderCall.offer[0].token).to.equal(
+        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      );
+    });
   });
 
   suite("createListing", () => {
@@ -246,18 +277,6 @@ suite("SDK: OrdersManager", () => {
       expect(mockSeaport.createOrder.calledOnce).to.be.true;
       expect(mockAPI.postOrder.calledOnce).to.be.true;
       expect(result.orderHash).to.equal("0xOrderHash");
-    });
-
-    test("creates listing with custom payment token", async () => {
-      await ordersManager.createListing({
-        asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
-        accountAddress: "0xSeller",
-        amount: "1000000000000000000",
-        paymentTokenAddress: "0xUSDC",
-      });
-
-      const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
-      expect(createOrderCall.consideration[0].token).to.equal("0xUSDC");
     });
 
     test("creates listing with buyer address (private listing)", async () => {
@@ -345,6 +364,31 @@ suite("SDK: OrdersManager", () => {
 
       expect(mockSeaport.createOrder.calledOnce).to.be.true;
     });
+
+    test("uses collection's listing pricing currency when no explicit token", async () => {
+      mockAPI.getCollection.resolves({
+        ...mockCollection,
+        pricingCurrencies: {
+          listingCurrency: {
+            name: "USDC",
+            symbol: "USDC",
+            decimals: 6,
+            address: "0xUSDC",
+            chain: "ethereum",
+          },
+        },
+      });
+
+      await ordersManager.createListing({
+        asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+        accountAddress: "0xSeller",
+        amount: "1000000000000000000",
+      });
+
+      const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
+      // The listing consideration's first item (seller payment) should use the resolved token
+      expect(createOrderCall.consideration[0].token).to.equal("0xUSDC");
+    });
   });
 
   suite("createCollectionOffer", () => {
@@ -354,7 +398,6 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xBuyer",
         amount: "1000000000000000000",
         quantity: 1,
-        paymentTokenAddress: "0xWETH",
       });
 
       expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
@@ -371,7 +414,6 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xBuyer",
         amount: "1000000000000000000",
         quantity: 1,
-        paymentTokenAddress: "0xWETH",
         offerProtectionEnabled: true,
       });
 
@@ -386,7 +428,6 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xBuyer",
         amount: "1000000000000000000",
         quantity: 1,
-        paymentTokenAddress: "0xWETH",
         offerProtectionEnabled: false,
       });
 
@@ -400,7 +441,6 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xBuyer",
         amount: "1000000000000000000",
         quantity: 1,
-        paymentTokenAddress: "0xWETH",
         traitType: "Background",
         traitValue: "Blue",
       });
@@ -425,7 +465,6 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xBuyer",
         amount: "1000000000000000000",
         quantity: 1,
-        paymentTokenAddress: "0xWETH",
         traits,
       });
 
@@ -444,7 +483,6 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xBuyer",
         amount: "1000000000000000000",
         quantity: 1,
-        paymentTokenAddress: "0xWETH",
         expirationTime,
       });
 
@@ -458,7 +496,6 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xBuyer",
         amount: "1000000000000000000",
         quantity: 1,
-        paymentTokenAddress: "0xWETH",
         domain: "opensea.io",
         salt: "67890",
       });
@@ -474,7 +511,6 @@ suite("SDK: OrdersManager", () => {
         accountAddress: "0xBuyer",
         amount: "1000000000000000000",
         quantity: 5,
-        paymentTokenAddress: "0xWETH",
       });
 
       const buildOfferArgs = mockAPI.buildOffer.firstCall.args;
@@ -490,12 +526,56 @@ suite("SDK: OrdersManager", () => {
           accountAddress: "0xBuyer",
           amount: "1000000000000000000",
           quantity: 1,
-          paymentTokenAddress: "0xWETH",
         });
         expect.fail("Expected error to be thrown");
       } catch (error) {
         expect((error as Error).message).to.include("Account not available");
       }
+    });
+
+    test("uses collection's offer pricing currency", async () => {
+      mockAPI.getCollection.resolves({
+        ...mockCollection,
+        pricingCurrencies: {
+          offerCurrency: {
+            name: "USDC",
+            symbol: "USDC",
+            decimals: 6,
+            address: "0xUSDC",
+            chain: "ethereum",
+          },
+        },
+      });
+
+      await ordersManager.createCollectionOffer({
+        collectionSlug: "test-collection",
+        accountAddress: "0xBuyer",
+        amount: "1000000000000000000",
+        quantity: 1,
+      });
+
+      const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
+      expect(createOrderCall.offer[0].token).to.equal("0xUSDC");
+    });
+
+    test("falls back to chain default when no pricing currencies", async () => {
+      mockAPI.getCollection.resolves({
+        ...mockCollection,
+        pricingCurrencies: undefined,
+      });
+
+      await ordersManager.createCollectionOffer({
+        collectionSlug: "test-collection",
+        accountAddress: "0xBuyer",
+        amount: "1000000000000000000",
+        quantity: 1,
+      });
+
+      const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
+      // Chain default for Mainnet offers is WETH
+      expect(createOrderCall.offer[0].token).to.equal(
+        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      );
     });
   });
 
@@ -523,7 +603,6 @@ suite("SDK: OrdersManager", () => {
         domain: "test.io",
         salt: "999",
         expirationTime: 1000000,
-        paymentTokenAddress: "0xToken",
         zone: "0xZone",
       });
 
@@ -570,7 +649,6 @@ suite("SDK: OrdersManager", () => {
         salt: "12345",
         listingTime,
         expirationTime,
-        paymentTokenAddress: "0xUSDC",
         buyerAddress: "0xBuyer",
         includeOptionalCreatorFees: true,
         zone: "0xZone",
@@ -759,44 +837,6 @@ suite("SDK: OrdersManager", () => {
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
     });
 
-    test("creates bulk listings with custom payment token", async () => {
-      const mockBulkOrders = [
-        {
-          parameters: mockOrder.parameters,
-          signature: "0xBulkSignature1",
-        },
-        {
-          parameters: {
-            ...mockOrder.parameters,
-            salt: "1",
-          },
-          signature: "0xBulkSignature2",
-        },
-      ];
-
-      mockSeaport.createBulkOrders = sinon.stub().resolves({
-        executeAllActions: sinon.stub().resolves(mockBulkOrders),
-      });
-
-      await ordersManager.createBulkListings({
-        listings: [
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            amount: "1000000000000000000",
-            paymentTokenAddress: "0xUSDC",
-          },
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            amount: "2000000000000000000",
-            paymentTokenAddress: "0xUSDC",
-          },
-        ],
-        accountAddress: "0xSeller",
-      });
-
-      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
-    });
-
     test("throws when account is not available", async () => {
       mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
 
@@ -886,57 +926,6 @@ suite("SDK: OrdersManager", () => {
       expect(result.failed).to.have.lengthOf(0);
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
       expect(mockAPI.postOrder.callCount).to.equal(25);
-    });
-
-    test("handles mixed payment tokens in bulk operations", async () => {
-      const mockBulkOrders = [
-        {
-          parameters: mockOrder.parameters,
-          signature: "0xBulkSignature1",
-        },
-        {
-          parameters: {
-            ...mockOrder.parameters,
-            salt: "1",
-          },
-          signature: "0xBulkSignature2",
-        },
-        {
-          parameters: {
-            ...mockOrder.parameters,
-            salt: "2",
-          },
-          signature: "0xBulkSignature3",
-        },
-      ];
-
-      mockSeaport.createBulkOrders = sinon.stub().resolves({
-        executeAllActions: sinon.stub().resolves(mockBulkOrders),
-      });
-
-      await ordersManager.createBulkListings({
-        listings: [
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            amount: "1000000000000000000",
-            paymentTokenAddress: "0xETH",
-          },
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            amount: "2000000000000000000",
-            paymentTokenAddress: "0xUSDC",
-          },
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
-            amount: "3000000000000000000",
-            paymentTokenAddress: "0xWETH",
-          },
-        ],
-        accountAddress: "0xSeller",
-      });
-
-      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
-      expect(mockAPI.postOrder.calledThrice).to.be.true;
     });
 
     test("handles network failures during bulk submission", async () => {
@@ -1176,44 +1165,6 @@ suite("SDK: OrdersManager", () => {
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
     });
 
-    test("creates bulk offers with custom payment token", async () => {
-      const mockBulkOrders = [
-        {
-          parameters: mockOrder.parameters,
-          signature: "0xBulkSignature1",
-        },
-        {
-          parameters: {
-            ...mockOrder.parameters,
-            salt: "1",
-          },
-          signature: "0xBulkSignature2",
-        },
-      ];
-
-      mockSeaport.createBulkOrders = sinon.stub().resolves({
-        executeAllActions: sinon.stub().resolves(mockBulkOrders),
-      });
-
-      await ordersManager.createBulkOffers({
-        offers: [
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            amount: "1000000000000000000",
-            paymentTokenAddress: "0xWETH",
-          },
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            amount: "2000000000000000000",
-            paymentTokenAddress: "0xWETH",
-          },
-        ],
-        accountAddress: "0xBuyer",
-      });
-
-      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
-    });
-
     test("throws when account is not available", async () => {
       mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
 
@@ -1344,57 +1295,6 @@ suite("SDK: OrdersManager", () => {
       expect(result.failed).to.have.lengthOf(0);
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
       expect(mockAPI.postOrder.callCount).to.equal(25);
-    });
-
-    test("handles mixed payment tokens in bulk operations", async () => {
-      const mockBulkOrders = [
-        {
-          parameters: mockOrder.parameters,
-          signature: "0xBulkSignature1",
-        },
-        {
-          parameters: {
-            ...mockOrder.parameters,
-            salt: "1",
-          },
-          signature: "0xBulkSignature2",
-        },
-        {
-          parameters: {
-            ...mockOrder.parameters,
-            salt: "2",
-          },
-          signature: "0xBulkSignature3",
-        },
-      ];
-
-      mockSeaport.createBulkOrders = sinon.stub().resolves({
-        executeAllActions: sinon.stub().resolves(mockBulkOrders),
-      });
-
-      await ordersManager.createBulkOffers({
-        offers: [
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "1" },
-            amount: "1000000000000000000",
-            paymentTokenAddress: "0xWETH",
-          },
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "2" },
-            amount: "2000000000000000000",
-            paymentTokenAddress: "0xUSDC",
-          },
-          {
-            asset: { tokenAddress: "0xNFTContract", tokenId: "3" },
-            amount: "3000000000000000000",
-            paymentTokenAddress: "0xDAI",
-          },
-        ],
-        accountAddress: "0xBuyer",
-      });
-
-      expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
-      expect(mockAPI.postOrder.calledThrice).to.be.true;
     });
 
     test("handles network failures during bulk submission", async () => {

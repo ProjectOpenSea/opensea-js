@@ -55,7 +55,7 @@ suite("API: CollectionsAPI", () => {
         editors: [],
         fees: [],
         rarity: null,
-        payment_tokens: [],
+        pricing_currencies: null,
         total_supply: 10000,
         created_date: "2024-01-01T00:00:00Z",
       } as unknown as GetCollectionResponse;

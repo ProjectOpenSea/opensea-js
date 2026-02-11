@@ -625,7 +625,6 @@ suite("SDK: FulfillmentManager", () => {
         salt: "12345",
         listingTime: 1000000,
         expirationTime: 2000000,
-        paymentTokenAddress: "0xUSDC",
         buyerAddress: "0xBuyer",
         includeOptionalCreatorFees: true,
         zone: "0xZone",
@@ -663,7 +662,6 @@ suite("SDK: FulfillmentManager", () => {
         domain: "test.io",
         salt: "67890",
         expirationTime: 3000000,
-        paymentTokenAddress: "0xWETH",
         zone: "0xSignedZone",
       });
 
@@ -673,7 +671,6 @@ suite("SDK: FulfillmentManager", () => {
       expect(buildCall.amount).to.equal("1500000000000000000");
       expect(buildCall.quantity).to.equal(3);
       expect(buildCall.domain).to.equal("test.io");
-      expect(buildCall.paymentTokenAddress).to.equal("0xWETH");
     });
   });
 

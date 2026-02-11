@@ -79,7 +79,6 @@ suite("SDK: misc", () => {
         collectionSlug: "",
         amount: 1,
         quantity: 1,
-        paymentTokenAddress: "",
         accountAddress,
       });
       throw new Error("should have thrown");
