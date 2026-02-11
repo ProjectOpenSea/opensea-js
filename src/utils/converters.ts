@@ -3,6 +3,7 @@ import {
   OpenSeaAccount,
   OpenSeaCollection,
   OpenSeaPaymentToken,
+  PricingCurrencies,
   RarityStrategy,
 } from "../types";
 
@@ -41,7 +42,7 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     editors: collection.editors,
     fees: (collection.fees ?? []).map(feeFromJSON),
     rarity: rarityFromJSON(collection.rarity),
-    paymentTokens: (collection.payment_tokens ?? []).map(paymentTokenFromJSON),
+    pricingCurrencies: pricingCurrenciesFromJSON(collection.pricing_currencies),
     totalSupply: collection.total_supply,
     uniqueItemCount: collection.unique_item_count,
     createdDate: collection.created_date,
@@ -85,6 +86,27 @@ export const paymentTokenFromJSON = (token: any): OpenSeaPaymentToken => {
     usdPrice: token.usd_price,
   };
   return fromJSON;
+};
+
+/**
+ * Converts a pricing currencies JSON response to a PricingCurrencies object.
+ * @param pricingCurrencies The raw pricing currencies JSON from the API
+ * @returns PricingCurrencies object or undefined
+ */
+export const pricingCurrenciesFromJSON = (
+  pricingCurrencies: any,
+): PricingCurrencies | undefined => {
+  if (!pricingCurrencies) {
+    return undefined;
+  }
+  return {
+    listingCurrency: pricingCurrencies.listing_currency
+      ? paymentTokenFromJSON(pricingCurrencies.listing_currency)
+      : undefined,
+    offerCurrency: pricingCurrencies.offer_currency
+      ? paymentTokenFromJSON(pricingCurrencies.offer_currency)
+      : undefined,
+  };
 };
 
 /**

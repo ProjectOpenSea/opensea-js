@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import { suite, test } from "mocha";
 import { Chain } from "../../src/types";
-import { getOfferPaymentToken } from "../../src/utils";
 import { OFFER_AMOUNT } from "../utils/env";
 import { ensureVarsOrSkip } from "../utils/runtime";
 import {
@@ -108,7 +107,6 @@ suite("SDK: order posting", () => {
     const expirationTime = getRandomExpiration();
     const listing = {
       accountAddress: walletAddress,
-      paymentTokenAddress: getOfferPaymentToken(sdk2.chain),
       amount: +LISTING_AMOUNT * 1_000_000,
       asset: {
         tokenAddress: CREATE_LISTING_2_CONTRACT_ADDRESS as string,
@@ -171,14 +169,12 @@ suite("SDK: order posting", () => {
     const chain = Chain.Mainnet;
     const sdk = getSdkForChain(chain);
     const collection = await sdk.api.getCollection("cool-cats-nft");
-    const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
     const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,
       accountAddress: walletAddress,
       amount: OFFER_AMOUNT,
       quantity: 1,
-      paymentTokenAddress,
       expirationTime,
     };
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest);
@@ -207,14 +203,12 @@ suite("SDK: order posting", () => {
     const chain = Chain.Polygon;
     const sdk = getSdkForChain(chain);
     const collection = await sdk.api.getCollection("arttoken-1155-4");
-    const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
     const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,
       accountAddress: walletAddress,
       amount: 0.0001,
       quantity: 1,
-      paymentTokenAddress,
       expirationTime,
     };
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest);
@@ -243,14 +237,12 @@ suite("SDK: order posting", () => {
     const chain = Chain.Mainnet;
     const sdk = getSdkForChain(chain);
     const collection = await sdk.api.getCollection("cool-cats-nft");
-    const paymentTokenAddress = getOfferPaymentToken(sdk.chain);
     const expirationTime = getRandomExpiration();
     const postOrderRequest = {
       collectionSlug: collection.collection,
       accountAddress: walletAddress,
       amount: OFFER_AMOUNT,
       quantity: 1,
-      paymentTokenAddress,
       traitType: "face",
       traitValue: "tvface bobross",
       expirationTime,

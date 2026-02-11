@@ -4,6 +4,7 @@ import {
   collectionFromJSON,
   rarityFromJSON,
   paymentTokenFromJSON,
+  pricingCurrenciesFromJSON,
   accountFromJSON,
   feeFromJSON,
 } from "../../src/utils/converters";
@@ -115,6 +116,105 @@ suite("Utils: converters", () => {
     });
   });
 
+  suite("pricingCurrenciesFromJSON", () => {
+    test("converts full pricing currencies JSON", () => {
+      const json = {
+        listing_currency: {
+          name: "Ether",
+          symbol: "ETH",
+          decimals: 18,
+          address: "0x0000000000000000000000000000000000000000",
+          chain: "ethereum",
+          image: "https://example.com/eth.png",
+          eth_price: "1.0",
+          usd_price: "2500.00",
+        },
+        offer_currency: {
+          name: "Wrapped Ether",
+          symbol: "WETH",
+          decimals: 18,
+          address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+          chain: "ethereum",
+          image: "https://example.com/weth.png",
+          eth_price: "1.0",
+          usd_price: "2500.00",
+        },
+      };
+
+      const result = pricingCurrenciesFromJSON(json);
+
+      expect(result).to.not.be.undefined;
+      expect(result!.listingCurrency).to.deep.equal({
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18,
+        address: "0x0000000000000000000000000000000000000000",
+        chain: "ethereum",
+        imageUrl: "https://example.com/eth.png",
+        ethPrice: "1.0",
+        usdPrice: "2500.00",
+      });
+      expect(result!.offerCurrency).to.deep.equal({
+        name: "Wrapped Ether",
+        symbol: "WETH",
+        decimals: 18,
+        address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+        chain: "ethereum",
+        imageUrl: "https://example.com/weth.png",
+        ethPrice: "1.0",
+        usdPrice: "2500.00",
+      });
+    });
+
+    test("returns undefined for null input", () => {
+      const result = pricingCurrenciesFromJSON(null);
+      expect(result).to.be.undefined;
+    });
+
+    test("returns undefined for undefined input", () => {
+      const result = pricingCurrenciesFromJSON(undefined);
+      expect(result).to.be.undefined;
+    });
+
+    test("handles partial data with only listing currency", () => {
+      const json = {
+        listing_currency: {
+          name: "Ether",
+          symbol: "ETH",
+          decimals: 18,
+          address: "0x0000000000000000000000000000000000000000",
+          chain: "ethereum",
+        },
+      };
+
+      const result = pricingCurrenciesFromJSON(json);
+
+      expect(result).to.not.be.undefined;
+      expect(result!.listingCurrency).to.not.be.undefined;
+      expect(result!.listingCurrency!.symbol).to.equal("ETH");
+      expect(result!.offerCurrency).to.be.undefined;
+    });
+
+    test("handles partial data with only offer currency", () => {
+      const json = {
+        offer_currency: {
+          name: "Wrapped Ether",
+          symbol: "WETH",
+          decimals: 18,
+          address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+          chain: "ethereum",
+        },
+      };
+
+      const result = pricingCurrenciesFromJSON(json);
+
+      expect(result).to.not.be.undefined;
+      expect(result!.listingCurrency).to.be.undefined;
+      expect(result!.offerCurrency).to.not.be.undefined;
+      expect(result!.offerCurrency!.symbol).to.equal("WETH");
+    });
+  });
+
   suite("accountFromJSON", () => {
     test("converts account JSON to OpenSeaAccount object", () => {
       const accountJSON = {
@@ -215,15 +315,22 @@ suite("Utils: converters", () => {
           max_rank: 10000,
           tokens_scored: 9999,
         },
-        payment_tokens: [
-          {
+        pricing_currencies: {
+          listing_currency: {
             name: "Ether",
             symbol: "ETH",
             decimals: 18,
             address: "0x0000000000000000000000000000000000000000",
             chain: "ethereum",
           },
-        ],
+          offer_currency: {
+            name: "Wrapped Ether",
+            symbol: "WETH",
+            decimals: 18,
+            address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+            chain: "ethereum",
+          },
+        },
         total_supply: 10000,
         created_date: "2024-01-01",
         required_zone: "0x0000000000000000000000000000000000000000",
@@ -249,7 +356,9 @@ suite("Utils: converters", () => {
       expect(result.editors).to.have.length(1);
       expect(result.fees).to.have.length(1);
       expect(result.rarity).to.not.be.null;
-      expect(result.paymentTokens).to.have.length(1);
+      expect(result.pricingCurrencies).to.not.be.undefined;
+      expect(result.pricingCurrencies!.listingCurrency!.symbol).to.equal("ETH");
+      expect(result.pricingCurrencies!.offerCurrency!.symbol).to.equal("WETH");
       expect(result.totalSupply).to.equal(10000);
     });
 
@@ -264,7 +373,7 @@ suite("Utils: converters", () => {
       expect(result.name).to.equal("Minimal Collection");
       expect(result.contracts).to.deep.equal([]);
       expect(result.fees).to.deep.equal([]);
-      expect(result.paymentTokens).to.deep.equal([]);
+      expect(result.pricingCurrencies).to.be.undefined;
     });
 
     test("handles null rarity", () => {
@@ -331,33 +440,33 @@ suite("Utils: converters", () => {
       expect(result.fees[1].fee).to.equal(1.0);
     });
 
-    test("converts multiple payment tokens", () => {
+    test("converts pricing currencies", () => {
       const collectionJSON = {
-        name: "Multi Token Collection",
-        collection: "multi-token",
-        payment_tokens: [
-          {
+        name: "Currency Collection",
+        collection: "currency-collection",
+        pricing_currencies: {
+          listing_currency: {
             name: "Ether",
             symbol: "ETH",
             decimals: 18,
             address: "0x0000000000000000000000000000000000000000",
             chain: "ethereum",
           },
-          {
+          offer_currency: {
             name: "Wrapped Ether",
             symbol: "WETH",
             decimals: 18,
             address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             chain: "ethereum",
           },
-        ],
+        },
       };
 
       const result = collectionFromJSON(collectionJSON);
 
-      expect(result.paymentTokens).to.have.length(2);
-      expect(result.paymentTokens[0].symbol).to.equal("ETH");
-      expect(result.paymentTokens[1].symbol).to.equal("WETH");
+      expect(result.pricingCurrencies).to.not.be.undefined;
+      expect(result.pricingCurrencies!.listingCurrency!.symbol).to.equal("ETH");
+      expect(result.pricingCurrencies!.offerCurrency!.symbol).to.equal("WETH");
     });
   });
 });

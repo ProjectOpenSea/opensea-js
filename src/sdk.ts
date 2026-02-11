@@ -215,7 +215,6 @@ export class OpenSeaSDK {
    * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time for the order, in UTC seconds
-   * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to WETH
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.
    *
    * @returns The {@link OrderV2} that was created.
@@ -223,7 +222,6 @@ export class OpenSeaSDK {
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
    * @throws Error if the amount is not greater than 0.
-   * @throws Error if paymentTokenAddress is not WETH on anything other than Ethereum mainnet.
    */
   public async createOffer({
     asset,
@@ -233,7 +231,6 @@ export class OpenSeaSDK {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress,
     zone,
   }: {
     asset: AssetWithTokenId;
@@ -243,7 +240,6 @@ export class OpenSeaSDK {
     domain?: string;
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
-    paymentTokenAddress?: string;
     zone?: string;
   }): Promise<OrderV2> {
     return this._ordersManager.createOffer({
@@ -254,7 +250,6 @@ export class OpenSeaSDK {
       domain,
       salt,
       expirationTime,
-      paymentTokenAddress,
       zone,
     });
   }
@@ -270,7 +265,6 @@ export class OpenSeaSDK {
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
-   * @param options.paymentTokenAddress ERC20 address for the payment token in the order. If unspecified, defaults to ETH
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.includeOptionalCreatorFees If true, optional creator fees will be included in the listing. Default: false.
    * @param options.zone Zone for order protection. Defaults to no zone.
@@ -279,7 +273,6 @@ export class OpenSeaSDK {
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
    * @throws Error if the amount is not greater than 0.
-   * @throws Error if paymentTokenAddress is not WETH on anything other than Ethereum mainnet.
    */
   public async createListing({
     asset,
@@ -290,7 +283,6 @@ export class OpenSeaSDK {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress,
     buyerAddress,
     includeOptionalCreatorFees = false,
     zone,
@@ -303,7 +295,6 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     listingTime?: number;
     expirationTime?: number;
-    paymentTokenAddress?: string;
     buyerAddress?: string;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
@@ -317,7 +308,6 @@ export class OpenSeaSDK {
       salt,
       listingTime,
       expirationTime,
-      paymentTokenAddress,
       buyerAddress,
       includeOptionalCreatorFees,
       zone,
@@ -358,7 +348,6 @@ export class OpenSeaSDK {
       salt?: BigNumberish;
       listingTime?: number;
       expirationTime?: number;
-      paymentTokenAddress?: string;
       buyerAddress?: string;
       includeOptionalCreatorFees?: boolean;
       zone?: string;
@@ -408,7 +397,6 @@ export class OpenSeaSDK {
       domain?: string;
       salt?: BigNumberish;
       expirationTime?: BigNumberish;
-      paymentTokenAddress?: string;
       zone?: string;
     }>;
     accountAddress: string;
@@ -433,7 +421,6 @@ export class OpenSeaSDK {
    * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time (UTC seconds).
-   * @param options.paymentTokenAddress Payment token address. Defaults to WETH.
    * @param options.offerProtectionEnabled Use signed zone for protection against disabled items. Default: true.
    * @param options.traitType If defined, the trait name to create the collection offer for.
    * @param options.traitValue If defined, the trait value to create the collection offer for.
@@ -448,7 +435,6 @@ export class OpenSeaSDK {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress,
     offerProtectionEnabled = true,
     traitType,
     traitValue,
@@ -461,7 +447,6 @@ export class OpenSeaSDK {
     domain?: string;
     salt?: BigNumberish;
     expirationTime?: number | string;
-    paymentTokenAddress: string;
     offerProtectionEnabled?: boolean;
     traitType?: string;
     traitValue?: string;
@@ -475,7 +460,6 @@ export class OpenSeaSDK {
       domain,
       salt,
       expirationTime,
-      paymentTokenAddress,
       offerProtectionEnabled,
       traitType,
       traitValue,
@@ -854,7 +838,6 @@ export class OpenSeaSDK {
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.listingTime When order becomes fulfillable (UTC seconds). Defaults to now.
    * @param options.expirationTime Expiration time (UTC seconds).
-   * @param options.paymentTokenAddress Payment token address. Defaults to ETH.
    * @param options.buyerAddress Optional buyer restriction. Only this address can purchase.
    * @param options.includeOptionalCreatorFees Include optional creator fees. Default: false.
    * @param options.zone Zone for order protection. Defaults to no zone.
@@ -871,7 +854,6 @@ export class OpenSeaSDK {
     salt,
     listingTime,
     expirationTime,
-    paymentTokenAddress,
     buyerAddress,
     includeOptionalCreatorFees = false,
     zone,
@@ -884,7 +866,6 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     listingTime?: number;
     expirationTime?: number;
-    paymentTokenAddress?: string;
     buyerAddress?: string;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
@@ -898,7 +879,6 @@ export class OpenSeaSDK {
       salt,
       listingTime,
       expirationTime,
-      paymentTokenAddress,
       buyerAddress,
       includeOptionalCreatorFees,
       zone,
@@ -916,7 +896,6 @@ export class OpenSeaSDK {
    * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time (UTC seconds).
-   * @param options.paymentTokenAddress Payment token address. Defaults to WETH.
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.
    * @returns Transaction hash
    *
@@ -930,7 +909,6 @@ export class OpenSeaSDK {
     domain,
     salt,
     expirationTime,
-    paymentTokenAddress,
     zone,
   }: {
     asset: AssetWithTokenId;
@@ -940,7 +918,6 @@ export class OpenSeaSDK {
     domain?: string;
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
-    paymentTokenAddress?: string;
     zone?: string;
   }): Promise<string> {
     return this._fulfillmentManager.createOfferAndValidateOnchain({
@@ -951,7 +928,6 @@ export class OpenSeaSDK {
       domain,
       salt,
       expirationTime,
-      paymentTokenAddress,
       zone,
     });
   }
