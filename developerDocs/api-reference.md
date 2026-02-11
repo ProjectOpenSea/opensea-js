@@ -243,7 +243,7 @@ const { collections, next } = await openseaSDK.api.getCollections(
 | `chain`           | Chain                   | No       | Filter by blockchain                        |
 | `creatorUsername` | string                  | No       | Filter by creator's OpenSea username        |
 | `includeHidden`   | boolean                 | No       | Include hidden collections (default: false) |
-| `limit`           | number                  | No       | Number of collections to return(1-100)      |
+| `limit`           | number                  | No       | Number of collections to return (1-100)     |
 | `next`            | string                  | No       | Pagination cursor                           |
 
 **Order By Options:**
