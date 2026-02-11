@@ -14,7 +14,7 @@ export enum EventType {
    */
   TransactionCreated = "TransactionCreated",
   /**
-   * Emitted when the transaction has succeeded is mined and confirmed.
+   * Emitted when the transaction is mined and confirmed.
    */
   TransactionConfirmed = "TransactionConfirmed",
   /**
