@@ -12,7 +12,7 @@ import {
   OPENSEA_FEE_RECIPIENT,
   OPENSEA_SIGNED_ZONE_V2,
   SOMNIA_FEE_RECIPIENT,
-  MEGAETH_FEE_RECIPIENT,
+  ALTERNATE_FEE_RECIPIENT,
   WPOL_ADDRESS,
 } from "../constants";
 import { Chain } from "../types";
@@ -99,14 +99,14 @@ export const getOfferPaymentToken = (chain: Chain) => {
       return "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"; // WETH
     case Chain.Blast:
       return "0x4300000000000000000000000000000000000004"; // WETH
-    // OP Chains have WETH at the same address
+    // MegaETH and OP Chains have WETH at the same address
+    case Chain.MegaETH:
     case Chain.Base:
     case Chain.Optimism:
     case Chain.Zora:
     case Chain.B3:
     case Chain.Shape:
     case Chain.Unichain:
-    case Chain.MegaETH:
       return "0x4200000000000000000000000000000000000006"; // WETH
     case Chain.BeraChain:
       return "0x6969696969696969696969696969696969696969"; // WBERA
@@ -240,7 +240,7 @@ export const getFeeRecipient = (chain: Chain): string => {
     case Chain.Somnia:
       return SOMNIA_FEE_RECIPIENT;
     case Chain.MegaETH:
-      return MEGAETH_FEE_RECIPIENT;
+      return ALTERNATE_FEE_RECIPIENT;
     default:
       return OPENSEA_FEE_RECIPIENT;
   }

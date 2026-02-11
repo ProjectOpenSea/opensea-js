@@ -14,7 +14,7 @@ import {
   OPENSEA_FEE_RECIPIENT,
   GUNZILLA_FEE_RECIPIENT,
   SOMNIA_FEE_RECIPIENT,
-  MEGAETH_FEE_RECIPIENT,
+  ALTERNATE_FEE_RECIPIENT,
   WPOL_ADDRESS,
 } from "../../src/constants";
 import { Chain } from "../../src/types";
@@ -415,8 +415,8 @@ suite("Utils: chain", () => {
       expect(getFeeRecipient(Chain.Somnia)).to.equal(SOMNIA_FEE_RECIPIENT);
     });
 
-    test("returns MegaETH fee recipient for MegaETH", () => {
-      expect(getFeeRecipient(Chain.Somnia)).to.equal(MEGAETH_FEE_RECIPIENT);
+    test("returns alternate fee recipient for MegaETH", () => {
+      expect(getFeeRecipient(Chain.MegaETH)).to.equal(ALTERNATE_FEE_RECIPIENT);
     });
 
     test("returns OpenSea fee recipient for other chains", () => {
