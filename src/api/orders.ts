@@ -48,13 +48,12 @@ export class OrdersAPI {
   }: Omit<OrdersQueryOptions, "limit">): Promise<OrderV2> {
     // Validate eth_price orderBy requires additional parameters
     if (orderBy === "eth_price") {
-      if (
-        !restOptions.assetContractAddress ||
-        !restOptions.tokenIds ||
-        restOptions.tokenIds.length === 0
-      ) {
+      const hasTokenId =
+        (restOptions.tokenIds?.length ?? 0) > 0 ||
+        restOptions.tokenId !== undefined;
+      if (!restOptions.assetContractAddress || !hasTokenId) {
         throw new Error(
-          'When using orderBy: "eth_price", you must provide both asset_contract_address and token_ids parameters',
+          'When using orderBy: "eth_price", you must provide both assetContractAddress and tokenIds (or tokenId) parameters',
         );
       }
     }
@@ -104,13 +103,12 @@ export class OrdersAPI {
   }): Promise<GetOrdersResponse> {
     // Validate eth_price orderBy requires additional parameters
     if (orderBy === "eth_price") {
-      if (
-        !restOptions.assetContractAddress ||
-        !restOptions.tokenIds ||
-        restOptions.tokenIds.length === 0
-      ) {
+      const hasTokenId =
+        (restOptions.tokenIds?.length ?? 0) > 0 ||
+        restOptions.tokenId !== undefined;
+      if (!restOptions.assetContractAddress || !hasTokenId) {
         throw new Error(
-          'When using orderBy: "eth_price", you must provide both asset_contract_address and token_ids parameters',
+          'When using orderBy: "eth_price", you must provide both assetContractAddress and tokenIds (or tokenId) parameters',
         );
       }
     }
