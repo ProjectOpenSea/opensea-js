@@ -53,7 +53,7 @@ export class OrdersAPI {
         restOptions.tokenId !== undefined;
       if (!restOptions.assetContractAddress || !hasTokenId) {
         throw new Error(
-          'When using orderBy: "eth_price", you must provide both asset_contract_address and token_ids (or tokenId) parameters',
+          'When using orderBy: "eth_price", you must provide both assetContractAddress and tokenIds (or tokenId) parameters',
         );
       }
     }
@@ -108,7 +108,7 @@ export class OrdersAPI {
         restOptions.tokenId !== undefined;
       if (!restOptions.assetContractAddress || !hasTokenId) {
         throw new Error(
-          'When using orderBy: "eth_price", you must provide both asset_contract_address and token_ids (or tokenId) parameters',
+          'When using orderBy: "eth_price", you must provide both assetContractAddress and tokenIds (or tokenId) parameters',
         );
       }
     }
