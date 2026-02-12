@@ -101,11 +101,11 @@ export enum CollectionOrderByOption {
  * @category API Models
  */
 export enum OrderStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-  FULFILLED = "fulfilled",
-  EXPIRED = "expired",
-  CANCELLED = "cancelled",
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  FULFILLED = "FULFILLED",
+  EXPIRED = "EXPIRED",
+  CANCELLED = "CANCELLED",
 }
 
 /**
