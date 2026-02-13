@@ -52,8 +52,7 @@ const tokenId =
   "115792089237316195423570985008687907832853042650384256231655107562007036952461";
 
 const listing = await openseaSDK.createListing({
-  tokenAddress,
-  tokenId,
+  asset: { tokenAddress, tokenId },
   accountAddress: OWNERS_WALLET_ADDRESS,
   amount: 10,
   buyerAddress,
