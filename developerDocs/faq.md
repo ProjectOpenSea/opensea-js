@@ -17,7 +17,7 @@ The source code for the SDK can be found on [GitHub](https://github.com/ProjectO
 
 ## What chains are supported?
 
-See the [Chain enum](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/types.ts#L101) for a complete list of supported chains.
+See the [Chain enum](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/types.ts#L121-L145) for a complete list of supported chains.
 
 Please use methods in the v2 API for multichain capabilities.
 
