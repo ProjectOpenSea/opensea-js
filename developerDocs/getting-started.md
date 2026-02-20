@@ -343,10 +343,10 @@ To buy an item, you need to **fulfill a listing**. To do that, it's just one cal
 ```typescript
 import { OrderSide } from "opensea-js";
 
-const order = await openseaSDK.api.getOrder({
-  side: OrderSide.LISTING,
-  orderHash: "0x...",
-});
+const order = await openseaSDK.api.getOrderByHash(
+  "0x...",
+  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC" // Seaport 1.6
+);
 
 const accountAddress = "0x..."; // The buyer's wallet address
 const transactionHash = await openseaSDK.fulfillOrder({
@@ -366,10 +366,10 @@ Similar to fulfilling listings above, you need to fulfill an offer on an item yo
 ```typescript
 import { OrderSide } from "opensea-js";
 
-const order = await openseaSDK.api.getOrder({
-  side: OrderSide.OFFER,
-  orderHash: "0x...",
-});
+const order = await openseaSDK.api.getOrderByHash(
+  "0x...",
+  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC" // Seaport 1.6
+);
 
 const accountAddress = "0x..."; // The owner's wallet address
 await openseaSDK.fulfillOrder({ order, accountAddress });
