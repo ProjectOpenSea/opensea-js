@@ -37,7 +37,7 @@ const { nft } = await openseaSDK.api.getNFT(
 );
 
 console.log(nft.name);
-console.log(nft.image_url);
+console.log(nft.imageUrl);
 console.log(nft.traits);
 ```
 
@@ -176,7 +176,7 @@ const contract = await openseaSDK.api.getContract(
 
 console.log(contract.name); // "Bored Ape Yacht Club"
 console.log(contract.collection); // "boredapeyachtclub"
-console.log(contract.contract_standard); // "erc721"
+console.log(contract.contractStandard); // "erc721"
 ```
 
 **Parameters:**
@@ -206,7 +206,7 @@ Fetch detailed information about a single collection including fees, traits, and
 const collection = await openseaSDK.api.getCollection("boredapeyachtclub");
 
 console.log(collection.name);
-console.log(collection.total_supply);
+console.log(collection.totalSupply);
 console.log(collection.fees);
 ```
 
@@ -273,7 +273,7 @@ const stats = await openseaSDK.api.getCollectionStats("boredapeyachtclub");
 
 console.log(stats.total.volume); // Total trading volume
 console.log(stats.total.sales); // Total number of sales
-console.log(stats.total.floor_price); // Current floor price
+console.log(stats.total.floorPrice); // Current floor price
 ```
 
 **Parameters:**
@@ -888,7 +888,7 @@ const account = await openseaSDK.api.getAccount(
 
 console.log(account.address);
 console.log(account.username);
-console.log(account.profile_image_url);
+console.log(account.profileImageUrl);
 ```
 
 **Parameters:**
@@ -913,7 +913,7 @@ const token = await openseaSDK.api.getPaymentToken(
 
 console.log(token.symbol); // "WETH"
 console.log(token.decimals); // 18
-console.log(token.usd_price); // Current USD price
+console.log(token.usdPrice); // Current USD price
 ```
 
 **Parameters:**
@@ -1060,7 +1060,7 @@ const { asset_events } = await openseaSDK.api.getEventsByNFT(
 asset_events.forEach((event) => {
   if (event.event_type === "sale") {
     const price = event.payment.quantity;
-    const date = new Date(event.event_timestamp * 1000);
+    const date = new Date(event.eventTimestamp * 1000);
     console.log(`Sold for ${price} on ${date.toLocaleDateString()}`);
   }
 });
