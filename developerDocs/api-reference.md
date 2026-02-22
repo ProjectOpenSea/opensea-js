@@ -733,7 +733,7 @@ console.log(order.protocol_data.parameters);
 | `protocolAddress` | string | Yes      | Seaport contract address           |
 | `chain`           | Chain  | No       | Blockchain (defaults to SDK chain) |
 
-**Returns:** `OrderV2` object.
+**Returns:** `GetOrderByHashResponse` (Offer | Listing)
 
 **Use Cases:**
 
