@@ -345,7 +345,7 @@ import { OrderSide } from "opensea-js";
 
 const order = await openseaSDK.api.getOrderByHash(
   "0x...",
-  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC" // Seaport 1.6
+  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC", // Seaport 1.6
 );
 
 const accountAddress = "0x..."; // The buyer's wallet address
@@ -368,7 +368,7 @@ import { OrderSide } from "opensea-js";
 
 const order = await openseaSDK.api.getOrderByHash(
   "0x...",
-  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC" // Seaport 1.6
+  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC", // Seaport 1.6
 );
 
 const accountAddress = "0x..."; // The owner's wallet address

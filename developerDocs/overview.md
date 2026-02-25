@@ -71,7 +71,7 @@ await sdk.createOffer({
 // Fulfill a listing
 const order = await sdk.api.getOrderByHash(
   "0x...",
-  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC" // protocolAddress (Seaport 1.6)
+  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC", // protocolAddress (Seaport 1.6)
 );
 await sdk.fulfillOrder({ order, accountAddress: walletAddress });
 ```
