@@ -206,7 +206,7 @@ Fetch detailed information about a single collection including fees, traits, and
 const collection = await openseaSDK.api.getCollection("boredapeyachtclub");
 
 console.log(collection.name);
-console.log(collection.total_supply);
+console.log(collection.totalSupply);
 console.log(collection.fees);
 ```
 
@@ -888,7 +888,7 @@ const account = await openseaSDK.api.getAccount(
 
 console.log(account.address);
 console.log(account.username);
-console.log(account.profile_image_url);
+console.log(account.profileImageUrl);
 ```
 
 **Parameters:**
@@ -913,7 +913,7 @@ const token = await openseaSDK.api.getPaymentToken(
 
 console.log(token.symbol); // "WETH"
 console.log(token.decimals); // 18
-console.log(token.usd_price); // Current USD price
+console.log(token.usdPrice); // Current USD price
 ```
 
 **Parameters:**
