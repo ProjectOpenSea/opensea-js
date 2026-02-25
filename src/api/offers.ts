@@ -99,6 +99,7 @@ export class OffersAPI {
     traitType?: string,
     traitValue?: string,
     traits?: Array<{ type: string; value: string }>,
+    numericTraits?: Array<{ type: string; min?: number; max?: number }>,
   ): Promise<BuildOfferResponse> {
     // Validate trait parameters
     if (traits && traits.length > 0 && (traitType || traitValue)) {
@@ -123,6 +124,27 @@ export class OffersAPI {
         }
       }
     }
+    if (numericTraits && numericTraits.length > 0) {
+      for (const trait of numericTraits) {
+        if (!trait.type) {
+          throw new Error("Each numeric trait must have a 'type' property.");
+        }
+        if (trait.min === undefined && trait.max === undefined) {
+          throw new Error(
+            `Numeric trait '${trait.type}' must have at least one of 'min' or 'max'.`,
+          );
+        }
+        if (
+          trait.min !== undefined &&
+          trait.max !== undefined &&
+          trait.min > trait.max
+        ) {
+          throw new Error(
+            `Numeric trait '${trait.type}': 'min' (${trait.min}) must be <= 'max' (${trait.max}).`,
+          );
+        }
+      }
+    }
     const payload = getBuildCollectionOfferPayload(
       offererAddress,
       quantity,
@@ -132,6 +154,7 @@ export class OffersAPI {
       traitType,
       traitValue,
       traits,
+      numericTraits,
     );
     const response = await this.fetcher.post<BuildOfferResponse>(
       getBuildOfferPath(),
@@ -166,6 +189,7 @@ export class OffersAPI {
     traitType?: string,
     traitValue?: string,
     traits?: Array<{ type: string; value: string }>,
+    numericTraits?: Array<{ type: string; min?: number; max?: number }>,
   ): Promise<CollectionOffer | null> {
     const payload = getPostCollectionOfferPayload(
       slug,
@@ -174,6 +198,7 @@ export class OffersAPI {
       traitType,
       traitValue,
       traits,
+      numericTraits,
     );
     return await this.fetcher.post<CollectionOffer>(
       getPostCollectionOfferPath(),

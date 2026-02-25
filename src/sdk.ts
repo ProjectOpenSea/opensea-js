@@ -425,6 +425,7 @@ export class OpenSeaSDK {
    * @param options.traitType If defined, the trait name to create the collection offer for.
    * @param options.traitValue If defined, the trait value to create the collection offer for.
    * @param options.traits If defined, an array of traits to create the multi-trait collection offer for.
+   * @param options.numericTraits If defined, an array of numeric trait criteria with min/max ranges.
    * @returns The {@link CollectionOffer} that was created.
    */
   public async createCollectionOffer({
@@ -439,6 +440,7 @@ export class OpenSeaSDK {
     traitType,
     traitValue,
     traits,
+    numericTraits,
   }: {
     collectionSlug: string;
     accountAddress: string;
@@ -451,6 +453,7 @@ export class OpenSeaSDK {
     traitType?: string;
     traitValue?: string;
     traits?: Array<{ type: string; value: string }>;
+    numericTraits?: Array<{ type: string; min?: number; max?: number }>;
   }): Promise<CollectionOffer | null> {
     return this._ordersManager.createCollectionOffer({
       collectionSlug,
@@ -464,6 +467,7 @@ export class OpenSeaSDK {
       traitType,
       traitValue,
       traits,
+      numericTraits,
     });
   }
 

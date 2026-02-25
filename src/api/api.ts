@@ -331,6 +331,7 @@ export class OpenSeaAPI {
    * @param traitType If defined, the trait name to create the collection offer for.
    * @param traitValue If defined, the trait value to create the collection offer for.
    * @param traits If defined, an array of traits to create the multi-trait collection offer for.
+   * @param numericTraits If defined, an array of numeric trait criteria with min/max ranges.
    * @returns The {@link BuildOfferResponse} returned by the API.
    */
   public async buildOffer(
@@ -341,6 +342,7 @@ export class OpenSeaAPI {
     traitType?: string,
     traitValue?: string,
     traits?: Array<{ type: string; value: string }>,
+    numericTraits?: Array<{ type: string; min?: number; max?: number }>,
   ): Promise<BuildOfferResponse> {
     return this.offersAPI.buildOffer(
       offererAddress,
@@ -350,6 +352,7 @@ export class OpenSeaAPI {
       traitType,
       traitValue,
       traits,
+      numericTraits,
     );
   }
 
@@ -375,6 +378,7 @@ export class OpenSeaAPI {
    * @param traitType If defined, the trait name to create the collection offer for.
    * @param traitValue If defined, the trait value to create the collection offer for.
    * @param traits If defined, an array of traits to create the multi-trait collection offer for.
+   * @param numericTraits If defined, an array of numeric trait criteria with min/max ranges.
    * @returns The {@link Offer} returned to the API.
    */
   public async postCollectionOffer(
@@ -383,6 +387,7 @@ export class OpenSeaAPI {
     traitType?: string,
     traitValue?: string,
     traits?: Array<{ type: string; value: string }>,
+    numericTraits?: Array<{ type: string; min?: number; max?: number }>,
   ): Promise<CollectionOffer | null> {
     return this.offersAPI.postCollectionOffer(
       order,
@@ -390,6 +395,7 @@ export class OpenSeaAPI {
       traitType,
       traitValue,
       traits,
+      numericTraits,
     );
   }
 

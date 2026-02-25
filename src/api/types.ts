@@ -37,6 +37,8 @@ type Criteria = {
   trait?: TraitCriteria;
   /** Multiple traits for the criteria (multi-trait offers) */
   traits?: TraitCriteria[];
+  /** Numeric traits for the criteria (numeric trait offers) */
+  numericTraits?: NumericTraitCriteria[];
 };
 
 /**
@@ -46,6 +48,17 @@ type Criteria = {
 type TraitCriteria = {
   type: string;
   value: string;
+};
+
+/**
+ * Criteria for numeric trait offers.
+ * At least one of min or max must be defined.
+ * @category API Response Types
+ */
+type NumericTraitCriteria = {
+  type: string;
+  min?: number;
+  max?: number;
 };
 
 type CollectionCriteria = {

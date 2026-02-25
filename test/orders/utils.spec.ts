@@ -237,6 +237,69 @@ suite("Orders: utils", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((result.criteria as any).trait).to.be.undefined;
     });
+
+    test("should add numericTraits when provided", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const protocolData = { parameters: {} } as any as ProtocolData;
+      const numericTraits = [
+        { type: "Level", min: 1, max: 10 },
+        { type: "Power", min: 50 },
+      ];
+      const result = getPostCollectionOfferPayload(
+        "boredapeyachtclub",
+        protocolData,
+        Chain.Mainnet,
+        undefined,
+        undefined,
+        undefined,
+        numericTraits,
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).numericTraits).to.deep.equal(
+        numericTraits,
+      );
+    });
+
+    test("should add both traits and numericTraits when both provided", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const protocolData = { parameters: {} } as any as ProtocolData;
+      const traits = [{ type: "Background", value: "Blue" }];
+      const numericTraits = [{ type: "Level", min: 1, max: 10 }];
+      const result = getPostCollectionOfferPayload(
+        "boredapeyachtclub",
+        protocolData,
+        Chain.Mainnet,
+        undefined,
+        undefined,
+        traits,
+        numericTraits,
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).traits).to.deep.equal(traits);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).numericTraits).to.deep.equal(
+        numericTraits,
+      );
+    });
+
+    test("should not add numericTraits when empty array is provided", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const protocolData = { parameters: {} } as any as ProtocolData;
+      const result = getPostCollectionOfferPayload(
+        "boredapeyachtclub",
+        protocolData,
+        Chain.Mainnet,
+        undefined,
+        undefined,
+        undefined,
+        [],
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).numericTraits).to.be.undefined;
+    });
   });
 
   suite("getBuildCollectionOfferPayload", () => {
@@ -342,6 +405,69 @@ suite("Orders: utils", () => {
       expect((result.criteria as any).traits).to.be.undefined;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((result.criteria as any).trait).to.be.undefined;
+    });
+
+    test("should add numericTraits when provided", () => {
+      const numericTraits = [
+        { type: "Level", min: 1, max: 10 },
+        { type: "Power", min: 50 },
+      ];
+      const result = getBuildCollectionOfferPayload(
+        "0xOfferer",
+        2,
+        "boredapeyachtclub",
+        true,
+        Chain.Mainnet,
+        undefined,
+        undefined,
+        undefined,
+        numericTraits,
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).numericTraits).to.deep.equal(
+        numericTraits,
+      );
+    });
+
+    test("should add both traits and numericTraits when both provided", () => {
+      const traits = [{ type: "Background", value: "Blue" }];
+      const numericTraits = [{ type: "Level", min: 1, max: 10 }];
+      const result = getBuildCollectionOfferPayload(
+        "0xOfferer",
+        2,
+        "boredapeyachtclub",
+        true,
+        Chain.Mainnet,
+        undefined,
+        undefined,
+        traits,
+        numericTraits,
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).traits).to.deep.equal(traits);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).numericTraits).to.deep.equal(
+        numericTraits,
+      );
+    });
+
+    test("should not add numericTraits when empty array is provided", () => {
+      const result = getBuildCollectionOfferPayload(
+        "0xOfferer",
+        5,
+        "boredapeyachtclub",
+        true,
+        Chain.Mainnet,
+        undefined,
+        undefined,
+        undefined,
+        [],
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.criteria as any).numericTraits).to.be.undefined;
     });
   });
 

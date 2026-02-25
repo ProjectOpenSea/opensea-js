@@ -600,6 +600,124 @@ suite("API: OffersAPI", () => {
       }
     });
 
+    test("builds collection offer with numeric traits", async () => {
+      const mockResponse: BuildOfferResponse = {
+        partialParameters:
+          {} as unknown as BuildOfferResponse["partialParameters"],
+      };
+
+      mockPost.resolves(mockResponse);
+
+      const numericTraits = [
+        { type: "Level", min: 1, max: 10 },
+        { type: "Power", min: 50 },
+      ];
+
+      await offersAPI.buildOffer(
+        "0xofferer123",
+        2,
+        "test-collection",
+        true,
+        undefined,
+        undefined,
+        undefined,
+        numericTraits,
+      );
+
+      expect(mockPost.calledOnce).to.be.true;
+    });
+
+    test("builds collection offer with both string traits and numeric traits", async () => {
+      const mockResponse: BuildOfferResponse = {
+        partialParameters:
+          {} as unknown as BuildOfferResponse["partialParameters"],
+      };
+
+      mockPost.resolves(mockResponse);
+
+      const traits = [{ type: "Background", value: "Blue" }];
+      const numericTraits = [{ type: "Level", min: 1, max: 10 }];
+
+      await offersAPI.buildOffer(
+        "0xofferer123",
+        2,
+        "test-collection",
+        true,
+        undefined,
+        undefined,
+        traits,
+        numericTraits,
+      );
+
+      expect(mockPost.calledOnce).to.be.true;
+    });
+
+    test("throws error when numeric trait is missing type", async () => {
+      const numericTraits = [{ type: "", min: 1, max: 10 }];
+
+      try {
+        await offersAPI.buildOffer(
+          "0xofferer123",
+          5,
+          "test-collection",
+          true,
+          undefined,
+          undefined,
+          undefined,
+          numericTraits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Each numeric trait must have a 'type' property",
+        );
+      }
+    });
+
+    test("throws error when numeric trait has neither min nor max", async () => {
+      const numericTraits = [{ type: "Level" }];
+
+      try {
+        await offersAPI.buildOffer(
+          "0xofferer123",
+          5,
+          "test-collection",
+          true,
+          undefined,
+          undefined,
+          undefined,
+          numericTraits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "must have at least one of 'min' or 'max'",
+        );
+      }
+    });
+
+    test("throws error when numeric trait min > max", async () => {
+      const numericTraits = [{ type: "Level", min: 10, max: 1 }];
+
+      try {
+        await offersAPI.buildOffer(
+          "0xofferer123",
+          5,
+          "test-collection",
+          true,
+          undefined,
+          undefined,
+          undefined,
+          numericTraits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "'min' (10) must be <= 'max' (1)",
+        );
+      }
+    });
+
     test("throws error on API failure", async () => {
       mockPost.rejects(new Error("Build failed"));
 

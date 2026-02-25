@@ -577,6 +577,49 @@ suite("SDK: OrdersManager", () => {
         "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
       );
     });
+
+    test("creates collection offer with numeric traits", async () => {
+      const numericTraits = [
+        { type: "Level", min: 1, max: 10 },
+        { type: "Power", min: 50 },
+      ];
+
+      await ordersManager.createCollectionOffer({
+        collectionSlug: "test-collection",
+        accountAddress: "0xBuyer",
+        amount: "1000000000000000000",
+        quantity: 1,
+        numericTraits,
+      });
+
+      const buildOfferArgs = mockAPI.buildOffer.firstCall.args;
+      expect(buildOfferArgs[7]).to.deep.equal(numericTraits);
+
+      const postOfferArgs = mockAPI.postCollectionOffer.firstCall.args;
+      expect(postOfferArgs[5]).to.deep.equal(numericTraits);
+    });
+
+    test("creates collection offer with both string traits and numeric traits", async () => {
+      const traits = [{ type: "Background", value: "Blue" }];
+      const numericTraits = [{ type: "Level", min: 1, max: 10 }];
+
+      await ordersManager.createCollectionOffer({
+        collectionSlug: "test-collection",
+        accountAddress: "0xBuyer",
+        amount: "1000000000000000000",
+        quantity: 1,
+        traits,
+        numericTraits,
+      });
+
+      const buildOfferArgs = mockAPI.buildOffer.firstCall.args;
+      expect(buildOfferArgs[6]).to.deep.equal(traits);
+      expect(buildOfferArgs[7]).to.deep.equal(numericTraits);
+
+      const postOfferArgs = mockAPI.postCollectionOffer.firstCall.args;
+      expect(postOfferArgs[4]).to.deep.equal(traits);
+      expect(postOfferArgs[5]).to.deep.equal(numericTraits);
+    });
   });
 
   suite("buildOfferOrderComponents", () => {

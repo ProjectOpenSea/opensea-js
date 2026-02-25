@@ -1041,6 +1041,7 @@ export class OrdersManager {
    * @param options.traitType If defined, the trait name to create the collection offer for.
    * @param options.traitValue If defined, the trait value to create the collection offer for.
    * @param options.traits If defined, an array of traits to create the multi-trait collection offer for.
+   * @param options.numericTraits If defined, an array of numeric trait criteria with min/max ranges.
    * @returns The {@link CollectionOffer} that was created.
    */
   async createCollectionOffer({
@@ -1055,6 +1056,7 @@ export class OrdersManager {
     traitType,
     traitValue,
     traits,
+    numericTraits,
   }: {
     collectionSlug: string;
     accountAddress: string;
@@ -1067,6 +1069,7 @@ export class OrdersManager {
     traitType?: string;
     traitValue?: string;
     traits?: Array<{ type: string; value: string }>;
+    numericTraits?: Array<{ type: string; min?: number; max?: number }>;
   }): Promise<CollectionOffer | null> {
     await this.context.requireAccountIsAvailable(accountAddress);
 
@@ -1084,6 +1087,7 @@ export class OrdersManager {
       traitType,
       traitValue,
       traits,
+      numericTraits,
     );
     const item = buildOfferResult.partialParameters.consideration[0];
     const convertedConsiderationItem = {
@@ -1139,6 +1143,7 @@ export class OrdersManager {
       traitType,
       traitValue,
       traits,
+      numericTraits,
     );
   }
 }

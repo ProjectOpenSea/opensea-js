@@ -18,6 +18,7 @@ export const getPostCollectionOfferPayload = (
   traitType?: string,
   traitValue?: string,
   traits?: Array<{ type: string; value: string }>,
+  numericTraits?: Array<{ type: string; min?: number; max?: number }>,
 ) => {
   const payload = {
     criteria: {
@@ -39,6 +40,10 @@ export const getPostCollectionOfferPayload = (
       value: traitValue,
     };
   }
+  if (numericTraits && numericTraits.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (payload.criteria as any).numericTraits = numericTraits;
+  }
   return payload;
 };
 
@@ -51,6 +56,7 @@ export const getBuildCollectionOfferPayload = (
   traitType?: string,
   traitValue?: string,
   traits?: Array<{ type: string; value: string }>,
+  numericTraits?: Array<{ type: string; min?: number; max?: number }>,
 ) => {
   const payload = {
     offerer: offererAddress,
@@ -75,6 +81,10 @@ export const getBuildCollectionOfferPayload = (
       type: traitType,
       value: traitValue,
     };
+  }
+  if (numericTraits && numericTraits.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (payload.criteria as any).numericTraits = numericTraits;
   }
   return payload;
 };
