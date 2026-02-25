@@ -47,7 +47,7 @@ suite("SDK: order posting", () => {
     );
   });
 
-  test("Post Offer - Polygon", async () => {
+  test("Post Offer - Polygon", async function () {
     const chain2 = Chain.Polygon;
     const sdk2 = getSdkForChain(chain2);
 
@@ -62,8 +62,18 @@ suite("SDK: order posting", () => {
       },
       expirationTime,
     };
-    const order = await sdk2.createOffer(offer);
-    expectValidOrder(order);
+    try {
+      const order = await sdk2.createOffer(offer);
+      expectValidOrder(order);
+    } catch (error) {
+      if (
+        (error as Error).message?.includes("does not have the amount needed")
+      ) {
+        console.log("Skipping - wallet has insufficient Polygon balance");
+        this.skip();
+      }
+      throw error;
+    }
   });
 
   test(`Post Listing - ${CREATE_LISTING_CHAIN}`, async function () {
