@@ -673,3 +673,86 @@ export type GetTraitsResponse = {
     [traitType: string]: TraitCounts;
   };
 };
+
+/**
+ * Token model returned by OpenSea API.
+ * @category API Models
+ */
+export type Token = {
+  /** Token contract address */
+  address: string;
+  /** Chain the token is on */
+  chain: string;
+  /** Token name */
+  name: string;
+  /** Token symbol */
+  symbol: string;
+  /** Number of decimals */
+  decimals: number;
+  /** URL of the token image */
+  image_url: string | null;
+  /** URL on OpenSea */
+  opensea_url: string;
+};
+
+/**
+ * Response from OpenSea API for fetching trending tokens.
+ * @category API Response Types
+ */
+export type GetTrendingTokensResponse = QueryCursorsV2 & {
+  /** List of {@link Token} */
+  tokens: Token[];
+};
+
+/**
+ * Response from OpenSea API for fetching top tokens.
+ * @category API Response Types
+ */
+export type GetTopTokensResponse = QueryCursorsV2 & {
+  /** List of {@link Token} */
+  tokens: Token[];
+};
+
+/**
+ * Query args for Get Trending/Top Tokens endpoints.
+ * @category API Query Args
+ */
+export interface GetTokensArgs {
+  /** Limit the number of results */
+  limit?: number;
+  /** Cursor for pagination */
+  next?: string;
+}
+
+/**
+ * Query args for Get Swap Quote endpoint.
+ * @category API Query Args
+ */
+export interface GetSwapQuoteArgs {
+  /** Address of the input token */
+  token_in: string;
+  /** Address of the output token */
+  token_out: string;
+  /** Amount of input token */
+  amount: string;
+  /** Chain for the swap */
+  chain: string;
+  /** Address of the taker */
+  taker_address?: string;
+  /** Slippage tolerance */
+  slippage?: number;
+}
+
+/**
+ * Response from OpenSea API for fetching a swap quote.
+ * @category API Response Types
+ */
+export type GetSwapQuoteResponse = {
+  [key: string]: unknown;
+};
+
+/**
+ * Response from OpenSea API for fetching token details.
+ * @category API Response Types
+ */
+export type GetTokenResponse = Token;

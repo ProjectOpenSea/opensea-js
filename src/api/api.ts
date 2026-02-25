@@ -6,6 +6,7 @@ import { EventsAPI } from "./events";
 import { ListingsAPI } from "./listings";
 import { NFTsAPI } from "./nfts";
 import { OffersAPI } from "./offers";
+import { TokensAPI } from "./tokens";
 import {
   FulfillmentDataResponse,
   OrderAPIOptions,
@@ -43,6 +44,12 @@ import {
   GetEventsResponse,
   GetContractResponse,
   GetTraitsResponse,
+  GetTokensArgs,
+  GetTrendingTokensResponse,
+  GetTopTokensResponse,
+  GetSwapQuoteArgs,
+  GetSwapQuoteResponse,
+  GetTokenResponse,
 } from "./types";
 import { executeWithRateLimit } from "../utils/rateLimit";
 
@@ -75,6 +82,7 @@ export class OpenSeaAPI {
   private nftsAPI: NFTsAPI;
   private accountsAPI: AccountsAPI;
   private eventsAPI: EventsAPI;
+  private tokensAPI: TokensAPI;
 
   /**
    * Create an instance of the OpenSeaAPI
@@ -108,6 +116,7 @@ export class OpenSeaAPI {
     this.nftsAPI = new NFTsAPI(fetcher, this.chain);
     this.accountsAPI = new AccountsAPI(fetcher, this.chain);
     this.eventsAPI = new EventsAPI(fetcher);
+    this.tokensAPI = new TokensAPI(fetcher);
   }
 
   /**
@@ -648,6 +657,52 @@ export class OpenSeaAPI {
    */
   public async getTraits(collectionSlug: string): Promise<GetTraitsResponse> {
     return this.collectionsAPI.getTraits(collectionSlug);
+  }
+
+  /**
+   * Gets a list of trending tokens.
+   * @param args Optional query parameters for pagination.
+   * @returns The {@link GetTrendingTokensResponse} returned by the API.
+   */
+  public async getTrendingTokens(
+    args?: GetTokensArgs,
+  ): Promise<GetTrendingTokensResponse> {
+    return this.tokensAPI.getTrendingTokens(args);
+  }
+
+  /**
+   * Gets a list of top tokens.
+   * @param args Optional query parameters for pagination.
+   * @returns The {@link GetTopTokensResponse} returned by the API.
+   */
+  public async getTopTokens(
+    args?: GetTokensArgs,
+  ): Promise<GetTopTokensResponse> {
+    return this.tokensAPI.getTopTokens(args);
+  }
+
+  /**
+   * Gets a swap quote for exchanging tokens.
+   * @param args Query parameters for the swap quote including token addresses, amount, and chain.
+   * @returns The {@link GetSwapQuoteResponse} returned by the API.
+   */
+  public async getSwapQuote(
+    args: GetSwapQuoteArgs,
+  ): Promise<GetSwapQuoteResponse> {
+    return this.tokensAPI.getSwapQuote(args);
+  }
+
+  /**
+   * Gets details for a specific token.
+   * @param chain The chain the token is on.
+   * @param address The token contract address.
+   * @returns The {@link GetTokenResponse} returned by the API.
+   */
+  public async getToken(
+    chain: string,
+    address: string,
+  ): Promise<GetTokenResponse> {
+    return this.tokensAPI.getToken(chain, address);
   }
 
   /**

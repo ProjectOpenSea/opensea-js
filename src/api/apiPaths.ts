@@ -143,3 +143,19 @@ export const getContractPath = (chain: Chain, address: string) => {
 export const getTraitsPath = (collectionSlug: string) => {
   return `/api/v2/traits/${collectionSlug}`;
 };
+
+export const getTrendingTokensPath = () => {
+  return "/api/v2/tokens/trending";
+};
+
+export const getTopTokensPath = () => {
+  return "/api/v2/tokens/top";
+};
+
+export const getSwapQuotePath = () => {
+  return "/api/v2/swap/quote";
+};
+
+export const getTokenPath = (chain: string, address: string) => {
+  return `/api/v2/chain/${chain}/token/${address}`;
+};
