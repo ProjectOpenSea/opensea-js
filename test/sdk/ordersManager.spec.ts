@@ -3,7 +3,7 @@ import { ZeroAddress } from "ethers";
 import { suite, test } from "mocha";
 import * as sinon from "sinon";
 import { OrdersManager } from "../../src/sdk/orders";
-import { Chain } from "../../src/types";
+import { Chain, OrderSide } from "../../src/types";
 import {
   getCurrentUnixTimestamp,
   getUnixTimestampInSeconds,
@@ -575,6 +575,20 @@ suite("SDK: OrdersManager", () => {
       // Chain default for Mainnet offers is WETH
       expect(createOrderCall.offer[0].token).to.equal(
         "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      );
+    });
+
+    test("passes OrderSide.OFFER to price parameters callback", async () => {
+      await ordersManager.createCollectionOffer({
+        collectionSlug: "test-collection",
+        accountAddress: "0xBuyer",
+        amount: "1000000000000000000",
+        quantity: 1,
+      });
+
+      expect(mockGetPriceParameters.calledOnce).to.be.true;
+      expect(mockGetPriceParameters.firstCall.args[0]).to.equal(
+        OrderSide.OFFER,
       );
     });
 

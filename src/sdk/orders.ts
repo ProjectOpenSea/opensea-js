@@ -1098,7 +1098,7 @@ export class OrdersManager {
     };
 
     const { basePrice } = await this.getPriceParametersCallback(
-      OrderSide.LISTING,
+      OrderSide.OFFER,
       paymentTokenAddress,
       amount,
     );
