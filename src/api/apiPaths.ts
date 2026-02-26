@@ -159,3 +159,7 @@ export const getSwapQuotePath = () => {
 export const getTokenPath = (chain: string, address: string) => {
   return `/api/v2/chain/${chain}/token/${address}`;
 };
+
+export const getSearchPath = () => {
+  return "/api/v2/search";
+};

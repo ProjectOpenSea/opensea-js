@@ -6,6 +6,7 @@ import { EventsAPI } from "./events";
 import { ListingsAPI } from "./listings";
 import { NFTsAPI } from "./nfts";
 import { OffersAPI } from "./offers";
+import { SearchAPI } from "./search";
 import { TokensAPI } from "./tokens";
 import {
   FulfillmentDataResponse,
@@ -50,6 +51,8 @@ import {
   GetSwapQuoteArgs,
   GetSwapQuoteResponse,
   GetTokenResponse,
+  SearchArgs,
+  SearchResponse,
 } from "./types";
 import { executeWithRateLimit } from "../utils/rateLimit";
 
@@ -82,6 +85,7 @@ export class OpenSeaAPI {
   private nftsAPI: NFTsAPI;
   private accountsAPI: AccountsAPI;
   private eventsAPI: EventsAPI;
+  private searchAPI: SearchAPI;
   private tokensAPI: TokensAPI;
 
   /**
@@ -116,6 +120,7 @@ export class OpenSeaAPI {
     this.nftsAPI = new NFTsAPI(fetcher, this.chain);
     this.accountsAPI = new AccountsAPI(fetcher, this.chain);
     this.eventsAPI = new EventsAPI(fetcher);
+    this.searchAPI = new SearchAPI(fetcher);
     this.tokensAPI = new TokensAPI(fetcher);
   }
 
@@ -703,6 +708,16 @@ export class OpenSeaAPI {
     address: string,
   ): Promise<GetTokenResponse> {
     return this.tokensAPI.getToken(chain, address);
+  }
+
+  /**
+   * Search across collections, tokens, NFTs, and accounts.
+   * Results are ranked by relevance.
+   * @param args Query parameters including query text, optional chain/asset type filters, and limit.
+   * @returns The {@link SearchResponse} returned by the API.
+   */
+  public async search(args: SearchArgs): Promise<SearchResponse> {
+    return this.searchAPI.search(args);
   }
 
   /**

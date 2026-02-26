@@ -756,3 +756,120 @@ export type GetSwapQuoteResponse = {
  * @category API Response Types
  */
 export type GetTokenResponse = Token;
+
+/**
+ * Query args for the Search endpoint.
+ * @category API Query Args
+ */
+export interface SearchArgs {
+  /** Search query text */
+  query: string;
+  /** Filter by blockchain(s) */
+  chains?: string[];
+  /** Filter by asset type(s): collection, nft, token, account */
+  asset_types?: string[];
+  /** Number of results to return (default: 20, max: 50) */
+  limit?: number;
+}
+
+/**
+ * Collection search result.
+ * @category API Models
+ */
+export type CollectionSearchResult = {
+  /** The collection slug */
+  collection: string;
+  /** The collection name */
+  name: string;
+  /** URL of the collection image */
+  image_url: string | null;
+  /** Whether trading is disabled for this collection */
+  is_disabled: boolean;
+  /** Whether this collection is marked as NSFW */
+  is_nsfw: boolean;
+  /** URL to the collection on OpenSea */
+  opensea_url: string;
+};
+
+/**
+ * Token (currency) search result.
+ * @category API Models
+ */
+export type TokenSearchResult = {
+  /** Contract address of the token */
+  address: string;
+  /** Blockchain the token is on */
+  chain: string;
+  /** Token name */
+  name: string;
+  /** Token symbol */
+  symbol: string;
+  /** URL of the token image */
+  image_url: string | null;
+  /** Current USD price of the token */
+  usd_price: string;
+  /** Number of decimal places for the token */
+  decimals: number;
+  /** URL to the token on OpenSea */
+  opensea_url: string;
+};
+
+/**
+ * NFT search result.
+ * @category API Models
+ */
+export type NftSearchResult = {
+  /** Token ID of the NFT */
+  identifier: string;
+  /** Collection slug the NFT belongs to */
+  collection: string;
+  /** Contract address of the NFT */
+  contract: string;
+  /** Name of the NFT */
+  name: string | null;
+  /** URL of the NFT image */
+  image_url: string | null;
+  /** URL to the NFT on OpenSea */
+  opensea_url: string;
+};
+
+/**
+ * Account search result.
+ * @category API Models
+ */
+export type AccountSearchResult = {
+  /** Primary wallet address of the account */
+  address: string;
+  /** Username of the account */
+  username: string | null;
+  /** URL of the account's profile image */
+  profile_image_url: string | null;
+  /** URL to the account on OpenSea */
+  opensea_url: string;
+};
+
+/**
+ * A single search result with a type discriminator and the corresponding typed object.
+ * @category API Models
+ */
+export type SearchResult = {
+  /** The type of search result */
+  type: string;
+  /** Collection details, present when type is 'collection' */
+  collection?: CollectionSearchResult;
+  /** Token details, present when type is 'token' */
+  token?: TokenSearchResult;
+  /** NFT details, present when type is 'nft' */
+  nft?: NftSearchResult;
+  /** Account details, present when type is 'account' */
+  account?: AccountSearchResult;
+};
+
+/**
+ * Response from OpenSea API for search.
+ * @category API Response Types
+ */
+export type SearchResponse = {
+  /** List of search results ranked by relevance */
+  results: SearchResult[];
+};
