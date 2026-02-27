@@ -39,6 +39,8 @@ Happy seafaring! ⛵️
 - **Fulfill Orders**: Buy listings or accept offers programmatically
 - **Bulk Operations**: Create multiple listings/offers with a single signature
 - **Events API**: Query historical sales, transfers, and order events
+- **Token API**: Fetch trending tokens, top tokens, swap quotes, and token details
+- **Search API**: Search across collections, tokens, NFTs, and accounts
 - **Multi-chain Support**: Ethereum, Polygon, Arbitrum, Base, Optimism, and more
 - **Type-Safe**: Full TypeScript support with comprehensive type definitions
 - **Event Listeners**: React to transactions and order changes in real-time

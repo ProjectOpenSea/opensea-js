@@ -133,7 +133,7 @@ const offer = await openseaSDK.createCollectionOffer({
 });
 ```
 
-For **trait offers**, include `traitType` as the trait name and `traitValue` as the required value:
+For **single-trait offers**, include `traitType` as the trait name and `traitValue` as the required value:
 
 ```typescript
 const offer = await openseaSDK.createCollectionOffer({
@@ -143,6 +143,33 @@ const offer = await openseaSDK.createCollectionOffer({
   quantity: 1,
   traitType: "face",
   traitValue: "tvface bobross",
+});
+```
+
+For **multi-trait offers**, use the `traits` array:
+
+```typescript
+const offer = await openseaSDK.createCollectionOffer({
+  collectionSlug: "cool-cats-nft",
+  accountAddress: walletAddress,
+  amount: 7,
+  quantity: 1,
+  traits: [
+    { type: "face", value: "tvface bobross" },
+    { type: "body", value: "blue cat skin" },
+  ],
+});
+```
+
+For **numeric trait offers**, use the `numericTraits` array with min/max ranges:
+
+```typescript
+const offer = await openseaSDK.createCollectionOffer({
+  collectionSlug: "cool-cats-nft",
+  accountAddress: walletAddress,
+  amount: 7,
+  quantity: 1,
+  numericTraits: [{ type: "level", min: 5, max: 10 }],
 });
 ```
 
@@ -175,12 +202,10 @@ Note that the listing price of an asset is equal to the `currentPrice` of the **
 If you have an order hash, you can fetch the full order details directly:
 
 ```typescript
-const order = await openseaSDK.api.getOrder({
-  side: OrderSide.LISTING,
-  orderHash: "0x...",
-  chain: openseaSDK.chain,
-  protocolAddress: "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC", // Seaport 1.6
-});
+const order = await openseaSDK.api.getOrderByHash(
+  "0x...", // Order hash
+  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC", // Seaport 1.6
+);
 ```
 
 This is useful when you need to retrieve order details for operations like order cancellation or fulfillment when you only have the order hash.

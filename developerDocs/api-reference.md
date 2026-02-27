@@ -20,6 +20,8 @@ This comprehensive reference documents all OpenSea API endpoints available throu
 - [Order Endpoints](#order-endpoints)
 - [Account Endpoints](#account-endpoints)
 - [Event Endpoints](#event-endpoints)
+- [Token Endpoints](#token-endpoints)
+- [Search Endpoint](#search-endpoint)
 
 ---
 
@@ -342,6 +344,7 @@ const { listings, next } = await openseaSDK.api.getAllListings(
   "boredapeyachtclub",
   100, // Limit
   undefined, // Next cursor
+  false, // Include private listings
 );
 
 listings.forEach((listing) => {
@@ -354,11 +357,12 @@ listings.forEach((listing) => {
 
 **Parameters:**
 
-| Parameter        | Type   | Required | Description                              |
-| ---------------- | ------ | -------- | ---------------------------------------- |
-| `collectionSlug` | string | Yes      | Collection slug (identifier)             |
-| `limit`          | number | No       | Number of listings (1-100, default: 100) |
-| `next`           | string | No       | Pagination cursor                        |
+| Parameter                | Type    | Required | Description                               |
+| ------------------------ | ------- | -------- | ----------------------------------------- |
+| `collectionSlug`         | string  | Yes      | Collection slug (identifier)              |
+| `limit`                  | number  | No       | Number of listings (1-100, default: 100)  |
+| `next`                   | string  | No       | Pagination cursor                         |
+| `includePrivateListings` | boolean | No       | Include private listings (default: false) |
 
 **Returns:** `GetListingsResponse` containing:
 
@@ -380,10 +384,11 @@ console.log(`Seller: ${listing.protocol_data.parameters.offerer}`);
 
 **Parameters:**
 
-| Parameter        | Type             | Required | Description     |
-| ---------------- | ---------------- | -------- | --------------- |
-| `collectionSlug` | string           | Yes      | Collection slug |
-| `tokenId`        | string \| number | Yes      | Token ID        |
+| Parameter                | Type             | Required | Description                               |
+| ------------------------ | ---------------- | -------- | ----------------------------------------- |
+| `collectionSlug`         | string           | Yes      | Collection slug                           |
+| `tokenId`                | string \| number | Yes      | Token ID                                  |
+| `includePrivateListings` | boolean          | No       | Include private listings (default: false) |
 
 **Returns:** `GetBestListingResponse` with the lowest-priced active listing.
 
@@ -402,11 +407,12 @@ const { listings, next } = await openseaSDK.api.getBestListings(
 
 **Parameters:**
 
-| Parameter        | Type   | Required | Description                |
-| ---------------- | ------ | -------- | -------------------------- |
-| `collectionSlug` | string | Yes      | Collection slug            |
-| `limit`          | number | No       | Number of listings (1-100) |
-| `next`           | string | No       | Pagination cursor          |
+| Parameter                | Type    | Required | Description                               |
+| ------------------------ | ------- | -------- | ----------------------------------------- |
+| `collectionSlug`         | string  | Yes      | Collection slug                           |
+| `limit`                  | number  | No       | Number of listings (1-100)                |
+| `next`                   | string  | No       | Pagination cursor                         |
+| `includePrivateListings` | boolean | No       | Include private listings (default: false) |
 
 **Returns:** `GetListingsResponse` with best listings.
 
@@ -438,13 +444,14 @@ listings.forEach((listing) => {
 
 **Parameters:**
 
-| Parameter              | Type   | Required | Description                        |
-| ---------------------- | ------ | -------- | ---------------------------------- |
-| `assetContractAddress` | string | Yes      | NFT contract address               |
-| `tokenId`              | string | Yes      | Token ID                           |
-| `limit`                | number | No       | Number of listings (1-100)         |
-| `next`                 | string | No       | Pagination cursor                  |
-| `chain`                | Chain  | No       | Blockchain (defaults to SDK chain) |
+| Parameter                | Type    | Required | Description                               |
+| ------------------------ | ------- | -------- | ----------------------------------------- |
+| `assetContractAddress`   | string  | Yes      | NFT contract address                      |
+| `tokenId`                | string  | Yes      | Token ID                                  |
+| `limit`                  | number  | No       | Number of listings (1-100)                |
+| `next`                   | string  | No       | Pagination cursor                         |
+| `chain`                  | Chain   | No       | Blockchain (defaults to SDK chain)        |
+| `includePrivateListings` | boolean | No       | Include private listings (default: false) |
 
 **Returns:** `GetListingsResponse` containing:
 
@@ -603,21 +610,37 @@ const offerData = await openseaSDK.api.buildOffer(
   1, // Quantity
   "boredapeyachtclub", // Collection slug
   true, // Offer protection enabled
-  "Fur", // Optional: trait type
-  "Golden Brown", // Optional: trait value
+  "Fur", // Optional: trait type (single trait)
+  "Golden Brown", // Optional: trait value (single trait)
+);
+
+// Multi-trait offers
+const multiTraitOffer = await openseaSDK.api.buildOffer(
+  "0x...",
+  1,
+  "boredapeyachtclub",
+  true,
+  undefined, // Don't use traitType with traits array
+  undefined, // Don't use traitValue with traits array
+  [
+    { type: "Fur", value: "Golden Brown" },
+    { type: "Eyes", value: "Bored" },
+  ],
 );
 ```
 
 **Parameters:**
 
-| Parameter                | Type    | Required | Description                               |
-| ------------------------ | ------- | -------- | ----------------------------------------- |
-| `offererAddress`         | string  | Yes      | Wallet making the offer                   |
-| `quantity`               | number  | Yes      | Number of NFTs requested                  |
-| `collectionSlug`         | string  | Yes      | Collection slug                           |
-| `offerProtectionEnabled` | boolean | No       | Use OpenSea's signed zone (default: true) |
-| `traitType`              | string  | No       | Trait name for trait offers               |
-| `traitValue`             | string  | No       | Trait value for trait offers              |
+| Parameter                | Type                                                  | Required | Description                                                                       |
+| ------------------------ | ----------------------------------------------------- | -------- | --------------------------------------------------------------------------------- |
+| `offererAddress`         | string                                                | Yes      | Wallet making the offer                                                           |
+| `quantity`               | number                                                | Yes      | Number of NFTs requested                                                          |
+| `collectionSlug`         | string                                                | Yes      | Collection slug                                                                   |
+| `offerProtectionEnabled` | boolean                                               | No       | Use OpenSea's signed zone (default: true)                                         |
+| `traitType`              | string                                                | No       | Trait name for single-trait offers                                                |
+| `traitValue`             | string                                                | No       | Trait value for single-trait offers                                               |
+| `traits`                 | Array\<{ type: string; value: string }\>              | No       | Array of traits for multi-trait offers (cannot combine with traitType/traitValue) |
+| `numericTraits`          | Array\<{ type: string; min?: number; max?: number }\> | No       | Array of numeric trait criteria with min/max ranges                               |
 
 **Returns:** `BuildOfferResponse` with partial order parameters.
 
@@ -628,22 +651,29 @@ const offerData = await openseaSDK.api.buildOffer(
 Get all collection-level offers for a collection.
 
 ```typescript
-const response = await openseaSDK.api.getCollectionOffers("boredapeyachtclub");
+const { offers, next } = await openseaSDK.api.getCollectionOffers(
+  "boredapeyachtclub",
+  100, // Limit
+  undefined, // Next cursor
+);
 
-if (response) {
-  response.offers.forEach((offer) => {
-    console.log(`Collection offer: ${offer.price.value}`);
-  });
-}
+offers.forEach((offer) => {
+  console.log(`Collection offer: ${offer.price.value}`);
+});
 ```
 
 **Parameters:**
 
-| Parameter | Type   | Required | Description     |
-| --------- | ------ | -------- | --------------- |
-| `slug`    | string | Yes      | Collection slug |
+| Parameter | Type   | Required | Description                            |
+| --------- | ------ | -------- | -------------------------------------- |
+| `slug`    | string | Yes      | Collection slug                        |
+| `limit`   | number | No       | Number of offers (1-100, default: 100) |
+| `next`    | string | No       | Pagination cursor                      |
 
-**Returns:** `ListCollectionOffersResponse` or `null`.
+**Returns:** `GetOffersResponse` containing:
+
+- `offers`: Array of offer objects
+- `next`: Pagination cursor
 
 ---
 
@@ -658,16 +688,30 @@ const offer = await openseaSDK.api.postCollectionOffer(
   "Fur", // Optional: trait type
   "Golden Brown", // Optional: trait value
 );
+
+// Multi-trait collection offer
+const multiTraitOffer = await openseaSDK.api.postCollectionOffer(
+  orderProtocolData,
+  "boredapeyachtclub",
+  undefined, // Don't use traitType with traits array
+  undefined, // Don't use traitValue with traits array
+  [
+    { type: "Fur", value: "Golden Brown" },
+    { type: "Eyes", value: "Bored" },
+  ],
+);
 ```
 
 **Parameters:**
 
-| Parameter    | Type         | Required | Description                  |
-| ------------ | ------------ | -------- | ---------------------------- |
-| `order`      | ProtocolData | Yes      | Signed order data            |
-| `slug`       | string       | Yes      | Collection slug              |
-| `traitType`  | string       | No       | Trait name for trait offers  |
-| `traitValue` | string       | No       | Trait value for trait offers |
+| Parameter       | Type                                                  | Required | Description                                                                       |
+| --------------- | ----------------------------------------------------- | -------- | --------------------------------------------------------------------------------- |
+| `order`         | ProtocolData                                          | Yes      | Signed order data                                                                 |
+| `slug`          | string                                                | Yes      | Collection slug                                                                   |
+| `traitType`     | string                                                | No       | Trait name for single-trait offers                                                |
+| `traitValue`    | string                                                | No       | Trait value for single-trait offers                                               |
+| `traits`        | Array\<{ type: string; value: string }\>              | No       | Array of traits for multi-trait offers (cannot combine with traitType/traitValue) |
+| `numericTraits` | Array\<{ type: string; min?: number; max?: number }\> | No       | Array of numeric trait criteria with min/max ranges                               |
 
 **Returns:** `CollectionOffer` object or `null`.
 
@@ -786,19 +830,25 @@ const fulfillmentData = await openseaSDK.api.generateFulfillmentData(
   OrderSide.LISTING,
   "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D", // Optional: asset contract
   "1", // Optional: token ID
+  "1", // Optional: units to fill
+  "0x...", // Optional: recipient address
+  false, // Optional: include optional creator fees
 );
 ```
 
 **Parameters:**
 
-| Parameter              | Type      | Required | Description                 |
-| ---------------------- | --------- | -------- | --------------------------- |
-| `fulfillerAddress`     | string    | Yes      | Wallet fulfilling the order |
-| `orderHash`            | string    | Yes      | Order hash                  |
-| `protocolAddress`      | string    | Yes      | Seaport contract address    |
-| `side`                 | OrderSide | Yes      | LISTING or OFFER            |
-| `assetContractAddress` | string    | No       | For criteria offers         |
-| `tokenId`              | string    | No       | For criteria offers         |
+| Parameter                    | Type      | Required | Description                                    |
+| ---------------------------- | --------- | -------- | ---------------------------------------------- |
+| `fulfillerAddress`           | string    | Yes      | Wallet fulfilling the order                    |
+| `orderHash`                  | string    | Yes      | Order hash                                     |
+| `protocolAddress`            | string    | Yes      | Seaport contract address                       |
+| `side`                       | OrderSide | Yes      | LISTING or OFFER                               |
+| `assetContractAddress`       | string    | No       | For criteria offers                            |
+| `tokenId`                    | string    | No       | For criteria offers                            |
+| `unitsToFill`                | string    | No       | Number of units to fill (default: 1)           |
+| `recipientAddress`           | string    | No       | Recipient address for NFT (listings only)      |
+| `includeOptionalCreatorFees` | boolean   | No       | Include optional creator fees (default: false) |
 
 **Returns:** `FulfillmentDataResponse` with transaction data.
 
@@ -1129,6 +1179,162 @@ asset_events.forEach((event) => {
   nft: { /* NFT details */ }
 }
 ```
+
+---
+
+## Token Endpoints
+
+### Get Trending Tokens
+
+Fetch a list of trending tokens with pagination.
+
+```typescript
+const { tokens, next } = await openseaSDK.api.getTrendingTokens({
+  limit: 20,
+});
+
+tokens.forEach((token) => {
+  console.log(`${token.name} (${token.symbol}): $${token.usd_price}`);
+});
+```
+
+**Parameters:**
+
+| Parameter | Type   | Required | Description                             |
+| --------- | ------ | -------- | --------------------------------------- |
+| `limit`   | number | No       | Number of tokens to return              |
+| `next`    | string | No       | Pagination cursor from previous request |
+
+**Returns:** `GetTrendingTokensResponse` containing:
+
+- `tokens`: Array of token objects
+- `next`: Pagination cursor
+
+---
+
+### Get Top Tokens
+
+Fetch a list of top tokens with pagination.
+
+```typescript
+const { tokens, next } = await openseaSDK.api.getTopTokens({
+  limit: 20,
+});
+
+tokens.forEach((token) => {
+  console.log(`${token.name} (${token.symbol}): $${token.usd_price}`);
+});
+```
+
+**Parameters:**
+
+| Parameter | Type   | Required | Description                             |
+| --------- | ------ | -------- | --------------------------------------- |
+| `limit`   | number | No       | Number of tokens to return              |
+| `next`    | string | No       | Pagination cursor from previous request |
+
+**Returns:** `GetTopTokensResponse` containing:
+
+- `tokens`: Array of token objects
+- `next`: Pagination cursor
+
+---
+
+### Get Swap Quote
+
+Get a swap quote for exchanging tokens.
+
+```typescript
+const quote = await openseaSDK.api.getSwapQuote({
+  token_in: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
+  token_out: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+  amount: "1000000000000000000", // 1 WETH in wei
+  chain: "ethereum",
+  taker_address: "0x...", // Optional
+  slippage: 0.5, // Optional: slippage tolerance
+});
+```
+
+**Parameters:**
+
+| Parameter       | Type   | Required | Description                 |
+| --------------- | ------ | -------- | --------------------------- |
+| `token_in`      | string | Yes      | Address of the input token  |
+| `token_out`     | string | Yes      | Address of the output token |
+| `amount`        | string | Yes      | Amount of input token       |
+| `chain`         | string | Yes      | Chain for the swap          |
+| `taker_address` | string | No       | Address of the taker        |
+| `slippage`      | number | No       | Slippage tolerance          |
+
+**Returns:** `GetSwapQuoteResponse` with swap quote data.
+
+---
+
+### Get Token
+
+Fetch details for a specific token by chain and contract address.
+
+```typescript
+const token = await openseaSDK.api.getToken(
+  "ethereum", // Chain
+  "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // Token address
+);
+
+console.log(`${token.name} (${token.symbol})`);
+```
+
+**Parameters:**
+
+| Parameter | Type   | Required | Description               |
+| --------- | ------ | -------- | ------------------------- |
+| `chain`   | string | Yes      | The chain the token is on |
+| `address` | string | Yes      | Token contract address    |
+
+**Returns:** `GetTokenResponse` with token details.
+
+---
+
+## Search Endpoint
+
+### Search
+
+Search across collections, tokens, NFTs, and accounts. Results are ranked by relevance.
+
+```typescript
+import { SearchResponse } from "opensea-js";
+
+const results = await openseaSDK.api.search({
+  query: "bored ape",
+  chains: ["ethereum"], // Optional: filter by chain
+  asset_types: ["collection", "nft"], // Optional: filter by type
+  limit: 20, // Optional: number of results (default: 20, max: 50)
+});
+
+results.results.forEach((result) => {
+  if (result.type === "collection" && result.collection) {
+    console.log(`Collection: ${result.collection.name}`);
+  } else if (result.type === "nft" && result.nft) {
+    console.log(`NFT: ${result.nft.name}`);
+  } else if (result.type === "token" && result.token) {
+    console.log(`Token: ${result.token.name} ($${result.token.usd_price})`);
+  } else if (result.type === "account" && result.account) {
+    console.log(`Account: ${result.account.username}`);
+  }
+});
+```
+
+**Parameters:**
+
+| Parameter     | Type     | Required | Description                                                |
+| ------------- | -------- | -------- | ---------------------------------------------------------- |
+| `query`       | string   | Yes      | Search query text                                          |
+| `chains`      | string[] | No       | Filter by blockchain(s)                                    |
+| `asset_types` | string[] | No       | Filter by type: "collection", "nft", "token", or "account" |
+| `limit`       | number   | No       | Number of results (default: 20, max: 50)                   |
+
+**Returns:** `SearchResponse` containing:
+
+- `results`: Array of `SearchResult` objects, each with a `type` field and the corresponding typed object (`collection`, `token`, `nft`, or `account`)
 
 ---
 
