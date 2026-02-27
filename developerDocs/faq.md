@@ -17,7 +17,7 @@ The source code for the SDK can be found on [GitHub](https://github.com/ProjectO
 
 ## What chains are supported?
 
-See the [Chain enum](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/types.ts#L121-L145) for a complete list of supported chains.
+See the `Chain` enum in [`src/types.ts`](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/types.ts) for a complete list of supported chains.
 
 Please use methods in the v2 API for multichain capabilities.
 
@@ -25,4 +25,4 @@ Please use methods in the v2 API for multichain capabilities.
 
 First, check the [API Reference](api-reference.md) to see all available SDK methods - many OpenSea API v2 endpoints are now supported.
 
-If the SDK does not currently have a specific API, you can use the generic [GET and POST methods](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/api/api.ts#L783-L819) to make any API Request. This repository is also open source, so please feel free to create a pull request.
+If the SDK does not currently have a specific API, you can use the generic `get` and `post` methods on the `OpenSeaAPI` class in [`src/api/api.ts`](https://github.com/ProjectOpenSea/opensea-js/blob/main/src/api/api.ts) to make any API request. This repository is also open source, so please feel free to create a pull request.
