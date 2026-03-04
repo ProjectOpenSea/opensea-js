@@ -84,7 +84,7 @@ export class OrdersManager {
       ),
       token: remapSharedStorefrontAddress(nft.contract),
       identifier: nft.identifier ?? undefined,
-      amount: quantities[index].toString() ?? "1",
+      amount: quantities[index]?.toString() ?? "1",
     }));
   }
 
