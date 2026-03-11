@@ -197,9 +197,8 @@ export class OrdersManager {
     });
 
     if (buyerAddress) {
-      const { getPrivateListingConsiderations } = await import(
-        "../orders/privateListings"
-      );
+      const { getPrivateListingConsiderations } =
+        await import("../orders/privateListings");
       considerationFeeItems.push(
         ...getPrivateListingConsiderations(offerAssetItems, buyerAddress),
       );
@@ -646,9 +645,8 @@ export class OrdersManager {
       });
 
       if (buyerAddress) {
-        const { getPrivateListingConsiderations } = await import(
-          "../orders/privateListings"
-        );
+        const { getPrivateListingConsiderations } =
+          await import("../orders/privateListings");
         considerationFeeItems.push(
           ...getPrivateListingConsiderations(offerAssetItems, buyerAddress),
         );
@@ -703,9 +701,8 @@ export class OrdersManager {
         });
 
         if (buyerAddress) {
-          const { getPrivateListingConsiderations } = await import(
-            "../orders/privateListings"
-          );
+          const { getPrivateListingConsiderations } =
+            await import("../orders/privateListings");
           considerationFeeItems.push(
             ...getPrivateListingConsiderations(offerAssetItems, buyerAddress),
           );
