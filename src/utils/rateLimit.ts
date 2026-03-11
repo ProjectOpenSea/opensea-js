@@ -20,7 +20,6 @@ const CUSTOM_RATE_LIMIT_STATUS_CODE = 599;
  * This is exported for SDK consumers who may want to use executeWithRateLimit
  * for their own OpenSea API integrations.
  */
-// eslint-disable-next-line import/no-unused-modules
 export interface RateLimitOptions {
   /** Logger function for logging progress */
   logger?: (message: string) => void;

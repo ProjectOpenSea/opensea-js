@@ -1,7 +1,6 @@
 import { mockOrderComponents } from "./orders";
 import { Offer, OrderStatus } from "../../src/api/types";
 
-// eslint-disable-next-line import/no-unused-modules
 export const mockOffer: Offer = {
   order_hash: "0xabc123",
   chain: "ethereum",
@@ -18,7 +17,6 @@ export const mockOffer: Offer = {
   status: OrderStatus.ACTIVE,
 };
 
-// eslint-disable-next-line import/no-unused-modules
 export const mockOfferMinimal: Partial<Offer> & Pick<Offer, "order_hash"> = {
   order_hash: "0x123",
 };
