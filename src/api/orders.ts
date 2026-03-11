@@ -7,9 +7,13 @@ import {
   GetOrdersResponse,
   CancelOrderResponse,
   GetOrderByHashResponse,
+  Listing,
+  Offer,
 } from "./types";
 import {
   FulfillmentDataResponse,
+  ListingPostQueryResponse,
+  OfferPostQueryResponse,
   OrderAPIOptions,
   OrdersPostQueryResponse,
   OrdersQueryOptions,
@@ -38,6 +42,7 @@ export class OrdersAPI {
 
   /**
    * Gets an order from API based on query options.
+   * @deprecated Use collection-based endpoints instead: getAllOffers, getAllListings, getBestOffer, getBestListing.
    */
   async getOrder({
     side,
@@ -90,6 +95,7 @@ export class OrdersAPI {
 
   /**
    * Gets a list of orders from API based on query options.
+   * @deprecated Use collection-based endpoints instead: getAllOffers, getAllListings, getBestOffer, getBestListing.
    */
   async getOrders({
     side,
@@ -176,6 +182,7 @@ export class OrdersAPI {
 
   /**
    * Post an order to OpenSea.
+   * @deprecated Use postListing or postOffer instead.
    */
   async postOrder(
     order: ProtocolData,
@@ -214,6 +221,48 @@ export class OrdersAPI {
       { ...order, protocol_address: protocolAddress },
     );
     return deserializeOrder(response.order);
+  }
+
+  /**
+   * Post a listing to OpenSea. Returns the new Listing response format.
+   */
+  async postListing(
+    order: ProtocolData,
+    protocolAddress: string,
+  ): Promise<Listing> {
+    if (!order) {
+      throw new Error("order data is required");
+    }
+    if (!protocolAddress || !/^0x[a-fA-F0-9]{40}$/.test(protocolAddress)) {
+      throw new Error("Invalid protocol address format");
+    }
+
+    const response = await this.fetcher.post<ListingPostQueryResponse>(
+      getOrdersAPIPath(this.chain, "seaport", OrderSide.LISTING),
+      { ...order, protocol_address: protocolAddress },
+    );
+    return response.listing;
+  }
+
+  /**
+   * Post an offer to OpenSea. Returns the new Offer response format.
+   */
+  async postOffer(
+    order: ProtocolData,
+    protocolAddress: string,
+  ): Promise<Offer> {
+    if (!order) {
+      throw new Error("order data is required");
+    }
+    if (!protocolAddress || !/^0x[a-fA-F0-9]{40}$/.test(protocolAddress)) {
+      throw new Error("Invalid protocol address format");
+    }
+
+    const response = await this.fetcher.post<OfferPostQueryResponse>(
+      getOrdersAPIPath(this.chain, "seaport", OrderSide.OFFER),
+      { ...order, protocol_address: protocolAddress },
+    );
+    return response.offer;
   }
 
   /**

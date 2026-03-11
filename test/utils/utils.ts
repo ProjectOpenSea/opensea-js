@@ -1,8 +1,10 @@
 import { randomBytes } from "crypto";
 import { expect } from "chai";
+import { Listing, Offer } from "../../src/api/types";
 import { OrderV2 } from "../../src/orders/types";
 import { getCurrentUnixTimestamp, TimeInSeconds } from "../../src/utils";
 
+/** @deprecated Use expectValidListing or expectValidOffer instead. */
 export const expectValidOrder = (order: OrderV2) => {
   const requiredFields = [
     "createdDate",
@@ -26,6 +28,38 @@ export const expectValidOrder = (order: OrderV2) => {
   ];
   for (const field of requiredFields) {
     expect(field in order).to.be.true;
+  }
+};
+
+export const expectValidListing = (listing: Listing) => {
+  const requiredFields = [
+    "order_hash",
+    "chain",
+    "protocol_data",
+    "protocol_address",
+    "price",
+    "type",
+    "remaining_quantity",
+    "status",
+  ];
+  for (const field of requiredFields) {
+    expect(field in listing, `expected listing to have field '${field}'`).to.be
+      .true;
+  }
+};
+
+export const expectValidOffer = (offer: Offer) => {
+  const requiredFields = [
+    "order_hash",
+    "chain",
+    "protocol_data",
+    "protocol_address",
+    "price",
+    "status",
+  ];
+  for (const field of requiredFields) {
+    expect(field in offer, `expected offer to have field '${field}'`).to.be
+      .true;
   }
 };
 

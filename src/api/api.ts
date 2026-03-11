@@ -51,6 +51,8 @@ import {
   GetSwapQuoteArgs,
   GetSwapQuoteResponse,
   GetTokenResponse,
+  Listing,
+  Offer,
   SearchArgs,
   SearchResponse,
 } from "./types";
@@ -126,6 +128,7 @@ export class OpenSeaAPI {
 
   /**
    * Gets an order from API based on query options.
+   * @deprecated Use collection-based endpoints instead: getAllOffers, getAllListings, getBestOffer, getBestListing.
    * @param options Query options for fetching an order
    * @returns The first {@link OrderV2} returned by the API
    *
@@ -155,6 +158,7 @@ export class OpenSeaAPI {
 
   /**
    * Gets a list of orders from API based on query options.
+   * @deprecated Use collection-based endpoints instead: getAllOffers, getAllListings, getBestOffer, getBestListing.
    * @param options Query options for fetching orders
    * @returns The {@link GetOrdersResponse} returned by the API.
    */
@@ -325,6 +329,7 @@ export class OpenSeaAPI {
 
   /**
    * Post an order to OpenSea.
+   * @deprecated Use postListing or postOffer instead.
    * @param order The order to post
    * @param apiOptions API options for the order
    * @returns The {@link OrderV2} posted to the API.
@@ -334,6 +339,32 @@ export class OpenSeaAPI {
     apiOptions: OrderAPIOptions,
   ): Promise<OrderV2> {
     return this.ordersAPI.postOrder(order, apiOptions);
+  }
+
+  /**
+   * Post a listing to OpenSea. Returns the new v2 Listing response format.
+   * @param order The order to post
+   * @param protocolAddress The contract address of the seaport protocol
+   * @returns The {@link Listing} posted to the API.
+   */
+  public async postListing(
+    order: ProtocolData,
+    protocolAddress: string,
+  ): Promise<Listing> {
+    return this.ordersAPI.postListing(order, protocolAddress);
+  }
+
+  /**
+   * Post an offer to OpenSea. Returns the new v2 Offer response format.
+   * @param order The order to post
+   * @param protocolAddress The contract address of the seaport protocol
+   * @returns The {@link Offer} posted to the API.
+   */
+  public async postOffer(
+    order: ProtocolData,
+    protocolAddress: string,
+  ): Promise<Offer> {
+    return this.ordersAPI.postOffer(order, protocolAddress);
   }
 
   /**
