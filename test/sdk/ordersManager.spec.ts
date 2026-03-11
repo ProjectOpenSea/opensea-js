@@ -74,30 +74,6 @@ suite("SDK: OrdersManager", () => {
         protocolData: mockOrder,
         protocolAddress: "0xProtocol",
       }),
-      postListing: sinon.stub().resolves({
-        order_hash: "0xOrderHash",
-        chain: "ethereum",
-        protocol_data: mockOrder,
-        protocol_address: "0xProtocol",
-        price: {
-          current: {
-            currency: "ETH",
-            decimals: 18,
-            value: "1000000000000000000",
-          },
-        },
-        type: "basic",
-        remaining_quantity: 1,
-        status: "ACTIVE",
-      }),
-      postOffer: sinon.stub().resolves({
-        order_hash: "0xOrderHash",
-        chain: "ethereum",
-        protocol_data: mockOrder,
-        protocol_address: "0xProtocol",
-        price: { currency: "WETH", decimals: 18, value: "1000000000000000000" },
-        status: "ACTIVE",
-      }),
       buildOffer: sinon.stub().resolves({
         partialParameters: {
           consideration: [
@@ -155,8 +131,8 @@ suite("SDK: OrdersManager", () => {
       expect(mockAPI.getNFT.calledOnce).to.be.true;
       expect(mockAPI.getCollection.calledOnce).to.be.true;
       expect(mockSeaport.createOrder.calledOnce).to.be.true;
-      expect(mockAPI.postOffer.calledOnce).to.be.true;
-      expect(result.order_hash).to.equal("0xOrderHash");
+      expect(mockAPI.postOrder.calledOnce).to.be.true;
+      expect(result.orderHash).to.equal("0xOrderHash");
     });
 
     test("creates offer with custom quantity", async () => {
@@ -299,8 +275,8 @@ suite("SDK: OrdersManager", () => {
       expect(mockAPI.getNFT.calledOnce).to.be.true;
       expect(mockAPI.getCollection.calledOnce).to.be.true;
       expect(mockSeaport.createOrder.calledOnce).to.be.true;
-      expect(mockAPI.postListing.calledOnce).to.be.true;
-      expect(result.order_hash).to.equal("0xOrderHash");
+      expect(mockAPI.postOrder.calledOnce).to.be.true;
+      expect(result.orderHash).to.equal("0xOrderHash");
     });
 
     test("creates listing with buyer address (private listing)", async () => {
@@ -736,7 +712,6 @@ suite("SDK: OrdersManager", () => {
       });
 
       expect(mockAPI.postOrder.called).to.be.false;
-      expect(mockAPI.postOffer.called).to.be.false;
     });
   });
 
@@ -785,7 +760,6 @@ suite("SDK: OrdersManager", () => {
       });
 
       expect(mockAPI.postOrder.called).to.be.false;
-      expect(mockAPI.postListing.called).to.be.false;
     });
   });
 
@@ -827,7 +801,7 @@ suite("SDK: OrdersManager", () => {
       expect(mockAPI.getNFT.calledTwice).to.be.true;
       expect(mockAPI.getCollection.calledTwice).to.be.true;
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
-      expect(mockAPI.postListing.calledTwice).to.be.true;
+      expect(mockAPI.postOrder.calledTwice).to.be.true;
       expect(result.successful).to.have.lengthOf(2);
       expect(result.failed).to.have.lengthOf(0);
     });
@@ -846,7 +820,7 @@ suite("SDK: OrdersManager", () => {
       // Should use createListing, not createBulkOrders
       expect(mockSeaport.createOrder.calledOnce).to.be.true;
       expect(mockSeaport.createBulkOrders?.called).to.be.undefined;
-      expect(mockAPI.postListing.calledOnce).to.be.true;
+      expect(mockAPI.postOrder.calledOnce).to.be.true;
       expect(result.successful).to.have.lengthOf(1);
       expect(result.failed).to.have.lengthOf(0);
     });
@@ -912,7 +886,7 @@ suite("SDK: OrdersManager", () => {
       expect(result.successful).to.have.lengthOf(3);
       expect(result.failed).to.have.lengthOf(0);
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
-      expect(mockAPI.postListing.calledThrice).to.be.true;
+      expect(mockAPI.postOrder.calledThrice).to.be.true;
     });
 
     test("creates bulk listings with different parameters", async () => {
@@ -1045,7 +1019,7 @@ suite("SDK: OrdersManager", () => {
       expect(result.successful).to.have.lengthOf(25);
       expect(result.failed).to.have.lengthOf(0);
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
-      expect(mockAPI.postListing.callCount).to.equal(25);
+      expect(mockAPI.postOrder.callCount).to.equal(25);
     });
 
     test("handles network failures during bulk submission", async () => {
@@ -1075,7 +1049,7 @@ suite("SDK: OrdersManager", () => {
       });
 
       // Make the second API call fail
-      mockAPI.postListing
+      mockAPI.postOrder
         .onFirstCall()
         .resolves({
           orderHash: "0xOrderHash1",
@@ -1113,7 +1087,7 @@ suite("SDK: OrdersManager", () => {
       } catch (error) {
         expect((error as Error).message).to.include("Network error");
         // Should have called postOrder twice before failing
-        expect(mockAPI.postListing.callCount).to.equal(2);
+        expect(mockAPI.postOrder.callCount).to.equal(2);
       }
     });
   });
@@ -1156,7 +1130,7 @@ suite("SDK: OrdersManager", () => {
       expect(mockAPI.getNFT.calledTwice).to.be.true;
       expect(mockAPI.getCollection.calledTwice).to.be.true;
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
-      expect(mockAPI.postOffer.calledTwice).to.be.true;
+      expect(mockAPI.postOrder.calledTwice).to.be.true;
       expect(result.successful).to.have.lengthOf(2);
       expect(result.failed).to.have.lengthOf(0);
     });
@@ -1175,7 +1149,7 @@ suite("SDK: OrdersManager", () => {
       // Should use createOffer, not createBulkOrders
       expect(mockSeaport.createOrder.calledOnce).to.be.true;
       expect(mockSeaport.createBulkOrders?.called).to.be.undefined;
-      expect(mockAPI.postOffer.calledOnce).to.be.true;
+      expect(mockAPI.postOrder.calledOnce).to.be.true;
       expect(result.successful).to.have.lengthOf(1);
       expect(result.failed).to.have.lengthOf(0);
     });
@@ -1241,7 +1215,7 @@ suite("SDK: OrdersManager", () => {
       expect(result.successful).to.have.lengthOf(3);
       expect(result.failed).to.have.lengthOf(0);
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
-      expect(mockAPI.postOffer.calledThrice).to.be.true;
+      expect(mockAPI.postOrder.calledThrice).to.be.true;
     });
 
     test("creates bulk offers with different parameters", async () => {
@@ -1414,7 +1388,7 @@ suite("SDK: OrdersManager", () => {
       expect(result.successful).to.have.lengthOf(25);
       expect(result.failed).to.have.lengthOf(0);
       expect(mockSeaport.createBulkOrders.calledOnce).to.be.true;
-      expect(mockAPI.postOffer.callCount).to.equal(25);
+      expect(mockAPI.postOrder.callCount).to.equal(25);
     });
 
     test("handles network failures during bulk submission", async () => {
@@ -1444,7 +1418,7 @@ suite("SDK: OrdersManager", () => {
       });
 
       // Make the second API call fail
-      mockAPI.postOffer
+      mockAPI.postOrder
         .onFirstCall()
         .resolves({
           orderHash: "0xOrderHash1",
@@ -1482,7 +1456,7 @@ suite("SDK: OrdersManager", () => {
       } catch (error) {
         expect((error as Error).message).to.include("Network error");
         // Should have called postOrder twice before failing
-        expect(mockAPI.postOffer.callCount).to.equal(2);
+        expect(mockAPI.postOrder.callCount).to.equal(2);
       }
     });
   });

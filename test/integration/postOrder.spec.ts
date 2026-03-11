@@ -15,11 +15,7 @@ import {
   walletAddress,
   requireIntegrationEnv,
 } from "../utils/setupIntegration";
-import {
-  getRandomExpiration,
-  expectValidOffer,
-  expectValidListing,
-} from "../utils/utils";
+import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: order posting", () => {
   beforeEach(() => {
@@ -31,7 +27,7 @@ suite("SDK: order posting", () => {
     const sdk = getSdkForChain(chain);
 
     const expirationTime = getRandomExpiration();
-    const offerParams = {
+    const offer = {
       accountAddress: walletAddress,
       amount: +OFFER_AMOUNT,
       asset: {
@@ -40,11 +36,15 @@ suite("SDK: order posting", () => {
       },
       expirationTime,
     };
-    const offer = await sdk.createOffer(offerParams);
-    expectValidOffer(offer);
-    expect(offer.order_hash).to.be.a("string");
-    expect(offer.protocol_data).to.exist;
-    expect(offer.price).to.exist;
+    const order = await sdk.createOffer(offer);
+    expectValidOrder(order);
+    expect(order.expirationTime).to.equal(expirationTime);
+    expect(order.protocolData.parameters.endTime).to.equal(
+      expirationTime.toString(),
+    );
+    expect(order.currentPrice).to.equal(
+      BigInt(parseFloat(OFFER_AMOUNT) * 10 ** 18),
+    );
   });
 
   test("Post Offer - Polygon", async function () {
@@ -52,7 +52,7 @@ suite("SDK: order posting", () => {
     const sdk2 = getSdkForChain(chain2);
 
     const expirationTime = getRandomExpiration();
-    const offerParams = {
+    const offer = {
       accountAddress: walletAddress,
       amount: +OFFER_AMOUNT,
       asset: {
@@ -63,8 +63,8 @@ suite("SDK: order posting", () => {
       expirationTime,
     };
     try {
-      const offer = await sdk2.createOffer(offerParams);
-      expectValidOffer(offer);
+      const order = await sdk2.createOffer(offer);
+      expectValidOrder(order);
     } catch (error) {
       if (
         (error as Error).message?.includes("does not have the amount needed")
@@ -89,7 +89,7 @@ suite("SDK: order posting", () => {
     const chain = CREATE_LISTING_CHAIN;
     const sdk = getSdkForChain(chain);
     const expirationTime = getRandomExpiration();
-    const listingParams = {
+    const listing = {
       accountAddress: walletAddress,
       amount: LISTING_AMOUNT,
       asset: {
@@ -98,8 +98,8 @@ suite("SDK: order posting", () => {
       },
       expirationTime,
     };
-    const listing = await sdk.createListing(listingParams);
-    expectValidListing(listing);
+    const order = await sdk.createListing(listing);
+    expectValidOrder(order);
   });
 
   test(`Post Listing - ${CREATE_LISTING_2_CHAIN}`, async function () {
@@ -115,7 +115,7 @@ suite("SDK: order posting", () => {
     const chain2 = CREATE_LISTING_2_CHAIN;
     const sdk2 = getSdkForChain(chain2);
     const expirationTime = getRandomExpiration();
-    const listingParams = {
+    const listing = {
       accountAddress: walletAddress,
       amount: +LISTING_AMOUNT * 1_000_000,
       asset: {
@@ -124,8 +124,8 @@ suite("SDK: order posting", () => {
       },
       expirationTime,
     };
-    const listing = await sdk2.createListing(listingParams);
-    expectValidListing(listing);
+    const order = await sdk2.createListing(listing);
+    expectValidOrder(order);
   });
 
   test("Post Listing with Optional Creator Fees", async function () {
@@ -149,7 +149,7 @@ suite("SDK: order posting", () => {
     );
     const collection = await sdk.api.getCollection(nft.collection);
 
-    const listingParams = {
+    const listing = {
       accountAddress: walletAddress,
       amount: LISTING_AMOUNT,
       asset: {
@@ -159,8 +159,8 @@ suite("SDK: order posting", () => {
       includeOptionalCreatorFees: true,
       expirationTime,
     };
-    const listing = await sdk.createListing(listingParams);
-    expectValidListing(listing);
+    const order = await sdk.createListing(listing);
+    expectValidOrder(order);
 
     // Verify that optional creator fees are included
     const hasOptionalFees = collection.fees.some((fee) => !fee.required);
@@ -170,7 +170,7 @@ suite("SDK: order posting", () => {
         (fee) => fee.required,
       ).length;
       expect(
-        listing.protocol_data.parameters.consideration.length,
+        order.protocolData.parameters.consideration.length,
       ).to.be.greaterThan(1 + requiredFeesCount);
     }
   });

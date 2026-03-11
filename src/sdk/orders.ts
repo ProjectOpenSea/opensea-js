@@ -4,7 +4,7 @@ import {
   OrderComponents,
 } from "@opensea/seaport-js/lib/types";
 import { BigNumberish, ZeroAddress } from "ethers";
-import { CollectionOffer, Listing, NFT, Offer } from "../api/types";
+import { CollectionOffer, NFT } from "../api/types";
 import { INVERSE_BASIS_POINT } from "../constants";
 import { SDKContext } from "./context";
 import { OrderV2, ProtocolData } from "../orders/types";
@@ -31,7 +31,6 @@ import {
 /**
  * Result type for bulk operations that may partially succeed.
  * Contains successfully submitted orders and any failures with error information.
- * @deprecated Use BulkListingResult or BulkOfferResult instead.
  */
 export interface BulkOrderResult {
   /** Successfully submitted orders */
@@ -45,35 +44,6 @@ export interface BulkOrderResult {
     /** The error that occurred during submission */
     error: Error;
   }>;
-}
-
-type BulkFailure = {
-  /** Index of the failed order in the original input array */
-  index: number;
-  /** The signed order that failed to submit (undefined if order creation failed before signing) */
-  order?: ProtocolData;
-  /** The error that occurred during submission */
-  error: Error;
-};
-
-/**
- * Result type for bulk listing operations that may partially succeed.
- */
-export interface BulkListingResult {
-  /** Successfully submitted listings */
-  successful: Listing[];
-  /** Failed listing submissions with error information */
-  failed: BulkFailure[];
-}
-
-/**
- * Result type for bulk offer operations that may partially succeed.
- */
-export interface BulkOfferResult {
-  /** Successfully submitted offers */
-  successful: Offer[];
-  /** Failed offer submissions with error information */
-  failed: BulkFailure[];
 }
 
 /**
@@ -434,7 +404,7 @@ export class OrdersManager {
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.
    *
-   * @returns The {@link Offer} that was created.
+   * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -458,7 +428,7 @@ export class OrdersManager {
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
     zone?: string;
-  }): Promise<Offer> {
+  }): Promise<OrderV2> {
     const order = await this._buildOfferOrder({
       asset,
       accountAddress,
@@ -470,10 +440,11 @@ export class OrdersManager {
       zone,
     });
 
-    return this.context.api.postOffer(
-      order,
-      this.context.seaport.contract.target as string,
-    );
+    return this.context.api.postOrder(order, {
+      protocol: "seaport",
+      protocolAddress: this.context.seaport.contract.target as string,
+      side: OrderSide.OFFER,
+    });
   }
 
   /**
@@ -490,7 +461,7 @@ export class OrdersManager {
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.includeOptionalCreatorFees If true, optional creator fees will be included in the listing. Default: false.
    * @param options.zone Zone for order protection. Defaults to no zone.
-   * @returns The {@link Listing} that was created.
+   * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -520,7 +491,7 @@ export class OrdersManager {
     buyerAddress?: string;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
-  }): Promise<Listing> {
+  }): Promise<OrderV2> {
     const order = await this._buildListingOrder({
       asset,
       accountAddress,
@@ -535,10 +506,11 @@ export class OrdersManager {
       zone,
     });
 
-    return this.context.api.postListing(
-      order,
-      this.context.seaport.contract.target as string,
-    );
+    return this.context.api.postOrder(order, {
+      protocol: "seaport",
+      protocolAddress: this.context.seaport.contract.target as string,
+      side: OrderSide.LISTING,
+    });
   }
 
   /**
@@ -554,7 +526,7 @@ export class OrdersManager {
    * @param options.accountAddress Address of the wallet making the listings
    * @param options.continueOnError If true, continue submitting remaining listings even if some fail. Default: false (throw on first error).
    * @param options.onProgress Optional callback for progress updates. Called after each listing is submitted (successfully or not).
-   * @returns {@link BulkListingResult} containing successful listings and any failures.
+   * @returns {@link BulkOrderResult} containing successful orders and any failures.
    *
    * @throws Error if listings array is empty
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -582,7 +554,7 @@ export class OrdersManager {
     accountAddress: string;
     continueOnError?: boolean;
     onProgress?: (completed: number, total: number) => void;
-  }): Promise<BulkListingResult> {
+  }): Promise<BulkOrderResult> {
     if (listings.length === 0) {
       throw new Error("Listings array cannot be empty");
     }
@@ -768,25 +740,25 @@ export class OrdersManager {
       `Starting submission of ${orders.length} bulk-signed ${pluralize(orders.length, "listing")} to OpenSea API...`,
     );
 
-    const submittedListings: Listing[] = [];
-    const failedListings: BulkListingResult["failed"] = [];
-    const protocolAddress = this.context.seaport.contract.target as string;
+    const submittedOrders: OrderV2[] = [];
+    const failedOrders: BulkOrderResult["failed"] = [];
 
     for (let i = 0; i < orders.length; i++) {
       this.context.logger(`Submitting listing ${i + 1}/${orders.length}...`);
       try {
-        const listing = await this.context.api.postListing(
-          orders[i],
-          protocolAddress,
-        );
-        submittedListings.push(listing);
+        const submittedOrder = await this.context.api.postOrder(orders[i], {
+          protocol: "seaport",
+          protocolAddress: this.context.seaport.contract.target as string,
+          side: OrderSide.LISTING,
+        });
+        submittedOrders.push(submittedOrder);
         this.context.logger(`Completed listing ${i + 1}/${orders.length}`);
       } catch (error) {
         const errorMessage = (error as Error).message;
         this.context.logger(
           `Failed listing ${i + 1}/${orders.length}: ${errorMessage}`,
         );
-        failedListings.push({
+        failedOrders.push({
           index: i,
           order: orders[i],
           error: error as Error,
@@ -802,21 +774,21 @@ export class OrdersManager {
       onProgress?.(i + 1, orders.length);
     }
 
-    if (submittedListings.length > 0) {
+    if (submittedOrders.length > 0) {
       this.context.logger(
-        `Successfully submitted ${submittedListings.length}/${orders.length} ${pluralize(submittedListings.length, "listing")}`,
+        `Successfully submitted ${submittedOrders.length}/${orders.length} ${pluralize(submittedOrders.length, "listing")}`,
       );
     }
 
-    if (failedListings.length > 0) {
+    if (failedOrders.length > 0) {
       this.context.logger(
-        `Failed to submit ${failedListings.length}/${orders.length} ${pluralize(failedListings.length, "listing")}`,
+        `Failed to submit ${failedOrders.length}/${orders.length} ${pluralize(failedOrders.length, "listing")}`,
       );
     }
 
     return {
-      successful: submittedListings,
-      failed: failedListings,
+      successful: submittedOrders,
+      failed: failedOrders,
     };
   }
 
@@ -833,7 +805,7 @@ export class OrdersManager {
    * @param options.accountAddress Address of the wallet making the offers
    * @param options.continueOnError If true, continue submitting remaining offers even if some fail. Default: false (throw on first error).
    * @param options.onProgress Optional callback for progress updates. Called after each offer is submitted (successfully or not).
-   * @returns {@link BulkOfferResult} containing successful offers and any failures.
+   * @returns {@link BulkOrderResult} containing successful orders and any failures.
    *
    * @throws Error if offers array is empty
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -858,7 +830,7 @@ export class OrdersManager {
     accountAddress: string;
     continueOnError?: boolean;
     onProgress?: (completed: number, total: number) => void;
-  }): Promise<BulkOfferResult> {
+  }): Promise<BulkOrderResult> {
     if (offers.length === 0) {
       throw new Error("Offers array cannot be empty");
     }
@@ -1000,25 +972,25 @@ export class OrdersManager {
       `Starting submission of ${orders.length} bulk-signed ${pluralize(orders.length, "offer")} to OpenSea API...`,
     );
 
-    const submittedOffers: Offer[] = [];
-    const failedOffers: BulkOfferResult["failed"] = [];
-    const protocolAddress = this.context.seaport.contract.target as string;
+    const submittedOrders: OrderV2[] = [];
+    const failedOrders: BulkOrderResult["failed"] = [];
 
     for (let i = 0; i < orders.length; i++) {
       this.context.logger(`Submitting offer ${i + 1}/${orders.length}...`);
       try {
-        const offer = await this.context.api.postOffer(
-          orders[i],
-          protocolAddress,
-        );
-        submittedOffers.push(offer);
+        const submittedOrder = await this.context.api.postOrder(orders[i], {
+          protocol: "seaport",
+          protocolAddress: this.context.seaport.contract.target as string,
+          side: OrderSide.OFFER,
+        });
+        submittedOrders.push(submittedOrder);
         this.context.logger(`Completed offer ${i + 1}/${orders.length}`);
       } catch (error) {
         const errorMessage = (error as Error).message;
         this.context.logger(
           `Failed offer ${i + 1}/${orders.length}: ${errorMessage}`,
         );
-        failedOffers.push({
+        failedOrders.push({
           index: i,
           order: orders[i],
           error: error as Error,
@@ -1034,21 +1006,21 @@ export class OrdersManager {
       onProgress?.(i + 1, orders.length);
     }
 
-    if (submittedOffers.length > 0) {
+    if (submittedOrders.length > 0) {
       this.context.logger(
-        `Successfully submitted ${submittedOffers.length}/${orders.length} ${pluralize(submittedOffers.length, "offer")}`,
+        `Successfully submitted ${submittedOrders.length}/${orders.length} ${pluralize(submittedOrders.length, "offer")}`,
       );
     }
 
-    if (failedOffers.length > 0) {
+    if (failedOrders.length > 0) {
       this.context.logger(
-        `Failed to submit ${failedOffers.length}/${orders.length} ${pluralize(failedOffers.length, "offer")}`,
+        `Failed to submit ${failedOrders.length}/${orders.length} ${pluralize(failedOrders.length, "offer")}`,
       );
     }
 
     return {
-      successful: submittedOffers,
-      failed: failedOffers,
+      successful: submittedOrders,
+      failed: failedOrders,
     };
   }
 

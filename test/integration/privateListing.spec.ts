@@ -12,7 +12,7 @@ import {
   walletAddress,
   requireIntegrationEnv,
 } from "../utils/setupIntegration";
-import { getRandomExpiration, expectValidListing } from "../utils/utils";
+import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite(
   `SDK: Private Listings Integration - ${normalizeChainName(CREATE_LISTING_CHAIN)}`,
@@ -47,13 +47,13 @@ suite(
         buyerAddress,
         expirationTime,
       };
-      const listing = await sdk.createListing(privateListing);
-      expectValidListing(listing);
+      const order = await sdk.createListing(privateListing);
+      expectValidOrder(order);
 
-      expect(listing.protocol_data.parameters.consideration).to.exist;
+      expect(order.protocolData.parameters.consideration).to.exist;
 
       const hasMarketplaceFee =
-        listing.protocol_data.parameters.consideration.some(
+        order.protocolData.parameters.consideration.some(
           (item: { recipient?: string }) =>
             item.recipient?.toLowerCase() ===
             getFeeRecipient(Chain.Mainnet).toLowerCase(),
@@ -85,12 +85,12 @@ suite(
         },
         expirationTime,
       };
-      const listing = await sdk2.createListing(regularListing);
-      expectValidListing(listing);
+      const order = await sdk2.createListing(regularListing);
+      expectValidOrder(order);
 
-      expect(listing.protocol_data.parameters.consideration).to.exist;
+      expect(order.protocolData.parameters.consideration).to.exist;
       expect(
-        listing.protocol_data.parameters.consideration.length,
+        order.protocolData.parameters.consideration.length,
       ).to.be.greaterThan(0);
     });
   },

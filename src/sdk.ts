@@ -14,11 +14,7 @@ import { OrderV2 } from "./orders/types";
 import { AssetsManager } from "./sdk/assets";
 import { CancellationManager } from "./sdk/cancellation";
 import { FulfillmentManager } from "./sdk/fulfillment";
-import {
-  BulkListingResult,
-  BulkOfferResult,
-  OrdersManager,
-} from "./sdk/orders";
+import { BulkOrderResult, OrdersManager } from "./sdk/orders";
 import { TokensManager } from "./sdk/tokens";
 import {
   EventData,
@@ -221,7 +217,7 @@ export class OpenSeaSDK {
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.
    *
-   * @returns The {@link Offer} that was created.
+   * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -245,7 +241,7 @@ export class OpenSeaSDK {
     salt?: BigNumberish;
     expirationTime?: BigNumberish;
     zone?: string;
-  }): Promise<Offer> {
+  }): Promise<OrderV2> {
     return this._ordersManager.createOffer({
       asset,
       accountAddress,
@@ -272,7 +268,7 @@ export class OpenSeaSDK {
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.includeOptionalCreatorFees If true, optional creator fees will be included in the listing. Default: false.
    * @param options.zone Zone for order protection. Defaults to no zone.
-   * @returns The {@link Listing} that was created.
+   * @returns The {@link OrderV2} that was created.
    *
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -302,7 +298,7 @@ export class OpenSeaSDK {
     buyerAddress?: string;
     includeOptionalCreatorFees?: boolean;
     zone?: string;
-  }): Promise<Listing> {
+  }): Promise<OrderV2> {
     return this._ordersManager.createListing({
       asset,
       accountAddress,
@@ -331,7 +327,7 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the wallet making the listings
    * @param options.continueOnError If true, continue submitting remaining listings even if some fail. Default: false (throw on first error).
    * @param options.onProgress Optional callback for progress updates. Called after each listing is submitted (successfully or not).
-   * @returns {@link BulkListingResult} containing successful listings and any failures.
+   * @returns {@link BulkOrderResult} containing successful orders and any failures.
    *
    * @throws Error if listings array is empty
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -359,7 +355,7 @@ export class OpenSeaSDK {
     accountAddress: string;
     continueOnError?: boolean;
     onProgress?: (completed: number, total: number) => void;
-  }): Promise<BulkListingResult> {
+  }): Promise<BulkOrderResult> {
     return this._ordersManager.createBulkListings({
       listings,
       accountAddress,
@@ -381,7 +377,7 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the wallet making the offers
    * @param options.continueOnError If true, continue submitting remaining offers even if some fail. Default: false (throw on first error).
    * @param options.onProgress Optional callback for progress updates. Called after each offer is submitted (successfully or not).
-   * @returns {@link BulkOfferResult} containing successful offers and any failures.
+   * @returns {@link BulkOrderResult} containing successful orders and any failures.
    *
    * @throws Error if offers array is empty
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -406,7 +402,7 @@ export class OpenSeaSDK {
     accountAddress: string;
     continueOnError?: boolean;
     onProgress?: (completed: number, total: number) => void;
-  }): Promise<BulkOfferResult> {
+  }): Promise<BulkOrderResult> {
     return this._ordersManager.createBulkOffers({
       offers,
       accountAddress,

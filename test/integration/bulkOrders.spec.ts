@@ -15,11 +15,7 @@ import {
   walletAddress,
   requireIntegrationEnv,
 } from "../utils/setupIntegration";
-import {
-  getRandomExpiration,
-  expectValidOffer,
-  expectValidListing,
-} from "../utils/utils";
+import { getRandomExpiration, expectValidOrder } from "../utils/utils";
 
 suite("SDK: bulk order posting", () => {
   beforeEach(() => {
@@ -87,16 +83,20 @@ suite("SDK: bulk order posting", () => {
     expect(result.successful).to.have.lengthOf(offers.length);
     expect(result.failed).to.have.lengthOf(0);
 
-    // Validate each offer
-    result.successful.forEach((offer, index) => {
-      console.log(`Offer ${index + 1} hash:`, offer.order_hash);
-      if (offer.protocol_data.signature) {
+    // Validate each order
+    result.successful.forEach((order, index) => {
+      console.log(`Order ${index + 1} hash:`, order.orderHash);
+      if (order.protocolData.signature) {
         console.log(
-          `Offer ${index + 1} signature length:`,
-          offer.protocol_data.signature.length,
+          `Order ${index + 1} signature length:`,
+          order.protocolData.signature.length,
         );
       }
-      expectValidOffer(offer);
+      expectValidOrder(order);
+      expect(order.expirationTime).to.equal(expirationTime);
+      expect(order.maker.address.toLowerCase()).to.equal(
+        walletAddress.toLowerCase(),
+      );
     });
 
     console.log("✓ All bulk offers created and validated successfully");
@@ -173,9 +173,10 @@ suite("SDK: bulk order posting", () => {
     // At least one should succeed (the valid offer)
     expect(result.successful.length).to.be.greaterThan(0);
 
-    // Validate successful offers
-    result.successful.forEach((offer) => {
-      expectValidOffer(offer);
+    // Validate successful orders
+    result.successful.forEach((order) => {
+      expectValidOrder(order);
+      expect(order.expirationTime).to.equal(expirationTime);
     });
 
     // Log failed orders for debugging (if any)
@@ -257,20 +258,25 @@ suite("SDK: bulk order posting", () => {
       },
     });
 
-    // Verify all listings were created successfully
+    // Verify all orders were created successfully
     expect(result.successful).to.have.lengthOf(listings.length);
     expect(result.failed).to.have.lengthOf(0);
 
-    // Validate each listing
-    result.successful.forEach((listing, index) => {
-      console.log(`Listing ${index + 1} hash:`, listing.order_hash);
-      if (listing.protocol_data.signature) {
+    // Validate each order
+    result.successful.forEach((order, index) => {
+      console.log(`Listing ${index + 1} hash:`, order.orderHash);
+      if (order.protocolData.signature) {
         console.log(
           `Listing ${index + 1} signature length:`,
-          listing.protocol_data.signature.length,
+          order.protocolData.signature.length,
         );
       }
-      expectValidListing(listing);
+      expectValidOrder(order);
+      expect(order.expirationTime).to.equal(expirationTime);
+      expect(order.maker.address.toLowerCase()).to.equal(
+        walletAddress.toLowerCase(),
+      );
+      expect(order.side).to.equal("ask");
     });
 
     console.log("✓ All bulk listings created and validated successfully");
@@ -347,12 +353,13 @@ suite("SDK: bulk order posting", () => {
     expect(result.successful).to.have.lengthOf(listings.length);
     expect(result.failed).to.have.lengthOf(0);
 
-    // Validate each listing has correct parameters
-    result.successful.forEach((listing, index) => {
-      expectValidListing(listing);
+    // Validate each order has correct parameters
+    result.successful.forEach((order, index) => {
+      expectValidOrder(order);
       console.log(`Listing ${index + 1}:`, {
-        hash: listing.order_hash,
-        signatureLength: listing.protocol_data.signature?.length || "N/A",
+        hash: order.orderHash,
+        expirationTime: order.expirationTime,
+        signatureLength: order.protocolData.signature?.length || "N/A",
       });
     });
 
@@ -400,15 +407,15 @@ suite("SDK: bulk order posting", () => {
     expect(result.successful).to.have.lengthOf(1);
     expect(result.failed).to.have.lengthOf(0);
 
-    const listing = result.successful[0];
-    expect(listing).to.not.be.null;
-    expectValidListing(listing);
+    const order = result.successful[0];
+    expect(order).to.not.be.null;
+    expectValidOrder(order);
 
     // Normal signature should be shorter than bulk signature (no merkle proof)
     // Normal compact signature: 130 chars (0x + 128 hex chars)
     // Bulk signature: 130 + 6 (index) + merkle proof encoding
-    if (listing.protocol_data.signature) {
-      const signatureLength = listing.protocol_data.signature.length;
+    if (order.protocolData.signature) {
+      const signatureLength = order.protocolData.signature.length;
       console.log("Single order signature length:", signatureLength);
 
       // For single orders, the bulk API should use normal signature to save gas
@@ -480,10 +487,10 @@ suite("SDK: bulk order posting", () => {
     expect(result.successful).to.have.lengthOf(offers.length);
 
     // Analyze signature structure
-    result.successful.forEach((offer, index) => {
-      const signature = offer.protocol_data.signature;
-      console.log(`\nOffer ${index}:`);
-      console.log(`  Order hash: ${offer.order_hash}`);
+    result.successful.forEach((order, index) => {
+      const signature = order.protocolData.signature;
+      console.log(`\nOrder ${index}:`);
+      console.log(`  Order hash: ${order.orderHash}`);
 
       if (signature) {
         console.log(`  Signature length: ${signature.length} chars`);
