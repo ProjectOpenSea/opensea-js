@@ -362,6 +362,7 @@ export enum AssetEventType {
   TRANSFER = "transfer",
   MINT = "mint",
   LISTING = "listing",
+  ORDER = "order",
   OFFER = "offer",
   TRAIT_OFFER = "trait_offer",
   COLLECTION_OFFER = "collection_offer",
