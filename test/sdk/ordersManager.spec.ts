@@ -391,6 +391,43 @@ suite("SDK: OrdersManager", () => {
     });
   });
 
+  suite("getNFTItems (via createListing)", () => {
+    test("defaults amount to '1' when quantity is not provided", async () => {
+      await ordersManager.createListing({
+        asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+        accountAddress: "0xSeller",
+        amount: "1000000000000000000",
+      });
+
+      const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
+      expect(createOrderCall.offer[0].amount).to.equal("1");
+    });
+
+    test("uses provided quantity as amount", async () => {
+      await ordersManager.createListing({
+        asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+        accountAddress: "0xSeller",
+        amount: "1000000000000000000",
+        quantity: 5,
+      });
+
+      const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
+      expect(createOrderCall.offer[0].amount).to.equal("5");
+    });
+
+    test("uses provided quantity of 1 as amount", async () => {
+      await ordersManager.createListing({
+        asset: { tokenAddress: "0xNFTContract", tokenId: "1234" },
+        accountAddress: "0xSeller",
+        amount: "1000000000000000000",
+        quantity: 1,
+      });
+
+      const createOrderCall = mockSeaport.createOrder.firstCall.args[0];
+      expect(createOrderCall.offer[0].amount).to.equal("1");
+    });
+  });
+
   suite("createCollectionOffer", () => {
     test("creates a collection offer successfully", async () => {
       const result = await ordersManager.createCollectionOffer({
