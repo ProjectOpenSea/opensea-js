@@ -6,7 +6,13 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["docs/**", "lib/**", "coverage/**", "src/typechain/**"],
+    ignores: [
+      "docs/**",
+      "lib/**",
+      "coverage/**",
+      "src/typechain/**",
+      ".claude/**",
+    ],
   },
   {
     linterOptions: {
