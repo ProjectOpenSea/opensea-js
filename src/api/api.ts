@@ -885,10 +885,12 @@ export class OpenSeaAPI {
     // Set the throttle params
     req.setThrottleParams({ slotInterval: 1000 });
 
+    const sanitizedHeaders = { ...req.headers };
+    delete sanitizedHeaders["X-API-KEY"];
     this.logger(
       `Sending request: ${url} ${JSON.stringify({
         method: body ? "POST" : "GET",
-        headers: req.headers,
+        headers: sanitizedHeaders,
         body: body ? JSON.stringify(body, null, 2) : undefined,
       })}`,
     );
