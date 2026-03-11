@@ -29,7 +29,6 @@ export const mockListingPartiallyFilled: Listing = {
   remaining_quantity: 3,
 };
 
-// eslint-disable-next-line import/no-unused-modules
 export const mockListingMinimal: Partial<Listing> &
   Pick<Listing, "order_hash"> = {
   order_hash: "0x1",

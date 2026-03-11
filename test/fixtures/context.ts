@@ -2,7 +2,6 @@ import * as sinon from "sinon";
 import { SDKContext } from "../../src/sdk/context";
 import { Chain } from "../../src/types";
 
-// eslint-disable-next-line import/no-unused-modules
 export interface MockContextOptions {
   chain?: Chain;
   api?: unknown;
