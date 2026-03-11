@@ -362,6 +362,7 @@ export enum AssetEventType {
   TRANSFER = "transfer",
   MINT = "mint",
   LISTING = "listing",
+  ORDER = "order",
   OFFER = "offer",
   TRAIT_OFFER = "trait_offer",
   COLLECTION_OFFER = "collection_offer",
@@ -528,6 +529,35 @@ export type CollectionOfferEvent = BaseEvent & {
 };
 
 /**
+ * Order event type returned by the API for order-related activities
+ * (listings, offers, trait offers, collection offers).
+ * @category API Models
+ */
+export type OrderEvent = BaseEvent & {
+  event_type: AssetEventType.ORDER | "order";
+  /** Payment information */
+  payment: EventPayment;
+  /** Start date of the order */
+  start_date: number | null;
+  /** Expiration date of the order */
+  expiration_date: number;
+  /** Asset involved in the order (optional, not present for collection/trait offers) */
+  asset?: EventAsset;
+  /** Criteria for collection/trait offers (optional) */
+  criteria?: Record<string, unknown>;
+  /** Maker of the order */
+  maker: string;
+  /** Taker of the order */
+  taker: string;
+  /** Order hash (optional) */
+  order_hash?: string;
+  /** Protocol address (optional) */
+  protocol_address?: string;
+  /** Order type providing more detail */
+  order_type?: OrderEventType;
+};
+
+/**
  * Mint event type.
  * @category API Models
  */
@@ -590,6 +620,7 @@ export type AssetEvent =
   | OfferEvent
   | TraitOfferEvent
   | CollectionOfferEvent
+  | OrderEvent
   | SaleEvent
   | TransferEvent
   | MintEvent;
