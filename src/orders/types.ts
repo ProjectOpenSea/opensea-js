@@ -1,5 +1,6 @@
 import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport/contracts/Seaport";
 import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
+import { Listing, Offer } from "../api/types";
 import { OpenSeaAccount, OrderSide } from "../types";
 
 // Protocol data
@@ -173,4 +174,15 @@ export type OrdersQueryResponse = QueryCursors & {
   orders: SerializedOrderV2[];
 };
 
+/** @deprecated Use ListingPostQueryResponse or OfferPostQueryResponse instead. */
 export type OrdersPostQueryResponse = { order: SerializedOrderV2 };
+
+export type ListingPostQueryResponse = {
+  order: SerializedOrderV2;
+  listing: Listing;
+};
+
+export type OfferPostQueryResponse = {
+  order: SerializedOrderV2;
+  offer: Offer;
+};
