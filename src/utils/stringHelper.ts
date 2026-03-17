@@ -21,5 +21,5 @@ export function pluralize(
   singular: string,
   plural?: string,
 ): string {
-  return count === 1 ? singular : plural || `${singular}s`;
+  return count === 1 ? singular : (plural ?? `${singular}s`);
 }
