@@ -25,12 +25,12 @@ Interested in purchasing for users server-side or with a bot, scheduling future 
 You can buy and transfer an item to someone else in one step! Just pass the `recipientAddress` parameter:
 
 ```typescript
-const order = await openseaSDK.api.getOrder({ side: OrderSide.LISTING, ... })
+const order = await openseaSDK.api.getOrderByHash(orderHash, protocolAddress);
 await openseaSDK.fulfillOrder({
   order,
   accountAddress, // The address of your wallet, which will sign the transaction
-  recipientAddress // The address of the recipient, i.e. the wallet you're purchasing on behalf of
-})
+  recipientAddress, // The address of the recipient, i.e. the wallet you're purchasing on behalf of
+});
 ```
 
 If the order is a listing (sell order, ask, `OrderSide.LISTING`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is an offer (buy order, bid, `OrderSide.OFFER`), the taker is the _seller_ but the bid amount will be sent to the `recipientAddress`.
@@ -400,23 +400,32 @@ function handleSDKEvents() {
     sdk.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) => {
       console.info('Transaction confirmed: ',{ transactionHash, event })
     })
-    sdk.addListener(EventType.TransactionDenied, ({ transactionHash, event }) => {
-      console.info('Transaction denied: ',{ transactionHash, event })
+    sdk.addListener(EventType.TransactionDenied, ({ error, accountAddress }) => {
+      console.info('Transaction denied: ', { error, accountAddress })
     })
-    sdk.addListener(EventType.TransactionFailed, ({ transactionHash, event }) => {
-      console.info('Transaction failed: ',{ transactionHash, event })
+    sdk.addListener(EventType.TransactionFailed, ({ transactionHash, event, error }) => {
+      console.info('Transaction failed: ', { transactionHash, event, error })
     })
     sdk.addListener(EventType.WrapEth, ({ accountAddress, amount }) => {
-      console.info('Wrap ETH: ',{ accountAddress, amount })
+      console.info('Wrap ETH: ', { accountAddress, amount })
     })
     sdk.addListener(EventType.UnwrapWeth, ({ accountAddress, amount }) => {
-      console.info('Unwrap ETH: ',{ accountAddress, amount })
+      console.info('Unwrap ETH: ', { accountAddress, amount })
     })
     sdk.addListener(EventType.MatchOrders, ({ transactionHash, event }) => {
       console.info('Match orders: ', { transactionHash, event })
     })
-    sdk.addListener(EventType.CancelOrder, ({ order, accountAddress }) => {
-      console.info('Cancel order: ', { order, accountAddress })
+    sdk.addListener(EventType.CancelOrder, ({ orderV2, accountAddress }) => {
+      console.info('Cancel order: ', { orderV2, accountAddress })
+    })
+    sdk.addListener(EventType.ApproveOrder, ({ orderV2, accountAddress }) => {
+      console.info('Approve order: ', { orderV2, accountAddress })
+    })
+    sdk.addListener(EventType.Transfer, ({ accountAddress }) => {
+      console.info('Transfer: ', { accountAddress })
+    })
+    sdk.addListener(EventType.ApproveAllAssets, ({ transactionHash, event }) => {
+      console.info('Approve all assets: ', { transactionHash, event })
     })
 }
 ```
