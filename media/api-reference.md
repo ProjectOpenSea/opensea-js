@@ -721,6 +721,8 @@ const multiTraitOffer = await openseaSDK.api.postCollectionOffer(
 
 ### Get Order
 
+> **Deprecated:** Use collection-based endpoints instead: `getAllOffers`, `getAllListings`, `getBestOffer`, `getBestListing`.
+
 Fetch a single order based on query parameters.
 
 ```typescript
@@ -789,6 +791,8 @@ console.log(order.protocol_data.parameters);
 
 ### Get Orders
 
+> **Deprecated:** Use collection-based endpoints instead: `getAllOffers`, `getAllListings`, `getBestOffer`, `getBestListing`.
+
 Fetch multiple orders with filtering and pagination.
 
 ```typescript
@@ -854,7 +858,53 @@ const fulfillmentData = await openseaSDK.api.generateFulfillmentData(
 
 ---
 
+### Post Listing
+
+Submit a signed listing to OpenSea. Returns the new v2 Listing response format.
+
+```typescript
+const listing = await openseaSDK.api.postListing(
+  protocolData, // Signed Seaport order
+  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC", // Seaport protocol address
+);
+```
+
+**Parameters:**
+
+| Parameter         | Type         | Required | Description              |
+| ----------------- | ------------ | -------- | ------------------------ |
+| `order`           | ProtocolData | Yes      | Signed order data        |
+| `protocolAddress` | string       | Yes      | Seaport contract address |
+
+**Returns:** `Listing` object for the submitted listing.
+
+---
+
+### Post Offer
+
+Submit a signed offer to OpenSea. Returns the new v2 Offer response format.
+
+```typescript
+const offer = await openseaSDK.api.postOffer(
+  protocolData, // Signed Seaport order
+  "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC", // Seaport protocol address
+);
+```
+
+**Parameters:**
+
+| Parameter         | Type         | Required | Description              |
+| ----------------- | ------------ | -------- | ------------------------ |
+| `order`           | ProtocolData | Yes      | Signed order data        |
+| `protocolAddress` | string       | Yes      | Seaport contract address |
+
+**Returns:** `Offer` object for the submitted offer.
+
+---
+
 ### Post Order
+
+> **Deprecated:** Use `postListing` or `postOffer` instead.
 
 Submit a signed order to OpenSea.
 

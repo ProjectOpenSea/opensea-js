@@ -175,24 +175,26 @@ const offer = await openseaSDK.createCollectionOffer({
 
 ## Fetching Orders
 
-To retrieve a list of offers and listings on an asset, use `getOrders`. Parameters passed into API filter objects are camel-cased and serialized before being sent as [API parameters](https://docs.opensea.io/v2.0/reference):
+To retrieve offers and listings, use the collection-based or NFT-specific endpoints:
 
 ```typescript
-import { OrderSide } from "opensea-js";
+// Get all offers for a collection
+const { offers } = await openseaSDK.api.getAllOffers("cool-cats-nft");
 
-// Get offers
-const { orders, count } = await openseaSDK.api.getOrders({
-  assetContractAddress: tokenAddress,
-  tokenId,
-  side: OrderSide.OFFER,
-});
+// Get all listings for a collection
+const { listings } = await openseaSDK.api.getAllListings("cool-cats-nft");
 
-// Get listings
-const { orders, count } = await openseaSDK.api.getOrders({
-  assetContractAddress: tokenAddress,
+// Get offers for a specific NFT
+const { offers: nftOffers } = await openseaSDK.api.getNFTOffers(
+  tokenAddress,
   tokenId,
-  side: OrderSide.LISTING,
-});
+);
+
+// Get listings for a specific NFT
+const { listings: nftListings } = await openseaSDK.api.getNFTListings(
+  tokenAddress,
+  tokenId,
+);
 ```
 
 Note that the listing price of an asset is equal to the `currentPrice` of the **lowest listing** on the asset. Users can lower their listing price without invalidating previous listings, so all get shipped down until they're canceled or one is fulfilled.
