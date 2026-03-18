@@ -227,6 +227,34 @@ suite("API", () => {
     assert.equal(retryAfter, 5);
   });
 
+  test("API returns undefined for malformed numeric Retry-After suffixes", () => {
+    const response = {
+      headers: {
+        "retry-after": "5s",
+      },
+    };
+
+    const retryAfter = (
+      api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
+    )._parseRetryAfter(response);
+
+    assert.equal(retryAfter, undefined);
+  });
+
+  test("API returns undefined for fractional numeric Retry-After values", () => {
+    const response = {
+      headers: {
+        "retry-after": "1.5",
+      },
+    };
+
+    const retryAfter = (
+      api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
+    )._parseRetryAfter(response);
+
+    assert.equal(retryAfter, undefined);
+  });
+
   test("API handles custom 599 rate limit errors with retry-after", async () => {
     // Mock the _fetch method to simulate 599 rate limit response followed by success
     const rateLimitError = new Error(
