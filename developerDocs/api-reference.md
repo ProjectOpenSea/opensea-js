@@ -719,44 +719,6 @@ const multiTraitOffer = await openseaSDK.api.postCollectionOffer(
 
 ## Order Endpoints
 
-### Get Order
-
-> **Deprecated:** Use collection-based endpoints instead: `getAllOffers`, `getAllListings`, `getBestOffer`, `getBestListing`.
-
-Fetch a single order based on query parameters.
-
-```typescript
-import { OrderSide } from "opensea-js";
-
-const order = await openseaSDK.api.getOrder({
-  side: OrderSide.LISTING,
-  assetContractAddress: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
-  tokenIds: ["1"],
-  orderBy: "created_date",
-  orderDirection: "desc",
-});
-```
-
-**Parameters:**
-
-All parameters from `OrdersQueryOptions` except `limit`:
-
-| Parameter              | Type      | Required | Description                          |
-| ---------------------- | --------- | -------- | ------------------------------------ |
-| `side`                 | OrderSide | Yes      | LISTING or OFFER                     |
-| `assetContractAddress` | string    | No       | Filter by NFT contract               |
-| `tokenIds`             | string[]  | No       | Filter by token IDs                  |
-| `maker`                | string    | No       | Filter by maker address              |
-| `taker`                | string    | No       | Filter by taker address              |
-| `orderBy`              | string    | No       | Sort field (default: "created_date") |
-| `orderDirection`       | string    | No       | "asc" or "desc" (default: "desc")    |
-
-**Returns:** Single `OrderV2` object.
-
-**Throws:** Error if no matching order is found.
-
----
-
 ### Get Order by Hash
 
 Fetch a single order by its unique hash.
@@ -786,39 +748,6 @@ console.log(order.protocol_data.parameters);
 - Retrieve order for fulfillment
 - Check order status before cancellation
 - Fetch order details for UI display
-
----
-
-### Get Orders
-
-> **Deprecated:** Use collection-based endpoints instead: `getAllOffers`, `getAllListings`, `getBestOffer`, `getBestListing`.
-
-Fetch multiple orders with filtering and pagination.
-
-```typescript
-const { orders, next } = await openseaSDK.api.getOrders({
-  side: OrderSide.OFFER,
-  maker: "0x...",
-  orderBy: "eth_price",
-  orderDirection: "desc",
-});
-
-console.log(`Found ${orders.length} orders`);
-```
-
-**Parameters:**
-
-Same as `getOrder` plus:
-
-| Parameter           | Type   | Required | Description                          |
-| ------------------- | ------ | -------- | ------------------------------------ |
-| All getOrder params | ...    | ...      | ...                                  |
-| `limit`             | number | No       | Results per page (uses SDK pageSize) |
-
-**Returns:** `GetOrdersResponse` containing:
-
-- `orders`: Array of OrderV2 objects
-- `next`: Pagination cursor
 
 ---
 
@@ -899,42 +828,6 @@ const offer = await openseaSDK.api.postOffer(
 | `protocolAddress` | string       | Yes      | Seaport contract address |
 
 **Returns:** `Offer` object for the submitted offer.
-
----
-
-### Post Order
-
-> **Deprecated:** Use `postListing` or `postOffer` instead.
-
-Submit a signed order to OpenSea.
-
-```typescript
-const order = await openseaSDK.api.postOrder(
-  protocolData, // Signed Seaport order
-  {
-    protocol: "seaport",
-    side: "ask", // "ask" for listing, "bid" for offer
-    protocolAddress: "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC",
-  },
-);
-```
-
-**Parameters:**
-
-| Parameter    | Type            | Required | Description              |
-| ------------ | --------------- | -------- | ------------------------ |
-| `order`      | ProtocolData    | Yes      | Seaport protocol data    |
-| `apiOptions` | OrderAPIOptions | Yes      | Order submission options |
-
-**API Options:**
-
-| Field             | Type   | Required | Description              |
-| ----------------- | ------ | -------- | ------------------------ |
-| `protocol`        | string | No       | "seaport" (default)      |
-| `side`            | string | Yes      | "ask" or "bid"           |
-| `protocolAddress` | string | Yes      | Seaport contract address |
-
-**Returns:** `OrderV2` object for the submitted order.
 
 ---
 

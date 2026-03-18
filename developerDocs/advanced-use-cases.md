@@ -87,7 +87,7 @@ await openseaSDK.cancelOrder({
 });
 
 // Cancel using full OrderV2 object
-const order = await openseaSDK.api.getOrder({ side: OrderSide.LISTING, ... });
+const order = await openseaSDK.api.getOrderByHash(orderHash, protocolAddress);
 await openseaSDK.cancelOrder({
   order,
   accountAddress: "0x...",
@@ -111,9 +111,9 @@ await openseaSDK.cancelOrders({
 });
 
 // Cancel using full OrderV2 objects
-const orders = await openseaSDK.api.getOrders({ maker: accountAddress });
+const { listings } = await openseaSDK.api.getAllListings("my-collection");
 await openseaSDK.cancelOrders({
-  orders: orders.orders.slice(0, 3),
+  orders: listings.slice(0, 3),
   accountAddress: "0x...",
 });
 ```
