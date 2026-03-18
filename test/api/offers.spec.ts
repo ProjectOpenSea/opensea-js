@@ -417,6 +417,7 @@ suite("API: OffersAPI", () => {
           offer: [],
           consideration: [],
         } as unknown as BuildOfferResponse["partialParameters"],
+        criteria: { collection: { slug: "test-collection" } },
       };
 
       mockPost.resolves(mockResponse);
@@ -437,6 +438,7 @@ suite("API: OffersAPI", () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters:
           {} as unknown as BuildOfferResponse["partialParameters"],
+        criteria: { collection: { slug: "test-collection" } },
       };
 
       mockPost.resolves(mockResponse);
@@ -450,6 +452,7 @@ suite("API: OffersAPI", () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters:
           {} as unknown as BuildOfferResponse["partialParameters"],
+        criteria: { collection: { slug: "test-collection" } },
       };
 
       mockPost.resolves(mockResponse);
@@ -506,6 +509,7 @@ suite("API: OffersAPI", () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters:
           {} as unknown as BuildOfferResponse["partialParameters"],
+        criteria: { collection: { slug: "test-collection" } },
       };
 
       mockPost.resolves(mockResponse);
@@ -604,6 +608,7 @@ suite("API: OffersAPI", () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters:
           {} as unknown as BuildOfferResponse["partialParameters"],
+        criteria: { collection: { slug: "test-collection" } },
       };
 
       mockPost.resolves(mockResponse);
@@ -631,6 +636,7 @@ suite("API: OffersAPI", () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters:
           {} as unknown as BuildOfferResponse["partialParameters"],
+        criteria: { collection: { slug: "test-collection" } },
       };
 
       mockPost.resolves(mockResponse);

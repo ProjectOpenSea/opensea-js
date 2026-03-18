@@ -14,6 +14,19 @@ import { OpenSeaCollection } from "../types";
 export type BuildOfferResponse = {
   /** A portion of the parameters needed to submit a criteria offer, i.e. collection offer. */
   partialParameters: PartialParameters;
+  /** Criteria echoed back from the build request. Includes collection and trait info. */
+  criteria: BuildOfferCriteria;
+};
+
+/**
+ * Criteria returned by the build offer endpoint.
+ * Subset of {@link Criteria} — only collection and trait fields.
+ * @category API Response Types
+ */
+export type BuildOfferCriteria = {
+  collection: CollectionCriteria;
+  traits?: TraitCriteria[];
+  numericTraits?: NumericTraitCriteria[];
 };
 
 type PartialParameters = {
