@@ -412,8 +412,8 @@ function handleSDKEvents() {
     sdk.addListener(EventType.UnwrapWeth, ({ accountAddress, amount }) => {
       console.info('Unwrap ETH: ',{ accountAddress, amount })
     })
-    sdk.addListener(EventType.MatchOrders, ({ buy, sell, accountAddress }) => {
-      console.info('Match orders: ', { buy, sell, accountAddress })
+    sdk.addListener(EventType.MatchOrders, ({ transactionHash, event }) => {
+      console.info('Match orders: ', { transactionHash, event })
     })
     sdk.addListener(EventType.CancelOrder, ({ order, accountAddress }) => {
       console.info('Cancel order: ', { order, accountAddress })
