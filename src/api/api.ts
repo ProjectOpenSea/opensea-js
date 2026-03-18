@@ -972,11 +972,11 @@ export class OpenSeaAPI {
       response.headers["retry-after"] || response.headers["Retry-After"];
     if (retryAfterHeader) {
       const trimmed = retryAfterHeader.trim();
-      const parsedSeconds = parseInt(trimmed, 10);
 
-      // If it looks like a number (starts with digit or minus sign), handle as numeric
-      if (/^-?\d/.test(trimmed)) {
-        if (isNaN(parsedSeconds) || parsedSeconds <= 0) {
+      // Only accept fully numeric Retry-After values, rejecting malformed inputs like "5s" or "1.5"
+      if (/^-?\d+$/.test(trimmed)) {
+        const parsedSeconds = Number(trimmed);
+        if (!Number.isSafeInteger(parsedSeconds) || parsedSeconds <= 0) {
           return undefined;
         }
         return Math.min(parsedSeconds, OpenSeaAPI.MAX_RETRY_AFTER_SECONDS);
