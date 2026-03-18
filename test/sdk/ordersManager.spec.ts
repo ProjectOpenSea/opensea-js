@@ -87,6 +87,7 @@ suite("SDK: OrdersManager", () => {
           ],
           zone: "0xSignedZone",
         },
+        criteria: { collection: { slug: "test-collection" } },
       }),
       postCollectionOffer: sinon.stub().resolves({
         protocol_data: mockOrder,
