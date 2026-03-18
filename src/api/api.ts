@@ -973,8 +973,12 @@ export class OpenSeaAPI {
     if (retryAfterHeader) {
       const trimmed = retryAfterHeader.trim();
 
-      // Only accept fully numeric Retry-After values, rejecting malformed inputs like "5s" or "1.5"
-      if (/^-?\d+$/.test(trimmed)) {
+      // If it starts with a digit or minus sign, treat as numeric
+      if (/^-?\d/.test(trimmed)) {
+        // Only accept fully numeric integer values, reject malformed inputs like "5s" or "1.5"
+        if (!/^-?\d+$/.test(trimmed)) {
+          return undefined;
+        }
         const parsedSeconds = Number(trimmed);
         if (!Number.isSafeInteger(parsedSeconds) || parsedSeconds <= 0) {
           return undefined;
