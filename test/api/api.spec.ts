@@ -538,4 +538,19 @@ suite("API", () => {
     assert.notInclude(url, "ids=null");
     assert.notInclude(url, "ids=undefined");
   });
+
+  test("API get does not append trailing '?' when query is empty", async () => {
+    const successResponse = { ok: true };
+
+    fetchStub = sinon
+      .stub(api as unknown as { _fetch: () => Promise<unknown> }, "_fetch")
+      .resolves(successResponse);
+
+    await api.get("/api/v2/test");
+
+    assert.equal(fetchStub.callCount, 1);
+    const url = fetchStub.firstCall.args[0] as string;
+    assert.equal(url, `${api.apiBaseUrl}/api/v2/test`);
+    assert.notInclude(url, "?");
+  });
 });

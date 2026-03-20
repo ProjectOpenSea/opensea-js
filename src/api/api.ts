@@ -819,7 +819,9 @@ export class OpenSeaAPI {
     return executeWithRateLimit(
       async () => {
         const qs = this.objectToSearchParams(query);
-        const url = `${this.apiBaseUrl}${apiPath}?${qs}`;
+        const url = qs
+          ? `${this.apiBaseUrl}${apiPath}?${qs}`
+          : `${this.apiBaseUrl}${apiPath}`;
         return await this._fetch(url, undefined, undefined, options);
       },
       { logger: this.logger },
