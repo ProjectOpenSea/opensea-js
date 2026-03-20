@@ -300,6 +300,65 @@ suite("SDK: FulfillmentManager", () => {
       }
     });
 
+    test("encodes fulfillOrder with exactly 2 params (no recipient)", async () => {
+      mockAPI.generateFulfillmentData.resolves({
+        fulfillment_data: {
+          transaction: {
+            to: "0xSeaportAddress",
+            value: 0,
+            function:
+              "fulfillOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256),bytes),bytes32)",
+            input_data: {
+              order: {
+                parameters: {
+                  offerer: "0xOfferer",
+                  zone: "0x0000000000000000000000000000000000000000",
+                  offer: [],
+                  consideration: [],
+                  orderType: 0,
+                  startTime: "0",
+                  endTime: "9999999999",
+                  zoneHash:
+                    "0x0000000000000000000000000000000000000000000000000000000000000000",
+                  salt: "0",
+                  conduitKey:
+                    "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000",
+                  totalOriginalConsiderationItems: 0,
+                },
+                signature: "0x",
+              },
+              fulfillerConduitKey:
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+              recipient: "0xSomeRecipient",
+            },
+          },
+          orders: [{ signature: "0xOrderSignature" }],
+        },
+      });
+
+      const encodeStub = sinon.stub(
+        ethers.Interface.prototype,
+        "encodeFunctionData",
+      );
+      encodeStub.callsFake(() => "0xFulfillOrderEncoded");
+
+      try {
+        await fulfillmentManager.fulfillOrder({
+          order: mockOrderV2,
+          accountAddress: "0xBuyer",
+        });
+
+        expect(encodeStub.calledOnce).to.be.true;
+        expect(encodeStub.firstCall.args[0]).to.equal("fulfillOrder");
+        // fulfillOrder ABI only accepts 2 params: order and fulfillerConduitKey
+        // recipient must NOT be passed
+        const encodedParams = encodeStub.firstCall.args[1] as unknown[];
+        expect(encodedParams).to.have.length(2);
+      } finally {
+        encodeStub.restore();
+      }
+    });
+
     test("fulfills private listing successfully", async () => {
       const result = await fulfillmentManager.fulfillOrder({
         order: mockPrivateListingOrderV2,

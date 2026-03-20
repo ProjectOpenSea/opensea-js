@@ -220,7 +220,6 @@ export class FulfillmentManager {
         inputData.order,
         inputData.fulfillerConduitKey ||
           "0x0000000000000000000000000000000000000000000000000000000000000000",
-        inputData.recipient,
       ];
     } else {
       // Fallback: try to use values in object order
