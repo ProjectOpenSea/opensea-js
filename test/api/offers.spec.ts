@@ -936,6 +936,116 @@ suite("API: OffersAPI", () => {
         expect((error as Error).message).to.include("Post failed");
       }
     });
+
+    test("throws error when both traits array and traitType/traitValue are provided", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig",
+      };
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          "Background",
+          "Blue",
+          [{ type: "Background", value: "Blue" }],
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Cannot use both 'traits' array and individual",
+        );
+      }
+    });
+
+    test("throws error when only traitType is provided without traitValue", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig",
+      };
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          "Background",
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Both traitType and traitValue must be defined",
+        );
+      }
+    });
+
+    test("throws error when trait in array is missing type", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig",
+      };
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          undefined,
+          undefined,
+          [{ type: "", value: "Blue" }],
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Each trait must have both 'type' and 'value'",
+        );
+      }
+    });
+
+    test("throws error when numeric trait is missing type", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig",
+      };
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          undefined,
+          undefined,
+          undefined,
+          [{ type: "", min: 1, max: 10 }],
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Each numeric trait must have a 'type' property",
+        );
+      }
+    });
+
+    test("throws error when numeric trait min > max", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig",
+      };
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          undefined,
+          undefined,
+          undefined,
+          [{ type: "Speed", min: 100, max: 10 }],
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "'min' (100) must be <= 'max' (10)",
+        );
+      }
+    });
   });
 
   suite("getNFTOffers", () => {
