@@ -191,6 +191,50 @@ export class OffersAPI {
     traits?: Array<{ type: string; value: string }>,
     numericTraits?: Array<{ type: string; min?: number; max?: number }>,
   ): Promise<CollectionOffer | null> {
+    // Validate trait parameters
+    if (traits && traits.length > 0 && (traitType || traitValue)) {
+      throw new Error(
+        "Cannot use both 'traits' array and individual 'traitType'/'traitValue' parameters. Please use only one approach.",
+      );
+    }
+    if (traitType || traitValue) {
+      if (!traitType || !traitValue) {
+        throw new Error(
+          "Both traitType and traitValue must be defined if one is defined.",
+        );
+      }
+    }
+    if (traits && traits.length > 0) {
+      for (const trait of traits) {
+        if (!trait.type || !trait.value) {
+          throw new Error(
+            "Each trait must have both 'type' and 'value' properties.",
+          );
+        }
+      }
+    }
+    if (numericTraits && numericTraits.length > 0) {
+      for (const trait of numericTraits) {
+        if (!trait.type) {
+          throw new Error("Each numeric trait must have a 'type' property.");
+        }
+        if (trait.min === undefined && trait.max === undefined) {
+          throw new Error(
+            `Numeric trait '${trait.type}' must have at least one of 'min' or 'max'.`,
+          );
+        }
+        if (
+          trait.min !== undefined &&
+          trait.max !== undefined &&
+          trait.min > trait.max
+        ) {
+          throw new Error(
+            `Numeric trait '${trait.type}': 'min' (${trait.min}) must be <= 'max' (${trait.max}).`,
+          );
+        }
+      }
+    }
+
     const payload = getPostCollectionOfferPayload(
       slug,
       order,

@@ -921,6 +921,201 @@ suite("API: OffersAPI", () => {
       expect(result).to.be.null;
     });
 
+    test("throws error when both traits array and traitType/traitValue are provided", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig-mixed",
+      };
+
+      const traits = [{ type: "Background", value: "Blue" }];
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          "Fur",
+          "Golden",
+          traits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Cannot use both 'traits' array and individual 'traitType'/'traitValue' parameters",
+        );
+      }
+    });
+
+    test("throws error when only traitType is provided", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig-type-only",
+      };
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          "Background",
+          undefined,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Both traitType and traitValue must be defined if one is defined",
+        );
+      }
+    });
+
+    test("throws error when only traitValue is provided", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig-value-only",
+      };
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          undefined,
+          "Blue",
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Both traitType and traitValue must be defined if one is defined",
+        );
+      }
+    });
+
+    test("throws error when trait in array is missing type", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig-missing-type",
+      };
+
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "", value: "Beanie" },
+      ];
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          undefined,
+          undefined,
+          traits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Each trait must have both 'type' and 'value' properties",
+        );
+      }
+    });
+
+    test("throws error when trait in array is missing value", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig-missing-value",
+      };
+
+      const traits = [
+        { type: "Background", value: "Blue" },
+        { type: "Hat", value: "" },
+      ];
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          undefined,
+          undefined,
+          traits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Each trait must have both 'type' and 'value' properties",
+        );
+      }
+    });
+
+    test("throws error when numeric trait is missing type", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig-numeric-missing-type",
+      };
+
+      const numericTraits = [{ type: "", min: 1, max: 10 }];
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          undefined,
+          undefined,
+          undefined,
+          numericTraits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "Each numeric trait must have a 'type' property",
+        );
+      }
+    });
+
+    test("throws error when numeric trait has neither min nor max", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig-numeric-no-bounds",
+      };
+
+      const numericTraits = [{ type: "Level" }];
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          undefined,
+          undefined,
+          undefined,
+          numericTraits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "must have at least one of 'min' or 'max'",
+        );
+      }
+    });
+
+    test("throws error when numeric trait min > max", async () => {
+      const mockOrder: ProtocolData = {
+        parameters: {} as unknown as OrderComponents,
+        signature: "0xsig-numeric-range",
+      };
+
+      const numericTraits = [{ type: "Level", min: 10, max: 1 }];
+
+      try {
+        await offersAPI.postCollectionOffer(
+          mockOrder,
+          "test-collection",
+          undefined,
+          undefined,
+          undefined,
+          numericTraits,
+        );
+        expect.fail("Expected error to be thrown");
+      } catch (error) {
+        expect((error as Error).message).to.include(
+          "'min' (10) must be <= 'max' (1)",
+        );
+      }
+    });
+
     test("throws error on API failure", async () => {
       const mockOrder: ProtocolData = {
         parameters: {} as unknown as OrderComponents,
