@@ -51,6 +51,40 @@ suite("SDK: cancelOrders", () => {
     }
   });
 
+  test("Should throw an error when both orders and orderHashes are provided", async () => {
+    const mockOrderComponents: OrderComponents = {
+      offerer: "0x0000000000000000000000000000000000000001",
+      zone: "0x0000000000000000000000000000000000000000",
+      offer: [],
+      consideration: [],
+      orderType: 0,
+      startTime: "0",
+      endTime: "0",
+      zoneHash:
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      salt: "0",
+      conduitKey:
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      totalOriginalConsiderationItems: 0,
+      counter: 0,
+    };
+
+    try {
+      await sdk.cancelOrders({
+        orders: [mockOrderComponents],
+        orderHashes: [
+          "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+        ],
+        accountAddress,
+      });
+      throw new Error("should have thrown");
+    } catch (e) {
+      expect((e as Error).message).to.include(
+        "Cannot provide both orders and orderHashes",
+      );
+    }
+  });
+
   test("Should attempt to fetch orders from API when using orderHashes", async () => {
     try {
       await sdk.cancelOrders({

@@ -149,6 +149,12 @@ export class CancellationManager {
       );
     }
 
+    if (orders && orderHashes) {
+      throw new Error(
+        "Cannot provide both orders and orderHashes. Please use one or the other.",
+      );
+    }
+
     if (orders && orders.length === 0) {
       throw new Error("At least one order must be provided");
     }
