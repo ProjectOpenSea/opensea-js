@@ -235,11 +235,11 @@ export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
     protocolData: order.protocol_data,
     protocolAddress: order.protocol_address,
     currentPrice: BigInt(order.current_price),
-    makerFees: order.maker_fees.map(({ account, basis_points }) => ({
+    makerFees: (order.maker_fees ?? []).map(({ account, basis_points }) => ({
       account: accountFromJSON(account),
       basisPoints: basis_points,
     })),
-    takerFees: order.taker_fees.map(({ account, basis_points }) => ({
+    takerFees: (order.taker_fees ?? []).map(({ account, basis_points }) => ({
       account: accountFromJSON(account),
       basisPoints: basis_points,
     })),
