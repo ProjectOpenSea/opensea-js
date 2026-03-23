@@ -756,5 +756,36 @@ suite("Orders: utils", () => {
       expect(result.takerFees[0].account.address).to.equal("0xFee3");
       expect(result.takerFees[0].basisPoints).to.equal("300");
     });
+
+    test("should default missing fee arrays to empty arrays", () => {
+      const serializedOrder = {
+        created_date: "2024-01-01T00:00:00Z",
+        closing_date: null,
+        listing_time: 1704067200,
+        expiration_time: 1735689599,
+        order_hash: "0xOrderHash",
+        maker: {
+          address: "0xMaker",
+        },
+        taker: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        protocol_data: { parameters: {} } as any as ProtocolData,
+        protocol_address: "0xProtocol",
+        current_price: "1000000000000000000",
+        side: OrderSide.LISTING,
+        order_type: OrderType.BASIC,
+        cancelled: false,
+        finalized: false,
+        marked_invalid: false,
+        client_signature: null,
+        remaining_quantity: 1,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+
+      const result = deserializeOrder(serializedOrder);
+
+      expect(result.makerFees).to.deep.equal([]);
+      expect(result.takerFees).to.deep.equal([]);
+    });
   });
 });
