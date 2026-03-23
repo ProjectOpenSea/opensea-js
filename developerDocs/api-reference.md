@@ -32,8 +32,6 @@ This comprehensive reference documents all OpenSea API endpoints available throu
 Fetch metadata, traits, ownership information, and rarity for a single NFT.
 
 ```typescript
-import { Chain } from "opensea-js";
-
 const { nft } = await openseaSDK.api.getNFT(
   "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D", // Contract address
   "1", // Token ID
@@ -229,8 +227,6 @@ console.log(collection.fees);
 Fetch a list of collections with filtering and sorting options.
 
 ```typescript
-import { CollectionOrderByOption, Chain } from "opensea-js";
-
 const { collections, next } = await openseaSDK.api.getCollections(
   CollectionOrderByOption.SEVEN_DAY_VOLUME, // Sort by 7-day volume
   Chain.Mainnet, // Filter by chain
@@ -931,8 +927,6 @@ Events include sales, transfers, listings, offers, and cancellations.
 Fetch all events with optional filtering.
 
 ```typescript
-import { AssetEventType } from "opensea-js";
-
 const { asset_events, next } = await openseaSDK.api.getEvents({
   event_type: AssetEventType.SALE,
   limit: 50,
@@ -1040,8 +1034,6 @@ asset_events.forEach((event) => {
 Fetch events for a specific NFT.
 
 ```typescript
-import { Chain } from "opensea-js";
-
 const { asset_events } = await openseaSDK.api.getEventsByNFT(
   Chain.Mainnet,
   "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
@@ -1246,8 +1238,6 @@ console.log(`${token.name} (${token.symbol})`);
 Search across collections, tokens, NFTs, and accounts. Results are ranked by relevance.
 
 ```typescript
-import { SearchResponse } from "opensea-js";
-
 const results = await openseaSDK.api.search({
   query: "bored ape",
   chains: ["ethereum"], // Optional: filter by chain
@@ -1288,8 +1278,6 @@ results.results.forEach((result) => {
 Most list endpoints support pagination using cursor-based navigation:
 
 ```typescript
-import { OrderSide } from "opensea-js";
-
 let cursor: string | undefined;
 const allResults: any[] = [];
 
@@ -1329,8 +1317,6 @@ The SDK automatically handles rate limiting with exponential backoff:
 ## Error Handling
 
 ```typescript
-import { OrderSide } from "opensea-js";
-
 try {
   const order = await openseaSDK.api.getOrder({
     side: OrderSide.LISTING,
