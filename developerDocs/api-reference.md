@@ -32,6 +32,8 @@ This comprehensive reference documents all OpenSea API endpoints available throu
 Fetch metadata, traits, ownership information, and rarity for a single NFT.
 
 ```typescript
+import { Chain } from "opensea-js";
+
 const { nft } = await openseaSDK.api.getNFT(
   "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D", // Contract address
   "1", // Token ID
