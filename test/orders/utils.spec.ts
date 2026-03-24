@@ -95,6 +95,14 @@ suite("Orders: utils", () => {
       });
       expect(result.token_ids).to.deep.equal([]);
     });
+
+    test("should fall back to tokenId when tokenIds is empty", () => {
+      const result = serializeOrdersQueryOptions({
+        tokenId: "123",
+        tokenIds: [],
+      });
+      expect(result.token_ids).to.deep.equal(["123"]);
+    });
   });
 
   suite("getFulfillmentDataPath", () => {

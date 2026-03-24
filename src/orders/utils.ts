@@ -203,6 +203,13 @@ type OrdersQueryPathOptions = "protocol" | "side";
 export const serializeOrdersQueryOptions = (
   options: Omit<OrdersQueryOptions, OrdersQueryPathOptions>,
 ) => {
+  const tokenIds =
+    options.tokenIds && options.tokenIds.length > 0
+      ? options.tokenIds
+      : options.tokenId !== undefined
+        ? [options.tokenId]
+        : options.tokenIds;
+
   return {
     limit: options.limit,
     cursor: options.cursor ?? options.next,
@@ -213,9 +220,7 @@ export const serializeOrdersQueryOptions = (
     owner: options.owner,
     listed_after: options.listedAfter,
     listed_before: options.listedBefore,
-    token_ids:
-      options.tokenIds ??
-      (options.tokenId !== undefined ? [options.tokenId] : undefined),
+    token_ids: tokenIds,
     asset_contract_address: options.assetContractAddress,
     order_by: options.orderBy,
     order_direction: options.orderDirection,
