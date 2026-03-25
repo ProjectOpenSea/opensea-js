@@ -60,6 +60,10 @@ const sdk = new OpenSeaSDK(provider, {
   apiKey: "your-api-key",
 });
 
+const contractAddress = "0x..."; // NFT contract
+const tokenId = "1";
+const walletAddress = "0x..."; // Wallet making offers / fulfilling orders
+
 // Fetch an NFT
 const { nft } = await sdk.api.getNFT(contractAddress, tokenId);
 
