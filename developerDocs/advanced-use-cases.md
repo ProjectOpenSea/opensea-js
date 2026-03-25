@@ -390,15 +390,23 @@ Events are fired whenever transactions or orders are being created, and when tra
 Our recommendation is that you "forward" OpenSea events to your own store or state management system. Here are examples of listening to the events:
 
 ```typescript
-import { OpenSeaSDK, EventType } from 'opensea-js'
-const sdk = new OpenSeaSDK(...);
+import { ethers } from "ethers";
+import { OpenSeaSDK, EventType, Chain } from "opensea-js";
+
+const provider = new ethers.JsonRpcProvider(
+  "https://eth-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY",
+);
+const sdk = new OpenSeaSDK(provider, {
+  chain: Chain.Mainnet,
+  apiKey: "YOUR_OPENSEA_API_KEY",
+});
 
 function handleSDKEvents() {
     sdk.addListener(EventType.TransactionCreated, ({ transactionHash, event }) => {
       console.info('Transaction created: ', { transactionHash, event })
     })
     sdk.addListener(EventType.TransactionConfirmed, ({ transactionHash, event }) => {
-      console.info('Transaction confirmed: ',{ transactionHash, event })
+      console.info('Transaction confirmed: ', { transactionHash, event })
     })
     sdk.addListener(EventType.TransactionDenied, ({ error, accountAddress }) => {
       console.info('Transaction denied: ', { error, accountAddress })
