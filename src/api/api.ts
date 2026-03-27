@@ -938,7 +938,9 @@ export class OpenSeaAPI {
         // If an errors array is returned, throw with the error messages.
         const errors = response.bodyJson?.errors;
         if (errors?.length > 0) {
-          let errorMessage = errors.join(", ");
+          let errorMessage = Array.isArray(errors) 
+            ? errors.join(", ") 
+            : String(errors);
           if (errorMessage === "[object Object]") {
             errorMessage = JSON.stringify(errors);
           }
