@@ -23,7 +23,8 @@ const VALID_PROTOCOL_ADDRESSES = new Set([
  * @returns The corresponding ItemType from Seaport
  */
 export const getAssetItemType = (tokenStandard: TokenStandard) => {
-  switch (tokenStandard) {
+  const normalizedStandard = tokenStandard.toUpperCase();
+  switch (normalizedStandard) {
     case "ERC20":
       return ItemType.ERC20;
     case "ERC721":
