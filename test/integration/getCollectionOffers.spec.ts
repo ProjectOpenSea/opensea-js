@@ -1,29 +1,28 @@
-import { assert } from "chai";
-import { suite, test } from "mocha";
-import { Chain } from "../../src/types";
-import { decodeTokenIds } from "../../src/utils/utils";
-import { getSdkForChain } from "../utils/setupIntegration";
+import { describe, expect, test } from "vitest"
+import { Chain } from "../../src/types"
+import { decodeTokenIds } from "../../src/utils/utils"
+import { getSdkForChain } from "../utils/setupIntegration"
 
-suite("SDK: getCollectionOffers", () => {
+describe("SDK: getCollectionOffers", () => {
   test("Get Collection Offers", async () => {
-    const slug = "cool-cats-nft";
+    const slug = "cool-cats-nft"
     const response = await getSdkForChain(
       Chain.Mainnet,
-    ).api.getCollectionOffers(slug);
+    ).api.getCollectionOffers(slug)
 
-    assert(response, "Response should not be null");
-    assert(response.offers, "Collection offers should not be null");
-    assert(response.offers.length > 0, "Collection offers should not be empty");
-    const offer = response.offers[0];
-    assert(offer.order_hash, "Order hash should not be null");
-    assert(offer.criteria, "Criteria should not be undefined");
-    const tokens = offer.criteria.encoded_token_ids;
-    assert(tokens, "Encoded token ids should not be null");
+    expect(response, "Response should not be null").toBeTruthy()
+    expect(response.offers, "Collection offers should not be null").toBeTruthy()
+    expect(response.offers.length).toBeGreaterThan(0)
+    const offer = response.offers[0]
+    expect(offer.order_hash, "Order hash should not be null").toBeTruthy()
+    expect(offer.criteria).toBeTruthy()
+    const tokens = offer.criteria?.encoded_token_ids
+    expect(tokens).toBeTruthy()
 
-    const encodedTokenIds = offer.criteria.encoded_token_ids;
-    assert(encodedTokenIds, "Encoded tokens should not be null");
+    const encodedTokenIds = offer.criteria?.encoded_token_ids
+    expect(encodedTokenIds).toBeTruthy()
 
-    const decodedTokenIds = decodeTokenIds(encodedTokenIds);
-    assert(decodedTokenIds[0], "Decoded tokens should not be null");
-  });
-});
+    const decodedTokenIds = decodeTokenIds(encodedTokenIds!)
+    expect(decodedTokenIds[0], "Decoded tokens should not be null").toBeTruthy()
+  })
+})

@@ -1,21 +1,20 @@
-import { expect } from "chai";
-import { suite, test } from "mocha";
-import { EventData, EventType } from "../../src/types";
-import { ensureVarsOrSkip } from "../utils/runtime";
+import { describe, expect, test } from "vitest"
+import { type EventData, EventType } from "../../src/types"
+import { ensureVarsOrSkip } from "../utils/runtime"
 // import order adjusted above
 import {
   BUY_LISTING_CHAIN,
   BUY_LISTING_CONTRACT_ADDRESS,
   BUY_LISTING_TOKEN_ID,
   getSdkForChain,
-  walletAddress,
   requireIntegrationEnv,
-} from "../utils/setupIntegration";
+  walletAddress,
+} from "../utils/setupIntegration"
 
-suite("SDK: fulfill best listing", () => {
+describe("SDK: fulfill best listing", () => {
   beforeEach(() => {
-    requireIntegrationEnv();
-  });
+    requireIntegrationEnv()
+  })
 
   test("Get best listing and fulfill without errors", async function () {
     if (
@@ -25,61 +24,63 @@ suite("SDK: fulfill best listing", () => {
         BUY_LISTING_TOKEN_ID,
       })
     ) {
-      return;
+      return
     }
 
-    const sdkClient = getSdkForChain(BUY_LISTING_CHAIN);
-    const chain = BUY_LISTING_CHAIN;
-    const contractAddress = BUY_LISTING_CONTRACT_ADDRESS!;
-    const tokenId = BUY_LISTING_TOKEN_ID!;
+    const sdkClient = getSdkForChain(BUY_LISTING_CHAIN)
+    const chain = BUY_LISTING_CHAIN
+    const contractAddress = BUY_LISTING_CONTRACT_ADDRESS!
+    const tokenId = BUY_LISTING_TOKEN_ID!
 
-    const { nft } = await sdkClient.api.getNFT(contractAddress, tokenId, chain);
-    expect(nft).to.exist;
-    expect(nft.collection).to.be.a("string");
-    const slug = nft.collection;
+    const { nft } = await sdkClient.api.getNFT(contractAddress, tokenId, chain)
+    expect(nft).toBeDefined()
+    expect(typeof nft.collection).toBe("string")
+    const slug = nft.collection
 
-    const listing = await sdkClient.api.getBestListing(slug, tokenId, true);
-    expect(listing).to.exist;
-    expect(listing.chain).to.equal(chain);
-    expect(listing.order_hash).to.be.a("string");
-    expect(listing.protocol_address).to.be.a("string");
+    const listing = await sdkClient.api.getBestListing(slug, tokenId, true)
+    expect(listing).toBeDefined()
+    expect(listing.chain).toBe(chain)
+    expect(typeof listing.order_hash).toBe("string")
+    expect(typeof listing.protocol_address).toBe("string")
 
-    const observedEvents: { type: EventType; data: EventData }[] = [];
+    const observedEvents: { type: EventType; data: EventData }[] = []
     const listeners = [
       EventType.TransactionCreated,
       EventType.TransactionConfirmed,
       EventType.TransactionFailed,
-    ].map((eventType) => {
+    ].map(eventType => {
       const handler = (eventData: EventData) => {
-        observedEvents.push({ type: eventType, data: eventData });
-      };
-      sdkClient.addListener(eventType, handler);
-      return { eventType, handler };
-    });
+        observedEvents.push({ type: eventType, data: eventData })
+      }
+      sdkClient.addListener(eventType, handler)
+      return { eventType, handler }
+    })
 
     try {
       const txHash = await sdkClient.fulfillOrder({
         order: listing,
         accountAddress: walletAddress,
-      });
+      })
 
-      expect(txHash).to.match(/^0x[0-9a-fA-F]{64}$/);
+      expect(txHash).toMatch(/^0x[0-9a-fA-F]{64}$/)
 
       const confirmedEvent = observedEvents.find(
-        (event) => event.type === EventType.TransactionConfirmed,
-      );
-      expect(confirmedEvent, "Expected TransactionConfirmed event").to.exist;
-      expect(confirmedEvent?.data.transactionHash).to.equal(txHash);
+        event => event.type === EventType.TransactionConfirmed,
+      )
+      expect(
+        confirmedEvent,
+        "Expected TransactionConfirmed event",
+      ).toBeDefined()
+      expect(confirmedEvent?.data.transactionHash).toBe(txHash)
 
       const failedEvent = observedEvents.find(
-        (event) => event.type === EventType.TransactionFailed,
-      );
-      expect(failedEvent, "TransactionFailed event should not be emitted").to.be
-        .undefined;
+        event => event.type === EventType.TransactionFailed,
+      )
+      expect(failedEvent).toBeUndefined()
     } finally {
       for (const { eventType, handler } of listeners) {
-        sdkClient.removeListener(eventType, handler);
+        sdkClient.removeListener(eventType, handler)
       }
     }
-  });
-});
+  })
+})

@@ -1,7 +1,7 @@
-import { Seaport } from "@opensea/seaport-js";
-import { Signer, JsonRpcProvider } from "ethers";
-import { OpenSeaAPI } from "../api/api";
-import { EventData, EventType, Chain } from "../types";
+import type { Seaport } from "@opensea/seaport-js"
+import type { JsonRpcProvider, Signer } from "ethers"
+import type { OpenSeaAPI } from "../api/api"
+import type { Chain, EventData, EventType } from "../types"
 
 /**
  * Shared context passed to all SDK managers.
@@ -9,25 +9,25 @@ import { EventData, EventType, Chain } from "../types";
  */
 export interface SDKContext {
   /** The blockchain chain being used */
-  chain: Chain;
+  chain: Chain
   /** Signer or provider for blockchain interactions */
-  signerOrProvider: Signer | JsonRpcProvider;
+  signerOrProvider: Signer | JsonRpcProvider
   /** JSON-RPC provider for read operations */
-  provider: JsonRpcProvider;
+  provider: JsonRpcProvider
   /** OpenSea API client */
-  api: OpenSeaAPI;
+  api: OpenSeaAPI
   /** Seaport client instance */
-  seaport: Seaport;
+  seaport: Seaport
   /** Logger function for debugging */
-  logger: (msg: string) => void;
+  logger: (msg: string) => void
   /** Event dispatcher */
-  dispatch: (event: EventType, data: EventData) => void;
+  dispatch: (event: EventType, data: EventData) => void
   /** Transaction confirmation helper */
   confirmTransaction: (
     hash: string,
     event: EventType,
     description: string,
-  ) => Promise<void>;
+  ) => Promise<void>
   /** Account availability checker */
-  requireAccountIsAvailable: (address: string) => Promise<void>;
+  requireAccountIsAvailable: (address: string) => Promise<void>
 }

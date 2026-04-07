@@ -1,20 +1,20 @@
 import {
-  BigNumberish,
+  type BigNumberish,
   Contract,
-  Signer,
-  Overrides,
-  ContractTransactionResponse,
+  type ContractTransactionResponse,
   ethers,
-} from "ethers";
-import { TRANSFER_HELPER_ADDRESS, MULTICALL3_ADDRESS } from "../constants";
+  type Overrides,
+  type Signer,
+} from "ethers"
+import { MULTICALL3_ADDRESS, TRANSFER_HELPER_ADDRESS } from "../constants"
 import {
-  ERC1155__factory,
   ERC20__factory,
   ERC721__factory,
-} from "../typechain/contracts";
-import { EventType, TokenStandard, AssetWithTokenStandard } from "../types";
-import { SDKContext } from "./context";
-import { getDefaultConduit } from "../utils/utils";
+  ERC1155__factory,
+} from "../typechain/contracts"
+import { type AssetWithTokenStandard, EventType, TokenStandard } from "../types"
+import { getDefaultConduit } from "../utils/utils"
+import type { SDKContext } from "./context"
 
 /**
  * Asset transfer and approval operations
@@ -35,51 +35,50 @@ export class AssetsManager {
     accountAddress,
     asset,
   }: {
-    accountAddress: string;
-    asset: AssetWithTokenStandard;
+    accountAddress: string
+    asset: AssetWithTokenStandard
   }): Promise<bigint> {
     switch (asset.tokenStandard) {
       case TokenStandard.ERC20: {
         const contract = ERC20__factory.connect(
           asset.tokenAddress,
           this.context.provider,
-        );
-        return await contract.balanceOf.staticCall(accountAddress);
+        )
+        return await contract.balanceOf.staticCall(accountAddress)
       }
       case TokenStandard.ERC1155: {
         if (asset.tokenId === undefined || asset.tokenId === null) {
-          throw new Error("Missing ERC1155 tokenId for getBalance");
+          throw new Error("Missing ERC1155 tokenId for getBalance")
         }
         const contract = ERC1155__factory.connect(
           asset.tokenAddress,
           this.context.provider,
-        );
+        )
         return await contract.balanceOf.staticCall(
           accountAddress,
           asset.tokenId,
-        );
+        )
       }
       case TokenStandard.ERC721: {
         if (asset.tokenId === undefined || asset.tokenId === null) {
-          throw new Error("Missing ERC721 tokenId for getBalance");
+          throw new Error("Missing ERC721 tokenId for getBalance")
         }
         const contract = ERC721__factory.connect(
           asset.tokenAddress,
           this.context.provider,
-        );
+        )
         try {
-          const owner = await contract.ownerOf.staticCall(asset.tokenId);
-          return BigInt(owner.toLowerCase() == accountAddress.toLowerCase());
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const owner = await contract.ownerOf.staticCall(asset.tokenId)
+          return BigInt(owner.toLowerCase() === accountAddress.toLowerCase())
         } catch (error: any) {
           this.context.logger(
             `Failed to get ownerOf ERC721: ${error.message ?? error}`,
-          );
-          return 0n;
+          )
+          return 0n
         }
       }
       default:
-        throw new Error("Unsupported token standard for getBalance");
+        throw new Error("Unsupported token standard for getBalance")
     }
   }
 
@@ -99,38 +98,38 @@ export class AssetsManager {
     toAddress,
     overrides,
   }: {
-    asset: AssetWithTokenStandard;
-    amount?: BigNumberish;
-    fromAddress: string;
-    toAddress: string;
-    overrides?: Overrides;
+    asset: AssetWithTokenStandard
+    amount?: BigNumberish
+    fromAddress: string
+    toAddress: string
+    overrides?: Overrides
   }): Promise<void> {
-    overrides = { ...overrides, from: fromAddress };
-    let transaction: Promise<ContractTransactionResponse>;
+    overrides = { ...overrides, from: fromAddress }
+    let transaction: Promise<ContractTransactionResponse>
 
     switch (asset.tokenStandard) {
       case TokenStandard.ERC20: {
         if (!amount) {
-          throw new Error("Missing ERC20 amount for transfer");
+          throw new Error("Missing ERC20 amount for transfer")
         }
         const contract = ERC20__factory.connect(
           asset.tokenAddress,
           this.context.signerOrProvider,
-        );
-        transaction = contract.transfer(toAddress, amount, overrides);
-        break;
+        )
+        transaction = contract.transfer(toAddress, amount, overrides)
+        break
       }
       case TokenStandard.ERC1155: {
         if (asset.tokenId === undefined || asset.tokenId === null) {
-          throw new Error("Missing ERC1155 tokenId for transfer");
+          throw new Error("Missing ERC1155 tokenId for transfer")
         }
         if (!amount) {
-          throw new Error("Missing ERC1155 amount for transfer");
+          throw new Error("Missing ERC1155 amount for transfer")
         }
         const contract = ERC1155__factory.connect(
           asset.tokenAddress,
           this.context.signerOrProvider,
-        );
+        )
         transaction = contract.safeTransferFrom(
           fromAddress,
           toAddress,
@@ -138,42 +137,42 @@ export class AssetsManager {
           amount,
           "0x",
           overrides,
-        );
-        break;
+        )
+        break
       }
       case TokenStandard.ERC721: {
         if (asset.tokenId === undefined || asset.tokenId === null) {
-          throw new Error("Missing ERC721 tokenId for transfer");
+          throw new Error("Missing ERC721 tokenId for transfer")
         }
         const contract = ERC721__factory.connect(
           asset.tokenAddress,
           this.context.signerOrProvider,
-        );
+        )
         transaction = contract.transferFrom(
           fromAddress,
           toAddress,
           asset.tokenId,
           overrides,
-        );
-        break;
+        )
+        break
       }
       default:
-        throw new Error("Unsupported token standard for transfer");
+        throw new Error("Unsupported token standard for transfer")
     }
 
     try {
-      const transactionResponse = await transaction;
+      const transactionResponse = await transaction
       await this.context.confirmTransaction(
         transactionResponse.hash,
         EventType.Transfer,
         "Transferring asset",
-      );
+      )
     } catch (error) {
-      console.error(error);
+      console.error(error)
       this.context.dispatch(EventType.TransactionDenied, {
         error,
         accountAddress: fromAddress,
-      });
+      })
     }
   }
 
@@ -197,68 +196,68 @@ export class AssetsManager {
     overrides,
   }: {
     assets: Array<{
-      asset: AssetWithTokenStandard;
-      toAddress: string;
-      amount?: BigNumberish;
-    }>;
-    fromAddress: string;
-    overrides?: Overrides;
+      asset: AssetWithTokenStandard
+      toAddress: string
+      amount?: BigNumberish
+    }>
+    fromAddress: string
+    overrides?: Overrides
   }): Promise<string> {
     // Validate basic parameters before making any blockchain calls
     if (assets.length === 0) {
-      throw new Error("At least one asset must be provided");
+      throw new Error("At least one asset must be provided")
     }
 
     // Validate asset data and build transfer items array for TransferHelper
     // This validation happens before any blockchain calls to ensure proper error messages
     const transferItems: Array<{
-      itemType: number;
-      token: string;
-      identifier: string;
-      amount: string;
-      recipient: string;
-    }> = [];
+      itemType: number
+      token: string
+      identifier: string
+      amount: string
+      recipient: string
+    }> = []
 
     for (const { asset, toAddress, amount } of assets) {
-      let itemType: number;
-      let identifier: string;
-      let transferAmount: string;
+      let itemType: number
+      let identifier: string
+      let transferAmount: string
 
       switch (asset.tokenStandard) {
         case TokenStandard.ERC20:
-          itemType = 1; // ERC20
-          identifier = "0";
+          itemType = 1 // ERC20
+          identifier = "0"
           if (!amount) {
-            throw new Error("Missing ERC20 amount for bulk transfer");
+            throw new Error("Missing ERC20 amount for bulk transfer")
           }
-          transferAmount = amount.toString();
-          break;
+          transferAmount = amount.toString()
+          break
 
         case TokenStandard.ERC721:
-          itemType = 2; // ERC721
+          itemType = 2 // ERC721
           if (asset.tokenId === undefined || asset.tokenId === null) {
-            throw new Error("Missing ERC721 tokenId for bulk transfer");
+            throw new Error("Missing ERC721 tokenId for bulk transfer")
           }
-          identifier = asset.tokenId.toString();
-          transferAmount = "1";
-          break;
+          identifier = asset.tokenId.toString()
+          transferAmount = "1"
+          break
 
         case TokenStandard.ERC1155:
-          itemType = 3; // ERC1155
+          itemType = 3 // ERC1155
           if (asset.tokenId === undefined || asset.tokenId === null) {
-            throw new Error("Missing ERC1155 tokenId for bulk transfer");
+            throw new Error("Missing ERC1155 tokenId for bulk transfer")
           }
           if (!amount) {
-            throw new Error("Missing ERC1155 amount for bulk transfer");
+            throw new Error("Missing ERC1155 amount for bulk transfer")
           }
-          identifier = asset.tokenId.toString();
-          transferAmount = amount.toString();
-          break;
+          identifier = asset.tokenId.toString()
+          transferAmount = amount.toString()
+          break
 
         default:
           throw new Error(
             `Unsupported token standard for bulk transfer: ${asset.tokenStandard}`,
-          );
+          )
       }
 
       transferItems.push({
@@ -267,30 +266,30 @@ export class AssetsManager {
         identifier,
         amount: transferAmount,
         recipient: toAddress,
-      });
+      })
     }
 
     // Check account availability after parameter validation
-    await this.context.requireAccountIsAvailable(fromAddress);
+    await this.context.requireAccountIsAvailable(fromAddress)
 
     // Get the chain-specific default conduit
-    const defaultConduit = getDefaultConduit(this.context.chain);
+    const defaultConduit = getDefaultConduit(this.context.chain)
 
     // Check approvals for all assets before attempting transfer
-    const unapprovedAssets: string[] = [];
+    const unapprovedAssets: string[] = []
     for (const { asset, amount } of assets) {
       const isApproved = await this.checkAssetApproval(
         asset,
         fromAddress,
         defaultConduit.address,
         amount,
-      );
+      )
       if (!isApproved) {
         const assetIdentifier =
           asset.tokenId !== undefined
             ? `${asset.tokenAddress}:${asset.tokenId}`
-            : asset.tokenAddress;
-        unapprovedAssets.push(assetIdentifier);
+            : asset.tokenAddress
+        unapprovedAssets.push(assetIdentifier)
       }
     }
 
@@ -298,16 +297,16 @@ export class AssetsManager {
       throw new Error(
         `The following asset(s) are not approved for transfer to the OpenSea conduit:\n${unapprovedAssets.join("\n")}\n\n` +
           `Please approve these assets before transferring. You can use the batchApproveAssets() method to approve multiple assets efficiently in a single transaction.`,
-      );
+      )
     }
 
     // Create TransferHelper contract instance
-    const transferHelper = this.getTransferHelperContract();
+    const transferHelper = this.getTransferHelperContract()
 
     this.context.dispatch(EventType.Transfer, {
       accountAddress: fromAddress,
       assets,
-    });
+    })
 
     try {
       // Use chain-specific conduit key for bulk transfers
@@ -315,22 +314,22 @@ export class AssetsManager {
         transferItems,
         defaultConduit.key,
         { ...overrides, from: fromAddress },
-      );
+      )
 
       await this.context.confirmTransaction(
         transaction.hash,
         EventType.Transfer,
         `Bulk transferring ${assets.length} asset(s)`,
-      );
+      )
 
-      return transaction.hash;
+      return transaction.hash
     } catch (error) {
-      console.error(error);
+      console.error(error)
       this.context.dispatch(EventType.TransactionDenied, {
         error,
         accountAddress: fromAddress,
-      });
-      throw error;
+      })
+      throw error
     }
   }
 
@@ -355,15 +354,15 @@ export class AssetsManager {
     overrides,
   }: {
     assets: Array<{
-      asset: AssetWithTokenStandard;
-      amount?: BigNumberish;
-    }>;
-    fromAddress: string;
-    overrides?: Overrides;
+      asset: AssetWithTokenStandard
+      amount?: BigNumberish
+    }>
+    fromAddress: string
+    overrides?: Overrides
   }): Promise<string | undefined> {
     // Validate basic parameters before making any blockchain calls
     if (assets.length === 0) {
-      return undefined;
+      return undefined
     }
 
     // Validate ERC20 assets have amounts before making any blockchain calls
@@ -371,19 +370,19 @@ export class AssetsManager {
       if (asset.tokenStandard === TokenStandard.ERC20 && !amount) {
         throw new Error(
           `Amount required for ERC20 approval: ${asset.tokenAddress}`,
-        );
+        )
       }
     }
 
     // Check account availability after parameter validation
-    await this.context.requireAccountIsAvailable(fromAddress);
+    await this.context.requireAccountIsAvailable(fromAddress)
 
     // Get the chain-specific default conduit
-    const defaultConduit = getDefaultConduit(this.context.chain);
+    const defaultConduit = getDefaultConduit(this.context.chain)
 
     // Check which assets need approval and build approval calldata
-    const approvalsNeeded: Array<{ target: string; callData: string }> = [];
-    const processedContracts = new Set<string>();
+    const approvalsNeeded: Array<{ target: string; callData: string }> = []
+    const processedContracts = new Set<string>()
 
     for (const { asset, amount } of assets) {
       const isApproved = await this.checkAssetApproval(
@@ -391,7 +390,7 @@ export class AssetsManager {
         fromAddress,
         defaultConduit.address,
         amount,
-      );
+      )
 
       if (!isApproved) {
         // For ERC721/ERC1155, only approve once per contract
@@ -400,93 +399,93 @@ export class AssetsManager {
           asset.tokenStandard === TokenStandard.ERC1155
         ) {
           if (processedContracts.has(asset.tokenAddress.toLowerCase())) {
-            continue;
+            continue
           }
-          processedContracts.add(asset.tokenAddress.toLowerCase());
+          processedContracts.add(asset.tokenAddress.toLowerCase())
 
           // setApprovalForAll(operator, true)
           const iface = new ethers.Interface([
             "function setApprovalForAll(address operator, bool approved)",
-          ]);
+          ])
           const callData = iface.encodeFunctionData("setApprovalForAll", [
             defaultConduit.address,
             true,
-          ]);
+          ])
           approvalsNeeded.push({
             target: asset.tokenAddress,
             callData,
-          });
+          })
         } else if (asset.tokenStandard === TokenStandard.ERC20) {
           // approve(spender, amount) - use max uint256 for unlimited
           const iface = new ethers.Interface([
             "function approve(address spender, uint256 amount) returns (bool)",
-          ]);
+          ])
           const callData = iface.encodeFunctionData("approve", [
             defaultConduit.address,
             ethers.MaxUint256, // Approve max for convenience
-          ]);
+          ])
           approvalsNeeded.push({
             target: asset.tokenAddress,
             callData,
-          });
+          })
         }
       }
     }
 
     // No approvals needed
     if (approvalsNeeded.length === 0) {
-      return undefined;
+      return undefined
     }
 
     // Single approval: send directly
     if (approvalsNeeded.length === 1) {
-      const { target, callData } = approvalsNeeded[0];
-      const signer = this.context.signerOrProvider as Signer;
+      const { target, callData } = approvalsNeeded[0]
+      const signer = this.context.signerOrProvider as Signer
       const tx = await signer.sendTransaction({
         to: target,
         data: callData,
         ...overrides,
         from: fromAddress,
-      });
+      })
 
       await this.context.confirmTransaction(
         tx.hash,
         EventType.ApproveAllAssets,
         "Approving asset for transfer",
-      );
+      )
 
-      return tx.hash;
+      return tx.hash
     }
 
     // Multiple approvals: use Multicall3
-    const multicall3 = this.getMulticall3Contract();
+    const multicall3 = this.getMulticall3Contract()
 
     const calls = approvalsNeeded.map(({ target, callData }) => ({
       target,
       allowFailure: false,
       callData,
-    }));
+    }))
 
     try {
       const transaction = await multicall3.aggregate3(calls, {
         ...overrides,
         from: fromAddress,
-      });
+      })
 
       await this.context.confirmTransaction(
         transaction.hash,
         EventType.ApproveAllAssets,
         `Batch approving ${approvalsNeeded.length} asset(s) for transfer`,
-      );
+      )
 
-      return transaction.hash;
+      return transaction.hash
     } catch (error) {
-      console.error(error);
+      console.error(error)
       this.context.dispatch(EventType.TransactionDenied, {
         error,
         accountAddress: fromAddress,
-      });
-      throw error;
+      })
+      throw error
     }
   }
 
@@ -510,58 +509,55 @@ export class AssetsManager {
           const contract = ERC20__factory.connect(
             asset.tokenAddress,
             this.context.provider,
-          );
-          const allowance = await contract.allowance.staticCall(
-            owner,
-            operator,
-          );
+          )
+          const allowance = await contract.allowance.staticCall(owner, operator)
           // Check if allowance is sufficient
           if (!amount) {
-            return false;
+            return false
           }
-          return allowance >= BigInt(amount.toString());
+          return allowance >= BigInt(amount.toString())
         }
 
         case TokenStandard.ERC721: {
           const contract = ERC721__factory.connect(
             asset.tokenAddress,
             this.context.provider,
-          );
+          )
           // Check isApprovedForAll first
           const isApprovedForAll = await contract.isApprovedForAll.staticCall(
             owner,
             operator,
-          );
+          )
           if (isApprovedForAll) {
-            return true;
+            return true
           }
           // Check individual token approval
           if (asset.tokenId !== undefined && asset.tokenId !== null) {
             const approved = await contract.getApproved.staticCall(
               asset.tokenId,
-            );
-            return approved.toLowerCase() === operator.toLowerCase();
+            )
+            return approved.toLowerCase() === operator.toLowerCase()
           }
-          return false;
+          return false
         }
 
         case TokenStandard.ERC1155: {
           const contract = ERC1155__factory.connect(
             asset.tokenAddress,
             this.context.provider,
-          );
-          return await contract.isApprovedForAll.staticCall(owner, operator);
+          )
+          return await contract.isApprovedForAll.staticCall(owner, operator)
         }
 
         default:
-          return false;
+          return false
       }
     } catch (error) {
       // If there's an error checking approval (e.g., contract doesn't exist), return false
       this.context.logger(
         `Error checking approval for ${asset.tokenAddress}: ${error}`,
-      );
-      return false;
+      )
+      return false
     }
   }
 
@@ -576,7 +572,7 @@ export class AssetsManager {
         "function bulkTransfer(tuple(uint8 itemType, address token, uint256 identifier, uint256 amount, address recipient)[] items, bytes32 conduitKey) external returns (bytes4)",
       ],
       this.context.signerOrProvider,
-    );
+    )
   }
 
   /**
@@ -590,6 +586,6 @@ export class AssetsManager {
         "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)",
       ],
       this.context.signerOrProvider,
-    );
+    )
   }
 }

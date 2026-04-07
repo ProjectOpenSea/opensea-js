@@ -12,6 +12,7 @@
   "bugs": {
     "url": "https://github.com/ProjectOpenSea/opensea-js/issues"
   },
+  "type": "commonjs",
   "main": "lib/index.js",
   "files": [
     "lib",
@@ -21,58 +22,35 @@
     "abi-type-gen": "typechain --target=ethers-v6 src/abi/*.json --out-dir=src/typechain/contracts",
     "build": "npm run abi-type-gen && tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit --project tsconfig.json",
-    "coverage-report": "nyc report --reporter=lcov",
     "docs-build": "typedoc",
     "docs-build-md": "typedoc --plugin typedoc-plugin-markdown",
-    "eslint:check": "eslint . --max-warnings 0",
-    "eslint:fix": "npm run eslint:check -- --fix",
-    "postinstall": "husky || exit 0",
-    "lint": "concurrently \"npm run check-types\" \"npm run prettier:check\" \"npm run eslint:check\"",
-    "lint:fix": "npm run prettier:fix && npm run eslint:fix",
-    "prepare": "npm run build",
-    "prettier:check": "prettier --check .",
-    "prettier:check:package.json": "prettier-package-json --list-different",
-    "prettier:fix": "prettier --write .",
-    "test": "nyc mocha --config ./.mocharc-unit.json",
+    "format": "biome format --config-path ../.. --write .",
+    "format:check": "biome format --config-path ../.. .",
+    "lint": "concurrently \"npm run check-types\" \"biome check --config-path ../.. .\"",
+    "lint:fix": "biome check --config-path ../.. --write .",
+    "test": "vitest run",
     "test:all": "concurrently \"npm run test\" \"npm run test:integration\"",
-    "test:integration": "nyc mocha --config ./.mocharc-integration.json"
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "types": "lib/index.d.ts",
   "dependencies": {
+    "@opensea/api-types": "workspace:^",
     "@opensea/seaport-js": "^4.0.7",
     "ethers": "^6.16.0"
   },
   "devDependencies": {
     "@typechain/ethers-v6": "^0.5.1",
-    "@types/chai": "^5.2.3",
-    "@types/mocha": "^10.0.10",
     "@types/node": "^25.4.0",
-    "@types/sinon": "^21.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.57.0",
-    "@typescript-eslint/parser": "^8.57.0",
-    "chai": "^6.2.2",
+    "@vitest/coverage-v8": "^3.2.4",
     "concurrently": "^9.2.1",
-    "confusing-browser-globals": "^1.0.11",
     "dotenv": "^17.3.1",
-    "eslint": "^10.0.3",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-import-resolver-typescript": "^4.4.4",
-    "eslint-plugin-import-x": "^4.16.2",
-    "eslint-plugin-prettier": "^5.5.5",
-    "globals": "^17.4.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.3.3",
-    "mocha": "^11.7.5",
-    "nyc": "^18.0.0",
-    "prettier": "^3.8.1",
-    "prettier-package-json": "^2.8.0",
-    "sinon": "^21.0.0",
-    "ts-node": "^10.9.2",
     "typechain": "^8.0.0",
     "typedoc": "^0.28.17",
     "typedoc-plugin-markdown": "^4.10.0",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.0"
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.57.0",
+    "vitest": "^3.2.4"
   },
   "keywords": [
     "collectibles",
@@ -90,22 +68,5 @@
   ],
   "engines": {
     "node": ">=20.0.0"
-  },
-  "lint-staged": {
-    "package.json": [
-      "prettier-package-json --write"
-    ],
-    "**/*.{ts,tsx,js,jsx,html,md,mdx,yml,json}": [
-      "prettier --write"
-    ],
-    "**/*.{ts,tsx,js,jsx}": [
-      "eslint --cache --fix"
-    ]
-  },
-  "nyc": {
-    "exclude": [
-      "src/utils/tokens/**/*.ts",
-      "src/typechain"
-    ]
   }
 }

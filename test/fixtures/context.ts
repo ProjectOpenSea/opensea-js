@@ -1,17 +1,17 @@
-import * as sinon from "sinon";
-import { SDKContext } from "../../src/sdk/context";
-import { Chain } from "../../src/types";
+import { vi } from "vitest"
+import type { SDKContext } from "../../src/sdk/context"
+import { Chain } from "../../src/types"
 
 export interface MockContextOptions {
-  chain?: Chain;
-  api?: unknown;
-  seaport?: unknown;
-  logger?: sinon.SinonStub;
-  dispatch?: sinon.SinonStub;
-  confirmTransaction?: sinon.SinonStub;
-  requireAccountIsAvailable?: sinon.SinonStub;
-  signerOrProvider?: unknown;
-  provider?: unknown;
+  chain?: Chain
+  api?: unknown
+  seaport?: unknown
+  logger?: ReturnType<typeof vi.fn>
+  dispatch?: ReturnType<typeof vi.fn>
+  confirmTransaction?: ReturnType<typeof vi.fn>
+  requireAccountIsAvailable?: ReturnType<typeof vi.fn>
+  signerOrProvider?: unknown
+  provider?: unknown
 }
 
 /**
@@ -27,10 +27,11 @@ export function createMockContext(
     provider: options.provider ?? ({} as unknown),
     api: options.api ?? ({} as unknown),
     seaport: options.seaport ?? ({} as unknown),
-    logger: options.logger ?? sinon.stub(),
-    dispatch: options.dispatch ?? sinon.stub(),
-    confirmTransaction: options.confirmTransaction ?? sinon.stub().resolves(),
+    logger: options.logger ?? vi.fn(),
+    dispatch: options.dispatch ?? vi.fn(),
+    confirmTransaction:
+      options.confirmTransaction ?? vi.fn().mockResolvedValue(undefined),
     requireAccountIsAvailable:
-      options.requireAccountIsAvailable ?? sinon.stub().resolves(),
-  } as SDKContext;
+      options.requireAccountIsAvailable ?? vi.fn().mockResolvedValue(undefined),
+  } as SDKContext
 }

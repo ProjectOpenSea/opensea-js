@@ -1,13 +1,13 @@
+import { serializeOrdersQueryOptions } from "../orders/utils"
+import { type Chain, OrderSide } from "../types"
 import {
-  getBestListingAPIPath,
   getAllListingsAPIPath,
+  getBestListingAPIPath,
   getBestListingsAPIPath,
   getOrdersAPIPath,
-} from "./apiPaths";
-import { GetBestListingResponse, GetListingsResponse } from "./types";
-import { serializeOrdersQueryOptions } from "../orders/utils";
-import { Chain, OrderSide } from "../types";
-import { Fetcher } from "./fetcher";
+} from "./apiPaths"
+import type { Fetcher } from "./fetcher"
+import type { GetBestListingResponse, GetListingsResponse } from "./types"
 
 /**
  * Listing-related API operations
@@ -40,8 +40,8 @@ export class ListingsAPI {
           include_private_listings: includePrivateListings,
         }),
       },
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -60,8 +60,8 @@ export class ListingsAPI {
       includePrivateListings !== undefined
         ? { include_private_listings: includePrivateListings }
         : undefined,
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -86,8 +86,8 @@ export class ListingsAPI {
           include_private_listings: includePrivateListings,
         }),
       },
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -120,7 +120,7 @@ export class ListingsAPI {
           include_private_listings: includePrivateListings,
         }),
       },
-    );
-    return response;
+    )
+    return response
   }
 }

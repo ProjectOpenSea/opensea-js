@@ -1,56 +1,61 @@
-import { ethers } from "ethers";
-import type { Context as MochaContext } from "mocha";
-import { alchemyProvider } from "./providers";
-import { Chain } from "../../src/types";
+import { ethers } from "ethers"
+import { Chain } from "../../src/types"
+import { alchemyProvider } from "./providers"
+
+/** Context type used in integration tests for skip logic */
+export interface TestContext {
+  test?: { title?: string }
+  skip: () => void
+}
 
 export const normalizeChain = (chain: string): Chain => {
   if (!chain) {
-    throw new Error("normalizeChain: chain is required");
+    throw new Error("normalizeChain: chain is required")
   }
-  const lower = chain.toLowerCase();
-  const found = Object.values(Chain).find((value) => value === lower) as
+  const lower = chain.toLowerCase()
+  const found = Object.values(Chain).find(value => value === lower) as
     | Chain
-    | undefined;
+    | undefined
   if (!found) {
-    throw new Error(`normalizeChain: unsupported chain '${chain}'`);
+    throw new Error(`normalizeChain: unsupported chain '${chain}'`)
   }
-  return found;
-};
+  return found
+}
 
 export const normalizeChainName = (chain: string): string => {
   if (!chain) {
-    throw new Error("normalizeChainName: chain is required");
+    throw new Error("normalizeChainName: chain is required")
   }
-  const lower = chain.toLowerCase();
-  const found = Object.values(Chain).find((value) => value === lower);
+  const lower = chain.toLowerCase()
+  const found = Object.values(Chain).find(value => value === lower)
   if (!found) {
-    throw new Error(`normalizeChainName: unsupported chain '${chain}'`);
+    throw new Error(`normalizeChainName: unsupported chain '${chain}'`)
   }
   // Return the chain enum key
   const enumKey = Object.keys(Chain).find(
-    (key) => Chain[key as keyof typeof Chain] === found,
-  );
+    key => Chain[key as keyof typeof Chain] === found,
+  )
   if (!enumKey) {
     throw new Error(
       `normalizeChainName: could not find enum key for chain '${chain}'`,
-    );
+    )
   }
-  return enumKey;
-};
+  return enumKey
+}
 
 const getProviderForChain = (chain: Chain): ethers.Provider => {
-  return alchemyProvider(chain);
-};
+  return alchemyProvider(chain)
+}
 
 export const getWalletForChain = (
   privateKey: string,
   chain: Chain,
 ): ethers.Wallet => {
-  return new ethers.Wallet(privateKey, getProviderForChain(chain));
-};
+  return new ethers.Wallet(privateKey, getProviderForChain(chain))
+}
 
 export const ensureVarsOrSkip = <T extends Record<string, unknown>>(
-  ctx: MochaContext,
+  ctx: TestContext,
   vars: T,
   label?: string,
 ): boolean => {
@@ -58,15 +63,12 @@ export const ensureVarsOrSkip = <T extends Record<string, unknown>>(
     .filter(
       ([, value]) => value === undefined || value === null || value === "",
     )
-    .map(([key]) => key);
+    .map(([key]) => key)
   if (missing.length > 0) {
-    const testName =
-      (ctx as { test?: { title?: string } }).test?.title ||
-      label ||
-      "Unknown test";
-    console.log(`${testName} - Skipping test - missing: ${missing.join(", ")}`);
-    (ctx as unknown as { skip: () => void }).skip();
-    return false;
+    const testName = ctx.test?.title || label || "Unknown test"
+    console.log(`${testName} - Skipping test - missing: ${missing.join(", ")}`)
+    ctx.skip()
+    return false
   }
-  return true;
-};
+  return true
+}

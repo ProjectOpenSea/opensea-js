@@ -1,5 +1,0 @@
-lib
-docs
-.nyc_output
-coverage
-src/typechain

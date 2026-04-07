@@ -8,7 +8,7 @@
  * @returns Current time as Unix timestamp (seconds since epoch)
  */
 export function getCurrentUnixTimestamp(): number {
-  return Math.floor(Date.now() / 1000);
+  return Math.floor(Date.now() / 1000)
 }
 
 /**
@@ -20,7 +20,7 @@ export function getCurrentUnixTimestamp(): number {
  * const tomorrow = getUnixTimestampInSeconds(60 * 60 * 24);
  */
 export function getUnixTimestampInSeconds(seconds: number): number {
-  return getCurrentUnixTimestamp() + seconds;
+  return getCurrentUnixTimestamp() + seconds
 }
 
 /**
@@ -44,5 +44,5 @@ export enum TimeInSeconds {
  * @returns Unix timestamp (seconds since epoch) for 30 days in the future
  */
 export const oneMonthFromNowInSeconds = (): number => {
-  return getUnixTimestampInSeconds(TimeInSeconds.MONTH);
-};
+  return getUnixTimestampInSeconds(TimeInSeconds.MONTH)
+}

@@ -1,91 +1,90 @@
-import { FixedNumber } from "ethers";
+import { FixedNumber } from "ethers"
 
 // =============================================================================
 // Math & Calculation Constants
 // =============================================================================
 
-export const FIXED_NUMBER_100 = FixedNumber.fromValue(100);
-export const INVERSE_BASIS_POINT = 10_000n; // 100 basis points per 1%
+export const FIXED_NUMBER_100 = FixedNumber.fromValue(100)
+export const INVERSE_BASIS_POINT = 10_000n // 100 basis points per 1%
 
 // =============================================================================
 // API Configuration
 // =============================================================================
 
-export const API_BASE_MAINNET = "https://api.opensea.io";
+export const API_BASE_MAINNET = "https://api.opensea.io"
 
 // =============================================================================
 // OpenSea Protocol Addresses
 // =============================================================================
 
 export const OPENSEA_FEE_RECIPIENT =
-  "0x0000a26b00c1f0df003000390027140000faa719";
+  "0x0000a26b00c1f0df003000390027140000faa719"
 
 export const OPENSEA_CONDUIT_KEY =
-  "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000";
+  "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000"
 
 export const OPENSEA_CONDUIT_ADDRESS =
-  "0x1e0049783f008a0085193e00003d00cd54003c71";
+  "0x1e0049783f008a0085193e00003d00cd54003c71"
 
 export const OPENSEA_CONDUIT_KEY_2 =
-  "0x61159fefdfada89302ed55f8b9e89e2d67d8258712b3a3f89aa88525877f1d5e";
+  "0x61159fefdfada89302ed55f8b9e89e2d67d8258712b3a3f89aa88525877f1d5e"
 
 export const OPENSEA_CONDUIT_ADDRESS_2 =
-  "0x963f00d3ff000064ffcba824b800c0000000c300";
+  "0x963f00d3ff000064ffcba824b800c0000000c300"
 
 export const OPENSEA_SIGNED_ZONE_V2 =
-  "0x000056f7000000ece9003ca63978907a00ffd100";
+  "0x000056f7000000ece9003ca63978907a00ffd100"
 
 // =============================================================================
 // Alternate Protocol Constants (shared by Gunzilla, Somnia, etc.)
 // =============================================================================
 
 export const ALTERNATE_CONDUIT_ADDRESS =
-  "0x00000000001566479594a2e05532d81afa09bc52";
+  "0x00000000001566479594a2e05532d81afa09bc52"
 
 export const ALTERNATE_CONDUIT_KEY =
-  "0x86d26897267711ea4b173c8c124a0a73612001da35562f1ee3b26929b6575e89";
+  "0x86d26897267711ea4b173c8c124a0a73612001da35562f1ee3b26929b6575e89"
 
 export const ALTERNATE_SEAPORT_V1_6_ADDRESS =
-  "0x00000000006687982678b03100B9bDC8be440814";
+  "0x00000000006687982678b03100B9bDC8be440814"
 
 export const ALTERNATE_SIGNED_ZONE_V2_ADDRESS =
-  "0xdfe0000000005ce3008800300037e4c803ed08c7";
+  "0xdfe0000000005ce3008800300037e4c803ed08c7"
 
 // =============================================================================
 // Chain-Specific Fee Recipients
 // =============================================================================
 
 export const GUNZILLA_FEE_RECIPIENT =
-  "0xd9f68d28e451a83affdb7c71cc2c20552555b07f";
+  "0xd9f68d28e451a83affdb7c71cc2c20552555b07f"
 
-export const SOMNIA_FEE_RECIPIENT =
-  "0xdfe1593dca6ad8a20eeb418643e48577c1626f7c";
+export const SOMNIA_FEE_RECIPIENT = "0xdfe1593dca6ad8a20eeb418643e48577c1626f7c"
 
 export const ALTERNATE_FEE_RECIPIENT =
-  "0x07d3a100c3880830dd43fe5c938b5144721ce9d6";
+  "0x07d3a100c3880830dd43fe5c938b5144721ce9d6"
 
 // =============================================================================
 // Token & Helper Addresses
 // =============================================================================
 
-export const WPOL_ADDRESS = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270";
+export const WPOL_ADDRESS = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270"
 
-export const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
+export const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11"
 
 export const TRANSFER_HELPER_ADDRESS =
-  "0x0000000000c2d145a2526bd8c716263bfebe1a72";
+  "0x0000000000c2d145a2526bd8c716263bfebe1a72"
 
 // =============================================================================
 // Shared Storefront Addresses
 // =============================================================================
 
 const SHARED_STOREFRONT_ADDRESS_MAINNET =
-  "0x495f947276749ce646f68ac8c248420045cb7b5e";
+  "0x495f947276749ce646f68ac8c248420045cb7b5e"
 const SHARED_STOREFRONT_ADDRESS_POLYGON =
-  "0x2953399124f0cbb46d2cbacd8a89cf0599974963";
+  "0x2953399124f0cbb46d2cbacd8a89cf0599974963"
 export const SHARED_STOREFRONT_ADDRESSES = new Set([
   SHARED_STOREFRONT_ADDRESS_MAINNET,
   SHARED_STOREFRONT_ADDRESS_POLYGON,
-]);
+])
 export const SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS =
-  "0xa604060890923ff400e8c6f5290461a83aedacec";
+  "0xa604060890923ff400e8c6f5290461a83aedacec"

@@ -1,6 +1,6 @@
-import { getSearchPath } from "./apiPaths";
-import { Fetcher } from "./fetcher";
-import { SearchArgs, SearchResponse } from "./types";
+import { getSearchPath } from "./apiPaths"
+import type { Fetcher } from "./fetcher"
+import type { SearchArgs, SearchResponse } from "./types"
 
 /**
  * Search-related API operations
@@ -15,7 +15,7 @@ export class SearchAPI {
     const response = await this.fetcher.get<SearchResponse>(
       getSearchPath(),
       args,
-    );
-    return response;
+    )
+    return response
   }
 }

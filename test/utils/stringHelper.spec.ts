@@ -1,43 +1,42 @@
-import { expect } from "chai";
-import { suite, test } from "mocha";
-import { pluralize } from "../../src/utils/stringHelper";
+import { describe, expect, test } from "vitest"
+import { pluralize } from "../../src/utils/stringHelper"
 
-suite("Utils: stringHelper", () => {
-  suite("pluralize", () => {
+describe("Utils: stringHelper", () => {
+  describe("pluralize", () => {
     test("returns singular form for count of 1", () => {
-      expect(pluralize(1, "listing")).to.equal("listing");
-      expect(pluralize(1, "offer")).to.equal("offer");
-      expect(pluralize(1, "operation")).to.equal("operation");
-    });
+      expect(pluralize(1, "listing")).toBe("listing")
+      expect(pluralize(1, "offer")).toBe("offer")
+      expect(pluralize(1, "operation")).toBe("operation")
+    })
 
     test("returns plural form for count of 0", () => {
-      expect(pluralize(0, "listing")).to.equal("listings");
-      expect(pluralize(0, "offer")).to.equal("offers");
-      expect(pluralize(0, "operation")).to.equal("operations");
-    });
+      expect(pluralize(0, "listing")).toBe("listings")
+      expect(pluralize(0, "offer")).toBe("offers")
+      expect(pluralize(0, "operation")).toBe("operations")
+    })
 
     test("returns plural form for count greater than 1", () => {
-      expect(pluralize(2, "listing")).to.equal("listings");
-      expect(pluralize(5, "offer")).to.equal("offers");
-      expect(pluralize(100, "operation")).to.equal("operations");
-    });
+      expect(pluralize(2, "listing")).toBe("listings")
+      expect(pluralize(5, "offer")).toBe("offers")
+      expect(pluralize(100, "operation")).toBe("operations")
+    })
 
     test("uses custom plural form when provided", () => {
-      expect(pluralize(1, "query", "queries")).to.equal("query");
-      expect(pluralize(2, "query", "queries")).to.equal("queries");
-      expect(pluralize(5, "query", "queries")).to.equal("queries");
-    });
+      expect(pluralize(1, "query", "queries")).toBe("query")
+      expect(pluralize(2, "query", "queries")).toBe("queries")
+      expect(pluralize(5, "query", "queries")).toBe("queries")
+    })
 
     test("handles irregular plurals with custom plural parameter", () => {
-      expect(pluralize(1, "child", "children")).to.equal("child");
-      expect(pluralize(3, "child", "children")).to.equal("children");
-      expect(pluralize(1, "person", "people")).to.equal("person");
-      expect(pluralize(10, "person", "people")).to.equal("people");
-    });
+      expect(pluralize(1, "child", "children")).toBe("child")
+      expect(pluralize(3, "child", "children")).toBe("children")
+      expect(pluralize(1, "person", "people")).toBe("person")
+      expect(pluralize(10, "person", "people")).toBe("people")
+    })
 
     test("defaults to adding 's' when no custom plural provided", () => {
-      expect(pluralize(2, "item")).to.equal("items");
-      expect(pluralize(5, "order")).to.equal("orders");
-    });
-  });
-});
+      expect(pluralize(2, "item")).toBe("items")
+      expect(pluralize(5, "order")).toBe("orders")
+    })
+  })
+})

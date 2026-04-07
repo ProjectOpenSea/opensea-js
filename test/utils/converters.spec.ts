@@ -1,46 +1,45 @@
-import { expect } from "chai";
-import { suite, test } from "mocha";
+import { describe, expect, test } from "vitest"
 import {
+  accountFromJSON,
   collectionFromJSON,
-  rarityFromJSON,
+  feeFromJSON,
   paymentTokenFromJSON,
   pricingCurrenciesFromJSON,
-  accountFromJSON,
-  feeFromJSON,
-} from "../../src/utils/converters";
+  rarityFromJSON,
+} from "../../src/utils/converters"
 
-suite("Utils: converters", () => {
-  suite("feeFromJSON", () => {
+describe("Utils: converters", () => {
+  describe("feeFromJSON", () => {
     test("converts fee JSON to Fee object", () => {
       const feeJSON = {
         fee: 2.5,
         recipient: "0x1234567890123456789012345678901234567890",
         required: true,
-      };
+      }
 
-      const result = feeFromJSON(feeJSON);
+      const result = feeFromJSON(feeJSON)
 
-      expect(result).to.deep.equal({
+      expect(result).toEqual({
         fee: 2.5,
         recipient: "0x1234567890123456789012345678901234567890",
         required: true,
-      });
-    });
+      })
+    })
 
     test("handles non-required fee", () => {
       const feeJSON = {
         fee: 1.0,
         recipient: "0x0000000000000000000000000000000000000000",
         required: false,
-      };
+      }
 
-      const result = feeFromJSON(feeJSON);
+      const result = feeFromJSON(feeJSON)
 
-      expect(result.required).to.be.false;
-    });
-  });
+      expect(result.required).toBe(false)
+    })
+  })
 
-  suite("rarityFromJSON", () => {
+  describe("rarityFromJSON", () => {
     test("converts rarity JSON to RarityStrategy object", () => {
       const rarityJSON = {
         strategy_id: "openrarity",
@@ -48,31 +47,31 @@ suite("Utils: converters", () => {
         calculated_at: "2024-01-01T00:00:00Z",
         max_rank: 10000,
         tokens_scored: 9999,
-      };
+      }
 
-      const result = rarityFromJSON(rarityJSON);
+      const result = rarityFromJSON(rarityJSON)
 
-      expect(result).to.deep.equal({
+      expect(result).toEqual({
         strategyId: "openrarity",
         strategyVersion: "1.0",
         calculatedAt: "2024-01-01T00:00:00Z",
         maxRank: 10000,
         tokensScored: 9999,
-      });
-    });
+      })
+    })
 
     test("returns null for null input", () => {
-      const result = rarityFromJSON(null);
-      expect(result).to.be.null;
-    });
+      const result = rarityFromJSON(null)
+      expect(result).toBeNull()
+    })
 
     test("returns null for undefined input", () => {
-      const result = rarityFromJSON(undefined);
-      expect(result).to.be.null;
-    });
-  });
+      const result = rarityFromJSON(undefined)
+      expect(result).toBeNull()
+    })
+  })
 
-  suite("paymentTokenFromJSON", () => {
+  describe("paymentTokenFromJSON", () => {
     test("converts payment token JSON to OpenSeaPaymentToken object", () => {
       const tokenJSON = {
         name: "Wrapped Ether",
@@ -83,11 +82,11 @@ suite("Utils: converters", () => {
         image: "https://example.com/weth.png",
         eth_price: "1.0",
         usd_price: "2500.00",
-      };
+      }
 
-      const result = paymentTokenFromJSON(tokenJSON);
+      const result = paymentTokenFromJSON(tokenJSON)
 
-      expect(result).to.deep.equal({
+      expect(result).toEqual({
         name: "Wrapped Ether",
         symbol: "WETH",
         decimals: 18,
@@ -96,8 +95,8 @@ suite("Utils: converters", () => {
         imageUrl: "https://example.com/weth.png",
         ethPrice: "1.0",
         usdPrice: "2500.00",
-      });
-    });
+      })
+    })
 
     test("handles missing optional fields", () => {
       const tokenJSON = {
@@ -106,17 +105,17 @@ suite("Utils: converters", () => {
         decimals: 18,
         address: "0x0000000000000000000000000000000000000001",
         chain: "ethereum",
-      };
+      }
 
-      const result = paymentTokenFromJSON(tokenJSON);
+      const result = paymentTokenFromJSON(tokenJSON)
 
-      expect(result.name).to.equal("Test Token");
-      expect(result.symbol).to.equal("TEST");
-      expect(result.imageUrl).to.be.undefined;
-    });
-  });
+      expect(result.name).toBe("Test Token")
+      expect(result.symbol).toBe("TEST")
+      expect(result.imageUrl).toBeUndefined()
+    })
+  })
 
-  suite("pricingCurrenciesFromJSON", () => {
+  describe("pricingCurrenciesFromJSON", () => {
     test("converts full pricing currencies JSON", () => {
       const json = {
         listing_currency: {
@@ -139,12 +138,12 @@ suite("Utils: converters", () => {
           eth_price: "1.0",
           usd_price: "2500.00",
         },
-      };
+      }
 
-      const result = pricingCurrenciesFromJSON(json);
+      const result = pricingCurrenciesFromJSON(json)
 
-      expect(result).to.not.be.undefined;
-      expect(result!.listingCurrency).to.deep.equal({
+      expect(result).toBeDefined()
+      expect(result?.listingCurrency).toEqual({
         name: "Ether",
         symbol: "ETH",
         decimals: 18,
@@ -153,8 +152,8 @@ suite("Utils: converters", () => {
         imageUrl: "https://example.com/eth.png",
         ethPrice: "1.0",
         usdPrice: "2500.00",
-      });
-      expect(result!.offerCurrency).to.deep.equal({
+      })
+      expect(result?.offerCurrency).toEqual({
         name: "Wrapped Ether",
         symbol: "WETH",
         decimals: 18,
@@ -163,18 +162,18 @@ suite("Utils: converters", () => {
         imageUrl: "https://example.com/weth.png",
         ethPrice: "1.0",
         usdPrice: "2500.00",
-      });
-    });
+      })
+    })
 
     test("returns undefined for null input", () => {
-      const result = pricingCurrenciesFromJSON(null);
-      expect(result).to.be.undefined;
-    });
+      const result = pricingCurrenciesFromJSON(null)
+      expect(result).toBeUndefined()
+    })
 
     test("returns undefined for undefined input", () => {
-      const result = pricingCurrenciesFromJSON(undefined);
-      expect(result).to.be.undefined;
-    });
+      const result = pricingCurrenciesFromJSON(undefined)
+      expect(result).toBeUndefined()
+    })
 
     test("handles partial data with only listing currency", () => {
       const json = {
@@ -185,15 +184,15 @@ suite("Utils: converters", () => {
           address: "0x0000000000000000000000000000000000000000",
           chain: "ethereum",
         },
-      };
+      }
 
-      const result = pricingCurrenciesFromJSON(json);
+      const result = pricingCurrenciesFromJSON(json)
 
-      expect(result).to.not.be.undefined;
-      expect(result!.listingCurrency).to.not.be.undefined;
-      expect(result!.listingCurrency!.symbol).to.equal("ETH");
-      expect(result!.offerCurrency).to.be.undefined;
-    });
+      expect(result).toBeDefined()
+      expect(result?.listingCurrency).toBeDefined()
+      expect(result?.listingCurrency?.symbol).toBe("ETH")
+      expect(result?.offerCurrency).toBeUndefined()
+    })
 
     test("handles partial data with only offer currency", () => {
       const json = {
@@ -204,18 +203,18 @@ suite("Utils: converters", () => {
           address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
           chain: "ethereum",
         },
-      };
+      }
 
-      const result = pricingCurrenciesFromJSON(json);
+      const result = pricingCurrenciesFromJSON(json)
 
-      expect(result).to.not.be.undefined;
-      expect(result!.listingCurrency).to.be.undefined;
-      expect(result!.offerCurrency).to.not.be.undefined;
-      expect(result!.offerCurrency!.symbol).to.equal("WETH");
-    });
-  });
+      expect(result).toBeDefined()
+      expect(result?.listingCurrency).toBeUndefined()
+      expect(result?.offerCurrency).toBeDefined()
+      expect(result?.offerCurrency?.symbol).toBe("WETH")
+    })
+  })
 
-  suite("accountFromJSON", () => {
+  describe("accountFromJSON", () => {
     test("converts account JSON to OpenSeaAccount object", () => {
       const accountJSON = {
         address: "0x1234567890123456789012345678901234567890",
@@ -229,11 +228,11 @@ suite("Utils: converters", () => {
         ],
         bio: "Test bio",
         joined_date: "2024-01-01",
-      };
+      }
 
-      const result = accountFromJSON(accountJSON);
+      const result = accountFromJSON(accountJSON)
 
-      expect(result).to.deep.equal({
+      expect(result).toEqual({
         address: "0x1234567890123456789012345678901234567890",
         username: "testuser",
         profileImageUrl: "https://example.com/profile.png",
@@ -245,34 +244,34 @@ suite("Utils: converters", () => {
         ],
         bio: "Test bio",
         joinedDate: "2024-01-01",
-      });
-    });
+      })
+    })
 
     test("handles missing social media accounts", () => {
       const accountJSON = {
         address: "0x1234567890123456789012345678901234567890",
         username: "testuser",
-      };
+      }
 
-      const result = accountFromJSON(accountJSON);
+      const result = accountFromJSON(accountJSON)
 
-      expect(result.socialMediaAccounts).to.deep.equal([]);
-    });
+      expect(result.socialMediaAccounts).toEqual([])
+    })
 
     test("handles empty social media accounts array", () => {
       const accountJSON = {
         address: "0x1234567890123456789012345678901234567890",
         username: "testuser",
         social_media_accounts: [],
-      };
+      }
 
-      const result = accountFromJSON(accountJSON);
+      const result = accountFromJSON(accountJSON)
 
-      expect(result.socialMediaAccounts).to.deep.equal([]);
-    });
-  });
+      expect(result.socialMediaAccounts).toEqual([])
+    })
+  })
 
-  suite("collectionFromJSON", () => {
+  describe("collectionFromJSON", () => {
     test("converts collection JSON to OpenSeaCollection object", () => {
       const collectionJSON = {
         name: "Test Collection",
@@ -334,59 +333,57 @@ suite("Utils: converters", () => {
         total_supply: 10000,
         created_date: "2024-01-01",
         required_zone: "0x0000000000000000000000000000000000000000",
-      };
+      }
 
-      const result = collectionFromJSON(collectionJSON);
+      const result = collectionFromJSON(collectionJSON)
 
-      expect(result.name).to.equal("Test Collection");
-      expect(result.collection).to.equal("test-collection");
-      expect(result.description).to.equal("A test collection");
-      expect(result.imageUrl).to.equal("https://example.com/image.png");
-      expect(result.bannerImageUrl).to.equal("https://example.com/banner.png");
-      expect(result.owner).to.equal(
-        "0x1234567890123456789012345678901234567890",
-      );
-      expect(result.safelistStatus).to.equal("verified");
-      expect(result.category).to.equal("art");
-      expect(result.isDisabled).to.be.false;
-      expect(result.isNSFW).to.be.false;
-      expect(result.traitOffersEnabled).to.be.true;
-      expect(result.collectionOffersEnabled).to.be.true;
-      expect(result.contracts).to.have.length(1);
-      expect(result.editors).to.have.length(1);
-      expect(result.fees).to.have.length(1);
-      expect(result.rarity).to.not.be.null;
-      expect(result.pricingCurrencies).to.not.be.undefined;
-      expect(result.pricingCurrencies!.listingCurrency!.symbol).to.equal("ETH");
-      expect(result.pricingCurrencies!.offerCurrency!.symbol).to.equal("WETH");
-      expect(result.totalSupply).to.equal(10000);
-    });
+      expect(result.name).toBe("Test Collection")
+      expect(result.collection).toBe("test-collection")
+      expect(result.description).toBe("A test collection")
+      expect(result.imageUrl).toBe("https://example.com/image.png")
+      expect(result.bannerImageUrl).toBe("https://example.com/banner.png")
+      expect(result.owner).toBe("0x1234567890123456789012345678901234567890")
+      expect(result.safelistStatus).toBe("verified")
+      expect(result.category).toBe("art")
+      expect(result.isDisabled).toBe(false)
+      expect(result.isNSFW).toBe(false)
+      expect(result.traitOffersEnabled).toBe(true)
+      expect(result.collectionOffersEnabled).toBe(true)
+      expect(result.contracts).toHaveLength(1)
+      expect(result.editors).toHaveLength(1)
+      expect(result.fees).toHaveLength(1)
+      expect(result.rarity).not.toBeNull()
+      expect(result.pricingCurrencies).toBeDefined()
+      expect(result.pricingCurrencies?.listingCurrency?.symbol).toBe("ETH")
+      expect(result.pricingCurrencies?.offerCurrency?.symbol).toBe("WETH")
+      expect(result.totalSupply).toBe(10000)
+    })
 
     test("handles missing optional arrays", () => {
       const collectionJSON = {
         name: "Minimal Collection",
         collection: "minimal",
-      };
+      }
 
-      const result = collectionFromJSON(collectionJSON);
+      const result = collectionFromJSON(collectionJSON)
 
-      expect(result.name).to.equal("Minimal Collection");
-      expect(result.contracts).to.deep.equal([]);
-      expect(result.fees).to.deep.equal([]);
-      expect(result.pricingCurrencies).to.be.undefined;
-    });
+      expect(result.name).toBe("Minimal Collection")
+      expect(result.contracts).toEqual([])
+      expect(result.fees).toEqual([])
+      expect(result.pricingCurrencies).toBeUndefined()
+    })
 
     test("handles null rarity", () => {
       const collectionJSON = {
         name: "No Rarity Collection",
         collection: "no-rarity",
         rarity: null,
-      };
+      }
 
-      const result = collectionFromJSON(collectionJSON);
+      const result = collectionFromJSON(collectionJSON)
 
-      expect(result.rarity).to.be.null;
-    });
+      expect(result.rarity).toBeNull()
+    })
 
     test("converts multiple contracts", () => {
       const collectionJSON = {
@@ -402,18 +399,18 @@ suite("Utils: converters", () => {
             chain: "polygon",
           },
         ],
-      };
+      }
 
-      const result = collectionFromJSON(collectionJSON);
+      const result = collectionFromJSON(collectionJSON)
 
-      expect(result.contracts).to.have.length(2);
-      expect(result.contracts[0].address).to.equal(
+      expect(result.contracts).toHaveLength(2)
+      expect(result.contracts[0].address).toBe(
         "0x1111111111111111111111111111111111111111",
-      );
-      expect(result.contracts[1].address).to.equal(
+      )
+      expect(result.contracts[1].address).toBe(
         "0x2222222222222222222222222222222222222222",
-      );
-    });
+      )
+    })
 
     test("converts multiple fees", () => {
       const collectionJSON = {
@@ -431,14 +428,14 @@ suite("Utils: converters", () => {
             required: true,
           },
         ],
-      };
+      }
 
-      const result = collectionFromJSON(collectionJSON);
+      const result = collectionFromJSON(collectionJSON)
 
-      expect(result.fees).to.have.length(2);
-      expect(result.fees[0].fee).to.equal(2.5);
-      expect(result.fees[1].fee).to.equal(1.0);
-    });
+      expect(result.fees).toHaveLength(2)
+      expect(result.fees[0].fee).toBe(2.5)
+      expect(result.fees[1].fee).toBe(1.0)
+    })
 
     test("converts pricing currencies", () => {
       const collectionJSON = {
@@ -460,13 +457,13 @@ suite("Utils: converters", () => {
             chain: "ethereum",
           },
         },
-      };
+      }
 
-      const result = collectionFromJSON(collectionJSON);
+      const result = collectionFromJSON(collectionJSON)
 
-      expect(result.pricingCurrencies).to.not.be.undefined;
-      expect(result.pricingCurrencies!.listingCurrency!.symbol).to.equal("ETH");
-      expect(result.pricingCurrencies!.offerCurrency!.symbol).to.equal("WETH");
-    });
-  });
-});
+      expect(result.pricingCurrencies).toBeDefined()
+      expect(result.pricingCurrencies?.listingCurrency?.symbol).toBe("ETH")
+      expect(result.pricingCurrencies?.offerCurrency?.symbol).toBe("WETH")
+    })
+  })
+})

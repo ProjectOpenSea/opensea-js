@@ -1,12 +1,12 @@
+import type { Chain } from "../types"
 import {
   getEventsAPIPath,
   getEventsByAccountAPIPath,
   getEventsByCollectionAPIPath,
   getEventsByNFTAPIPath,
-} from "./apiPaths";
-import { GetEventsArgs, GetEventsResponse } from "./types";
-import { Chain } from "../types";
-import { Fetcher } from "./fetcher";
+} from "./apiPaths"
+import type { Fetcher } from "./fetcher"
+import type { GetEventsArgs, GetEventsResponse } from "./types"
 
 /**
  * Events-related API operations
@@ -21,8 +21,8 @@ export class EventsAPI {
     const response = await this.fetcher.get<GetEventsResponse>(
       getEventsAPIPath(),
       args,
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -35,8 +35,8 @@ export class EventsAPI {
     const response = await this.fetcher.get<GetEventsResponse>(
       getEventsByAccountAPIPath(address),
       args,
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -49,8 +49,8 @@ export class EventsAPI {
     const response = await this.fetcher.get<GetEventsResponse>(
       getEventsByCollectionAPIPath(collectionSlug),
       args,
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -65,7 +65,7 @@ export class EventsAPI {
     const response = await this.fetcher.get<GetEventsResponse>(
       getEventsByNFTAPIPath(chain, address, identifier),
       args,
-    );
-    return response;
+    )
+    return response
   }
 }

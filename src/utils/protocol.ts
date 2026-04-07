@@ -1,21 +1,21 @@
-import { Seaport } from "@opensea/seaport-js";
+import type { Seaport } from "@opensea/seaport-js"
 import {
   CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
   ItemType,
-} from "@opensea/seaport-js/lib/constants";
-import { ethers } from "ethers";
+} from "@opensea/seaport-js/lib/constants"
+import { ethers } from "ethers"
 import {
   ALTERNATE_SEAPORT_V1_6_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-} from "../constants";
-import { TokenStandard } from "../types";
+} from "../constants"
+import type { TokenStandard } from "../types"
 
 // Pre-compute checksummed protocol addresses for consistent comparisons
 const VALID_PROTOCOL_ADDRESSES = new Set([
   ethers.getAddress(CROSS_CHAIN_SEAPORT_V1_6_ADDRESS),
   ethers.getAddress(ALTERNATE_SEAPORT_V1_6_ADDRESS),
-]);
+])
 
 /**
  * Gets the appropriate ItemType for a given token standard.
@@ -23,17 +23,18 @@ const VALID_PROTOCOL_ADDRESSES = new Set([
  * @returns The corresponding ItemType from Seaport
  */
 export const getAssetItemType = (tokenStandard: TokenStandard) => {
-  switch (tokenStandard) {
+  const normalizedStandard = tokenStandard.toUpperCase()
+  switch (normalizedStandard) {
     case "ERC20":
-      return ItemType.ERC20;
+      return ItemType.ERC20
     case "ERC721":
-      return ItemType.ERC721;
+      return ItemType.ERC721
     case "ERC1155":
-      return ItemType.ERC1155;
+      return ItemType.ERC1155
     default:
-      throw new Error(`Unknown schema name: ${tokenStandard}`);
+      throw new Error(`Unknown schema name: ${tokenStandard}`)
   }
-};
+}
 
 /**
  * Remaps shared storefront token addresses to the lazy mint adapter address.
@@ -50,10 +51,10 @@ export const remapSharedStorefrontAddress = (tokenAddress: string): string => {
   if (SHARED_STOREFRONT_ADDRESSES.has(tokenAddress.toLowerCase())) {
     return ethers.getAddress(
       SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
-    );
+    )
   }
-  return tokenAddress;
-};
+  return tokenAddress
+}
 
 /**
  * Returns if a protocol address is valid.
@@ -61,11 +62,11 @@ export const remapSharedStorefrontAddress = (tokenAddress: string): string => {
  */
 export const isValidProtocol = (protocolAddress: string): boolean => {
   try {
-    return VALID_PROTOCOL_ADDRESSES.has(ethers.getAddress(protocolAddress));
+    return VALID_PROTOCOL_ADDRESSES.has(ethers.getAddress(protocolAddress))
   } catch {
-    return false;
+    return false
   }
-};
+}
 
 /**
  * Throws an error if the protocol address is not valid.
@@ -73,9 +74,9 @@ export const isValidProtocol = (protocolAddress: string): boolean => {
  */
 export const requireValidProtocol = (protocolAddress: string) => {
   if (!isValidProtocol(protocolAddress)) {
-    throw new Error(`Unsupported protocol address: ${protocolAddress}`);
+    throw new Error(`Unsupported protocol address: ${protocolAddress}`)
   }
-};
+}
 
 /**
  * Get the Seaport instance for a given protocol address.
@@ -89,9 +90,9 @@ export const getSeaportInstance = (
   protocolAddress: string,
   seaport: Seaport,
 ): Seaport => {
-  requireValidProtocol(protocolAddress);
-  return seaport;
-};
+  requireValidProtocol(protocolAddress)
+  return seaport
+}
 
 /**
  * Get the Seaport version string for a given protocol address.
@@ -100,9 +101,9 @@ export const getSeaportInstance = (
  * @throws Error if the protocol address is not supported
  */
 export const getSeaportVersion = (protocolAddress: string): string => {
-  requireValidProtocol(protocolAddress);
-  return "1.6";
-};
+  requireValidProtocol(protocolAddress)
+  return "1.6"
+}
 
 /**
  * Decodes an encoded string of token IDs into an array of individual token IDs using bigint for precise calculations.
@@ -133,52 +134,52 @@ export const getSeaportVersion = (protocolAddress: string): string => {
  */
 export const decodeTokenIds = (encodedTokenIds: string): string[] => {
   if (encodedTokenIds === "*") {
-    return ["*"];
+    return ["*"]
   }
 
   if (encodedTokenIds === "") {
-    return [];
+    return []
   }
 
   // Check for whitespace and provide helpful error message
   if (/\s/.test(encodedTokenIds)) {
     throw new Error(
       "Invalid input format: whitespace is not allowed. Expected format: '1,2,3' or '1:5' or '1,3:5,8' (no spaces).",
-    );
+    )
   }
 
-  const validFormatRegex = /^(\d+(:\d+)?)(,\d+(:\d+)?)*$/;
+  const validFormatRegex = /^(\d+(:\d+)?)(,\d+(:\d+)?)*$/
 
   if (!validFormatRegex.test(encodedTokenIds)) {
     throw new Error(
       "Invalid input format. Expected a valid comma-separated list of numbers and ranges.",
-    );
+    )
   }
 
-  const ranges = encodedTokenIds.split(",");
-  const tokenIds: string[] = [];
+  const ranges = encodedTokenIds.split(",")
+  const tokenIds: string[] = []
 
   for (const range of ranges) {
     if (range.includes(":")) {
-      const [startStr, endStr] = range.split(":");
-      const start = BigInt(startStr);
-      const end = BigInt(endStr);
-      const diff = end - start + 1n;
+      const [startStr, endStr] = range.split(":")
+      const start = BigInt(startStr)
+      const end = BigInt(endStr)
+      const diff = end - start + 1n
 
       if (diff <= 0) {
         throw new Error(
           `Invalid range. End value: ${end} must be greater than or equal to the start value: ${start}.`,
-        );
+        )
       }
 
       for (let i = 0n; i < diff; i += 1n) {
-        tokenIds.push((start + i).toString());
+        tokenIds.push((start + i).toString())
       }
     } else {
-      const tokenId = BigInt(range);
-      tokenIds.push(tokenId.toString());
+      const tokenId = BigInt(range)
+      tokenIds.push(tokenId.toString())
     }
   }
 
-  return tokenIds;
-};
+  return tokenIds
+}

@@ -1,18 +1,17 @@
-import { ItemType } from "@opensea/seaport-js/lib/constants";
-import { OrderWithCounter } from "@opensea/seaport-js/lib/types";
-import { expect } from "chai";
-import { ZeroAddress } from "ethers";
-import { suite, test } from "mocha";
+import { ItemType } from "@opensea/seaport-js/lib/constants"
+import type { OrderWithCounter } from "@opensea/seaport-js/lib/types"
+import { ZeroAddress } from "ethers"
+import { describe, expect, test } from "vitest"
 import {
   computePrivateListingValue,
   constructPrivateListingCounterOrder,
-} from "../../src/orders/privateListings";
+} from "../../src/orders/privateListings"
 
-const SELLER_ADDRESS = "0x1111111111111111111111111111111111111111";
-const TAKER_ADDRESS = "0x2222222222222222222222222222222222222222";
-const FEE_RECIPIENT = "0x3333333333333333333333333333333333333333";
-const NFT_CONTRACT = "0x4444444444444444444444444444444444444444";
-const WETH_ADDRESS = "0x5555555555555555555555555555555555555555";
+const SELLER_ADDRESS = "0x1111111111111111111111111111111111111111"
+const TAKER_ADDRESS = "0x2222222222222222222222222222222222222222"
+const FEE_RECIPIENT = "0x3333333333333333333333333333333333333333"
+const NFT_CONTRACT = "0x4444444444444444444444444444444444444444"
+const WETH_ADDRESS = "0x5555555555555555555555555555555555555555"
 
 const createMockOrder = (
   consideration: OrderWithCounter["parameters"]["consideration"],
@@ -42,10 +41,10 @@ const createMockOrder = (
     counter: "0",
   },
   signature: "0x",
-});
+})
 
-suite("Orders: privateListings", () => {
-  suite("computePrivateListingValue", () => {
+describe("Orders: privateListings", () => {
+  describe("computePrivateListingValue", () => {
     test("should return 0 for zero-payment private listings", () => {
       const order = createMockOrder([
         // Only NFT going to taker, no payment items
@@ -57,11 +56,11 @@ suite("Orders: privateListings", () => {
           endAmount: "1",
           recipient: TAKER_ADDRESS,
         },
-      ]);
+      ])
 
-      const value = computePrivateListingValue(order, TAKER_ADDRESS);
-      expect(value).to.equal(0n);
-    });
+      const value = computePrivateListingValue(order, TAKER_ADDRESS)
+      expect(value).toBe(0n)
+    })
 
     test("should sum native currency items not going to taker", () => {
       const order = createMockOrder([
@@ -92,12 +91,12 @@ suite("Orders: privateListings", () => {
           endAmount: "100000000000000000",
           recipient: FEE_RECIPIENT,
         },
-      ]);
+      ])
 
-      const value = computePrivateListingValue(order, TAKER_ADDRESS);
+      const value = computePrivateListingValue(order, TAKER_ADDRESS)
       // 1 ETH + 0.1 ETH = 1.1 ETH
-      expect(value).to.equal(1100000000000000000n);
-    });
+      expect(value).toBe(1100000000000000000n)
+    })
 
     test("should ignore ERC20 currency items", () => {
       const order = createMockOrder([
@@ -119,11 +118,11 @@ suite("Orders: privateListings", () => {
           endAmount: "1000000000000000000",
           recipient: SELLER_ADDRESS,
         },
-      ]);
+      ])
 
-      const value = computePrivateListingValue(order, TAKER_ADDRESS);
-      expect(value).to.equal(0n);
-    });
+      const value = computePrivateListingValue(order, TAKER_ADDRESS)
+      expect(value).toBe(0n)
+    })
 
     test("should handle mixed native and ERC20 payments", () => {
       const order = createMockOrder([
@@ -154,15 +153,15 @@ suite("Orders: privateListings", () => {
           endAmount: "500000000000000000",
           recipient: SELLER_ADDRESS,
         },
-      ]);
+      ])
 
-      const value = computePrivateListingValue(order, TAKER_ADDRESS);
+      const value = computePrivateListingValue(order, TAKER_ADDRESS)
       // Only native ETH counts
-      expect(value).to.equal(500000000000000000n);
-    });
-  });
+      expect(value).toBe(500000000000000000n)
+    })
+  })
 
-  suite("constructPrivateListingCounterOrder", () => {
+  describe("constructPrivateListingCounterOrder", () => {
     test("should return empty offer for zero-payment private listings", () => {
       const order = createMockOrder([
         // Only NFT going to taker
@@ -174,17 +173,17 @@ suite("Orders: privateListings", () => {
           endAmount: "1",
           recipient: TAKER_ADDRESS,
         },
-      ]);
+      ])
 
       const counterOrder = constructPrivateListingCounterOrder(
         order,
         TAKER_ADDRESS,
-      );
+      )
 
-      expect(counterOrder.parameters.offer).to.deep.equal([]);
-      expect(counterOrder.parameters.consideration).to.deep.equal([]);
-      expect(counterOrder.parameters.offerer).to.equal(TAKER_ADDRESS);
-    });
+      expect(counterOrder.parameters.offer).toEqual([])
+      expect(counterOrder.parameters.consideration).toEqual([])
+      expect(counterOrder.parameters.offerer).toBe(TAKER_ADDRESS)
+    })
 
     test("should aggregate payment items into single offer", () => {
       const order = createMockOrder([
@@ -215,24 +214,22 @@ suite("Orders: privateListings", () => {
           endAmount: "100000000000000000",
           recipient: FEE_RECIPIENT,
         },
-      ]);
+      ])
 
       const counterOrder = constructPrivateListingCounterOrder(
         order,
         TAKER_ADDRESS,
-      );
+      )
 
-      expect(counterOrder.parameters.offer).to.have.length(1);
-      expect(counterOrder.parameters.offer[0].itemType).to.equal(
-        ItemType.NATIVE,
-      );
-      expect(counterOrder.parameters.offer[0].startAmount).to.equal(
+      expect(counterOrder.parameters.offer).toHaveLength(1)
+      expect(counterOrder.parameters.offer[0].itemType).toBe(ItemType.NATIVE)
+      expect(counterOrder.parameters.offer[0].startAmount).toBe(
         "1100000000000000000",
-      );
-      expect(counterOrder.parameters.offer[0].endAmount).to.equal(
+      )
+      expect(counterOrder.parameters.offer[0].endAmount).toBe(
         "1100000000000000000",
-      );
-    });
+      )
+    })
 
     test("should throw if payment items contain non-currency items", () => {
       const order = createMockOrder([
@@ -254,12 +251,12 @@ suite("Orders: privateListings", () => {
           endAmount: "1",
           recipient: SELLER_ADDRESS,
         },
-      ]);
+      ])
 
       expect(() =>
         constructPrivateListingCounterOrder(order, TAKER_ADDRESS),
-      ).to.throw("did not contain only currency items");
-    });
+      ).toThrow("did not contain only currency items")
+    })
 
     test("should throw if payment items have mixed currency types", () => {
       const order = createMockOrder([
@@ -290,11 +287,11 @@ suite("Orders: privateListings", () => {
           endAmount: "100000000000000000",
           recipient: FEE_RECIPIENT,
         },
-      ]);
+      ])
 
       expect(() =>
         constructPrivateListingCounterOrder(order, TAKER_ADDRESS),
-      ).to.throw("Not all currency items were the same");
-    });
-  });
-});
+      ).toThrow("Not all currency items were the same")
+    })
+  })
+})

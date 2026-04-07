@@ -1,18 +1,18 @@
 import {
-  getTrendingTokensPath,
-  getTopTokensPath,
   getSwapQuotePath,
   getTokenPath,
-} from "./apiPaths";
-import { Fetcher } from "./fetcher";
-import {
-  GetTokensArgs,
-  GetTrendingTokensResponse,
-  GetTopTokensResponse,
+  getTopTokensPath,
+  getTrendingTokensPath,
+} from "./apiPaths"
+import type { Fetcher } from "./fetcher"
+import type {
   GetSwapQuoteArgs,
   GetSwapQuoteResponse,
   GetTokenResponse,
-} from "./types";
+  GetTokensArgs,
+  GetTopTokensResponse,
+  GetTrendingTokensResponse,
+} from "./types"
 
 /**
  * Token-related API operations
@@ -29,8 +29,8 @@ export class TokensAPI {
     const response = await this.fetcher.get<GetTrendingTokensResponse>(
       getTrendingTokensPath(),
       args,
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -40,8 +40,8 @@ export class TokensAPI {
     const response = await this.fetcher.get<GetTopTokensResponse>(
       getTopTokensPath(),
       args,
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -51,8 +51,8 @@ export class TokensAPI {
     const response = await this.fetcher.get<GetSwapQuoteResponse>(
       getSwapQuotePath(),
       args,
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -61,7 +61,7 @@ export class TokensAPI {
   async getToken(chain: string, address: string): Promise<GetTokenResponse> {
     const response = await this.fetcher.get<GetTokenResponse>(
       getTokenPath(chain, address),
-    );
-    return response;
+    )
+    return response
   }
 }

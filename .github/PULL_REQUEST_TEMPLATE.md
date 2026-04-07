@@ -1,25 +1,21 @@
-<!--
-Borrowed from foundry.
+## Thanks for opening a PR!
 
-Thank you for your Pull Request. Please provide a description above and review
-the requirements below.
+We really appreciate you taking the time to contribute. It means a lot to the OpenSea team and the broader developer community.
 
-Bug fixes and new features should include tests.
--->
+### A quick note about how this repo works
 
-## Motivation
+This repository is a **read-only mirror** of a package maintained in an internal monorepo. Because of that, pull requests cannot be merged directly here.
 
-<!--
-Explain the context and why you're making that change. What is the problem
-you're trying to solve? In some cases there is not a problem and this can be
-thought of as being the motivation for your change.
+**But don't worry -- your contribution won't be lost!** Here's what happens next:
 
-If your PR solves a particular issue, tag that issue.
--->
+1. Our team reviews every PR that comes in.
+2. If the change looks good, we'll recreate it internally in our monorepo.
+3. The fix will be synced back to this public repo on the next release.
 
-## Solution
+We'll keep you posted on the PR as things progress.
 
-<!--
-Summarize the solution and provide any necessary context needed to understand
-the code change.
--->
+### Is this a bug report?
+
+If you're reporting a bug rather than submitting a code fix, opening an **issue** is usually the fastest path to a resolution. Bug report issues help us triage and prioritize effectively.
+
+Thanks again for helping make OpenSea better for everyone!

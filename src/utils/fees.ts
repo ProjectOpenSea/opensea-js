@@ -1,6 +1,6 @@
-import { FixedNumber } from "ethers";
-import { FIXED_NUMBER_100 } from "../constants";
-import { Fee } from "../types";
+import { FixedNumber } from "ethers"
+import { FIXED_NUMBER_100 } from "../constants"
+import type { Fee } from "../types"
 
 /**
  * Sums up the basis points for fees.
@@ -8,13 +8,13 @@ import { Fee } from "../types";
  * @returns sum of basis points
  */
 export const totalBasisPointsForFees = (fees: Fee[]): bigint => {
-  const feeBasisPoints = fees.map((fee) => basisPointsForFee(fee));
+  const feeBasisPoints = fees.map(fee => basisPointsForFee(fee))
   const totalBasisPoints = feeBasisPoints.reduce(
     (sum, basisPoints) => basisPoints + sum,
     0n,
-  );
-  return totalBasisPoints;
-};
+  )
+  return totalBasisPoints
+}
 
 /**
  * Converts a fee to its basis points representation.
@@ -27,5 +27,5 @@ export const basisPointsForFee = (fee: Fee): bigint => {
       .mul(FIXED_NUMBER_100)
       .toFormat(0) // format to 0 decimal places to convert to bigint
       .toString(),
-  );
-};
+  )
+}

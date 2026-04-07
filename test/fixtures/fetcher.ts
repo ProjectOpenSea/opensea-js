@@ -1,22 +1,26 @@
-import * as sinon from "sinon";
-import { Fetcher } from "../../src/api/fetcher";
+import { vi } from "vitest"
+import type { Fetcher } from "../../src/api/fetcher"
 
 /**
  * Creates a mock Fetcher for testing purposes
- * @param getStub Optional pre-configured sinon stub for get method
- * @param postStub Optional pre-configured sinon stub for post method
- * @returns Object containing the fetcher and the individual stubs for assertions
+ * @param getStub Optional pre-configured vi mock for get method
+ * @param postStub Optional pre-configured vi mock for post method
+ * @returns Object containing the fetcher and the individual mocks for assertions
  */
 export function createMockFetcher(
-  getStub?: sinon.SinonStub,
-  postStub?: sinon.SinonStub,
-): { fetcher: Fetcher; mockGet: sinon.SinonStub; mockPost: sinon.SinonStub } {
-  const mockGet = getStub || sinon.stub();
-  const mockPost = postStub || sinon.stub();
+  getStub?: ReturnType<typeof vi.fn>,
+  postStub?: ReturnType<typeof vi.fn>,
+): {
+  fetcher: Fetcher
+  mockGet: ReturnType<typeof vi.fn>
+  mockPost: ReturnType<typeof vi.fn>
+} {
+  const mockGet = getStub || vi.fn()
+  const mockPost = postStub || vi.fn()
 
   return {
-    fetcher: { get: mockGet, post: mockPost },
+    fetcher: { get: mockGet, post: mockPost } as unknown as Fetcher,
     mockGet,
     mockPost,
-  };
+  }
 }

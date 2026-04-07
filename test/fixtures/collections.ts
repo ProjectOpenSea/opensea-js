@@ -1,4 +1,4 @@
-import { OpenSeaCollection, SafelistStatus } from "../../src/types";
+import { type OpenSeaCollection, SafelistStatus } from "../../src/types"
 
 export const mockCollection: OpenSeaCollection = {
   collection: "test-collection",
@@ -27,10 +27,10 @@ export const mockCollection: OpenSeaCollection = {
   totalSupply: 10000,
   uniqueItemCount: 10000,
   createdDate: "2024-01-01T00:00:00Z",
-};
+}
 
 export const mockCollectionMinimal: Partial<OpenSeaCollection> &
   Pick<OpenSeaCollection, "collection"> = {
   collection: "test-collection",
   name: "Test Collection",
-};
+}

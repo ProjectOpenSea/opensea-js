@@ -1,5 +1,5 @@
 export const BAYC_CONTRACT_ADDRESS =
-  "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d";
+  "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d"
 export const BAYC_TOKEN_IDS = [
   "9703",
   "4049",
@@ -10,4 +10,4 @@ export const BAYC_TOKEN_IDS = [
   "3255",
   "5532",
   "4610",
-];
+]

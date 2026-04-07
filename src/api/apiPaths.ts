@@ -1,165 +1,168 @@
-import { OrderProtocol } from "../orders/types";
-import { Chain, OrderSide } from "../types";
+import type { OrderProtocol } from "../orders/types"
+import { type Chain, OrderSide } from "../types"
+
+/** Base path prefix for all OpenSea API v2 endpoints. */
+export const API_V2_PREFIX = "/api/v2"
 
 export const getOrdersAPIPath = (
   chain: Chain,
   protocol: OrderProtocol,
   side: OrderSide,
 ) => {
-  const sidePath = side === OrderSide.LISTING ? "listings" : "offers";
-  return `/api/v2/orders/${chain}/${protocol}/${sidePath}`;
-};
+  const sidePath = side === OrderSide.LISTING ? "listings" : "offers"
+  return `${API_V2_PREFIX}/orders/${chain}/${protocol}/${sidePath}`
+}
 
 export const getAllOffersAPIPath = (collectionSlug: string) => {
-  return `/api/v2/offers/collection/${collectionSlug}/all`;
-};
+  return `${API_V2_PREFIX}/offers/collection/${collectionSlug}/all`
+}
 
 export const getAllListingsAPIPath = (collectionSlug: string) => {
-  return `/api/v2/listings/collection/${collectionSlug}/all`;
-};
+  return `${API_V2_PREFIX}/listings/collection/${collectionSlug}/all`
+}
 
 export const getBestOfferAPIPath = (
   collectionSlug: string,
   tokenId: string | number,
 ) => {
-  return `/api/v2/offers/collection/${collectionSlug}/nfts/${tokenId}/best`;
-};
+  return `${API_V2_PREFIX}/offers/collection/${collectionSlug}/nfts/${tokenId}/best`
+}
 
 export const getBestListingAPIPath = (
   collectionSlug: string,
   tokenId: string | number,
 ) => {
-  return `/api/v2/listings/collection/${collectionSlug}/nfts/${tokenId}/best`;
-};
+  return `${API_V2_PREFIX}/listings/collection/${collectionSlug}/nfts/${tokenId}/best`
+}
 
 export const getBestListingsAPIPath = (collectionSlug: string) => {
-  return `/api/v2/listings/collection/${collectionSlug}/best`;
-};
+  return `${API_V2_PREFIX}/listings/collection/${collectionSlug}/best`
+}
 
 export const getCollectionPath = (slug: string) => {
-  return `/api/v2/collections/${slug}`;
-};
+  return `${API_V2_PREFIX}/collections/${slug}`
+}
 
 export const getCollectionsPath = () => {
-  return "/api/v2/collections";
-};
+  return `${API_V2_PREFIX}/collections`
+}
 
 export const getCollectionStatsPath = (slug: string) => {
-  return `/api/v2/collections/${slug}/stats`;
-};
+  return `${API_V2_PREFIX}/collections/${slug}/stats`
+}
 
 export const getPaymentTokenPath = (chain: Chain, address: string) => {
-  return `/api/v2/chain/${chain}/payment_token/${address}`;
-};
+  return `${API_V2_PREFIX}/chain/${chain}/payment_token/${address}`
+}
 
 export const getAccountPath = (address: string) => {
-  return `/api/v2/accounts/${address}`;
-};
+  return `${API_V2_PREFIX}/accounts/${address}`
+}
 
 export const getBuildOfferPath = () => {
-  return `/api/v2/offers/build`;
-};
+  return `${API_V2_PREFIX}/offers/build`
+}
 
 export const getPostCollectionOfferPath = () => {
-  return `/api/v2/offers`;
-};
+  return `${API_V2_PREFIX}/offers`
+}
 
 export const getCollectionOffersPath = (slug: string) => {
-  return `/api/v2/offers/collection/${slug}`;
-};
+  return `${API_V2_PREFIX}/offers/collection/${slug}`
+}
 
 export const getListNFTsByCollectionPath = (slug: string) => {
-  return `/api/v2/collection/${slug}/nfts`;
-};
+  return `${API_V2_PREFIX}/collection/${slug}/nfts`
+}
 
 export const getListNFTsByContractPath = (chain: Chain, address: string) => {
-  return `/api/v2/chain/${chain}/contract/${address}/nfts`;
-};
+  return `${API_V2_PREFIX}/chain/${chain}/contract/${address}/nfts`
+}
 
 export const getListNFTsByAccountPath = (chain: Chain, address: string) => {
-  return `/api/v2/chain/${chain}/account/${address}/nfts`;
-};
+  return `${API_V2_PREFIX}/chain/${chain}/account/${address}/nfts`
+}
 
 export const getNFTPath = (
   chain: Chain,
   address: string,
   identifier: string,
 ) => {
-  return `/api/v2/chain/${chain}/contract/${address}/nfts/${identifier}`;
-};
+  return `${API_V2_PREFIX}/chain/${chain}/contract/${address}/nfts/${identifier}`
+}
 
 export const getRefreshMetadataPath = (
   chain: Chain,
   address: string,
   identifier: string,
 ) => {
-  return `/api/v2/chain/${chain}/contract/${address}/nfts/${identifier}/refresh`;
-};
+  return `${API_V2_PREFIX}/chain/${chain}/contract/${address}/nfts/${identifier}/refresh`
+}
 
 export const getOrderByHashPath = (
   chain: Chain,
   protocolAddress: string,
   orderHash: string,
 ) => {
-  return `/api/v2/orders/chain/${chain}/protocol/${protocolAddress}/${orderHash}`;
-};
+  return `${API_V2_PREFIX}/orders/chain/${chain}/protocol/${protocolAddress}/${orderHash}`
+}
 
 export const getCancelOrderPath = (
   chain: Chain,
   protocolAddress: string,
   orderHash: string,
 ) => {
-  return `/api/v2/orders/chain/${chain}/protocol/${protocolAddress}/${orderHash}/cancel`;
-};
+  return `${API_V2_PREFIX}/orders/chain/${chain}/protocol/${protocolAddress}/${orderHash}/cancel`
+}
 
 export const getTraitOffersPath = (collectionSlug: string) => {
-  return `/api/v2/offers/collection/${collectionSlug}/traits`;
-};
+  return `${API_V2_PREFIX}/offers/collection/${collectionSlug}/traits`
+}
 
 export const getEventsAPIPath = () => {
-  return "/api/v2/events";
-};
+  return `${API_V2_PREFIX}/events`
+}
 
 export const getEventsByAccountAPIPath = (address: string) => {
-  return `/api/v2/events/accounts/${address}`;
-};
+  return `${API_V2_PREFIX}/events/accounts/${address}`
+}
 
 export const getEventsByCollectionAPIPath = (collectionSlug: string) => {
-  return `/api/v2/events/collection/${collectionSlug}`;
-};
+  return `${API_V2_PREFIX}/events/collection/${collectionSlug}`
+}
 
 export const getEventsByNFTAPIPath = (
   chain: Chain,
   address: string,
   identifier: string,
 ) => {
-  return `/api/v2/events/chain/${chain}/contract/${address}/nfts/${identifier}`;
-};
+  return `${API_V2_PREFIX}/events/chain/${chain}/contract/${address}/nfts/${identifier}`
+}
 
 export const getContractPath = (chain: Chain, address: string) => {
-  return `/api/v2/chain/${chain}/contract/${address}`;
-};
+  return `${API_V2_PREFIX}/chain/${chain}/contract/${address}`
+}
 
 export const getTraitsPath = (collectionSlug: string) => {
-  return `/api/v2/traits/${collectionSlug}`;
-};
+  return `${API_V2_PREFIX}/traits/${collectionSlug}`
+}
 
 export const getTrendingTokensPath = () => {
-  return "/api/v2/tokens/trending";
-};
+  return `${API_V2_PREFIX}/tokens/trending`
+}
 
 export const getTopTokensPath = () => {
-  return "/api/v2/tokens/top";
-};
+  return `${API_V2_PREFIX}/tokens/top`
+}
 
 export const getSwapQuotePath = () => {
-  return "/api/v2/swap/quote";
-};
+  return `${API_V2_PREFIX}/swap/quote`
+}
 
 export const getTokenPath = (chain: string, address: string) => {
-  return `/api/v2/chain/${chain}/token/${address}`;
-};
+  return `${API_V2_PREFIX}/chain/${chain}/token/${address}`
+}
 
 export const getSearchPath = () => {
-  return "/api/v2/search";
-};
+  return `${API_V2_PREFIX}/search`
+}

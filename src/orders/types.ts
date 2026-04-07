@@ -1,15 +1,18 @@
-import { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport/contracts/Seaport";
-import { AdvancedOrder, OrderWithCounter } from "@opensea/seaport-js/lib/types";
-import { Listing, Offer } from "../api/types";
-import { OpenSeaAccount, OrderSide } from "../types";
+import type { BasicOrderParametersStruct } from "@opensea/seaport-js/lib/typechain-types/seaport/contracts/Seaport"
+import type {
+  AdvancedOrder,
+  OrderWithCounter,
+} from "@opensea/seaport-js/lib/types"
+import type { Listing, Offer } from "../api/types"
+import type { OpenSeaAccount, OrderSide } from "../types"
 
 // Protocol data
 type OrderProtocolToProtocolData = {
-  seaport: OrderWithCounter;
-};
-export type OrderProtocol = keyof OrderProtocolToProtocolData;
+  seaport: OrderWithCounter
+}
+export type OrderProtocol = keyof OrderProtocolToProtocolData
 export type ProtocolData =
-  OrderProtocolToProtocolData[keyof OrderProtocolToProtocolData];
+  OrderProtocolToProtocolData[keyof OrderProtocolToProtocolData]
 
 export enum OrderType {
   BASIC = "basic",
@@ -18,171 +21,171 @@ export enum OrderType {
 }
 
 type OrderFee = {
-  account: OpenSeaAccount;
-  basisPoints: string;
-};
+  account: OpenSeaAccount
+  basisPoints: string
+}
 
 /**
  * The latest OpenSea Order schema.
  */
 export type OrderV2 = {
   /** The date the order was created. */
-  createdDate: string;
+  createdDate: string
   /** The date the order was closed. */
-  closingDate: string | null;
+  closingDate: string | null
   /** The date the order was listed. Order can be created before the listing time. */
-  listingTime: number;
+  listingTime: number
   /** The date the order expires. */
-  expirationTime: number;
+  expirationTime: number
   /** The hash of the order. */
-  orderHash: string | null;
+  orderHash: string | null
   /** The account that created the order. */
-  maker: OpenSeaAccount;
+  maker: OpenSeaAccount
   /** The account that filled the order. */
-  taker: OpenSeaAccount | null;
+  taker: OpenSeaAccount | null
   /** The protocol data for the order. Only 'seaport' is currently supported. */
-  protocolData: ProtocolData;
+  protocolData: ProtocolData
   /** The contract address of the protocol. */
-  protocolAddress: string;
+  protocolAddress: string
   /** The current price of the order. */
-  currentPrice: bigint;
+  currentPrice: bigint
   /** The maker fees for the order. */
-  makerFees: OrderFee[];
+  makerFees: OrderFee[]
   /** The taker fees for the order. */
-  takerFees: OrderFee[];
+  takerFees: OrderFee[]
   /** The side of the order. Listing/Offer */
-  side: OrderSide;
+  side: OrderSide
   /** The type of the order. Basic/English/Criteria */
-  orderType: OrderType;
+  orderType: OrderType
   /** Whether or not the maker has cancelled the order. */
-  cancelled: boolean;
+  cancelled: boolean
   /** Whether or not the order is finalized. */
-  finalized: boolean;
+  finalized: boolean
   /** Whether or not the order is marked invalid and therefore not fillable. */
-  markedInvalid: boolean;
+  markedInvalid: boolean
   /** The signature the order is signed with. */
-  clientSignature: string | null;
+  clientSignature: string | null
   /** Amount of items left in the order which can be taken. */
-  remainingQuantity: number;
-};
+  remainingQuantity: number
+}
 
 export type FulfillmentDataResponse = {
-  protocol: string;
-  fulfillment_data: FulfillmentData;
-};
+  protocol: string
+  fulfillment_data: FulfillmentData
+}
 
 type FulfillmentData = {
-  transaction: Transaction;
-  orders: ProtocolData[];
-};
+  transaction: Transaction
+  orders: ProtocolData[]
+}
 
 type Transaction = {
-  function: string;
-  chain: number;
-  to: string;
-  value: string;
+  function: string
+  chain: number
+  to: string
+  value: string
   input_data:
     | {
         // For fulfillAdvancedOrder
-        advancedOrder: AdvancedOrder;
-        criteriaResolvers?: unknown[];
-        fulfillerConduitKey?: string;
-        recipient: string;
+        advancedOrder: AdvancedOrder
+        criteriaResolvers?: unknown[]
+        fulfillerConduitKey?: string
+        recipient: string
       }
     | {
         // For fulfillBasicOrder
-        basicOrderParameters: BasicOrderParametersStruct;
+        basicOrderParameters: BasicOrderParametersStruct
       }
     | {
         // For fulfillOrder
-        order: OrderWithCounter;
-        fulfillerConduitKey?: string;
-        recipient: string;
+        order: OrderWithCounter
+        fulfillerConduitKey?: string
+        recipient: string
       }
     | {
         // Legacy: for backward compatibility
         orders:
           | OrderWithCounter[]
           | AdvancedOrder[]
-          | BasicOrderParametersStruct[];
-      };
-};
+          | BasicOrderParametersStruct[]
+      }
+}
 
 // API query types
-type OpenOrderOrderingOption = "created_date" | "eth_price";
-type OrderByDirection = "asc" | "desc";
+type OpenOrderOrderingOption = "created_date" | "eth_price"
+type OrderByDirection = "asc" | "desc"
 
 export type OrderAPIOptions = {
-  protocol?: OrderProtocol;
-  protocolAddress?: string;
-  side: OrderSide;
-};
+  protocol?: OrderProtocol
+  protocolAddress?: string
+  side: OrderSide
+}
 
 export type OrdersQueryOptions = OrderAPIOptions & {
-  limit?: number;
-  cursor?: string;
-  next?: string;
+  limit?: number
+  cursor?: string
+  next?: string
 
-  paymentTokenAddress?: string;
-  maker?: string;
-  taker?: string;
-  owner?: string;
-  listedAfter?: number | string;
-  listedBefore?: number | string;
-  tokenId?: string;
-  tokenIds?: string[];
-  assetContractAddress?: string;
-  orderBy?: OpenOrderOrderingOption;
-  orderDirection?: OrderByDirection;
-  onlyEnglish?: boolean;
-};
+  paymentTokenAddress?: string
+  maker?: string
+  taker?: string
+  owner?: string
+  listedAfter?: number | string
+  listedBefore?: number | string
+  tokenId?: string
+  tokenIds?: string[]
+  assetContractAddress?: string
+  orderBy?: OpenOrderOrderingOption
+  orderDirection?: OrderByDirection
+  onlyEnglish?: boolean
+}
 
 export type SerializedOrderV2 = {
-  created_date: string;
-  closing_date: string | null;
-  listing_time: number;
-  expiration_time: number;
-  order_hash: string | null;
-  maker: unknown;
-  taker: unknown | null;
-  protocol_data: ProtocolData;
-  protocol_address: string;
-  current_price: string;
+  created_date: string
+  closing_date: string | null
+  listing_time: number
+  expiration_time: number
+  order_hash: string | null
+  maker: unknown
+  taker: unknown | null
+  protocol_data: ProtocolData
+  protocol_address: string
+  current_price: string
   maker_fees: {
-    account: unknown;
-    basis_points: string;
-  }[];
+    account: unknown
+    basis_points: string
+  }[]
   taker_fees: {
-    account: unknown;
-    basis_points: string;
-  }[];
-  side: OrderSide;
-  order_type: OrderType;
-  cancelled: boolean;
-  finalized: boolean;
-  marked_invalid: boolean;
-  client_signature: string | null;
-  remaining_quantity: number;
-};
+    account: unknown
+    basis_points: string
+  }[]
+  side: OrderSide
+  order_type: OrderType
+  cancelled: boolean
+  finalized: boolean
+  marked_invalid: boolean
+  client_signature: string | null
+  remaining_quantity: number
+}
 
 export type QueryCursors = {
-  next: string | null;
-  previous: string | null;
-};
+  next: string | null
+  previous: string | null
+}
 
 export type OrdersQueryResponse = QueryCursors & {
-  orders: SerializedOrderV2[];
-};
+  orders: SerializedOrderV2[]
+}
 
 /** @deprecated Use ListingPostQueryResponse or OfferPostQueryResponse instead. */
-export type OrdersPostQueryResponse = { order: SerializedOrderV2 };
+export type OrdersPostQueryResponse = { order: SerializedOrderV2 }
 
 export type ListingPostQueryResponse = {
-  order: SerializedOrderV2;
-  listing: Listing;
-};
+  order: SerializedOrderV2
+  listing: Listing
+}
 
 export type OfferPostQueryResponse = {
-  order: SerializedOrderV2;
-  offer: Offer;
-};
+  order: SerializedOrderV2
+  offer: Offer
+}

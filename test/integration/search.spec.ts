@@ -1,48 +1,46 @@
-import { assert } from "chai";
-import { suite, test } from "mocha";
-import { Chain } from "../../src/types";
-import { getSdkForChain } from "../utils/setupIntegration";
+import { describe, expect, test } from "vitest"
+import { Chain } from "../../src/types"
+import { getSdkForChain } from "../utils/setupIntegration"
 
-suite("SDK: search", () => {
+describe("SDK: search", () => {
   test("Search for collections by name", async () => {
     const response = await getSdkForChain(Chain.Mainnet).api.search({
       query: "bored ape",
       asset_types: ["collection"],
       limit: 5,
-    });
+    })
 
-    assert(response.results, "Results should exist");
-    assert(response.results.length > 0, "Should return at least one result");
-    assert.equal(
-      response.results[0].type,
-      "collection",
-      "First result should be a collection",
-    );
-    assert(response.results[0].collection, "Collection data should be present");
-    assert(
+    expect(response.results, "Results should exist").toBeTruthy()
+    expect(response.results.length).toBeGreaterThan(0)
+    expect(response.results[0].type).toBe("collection")
+    expect(
+      response.results[0].collection,
+      "Collection data should be present",
+    ).toBeTruthy()
+    expect(
       response.results[0].collection?.name,
       "Collection name should exist",
-    );
-    assert(
+    ).toBeTruthy()
+    expect(
       response.results[0].collection?.opensea_url,
       "Collection opensea_url should exist",
-    );
-  });
+    ).toBeTruthy()
+  })
 
   test("Search across all asset types", async () => {
     const response = await getSdkForChain(Chain.Mainnet).api.search({
       query: "ethereum",
       asset_types: ["collection", "token"],
       limit: 10,
-    });
+    })
 
-    assert(response.results, "Results should exist");
-    assert(response.results.length > 0, "Should return at least one result");
+    expect(response.results, "Results should exist").toBeTruthy()
+    expect(response.results.length).toBeGreaterThan(0)
 
-    const types = response.results.map((r) => r.type);
-    assert(
+    const types = response.results.map(r => r.type)
+    expect(
       types.includes("collection") || types.includes("token"),
       "Should return collections or tokens",
-    );
-  });
-});
+    ).toBe(true)
+  })
+})

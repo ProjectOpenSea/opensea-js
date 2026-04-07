@@ -1,4 +1,4 @@
-import { RequestOptions } from "../types";
+import type { RequestOptions } from "../types"
 
 /**
  * Fetcher context interface for making HTTP requests to the OpenSea API.
@@ -12,7 +12,7 @@ export interface Fetcher {
    * @param options Request options like timeout and abort signal.
    * @returns The response from the API.
    */
-  get<T>(apiPath: string, query?: object, options?: RequestOptions): Promise<T>;
+  get<T>(apiPath: string, query?: object, options?: RequestOptions): Promise<T>
 
   /**
    * Generic post method for POST requests with automatic rate limit retry
@@ -27,5 +27,5 @@ export interface Fetcher {
     body?: object,
     headers?: object,
     options?: RequestOptions,
-  ): Promise<T>;
+  ): Promise<T>
 }

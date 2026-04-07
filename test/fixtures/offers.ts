@@ -1,5 +1,5 @@
-import { mockOrderComponents } from "./orders";
-import { Offer, OrderStatus } from "../../src/api/types";
+import { type Offer, OrderStatus } from "../../src/api/types"
+import { mockOrderComponents } from "./orders"
 
 export const mockOffer: Offer = {
   order_hash: "0xabc123",
@@ -15,8 +15,8 @@ export const mockOffer: Offer = {
     value: "1500000000000000000",
   },
   status: OrderStatus.ACTIVE,
-};
+}
 
 export const mockOfferMinimal: Partial<Offer> & Pick<Offer, "order_hash"> = {
   order_hash: "0x123",
-};
+}

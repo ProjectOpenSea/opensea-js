@@ -1,10 +1,5 @@
 {
-  "extends": ["config:base"],
-  "packageRules": [
-    {
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-      "automerge": true
-    }
-  ],
-  "schedule": ["before 9am on monday"]
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Dependency updates are managed in the opensea-devtools monorepo",
+  "enabled": false
 }

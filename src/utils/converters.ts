@@ -1,13 +1,11 @@
-import {
+import type {
   Fee,
   OpenSeaAccount,
   OpenSeaCollection,
   OpenSeaPaymentToken,
   PricingCurrencies,
   RarityStrategy,
-} from "../types";
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
+} from "../types"
 
 /**
  * Converts a collection JSON response to an OpenSeaCollection object.
@@ -47,8 +45,8 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
     uniqueItemCount: collection.unique_item_count,
     createdDate: collection.created_date,
     requiredZone: collection.required_zone,
-  };
-};
+  }
+}
 
 /**
  * Converts a rarity JSON response to a RarityStrategy object.
@@ -57,7 +55,7 @@ export const collectionFromJSON = (collection: any): OpenSeaCollection => {
  */
 export const rarityFromJSON = (rarity: any): RarityStrategy | null => {
   if (!rarity) {
-    return null;
+    return null
   }
   const fromJSON: RarityStrategy = {
     strategyId: rarity.strategy_id,
@@ -65,9 +63,9 @@ export const rarityFromJSON = (rarity: any): RarityStrategy | null => {
     calculatedAt: rarity.calculated_at,
     maxRank: rarity.max_rank,
     tokensScored: rarity.tokens_scored,
-  };
-  return fromJSON;
-};
+  }
+  return fromJSON
+}
 
 /**
  * Converts a payment token JSON response to an OpenSeaPaymentToken object.
@@ -84,9 +82,9 @@ export const paymentTokenFromJSON = (token: any): OpenSeaPaymentToken => {
     imageUrl: token.image,
     ethPrice: token.eth_price,
     usdPrice: token.usd_price,
-  };
-  return fromJSON;
-};
+  }
+  return fromJSON
+}
 
 /**
  * Converts a pricing currencies JSON response to a PricingCurrencies object.
@@ -97,7 +95,7 @@ export const pricingCurrenciesFromJSON = (
   pricingCurrencies: any,
 ): PricingCurrencies | undefined => {
   if (!pricingCurrencies) {
-    return undefined;
+    return undefined
   }
   return {
     listingCurrency: pricingCurrencies.listing_currency
@@ -106,8 +104,8 @@ export const pricingCurrenciesFromJSON = (
     offerCurrency: pricingCurrencies.offer_currency
       ? paymentTokenFromJSON(pricingCurrencies.offer_currency)
       : undefined,
-  };
-};
+  }
+}
 
 /**
  * Converts an account JSON response to an OpenSeaAccount object.
@@ -129,8 +127,8 @@ export const accountFromJSON = (account: any): OpenSeaAccount => {
     ),
     bio: account.bio,
     joinedDate: account.joined_date,
-  };
-};
+  }
+}
 
 /**
  * Converts a fee JSON response to a Fee object.
@@ -142,6 +140,6 @@ export const feeFromJSON = (fee: any): Fee => {
     fee: fee.fee,
     recipient: fee.recipient,
     required: fee.required,
-  };
-  return fromJSON;
-};
+  }
+  return fromJSON
+}

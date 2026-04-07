@@ -1,11 +1,11 @@
-import { ConsiderationItem } from "@opensea/seaport-js/lib/types";
-import {
+import type { ConsiderationItem } from "@opensea/seaport-js/lib/types"
+import type {
   OrderType,
   OrderV2,
   ProtocolData,
   QueryCursors,
-} from "../orders/types";
-import { OpenSeaCollection } from "../types";
+} from "../orders/types"
+import type { OpenSeaCollection } from "../types"
 
 /**
  * Response from OpenSea API for building an offer.
@@ -13,10 +13,10 @@ import { OpenSeaCollection } from "../types";
  */
 export type BuildOfferResponse = {
   /** A portion of the parameters needed to submit a criteria offer, i.e. collection offer. */
-  partialParameters: PartialParameters;
+  partialParameters: PartialParameters
   /** Criteria echoed back from the build request. Includes collection and trait info. */
-  criteria: BuildOfferCriteria;
-};
+  criteria: BuildOfferCriteria
+}
 
 /**
  * Criteria returned by the build offer endpoint.
@@ -24,16 +24,16 @@ export type BuildOfferResponse = {
  * @category API Response Types
  */
 export type BuildOfferCriteria = {
-  collection: CollectionCriteria;
-  traits?: TraitCriteria[];
-  numericTraits?: NumericTraitCriteria[];
-};
+  collection: CollectionCriteria
+  traits?: TraitCriteria[]
+  numericTraits?: NumericTraitCriteria[]
+}
 
 type PartialParameters = {
-  consideration: ConsiderationItem[];
-  zone: string;
-  zoneHash: string;
-};
+  consideration: ConsiderationItem[]
+  zone: string
+  zoneHash: string
+}
 
 /**
  * Criteria for collection or trait offers.
@@ -41,27 +41,27 @@ type PartialParameters = {
  */
 type Criteria = {
   /** The collection for the criteria */
-  collection: CollectionCriteria;
+  collection: CollectionCriteria
   /** The contract for the criteria */
-  contract: ContractCriteria;
+  contract: ContractCriteria
   /** Represents a list of token ids which can be used to fulfill the criteria offer. */
-  encoded_token_ids?: string;
+  encoded_token_ids?: string
   /** The trait for the criteria (single trait) */
-  trait?: TraitCriteria;
+  trait?: TraitCriteria
   /** Multiple traits for the criteria (multi-trait offers) */
-  traits?: TraitCriteria[];
+  traits?: TraitCriteria[]
   /** Numeric traits for the criteria (numeric trait offers) */
-  numericTraits?: NumericTraitCriteria[];
-};
+  numericTraits?: NumericTraitCriteria[]
+}
 
 /**
  * Criteria for trait offers.
  * @category API Response Types
  */
 type TraitCriteria = {
-  type: string;
-  value: string;
-};
+  type: string
+  value: string
+}
 
 /**
  * Criteria for numeric trait offers.
@@ -69,30 +69,30 @@ type TraitCriteria = {
  * @category API Response Types
  */
 type NumericTraitCriteria = {
-  type: string;
-  min?: number;
-  max?: number;
-};
+  type: string
+  min?: number
+  max?: number
+}
 
 type CollectionCriteria = {
-  slug: string;
-};
+  slug: string
+}
 
 type ContractCriteria = {
-  address: string;
-};
+  address: string
+}
 
 /**
  * Query args for Get Collections
  * @category API Query Args
  */
 export interface GetCollectionsArgs {
-  order_by?: string;
-  limit?: number;
-  next?: string;
-  chain?: string;
-  creator_username?: string;
-  include_hidden?: boolean;
+  order_by?: string
+  limit?: number
+  next?: string
+  chain?: string
+  creator_username?: string
+  include_hidden?: boolean
 }
 
 /**
@@ -101,8 +101,8 @@ export interface GetCollectionsArgs {
  */
 export type GetCollectionResponse = {
   /** Collection object. See {@link OpenSeaCollection} */
-  collection: OpenSeaCollection;
-};
+  collection: OpenSeaCollection
+}
 
 /**
  * Response from OpenSea API for fetching a list of collections.
@@ -110,8 +110,8 @@ export type GetCollectionResponse = {
  */
 export type GetCollectionsResponse = QueryCursorsV2 & {
   /** List of collections. See {@link OpenSeaCollection} */
-  collections: OpenSeaCollection[];
-};
+  collections: OpenSeaCollection[]
+}
 
 export enum CollectionOrderByOption {
   CREATED_DATE = "created_date",
@@ -140,16 +140,16 @@ export enum OrderStatus {
  */
 export type Order = {
   /** Offer Identifier */
-  order_hash: string;
+  order_hash: string
   /** Chain the offer exists on */
-  chain: string;
+  chain: string
   /** The protocol data for the order. Only 'seaport' is currently supported. */
-  protocol_data: ProtocolData;
+  protocol_data: ProtocolData
   /** The contract address of the protocol. */
-  protocol_address: string;
+  protocol_address: string
   /** The price of the order. */
-  price: Price;
-};
+  price: Price
+}
 
 /**
  * Offer type.
@@ -157,26 +157,26 @@ export type Order = {
  */
 export type Offer = Order & {
   /** The criteria for the offer if it is a collection or trait offer. */
-  criteria?: Criteria;
+  criteria?: Criteria
   /** The status of the offer. */
-  status: OrderStatus;
-};
+  status: OrderStatus
+}
 
 /**
  * Collection Offer type.
  * @category API Models
  */
-export type CollectionOffer = Required<Pick<Offer, "criteria">> & Offer;
+export type CollectionOffer = Required<Pick<Offer, "criteria">> & Offer
 
 /**
  * Price response.
  * @category API Models
  */
 export type Price = {
-  currency: string;
-  decimals: number;
-  value: string;
-};
+  currency: string
+  decimals: number
+  value: string
+}
 
 /**
  * Listing order type.
@@ -184,16 +184,16 @@ export type Price = {
  */
 export type Listing = Omit<Order, "price"> & {
   /** The order type of the listing. */
-  type: OrderType;
+  type: OrderType
   /** The price of the listing with current price nested. */
   price: {
-    current: Price;
-  };
+    current: Price
+  }
   /** The remaining quantity available for the listing. This is important for partially filled orders. */
-  remaining_quantity: number;
+  remaining_quantity: number
   /** The status of the listing. */
-  status: OrderStatus;
-};
+  status: OrderStatus
+}
 
 /**
  * Response from OpenSea API for fetching a list of collection offers.
@@ -201,8 +201,8 @@ export type Listing = Omit<Order, "price"> & {
  */
 export type ListCollectionOffersResponse = {
   /** List of {@link Offer} */
-  offers: CollectionOffer[];
-};
+  offers: CollectionOffer[]
+}
 
 /**
  * Response from OpenSea API for fetching a list of NFTs.
@@ -210,10 +210,10 @@ export type ListCollectionOffersResponse = {
  */
 export type ListNFTsResponse = {
   /** List of {@link NFT} */
-  nfts: NFT[];
+  nfts: NFT[]
   /** Cursor for next page of results. */
-  next: string;
-};
+  next: string
+}
 
 /**
  * Response from OpenSea API for fetching a single NFT.
@@ -221,8 +221,8 @@ export type ListNFTsResponse = {
  */
 export type GetNFTResponse = {
   /** See {@link NFT} */
-  nft: NFT;
-};
+  nft: NFT
+}
 
 /**
  * Response from OpenSea API for fetching Orders.
@@ -230,59 +230,59 @@ export type GetNFTResponse = {
  */
 export type GetOrdersResponse = QueryCursors & {
   /** List of {@link OrderV2} */
-  orders: OrderV2[];
-};
+  orders: OrderV2[]
+}
 
 /**
  * Base query cursors response from OpenSea API.
  * @category API Response Types
  */
 export type QueryCursorsV2 = {
-  next?: string;
-};
+  next?: string
+}
 
 /**
  * Response from OpenSea API for fetching offers.
  * @category API Response Types
  */
 export type GetOffersResponse = QueryCursorsV2 & {
-  offers: Offer[];
-};
+  offers: Offer[]
+}
 
 /**
  * Response from OpenSea API for fetching listings.
  * @category API Response Types
  */
 export type GetListingsResponse = QueryCursorsV2 & {
-  listings: Listing[];
-};
+  listings: Listing[]
+}
 
 /**
  * Response from OpenSea API for fetching a best offer.
  * @category API Response Types
  */
-export type GetBestOfferResponse = Offer | CollectionOffer;
+export type GetBestOfferResponse = Offer | CollectionOffer
 
 /**
  * Response from OpenSea API for fetching a best listing.
  * @category API Response Types
  */
-export type GetBestListingResponse = Listing;
+export type GetBestListingResponse = Listing
 
 /**
  * Response from OpenSea API for fetching an order by hash.
  * Can be either an Offer or a Listing.
  * @category API Response Types
  */
-export type GetOrderByHashResponse = Offer | Listing;
+export type GetOrderByHashResponse = Offer | Listing
 
 /**
  * Response from OpenSea API for offchain canceling an order.
  * @category API Response Types
  */
 export type CancelOrderResponse = {
-  last_signature_issued_valid_until: string | null;
-};
+  last_signature_issued_valid_until: string | null
+}
 
 /**
  * NFT type returned by OpenSea API.
@@ -290,52 +290,52 @@ export type CancelOrderResponse = {
  */
 export type NFT = {
   /** NFT Identifier (also commonly referred to as tokenId) */
-  identifier: string;
+  identifier: string
   /** Slug identifier of collection */
-  collection: string;
+  collection: string
   /** Address of contract */
-  contract: string;
+  contract: string
   /** Token standard, i.e. ERC721, ERC1155, etc. */
-  token_standard: string;
+  token_standard: string
   /** Name of NFT */
-  name: string;
+  name: string
   /** Description of NFT */
-  description: string;
+  description: string
   /** URL of image */
-  image_url: string;
+  image_url: string
   /** URL of metadata */
-  metadata_url: string;
+  metadata_url: string
   /** URL on OpenSea */
-  opensea_url: string;
+  opensea_url: string
   /** Date of latest NFT update */
-  updated_at: string;
+  updated_at: string
   /** Whether NFT is disabled for trading on OpenSea */
-  is_disabled: boolean;
+  is_disabled: boolean
   /** Whether NFT is NSFW (Not Safe For Work) */
-  is_nsfw: boolean;
+  is_nsfw: boolean
   /** Traits for the NFT, returns null if the NFT has than 50 traits */
-  traits: Trait[] | null;
+  traits: Trait[] | null
   /** Creator of the NFT */
-  creator: string;
+  creator: string
   /** Owners of the NFT */
   owners: {
-    address: string;
-    quantity: number;
-  }[];
+    address: string
+    quantity: number
+  }[]
   /** Rarity of the NFT */
   rarity: null | {
-    strategy_id: string | null;
-    strategy_version: string | null;
-    rank: number | null;
-    score: number | null;
-    calculated_at: string;
-    max_rank: number | null;
-    tokens_scored: number | null;
+    strategy_id: string | null
+    strategy_version: string | null
+    rank: number | null
+    score: number | null
+    calculated_at: string
+    max_rank: number | null
+    tokens_scored: number | null
     ranking_features: null | {
-      unique_attribute_count: number;
-    };
-  };
-};
+      unique_attribute_count: number
+    }
+  }
+}
 
 /**
  * Trait type returned by OpenSea API.
@@ -343,14 +343,14 @@ export type NFT = {
  */
 export type Trait = {
   /** The name of the trait category (e.g. 'Background') */
-  trait_type: string;
+  trait_type: string
   /** A field indicating how to display. None is used for string traits. */
-  display_type: TraitDisplayType;
+  display_type: TraitDisplayType
   /** Ceiling for possible numeric trait values */
-  max_value: string;
+  max_value: string
   /** The value of the trait (e.g. 'Red') */
-  value: string | number | Date;
-};
+  value: string | number | Date
+}
 
 /**
  * Trait display type returned by OpenSea API.
@@ -398,35 +398,35 @@ export enum OrderEventType {
  */
 export type EventPayment = {
   /** Quantity of the payment token */
-  quantity: string;
+  quantity: string
   /** Address of the payment token (0x0...0 for ETH) */
-  token_address: string;
+  token_address: string
   /** Decimals of the payment token */
-  decimals: number;
+  decimals: number
   /** Symbol of the payment token */
-  symbol: string;
-};
+  symbol: string
+}
 
 /**
  * Asset information in an event.
  * @category API Models
  */
 export type EventAsset = {
-  identifier: string;
-  collection: string;
-  contract: string;
-  token_standard: string;
-  name: string;
-  description: string;
-  image_url: string;
-  display_image_url: string;
-  display_animation_url: string | null;
-  metadata_url: string;
-  opensea_url: string;
-  updated_at: string;
-  is_disabled: boolean;
-  is_nsfw: boolean;
-};
+  identifier: string
+  collection: string
+  contract: string
+  token_standard: string
+  name: string
+  description: string
+  image_url: string
+  display_image_url: string
+  display_animation_url: string | null
+  metadata_url: string
+  opensea_url: string
+  updated_at: string
+  is_disabled: boolean
+  is_nsfw: boolean
+}
 
 /**
  * Base event type.
@@ -434,112 +434,112 @@ export type EventAsset = {
  */
 type BaseEvent = {
   /** Type of the event */
-  event_type: AssetEventType | string;
+  event_type: AssetEventType | string
   /** Timestamp of the event */
-  event_timestamp: number;
+  event_timestamp: number
   /** Chain the event occurred on */
-  chain: string;
+  chain: string
   /** Quantity involved in the event */
-  quantity: number;
-};
+  quantity: number
+}
 
 /**
  * Listing event type.
  * @category API Models
  */
 export type ListingEvent = BaseEvent & {
-  event_type: AssetEventType.LISTING | "listing";
+  event_type: AssetEventType.LISTING | "listing"
   /** Payment information */
-  payment: EventPayment;
+  payment: EventPayment
   /** Start date of the listing */
-  start_date: number | null;
+  start_date: number | null
   /** Expiration date of the listing */
-  expiration_date: number;
+  expiration_date: number
   /** Asset involved in the listing */
-  asset: EventAsset;
+  asset: EventAsset
   /** Maker of the listing */
-  maker: string;
+  maker: string
   /** Taker of the listing */
-  taker: string;
+  taker: string
   /** Whether the listing is private */
-  is_private_listing: boolean;
+  is_private_listing: boolean
   /** Order hash (optional) */
-  order_hash?: string;
+  order_hash?: string
   /** Protocol address (optional) */
-  protocol_address?: string;
-};
+  protocol_address?: string
+}
 
 /**
  * Offer event type.
  * @category API Models
  */
 export type OfferEvent = BaseEvent & {
-  event_type: AssetEventType.OFFER | "offer";
+  event_type: AssetEventType.OFFER | "offer"
   /** Payment information */
-  payment: EventPayment;
+  payment: EventPayment
   /** Start date of the offer */
-  start_date: number | null;
+  start_date: number | null
   /** Expiration date of the offer */
-  expiration_date: number;
+  expiration_date: number
   /** Asset involved in the offer */
-  asset: EventAsset;
+  asset: EventAsset
   /** Maker of the offer */
-  maker: string;
+  maker: string
   /** Taker of the offer */
-  taker: string;
+  taker: string
   /** Order hash (optional) */
-  order_hash?: string;
+  order_hash?: string
   /** Protocol address (optional) */
-  protocol_address?: string;
-};
+  protocol_address?: string
+}
 
 /**
  * Trait offer event type.
  * @category API Models
  */
 export type TraitOfferEvent = BaseEvent & {
-  event_type: AssetEventType.TRAIT_OFFER | "trait_offer";
+  event_type: AssetEventType.TRAIT_OFFER | "trait_offer"
   /** Payment information */
-  payment: EventPayment;
+  payment: EventPayment
   /** Start date of the offer */
-  start_date: number | null;
+  start_date: number | null
   /** Expiration date of the offer */
-  expiration_date: number;
+  expiration_date: number
   /** Criteria for trait offers */
-  criteria: Record<string, unknown>;
+  criteria: Record<string, unknown>
   /** Maker of the offer */
-  maker: string;
+  maker: string
   /** Taker of the offer */
-  taker: string;
+  taker: string
   /** Order hash (optional) */
-  order_hash?: string;
+  order_hash?: string
   /** Protocol address (optional) */
-  protocol_address?: string;
-};
+  protocol_address?: string
+}
 
 /**
  * Collection offer event type.
  * @category API Models
  */
 export type CollectionOfferEvent = BaseEvent & {
-  event_type: AssetEventType.COLLECTION_OFFER | "collection_offer";
+  event_type: AssetEventType.COLLECTION_OFFER | "collection_offer"
   /** Payment information */
-  payment: EventPayment;
+  payment: EventPayment
   /** Start date of the offer */
-  start_date: number | null;
+  start_date: number | null
   /** Expiration date of the offer */
-  expiration_date: number;
+  expiration_date: number
   /** Criteria for collection offers */
-  criteria: Record<string, unknown>;
+  criteria: Record<string, unknown>
   /** Maker of the offer */
-  maker: string;
+  maker: string
   /** Taker of the offer */
-  taker: string;
+  taker: string
   /** Order hash (optional) */
-  order_hash?: string;
+  order_hash?: string
   /** Protocol address (optional) */
-  protocol_address?: string;
-};
+  protocol_address?: string
+}
 
 /**
  * Order event type returned by the API for order-related activities
@@ -547,82 +547,82 @@ export type CollectionOfferEvent = BaseEvent & {
  * @category API Models
  */
 export type OrderEvent = BaseEvent & {
-  event_type: AssetEventType.ORDER | "order";
+  event_type: AssetEventType.ORDER | "order"
   /** Payment information */
-  payment: EventPayment;
+  payment: EventPayment
   /** Start date of the order */
-  start_date: number | null;
+  start_date: number | null
   /** Expiration date of the order */
-  expiration_date: number;
+  expiration_date: number
   /** Asset involved in the order (optional, not present for collection/trait offers) */
-  asset?: EventAsset;
+  asset?: EventAsset
   /** Criteria for collection/trait offers (optional) */
-  criteria?: Record<string, unknown>;
+  criteria?: Record<string, unknown>
   /** Maker of the order */
-  maker: string;
+  maker: string
   /** Taker of the order */
-  taker: string;
+  taker: string
   /** Order hash (optional) */
-  order_hash?: string;
+  order_hash?: string
   /** Protocol address (optional) */
-  protocol_address?: string;
+  protocol_address?: string
   /** Order type providing more detail */
-  order_type?: OrderEventType;
-};
+  order_type?: OrderEventType
+}
 
 /**
  * Mint event type.
  * @category API Models
  */
 export type MintEvent = BaseEvent & {
-  event_type: AssetEventType.MINT | "mint";
+  event_type: AssetEventType.MINT | "mint"
   /** Transaction hash */
-  transaction: string;
+  transaction: string
   /** Address the NFT was minted to */
-  to_address: string;
+  to_address: string
   /** NFT that was minted */
-  nft: EventAsset;
-};
+  nft: EventAsset
+}
 
 /**
  * Sale event type.
  * @category API Models
  */
 export type SaleEvent = BaseEvent & {
-  event_type: AssetEventType.SALE | "sale";
+  event_type: AssetEventType.SALE | "sale"
   /** Transaction hash */
-  transaction: string;
+  transaction: string
   /** Order hash */
-  order_hash: string;
+  order_hash: string
   /** Protocol address */
-  protocol_address: string;
+  protocol_address: string
   /** Payment information */
-  payment: EventPayment;
+  payment: EventPayment
   /** Closing date of the sale */
-  closing_date: number;
+  closing_date: number
   /** Seller address */
-  seller: string;
+  seller: string
   /** Buyer address */
-  buyer: string;
+  buyer: string
   /** NFT involved in the sale */
-  nft: EventAsset;
-};
+  nft: EventAsset
+}
 
 /**
  * Transfer event type.
  * @category API Models
  */
 export type TransferEvent = BaseEvent & {
-  event_type: AssetEventType.TRANSFER | "transfer";
+  event_type: AssetEventType.TRANSFER | "transfer"
   /** Transaction hash */
-  transaction: string;
+  transaction: string
   /** Address the NFT was transferred from */
-  from_address: string;
+  from_address: string
   /** Address the NFT was transferred to */
-  to_address: string;
+  to_address: string
   /** NFT involved in the transfer */
-  nft: EventAsset;
-};
+  nft: EventAsset
+}
 
 /**
  * Generic event type that can be any event type.
@@ -636,7 +636,7 @@ export type AssetEvent =
   | OrderEvent
   | SaleEvent
   | TransferEvent
-  | MintEvent;
+  | MintEvent
 
 /**
  * Query args for Get Events endpoints.
@@ -644,17 +644,17 @@ export type AssetEvent =
  */
 export interface GetEventsArgs {
   /** Type of event to filter by */
-  event_type?: AssetEventType | string;
+  event_type?: AssetEventType | string
   /** Filter events after this timestamp */
-  after?: number;
+  after?: number
   /** Filter events before this timestamp */
-  before?: number;
+  before?: number
   /** Limit the number of results */
-  limit?: number;
+  limit?: number
   /** Cursor for pagination */
-  next?: string;
+  next?: string
   /** Chain to filter by */
-  chain?: string;
+  chain?: string
 }
 
 /**
@@ -663,8 +663,8 @@ export interface GetEventsArgs {
  */
 export type GetEventsResponse = QueryCursorsV2 & {
   /** List of {@link AssetEvent} */
-  asset_events: AssetEvent[];
-};
+  asset_events: AssetEvent[]
+}
 
 /**
  * Contract information returned by OpenSea API.
@@ -672,38 +672,38 @@ export type GetEventsResponse = QueryCursorsV2 & {
  */
 export type Contract = {
   /** Contract address */
-  address: string;
+  address: string
   /** Chain the contract is deployed on */
-  chain: string;
+  chain: string
   /** Associated collection slug (if any) */
-  collection: string | null;
+  collection: string | null
   /** Contract name */
-  name: string;
+  name: string
   /** Contract standard (e.g., erc721, erc1155) */
-  contract_standard: string;
-};
+  contract_standard: string
+}
 
 /**
  * Response from OpenSea API for fetching a contract.
  * @category API Response Types
  */
-export type GetContractResponse = Contract;
+export type GetContractResponse = Contract
 
 /**
  * Trait counts for a specific trait type.
  * @category API Models
  */
 export type TraitCounts = {
-  [traitValue: string]: number;
-};
+  [traitValue: string]: number
+}
 
 /**
  * Trait categories in a collection.
  * @category API Models
  */
 export type TraitCategories = {
-  [traitType: string]: "string" | "number" | "date";
-};
+  [traitType: string]: "string" | "number" | "date"
+}
 
 /**
  * Response from OpenSea API for fetching collection traits.
@@ -711,12 +711,12 @@ export type TraitCategories = {
  */
 export type GetTraitsResponse = {
   /** Trait categories with their data types */
-  categories: TraitCategories;
+  categories: TraitCategories
   /** Trait counts for each category */
   counts: {
-    [traitType: string]: TraitCounts;
-  };
-};
+    [traitType: string]: TraitCounts
+  }
+}
 
 /**
  * Token model returned by OpenSea API.
@@ -724,20 +724,20 @@ export type GetTraitsResponse = {
  */
 export type Token = {
   /** Token contract address */
-  address: string;
+  address: string
   /** Chain the token is on */
-  chain: string;
+  chain: string
   /** Token name */
-  name: string;
+  name: string
   /** Token symbol */
-  symbol: string;
+  symbol: string
   /** Number of decimals */
-  decimals: number;
+  decimals: number
   /** URL of the token image */
-  image_url: string | null;
+  image_url: string | null
   /** URL on OpenSea */
-  opensea_url: string;
-};
+  opensea_url: string
+}
 
 /**
  * Response from OpenSea API for fetching trending tokens.
@@ -745,8 +745,8 @@ export type Token = {
  */
 export type GetTrendingTokensResponse = QueryCursorsV2 & {
   /** List of {@link Token} */
-  tokens: Token[];
-};
+  tokens: Token[]
+}
 
 /**
  * Response from OpenSea API for fetching top tokens.
@@ -754,8 +754,8 @@ export type GetTrendingTokensResponse = QueryCursorsV2 & {
  */
 export type GetTopTokensResponse = QueryCursorsV2 & {
   /** List of {@link Token} */
-  tokens: Token[];
-};
+  tokens: Token[]
+}
 
 /**
  * Query args for Get Trending/Top Tokens endpoints.
@@ -763,9 +763,9 @@ export type GetTopTokensResponse = QueryCursorsV2 & {
  */
 export interface GetTokensArgs {
   /** Limit the number of results */
-  limit?: number;
+  limit?: number
   /** Cursor for pagination */
-  next?: string;
+  next?: string
 }
 
 /**
@@ -774,17 +774,17 @@ export interface GetTokensArgs {
  */
 export interface GetSwapQuoteArgs {
   /** Address of the input token */
-  token_in: string;
+  token_in: string
   /** Address of the output token */
-  token_out: string;
+  token_out: string
   /** Amount of input token */
-  amount: string;
+  amount: string
   /** Chain for the swap */
-  chain: string;
+  chain: string
   /** Address of the taker */
-  taker_address?: string;
+  taker_address?: string
   /** Slippage tolerance */
-  slippage?: number;
+  slippage?: number
 }
 
 /**
@@ -792,14 +792,14 @@ export interface GetSwapQuoteArgs {
  * @category API Response Types
  */
 export type GetSwapQuoteResponse = {
-  [key: string]: unknown;
-};
+  [key: string]: unknown
+}
 
 /**
  * Response from OpenSea API for fetching token details.
  * @category API Response Types
  */
-export type GetTokenResponse = Token;
+export type GetTokenResponse = Token
 
 /**
  * Query args for the Search endpoint.
@@ -807,13 +807,13 @@ export type GetTokenResponse = Token;
  */
 export interface SearchArgs {
   /** Search query text */
-  query: string;
+  query: string
   /** Filter by blockchain(s) */
-  chains?: string[];
+  chains?: string[]
   /** Filter by asset type(s): collection, nft, token, account */
-  asset_types?: string[];
+  asset_types?: string[]
   /** Number of results to return (default: 20, max: 50) */
-  limit?: number;
+  limit?: number
 }
 
 /**
@@ -822,18 +822,18 @@ export interface SearchArgs {
  */
 export type CollectionSearchResult = {
   /** The collection slug */
-  collection: string;
+  collection: string
   /** The collection name */
-  name: string;
+  name: string
   /** URL of the collection image */
-  image_url: string | null;
+  image_url: string | null
   /** Whether trading is disabled for this collection */
-  is_disabled: boolean;
+  is_disabled: boolean
   /** Whether this collection is marked as NSFW */
-  is_nsfw: boolean;
+  is_nsfw: boolean
   /** URL to the collection on OpenSea */
-  opensea_url: string;
-};
+  opensea_url: string
+}
 
 /**
  * Token (currency) search result.
@@ -841,22 +841,22 @@ export type CollectionSearchResult = {
  */
 export type TokenSearchResult = {
   /** Contract address of the token */
-  address: string;
+  address: string
   /** Blockchain the token is on */
-  chain: string;
+  chain: string
   /** Token name */
-  name: string;
+  name: string
   /** Token symbol */
-  symbol: string;
+  symbol: string
   /** URL of the token image */
-  image_url: string | null;
+  image_url: string | null
   /** Current USD price of the token */
-  usd_price: string;
+  usd_price: string
   /** Number of decimal places for the token */
-  decimals: number;
+  decimals: number
   /** URL to the token on OpenSea */
-  opensea_url: string;
-};
+  opensea_url: string
+}
 
 /**
  * NFT search result.
@@ -864,18 +864,18 @@ export type TokenSearchResult = {
  */
 export type NftSearchResult = {
   /** Token ID of the NFT */
-  identifier: string;
+  identifier: string
   /** Collection slug the NFT belongs to */
-  collection: string;
+  collection: string
   /** Contract address of the NFT */
-  contract: string;
+  contract: string
   /** Name of the NFT */
-  name: string | null;
+  name: string | null
   /** URL of the NFT image */
-  image_url: string | null;
+  image_url: string | null
   /** URL to the NFT on OpenSea */
-  opensea_url: string;
-};
+  opensea_url: string
+}
 
 /**
  * Account search result.
@@ -883,14 +883,14 @@ export type NftSearchResult = {
  */
 export type AccountSearchResult = {
   /** Primary wallet address of the account */
-  address: string;
+  address: string
   /** Username of the account */
-  username: string | null;
+  username: string | null
   /** URL of the account's profile image */
-  profile_image_url: string | null;
+  profile_image_url: string | null
   /** URL to the account on OpenSea */
-  opensea_url: string;
-};
+  opensea_url: string
+}
 
 /**
  * A single search result with a type discriminator and the corresponding typed object.
@@ -898,16 +898,16 @@ export type AccountSearchResult = {
  */
 export type SearchResult = {
   /** The type of search result */
-  type: string;
+  type: string
   /** Collection details, present when type is 'collection' */
-  collection?: CollectionSearchResult;
+  collection?: CollectionSearchResult
   /** Token details, present when type is 'token' */
-  token?: TokenSearchResult;
+  token?: TokenSearchResult
   /** NFT details, present when type is 'nft' */
-  nft?: NftSearchResult;
+  nft?: NftSearchResult
   /** Account details, present when type is 'account' */
-  account?: AccountSearchResult;
-};
+  account?: AccountSearchResult
+}
 
 /**
  * Response from OpenSea API for search.
@@ -915,5 +915,5 @@ export type SearchResult = {
  */
 export type SearchResponse = {
   /** List of search results ranked by relevance */
-  results: SearchResult[];
-};
+  results: SearchResult[]
+}

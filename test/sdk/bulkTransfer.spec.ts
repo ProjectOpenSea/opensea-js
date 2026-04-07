@@ -1,17 +1,16 @@
-import { expect } from "chai";
-import { ethers } from "ethers";
-import { suite, test } from "mocha";
-import { TokenStandard } from "../../src/types";
-import { BAYC_CONTRACT_ADDRESS } from "../utils/constants";
-import { sdk } from "../utils/sdk";
+import { ethers } from "ethers"
+import { describe, expect, test } from "vitest"
+import { TokenStandard } from "../../src/types"
+import { BAYC_CONTRACT_ADDRESS } from "../utils/constants"
+import { sdk } from "../utils/sdk"
 
-suite("SDK: bulkTransfer", () => {
-  const wallet = ethers.Wallet.createRandom();
-  const accountAddress = wallet.address;
-  const recipientAddress = ethers.Wallet.createRandom().address;
+describe("SDK: bulkTransfer", () => {
+  const wallet = ethers.Wallet.createRandom()
+  const accountAddress = wallet.address
+  const recipientAddress = ethers.Wallet.createRandom().address
 
   test("Should throw an error when using bulkTransfer without wallet", async () => {
-    const expectedErrorMessage = `Specified accountAddress is not available through wallet or provider: ${accountAddress}`;
+    const expectedErrorMessage = `Specified accountAddress is not available through wallet or provider: ${accountAddress}`
 
     try {
       await sdk.bulkTransfer({
@@ -26,26 +25,26 @@ suite("SDK: bulkTransfer", () => {
           },
         ],
         fromAddress: accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(expectedErrorMessage);
+      expect((e as Error).message).toContain(expectedErrorMessage)
     }
-  });
+  })
 
   test("Should throw an error when assets array is empty", async () => {
     try {
       await sdk.bulkTransfer({
         assets: [],
         fromAddress: accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(
+      expect((e as Error).message).toContain(
         "At least one asset must be provided",
-      );
+      )
     }
-  });
+  })
 
   test("Should throw an error when ERC20 amount is missing", async () => {
     try {
@@ -61,14 +60,14 @@ suite("SDK: bulkTransfer", () => {
           },
         ],
         fromAddress: accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(
+      expect((e as Error).message).toContain(
         "Missing ERC20 amount for bulk transfer",
-      );
+      )
     }
-  });
+  })
 
   test("Should throw an error when ERC721 tokenId is missing", async () => {
     try {
@@ -84,14 +83,14 @@ suite("SDK: bulkTransfer", () => {
           },
         ],
         fromAddress: accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(
+      expect((e as Error).message).toContain(
         "Missing ERC721 tokenId for bulk transfer",
-      );
+      )
     }
-  });
+  })
 
   test("Should throw an error when ERC1155 tokenId is missing", async () => {
     try {
@@ -108,14 +107,14 @@ suite("SDK: bulkTransfer", () => {
           },
         ],
         fromAddress: accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(
+      expect((e as Error).message).toContain(
         "Missing ERC1155 tokenId for bulk transfer",
-      );
+      )
     }
-  });
+  })
 
   test("Should throw an error when ERC1155 amount is missing", async () => {
     try {
@@ -131,14 +130,14 @@ suite("SDK: bulkTransfer", () => {
           },
         ],
         fromAddress: accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(
+      expect((e as Error).message).toContain(
         "Missing ERC1155 amount for bulk transfer",
-      );
+      )
     }
-  });
+  })
 
   test("Should provide helpful error when assets are not approved", async () => {
     // This test will fail on approval check since we're using a random wallet
@@ -156,26 +155,26 @@ suite("SDK: bulkTransfer", () => {
           },
         ],
         fromAddress: accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
       // Should fail on either account check or approval check
       // Both are expected since we're using random wallets
-      expect((e as Error).message).to.satisfy(
+      expect((e as Error).message).toSatisfy(
         (msg: string) =>
           msg.includes("accountAddress is not available") ||
           msg.includes("not approved for transfer"),
-      );
+      )
     }
-  });
-});
+  })
+})
 
-suite("SDK: batchApproveAssets", () => {
-  const wallet = ethers.Wallet.createRandom();
-  const accountAddress = wallet.address;
+describe("SDK: batchApproveAssets", () => {
+  const wallet = ethers.Wallet.createRandom()
+  const accountAddress = wallet.address
 
   test("Should throw an error when using batchApproveAssets without wallet", async () => {
-    const expectedErrorMessage = `Specified accountAddress is not available through wallet or provider: ${accountAddress}`;
+    const expectedErrorMessage = `Specified accountAddress is not available through wallet or provider: ${accountAddress}`
 
     try {
       await sdk.batchApproveAssets({
@@ -189,20 +188,20 @@ suite("SDK: batchApproveAssets", () => {
           },
         ],
         fromAddress: accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(expectedErrorMessage);
+      expect((e as Error).message).toContain(expectedErrorMessage)
     }
-  });
+  })
 
   test("Should return undefined when assets array is empty", async () => {
     const result = await sdk.batchApproveAssets({
       assets: [],
       fromAddress: accountAddress,
-    });
-    expect(result).to.be.undefined;
-  });
+    })
+    expect(result).toBeUndefined()
+  })
 
   test("Should throw an error when ERC20 amount is missing", async () => {
     try {
@@ -217,14 +216,14 @@ suite("SDK: batchApproveAssets", () => {
           },
         ],
         fromAddress: accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.satisfy(
+      expect((e as Error).message).toSatisfy(
         (msg: string) =>
           msg.includes("accountAddress is not available") ||
           msg.includes("Amount required for ERC20 approval"),
-      );
+      )
     }
-  });
-});
+  })
+})

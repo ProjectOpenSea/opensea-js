@@ -1,14 +1,14 @@
-import { ItemType } from "@opensea/seaport-js/lib/constants";
-import {
+import { ItemType } from "@opensea/seaport-js/lib/constants"
+import type {
   ConsiderationInputItem,
   CreateInputItem,
   MatchOrdersFulfillment,
   Order,
   OrderWithCounter,
-} from "@opensea/seaport-js/lib/types";
-import { isCurrencyItem } from "@opensea/seaport-js/lib/utils/item";
-import { generateRandomSalt } from "@opensea/seaport-js/lib/utils/order";
-import { ZeroAddress } from "ethers";
+} from "@opensea/seaport-js/lib/types"
+import { isCurrencyItem } from "@opensea/seaport-js/lib/utils/item"
+import { generateRandomSalt } from "@opensea/seaport-js/lib/utils/order"
+import { ZeroAddress } from "ethers"
 
 /**
  * Compute the native currency (ETH) value required to fulfill a private listing.
@@ -23,22 +23,22 @@ export const computePrivateListingValue = (
 ): bigint => {
   return order.parameters.consideration
     .filter(
-      (item) =>
+      item =>
         item.recipient.toLowerCase() !== takerAddress.toLowerCase() &&
         item.token.toLowerCase() === ZeroAddress.toLowerCase() &&
         item.itemType === ItemType.NATIVE,
     )
-    .reduce((sum, item) => sum + BigInt(item.startAmount), 0n);
-};
+    .reduce((sum, item) => sum + BigInt(item.startAmount), 0n)
+}
 
 export const getPrivateListingConsiderations = (
   offer: CreateInputItem[],
   privateSaleRecipient: string,
 ): ConsiderationInputItem[] => {
-  return offer.map((item) => {
-    return { ...item, recipient: privateSaleRecipient };
-  });
-};
+  return offer.map(item => {
+    return { ...item, recipient: privateSaleRecipient }
+  })
+}
 
 export const constructPrivateListingCounterOrder = (
   order: OrderWithCounter,
@@ -47,21 +47,20 @@ export const constructPrivateListingCounterOrder = (
   // Counter order offers up all the items in the private listing consideration
   // besides the items that are going to the private listing recipient
   const paymentItems = order.parameters.consideration.filter(
-    (item) =>
-      item.recipient.toLowerCase() !== privateSaleRecipient.toLowerCase(),
-  );
+    item => item.recipient.toLowerCase() !== privateSaleRecipient.toLowerCase(),
+  )
 
   // Only validate payment items if there are any (zero-payment private listings are valid)
   if (paymentItems.length > 0) {
-    if (!paymentItems.every((item) => isCurrencyItem(item))) {
+    if (!paymentItems.every(item => isCurrencyItem(item))) {
       throw new Error(
         "The consideration for the private listing did not contain only currency items",
-      );
+      )
     }
     if (
-      !paymentItems.every((item) => item.itemType === paymentItems[0].itemType)
+      !paymentItems.every(item => item.itemType === paymentItems[0].itemType)
     ) {
-      throw new Error("Not all currency items were the same for private order");
+      throw new Error("Not all currency items were the same for private order")
     }
   }
 
@@ -74,7 +73,7 @@ export const constructPrivateListingCounterOrder = (
       aggregatedStartAmount: 0n,
       aggregatedEndAmount: 0n,
     },
-  );
+  )
 
   const counterOrder: Order = {
     parameters: {
@@ -100,31 +99,31 @@ export const constructPrivateListingCounterOrder = (
       totalOriginalConsiderationItems: 0,
     },
     signature: "0x",
-  };
+  }
 
-  return counterOrder;
-};
+  return counterOrder
+}
 
 export const getPrivateListingFulfillments = (
   privateListingOrder: OrderWithCounter,
 ): MatchOrdersFulfillment[] => {
-  const nftRelatedFulfillments: MatchOrdersFulfillment[] = [];
+  const nftRelatedFulfillments: MatchOrdersFulfillment[] = []
 
   // For the original order, we need to match everything offered with every consideration item
   // on the original order that's set to go to the private listing recipient
   privateListingOrder.parameters.offer.forEach((offerItem, offerIndex) => {
     const considerationIndex =
       privateListingOrder.parameters.consideration.findIndex(
-        (considerationItem) =>
+        considerationItem =>
           considerationItem.itemType === offerItem.itemType &&
           considerationItem.token === offerItem.token &&
           considerationItem.identifierOrCriteria ===
             offerItem.identifierOrCriteria,
-      );
+      )
     if (considerationIndex === -1) {
       throw new Error(
         "Could not find matching offer item in the consideration for private listing",
-      );
+      )
     }
     nftRelatedFulfillments.push({
       offerComponents: [
@@ -139,17 +138,17 @@ export const getPrivateListingFulfillments = (
           itemIndex: considerationIndex,
         },
       ],
-    });
-  });
+    })
+  })
 
-  const currencyRelatedFulfillments: MatchOrdersFulfillment[] = [];
+  const currencyRelatedFulfillments: MatchOrdersFulfillment[] = []
 
   // For the original order, we need to match everything offered with every consideration item
   // on the original order that's set to go to the private listing recipient
   privateListingOrder.parameters.consideration.forEach(
     (considerationItem, considerationIndex) => {
       if (!isCurrencyItem(considerationItem)) {
-        return;
+        return
       }
       // We always match the offer item (index 0) of the counter order (index 1)
       // with all of the payment items on the private listing
@@ -166,9 +165,9 @@ export const getPrivateListingFulfillments = (
             itemIndex: considerationIndex,
           },
         ],
-      });
+      })
     },
-  );
+  )
 
-  return [...nftRelatedFulfillments, ...currencyRelatedFulfillments];
-};
+  return [...nftRelatedFulfillments, ...currencyRelatedFulfillments]
+}

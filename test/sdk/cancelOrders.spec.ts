@@ -1,55 +1,54 @@
-import { OrderComponents } from "@opensea/seaport-js/lib/types";
-import { expect } from "chai";
-import { ethers } from "ethers";
-import { suite, test } from "mocha";
-import { OrderV2 } from "../../src/orders/types";
-import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../../src/orders/utils";
-import { sdk } from "../utils/sdk";
+import type { OrderComponents } from "@opensea/seaport-js/lib/types"
+import { ethers } from "ethers"
+import { describe, expect, test } from "vitest"
+import type { OrderV2 } from "../../src/orders/types"
+import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../../src/orders/utils"
+import { sdk } from "../utils/sdk"
 
-suite("SDK: cancelOrders", () => {
-  const wallet = ethers.Wallet.createRandom();
-  const accountAddress = wallet.address;
+describe("SDK: cancelOrders", () => {
+  const wallet = ethers.Wallet.createRandom()
+  const accountAddress = wallet.address
 
   test("Should throw an error when neither orders nor orderHashes is provided", async () => {
     try {
       await sdk.cancelOrders({
         accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(
+      expect((e as Error).message).toContain(
         "Either orders or orderHashes must be provided",
-      );
+      )
     }
-  });
+  })
 
   test("Should throw an error when orders array is empty", async () => {
     try {
       await sdk.cancelOrders({
         orders: [],
         accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(
+      expect((e as Error).message).toContain(
         "At least one order must be provided",
-      );
+      )
     }
-  });
+  })
 
   test("Should throw an error when orderHashes array is empty", async () => {
     try {
       await sdk.cancelOrders({
         orderHashes: [],
         accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(
+      expect((e as Error).message).toContain(
         "At least one order hash must be provided",
-      );
+      )
     }
-  });
+  })
 
   test("Should throw an error when both orders and orderHashes are provided", async () => {
     const mockOrderComponents: OrderComponents = {
@@ -67,7 +66,7 @@ suite("SDK: cancelOrders", () => {
         "0x0000000000000000000000000000000000000000000000000000000000000000",
       totalOriginalConsiderationItems: 0,
       counter: 0,
-    };
+    }
 
     try {
       await sdk.cancelOrders({
@@ -76,14 +75,14 @@ suite("SDK: cancelOrders", () => {
           "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
         ],
         accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(
+      expect((e as Error).message).toContain(
         "Cannot provide both orders and orderHashes",
-      );
+      )
     }
-  });
+  })
 
   test("Should attempt to fetch orders from API when using orderHashes", async () => {
     try {
@@ -91,20 +90,20 @@ suite("SDK: cancelOrders", () => {
         orderHashes: ["0x123"],
         accountAddress,
         protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
       // Should fail when trying to fetch the order from the API
       // Either "Not found" or network error depending on the API state
-      expect((e as Error).message).to.satisfy(
+      expect((e as Error).message).toSatisfy(
         (msg: string) =>
           msg.includes("Not found") ||
           msg.includes("Server Error") ||
           msg.includes("Unauthorized") ||
           msg.includes("accountAddress is not available"),
-      );
+      )
     }
-  });
+  })
 
   test("Should throw an error when using cancelOrders without wallet", async () => {
     const mockOrderV2: OrderV2 = {
@@ -138,26 +137,25 @@ suite("SDK: cancelOrders", () => {
         },
         signature: "0x",
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any;
+    } as any
 
     try {
       await sdk.cancelOrders({
         orders: [mockOrderV2],
         accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
       // Should fail when checking wallet availability
       // Either proper wallet check error or RPC auth error if provider is misconfigured
-      expect((e as Error).message).to.satisfy(
+      expect((e as Error).message).toSatisfy(
         (msg: string) =>
           msg.includes("accountAddress is not available") ||
           msg.includes("Unauthorized") ||
           msg.includes("Must be authenticated"),
-      );
+      )
     }
-  });
+  })
 
   test("Should accept OrderComponents directly", async () => {
     const mockOrderComponents: OrderComponents = {
@@ -175,43 +173,43 @@ suite("SDK: cancelOrders", () => {
         "0x0000000000000000000000000000000000000000000000000000000000000000",
       totalOriginalConsiderationItems: 0,
       counter: 0,
-    };
+    }
 
     try {
       await sdk.cancelOrders({
         orders: [mockOrderComponents],
         accountAddress,
-      });
-      throw new Error("should have thrown wallet error");
+      })
+      throw new Error("should have thrown wallet error")
     } catch (e) {
       // We expect it to fail on wallet check, not on input validation
       // Either proper wallet check error or RPC auth error if provider is misconfigured
-      expect((e as Error).message).to.satisfy(
+      expect((e as Error).message).toSatisfy(
         (msg: string) =>
           msg.includes("accountAddress is not available") ||
           msg.includes("Unauthorized") ||
           msg.includes("Must be authenticated"),
-      );
+      )
     }
-  });
-});
+  })
+})
 
-suite("SDK: cancelOrder (singular)", () => {
-  const wallet = ethers.Wallet.createRandom();
-  const accountAddress = wallet.address;
+describe("SDK: cancelOrder (singular)", () => {
+  const wallet = ethers.Wallet.createRandom()
+  const accountAddress = wallet.address
 
   test("Should throw an error when neither order nor orderHash is provided", async () => {
     try {
       await sdk.cancelOrder({
         accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
-      expect((e as Error).message).to.include(
+      expect((e as Error).message).toContain(
         "Either order or orderHash must be provided",
-      );
+      )
     }
-  });
+  })
 
   test("Should attempt to fetch order from API when using orderHash", async () => {
     try {
@@ -219,20 +217,20 @@ suite("SDK: cancelOrder (singular)", () => {
         orderHash: "0x123",
         accountAddress,
         protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
       // Should fail when trying to fetch the order from the API
       // Either "Not found" or network error depending on the API state
-      expect((e as Error).message).to.satisfy(
+      expect((e as Error).message).toSatisfy(
         (msg: string) =>
           msg.includes("Not found") ||
           msg.includes("Server Error") ||
           msg.includes("Unauthorized") ||
           msg.includes("accountAddress is not available"),
-      );
+      )
     }
-  });
+  })
 
   test("Should throw an error when using cancelOrder with OrderV2 without wallet", async () => {
     const mockOrderV2: OrderV2 = {
@@ -266,24 +264,23 @@ suite("SDK: cancelOrder (singular)", () => {
         },
         signature: "0x",
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any;
+    } as any
 
     try {
       await sdk.cancelOrder({
         order: mockOrderV2,
         accountAddress,
-      });
-      throw new Error("should have thrown");
+      })
+      throw new Error("should have thrown")
     } catch (e) {
       // Should fail when checking wallet availability
       // Either proper wallet check error or RPC auth error if provider is misconfigured
-      expect((e as Error).message).to.satisfy(
+      expect((e as Error).message).toSatisfy(
         (msg: string) =>
           msg.includes("accountAddress is not available") ||
           msg.includes("Unauthorized") ||
           msg.includes("Must be authenticated"),
-      );
+      )
     }
-  });
-});
+  })
+})

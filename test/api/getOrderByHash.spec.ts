@@ -1,30 +1,28 @@
-import { expect } from "chai";
-import { suite, test } from "mocha";
-import * as sinon from "sinon";
-import { OrdersAPI } from "../../src/api/orders";
+import { describe, expect, test, vi } from "vitest"
+import { OrdersAPI } from "../../src/api/orders"
 import {
-  GetOrderByHashResponse,
-  Offer,
-  Listing,
+  type GetOrderByHashResponse,
+  type Listing,
+  type Offer,
   OrderStatus,
-} from "../../src/api/types";
-import { OrderType, ProtocolData } from "../../src/orders/types";
-import { Chain } from "../../src/types";
-import { createMockFetcher } from "../fixtures/fetcher";
+} from "../../src/api/types"
+import { OrderType, type ProtocolData } from "../../src/orders/types"
+import { Chain } from "../../src/types"
+import { createMockFetcher } from "../fixtures/fetcher"
 
-suite("API: OrdersAPI.getOrderByHash", () => {
-  let mockGet: sinon.SinonStub;
-  let ordersAPI: OrdersAPI;
+describe("API: OrdersAPI.getOrderByHash", () => {
+  let mockGet: ReturnType<typeof vi.fn>
+  let ordersAPI: OrdersAPI
 
   beforeEach(() => {
-    const { fetcher, mockGet: getMock } = createMockFetcher();
-    mockGet = getMock;
-    ordersAPI = new OrdersAPI(fetcher, Chain.Mainnet);
-  });
+    const { fetcher, mockGet: getMock } = createMockFetcher()
+    mockGet = getMock
+    ordersAPI = new OrdersAPI(fetcher, Chain.Mainnet)
+  })
 
   afterEach(() => {
-    sinon.restore();
-  });
+    vi.restoreAllMocks()
+  })
 
   test("returns an Offer type response", async () => {
     const mockOffer: Offer = {
@@ -69,34 +67,34 @@ suite("API: OrdersAPI.getOrderByHash", () => {
         contract: { address: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d" },
       },
       status: OrderStatus.ACTIVE,
-    };
+    }
 
-    mockGet.resolves({ order: mockOffer });
+    mockGet.mockResolvedValue({ order: mockOffer })
 
     const result = await ordersAPI.getOrderByHash(
       "0x143be64aaf5d170c61e56ceb37dff0f8494e2630a7eae3eb24c8edbef09af9d5",
       "0x0000000000000068f116a894984e2db1123eb395",
-    );
+    )
 
-    expect(mockGet.calledOnce).to.be.true;
-    expect(mockGet.firstCall.args[0]).to.equal(
+    expect(mockGet).toHaveBeenCalledTimes(1)
+    expect(mockGet.mock.calls[0][0]).toBe(
       "/api/v2/orders/chain/ethereum/protocol/0x0000000000000068f116a894984e2db1123eb395/0x143be64aaf5d170c61e56ceb37dff0f8494e2630a7eae3eb24c8edbef09af9d5",
-    );
+    )
 
     // Verify it returns the raw API response (Offer type)
-    expect(result.order_hash).to.equal(
+    expect(result.order_hash).toBe(
       "0x143be64aaf5d170c61e56ceb37dff0f8494e2630a7eae3eb24c8edbef09af9d5",
-    );
-    expect(result.protocol_address).to.equal(
+    )
+    expect(result.protocol_address).toBe(
       "0x0000000000000068f116a894984e2db1123eb395",
-    );
-    expect(result.protocol_data.parameters.offerer).to.equal(
+    )
+    expect(result.protocol_data.parameters.offerer).toBe(
       "0xaf68f720d7e51b88a76ec35aab2b1694f8f0892a",
-    );
-    expect((result as Offer).criteria?.collection.slug).to.equal(
+    )
+    expect((result as Offer).criteria?.collection.slug).toBe(
       "boredapeyachtclub",
-    );
-  });
+    )
+  })
 
   test("returns a Listing type response", async () => {
     const mockListing: Listing = {
@@ -141,25 +139,25 @@ suite("API: OrdersAPI.getOrderByHash", () => {
       },
       remaining_quantity: 1,
       status: OrderStatus.ACTIVE,
-    };
+    }
 
-    mockGet.resolves({ order: mockListing });
+    mockGet.mockResolvedValue({ order: mockListing })
 
     const result = await ordersAPI.getOrderByHash(
       "0xabc123def456789012345678901234567890123456789012345678901234abcd",
       "0x0000000000000068f116a894984e2db1123eb395",
-    );
+    )
 
     // Verify it returns the raw API response (Listing type)
-    expect(result.order_hash).to.equal(
+    expect(result.order_hash).toBe(
       "0xabc123def456789012345678901234567890123456789012345678901234abcd",
-    );
-    expect(result.protocol_address).to.equal(
+    )
+    expect(result.protocol_address).toBe(
       "0x0000000000000068f116a894984e2db1123eb395",
-    );
-    expect((result as Listing).remaining_quantity).to.equal(1);
-    expect((result as Listing).type).to.equal(OrderType.BASIC);
-  });
+    )
+    expect((result as Listing).remaining_quantity).toBe(1)
+    expect((result as Listing).type).toBe(OrderType.BASIC)
+  })
 
   test("response can be used for order cancellation", async () => {
     const mockOffer: Offer = {
@@ -189,26 +187,26 @@ suite("API: OrdersAPI.getOrderByHash", () => {
         value: "1000000000000000000",
       },
       status: OrderStatus.ACTIVE,
-    };
+    }
 
-    mockGet.resolves({ order: mockOffer });
+    mockGet.mockResolvedValue({ order: mockOffer })
 
     const result: GetOrderByHashResponse = await ordersAPI.getOrderByHash(
       "0x123",
       "0xprotocol",
-    );
+    )
 
     // Verify the response has the fields needed for cancellation
-    expect(result.protocol_address).to.equal("0xprotocol");
-    expect(result.protocol_data).to.exist;
-    expect(result.protocol_data.parameters).to.exist;
-    expect(result.protocol_data.parameters.offerer).to.equal("0xofferer");
-  });
+    expect(result.protocol_address).toBe("0xprotocol")
+    expect(result.protocol_data).toBeDefined()
+    expect(result.protocol_data.parameters).toBeDefined()
+    expect(result.protocol_data.parameters.offerer).toBe("0xofferer")
+  })
 
   test("passes chain parameter correctly", async () => {
     // Create a new API instance for this test with Polygon chain
-    const { fetcher, mockGet: polygonMockGet } = createMockFetcher();
-    const polygonOrdersAPI = new OrdersAPI(fetcher, Chain.Polygon);
+    const { fetcher, mockGet: polygonMockGet } = createMockFetcher()
+    const polygonOrdersAPI = new OrdersAPI(fetcher, Chain.Polygon)
 
     const mockOffer: Offer = {
       order_hash: "0x123",
@@ -237,12 +235,12 @@ suite("API: OrdersAPI.getOrderByHash", () => {
         value: "1000000000000000000",
       },
       status: OrderStatus.ACTIVE,
-    };
+    }
 
-    polygonMockGet.resolves({ order: mockOffer });
+    polygonMockGet.mockResolvedValue({ order: mockOffer })
 
-    await polygonOrdersAPI.getOrderByHash("0x123", "0xprotocol");
+    await polygonOrdersAPI.getOrderByHash("0x123", "0xprotocol")
 
-    expect(polygonMockGet.firstCall.args[0]).to.include("/chain/polygon/");
-  });
-});
+    expect(polygonMockGet.mock.calls[0][0]).toContain("/chain/polygon/")
+  })
+})

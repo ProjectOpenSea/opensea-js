@@ -1,10 +1,10 @@
-import { ethers } from "ethers";
+import type { ethers } from "ethers"
 
+export * from "./chain"
 // Re-export all utilities from specialized modules
-export * from "./converters";
-export * from "./chain";
-export * from "./fees";
-export * from "./protocol";
+export * from "./converters"
+export * from "./fees"
+export * from "./protocol"
 
 /**
  * Estimate gas usage for a transaction.
@@ -23,14 +23,14 @@ export async function estimateGas(
     to,
     value: value.toString(),
     data,
-  });
+  })
 }
 
 interface ErrorWithCode extends Error {
-  code: string;
+  code: string
 }
 
 export const hasErrorCode = (error: unknown): error is ErrorWithCode => {
-  const untypedError = error as Partial<ErrorWithCode>;
-  return !!untypedError.code;
-};
+  const untypedError = error as Partial<ErrorWithCode>
+  return !!untypedError.code
+}

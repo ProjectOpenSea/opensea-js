@@ -1,7 +1,7 @@
-import { BigNumberish, Contract, parseEther } from "ethers";
-import { EventType } from "../types";
-import { SDKContext } from "./context";
-import { getNativeWrapTokenAddress } from "../utils/chain";
+import { type BigNumberish, Contract, parseEther } from "ethers"
+import { EventType } from "../types"
+import { getNativeWrapTokenAddress } from "../utils/chain"
+import type { SDKContext } from "./context"
 
 /**
  * Token wrapping and unwrapping operations
@@ -20,34 +20,34 @@ export class TokensManager {
     amountInEth,
     accountAddress,
   }: {
-    amountInEth: BigNumberish;
-    accountAddress: string;
+    amountInEth: BigNumberish
+    accountAddress: string
   }) {
-    await this.context.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress)
 
-    const value = parseEther(amountInEth.toString());
+    const value = parseEther(amountInEth.toString())
 
-    this.context.dispatch(EventType.WrapEth, { accountAddress, amount: value });
+    this.context.dispatch(EventType.WrapEth, { accountAddress, amount: value })
 
     const wethContract = new Contract(
       getNativeWrapTokenAddress(this.context.chain),
       ["function deposit() payable"],
       this.context.signerOrProvider,
-    );
+    )
 
     try {
-      const transaction = await wethContract.deposit({ value });
+      const transaction = await wethContract.deposit({ value })
       await this.context.confirmTransaction(
         transaction.hash,
         EventType.WrapEth,
         "Wrapping native asset",
-      );
+      )
     } catch (error) {
-      console.error(error);
+      console.error(error)
       this.context.dispatch(EventType.TransactionDenied, {
         error,
         accountAddress,
-      });
+      })
     }
   }
 
@@ -62,34 +62,34 @@ export class TokensManager {
     amountInEth,
     accountAddress,
   }: {
-    amountInEth: BigNumberish;
-    accountAddress: string;
+    amountInEth: BigNumberish
+    accountAddress: string
   }) {
-    await this.context.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress)
 
-    const amount = parseEther(amountInEth.toString());
+    const amount = parseEther(amountInEth.toString())
 
-    this.context.dispatch(EventType.UnwrapWeth, { accountAddress, amount });
+    this.context.dispatch(EventType.UnwrapWeth, { accountAddress, amount })
 
     const wethContract = new Contract(
       getNativeWrapTokenAddress(this.context.chain),
       ["function withdraw(uint wad) public"],
       this.context.signerOrProvider,
-    );
+    )
 
     try {
-      const transaction = await wethContract.withdraw(amount);
+      const transaction = await wethContract.withdraw(amount)
       await this.context.confirmTransaction(
         transaction.hash,
         EventType.UnwrapWeth,
         "Unwrapping wrapped native asset",
-      );
+      )
     } catch (error) {
-      console.error(error);
+      console.error(error)
       this.context.dispatch(EventType.TransactionDenied, {
         error,
         accountAddress,
-      });
+      })
     }
   }
 }

@@ -1,6 +1,7 @@
-import { BigNumberish } from "ethers";
-import type { Offer, Listing } from "./api/types";
-import type { OrderV2 } from "./orders/types";
+import type { ChainIdentifier } from "@opensea/api-types"
+import type { BigNumberish } from "ethers"
+import type { Listing, Offer } from "./api/types"
+import type { OrderV2 } from "./orders/types"
 
 /**
  * Events emitted by the SDK which can be used by frontend applications
@@ -63,39 +64,39 @@ export interface EventData {
   /**
    * Wallet address of the user who initiated the event.
    */
-  accountAddress?: string;
+  accountAddress?: string
   /**
    * Amount of ETH sent when wrapping or unwrapping.
    */
-  amount?: BigNumberish;
+  amount?: BigNumberish
   /**
    * The transaction hash of the event.
    */
-  transactionHash?: string;
+  transactionHash?: string
   /**
    * The {@link EventType} of the event.
    */
-  event?: EventType;
+  event?: EventType
   /**
    * Error which occurred when transaction was denied or failed.
    */
-  error?: unknown;
+  error?: unknown
   /**
    * The {@link OrderV2} object.
    */
-  orderV2?: OrderV2;
+  orderV2?: OrderV2
   /**
    * The order as returned by the API ({@link Offer} or {@link Listing}).
    */
-  order?: Offer | Listing;
+  order?: Offer | Listing
   /**
    * Array of assets for bulk transfer and batch approval operations.
    */
   assets?: Array<{
-    asset: AssetWithTokenStandard;
-    toAddress?: string;
-    amount?: BigNumberish;
-  }>;
+    asset: AssetWithTokenStandard
+    toAddress?: string
+    amount?: BigNumberish
+  }>
 }
 
 /**
@@ -105,9 +106,9 @@ export interface EventData {
  * @param apiBaseUrl Optional base URL to use for the API
  */
 export interface OpenSeaAPIConfig {
-  chain?: Chain;
-  apiKey?: string;
-  apiBaseUrl?: string;
+  chain?: Chain
+  apiKey?: string
+  apiBaseUrl?: string
 }
 
 /**
@@ -142,7 +143,16 @@ export enum Chain {
   Somnia = "somnia",
   Monad = "monad",
   MegaETH = "megaeth",
+  Soneium = "soneium",
+  Hyperliquid = "hyperliquid",
 }
+
+// Compile-time check: every ChainIdentifier from the API spec must be assignable to Chain.
+// If the API adds a new chain, this will error — add it to the Chain enum above.
+// The SDK may have chains not yet in the API spec (e.g. testnets, upcoming chains).
+type _AssertAPIChainsCovered = ChainIdentifier extends `${Chain}` ? true : never
+
+const _assertAPIChainsCovered: _AssertAPIChainsCovered = true
 
 /**
  * Order side: listing (ask) or offer (bid)
@@ -182,9 +192,9 @@ export enum SafelistStatus {
  * @category API Models
  */
 export interface Fee {
-  fee: number;
-  recipient: string;
-  required: boolean;
+  fee: number
+  recipient: string
+  required: boolean
 }
 
 /**
@@ -193,15 +203,15 @@ export interface Fee {
  */
 export interface Asset {
   /** The asset's token ID, or null if ERC-20 */
-  tokenId: string | null;
+  tokenId: string | null
   /** The asset's contract address */
-  tokenAddress: string;
+  tokenAddress: string
   /** The token standard (e.g. "ERC721") for this asset */
-  tokenStandard?: TokenStandard;
+  tokenStandard?: TokenStandard
   /** Optional for ENS names */
-  name?: string;
+  name?: string
   /** Optional for fungible items */
-  decimals?: number;
+  decimals?: number
 }
 
 /**
@@ -210,7 +220,7 @@ export interface Asset {
  */
 export interface AssetWithTokenId extends Asset {
   /** The asset's token ID */
-  tokenId: string;
+  tokenId: string
 }
 
 /**
@@ -219,17 +229,17 @@ export interface AssetWithTokenId extends Asset {
  */
 export interface AssetWithTokenStandard extends Asset {
   /** The token standard (e.g. "ERC721") for this asset */
-  tokenStandard: TokenStandard;
+  tokenStandard: TokenStandard
 }
 
 interface OpenSeaCollectionStatsIntervalData {
-  interval: "one_day" | "seven_day" | "thirty_day";
-  volume: number;
-  volume_diff: number;
-  volume_change: number;
-  sales: number;
-  sales_diff: number;
-  average_price: number;
+  interval: "one_day" | "seven_day" | "thirty_day"
+  volume: number
+  volume_diff: number
+  volume_change: number
+  sales: number
+  sales_diff: number
+  average_price: number
 }
 
 /**
@@ -238,23 +248,23 @@ interface OpenSeaCollectionStatsIntervalData {
  */
 export interface OpenSeaCollectionStats {
   total: {
-    volume: number;
-    sales: number;
-    average_price: number;
-    num_owners: number;
-    market_cap: number;
-    floor_price: number;
-    floor_price_symbol: string;
-  };
-  intervals: OpenSeaCollectionStatsIntervalData[];
+    volume: number
+    sales: number
+    average_price: number
+    num_owners: number
+    market_cap: number
+    floor_price: number
+    floor_price_symbol: string
+  }
+  intervals: OpenSeaCollectionStatsIntervalData[]
 }
 
 export interface RarityStrategy {
-  strategyId: string;
-  strategyVersion: string;
-  calculatedAt: string;
-  maxRank: number;
-  tokensScored: number;
+  strategyId: string
+  strategyVersion: string
+  calculatedAt: string
+  maxRank: number
+  tokensScored: number
 }
 
 /**
@@ -263,75 +273,75 @@ export interface RarityStrategy {
  */
 export interface OpenSeaCollection {
   /** Name of the collection */
-  name: string;
+  name: string
   /** The identifier (slug) of the collection */
-  collection: string;
+  collection: string
   /** Description of the collection */
-  description: string;
+  description: string
   /** Image for the collection */
-  imageUrl: string;
+  imageUrl: string
   /** Banner image for the collection */
-  bannerImageUrl: string;
+  bannerImageUrl: string
   /** Owner address of the collection */
-  owner: string;
+  owner: string
   /** The collection's safelist status */
-  safelistStatus: SafelistStatus;
+  safelistStatus: SafelistStatus
   /** The category of the collection */
-  category: string;
+  category: string
   /** If the collection is disabled */
-  isDisabled: boolean;
+  isDisabled: boolean
   /** If the collection is NSFW (not safe for work) */
-  isNSFW: boolean;
+  isNSFW: boolean
   /** If trait offers are enabled */
-  traitOffersEnabled: boolean;
+  traitOffersEnabled: boolean
   /** If collection offers are enabled */
-  collectionOffersEnabled: boolean;
+  collectionOffersEnabled: boolean
   /** The OpenSea url for the collection */
-  openseaUrl: string;
+  openseaUrl: string
   /** The project url for the collection */
-  projectUrl: string;
+  projectUrl: string
   /** The wiki url for the collection */
-  wikiUrl: string;
+  wikiUrl: string
   /** The discord url for the collection */
-  discordUrl: string;
+  discordUrl: string
   /** The telegram url for the collection */
-  telegramUrl: string;
+  telegramUrl: string
   /** The twitter username for the collection */
-  twitterUsername: string;
+  twitterUsername: string
   /** The instagram username for the collection */
-  instagramUsername: string;
+  instagramUsername: string
   /** The contracts for the collection */
-  contracts: { address: string; chain: Chain }[];
+  contracts: { address: string; chain: Chain }[]
   /** Accounts allowed to edit this collection */
-  editors: string[];
+  editors: string[]
   /** The fees for the collection */
-  fees: Fee[];
+  fees: Fee[]
   /** The rarity strategy for the collection */
-  rarity: RarityStrategy | null;
+  rarity: RarityStrategy | null
   /** Pricing currencies for listings and offers in this collection */
-  pricingCurrencies?: PricingCurrencies;
+  pricingCurrencies?: PricingCurrencies
   /** The total supply of the collection (minted minus burned) */
-  totalSupply: number;
+  totalSupply: number
   /** The number of unique items in the collection */
-  uniqueItemCount: number;
+  uniqueItemCount: number
   /** The created date of the collection */
-  createdDate: string;
+  createdDate: string
   /** When defined, the zone required for orders for the collection */
-  requiredZone?: string;
+  requiredZone?: string
 }
 
 /**
  * Full annotated Fungible Token spec with OpenSea metadata
  */
 export interface OpenSeaPaymentToken {
-  name: string;
-  symbol: string;
-  decimals: number;
-  address: string;
-  chain: Chain;
-  imageUrl?: string;
-  ethPrice?: string;
-  usdPrice?: string;
+  name: string
+  symbol: string
+  decimals: number
+  address: string
+  chain: Chain
+  imageUrl?: string
+  ethPrice?: string
+  usdPrice?: string
 }
 
 /**
@@ -339,8 +349,8 @@ export interface OpenSeaPaymentToken {
  * @category API Models
  */
 export interface PricingCurrencies {
-  listingCurrency?: OpenSeaPaymentToken;
-  offerCurrency?: OpenSeaPaymentToken;
+  listingCurrency?: OpenSeaPaymentToken
+  offerCurrency?: OpenSeaPaymentToken
 }
 
 /**
@@ -348,22 +358,22 @@ export interface PricingCurrencies {
  * @category API Models
  */
 export interface OpenSeaAccount {
-  address: string;
-  username: string;
-  profileImageUrl: string;
-  bannerImageUrl: string;
-  website: string;
-  socialMediaAccounts: SocialMediaAccount[];
-  bio: string;
-  joinedDate: string;
+  address: string
+  username: string
+  profileImageUrl: string
+  bannerImageUrl: string
+  website: string
+  socialMediaAccounts: SocialMediaAccount[]
+  bio: string
+  joinedDate: string
 }
 /**
  * Social media account
  * @category API Models
  */
 export interface SocialMediaAccount {
-  platform: string;
-  username: string;
+  platform: string
+  username: string
 }
 
 /**
@@ -372,11 +382,11 @@ export interface SocialMediaAccount {
  */
 export interface OpenSeaRateLimitError extends Error {
   /** The HTTP status code of the error response */
-  statusCode?: number;
+  statusCode?: number
   /** The number of seconds to wait before retrying the request */
-  retryAfter?: number;
+  retryAfter?: number
   /** The response body from the API */
-  responseBody?: unknown;
+  responseBody?: unknown
 }
 
 /**
@@ -388,7 +398,7 @@ export interface RequestOptions {
    * Request timeout in milliseconds.
    * If the request takes longer than this, it will be aborted.
    */
-  timeout?: number;
+  timeout?: number
   /**
    * An AbortSignal to cancel the request.
    * Useful for implementing custom cancellation logic or timeouts.
@@ -397,5 +407,5 @@ export interface RequestOptions {
    * setTimeout(() => controller.abort(), 5000);
    * await api.post('/path', body, headers, { signal: controller.signal });
    */
-  signal?: AbortSignal;
+  signal?: AbortSignal
 }

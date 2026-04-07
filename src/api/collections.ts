@@ -1,19 +1,19 @@
+import type { Chain, OpenSeaCollection, OpenSeaCollectionStats } from "../types"
+import { collectionFromJSON } from "../utils/converters"
 import {
   getCollectionPath,
-  getCollectionsPath,
   getCollectionStatsPath,
+  getCollectionsPath,
   getTraitsPath,
-} from "./apiPaths";
-import { Fetcher } from "./fetcher";
+} from "./apiPaths"
+import type { Fetcher } from "./fetcher"
 import {
-  GetCollectionResponse,
-  GetCollectionsResponse,
   CollectionOrderByOption,
-  GetCollectionsArgs,
-  GetTraitsResponse,
-} from "./types";
-import { Chain, OpenSeaCollection, OpenSeaCollectionStats } from "../types";
-import { collectionFromJSON } from "../utils/converters";
+  type GetCollectionResponse,
+  type GetCollectionsArgs,
+  type GetCollectionsResponse,
+  type GetTraitsResponse,
+} from "./types"
 
 /**
  * Collection-related API operations
@@ -25,9 +25,9 @@ export class CollectionsAPI {
    * Fetch an OpenSea collection.
    */
   async getCollection(slug: string): Promise<OpenSeaCollection> {
-    const path = getCollectionPath(slug);
-    const response = await this.fetcher.get<GetCollectionResponse>(path);
-    return collectionFromJSON(response);
+    const path = getCollectionPath(slug)
+    const response = await this.fetcher.get<GetCollectionResponse>(path)
+    return collectionFromJSON(response)
   }
 
   /**
@@ -41,7 +41,7 @@ export class CollectionsAPI {
     limit?: number,
     next?: string,
   ): Promise<GetCollectionsResponse> {
-    const path = getCollectionsPath();
+    const path = getCollectionsPath()
     const args: GetCollectionsArgs = {
       order_by: orderBy,
       chain,
@@ -49,29 +49,29 @@ export class CollectionsAPI {
       include_hidden: includeHidden,
       limit,
       next,
-    };
-    const response = await this.fetcher.get<GetCollectionsResponse>(path, args);
-    response.collections = response.collections.map((collection) =>
+    }
+    const response = await this.fetcher.get<GetCollectionsResponse>(path, args)
+    response.collections = response.collections.map(collection =>
       collectionFromJSON(collection),
-    );
-    return response;
+    )
+    return response
   }
 
   /**
    * Fetch stats for an OpenSea collection.
    */
   async getCollectionStats(slug: string): Promise<OpenSeaCollectionStats> {
-    const path = getCollectionStatsPath(slug);
-    const response = await this.fetcher.get<OpenSeaCollectionStats>(path);
-    return response as OpenSeaCollectionStats;
+    const path = getCollectionStatsPath(slug)
+    const response = await this.fetcher.get<OpenSeaCollectionStats>(path)
+    return response as OpenSeaCollectionStats
   }
 
   /**
    * Fetch all traits for a collection with their possible values and counts.
    */
   async getTraits(collectionSlug: string): Promise<GetTraitsResponse> {
-    const path = getTraitsPath(collectionSlug);
-    const response = await this.fetcher.get<GetTraitsResponse>(path);
-    return response;
+    const path = getTraitsPath(collectionSlug)
+    const response = await this.fetcher.get<GetTraitsResponse>(path)
+    return response
   }
 }

@@ -1,4 +1,4 @@
-import { NFT, TraitDisplayType } from "../../src/api/types";
+import { type NFT, TraitDisplayType } from "../../src/api/types"
 
 export const mockNFT: NFT = {
   identifier: "1",
@@ -22,7 +22,7 @@ export const mockNFT: NFT = {
     },
   ],
   rarity: null,
-};
+}
 
 export const mockNFTDetailed: NFT = {
   identifier: "1234",
@@ -64,9 +64,9 @@ export const mockNFTDetailed: NFT = {
       unique_attribute_count: 5,
     },
   },
-};
+}
 
 export const createMockNFT = (overrides: Partial<NFT> = {}): NFT => ({
   ...mockNFT,
   ...overrides,
-});
+})

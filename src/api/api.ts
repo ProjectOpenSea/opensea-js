@@ -1,62 +1,62 @@
-import { ethers } from "ethers";
-import { API_BASE_MAINNET } from "../constants";
-import { AccountsAPI } from "./accounts";
-import { CollectionsAPI } from "./collections";
-import { EventsAPI } from "./events";
-import { ListingsAPI } from "./listings";
-import { NFTsAPI } from "./nfts";
-import { OffersAPI } from "./offers";
-import { SearchAPI } from "./search";
-import { TokensAPI } from "./tokens";
-import {
+import { ethers } from "ethers"
+import { API_BASE_MAINNET } from "../constants"
+import type {
   FulfillmentDataResponse,
   OrderAPIOptions,
   OrdersQueryOptions,
   OrderV2,
   ProtocolData,
-} from "../orders/types";
+} from "../orders/types"
 import {
   Chain,
-  OpenSeaAPIConfig,
-  OpenSeaAccount,
-  OpenSeaCollection,
-  OpenSeaCollectionStats,
-  OpenSeaPaymentToken,
-  OpenSeaRateLimitError,
-  OrderSide,
-  RequestOptions,
-} from "../types";
-import { OrdersAPI } from "./orders";
+  type OpenSeaAccount,
+  type OpenSeaAPIConfig,
+  type OpenSeaCollection,
+  type OpenSeaCollectionStats,
+  type OpenSeaPaymentToken,
+  type OpenSeaRateLimitError,
+  type OrderSide,
+  type RequestOptions,
+} from "../types"
+import { executeWithRateLimit } from "../utils/rateLimit"
+import { AccountsAPI } from "./accounts"
+import { CollectionsAPI } from "./collections"
+import { EventsAPI } from "./events"
+import { ListingsAPI } from "./listings"
+import { NFTsAPI } from "./nfts"
+import { OffersAPI } from "./offers"
+import { OrdersAPI } from "./orders"
+import { SearchAPI } from "./search"
+import { TokensAPI } from "./tokens"
 import {
-  BuildOfferResponse,
-  GetCollectionsResponse,
-  ListNFTsResponse,
-  GetNFTResponse,
-  GetOrdersResponse,
-  GetBestOfferResponse,
-  GetBestListingResponse,
-  GetOffersResponse,
-  GetListingsResponse,
-  GetOrderByHashResponse,
-  CollectionOffer,
+  type BuildOfferResponse,
+  type CancelOrderResponse,
+  type CollectionOffer,
   CollectionOrderByOption,
-  CancelOrderResponse,
-  GetEventsArgs,
-  GetEventsResponse,
-  GetContractResponse,
-  GetTraitsResponse,
-  GetTokensArgs,
-  GetTrendingTokensResponse,
-  GetTopTokensResponse,
-  GetSwapQuoteArgs,
-  GetSwapQuoteResponse,
-  GetTokenResponse,
-  Listing,
-  Offer,
-  SearchArgs,
-  SearchResponse,
-} from "./types";
-import { executeWithRateLimit } from "../utils/rateLimit";
+  type GetBestListingResponse,
+  type GetBestOfferResponse,
+  type GetCollectionsResponse,
+  type GetContractResponse,
+  type GetEventsArgs,
+  type GetEventsResponse,
+  type GetListingsResponse,
+  type GetNFTResponse,
+  type GetOffersResponse,
+  type GetOrderByHashResponse,
+  type GetOrdersResponse,
+  type GetSwapQuoteArgs,
+  type GetSwapQuoteResponse,
+  type GetTokenResponse,
+  type GetTokensArgs,
+  type GetTopTokensResponse,
+  type GetTraitsResponse,
+  type GetTrendingTokensResponse,
+  type Listing,
+  type ListNFTsResponse,
+  type Offer,
+  type SearchArgs,
+  type SearchResponse,
+} from "./types"
 
 /**
  * The API class for the OpenSea SDK.
@@ -66,29 +66,29 @@ export class OpenSeaAPI {
   /**
    * Base url for the API
    */
-  public readonly apiBaseUrl: string;
+  public readonly apiBaseUrl: string
   /**
    * Default size to use for fetching orders
    */
-  public pageSize = 20;
+  public pageSize = 20
   /**
    * Logger function to use when debugging
    */
-  public logger: (arg: string) => void;
+  public logger: (arg: string) => void
 
-  private apiKey: string | undefined;
-  private chain: Chain;
+  private apiKey: string | undefined
+  private chain: Chain
 
   // Specialized API clients
-  private ordersAPI: OrdersAPI;
-  private offersAPI: OffersAPI;
-  private listingsAPI: ListingsAPI;
-  private collectionsAPI: CollectionsAPI;
-  private nftsAPI: NFTsAPI;
-  private accountsAPI: AccountsAPI;
-  private eventsAPI: EventsAPI;
-  private searchAPI: SearchAPI;
-  private tokensAPI: TokensAPI;
+  private ordersAPI: OrdersAPI
+  private offersAPI: OffersAPI
+  private listingsAPI: ListingsAPI
+  private collectionsAPI: CollectionsAPI
+  private nftsAPI: NFTsAPI
+  private accountsAPI: AccountsAPI
+  private eventsAPI: EventsAPI
+  private searchAPI: SearchAPI
+  private tokensAPI: TokensAPI
 
   /**
    * Create an instance of the OpenSeaAPI
@@ -96,34 +96,34 @@ export class OpenSeaAPI {
    * @param logger Optional function for logging debug strings before and after requests are made. Defaults to no logging
    */
   constructor(config: OpenSeaAPIConfig, logger?: (arg: string) => void) {
-    this.apiKey = config.apiKey;
-    this.chain = config.chain ?? Chain.Mainnet;
+    this.apiKey = config.apiKey
+    this.chain = config.chain ?? Chain.Mainnet
 
     if (config.apiBaseUrl) {
-      this.apiBaseUrl = config.apiBaseUrl;
+      this.apiBaseUrl = config.apiBaseUrl
     } else {
-      this.apiBaseUrl = API_BASE_MAINNET;
+      this.apiBaseUrl = API_BASE_MAINNET
     }
 
     // Debugging: default to nothing
-    this.logger = logger ?? ((arg: string) => arg);
+    this.logger = logger ?? ((arg: string) => arg)
 
     // Create fetcher context
     const fetcher = {
       get: this.get.bind(this),
       post: this.post.bind(this),
-    };
+    }
 
     // Initialize specialized API clients
-    this.ordersAPI = new OrdersAPI(fetcher, this.chain);
-    this.offersAPI = new OffersAPI(fetcher, this.chain);
-    this.listingsAPI = new ListingsAPI(fetcher, this.chain);
-    this.collectionsAPI = new CollectionsAPI(fetcher);
-    this.nftsAPI = new NFTsAPI(fetcher, this.chain);
-    this.accountsAPI = new AccountsAPI(fetcher, this.chain);
-    this.eventsAPI = new EventsAPI(fetcher);
-    this.searchAPI = new SearchAPI(fetcher);
-    this.tokensAPI = new TokensAPI(fetcher);
+    this.ordersAPI = new OrdersAPI(fetcher, this.chain)
+    this.offersAPI = new OffersAPI(fetcher, this.chain)
+    this.listingsAPI = new ListingsAPI(fetcher, this.chain)
+    this.collectionsAPI = new CollectionsAPI(fetcher)
+    this.nftsAPI = new NFTsAPI(fetcher, this.chain)
+    this.accountsAPI = new AccountsAPI(fetcher, this.chain)
+    this.eventsAPI = new EventsAPI(fetcher)
+    this.searchAPI = new SearchAPI(fetcher)
+    this.tokensAPI = new TokensAPI(fetcher)
   }
 
   /**
@@ -137,7 +137,7 @@ export class OpenSeaAPI {
   public async getOrder(
     options: Omit<OrdersQueryOptions, "limit">,
   ): Promise<OrderV2> {
-    return this.ordersAPI.getOrder(options);
+    return this.ordersAPI.getOrder(options)
   }
 
   /**
@@ -153,7 +153,7 @@ export class OpenSeaAPI {
     protocolAddress: string,
     chain: Chain = this.chain,
   ): Promise<GetOrderByHashResponse> {
-    return this.ordersAPI.getOrderByHash(orderHash, protocolAddress, chain);
+    return this.ordersAPI.getOrderByHash(orderHash, protocolAddress, chain)
   }
 
   /**
@@ -165,7 +165,7 @@ export class OpenSeaAPI {
   public async getOrders(
     options: Omit<OrdersQueryOptions, "limit">,
   ): Promise<GetOrdersResponse> {
-    return this.ordersAPI.getOrders({ ...options, pageSize: this.pageSize });
+    return this.ordersAPI.getOrders({ ...options, pageSize: this.pageSize })
   }
 
   /**
@@ -180,7 +180,7 @@ export class OpenSeaAPI {
     limit?: number,
     next?: string,
   ): Promise<GetOffersResponse> {
-    return this.offersAPI.getAllOffers(collectionSlug, limit, next);
+    return this.offersAPI.getAllOffers(collectionSlug, limit, next)
   }
 
   /**
@@ -202,7 +202,7 @@ export class OpenSeaAPI {
       limit,
       next,
       includePrivateListings,
-    );
+    )
   }
 
   /**
@@ -233,7 +233,7 @@ export class OpenSeaAPI {
       next,
       floatValue,
       intValue,
-    );
+    )
   }
 
   /**
@@ -246,7 +246,7 @@ export class OpenSeaAPI {
     collectionSlug: string,
     tokenId: string | number,
   ): Promise<GetBestOfferResponse> {
-    return this.offersAPI.getBestOffer(collectionSlug, tokenId);
+    return this.offersAPI.getBestOffer(collectionSlug, tokenId)
   }
 
   /**
@@ -265,7 +265,7 @@ export class OpenSeaAPI {
       collectionSlug,
       tokenId,
       includePrivateListings,
-    );
+    )
   }
 
   /**
@@ -287,7 +287,7 @@ export class OpenSeaAPI {
       limit,
       next,
       includePrivateListings,
-    );
+    )
   }
 
   /**
@@ -324,7 +324,7 @@ export class OpenSeaAPI {
       unitsToFill,
       recipientAddress,
       includeOptionalCreatorFees,
-    );
+    )
   }
 
   /**
@@ -338,7 +338,7 @@ export class OpenSeaAPI {
     order: ProtocolData,
     apiOptions: OrderAPIOptions,
   ): Promise<OrderV2> {
-    return this.ordersAPI.postOrder(order, apiOptions);
+    return this.ordersAPI.postOrder(order, apiOptions)
   }
 
   /**
@@ -351,7 +351,7 @@ export class OpenSeaAPI {
     order: ProtocolData,
     protocolAddress: string,
   ): Promise<Listing> {
-    return this.ordersAPI.postListing(order, protocolAddress);
+    return this.ordersAPI.postListing(order, protocolAddress)
   }
 
   /**
@@ -364,7 +364,7 @@ export class OpenSeaAPI {
     order: ProtocolData,
     protocolAddress: string,
   ): Promise<Offer> {
-    return this.ordersAPI.postOffer(order, protocolAddress);
+    return this.ordersAPI.postOffer(order, protocolAddress)
   }
 
   /**
@@ -398,7 +398,7 @@ export class OpenSeaAPI {
       traitValue,
       traits,
       numericTraits,
-    );
+    )
   }
 
   /**
@@ -413,7 +413,7 @@ export class OpenSeaAPI {
     limit?: number,
     next?: string,
   ): Promise<GetOffersResponse> {
-    return this.offersAPI.getCollectionOffers(slug, limit, next);
+    return this.offersAPI.getCollectionOffers(slug, limit, next)
   }
 
   /**
@@ -441,7 +441,7 @@ export class OpenSeaAPI {
       traitValue,
       traits,
       numericTraits,
-    );
+    )
   }
 
   /**
@@ -456,7 +456,7 @@ export class OpenSeaAPI {
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
   ): Promise<ListNFTsResponse> {
-    return this.nftsAPI.getNFTsByCollection(slug, limit, next);
+    return this.nftsAPI.getNFTsByCollection(slug, limit, next)
   }
 
   /**
@@ -473,7 +473,7 @@ export class OpenSeaAPI {
     next: string | undefined = undefined,
     chain: Chain = this.chain,
   ): Promise<ListNFTsResponse> {
-    return this.nftsAPI.getNFTsByContract(address, limit, next, chain);
+    return this.nftsAPI.getNFTsByContract(address, limit, next, chain)
   }
 
   /**
@@ -490,7 +490,7 @@ export class OpenSeaAPI {
     next: string | undefined = undefined,
     chain = this.chain,
   ): Promise<ListNFTsResponse> {
-    return this.nftsAPI.getNFTsByAccount(address, limit, next, chain);
+    return this.nftsAPI.getNFTsByAccount(address, limit, next, chain)
   }
 
   /**
@@ -505,7 +505,7 @@ export class OpenSeaAPI {
     identifier: string,
     chain = this.chain,
   ): Promise<GetNFTResponse> {
-    return this.nftsAPI.getNFT(address, identifier, chain);
+    return this.nftsAPI.getNFT(address, identifier, chain)
   }
 
   /**
@@ -514,7 +514,7 @@ export class OpenSeaAPI {
    * @returns The {@link OpenSeaCollection} returned by the API.
    */
   public async getCollection(slug: string): Promise<OpenSeaCollection> {
-    return this.collectionsAPI.getCollection(slug);
+    return this.collectionsAPI.getCollection(slug)
   }
 
   /**
@@ -542,7 +542,7 @@ export class OpenSeaAPI {
       includeHidden,
       limit,
       next,
-    );
+    )
   }
 
   /**
@@ -553,7 +553,7 @@ export class OpenSeaAPI {
   public async getCollectionStats(
     slug: string,
   ): Promise<OpenSeaCollectionStats> {
-    return this.collectionsAPI.getCollectionStats(slug);
+    return this.collectionsAPI.getCollectionStats(slug)
   }
 
   /**
@@ -566,7 +566,7 @@ export class OpenSeaAPI {
     address: string,
     chain = this.chain,
   ): Promise<OpenSeaPaymentToken> {
-    return this.accountsAPI.getPaymentToken(address, chain);
+    return this.accountsAPI.getPaymentToken(address, chain)
   }
 
   /**
@@ -575,7 +575,7 @@ export class OpenSeaAPI {
    * @returns The {@link OpenSeaAccount} returned by the API.
    */
   public async getAccount(address: string): Promise<OpenSeaAccount> {
-    return this.accountsAPI.getAccount(address);
+    return this.accountsAPI.getAccount(address)
   }
 
   /**
@@ -590,7 +590,7 @@ export class OpenSeaAPI {
     identifier: string,
     chain: Chain = this.chain,
   ): Promise<Response> {
-    return this.nftsAPI.refreshNFTMetadata(address, identifier, chain);
+    return this.nftsAPI.refreshNFTMetadata(address, identifier, chain)
   }
 
   /**
@@ -618,7 +618,7 @@ export class OpenSeaAPI {
       orderHash,
       chain,
       offererSignature,
-    );
+    )
   }
 
   /**
@@ -627,7 +627,7 @@ export class OpenSeaAPI {
    * @returns The {@link GetEventsResponse} returned by the API.
    */
   public async getEvents(args?: GetEventsArgs): Promise<GetEventsResponse> {
-    return this.eventsAPI.getEvents(args);
+    return this.eventsAPI.getEvents(args)
   }
 
   /**
@@ -640,7 +640,7 @@ export class OpenSeaAPI {
     address: string,
     args?: GetEventsArgs,
   ): Promise<GetEventsResponse> {
-    return this.eventsAPI.getEventsByAccount(address, args);
+    return this.eventsAPI.getEventsByAccount(address, args)
   }
 
   /**
@@ -653,7 +653,7 @@ export class OpenSeaAPI {
     collectionSlug: string,
     args?: GetEventsArgs,
   ): Promise<GetEventsResponse> {
-    return this.eventsAPI.getEventsByCollection(collectionSlug, args);
+    return this.eventsAPI.getEventsByCollection(collectionSlug, args)
   }
 
   /**
@@ -670,7 +670,7 @@ export class OpenSeaAPI {
     identifier: string,
     args?: GetEventsArgs,
   ): Promise<GetEventsResponse> {
-    return this.eventsAPI.getEventsByNFT(chain, address, identifier, args);
+    return this.eventsAPI.getEventsByNFT(chain, address, identifier, args)
   }
 
   /**
@@ -683,7 +683,7 @@ export class OpenSeaAPI {
     address: string,
     chain: Chain = this.chain,
   ): Promise<GetContractResponse> {
-    return this.nftsAPI.getContract(address, chain);
+    return this.nftsAPI.getContract(address, chain)
   }
 
   /**
@@ -692,7 +692,7 @@ export class OpenSeaAPI {
    * @returns The {@link GetTraitsResponse} returned by the API.
    */
   public async getTraits(collectionSlug: string): Promise<GetTraitsResponse> {
-    return this.collectionsAPI.getTraits(collectionSlug);
+    return this.collectionsAPI.getTraits(collectionSlug)
   }
 
   /**
@@ -703,7 +703,7 @@ export class OpenSeaAPI {
   public async getTrendingTokens(
     args?: GetTokensArgs,
   ): Promise<GetTrendingTokensResponse> {
-    return this.tokensAPI.getTrendingTokens(args);
+    return this.tokensAPI.getTrendingTokens(args)
   }
 
   /**
@@ -714,7 +714,7 @@ export class OpenSeaAPI {
   public async getTopTokens(
     args?: GetTokensArgs,
   ): Promise<GetTopTokensResponse> {
-    return this.tokensAPI.getTopTokens(args);
+    return this.tokensAPI.getTopTokens(args)
   }
 
   /**
@@ -725,7 +725,7 @@ export class OpenSeaAPI {
   public async getSwapQuote(
     args: GetSwapQuoteArgs,
   ): Promise<GetSwapQuoteResponse> {
-    return this.tokensAPI.getSwapQuote(args);
+    return this.tokensAPI.getSwapQuote(args)
   }
 
   /**
@@ -738,7 +738,7 @@ export class OpenSeaAPI {
     chain: string,
     address: string,
   ): Promise<GetTokenResponse> {
-    return this.tokensAPI.getToken(chain, address);
+    return this.tokensAPI.getToken(chain, address)
   }
 
   /**
@@ -748,7 +748,7 @@ export class OpenSeaAPI {
    * @returns The {@link SearchResponse} returned by the API.
    */
   public async search(args: SearchArgs): Promise<SearchResponse> {
-    return this.searchAPI.search(args);
+    return this.searchAPI.search(args)
   }
 
   /**
@@ -773,7 +773,7 @@ export class OpenSeaAPI {
       limit,
       next,
       chain,
-    );
+    )
   }
 
   /**
@@ -801,7 +801,7 @@ export class OpenSeaAPI {
       next,
       chain,
       includePrivateListings,
-    );
+    )
   }
 
   /**
@@ -818,14 +818,14 @@ export class OpenSeaAPI {
   ): Promise<T> {
     return executeWithRateLimit(
       async () => {
-        const qs = this.objectToSearchParams(query);
+        const qs = this.objectToSearchParams(query)
         const url = qs
           ? `${this.apiBaseUrl}${apiPath}?${qs}`
-          : `${this.apiBaseUrl}${apiPath}`;
-        return await this._fetch(url, undefined, undefined, options);
+          : `${this.apiBaseUrl}${apiPath}`
+        return await this._fetch(url, undefined, undefined, options)
       },
       { logger: this.logger },
-    );
+    )
   }
 
   /**
@@ -844,29 +844,29 @@ export class OpenSeaAPI {
   ): Promise<T> {
     return executeWithRateLimit(
       async () => {
-        const url = `${this.apiBaseUrl}${apiPath}`;
-        return await this._fetch(url, headers, body, options);
+        const url = `${this.apiBaseUrl}${apiPath}`
+        return await this._fetch(url, headers, body, options)
       },
       { logger: this.logger },
-    );
+    )
   }
 
   private objectToSearchParams(params: object = {}) {
-    const urlSearchParams = new URLSearchParams();
+    const urlSearchParams = new URLSearchParams()
 
     Object.entries(params).forEach(([key, value]) => {
       if (Array.isArray(value)) {
-        value.forEach((item) => {
+        value.forEach(item => {
           if (item != null) {
-            urlSearchParams.append(key, String(item));
+            urlSearchParams.append(key, String(item))
           }
-        });
+        })
       } else if (value != null) {
-        urlSearchParams.append(key, String(value));
+        urlSearchParams.append(key, String(value))
       }
-    });
+    })
 
-    return urlSearchParams.toString();
+    return urlSearchParams.toString()
   }
 
   /**
@@ -883,77 +883,79 @@ export class OpenSeaAPI {
     options?: RequestOptions,
   ) {
     // Create the fetch request
-    const req = new ethers.FetchRequest(url);
+    const req = new ethers.FetchRequest(url)
 
     // Set the headers
     headers = {
       "x-app-id": "opensea-js",
       ...(this.apiKey ? { "X-API-KEY": this.apiKey } : {}),
       ...headers,
-    };
+    }
     for (const [key, value] of Object.entries(headers)) {
-      req.setHeader(key, value);
+      req.setHeader(key, value)
     }
 
     // Set the body if provided
     if (body) {
-      req.body = body;
+      req.body = body
     }
 
     // Apply request options
     if (options?.timeout !== undefined) {
-      req.timeout = options.timeout;
+      req.timeout = options.timeout
     }
 
     // Set up abort signal handling
-    let abortHandler: (() => void) | undefined;
+    let abortHandler: (() => void) | undefined
     if (options?.signal) {
       if (options.signal.aborted) {
-        throw new Error("Request aborted");
+        throw new Error("Request aborted")
       }
-      abortHandler = () => req.cancel();
-      options.signal.addEventListener("abort", abortHandler);
+      abortHandler = () => req.cancel()
+      options.signal.addEventListener("abort", abortHandler)
     }
 
     // Set the throttle params
-    req.setThrottleParams({ slotInterval: 1000 });
+    req.setThrottleParams({ slotInterval: 1000 })
 
-    const sanitizedHeaders = { ...req.headers };
-    delete sanitizedHeaders["X-API-KEY"];
+    const sanitizedHeaders = { ...req.headers }
+    delete sanitizedHeaders["X-API-KEY"]
     this.logger(
       `Sending request: ${url} ${JSON.stringify({
         method: body ? "POST" : "GET",
         headers: sanitizedHeaders,
         body: body ? JSON.stringify(body, null, 2) : undefined,
       })}`,
-    );
+    )
 
     try {
-      const response = await req.send();
+      const response = await req.send()
       if (!response.ok()) {
         // Handle rate limit errors (429 Too Many Requests and 599 custom rate limit)
         if (response.statusCode === 599 || response.statusCode === 429) {
-          throw this._createRateLimitError(response);
+          throw this._createRateLimitError(response)
         }
         // If an errors array is returned, throw with the error messages.
-        const errors = response.bodyJson?.errors;
+        const errors = response.bodyJson?.errors
         if (errors?.length > 0) {
-          let errorMessage = errors.join(", ");
+          let errorMessage = Array.isArray(errors)
+            ? errors.join(", ")
+            : String(errors)
           if (errorMessage === "[object Object]") {
-            errorMessage = JSON.stringify(errors);
+            errorMessage = JSON.stringify(errors)
           }
-          throw new Error(`Server Error: ${errorMessage}`);
+          throw new Error(`Server Error: ${errorMessage}`)
         } else {
           // Otherwise, let ethers throw a SERVER_ERROR since it will include
           // more context about the request and response.
-          response.assertOk();
+          response.assertOk()
         }
       }
-      return response.bodyJson;
+      return response.bodyJson
     } finally {
       // Clean up abort handler
       if (abortHandler && options?.signal) {
-        options.signal.removeEventListener("abort", abortHandler);
+        options.signal.removeEventListener("abort", abortHandler)
       }
     }
   }
@@ -962,7 +964,7 @@ export class OpenSeaAPI {
    * Maximum retry-after value in seconds (5 minutes).
    * Prevents excessively long waits from buggy or malicious servers.
    */
-  private static readonly MAX_RETRY_AFTER_SECONDS = 300;
+  private static readonly MAX_RETRY_AFTER_SECONDS = 300
 
   /**
    * Parses the retry-after header from the response with robust error handling.
@@ -971,35 +973,35 @@ export class OpenSeaAPI {
    */
   private _parseRetryAfter(response: ethers.FetchResponse): number | undefined {
     const retryAfterHeader =
-      response.headers["retry-after"] || response.headers["Retry-After"];
+      response.headers["retry-after"] || response.headers["Retry-After"]
     if (retryAfterHeader) {
-      const trimmed = retryAfterHeader.trim();
+      const trimmed = retryAfterHeader.trim()
 
       // If it starts with a digit or minus sign, treat as numeric
       if (/^-?\d/.test(trimmed)) {
         // Only accept fully numeric integer values, reject malformed inputs like "5s" or "1.5"
         if (!/^-?\d+$/.test(trimmed)) {
-          return undefined;
+          return undefined
         }
-        const parsedSeconds = Number(trimmed);
+        const parsedSeconds = Number(trimmed)
         if (!Number.isSafeInteger(parsedSeconds) || parsedSeconds <= 0) {
-          return undefined;
+          return undefined
         }
-        return Math.min(parsedSeconds, OpenSeaAPI.MAX_RETRY_AFTER_SECONDS);
+        return Math.min(parsedSeconds, OpenSeaAPI.MAX_RETRY_AFTER_SECONDS)
       }
 
       // Otherwise, try to parse as HTTP-date
-      const parsedDateMs = Date.parse(trimmed);
-      if (isNaN(parsedDateMs)) {
-        return undefined;
+      const parsedDateMs = Date.parse(trimmed)
+      if (Number.isNaN(parsedDateMs)) {
+        return undefined
       }
-      const diffSeconds = Math.ceil((parsedDateMs - Date.now()) / 1000);
+      const diffSeconds = Math.ceil((parsedDateMs - Date.now()) / 1000)
       if (diffSeconds <= 0) {
-        return undefined;
+        return undefined
       }
-      return Math.min(diffSeconds, OpenSeaAPI.MAX_RETRY_AFTER_SECONDS);
+      return Math.min(diffSeconds, OpenSeaAPI.MAX_RETRY_AFTER_SECONDS)
     }
-    return undefined;
+    return undefined
   }
 
   /**
@@ -1010,15 +1012,15 @@ export class OpenSeaAPI {
   private _createRateLimitError(
     response: ethers.FetchResponse,
   ): OpenSeaRateLimitError {
-    const retryAfter = this._parseRetryAfter(response);
+    const retryAfter = this._parseRetryAfter(response)
     const error = new Error(
       `${response.statusCode} ${response.statusMessage}`,
-    ) as OpenSeaRateLimitError;
+    ) as OpenSeaRateLimitError
 
     // Add status code and retry-after information to the error object
-    error.statusCode = response.statusCode;
-    error.retryAfter = retryAfter;
-    error.responseBody = response.bodyJson;
-    return error;
+    error.statusCode = response.statusCode
+    error.retryAfter = retryAfter
+    error.responseBody = response.bodyJson
+    return error
   }
 }

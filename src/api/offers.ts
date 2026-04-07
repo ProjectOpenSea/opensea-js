@@ -1,26 +1,26 @@
-import {
-  getPostCollectionOfferPath,
-  getBuildOfferPath,
-  getCollectionOffersPath,
-  getBestOfferAPIPath,
-  getAllOffersAPIPath,
-  getTraitOffersPath,
-  getOrdersAPIPath,
-} from "./apiPaths";
-import {
-  BuildOfferResponse,
-  GetBestOfferResponse,
-  GetOffersResponse,
-  CollectionOffer,
-} from "./types";
-import { ProtocolData } from "../orders/types";
+import type { ProtocolData } from "../orders/types"
 import {
   getBuildCollectionOfferPayload,
   getPostCollectionOfferPayload,
   serializeOrdersQueryOptions,
-} from "../orders/utils";
-import { Chain, OrderSide } from "../types";
-import { Fetcher } from "./fetcher";
+} from "../orders/utils"
+import { type Chain, OrderSide } from "../types"
+import {
+  getAllOffersAPIPath,
+  getBestOfferAPIPath,
+  getBuildOfferPath,
+  getCollectionOffersPath,
+  getOrdersAPIPath,
+  getPostCollectionOfferPath,
+  getTraitOffersPath,
+} from "./apiPaths"
+import type { Fetcher } from "./fetcher"
+import type {
+  BuildOfferResponse,
+  CollectionOffer,
+  GetBestOfferResponse,
+  GetOffersResponse,
+} from "./types"
 
 /**
  * Validates trait parameters for collection offers.
@@ -35,13 +35,13 @@ function validateTraitParams(
   if (traits && traits.length > 0 && (traitType || traitValue)) {
     throw new Error(
       "Cannot use both 'traits' array and individual 'traitType'/'traitValue' parameters. Please use only one approach.",
-    );
+    )
   }
   if (traitType || traitValue) {
     if (!traitType || !traitValue) {
       throw new Error(
         "Both traitType and traitValue must be defined if one is defined.",
-      );
+      )
     }
   }
   if (traits && traits.length > 0) {
@@ -49,19 +49,19 @@ function validateTraitParams(
       if (!trait.type || !trait.value) {
         throw new Error(
           "Each trait must have both 'type' and 'value' properties.",
-        );
+        )
       }
     }
   }
   if (numericTraits && numericTraits.length > 0) {
     for (const trait of numericTraits) {
       if (!trait.type) {
-        throw new Error("Each numeric trait must have a 'type' property.");
+        throw new Error("Each numeric trait must have a 'type' property.")
       }
       if (trait.min === undefined && trait.max === undefined) {
         throw new Error(
           `Numeric trait '${trait.type}' must have at least one of 'min' or 'max'.`,
-        );
+        )
       }
       if (
         trait.min !== undefined &&
@@ -70,7 +70,7 @@ function validateTraitParams(
       ) {
         throw new Error(
           `Numeric trait '${trait.type}': 'min' (${trait.min}) must be <= 'max' (${trait.max}).`,
-        );
+        )
       }
     }
   }
@@ -99,8 +99,8 @@ export class OffersAPI {
         limit,
         next,
       },
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -125,8 +125,8 @@ export class OffersAPI {
         float_value: floatValue,
         int_value: intValue,
       },
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -138,8 +138,8 @@ export class OffersAPI {
   ): Promise<GetBestOfferResponse> {
     const response = await this.fetcher.get<GetBestOfferResponse>(
       getBestOfferAPIPath(collectionSlug, tokenId),
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -155,7 +155,7 @@ export class OffersAPI {
     traits?: Array<{ type: string; value: string }>,
     numericTraits?: Array<{ type: string; min?: number; max?: number }>,
   ): Promise<BuildOfferResponse> {
-    validateTraitParams(traitType, traitValue, traits, numericTraits);
+    validateTraitParams(traitType, traitValue, traits, numericTraits)
     const payload = getBuildCollectionOfferPayload(
       offererAddress,
       quantity,
@@ -166,12 +166,12 @@ export class OffersAPI {
       traitValue,
       traits,
       numericTraits,
-    );
+    )
     const response = await this.fetcher.post<BuildOfferResponse>(
       getBuildOfferPath(),
       payload,
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -188,7 +188,7 @@ export class OffersAPI {
         limit,
         next,
       },
-    );
+    )
   }
 
   /**
@@ -202,7 +202,7 @@ export class OffersAPI {
     traits?: Array<{ type: string; value: string }>,
     numericTraits?: Array<{ type: string; min?: number; max?: number }>,
   ): Promise<CollectionOffer | null> {
-    validateTraitParams(traitType, traitValue, traits, numericTraits);
+    validateTraitParams(traitType, traitValue, traits, numericTraits)
     const payload = getPostCollectionOfferPayload(
       slug,
       order,
@@ -211,11 +211,11 @@ export class OffersAPI {
       traitValue,
       traits,
       numericTraits,
-    );
+    )
     return await this.fetcher.post<CollectionOffer>(
       getPostCollectionOfferPath(),
       payload,
-    );
+    )
   }
 
   /**
@@ -236,7 +236,7 @@ export class OffersAPI {
         limit,
         next,
       }),
-    );
-    return response;
+    )
+    return response
   }
 }

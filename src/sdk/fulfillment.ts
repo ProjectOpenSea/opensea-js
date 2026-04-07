@@ -1,24 +1,24 @@
-import { SeaportABI } from "@opensea/seaport-js/lib/abi/Seaport";
-import { OrderComponents } from "@opensea/seaport-js/lib/types";
-import { BigNumberish, Overrides, Signer, ethers } from "ethers";
-import { SDKContext } from "./context";
-import { OrdersManager } from "./orders";
-import { Listing, Offer, Order } from "../api/types";
+import { SeaportABI } from "@opensea/seaport-js/lib/abi/Seaport"
+import type { OrderComponents } from "@opensea/seaport-js/lib/types"
+import { type BigNumberish, ethers, type Overrides, type Signer } from "ethers"
+import type { Listing, Offer, Order } from "../api/types"
 import {
   computePrivateListingValue,
   constructPrivateListingCounterOrder,
   getPrivateListingFulfillments,
-} from "../orders/privateListings";
-import { OrderType, OrderV2 } from "../orders/types";
-import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils";
-import { EventType, OrderSide, AssetWithTokenId } from "../types";
+} from "../orders/privateListings"
+import { OrderType, type OrderV2 } from "../orders/types"
+import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils"
+import { type AssetWithTokenId, EventType, OrderSide } from "../types"
 import {
+  getSeaportInstance,
   hasErrorCode,
   requireValidProtocol,
-  getSeaportInstance,
-} from "../utils/utils";
+} from "../utils/utils"
+import type { SDKContext } from "./context"
+import type { OrdersManager } from "./orders"
 
-const FULFILL_BASIC_ORDER_ALIAS = "fulfillBasicOrder_efficient_6GL6yc";
+const FULFILL_BASIC_ORDER_ALIAS = "fulfillBasicOrder_efficient_6GL6yc"
 
 /**
  * Manager for order fulfillment and validation operations.
@@ -46,33 +46,33 @@ export class FulfillmentManager {
     domain,
     overrides,
   }: {
-    order: OrderV2;
-    accountAddress: string;
-    domain?: string;
-    overrides?: Overrides;
+    order: OrderV2
+    accountAddress: string
+    domain?: string
+    overrides?: Overrides
   }): Promise<string> {
     if (!order.taker?.address) {
       throw new Error(
         "Order is not a private listing - must have a taker address",
-      );
+      )
     }
     const counterOrder = constructPrivateListingCounterOrder(
       order.protocolData,
       order.taker.address,
-    );
-    const fulfillments = getPrivateListingFulfillments(order.protocolData);
+    )
+    const fulfillments = getPrivateListingFulfillments(order.protocolData)
 
     // Compute ETH value from original order's consideration items
     // This handles both standard private listings and zero-payment listings (e.g., rewards)
     const value = computePrivateListingValue(
       order.protocolData,
       order.taker.address,
-    );
+    )
 
     const seaport = getSeaportInstance(
       order.protocolAddress,
       this.context.seaport,
-    );
+    )
     const transaction = await seaport
       .matchOrders({
         orders: [order.protocolData, counterOrder],
@@ -84,18 +84,18 @@ export class FulfillmentManager {
         accountAddress,
         domain,
       })
-      .transact();
-    const transactionReceipt = await transaction.wait();
+      .transact()
+    const transactionReceipt = await transaction.wait()
     if (!transactionReceipt) {
-      throw new Error("Missing transaction receipt");
+      throw new Error("Missing transaction receipt")
     }
 
     await this.context.confirmTransaction(
       transactionReceipt.hash,
       EventType.MatchOrders,
       "Fulfilling order",
-    );
-    return transactionReceipt.hash;
+    )
+    return transactionReceipt.hash
   }
 
   /**
@@ -127,48 +127,48 @@ export class FulfillmentManager {
     includeOptionalCreatorFees = false,
     overrides,
   }: {
-    order: OrderV2 | Order | Listing | Offer;
-    accountAddress: string;
-    assetContractAddress?: string;
-    tokenId?: string;
-    unitsToFill?: BigNumberish;
-    recipientAddress?: string;
-    includeOptionalCreatorFees?: boolean;
-    overrides?: Overrides;
+    order: OrderV2 | Order | Listing | Offer
+    accountAddress: string
+    assetContractAddress?: string
+    tokenId?: string
+    unitsToFill?: BigNumberish
+    recipientAddress?: string
+    includeOptionalCreatorFees?: boolean
+    overrides?: Overrides
   }): Promise<string> {
-    await this.context.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress)
 
     const protocolAddress =
-      (order as OrderV2).protocolAddress ?? (order as Order).protocol_address;
-    requireValidProtocol(protocolAddress);
+      (order as OrderV2).protocolAddress ?? (order as Order).protocol_address
+    requireValidProtocol(protocolAddress)
 
     const orderHash =
-      (order as OrderV2).orderHash ?? (order as Order).order_hash;
+      (order as OrderV2).orderHash ?? (order as Order).order_hash
 
     const side =
       (order as OrderV2).side ??
       ("type" in order &&
       [OrderType.BASIC, OrderType.ENGLISH].includes(order.type as OrderType)
         ? OrderSide.LISTING
-        : OrderSide.OFFER);
+        : OrderSide.OFFER)
 
-    const isPrivateListing = "taker" in order ? !!order.taker : false;
+    const isPrivateListing = "taker" in order ? !!order.taker : false
     if (isPrivateListing) {
       return this.fulfillPrivateOrder({
         order: order as OrderV2,
         accountAddress,
         overrides,
-      });
+      })
     }
 
     // Get fulfillment data from the API
     if (!orderHash) {
-      throw new Error("Order hash is required to fulfill an order");
+      throw new Error("Order hash is required to fulfill an order")
     }
 
     // Convert unitsToFill to string, defaulting to "1" if not provided
     const unitsToFillStr =
-      unitsToFill !== undefined ? unitsToFill.toString() : "1";
+      unitsToFill !== undefined ? unitsToFill.toString() : "1"
 
     const fulfillmentData = await this.context.api.generateFulfillmentData(
       accountAddress,
@@ -180,22 +180,22 @@ export class FulfillmentManager {
       unitsToFillStr,
       recipientAddress,
       includeOptionalCreatorFees,
-    );
+    )
 
     // Use the transaction data returned by the API
-    const transaction = fulfillmentData.fulfillment_data.transaction;
-    const inputData = transaction.input_data;
+    const transaction = fulfillmentData.fulfillment_data.transaction
+    const inputData = transaction.input_data
 
     // Use Seaport ABI to encode the transaction
-    const seaportInterface = new ethers.Interface(SeaportABI);
+    const seaportInterface = new ethers.Interface(SeaportABI)
 
     // Extract function name and build parameters array in correct order
-    const rawFunctionName = transaction.function.split("(")[0];
+    const rawFunctionName = transaction.function.split("(")[0]
     const functionName =
       rawFunctionName === FULFILL_BASIC_ORDER_ALIAS
         ? "fulfillBasicOrder"
-        : rawFunctionName;
-    let params: unknown[];
+        : rawFunctionName
+    let params: unknown[]
 
     // Order parameters based on the function being called
     if (
@@ -208,44 +208,44 @@ export class FulfillmentManager {
         inputData.fulfillerConduitKey ||
           "0x0000000000000000000000000000000000000000000000000000000000000000",
         inputData.recipient,
-      ];
+      ]
     } else if (
       (functionName === "fulfillBasicOrder" ||
         rawFunctionName === FULFILL_BASIC_ORDER_ALIAS) &&
       "basicOrderParameters" in inputData
     ) {
-      params = [inputData.basicOrderParameters];
+      params = [inputData.basicOrderParameters]
     } else if (functionName === "fulfillOrder" && "order" in inputData) {
       params = [
         inputData.order,
         inputData.fulfillerConduitKey ||
           "0x0000000000000000000000000000000000000000000000000000000000000000",
-      ];
+      ]
     } else {
       // Fallback: try to use values in object order
-      params = Object.values(inputData);
+      params = Object.values(inputData)
     }
 
     const encodedData = seaportInterface.encodeFunctionData(
       functionName,
       params,
-    );
+    )
 
     // Send the transaction using the signer from context
-    const signer = this.context.signerOrProvider as Signer;
+    const signer = this.context.signerOrProvider as Signer
     const tx = await signer.sendTransaction({
       to: transaction.to,
       value: transaction.value,
       data: encodedData,
       ...overrides,
-    });
+    })
 
     await this.context.confirmTransaction(
       tx.hash,
       EventType.MatchOrders,
       "Fulfilling order",
-    );
-    return tx.hash;
+    )
+    return tx.hash
   }
 
   /**
@@ -264,26 +264,26 @@ export class FulfillmentManager {
     order,
     accountAddress,
   }: {
-    order: OrderV2;
-    accountAddress: string;
+    order: OrderV2
+    accountAddress: string
   }): Promise<boolean> {
-    requireValidProtocol(order.protocolAddress);
+    requireValidProtocol(order.protocolAddress)
 
     const seaport = getSeaportInstance(
       order.protocolAddress,
       this.context.seaport,
-    );
+    )
 
     try {
       const isValid = await seaport
         .validate([order.protocolData], accountAddress)
-        .staticCall();
-      return !!isValid;
+        .staticCall()
+      return !!isValid
     } catch (error) {
       if (hasErrorCode(error) && error.code === "CALL_EXCEPTION") {
-        return false;
+        return false
       }
-      throw error;
+      throw error
     }
   }
 
@@ -298,29 +298,29 @@ export class FulfillmentManager {
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    */
   async approveOrder(order: OrderV2, domain?: string) {
-    await this.context.requireAccountIsAvailable(order.maker.address);
-    requireValidProtocol(order.protocolAddress);
+    await this.context.requireAccountIsAvailable(order.maker.address)
+    requireValidProtocol(order.protocolAddress)
 
     this.context.dispatch(EventType.ApproveOrder, {
       orderV2: order,
       accountAddress: order.maker.address,
-    });
+    })
 
     const seaport = getSeaportInstance(
       order.protocolAddress,
       this.context.seaport,
-    );
+    )
     const transaction = await seaport
       .validate([order.protocolData], order.maker.address, domain)
-      .transact();
+      .transact()
 
     await this.context.confirmTransaction(
       transaction.hash,
       EventType.ApproveOrder,
       "Approving order",
-    );
+    )
 
-    return transaction.hash;
+    return transaction.hash
   }
 
   /**
@@ -338,31 +338,31 @@ export class FulfillmentManager {
     orderComponents: OrderComponents,
     accountAddress: string,
   ) {
-    await this.context.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress)
 
     this.context.dispatch(EventType.ApproveOrder, {
       orderV2: { protocolData: orderComponents } as unknown as OrderV2,
       accountAddress,
-    });
+    })
 
     const seaport = getSeaportInstance(
       DEFAULT_SEAPORT_CONTRACT_ADDRESS,
       this.context.seaport,
-    );
+    )
     const transaction = await seaport
       .validate(
         [{ parameters: orderComponents, signature: "0x" }],
         accountAddress,
       )
-      .transact();
+      .transact()
 
     await this.context.confirmTransaction(
       transaction.hash,
       EventType.ApproveOrder,
       "Validating order onchain",
-    );
+    )
 
-    return transaction.hash;
+    return transaction.hash
   }
 
   /**
@@ -397,17 +397,17 @@ export class FulfillmentManager {
     includeOptionalCreatorFees = false,
     zone,
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    listingTime?: number;
-    expirationTime?: number;
-    buyerAddress?: string;
-    includeOptionalCreatorFees?: boolean;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    listingTime?: number
+    expirationTime?: number
+    buyerAddress?: string
+    includeOptionalCreatorFees?: boolean
+    zone?: string
   }): Promise<string> {
     const orderComponents =
       await this.ordersManager.buildListingOrderComponents({
@@ -422,9 +422,9 @@ export class FulfillmentManager {
         buyerAddress,
         includeOptionalCreatorFees,
         zone,
-      });
+      })
 
-    return this.validateOrderOnchain(orderComponents, accountAddress);
+    return this.validateOrderOnchain(orderComponents, accountAddress)
   }
 
   /**
@@ -453,14 +453,14 @@ export class FulfillmentManager {
     expirationTime,
     zone,
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    expirationTime?: BigNumberish;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    expirationTime?: BigNumberish
+    zone?: string
   }): Promise<string> {
     const orderComponents = await this.ordersManager.buildOfferOrderComponents({
       asset,
@@ -471,8 +471,8 @@ export class FulfillmentManager {
       salt,
       expirationTime,
       zone,
-    });
+    })
 
-    return this.validateOrderOnchain(orderComponents, accountAddress);
+    return this.validateOrderOnchain(orderComponents, accountAddress)
   }
 }

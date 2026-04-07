@@ -1,35 +1,33 @@
-import { expect } from "chai";
-import { suite, test } from "mocha";
-import * as sinon from "sinon";
-import { CollectionsAPI } from "../../src/api/collections";
+import { describe, expect, test, vi } from "vitest"
+import { CollectionsAPI } from "../../src/api/collections"
 import {
-  GetCollectionResponse,
-  GetCollectionsResponse,
   CollectionOrderByOption,
-  GetTraitsResponse,
-} from "../../src/api/types";
+  type GetCollectionResponse,
+  type GetCollectionsResponse,
+  type GetTraitsResponse,
+} from "../../src/api/types"
 import {
   Chain,
-  OpenSeaCollection,
-  OpenSeaCollectionStats,
-} from "../../src/types";
-import { createMockFetcher } from "../fixtures/fetcher";
+  type OpenSeaCollection,
+  type OpenSeaCollectionStats,
+} from "../../src/types"
+import { createMockFetcher } from "../fixtures/fetcher"
 
-suite("API: CollectionsAPI", () => {
-  let mockGet: sinon.SinonStub;
-  let collectionsAPI: CollectionsAPI;
+describe("API: CollectionsAPI", () => {
+  let mockGet: ReturnType<typeof vi.fn>
+  let collectionsAPI: CollectionsAPI
 
   beforeEach(() => {
-    const { fetcher, mockGet: getMock } = createMockFetcher();
-    mockGet = getMock;
-    collectionsAPI = new CollectionsAPI(fetcher);
-  });
+    const { fetcher, mockGet: getMock } = createMockFetcher()
+    mockGet = getMock
+    collectionsAPI = new CollectionsAPI(fetcher)
+  })
 
   afterEach(() => {
-    sinon.restore();
-  });
+    vi.restoreAllMocks()
+  })
 
-  suite("getCollection", () => {
+  describe("getCollection", () => {
     test("fetches a single collection by slug", async () => {
       const mockResponse: GetCollectionResponse = {
         collection: "test-collection",
@@ -58,51 +56,51 @@ suite("API: CollectionsAPI", () => {
         pricing_currencies: null,
         total_supply: 10000,
         created_date: "2024-01-01T00:00:00Z",
-      } as unknown as GetCollectionResponse;
+      } as unknown as GetCollectionResponse
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getCollection("test-collection");
+      const result = await collectionsAPI.getCollection("test-collection")
 
-      expect(mockGet.calledOnce).to.be.true;
-      expect(mockGet.firstCall.args[0]).to.equal(
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/collections/test-collection",
-      );
+      )
       // Verify the collection was transformed from snake_case to camelCase
-      expect(result.collection).to.equal("test-collection");
-      expect(result.name).to.equal("Test Collection");
-      expect(result.imageUrl).to.equal("https://example.com/image.png");
-      expect(result.bannerImageUrl).to.equal("https://example.com/banner.png");
-      expect(result.safelistStatus).to.equal("verified");
-    });
+      expect(result.collection).toBe("test-collection")
+      expect(result.name).toBe("Test Collection")
+      expect(result.imageUrl).toBe("https://example.com/image.png")
+      expect(result.bannerImageUrl).toBe("https://example.com/banner.png")
+      expect(result.safelistStatus).toBe("verified")
+    })
 
     test("handles slug with special characters", async () => {
       const mockResponse: GetCollectionResponse = {
         collection: "test-collection-123",
-      } as unknown as GetCollectionResponse;
+      } as unknown as GetCollectionResponse
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await collectionsAPI.getCollection("test-collection-123");
+      await collectionsAPI.getCollection("test-collection-123")
 
-      expect(mockGet.firstCall.args[0]).to.equal(
+      expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/collections/test-collection-123",
-      );
-    });
+      )
+    })
 
     test("throws error when collection not found", async () => {
-      mockGet.rejects(new Error("Collection not found"));
+      mockGet.mockRejectedValue(new Error("Collection not found"))
 
       try {
-        await collectionsAPI.getCollection("nonexistent-collection");
-        expect.fail("Expected error to be thrown");
+        await collectionsAPI.getCollection("nonexistent-collection")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Collection not found");
+        expect((error as Error).message).toContain("Collection not found")
       }
-    });
-  });
+    })
+  })
 
-  suite("getCollections", () => {
+  describe("getCollections", () => {
     test("fetches collections with default parameters", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [
@@ -116,100 +114,100 @@ suite("API: CollectionsAPI", () => {
           } as unknown as OpenSeaCollection,
         ],
         next: "cursor-123",
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getCollections();
+      const result = await collectionsAPI.getCollections()
 
-      expect(mockGet.calledOnce).to.be.true;
-      expect(mockGet.firstCall.args[0]).to.equal("/api/v2/collections");
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe("/api/v2/collections")
+      expect(mockGet.mock.calls[0][1]).toEqual({
         order_by: CollectionOrderByOption.CREATED_DATE,
         chain: undefined,
         creator_username: undefined,
         include_hidden: false,
         limit: undefined,
         next: undefined,
-      });
-      expect(result.collections).to.have.length(2);
-      expect(result.next).to.equal("cursor-123");
-    });
+      })
+      expect(result.collections).toHaveLength(2)
+      expect(result.next).toBe("cursor-123")
+    })
 
     test("fetches collections with orderBy parameter", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await collectionsAPI.getCollections(CollectionOrderByOption.MARKET_CAP);
+      await collectionsAPI.getCollections(CollectionOrderByOption.MARKET_CAP)
 
-      expect(mockGet.firstCall.args[1]).to.deep.include({
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
         order_by: CollectionOrderByOption.MARKET_CAP,
-      });
-    });
+      })
+    })
 
     test("fetches collections filtered by chain", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await collectionsAPI.getCollections(
         CollectionOrderByOption.CREATED_DATE,
         Chain.Polygon,
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.include({
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
         chain: Chain.Polygon,
-      });
-    });
+      })
+    })
 
     test("fetches collections filtered by creator username", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await collectionsAPI.getCollections(
         CollectionOrderByOption.CREATED_DATE,
         undefined,
         "test-creator",
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.include({
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
         creator_username: "test-creator",
-      });
-    });
+      })
+    })
 
     test("fetches collections with includeHidden set to true", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await collectionsAPI.getCollections(
         CollectionOrderByOption.CREATED_DATE,
         undefined,
         undefined,
         true,
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.include({
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
         include_hidden: true,
-      });
-    });
+      })
+    })
 
     test("fetches collections with limit parameter", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await collectionsAPI.getCollections(
         CollectionOrderByOption.CREATED_DATE,
@@ -217,20 +215,20 @@ suite("API: CollectionsAPI", () => {
         undefined,
         false,
         50,
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.include({
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
         limit: 50,
-      });
-    });
+      })
+    })
 
     test("fetches collections with pagination cursor", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
         next: "cursor-456",
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await collectionsAPI.getCollections(
         CollectionOrderByOption.CREATED_DATE,
@@ -239,19 +237,19 @@ suite("API: CollectionsAPI", () => {
         false,
         undefined,
         "cursor-123",
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.include({
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
         next: "cursor-123",
-      });
-    });
+      })
+    })
 
     test("fetches collections with all parameters", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await collectionsAPI.getCollections(
         CollectionOrderByOption.SEVEN_DAY_VOLUME,
@@ -260,17 +258,17 @@ suite("API: CollectionsAPI", () => {
         true,
         25,
         "cursor-xyz",
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      expect(mockGet.mock.calls[0][1]).toEqual({
         order_by: CollectionOrderByOption.SEVEN_DAY_VOLUME,
         chain: Chain.Mainnet,
         creator_username: "creator-username",
         include_hidden: true,
         limit: 25,
         next: "cursor-xyz",
-      });
-    });
+      })
+    })
 
     test("transforms collections using collectionFromJSON", async () => {
       const mockResponse = {
@@ -280,42 +278,42 @@ suite("API: CollectionsAPI", () => {
             name: "Collection 1",
           } as unknown as OpenSeaCollection,
         ],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getCollections();
+      const result = await collectionsAPI.getCollections()
 
       // Verify that the collections were processed
-      expect(result.collections).to.have.length(1);
-      expect(result.collections[0]).to.have.property("collection");
-    });
+      expect(result.collections).toHaveLength(1)
+      expect(result.collections[0]).toHaveProperty("collection")
+    })
 
     test("handles empty collections list", async () => {
       const mockResponse: GetCollectionsResponse = {
         collections: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getCollections();
+      const result = await collectionsAPI.getCollections()
 
-      expect(result.collections).to.be.an("array").that.is.empty;
-    });
+      expect(result.collections).toEqual([])
+    })
 
     test("throws error on API failure", async () => {
-      mockGet.rejects(new Error("API Error"));
+      mockGet.mockRejectedValue(new Error("API Error"))
 
       try {
-        await collectionsAPI.getCollections();
-        expect.fail("Expected error to be thrown");
+        await collectionsAPI.getCollections()
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("API Error");
+        expect((error as Error).message).toContain("API Error")
       }
-    });
-  });
+    })
+  })
 
-  suite("getCollectionStats", () => {
+  describe("getCollectionStats", () => {
     test("fetches stats for a collection", async () => {
       const mockResponse: OpenSeaCollectionStats = {
         total: {
@@ -338,20 +336,20 @@ suite("API: CollectionsAPI", () => {
             average_price: 2,
           },
         ],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getCollectionStats("test-collection");
+      const result = await collectionsAPI.getCollectionStats("test-collection")
 
-      expect(mockGet.calledOnce).to.be.true;
-      expect(mockGet.firstCall.args[0]).to.equal(
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/collections/test-collection/stats",
-      );
-      expect(result).to.deep.equal(mockResponse);
-      expect(result.total.volume).to.equal(1000);
-      expect(result.total.sales).to.equal(500);
-    });
+      )
+      expect(result).toEqual(mockResponse)
+      expect(result.total.volume).toBe(1000)
+      expect(result.total.sales).toBe(500)
+    })
 
     test("fetches stats with various collection slugs", async () => {
       const mockResponse: OpenSeaCollectionStats = {
@@ -365,16 +363,16 @@ suite("API: CollectionsAPI", () => {
           floor_price_symbol: "ETH",
         },
         intervals: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await collectionsAPI.getCollectionStats("collection-with-dashes");
+      await collectionsAPI.getCollectionStats("collection-with-dashes")
 
-      expect(mockGet.firstCall.args[0]).to.equal(
+      expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/collections/collection-with-dashes/stats",
-      );
-    });
+      )
+    })
 
     test("handles collection with no stats", async () => {
       const mockResponse: OpenSeaCollectionStats = {
@@ -388,41 +386,41 @@ suite("API: CollectionsAPI", () => {
           floor_price_symbol: "ETH",
         },
         intervals: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getCollectionStats("new-collection");
+      const result = await collectionsAPI.getCollectionStats("new-collection")
 
-      expect(result.total.volume).to.equal(0);
-      expect(result.total.sales).to.equal(0);
-      expect(result.intervals).to.be.an("array").that.is.empty;
-    });
+      expect(result.total.volume).toBe(0)
+      expect(result.total.sales).toBe(0)
+      expect(result.intervals).toEqual([])
+    })
 
     test("throws error when stats not found", async () => {
-      mockGet.rejects(new Error("Stats not found"));
+      mockGet.mockRejectedValue(new Error("Stats not found"))
 
       try {
-        await collectionsAPI.getCollectionStats("nonexistent-collection");
-        expect.fail("Expected error to be thrown");
+        await collectionsAPI.getCollectionStats("nonexistent-collection")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Stats not found");
+        expect((error as Error).message).toContain("Stats not found")
       }
-    });
+    })
 
     test("throws error on API failure", async () => {
-      mockGet.rejects(new Error("Server Error"));
+      mockGet.mockRejectedValue(new Error("Server Error"))
 
       try {
-        await collectionsAPI.getCollectionStats("test-collection");
-        expect.fail("Expected error to be thrown");
+        await collectionsAPI.getCollectionStats("test-collection")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Server Error");
+        expect((error as Error).message).toContain("Server Error")
       }
-    });
-  });
+    })
+  })
 
-  suite("getTraits", () => {
+  describe("getTraits", () => {
     test("fetches traits for a collection", async () => {
       const mockResponse: GetTraitsResponse = {
         categories: {
@@ -448,37 +446,35 @@ suite("API: CollectionsAPI", () => {
             Angry: 1800,
           },
         },
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getTraits("boredapeyachtclub");
+      const result = await collectionsAPI.getTraits("boredapeyachtclub")
 
-      expect(mockGet.calledOnce).to.be.true;
-      expect(mockGet.firstCall.args[0]).to.equal(
-        "/api/v2/traits/boredapeyachtclub",
-      );
-      expect(result.categories).to.have.property("Background");
-      expect(result.categories).to.have.property("Fur");
-      expect(result.counts).to.have.property("Background");
-      expect(result.counts.Background).to.have.property("Blue");
-      expect(result.counts.Background.Blue).to.equal(1234);
-      expect(result.counts.Fur["Golden Brown"]).to.equal(456);
-    });
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe("/api/v2/traits/boredapeyachtclub")
+      expect(result.categories).toHaveProperty("Background")
+      expect(result.categories).toHaveProperty("Fur")
+      expect(result.counts).toHaveProperty("Background")
+      expect(result.counts.Background).toHaveProperty("Blue")
+      expect(result.counts.Background.Blue).toBe(1234)
+      expect(result.counts.Fur["Golden Brown"]).toBe(456)
+    })
 
     test("handles collection with no traits", async () => {
       const mockResponse: GetTraitsResponse = {
         categories: {},
         counts: {},
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getTraits("no-traits-collection");
+      const result = await collectionsAPI.getTraits("no-traits-collection")
 
-      expect(result.categories).to.be.an("object").that.is.empty;
-      expect(result.counts).to.be.an("object").that.is.empty;
-    });
+      expect(result.categories).toEqual({})
+      expect(result.counts).toEqual({})
+    })
 
     test("handles numeric traits", async () => {
       const mockResponse: GetTraitsResponse = {
@@ -498,19 +494,17 @@ suite("API: CollectionsAPI", () => {
             "300": 25,
           },
         },
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getTraits(
-        "numeric-traits-collection",
-      );
+      const result = await collectionsAPI.getTraits("numeric-traits-collection")
 
-      expect(result.categories.Level).to.equal("number");
-      expect(result.categories.Power).to.equal("number");
-      expect(result.counts.Level["1"]).to.equal(100);
-      expect(result.counts.Power["100"]).to.equal(50);
-    });
+      expect(result.categories.Level).toBe("number")
+      expect(result.categories.Power).toBe("number")
+      expect(result.counts.Level["1"]).toBe(100)
+      expect(result.counts.Power["100"]).toBe(50)
+    })
 
     test("handles date traits", async () => {
       const mockResponse: GetTraitsResponse = {
@@ -523,15 +517,15 @@ suite("API: CollectionsAPI", () => {
             "2024-01-02": 75,
           },
         },
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getTraits("date-traits-collection");
+      const result = await collectionsAPI.getTraits("date-traits-collection")
 
-      expect(result.categories.CreatedDate).to.equal("date");
-      expect(result.counts.CreatedDate["2024-01-01"]).to.equal(50);
-    });
+      expect(result.categories.CreatedDate).toBe("date")
+      expect(result.counts.CreatedDate["2024-01-01"]).toBe(50)
+    })
 
     test("handles traits with special characters in values", async () => {
       const mockResponse: GetTraitsResponse = {
@@ -545,16 +539,16 @@ suite("API: CollectionsAPI", () => {
             "With/Slash": 50,
           },
         },
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getTraits("special-chars-collection");
+      const result = await collectionsAPI.getTraits("special-chars-collection")
 
-      expect(result.counts.Type["Special-Character_123"]).to.equal(100);
-      expect(result.counts.Type["With Spaces"]).to.equal(200);
-      expect(result.counts.Type["With/Slash"]).to.equal(50);
-    });
+      expect(result.counts.Type["Special-Character_123"]).toBe(100)
+      expect(result.counts.Type["With Spaces"]).toBe(200)
+      expect(result.counts.Type["With/Slash"]).toBe(50)
+    })
 
     test("handles large trait counts", async () => {
       const mockResponse: GetTraitsResponse = {
@@ -568,86 +562,86 @@ suite("API: CollectionsAPI", () => {
             Green: 500000,
           },
         },
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getTraits("large-collection");
+      const result = await collectionsAPI.getTraits("large-collection")
 
-      expect(result.counts.Color.Blue).to.equal(999999);
-      expect(result.counts.Color.Red).to.equal(1000000);
-    });
+      expect(result.counts.Color.Blue).toBe(999999)
+      expect(result.counts.Color.Red).toBe(1000000)
+    })
 
     test("handles collection slugs with special characters", async () => {
       const mockResponse: GetTraitsResponse = {
         categories: {},
         counts: {},
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await collectionsAPI.getTraits("collection-with-dashes-123");
+      await collectionsAPI.getTraits("collection-with-dashes-123")
 
-      expect(mockGet.firstCall.args[0]).to.equal(
+      expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/traits/collection-with-dashes-123",
-      );
-    });
+      )
+    })
 
     test("handles many trait categories", async () => {
-      const categories: Record<string, "string" | "number" | "date"> = {};
-      const counts: Record<string, Record<string, number>> = {};
+      const categories: Record<string, "string" | "number" | "date"> = {}
+      const counts: Record<string, Record<string, number>> = {}
 
       for (let i = 0; i < 20; i++) {
-        const traitName = `Trait${i}`;
-        categories[traitName] = "string";
+        const traitName = `Trait${i}`
+        categories[traitName] = "string"
         counts[traitName] = {
           Value1: 10,
           Value2: 20,
-        };
+        }
       }
 
       const mockResponse: GetTraitsResponse = {
         categories,
         counts,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await collectionsAPI.getTraits("many-traits-collection");
+      const result = await collectionsAPI.getTraits("many-traits-collection")
 
-      expect(Object.keys(result.categories)).to.have.length(20);
-      expect(Object.keys(result.counts)).to.have.length(20);
-    });
+      expect(Object.keys(result.categories)).toHaveLength(20)
+      expect(Object.keys(result.counts)).toHaveLength(20)
+    })
 
     test("throws error when collection not found", async () => {
-      mockGet.rejects(new Error("Collection not found"));
+      mockGet.mockRejectedValue(new Error("Collection not found"))
 
       try {
-        await collectionsAPI.getTraits("nonexistent-collection");
-        expect.fail("Expected error to be thrown");
+        await collectionsAPI.getTraits("nonexistent-collection")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Collection not found");
+        expect((error as Error).message).toContain("Collection not found")
       }
-    });
+    })
 
     test("throws error on API failure", async () => {
-      mockGet.rejects(new Error("Server Error"));
+      mockGet.mockRejectedValue(new Error("Server Error"))
 
       try {
-        await collectionsAPI.getTraits("test-collection");
-        expect.fail("Expected error to be thrown");
+        await collectionsAPI.getTraits("test-collection")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Server Error");
+        expect((error as Error).message).toContain("Server Error")
       }
-    });
-  });
+    })
+  })
 
-  suite("Constructor", () => {
+  describe("Constructor", () => {
     test("initializes with fetcher", () => {
-      const { fetcher } = createMockFetcher();
-      const api = new CollectionsAPI(fetcher);
+      const { fetcher } = createMockFetcher()
+      const api = new CollectionsAPI(fetcher)
 
-      expect(api).to.be.instanceOf(CollectionsAPI);
-    });
-  });
-});
+      expect(api).toBeInstanceOf(CollectionsAPI)
+    })
+  })
+})

@@ -1,44 +1,43 @@
-import { expect } from "chai";
-import { suite, test } from "mocha";
-import { OrderType, ProtocolData } from "../../src/orders/types";
+import { describe, expect, test } from "vitest"
+import { OrderType, type ProtocolData } from "../../src/orders/types"
 import {
-  serializeOrdersQueryOptions,
+  DEFAULT_SEAPORT_CONTRACT_ADDRESS,
   deserializeOrder,
-  getFulfillmentDataPath,
-  getPostCollectionOfferPayload,
   getBuildCollectionOfferPayload,
   getFulfillListingPayload,
+  getFulfillmentDataPath,
   getFulfillOfferPayload,
-  DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-} from "../../src/orders/utils";
-import { Chain, OrderSide } from "../../src/types";
+  getPostCollectionOfferPayload,
+  serializeOrdersQueryOptions,
+} from "../../src/orders/utils"
+import { Chain, OrderSide } from "../../src/types"
 
-suite("Orders: utils", () => {
-  suite("serializeOrdersQueryOptions", () => {
+describe("Orders: utils", () => {
+  describe("serializeOrdersQueryOptions", () => {
     test("should omit token_ids when neither tokenId nor tokenIds is provided", () => {
-      const result = serializeOrdersQueryOptions({});
-      expect(result.token_ids).to.be.undefined;
-    });
+      const result = serializeOrdersQueryOptions({})
+      expect(result.token_ids).toBeUndefined()
+    })
 
     test("should wrap single tokenId in array", () => {
-      const result = serializeOrdersQueryOptions({ tokenId: "123" });
-      expect(result.token_ids).to.deep.equal(["123"]);
-    });
+      const result = serializeOrdersQueryOptions({ tokenId: "123" })
+      expect(result.token_ids).toEqual(["123"])
+    })
 
     test("should use tokenIds array directly when provided", () => {
       const result = serializeOrdersQueryOptions({
         tokenIds: ["1", "2", "3"],
-      });
-      expect(result.token_ids).to.deep.equal(["1", "2", "3"]);
-    });
+      })
+      expect(result.token_ids).toEqual(["1", "2", "3"])
+    })
 
     test("should prefer tokenIds over tokenId when both are provided", () => {
       const result = serializeOrdersQueryOptions({
         tokenId: "123",
         tokenIds: ["1", "2", "3"],
-      });
-      expect(result.token_ids).to.deep.equal(["1", "2", "3"]);
-    });
+      })
+      expect(result.token_ids).toEqual(["1", "2", "3"])
+    })
 
     test("should serialize all query options correctly", () => {
       const result = serializeOrdersQueryOptions({
@@ -55,9 +54,9 @@ suite("Orders: utils", () => {
         orderBy: "created_date",
         orderDirection: "desc",
         onlyEnglish: true,
-      });
+      })
 
-      expect(result).to.deep.equal({
+      expect(result).toEqual({
         limit: 10,
         cursor: "cursor123",
         payment_token_address: "0xPaymentToken",
@@ -71,118 +70,118 @@ suite("Orders: utils", () => {
         order_by: "created_date",
         order_direction: "desc",
         only_english: true,
-      });
-    });
+      })
+    })
 
     test("should use cursor over next when both are provided", () => {
       const result = serializeOrdersQueryOptions({
         cursor: "cursor123",
         next: "next456",
-      });
-      expect(result.cursor).to.equal("cursor123");
-    });
+      })
+      expect(result.cursor).toBe("cursor123")
+    })
 
     test("should use next when cursor is not provided", () => {
       const result = serializeOrdersQueryOptions({
         next: "next456",
-      });
-      expect(result.cursor).to.equal("next456");
-    });
+      })
+      expect(result.cursor).toBe("next456")
+    })
 
     test("should handle empty tokenIds array", () => {
       const result = serializeOrdersQueryOptions({
         tokenIds: [],
-      });
-      expect(result.token_ids).to.deep.equal([]);
-    });
-  });
+      })
+      expect(result.token_ids).toEqual([])
+    })
 
-  suite("getFulfillmentDataPath", () => {
+    test("should fall back to tokenId when tokenIds is empty", () => {
+      const result = serializeOrdersQueryOptions({
+        tokenId: "123",
+        tokenIds: [],
+      })
+      expect(result.token_ids).toEqual(["123"])
+    })
+  })
+
+  describe("getFulfillmentDataPath", () => {
     test("should return listings path for LISTING side", () => {
-      const result = getFulfillmentDataPath(OrderSide.LISTING);
-      expect(result).to.equal("/v2/listings/fulfillment_data");
-    });
+      const result = getFulfillmentDataPath(OrderSide.LISTING)
+      expect(result).toBe("/api/v2/listings/fulfillment_data")
+    })
 
     test("should return offers path for OFFER side", () => {
-      const result = getFulfillmentDataPath(OrderSide.OFFER);
-      expect(result).to.equal("/v2/offers/fulfillment_data");
-    });
-  });
+      const result = getFulfillmentDataPath(OrderSide.OFFER)
+      expect(result).toBe("/api/v2/offers/fulfillment_data")
+    })
+  })
 
-  suite("getPostCollectionOfferPayload", () => {
+  describe("getPostCollectionOfferPayload", () => {
     test("should create basic collection offer payload without traits", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protocolData = { parameters: {} } as any as ProtocolData;
+      const protocolData = { parameters: {} } as any as ProtocolData
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
         Chain.Mainnet,
-      );
+      )
 
-      expect(result).to.deep.equal({
+      expect(result).toEqual({
         criteria: {
           collection: { slug: "boredapeyachtclub" },
         },
         protocol_data: protocolData,
         protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      });
-    });
+      })
+    })
 
     test("should add trait criteria when both traitType and traitValue are provided", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protocolData = { parameters: {} } as any as ProtocolData;
+      const protocolData = { parameters: {} } as any as ProtocolData
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
         Chain.Mainnet,
         "Background",
         "Blue",
-      );
+      )
 
-      expect(result.criteria).to.have.property("trait");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).trait).to.deep.equal({
+      expect(result.criteria).toHaveProperty("trait")
+      expect((result.criteria as any).trait).toEqual({
         type: "Background",
         value: "Blue",
-      });
-    });
+      })
+    })
 
     test("should not add trait criteria when only traitType is provided", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protocolData = { parameters: {} } as any as ProtocolData;
+      const protocolData = { parameters: {} } as any as ProtocolData
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
         Chain.Mainnet,
         "Background",
-      );
+      )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).trait).to.be.undefined;
-    });
+      expect((result.criteria as any).trait).toBeUndefined()
+    })
 
     test("should not add trait criteria when only traitValue is provided", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protocolData = { parameters: {} } as any as ProtocolData;
+      const protocolData = { parameters: {} } as any as ProtocolData
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
         Chain.Mainnet,
         undefined,
         "Blue",
-      );
+      )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).trait).to.be.undefined;
-    });
+      expect((result.criteria as any).trait).toBeUndefined()
+    })
 
     test("should add traits array when provided", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protocolData = { parameters: {} } as any as ProtocolData;
+      const protocolData = { parameters: {} } as any as ProtocolData
       const traits = [
         { type: "Background", value: "Blue" },
         { type: "Hat", value: "Beanie" },
-      ];
+      ]
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
@@ -190,20 +189,18 @@ suite("Orders: utils", () => {
         undefined,
         undefined,
         traits,
-      );
+      )
 
-      expect(result.criteria).to.have.property("traits");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).traits).to.deep.equal(traits);
-    });
+      expect(result.criteria).toHaveProperty("traits")
+      expect((result.criteria as any).traits).toEqual(traits)
+    })
 
     test("should prioritize traits array over individual traitType/traitValue", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protocolData = { parameters: {} } as any as ProtocolData;
+      const protocolData = { parameters: {} } as any as ProtocolData
       const traits = [
         { type: "Background", value: "Blue" },
         { type: "Hat", value: "Beanie" },
-      ];
+      ]
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
@@ -211,18 +208,15 @@ suite("Orders: utils", () => {
         "Fur",
         "Brown",
         traits,
-      );
+      )
 
-      expect(result.criteria).to.have.property("traits");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).traits).to.deep.equal(traits);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).trait).to.be.undefined;
-    });
+      expect(result.criteria).toHaveProperty("traits")
+      expect((result.criteria as any).traits).toEqual(traits)
+      expect((result.criteria as any).trait).toBeUndefined()
+    })
 
     test("should not add traits when empty array is provided", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protocolData = { parameters: {} } as any as ProtocolData;
+      const protocolData = { parameters: {} } as any as ProtocolData
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
@@ -230,21 +224,18 @@ suite("Orders: utils", () => {
         undefined,
         undefined,
         [],
-      );
+      )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).traits).to.be.undefined;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).trait).to.be.undefined;
-    });
+      expect((result.criteria as any).traits).toBeUndefined()
+      expect((result.criteria as any).trait).toBeUndefined()
+    })
 
     test("should add numericTraits when provided", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protocolData = { parameters: {} } as any as ProtocolData;
+      const protocolData = { parameters: {} } as any as ProtocolData
       const numericTraits = [
         { type: "Level", min: 1, max: 10 },
         { type: "Power", min: 50 },
-      ];
+      ]
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
@@ -253,19 +244,15 @@ suite("Orders: utils", () => {
         undefined,
         undefined,
         numericTraits,
-      );
+      )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).numericTraits).to.deep.equal(
-        numericTraits,
-      );
-    });
+      expect((result.criteria as any).numericTraits).toEqual(numericTraits)
+    })
 
     test("should add both traits and numericTraits when both provided", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protocolData = { parameters: {} } as any as ProtocolData;
-      const traits = [{ type: "Background", value: "Blue" }];
-      const numericTraits = [{ type: "Level", min: 1, max: 10 }];
+      const protocolData = { parameters: {} } as any as ProtocolData
+      const traits = [{ type: "Background", value: "Blue" }]
+      const numericTraits = [{ type: "Level", min: 1, max: 10 }]
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
@@ -274,19 +261,14 @@ suite("Orders: utils", () => {
         undefined,
         traits,
         numericTraits,
-      );
+      )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).traits).to.deep.equal(traits);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).numericTraits).to.deep.equal(
-        numericTraits,
-      );
-    });
+      expect((result.criteria as any).traits).toEqual(traits)
+      expect((result.criteria as any).numericTraits).toEqual(numericTraits)
+    })
 
     test("should not add numericTraits when empty array is provided", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protocolData = { parameters: {} } as any as ProtocolData;
+      const protocolData = { parameters: {} } as any as ProtocolData
       const result = getPostCollectionOfferPayload(
         "boredapeyachtclub",
         protocolData,
@@ -295,14 +277,13 @@ suite("Orders: utils", () => {
         undefined,
         undefined,
         [],
-      );
+      )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).numericTraits).to.be.undefined;
-    });
-  });
+      expect((result.criteria as any).numericTraits).toBeUndefined()
+    })
+  })
 
-  suite("getBuildCollectionOfferPayload", () => {
+  describe("getBuildCollectionOfferPayload", () => {
     test("should create basic build collection offer payload without traits", () => {
       const result = getBuildCollectionOfferPayload(
         "0xOfferer",
@@ -310,9 +291,9 @@ suite("Orders: utils", () => {
         "boredapeyachtclub",
         true,
         Chain.Mainnet,
-      );
+      )
 
-      expect(result).to.deep.equal({
+      expect(result).toEqual({
         offerer: "0xOfferer",
         quantity: 5,
         criteria: {
@@ -322,8 +303,8 @@ suite("Orders: utils", () => {
         },
         protocol_address: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
         offer_protection_enabled: true,
-      });
-    });
+      })
+    })
 
     test("should add trait criteria when both traitType and traitValue are provided", () => {
       const result = getBuildCollectionOfferPayload(
@@ -334,22 +315,21 @@ suite("Orders: utils", () => {
         Chain.Mainnet,
         "Hat",
         "Crown",
-      );
+      )
 
-      expect(result.criteria).to.have.property("trait");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).trait).to.deep.equal({
+      expect(result.criteria).toHaveProperty("trait")
+      expect((result.criteria as any).trait).toEqual({
         type: "Hat",
         value: "Crown",
-      });
-      expect(result.offer_protection_enabled).to.be.false;
-    });
+      })
+      expect(result.offer_protection_enabled).toBe(false)
+    })
 
     test("should add traits array when provided", () => {
       const traits = [
         { type: "Background", value: "Blue" },
         { type: "Hat", value: "Beanie" },
-      ];
+      ]
       const result = getBuildCollectionOfferPayload(
         "0xOfferer",
         2,
@@ -359,18 +339,17 @@ suite("Orders: utils", () => {
         undefined,
         undefined,
         traits,
-      );
+      )
 
-      expect(result.criteria).to.have.property("traits");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).traits).to.deep.equal(traits);
-    });
+      expect(result.criteria).toHaveProperty("traits")
+      expect((result.criteria as any).traits).toEqual(traits)
+    })
 
     test("should prioritize traits array over individual traitType/traitValue", () => {
       const traits = [
         { type: "Background", value: "Blue" },
         { type: "Fur", value: "Golden" },
-      ];
+      ]
       const result = getBuildCollectionOfferPayload(
         "0xOfferer",
         1,
@@ -380,14 +359,12 @@ suite("Orders: utils", () => {
         "Hat",
         "Crown",
         traits,
-      );
+      )
 
-      expect(result.criteria).to.have.property("traits");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).traits).to.deep.equal(traits);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).trait).to.be.undefined;
-    });
+      expect(result.criteria).toHaveProperty("traits")
+      expect((result.criteria as any).traits).toEqual(traits)
+      expect((result.criteria as any).trait).toBeUndefined()
+    })
 
     test("should not add traits when empty array is provided", () => {
       const result = getBuildCollectionOfferPayload(
@@ -399,19 +376,17 @@ suite("Orders: utils", () => {
         undefined,
         undefined,
         [],
-      );
+      )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).traits).to.be.undefined;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).trait).to.be.undefined;
-    });
+      expect((result.criteria as any).traits).toBeUndefined()
+      expect((result.criteria as any).trait).toBeUndefined()
+    })
 
     test("should add numericTraits when provided", () => {
       const numericTraits = [
         { type: "Level", min: 1, max: 10 },
         { type: "Power", min: 50 },
-      ];
+      ]
       const result = getBuildCollectionOfferPayload(
         "0xOfferer",
         2,
@@ -422,17 +397,14 @@ suite("Orders: utils", () => {
         undefined,
         undefined,
         numericTraits,
-      );
+      )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).numericTraits).to.deep.equal(
-        numericTraits,
-      );
-    });
+      expect((result.criteria as any).numericTraits).toEqual(numericTraits)
+    })
 
     test("should add both traits and numericTraits when both provided", () => {
-      const traits = [{ type: "Background", value: "Blue" }];
-      const numericTraits = [{ type: "Level", min: 1, max: 10 }];
+      const traits = [{ type: "Background", value: "Blue" }]
+      const numericTraits = [{ type: "Level", min: 1, max: 10 }]
       const result = getBuildCollectionOfferPayload(
         "0xOfferer",
         2,
@@ -443,15 +415,11 @@ suite("Orders: utils", () => {
         undefined,
         traits,
         numericTraits,
-      );
+      )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).traits).to.deep.equal(traits);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).numericTraits).to.deep.equal(
-        numericTraits,
-      );
-    });
+      expect((result.criteria as any).traits).toEqual(traits)
+      expect((result.criteria as any).numericTraits).toEqual(numericTraits)
+    })
 
     test("should not add numericTraits when empty array is provided", () => {
       const result = getBuildCollectionOfferPayload(
@@ -464,23 +432,22 @@ suite("Orders: utils", () => {
         undefined,
         undefined,
         [],
-      );
+      )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((result.criteria as any).numericTraits).to.be.undefined;
-    });
-  });
+      expect((result.criteria as any).numericTraits).toBeUndefined()
+    })
+  })
 
-  suite("getFulfillListingPayload", () => {
+  describe("getFulfillListingPayload", () => {
     test("should create basic listing fulfillment payload without consideration", () => {
       const result = getFulfillListingPayload(
         "0xFulfiller",
         "0xOrderHash",
         "0xProtocol",
         Chain.Mainnet,
-      );
+      )
 
-      expect(result).to.deep.equal({
+      expect(result).toEqual({
         listing: {
           hash: "0xOrderHash",
           chain: Chain.Mainnet,
@@ -491,9 +458,9 @@ suite("Orders: utils", () => {
         },
         units_to_fill: "1",
         include_optional_creator_fees: false,
-      });
-      expect(result.consideration).to.be.undefined;
-    });
+      })
+      expect(result.consideration).toBeUndefined()
+    })
 
     test("should include includeOptionalCreatorFees when set to true", () => {
       const result = getFulfillListingPayload(
@@ -506,10 +473,10 @@ suite("Orders: utils", () => {
         "1",
         undefined,
         true,
-      );
+      )
 
-      expect(result.include_optional_creator_fees).to.be.true;
-    });
+      expect(result.include_optional_creator_fees).toBe(true)
+    })
 
     test("should add consideration for criteria listings", () => {
       const result = getFulfillListingPayload(
@@ -519,13 +486,13 @@ suite("Orders: utils", () => {
         Chain.Mainnet,
         "0xAssetContract",
         "123",
-      );
+      )
 
-      expect(result.consideration).to.deep.equal({
+      expect(result.consideration).toEqual({
         asset_contract_address: "0xAssetContract",
         token_id: "123",
-      });
-    });
+      })
+    })
 
     test("should not add consideration when only assetContractAddress is provided", () => {
       const result = getFulfillListingPayload(
@@ -534,10 +501,10 @@ suite("Orders: utils", () => {
         "0xProtocol",
         Chain.Mainnet,
         "0xAssetContract",
-      );
+      )
 
-      expect(result.consideration).to.be.undefined;
-    });
+      expect(result.consideration).toBeUndefined()
+    })
 
     test("should not add consideration when only tokenId is provided", () => {
       const result = getFulfillListingPayload(
@@ -547,22 +514,22 @@ suite("Orders: utils", () => {
         Chain.Mainnet,
         undefined,
         "123",
-      );
+      )
 
-      expect(result.consideration).to.be.undefined;
-    });
-  });
+      expect(result.consideration).toBeUndefined()
+    })
+  })
 
-  suite("getFulfillOfferPayload", () => {
+  describe("getFulfillOfferPayload", () => {
     test("should create basic offer fulfillment payload without consideration", () => {
       const result = getFulfillOfferPayload(
         "0xFulfiller",
         "0xOrderHash",
         "0xProtocol",
         Chain.Polygon,
-      );
+      )
 
-      expect(result).to.deep.equal({
+      expect(result).toEqual({
         offer: {
           hash: "0xOrderHash",
           chain: Chain.Polygon,
@@ -573,9 +540,9 @@ suite("Orders: utils", () => {
         },
         units_to_fill: "1",
         include_optional_creator_fees: false,
-      });
-      expect(result.consideration).to.be.undefined;
-    });
+      })
+      expect(result.consideration).toBeUndefined()
+    })
 
     test("should add consideration for criteria offers", () => {
       const result = getFulfillOfferPayload(
@@ -585,13 +552,13 @@ suite("Orders: utils", () => {
         Chain.Polygon,
         "0xAssetContract",
         "456",
-      );
+      )
 
-      expect(result.consideration).to.deep.equal({
+      expect(result.consideration).toEqual({
         asset_contract_address: "0xAssetContract",
         token_id: "456",
-      });
-    });
+      })
+    })
 
     test("should include includeOptionalCreatorFees when set to true", () => {
       const result = getFulfillOfferPayload(
@@ -603,13 +570,13 @@ suite("Orders: utils", () => {
         undefined,
         "1",
         true,
-      );
+      )
 
-      expect(result.include_optional_creator_fees).to.be.true;
-    });
-  });
+      expect(result.include_optional_creator_fees).toBe(true)
+    })
+  })
 
-  suite("deserializeOrder", () => {
+  describe("deserializeOrder", () => {
     test("should deserialize order with all fields", () => {
       const serializedOrder = {
         created_date: "2024-01-01T00:00:00Z",
@@ -623,7 +590,6 @@ suite("Orders: utils", () => {
         taker: {
           address: "0xTaker",
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         protocol_data: { parameters: {} } as any as ProtocolData,
         protocol_address: "0xProtocol",
         current_price: "1000000000000000000",
@@ -646,28 +612,27 @@ suite("Orders: utils", () => {
         marked_invalid: false,
         client_signature: "0xSignature",
         remaining_quantity: 1,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
+      } as any
 
-      const result = deserializeOrder(serializedOrder);
+      const result = deserializeOrder(serializedOrder)
 
-      expect(result.createdDate).to.equal("2024-01-01T00:00:00Z");
-      expect(result.closingDate).to.equal("2024-12-31T23:59:59Z");
-      expect(result.listingTime).to.equal(1704067200);
-      expect(result.expirationTime).to.equal(1735689599);
-      expect(result.orderHash).to.equal("0xOrderHash");
-      expect(result.maker.address).to.equal("0xMaker");
-      expect(result.taker?.address).to.equal("0xTaker");
-      expect(result.protocolAddress).to.equal("0xProtocol");
-      expect(result.currentPrice).to.equal(BigInt("1000000000000000000"));
-      expect(result.side).to.equal(OrderSide.LISTING);
-      expect(result.orderType).to.equal(OrderType.BASIC);
-      expect(result.cancelled).to.be.false;
-      expect(result.finalized).to.be.true;
-      expect(result.markedInvalid).to.be.false;
-      expect(result.clientSignature).to.equal("0xSignature");
-      expect(result.remainingQuantity).to.equal(1);
-    });
+      expect(result.createdDate).toBe("2024-01-01T00:00:00Z")
+      expect(result.closingDate).toBe("2024-12-31T23:59:59Z")
+      expect(result.listingTime).toBe(1704067200)
+      expect(result.expirationTime).toBe(1735689599)
+      expect(result.orderHash).toBe("0xOrderHash")
+      expect(result.maker.address).toBe("0xMaker")
+      expect(result.taker?.address).toBe("0xTaker")
+      expect(result.protocolAddress).toBe("0xProtocol")
+      expect(result.currentPrice).toBe(BigInt("1000000000000000000"))
+      expect(result.side).toBe(OrderSide.LISTING)
+      expect(result.orderType).toBe(OrderType.BASIC)
+      expect(result.cancelled).toBe(false)
+      expect(result.finalized).toBe(true)
+      expect(result.markedInvalid).toBe(false)
+      expect(result.clientSignature).toBe("0xSignature")
+      expect(result.remainingQuantity).toBe(1)
+    })
 
     test("should handle null taker", () => {
       const serializedOrder = {
@@ -680,7 +645,6 @@ suite("Orders: utils", () => {
           address: "0xMaker",
         },
         taker: null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         protocol_data: { parameters: {} } as any as ProtocolData,
         protocol_address: "0xProtocol",
         current_price: "1000000000000000000",
@@ -693,15 +657,14 @@ suite("Orders: utils", () => {
         marked_invalid: false,
         client_signature: null,
         remaining_quantity: 0,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
+      } as any
 
-      const result = deserializeOrder(serializedOrder);
+      const result = deserializeOrder(serializedOrder)
 
-      expect(result.taker).to.be.null;
-      expect(result.closingDate).to.be.null;
-      expect(result.clientSignature).to.be.null;
-    });
+      expect(result.taker).toBeNull()
+      expect(result.closingDate).toBeNull()
+      expect(result.clientSignature).toBeNull()
+    })
 
     test("should deserialize maker and taker fees correctly", () => {
       const serializedOrder = {
@@ -714,7 +677,6 @@ suite("Orders: utils", () => {
           address: "0xMaker",
         },
         taker: null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         protocol_data: { parameters: {} } as any as ProtocolData,
         protocol_address: "0xProtocol",
         current_price: "1000000000000000000",
@@ -741,21 +703,20 @@ suite("Orders: utils", () => {
         marked_invalid: false,
         client_signature: null,
         remaining_quantity: 10,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
+      } as any
 
-      const result = deserializeOrder(serializedOrder);
+      const result = deserializeOrder(serializedOrder)
 
-      expect(result.makerFees).to.have.length(2);
-      expect(result.makerFees[0].account.address).to.equal("0xFee1");
-      expect(result.makerFees[0].basisPoints).to.equal("100");
-      expect(result.makerFees[1].account.address).to.equal("0xFee2");
-      expect(result.makerFees[1].basisPoints).to.equal("200");
+      expect(result.makerFees).toHaveLength(2)
+      expect(result.makerFees[0].account.address).toBe("0xFee1")
+      expect(result.makerFees[0].basisPoints).toBe("100")
+      expect(result.makerFees[1].account.address).toBe("0xFee2")
+      expect(result.makerFees[1].basisPoints).toBe("200")
 
-      expect(result.takerFees).to.have.length(1);
-      expect(result.takerFees[0].account.address).to.equal("0xFee3");
-      expect(result.takerFees[0].basisPoints).to.equal("300");
-    });
+      expect(result.takerFees).toHaveLength(1)
+      expect(result.takerFees[0].account.address).toBe("0xFee3")
+      expect(result.takerFees[0].basisPoints).toBe("300")
+    })
 
     test("should default missing fee arrays to empty arrays", () => {
       const serializedOrder = {
@@ -768,7 +729,6 @@ suite("Orders: utils", () => {
           address: "0xMaker",
         },
         taker: null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         protocol_data: { parameters: {} } as any as ProtocolData,
         protocol_address: "0xProtocol",
         current_price: "1000000000000000000",
@@ -779,13 +739,12 @@ suite("Orders: utils", () => {
         marked_invalid: false,
         client_signature: null,
         remaining_quantity: 1,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
+      } as any
 
-      const result = deserializeOrder(serializedOrder);
+      const result = deserializeOrder(serializedOrder)
 
-      expect(result.makerFees).to.deep.equal([]);
-      expect(result.takerFees).to.deep.equal([]);
-    });
-  });
-});
+      expect(result.makerFees).toEqual([])
+      expect(result.takerFees).toEqual([])
+    })
+  })
+})

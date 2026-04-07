@@ -1,54 +1,49 @@
-import { expect } from "chai";
-import { ethers } from "ethers";
-import { suite, test } from "mocha";
-import * as sinon from "sinon";
-import { FulfillmentManager } from "../../src/sdk/fulfillment";
-import { Chain, EventType } from "../../src/types";
-import { createMockContext } from "../fixtures/context";
-import { mockListing, mockListingPartiallyFilled } from "../fixtures/listings";
+import { ethers } from "ethers"
+import { describe, expect, test, vi } from "vitest"
+import { FulfillmentManager } from "../../src/sdk/fulfillment"
+import { Chain, EventType } from "../../src/types"
+import { createMockContext } from "../fixtures/context"
+import { mockListing, mockListingPartiallyFilled } from "../fixtures/listings"
 import {
-  mockOrderV2,
-  mockOrderComponents,
   mockOfferOrderV2,
+  mockOrderComponents,
+  mockOrderV2,
   mockPrivateListingOrderV2,
-} from "../fixtures/orders";
+} from "../fixtures/orders"
 
-suite("SDK: FulfillmentManager", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockOrdersManager: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockAPI: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockSeaport: any;
-  let mockDispatch: sinon.SinonStub;
-  let mockConfirmTransaction: sinon.SinonStub;
-  let mockRequireAccountIsAvailable: sinon.SinonStub;
-  let fulfillmentManager: FulfillmentManager;
+describe("SDK: FulfillmentManager", () => {
+  let mockOrdersManager: any
+  let mockAPI: any
+  let mockSeaport: any
+  let mockDispatch: ReturnType<typeof vi.fn>
+  let mockConfirmTransaction: ReturnType<typeof vi.fn>
+  let mockRequireAccountIsAvailable: ReturnType<typeof vi.fn>
+  let fulfillmentManager: FulfillmentManager
 
-  const mockTransaction = {
-    hash: "0xTxHash",
-    wait: sinon.stub().resolves({ hash: "0xTxHash" }),
-  };
-
-  const mockSigner = {
-    sendTransaction: sinon.stub().resolves({ hash: "0xFulfillTxHash" }),
-  };
+  let mockTransaction: { hash: string; wait: ReturnType<typeof vi.fn> }
+  let mockSigner: { sendTransaction: ReturnType<typeof vi.fn> }
 
   beforeEach(() => {
-    // Reset stubs
-    mockSigner.sendTransaction = sinon
-      .stub()
-      .resolves({ hash: "0xFulfillTxHash" });
+    mockTransaction = {
+      hash: "0xTxHash",
+      wait: vi.fn().mockResolvedValue({ hash: "0xTxHash" }),
+    }
+
+    mockSigner = {
+      sendTransaction: vi.fn().mockResolvedValue({ hash: "0xFulfillTxHash" }),
+    }
 
     // Mock OrdersManager
     mockOrdersManager = {
-      buildListingOrderComponents: sinon.stub().resolves(mockOrderComponents),
-      buildOfferOrderComponents: sinon.stub().resolves(mockOrderComponents),
-    };
+      buildListingOrderComponents: vi
+        .fn()
+        .mockResolvedValue(mockOrderComponents),
+      buildOfferOrderComponents: vi.fn().mockResolvedValue(mockOrderComponents),
+    }
 
     // Mock OpenSeaAPI with full transaction data
     mockAPI = {
-      generateFulfillmentData: sinon.stub().resolves({
+      generateFulfillmentData: vi.fn().mockResolvedValue({
         fulfillment_data: {
           transaction: {
             to: "0xSeaportAddress",
@@ -103,26 +98,26 @@ suite("SDK: FulfillmentManager", () => {
           orders: [{ signature: "0xNewSignature" }],
         },
       }),
-    };
+    }
 
     // Mock Seaport
     mockSeaport = {
-      fulfillOrder: sinon.stub().returns({
-        executeAllActions: sinon.stub().resolves("0xFulfillTxHash"),
+      fulfillOrder: vi.fn().mockReturnValue({
+        executeAllActions: vi.fn().mockResolvedValue("0xFulfillTxHash"),
       }),
-      matchOrders: sinon.stub().returns({
-        transact: sinon.stub().resolves(mockTransaction),
+      matchOrders: vi.fn().mockReturnValue({
+        transact: vi.fn().mockResolvedValue(mockTransaction),
       }),
-      validate: sinon.stub().returns({
-        staticCall: sinon.stub().resolves(true),
-        transact: sinon.stub().resolves(mockTransaction),
+      validate: vi.fn().mockReturnValue({
+        staticCall: vi.fn().mockResolvedValue(true),
+        transact: vi.fn().mockResolvedValue(mockTransaction),
       }),
-    };
+    }
 
     // Mock callback functions
-    mockDispatch = sinon.stub();
-    mockConfirmTransaction = sinon.stub().resolves();
-    mockRequireAccountIsAvailable = sinon.stub().resolves();
+    mockDispatch = vi.fn()
+    mockConfirmTransaction = vi.fn().mockResolvedValue(undefined)
+    mockRequireAccountIsAvailable = vi.fn().mockResolvedValue(undefined)
 
     // Create SDKContext mock using fixture
     const mockContext = createMockContext({
@@ -133,39 +128,39 @@ suite("SDK: FulfillmentManager", () => {
       confirmTransaction: mockConfirmTransaction,
       requireAccountIsAvailable: mockRequireAccountIsAvailable,
       signerOrProvider: mockSigner,
-    });
+    })
 
     // Create FulfillmentManager instance
-    fulfillmentManager = new FulfillmentManager(mockContext, mockOrdersManager);
-  });
+    fulfillmentManager = new FulfillmentManager(mockContext, mockOrdersManager)
+  })
 
   afterEach(() => {
-    sinon.restore();
-  });
+    vi.restoreAllMocks()
+  })
 
-  suite("fulfillOrder", () => {
+  describe("fulfillOrder", () => {
     test("fulfills a listing order successfully", async () => {
       const result = await fulfillmentManager.fulfillOrder({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
-      });
+      })
 
-      expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
-      expect(mockAPI.generateFulfillmentData.calledOnce).to.be.true;
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-      expect(mockConfirmTransaction.calledOnce).to.be.true;
-      expect(result).to.equal("0xFulfillTxHash");
-    });
+      expect(mockRequireAccountIsAvailable).toHaveBeenCalledTimes(1)
+      expect(mockAPI.generateFulfillmentData).toHaveBeenCalledTimes(1)
+      expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
+      expect(mockConfirmTransaction).toHaveBeenCalledTimes(1)
+      expect(result).toBe("0xFulfillTxHash")
+    })
 
     test("fulfills an offer order successfully", async () => {
       const result = await fulfillmentManager.fulfillOrder({
         order: mockOfferOrderV2,
         accountAddress: "0xSeller",
-      });
+      })
 
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-      expect(result).to.equal("0xFulfillTxHash");
-    });
+      expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
+      expect(result).toBe("0xFulfillTxHash")
+    })
 
     test("fulfills criteria order with contract and tokenId", async () => {
       await fulfillmentManager.fulfillOrder({
@@ -173,16 +168,16 @@ suite("SDK: FulfillmentManager", () => {
         accountAddress: "0xBuyer",
         assetContractAddress: "0xNFT",
         tokenId: "123",
-      });
+      })
 
-      expect(mockAPI.generateFulfillmentData.calledOnce).to.be.true;
-      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
-      expect(apiCall[4]).to.equal("0xNFT");
-      expect(apiCall[5]).to.equal("123");
-    });
+      expect(mockAPI.generateFulfillmentData).toHaveBeenCalledTimes(1)
+      const apiCall = mockAPI.generateFulfillmentData.mock.calls[0]
+      expect(apiCall[4]).toBe("0xNFT")
+      expect(apiCall[5]).toBe("123")
+    })
 
     test("includes extraData when order has offer protection", async () => {
-      mockAPI.generateFulfillmentData.resolves({
+      mockAPI.generateFulfillmentData.mockResolvedValue({
         fulfillment_data: {
           transaction: {
             to: "0xSeaportAddress",
@@ -236,31 +231,31 @@ suite("SDK: FulfillmentManager", () => {
           },
           orders: [{ signature: "0xNewSignature" }],
         },
-      });
+      })
 
       await fulfillmentManager.fulfillOrder({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
-      });
+      })
 
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-    });
+      expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
+    })
 
     test("fulfills order with recipient address", async () => {
-      const recipientAddress = "0xRecipient123";
+      const recipientAddress = "0xRecipient123"
       await fulfillmentManager.fulfillOrder({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
         recipientAddress,
-      });
+      })
 
-      expect(mockAPI.generateFulfillmentData.calledOnce).to.be.true;
-      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
-      expect(apiCall[7]).to.equal(recipientAddress);
-    });
+      expect(mockAPI.generateFulfillmentData).toHaveBeenCalledTimes(1)
+      const apiCall = mockAPI.generateFulfillmentData.mock.calls[0]
+      expect(apiCall[7]).toBe(recipientAddress)
+    })
 
     test("encodes fulfillBasicOrder alias using supported fragment", async () => {
-      mockAPI.generateFulfillmentData.resolves({
+      mockAPI.generateFulfillmentData.mockResolvedValue({
         fulfillment_data: {
           transaction: {
             to: "0xSeaportAddress",
@@ -275,33 +270,33 @@ suite("SDK: FulfillmentManager", () => {
           },
           orders: [{ signature: "0xAliasSignature" }],
         },
-      });
+      })
 
-      const encodeStub = sinon.stub(
+      const encodeStub = vi.spyOn(
         ethers.Interface.prototype,
         "encodeFunctionData",
-      );
-      encodeStub.callsFake(() => "0xAliasEncoded");
+      )
+      encodeStub.mockImplementation(() => "0xAliasEncoded")
 
       try {
         const result = await fulfillmentManager.fulfillOrder({
           order: mockOrderV2,
           accountAddress: "0xBuyer",
-        });
+        })
 
-        expect(result).to.equal("0xFulfillTxHash");
-        expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-        expect(encodeStub.firstCall.args[0]).to.equal("fulfillBasicOrder");
-        expect(mockSigner.sendTransaction.firstCall.args[0].data).to.equal(
+        expect(result).toBe("0xFulfillTxHash")
+        expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
+        expect(encodeStub.mock.calls[0][0]).toBe("fulfillBasicOrder")
+        expect(mockSigner.sendTransaction.mock.calls[0][0].data).toBe(
           "0xAliasEncoded",
-        );
+        )
       } finally {
-        encodeStub.restore();
+        encodeStub.mockRestore()
       }
-    });
+    })
 
     test("encodes fulfillOrder with exactly 2 params (no recipient)", async () => {
-      mockAPI.generateFulfillmentData.resolves({
+      mockAPI.generateFulfillmentData.mockResolvedValue({
         fulfillment_data: {
           transaction: {
             to: "0xSeaportAddress",
@@ -334,119 +329,121 @@ suite("SDK: FulfillmentManager", () => {
           },
           orders: [{ signature: "0xOrderSignature" }],
         },
-      });
+      })
 
-      const encodeStub = sinon.stub(
+      const encodeStub = vi.spyOn(
         ethers.Interface.prototype,
         "encodeFunctionData",
-      );
-      encodeStub.callsFake(() => "0xFulfillOrderEncoded");
+      )
+      encodeStub.mockImplementation(() => "0xFulfillOrderEncoded")
 
       try {
         await fulfillmentManager.fulfillOrder({
           order: mockOrderV2,
           accountAddress: "0xBuyer",
-        });
+        })
 
-        expect(encodeStub.calledOnce).to.be.true;
-        expect(encodeStub.firstCall.args[0]).to.equal("fulfillOrder");
+        expect(encodeStub).toHaveBeenCalledTimes(1)
+        expect(encodeStub.mock.calls[0][0]).toBe("fulfillOrder")
         // fulfillOrder ABI only accepts 2 params: order and fulfillerConduitKey
         // recipient must NOT be passed
-        const encodedParams = encodeStub.firstCall.args[1] as unknown[];
-        expect(encodedParams).to.have.length(2);
+        const encodedParams = encodeStub.mock.calls[0][1] as unknown[]
+        expect(encodedParams).toHaveLength(2)
       } finally {
-        encodeStub.restore();
+        encodeStub.mockRestore()
       }
-    });
+    })
 
     test("fulfills private listing successfully", async () => {
       const result = await fulfillmentManager.fulfillOrder({
         order: mockPrivateListingOrderV2,
         accountAddress: "0xPrivateBuyer",
-      });
+      })
 
-      expect(mockSeaport.matchOrders.calledOnce).to.be.true;
-      expect(mockSeaport.fulfillOrder.called).to.be.false;
-      expect(result).to.equal("0xTxHash");
-    });
+      expect(mockSeaport.matchOrders).toHaveBeenCalledTimes(1)
+      expect(mockSeaport.fulfillOrder).not.toHaveBeenCalled()
+      expect(result).toBe("0xTxHash")
+    })
 
     test("throws when account is not available", async () => {
-      mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
+      mockRequireAccountIsAvailable.mockRejectedValue(
+        new Error("Account not available"),
+      )
 
       try {
         await fulfillmentManager.fulfillOrder({
           order: mockOrderV2,
           accountAddress: "0xBuyer",
-        });
-        expect.fail("Expected error to be thrown");
+        })
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Account not available");
+        expect((error as Error).message).toContain("Account not available")
       }
-    });
+    })
 
     test("throws when protocol is invalid", async () => {
       const invalidOrder = {
         ...mockOrderV2,
         protocolAddress: "0xInvalidProtocol",
-      };
+      }
 
       try {
         await fulfillmentManager.fulfillOrder({
           order: invalidOrder,
           accountAddress: "0xBuyer",
-        });
-        expect.fail("Expected error to be thrown");
+        })
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Unsupported protocol");
+        expect((error as Error).message).toContain("Unsupported protocol")
       }
-    });
+    })
 
     test("handles transaction response as ContractTransactionResponse", async () => {
       const result = await fulfillmentManager.fulfillOrder({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
-      });
+      })
 
-      expect(result).to.equal("0xFulfillTxHash");
-    });
-  });
+      expect(result).toBe("0xFulfillTxHash")
+    })
+  })
 
-  suite("fulfillOrder with remaining_quantity", () => {
+  describe("fulfillOrder with remaining_quantity", () => {
     test("defaults to 1 when unitsToFill not specified for Listing", async () => {
       await fulfillmentManager.fulfillOrder({
         order: mockListing,
         accountAddress: "0xBuyer",
-      });
+      })
 
       // SDK defaults unitsToFill to "1" for both listings and offers
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
-      expect(apiCall[6]).to.equal("1"); // unitsToFill defaults to "1"
-    });
+      expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
+      const apiCall = mockAPI.generateFulfillmentData.mock.calls[0]
+      expect(apiCall[6]).toBe("1") // unitsToFill defaults to "1"
+    })
 
     test("defaults to 1 when unitsToFill not specified for partially filled Listing", async () => {
       await fulfillmentManager.fulfillOrder({
         order: mockListingPartiallyFilled,
         accountAddress: "0xBuyer",
-      });
+      })
 
       // SDK defaults unitsToFill to "1" for both listings and offers
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
-      expect(apiCall[6]).to.equal("1"); // unitsToFill defaults to "1"
-    });
+      expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
+      const apiCall = mockAPI.generateFulfillmentData.mock.calls[0]
+      expect(apiCall[6]).toBe("1") // unitsToFill defaults to "1"
+    })
 
     test("defaults to 1 when unitsToFill not specified for OrderV2", async () => {
       await fulfillmentManager.fulfillOrder({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
-      });
+      })
 
       // SDK defaults unitsToFill to "1" for both listings and offers
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
-      expect(apiCall[6]).to.equal("1"); // unitsToFill defaults to "1"
-    });
+      expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
+      const apiCall = mockAPI.generateFulfillmentData.mock.calls[0]
+      expect(apiCall[6]).toBe("1") // unitsToFill defaults to "1"
+    })
 
     test("passes unitsToFill when specified", async () => {
       const orderWithoutRemainingQty = {
@@ -462,217 +459,222 @@ suite("SDK: FulfillmentManager", () => {
           decimals: 18,
           value: "1000000000000000000",
         },
-      };
+      }
 
       await fulfillmentManager.fulfillOrder({
         order: orderWithoutRemainingQty,
         accountAddress: "0xBuyer",
         unitsToFill: 5,
-      });
+      })
 
-      expect(mockSigner.sendTransaction.calledOnce).to.be.true;
-      const apiCall = mockAPI.generateFulfillmentData.firstCall.args;
-      expect(apiCall[6]).to.equal("5"); // unitsToFill passed to API
-    });
-  });
+      expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
+      const apiCall = mockAPI.generateFulfillmentData.mock.calls[0]
+      expect(apiCall[6]).toBe("5") // unitsToFill passed to API
+    })
+  })
 
-  suite("isOrderFulfillable", () => {
+  describe("isOrderFulfillable", () => {
     test("returns true when order is fulfillable", async () => {
       const result = await fulfillmentManager.isOrderFulfillable({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
-      });
+      })
 
-      expect(mockSeaport.validate.calledOnce).to.be.true;
-      expect(result).to.be.true;
-    });
+      expect(mockSeaport.validate).toHaveBeenCalledTimes(1)
+      expect(result).toBe(true)
+    })
 
     test("returns false when order is not fulfillable", async () => {
-      mockSeaport.validate.returns({
-        staticCall: sinon.stub().resolves(false),
-      });
+      mockSeaport.validate.mockReturnValue({
+        staticCall: vi.fn().mockResolvedValue(false),
+      })
 
       const result = await fulfillmentManager.isOrderFulfillable({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
-      });
+      })
 
-      expect(result).to.be.false;
-    });
+      expect(result).toBe(false)
+    })
 
     test("returns false on CALL_EXCEPTION error", async () => {
       const error = new Error("CALL_EXCEPTION") as unknown as {
-        code: string;
-        message: string;
-      };
-      error.code = "CALL_EXCEPTION";
+        code: string
+        message: string
+      }
+      error.code = "CALL_EXCEPTION"
 
-      mockSeaport.validate.returns({
-        staticCall: sinon.stub().rejects(error),
-      });
+      mockSeaport.validate.mockReturnValue({
+        staticCall: vi.fn().mockRejectedValue(error),
+      })
 
       const result = await fulfillmentManager.isOrderFulfillable({
         order: mockOrderV2,
         accountAddress: "0xBuyer",
-      });
+      })
 
-      expect(result).to.be.false;
-    });
+      expect(result).toBe(false)
+    })
 
     test("throws other errors", async () => {
-      mockSeaport.validate.returns({
-        staticCall: sinon.stub().rejects(new Error("Unknown error")),
-      });
+      mockSeaport.validate.mockReturnValue({
+        staticCall: vi.fn().mockRejectedValue(new Error("Unknown error")),
+      })
 
       try {
         await fulfillmentManager.isOrderFulfillable({
           order: mockOrderV2,
           accountAddress: "0xBuyer",
-        });
-        expect.fail("Expected error to be thrown");
+        })
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Unknown error");
+        expect((error as Error).message).toContain("Unknown error")
       }
-    });
+    })
 
     test("throws when protocol is invalid", async () => {
       const invalidOrder = {
         ...mockOrderV2,
         protocolAddress: "0xInvalidProtocol",
-      };
+      }
 
       try {
         await fulfillmentManager.isOrderFulfillable({
           order: invalidOrder,
           accountAddress: "0xBuyer",
-        });
-        expect.fail("Expected error to be thrown");
+        })
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Unsupported protocol");
+        expect((error as Error).message).toContain("Unsupported protocol")
       }
-    });
-  });
+    })
+  })
 
-  suite("approveOrder", () => {
+  describe("approveOrder", () => {
     test("approves an order successfully", async () => {
-      const result = await fulfillmentManager.approveOrder(mockOrderV2);
+      const result = await fulfillmentManager.approveOrder(mockOrderV2)
 
-      expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
-      expect(mockDispatch.calledOnce).to.be.true;
-      expect(mockDispatch.firstCall.args[0]).to.equal(EventType.ApproveOrder);
-      expect(mockSeaport.validate.calledOnce).to.be.true;
-      expect(mockConfirmTransaction.calledOnce).to.be.true;
-      expect(result).to.equal("0xTxHash");
-    });
+      expect(mockRequireAccountIsAvailable).toHaveBeenCalledTimes(1)
+      expect(mockDispatch).toHaveBeenCalledTimes(1)
+      expect(mockDispatch.mock.calls[0][0]).toBe(EventType.ApproveOrder)
+      expect(mockSeaport.validate).toHaveBeenCalledTimes(1)
+      expect(mockConfirmTransaction).toHaveBeenCalledTimes(1)
+      expect(result).toBe("0xTxHash")
+    })
 
     test("approves order with domain", async () => {
-      await fulfillmentManager.approveOrder(mockOrderV2, "opensea.io");
+      await fulfillmentManager.approveOrder(mockOrderV2, "opensea.io")
 
-      const validateCall = mockSeaport.validate.firstCall.args;
-      expect(validateCall[2]).to.equal("opensea.io");
-    });
+      const validateCall = mockSeaport.validate.mock.calls[0]
+      expect(validateCall[2]).toBe("opensea.io")
+    })
 
     test("dispatches ApproveOrder event", async () => {
-      await fulfillmentManager.approveOrder(mockOrderV2);
+      await fulfillmentManager.approveOrder(mockOrderV2)
 
-      expect(mockDispatch.calledOnce).to.be.true;
-      const eventData = mockDispatch.firstCall.args[1];
-      expect(eventData.orderV2).to.equal(mockOrderV2);
-      expect(eventData.accountAddress).to.equal("0xMaker");
-    });
+      expect(mockDispatch).toHaveBeenCalledTimes(1)
+      const eventData = mockDispatch.mock.calls[0][1]
+      expect(eventData.orderV2).toBe(mockOrderV2)
+      expect(eventData.accountAddress).toBe("0xMaker")
+    })
 
     test("throws when account is not available", async () => {
-      mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
+      mockRequireAccountIsAvailable.mockRejectedValue(
+        new Error("Account not available"),
+      )
 
       try {
-        await fulfillmentManager.approveOrder(mockOrderV2);
-        expect.fail("Expected error to be thrown");
+        await fulfillmentManager.approveOrder(mockOrderV2)
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Account not available");
+        expect((error as Error).message).toContain("Account not available")
       }
-    });
+    })
 
     test("throws when protocol is invalid", async () => {
       const invalidOrder = {
         ...mockOrderV2,
         protocolAddress: "0xInvalidProtocol",
-      };
+      }
 
       try {
-        await fulfillmentManager.approveOrder(invalidOrder);
-        expect.fail("Expected error to be thrown");
+        await fulfillmentManager.approveOrder(invalidOrder)
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Unsupported protocol");
+        expect((error as Error).message).toContain("Unsupported protocol")
       }
-    });
-  });
+    })
+  })
 
-  suite("validateOrderOnchain", () => {
+  describe("validateOrderOnchain", () => {
     test("validates order components onchain successfully", async () => {
       const result = await fulfillmentManager.validateOrderOnchain(
         mockOrderComponents,
         "0xValidator",
-      );
+      )
 
-      expect(mockRequireAccountIsAvailable.calledOnce).to.be.true;
-      expect(mockDispatch.calledOnce).to.be.true;
-      expect(mockDispatch.firstCall.args[0]).to.equal(EventType.ApproveOrder);
-      expect(mockSeaport.validate.calledOnce).to.be.true;
-      expect(mockConfirmTransaction.calledOnce).to.be.true;
-      expect(result).to.equal("0xTxHash");
-    });
+      expect(mockRequireAccountIsAvailable).toHaveBeenCalledTimes(1)
+      expect(mockDispatch).toHaveBeenCalledTimes(1)
+      expect(mockDispatch.mock.calls[0][0]).toBe(EventType.ApproveOrder)
+      expect(mockSeaport.validate).toHaveBeenCalledTimes(1)
+      expect(mockConfirmTransaction).toHaveBeenCalledTimes(1)
+      expect(result).toBe("0xTxHash")
+    })
 
     test("dispatches ApproveOrder event with order components", async () => {
       await fulfillmentManager.validateOrderOnchain(
         mockOrderComponents,
         "0xValidator",
-      );
+      )
 
-      const eventData = mockDispatch.firstCall.args[1];
-      expect(eventData.orderV2.protocolData).to.equal(mockOrderComponents);
-      expect(eventData.accountAddress).to.equal("0xValidator");
-    });
+      const eventData = mockDispatch.mock.calls[0][1]
+      expect(eventData.orderV2.protocolData).toBe(mockOrderComponents)
+      expect(eventData.accountAddress).toBe("0xValidator")
+    })
 
     test("calls validate with correct parameters", async () => {
       await fulfillmentManager.validateOrderOnchain(
         mockOrderComponents,
         "0xValidator",
-      );
+      )
 
-      const validateCall = mockSeaport.validate.firstCall.args;
-      expect(validateCall[0][0].parameters).to.equal(mockOrderComponents);
-      expect(validateCall[0][0].signature).to.equal("0x");
-      expect(validateCall[1]).to.equal("0xValidator");
-    });
+      const validateCall = mockSeaport.validate.mock.calls[0]
+      expect(validateCall[0][0].parameters).toBe(mockOrderComponents)
+      expect(validateCall[0][0].signature).toBe("0x")
+      expect(validateCall[1]).toBe("0xValidator")
+    })
 
     test("throws when account is not available", async () => {
-      mockRequireAccountIsAvailable.rejects(new Error("Account not available"));
+      mockRequireAccountIsAvailable.mockRejectedValue(
+        new Error("Account not available"),
+      )
 
       try {
         await fulfillmentManager.validateOrderOnchain(
           mockOrderComponents,
           "0xValidator",
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Account not available");
+        expect((error as Error).message).toContain("Account not available")
       }
-    });
-  });
+    })
+  })
 
-  suite("createListingAndValidateOnchain", () => {
+  describe("createListingAndValidateOnchain", () => {
     test("creates and validates a listing successfully", async () => {
       const result = await fulfillmentManager.createListingAndValidateOnchain({
         asset: { tokenAddress: "0xNFT", tokenId: "123" },
         accountAddress: "0xSeller",
         amount: "1000000000000000000",
-      });
+      })
 
-      expect(mockOrdersManager.buildListingOrderComponents.calledOnce).to.be
-        .true;
-      expect(mockSeaport.validate.calledOnce).to.be.true;
-      expect(result).to.equal("0xTxHash");
-    });
+      expect(
+        mockOrdersManager.buildListingOrderComponents,
+      ).toHaveBeenCalledTimes(1)
+      expect(mockSeaport.validate).toHaveBeenCalledTimes(1)
+      expect(result).toBe("0xTxHash")
+    })
 
     test("forwards all listing parameters", async () => {
       await fulfillmentManager.createListingAndValidateOnchain({
@@ -687,30 +689,32 @@ suite("SDK: FulfillmentManager", () => {
         buyerAddress: "0xBuyer",
         includeOptionalCreatorFees: true,
         zone: "0xZone",
-      });
+      })
 
       const buildCall =
-        mockOrdersManager.buildListingOrderComponents.firstCall.args[0];
-      expect(buildCall.asset.tokenAddress).to.equal("0xNFT");
-      expect(buildCall.amount).to.equal("2000000000000000000");
-      expect(buildCall.quantity).to.equal(5);
-      expect(buildCall.domain).to.equal("opensea.io");
-      expect(buildCall.buyerAddress).to.equal("0xBuyer");
-    });
-  });
+        mockOrdersManager.buildListingOrderComponents.mock.calls[0][0]
+      expect(buildCall.asset.tokenAddress).toBe("0xNFT")
+      expect(buildCall.amount).toBe("2000000000000000000")
+      expect(buildCall.quantity).toBe(5)
+      expect(buildCall.domain).toBe("opensea.io")
+      expect(buildCall.buyerAddress).toBe("0xBuyer")
+    })
+  })
 
-  suite("createOfferAndValidateOnchain", () => {
+  describe("createOfferAndValidateOnchain", () => {
     test("creates and validates an offer successfully", async () => {
       const result = await fulfillmentManager.createOfferAndValidateOnchain({
         asset: { tokenAddress: "0xNFT", tokenId: "123" },
         accountAddress: "0xBuyer",
         amount: "1000000000000000000",
-      });
+      })
 
-      expect(mockOrdersManager.buildOfferOrderComponents.calledOnce).to.be.true;
-      expect(mockSeaport.validate.calledOnce).to.be.true;
-      expect(result).to.equal("0xTxHash");
-    });
+      expect(mockOrdersManager.buildOfferOrderComponents).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(mockSeaport.validate).toHaveBeenCalledTimes(1)
+      expect(result).toBe("0xTxHash")
+    })
 
     test("forwards all offer parameters", async () => {
       await fulfillmentManager.createOfferAndValidateOnchain({
@@ -722,18 +726,18 @@ suite("SDK: FulfillmentManager", () => {
         salt: "67890",
         expirationTime: 3000000,
         zone: "0xSignedZone",
-      });
+      })
 
       const buildCall =
-        mockOrdersManager.buildOfferOrderComponents.firstCall.args[0];
-      expect(buildCall.asset.tokenAddress).to.equal("0xNFT");
-      expect(buildCall.amount).to.equal("1500000000000000000");
-      expect(buildCall.quantity).to.equal(3);
-      expect(buildCall.domain).to.equal("test.io");
-    });
-  });
+        mockOrdersManager.buildOfferOrderComponents.mock.calls[0][0]
+      expect(buildCall.asset.tokenAddress).toBe("0xNFT")
+      expect(buildCall.amount).toBe("1500000000000000000")
+      expect(buildCall.quantity).toBe(3)
+      expect(buildCall.domain).toBe("test.io")
+    })
+  })
 
-  suite("Constructor", () => {
+  describe("Constructor", () => {
     test("initializes with all required dependencies", () => {
       const mockContext = createMockContext({
         chain: Chain.Mainnet,
@@ -742,11 +746,11 @@ suite("SDK: FulfillmentManager", () => {
         dispatch: mockDispatch,
         confirmTransaction: mockConfirmTransaction,
         requireAccountIsAvailable: mockRequireAccountIsAvailable,
-      });
+      })
 
-      const manager = new FulfillmentManager(mockContext, mockOrdersManager);
+      const manager = new FulfillmentManager(mockContext, mockOrdersManager)
 
-      expect(manager).to.be.instanceOf(FulfillmentManager);
-    });
-  });
-});
+      expect(manager).toBeInstanceOf(FulfillmentManager)
+    })
+  })
+})

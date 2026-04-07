@@ -1,14 +1,18 @@
+import type { Chain } from "../types"
 import {
+  getContractPath,
+  getListNFTsByAccountPath,
   getListNFTsByCollectionPath,
   getListNFTsByContractPath,
   getNFTPath,
   getRefreshMetadataPath,
-  getListNFTsByAccountPath,
-  getContractPath,
-} from "./apiPaths";
-import { ListNFTsResponse, GetNFTResponse, GetContractResponse } from "./types";
-import { Chain } from "../types";
-import { Fetcher } from "./fetcher";
+} from "./apiPaths"
+import type { Fetcher } from "./fetcher"
+import type {
+  GetContractResponse,
+  GetNFTResponse,
+  ListNFTsResponse,
+} from "./types"
 
 /**
  * NFT-related API operations
@@ -33,8 +37,8 @@ export class NFTsAPI {
         limit,
         next,
       },
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -52,8 +56,8 @@ export class NFTsAPI {
         limit,
         next,
       },
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -71,9 +75,9 @@ export class NFTsAPI {
         limit,
         next,
       },
-    );
+    )
 
-    return response;
+    return response
   }
 
   /**
@@ -86,8 +90,8 @@ export class NFTsAPI {
   ): Promise<GetNFTResponse> {
     const response = await this.fetcher.get<GetNFTResponse>(
       getNFTPath(chain, address, identifier),
-    );
-    return response;
+    )
+    return response
   }
 
   /**
@@ -101,9 +105,9 @@ export class NFTsAPI {
     const response = await this.fetcher.post<Response>(
       getRefreshMetadataPath(chain, address, identifier),
       {},
-    );
+    )
 
-    return response;
+    return response
   }
 
   /**
@@ -115,7 +119,7 @@ export class NFTsAPI {
   ): Promise<GetContractResponse> {
     const response = await this.fetcher.get<GetContractResponse>(
       getContractPath(chain, address),
-    );
-    return response;
+    )
+    return response
   }
 }

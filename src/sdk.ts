@@ -1,36 +1,37 @@
-import EventEmitter = require("events");
-import { Seaport } from "@opensea/seaport-js";
-import { OrderComponents } from "@opensea/seaport-js/lib/types";
+import EventEmitter = require("node:events")
+
+import { Seaport } from "@opensea/seaport-js"
+import type { OrderComponents } from "@opensea/seaport-js/lib/types"
 import {
-  BigNumberish,
-  Overrides,
-  Signer,
+  type BigNumberish,
   ethers,
-  JsonRpcProvider,
-} from "ethers";
-import { OpenSeaAPI } from "./api/api";
-import { CollectionOffer, Listing, Offer, Order } from "./api/types";
-import { OrderV2 } from "./orders/types";
-import { AssetsManager } from "./sdk/assets";
-import { CancellationManager } from "./sdk/cancellation";
-import { FulfillmentManager } from "./sdk/fulfillment";
-import { BulkOrderResult, OrdersManager } from "./sdk/orders";
-import { TokensManager } from "./sdk/tokens";
+  type JsonRpcProvider,
+  type Overrides,
+  type Signer,
+} from "ethers"
+import { OpenSeaAPI } from "./api/api"
+import type { CollectionOffer, Listing, Offer, Order } from "./api/types"
+import type { OrderV2 } from "./orders/types"
+import { AssetsManager } from "./sdk/assets"
+import { CancellationManager } from "./sdk/cancellation"
+import { FulfillmentManager } from "./sdk/fulfillment"
+import { type BulkOrderResult, OrdersManager } from "./sdk/orders"
+import { TokensManager } from "./sdk/tokens"
 import {
-  EventData,
-  EventType,
+  type AssetWithTokenId,
+  type AssetWithTokenStandard,
   Chain,
-  OpenSeaAPIConfig,
+  type EventData,
+  EventType,
+  type OpenSeaAPIConfig,
   OrderSide,
-  AssetWithTokenStandard,
-  AssetWithTokenId,
-} from "./types";
+} from "./types"
 import {
   getDefaultConduit,
-  getOfferPaymentToken,
   getListingPaymentToken,
+  getOfferPaymentToken,
   getSeaportAddress,
-} from "./utils/utils";
+} from "./utils/utils"
 
 /**
  * The OpenSea SDK main class.
@@ -38,27 +39,27 @@ import {
  */
 export class OpenSeaSDK {
   /** Provider to use for transactions. */
-  public provider: JsonRpcProvider;
+  public provider: JsonRpcProvider
   /** Seaport client @see {@link https://github.com/ProjectOpenSea/seaport-js} */
-  public seaport: Seaport;
+  public seaport: Seaport
   /** Logger function to use when debugging */
-  public logger: (arg: string) => void;
+  public logger: (arg: string) => void
   /** API instance */
-  public readonly api: OpenSeaAPI;
+  public readonly api: OpenSeaAPI
   /** The configured chain */
-  public readonly chain: Chain;
+  public readonly chain: Chain
   /** Internal cache of decimals for payment tokens to save network requests */
-  private _cachedPaymentTokenDecimals: { [address: string]: number } = {};
+  private _cachedPaymentTokenDecimals: { [address: string]: number } = {}
 
-  private _emitter: EventEmitter;
-  private _signerOrProvider: Signer | JsonRpcProvider;
+  private _emitter: EventEmitter
+  private _signerOrProvider: Signer | JsonRpcProvider
 
   // Manager instances
-  private _tokensManager: TokensManager;
-  private _assetsManager: AssetsManager;
-  private _cancellationManager: CancellationManager;
-  private _ordersManager: OrdersManager;
-  private _fulfillmentManager: FulfillmentManager;
+  private _tokensManager: TokensManager
+  private _assetsManager: AssetsManager
+  private _cancellationManager: CancellationManager
+  private _ordersManager: OrdersManager
+  private _fulfillmentManager: FulfillmentManager
 
   /**
    * Create a new instance of OpenSeaSDK.
@@ -74,16 +75,16 @@ export class OpenSeaSDK {
     logger?: (arg: string) => void,
   ) {
     // API config
-    apiConfig.chain ??= Chain.Mainnet;
-    this.chain = apiConfig.chain;
-    this.api = new OpenSeaAPI(apiConfig);
+    apiConfig.chain ??= Chain.Mainnet
+    this.chain = apiConfig.chain
+    this.api = new OpenSeaAPI(apiConfig)
 
     this.provider = ((signerOrProvider as Signer).provider ??
-      signerOrProvider) as JsonRpcProvider;
-    this._signerOrProvider = signerOrProvider ?? this.provider;
+      signerOrProvider) as JsonRpcProvider
+    this._signerOrProvider = signerOrProvider ?? this.provider
 
-    const defaultConduit = getDefaultConduit(this.chain);
-    const seaportAddress = getSeaportAddress(this.chain);
+    const defaultConduit = getDefaultConduit(this.chain)
+    const seaportAddress = getSeaportAddress(this.chain)
     this.seaport = new Seaport(this._signerOrProvider, {
       conduitKeyToConduit: {
         [defaultConduit.key]: defaultConduit.address,
@@ -92,21 +93,19 @@ export class OpenSeaSDK {
         defaultConduitKey: defaultConduit.key,
         contractAddress: seaportAddress,
       },
-    });
+    })
 
     // Emit events
-    this._emitter = new EventEmitter();
+    this._emitter = new EventEmitter()
 
     // Logger: default to no logging if fn not provided
-    this.logger = logger ?? ((arg: string) => arg);
+    this.logger = logger ?? ((arg: string) => arg)
 
     // Cache decimals for offer and listing payment tokens to skip network request
-    const offerPaymentToken = getOfferPaymentToken(this.chain).toLowerCase();
-    const listingPaymentToken = getListingPaymentToken(
-      this.chain,
-    ).toLowerCase();
-    this._cachedPaymentTokenDecimals[offerPaymentToken] = 18;
-    this._cachedPaymentTokenDecimals[listingPaymentToken] = 18;
+    const offerPaymentToken = getOfferPaymentToken(this.chain).toLowerCase()
+    const listingPaymentToken = getListingPaymentToken(this.chain).toLowerCase()
+    this._cachedPaymentTokenDecimals[offerPaymentToken] = 18
+    this._cachedPaymentTokenDecimals[listingPaymentToken] = 18
 
     // Create shared context for all managers
     const context = {
@@ -119,20 +118,20 @@ export class OpenSeaSDK {
       dispatch: this._dispatch.bind(this),
       confirmTransaction: this._confirmTransaction.bind(this),
       requireAccountIsAvailable: this._requireAccountIsAvailable.bind(this),
-    };
+    }
 
     // Initialize manager instances
-    this._tokensManager = new TokensManager(context);
-    this._assetsManager = new AssetsManager(context);
-    this._cancellationManager = new CancellationManager(context);
+    this._tokensManager = new TokensManager(context)
+    this._assetsManager = new AssetsManager(context)
+    this._cancellationManager = new CancellationManager(context)
     this._ordersManager = new OrdersManager(
       context,
       this._getPriceParameters.bind(this),
-    );
+    )
     this._fulfillmentManager = new FulfillmentManager(
       context,
       this._ordersManager,
-    );
+    )
   }
 
   /**
@@ -147,9 +146,9 @@ export class OpenSeaSDK {
     once = false,
   ) {
     if (once) {
-      this._emitter.once(event, listener);
+      this._emitter.once(event, listener)
     } else {
-      this._emitter.addListener(event, listener);
+      this._emitter.addListener(event, listener)
     }
   }
 
@@ -159,7 +158,7 @@ export class OpenSeaSDK {
    * @param listener The listener to remove
    */
   public removeListener(event: EventType, listener: (data: EventData) => void) {
-    this._emitter.removeListener(event, listener);
+    this._emitter.removeListener(event, listener)
   }
 
   /**
@@ -168,7 +167,7 @@ export class OpenSeaSDK {
    * @param event Optional EventType to remove listeners for
    */
   public removeAllListeners(event?: EventType) {
-    this._emitter.removeAllListeners(event);
+    this._emitter.removeAllListeners(event)
   }
 
   /**
@@ -182,10 +181,10 @@ export class OpenSeaSDK {
     amountInEth,
     accountAddress,
   }: {
-    amountInEth: BigNumberish;
-    accountAddress: string;
+    amountInEth: BigNumberish
+    accountAddress: string
   }) {
-    return this._tokensManager.wrapEth({ amountInEth, accountAddress });
+    return this._tokensManager.wrapEth({ amountInEth, accountAddress })
   }
 
   /**
@@ -199,10 +198,10 @@ export class OpenSeaSDK {
     amountInEth,
     accountAddress,
   }: {
-    amountInEth: BigNumberish;
-    accountAddress: string;
+    amountInEth: BigNumberish
+    accountAddress: string
   }) {
-    return this._tokensManager.unwrapWeth({ amountInEth, accountAddress });
+    return this._tokensManager.unwrapWeth({ amountInEth, accountAddress })
   }
 
   /**
@@ -233,14 +232,14 @@ export class OpenSeaSDK {
     expirationTime,
     zone,
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    expirationTime?: BigNumberish;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    expirationTime?: BigNumberish
+    zone?: string
   }): Promise<OrderV2> {
     return this._ordersManager.createOffer({
       asset,
@@ -251,7 +250,7 @@ export class OpenSeaSDK {
       salt,
       expirationTime,
       zone,
-    });
+    })
   }
 
   /**
@@ -287,17 +286,17 @@ export class OpenSeaSDK {
     includeOptionalCreatorFees = false,
     zone,
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    listingTime?: number;
-    expirationTime?: number;
-    buyerAddress?: string;
-    includeOptionalCreatorFees?: boolean;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    listingTime?: number
+    expirationTime?: number
+    buyerAddress?: string
+    includeOptionalCreatorFees?: boolean
+    zone?: string
   }): Promise<OrderV2> {
     return this._ordersManager.createListing({
       asset,
@@ -311,7 +310,7 @@ export class OpenSeaSDK {
       buyerAddress,
       includeOptionalCreatorFees,
       zone,
-    });
+    })
   }
 
   /**
@@ -341,27 +340,27 @@ export class OpenSeaSDK {
     onProgress,
   }: {
     listings: Array<{
-      asset: AssetWithTokenId;
-      amount: BigNumberish;
-      quantity?: BigNumberish;
-      domain?: string;
-      salt?: BigNumberish;
-      listingTime?: number;
-      expirationTime?: number;
-      buyerAddress?: string;
-      includeOptionalCreatorFees?: boolean;
-      zone?: string;
-    }>;
-    accountAddress: string;
-    continueOnError?: boolean;
-    onProgress?: (completed: number, total: number) => void;
+      asset: AssetWithTokenId
+      amount: BigNumberish
+      quantity?: BigNumberish
+      domain?: string
+      salt?: BigNumberish
+      listingTime?: number
+      expirationTime?: number
+      buyerAddress?: string
+      includeOptionalCreatorFees?: boolean
+      zone?: string
+    }>
+    accountAddress: string
+    continueOnError?: boolean
+    onProgress?: (completed: number, total: number) => void
   }): Promise<BulkOrderResult> {
     return this._ordersManager.createBulkListings({
       listings,
       accountAddress,
       continueOnError,
       onProgress,
-    });
+    })
   }
 
   /**
@@ -391,24 +390,24 @@ export class OpenSeaSDK {
     onProgress,
   }: {
     offers: Array<{
-      asset: AssetWithTokenId;
-      amount: BigNumberish;
-      quantity?: BigNumberish;
-      domain?: string;
-      salt?: BigNumberish;
-      expirationTime?: BigNumberish;
-      zone?: string;
-    }>;
-    accountAddress: string;
-    continueOnError?: boolean;
-    onProgress?: (completed: number, total: number) => void;
+      asset: AssetWithTokenId
+      amount: BigNumberish
+      quantity?: BigNumberish
+      domain?: string
+      salt?: BigNumberish
+      expirationTime?: BigNumberish
+      zone?: string
+    }>
+    accountAddress: string
+    continueOnError?: boolean
+    onProgress?: (completed: number, total: number) => void
   }): Promise<BulkOrderResult> {
     return this._ordersManager.createBulkOffers({
       offers,
       accountAddress,
       continueOnError,
       onProgress,
-    });
+    })
   }
 
   /**
@@ -442,18 +441,18 @@ export class OpenSeaSDK {
     traits,
     numericTraits,
   }: {
-    collectionSlug: string;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity: number;
-    domain?: string;
-    salt?: BigNumberish;
-    expirationTime?: number | string;
-    offerProtectionEnabled?: boolean;
-    traitType?: string;
-    traitValue?: string;
-    traits?: Array<{ type: string; value: string }>;
-    numericTraits?: Array<{ type: string; min?: number; max?: number }>;
+    collectionSlug: string
+    accountAddress: string
+    amount: BigNumberish
+    quantity: number
+    domain?: string
+    salt?: BigNumberish
+    expirationTime?: number | string
+    offerProtectionEnabled?: boolean
+    traitType?: string
+    traitValue?: string
+    traits?: Array<{ type: string; value: string }>
+    numericTraits?: Array<{ type: string; min?: number; max?: number }>
   }): Promise<CollectionOffer | null> {
     return this._ordersManager.createCollectionOffer({
       collectionSlug,
@@ -468,7 +467,7 @@ export class OpenSeaSDK {
       traitValue,
       traits,
       numericTraits,
-    });
+    })
   }
 
   /**
@@ -500,14 +499,14 @@ export class OpenSeaSDK {
     includeOptionalCreatorFees = false,
     overrides,
   }: {
-    order: OrderV2 | Order | Listing | Offer;
-    accountAddress: string;
-    assetContractAddress?: string;
-    tokenId?: string;
-    unitsToFill?: BigNumberish;
-    recipientAddress?: string;
-    includeOptionalCreatorFees?: boolean;
-    overrides?: Overrides;
+    order: OrderV2 | Order | Listing | Offer
+    accountAddress: string
+    assetContractAddress?: string
+    tokenId?: string
+    unitsToFill?: BigNumberish
+    recipientAddress?: string
+    includeOptionalCreatorFees?: boolean
+    overrides?: Overrides
   }): Promise<string> {
     return this._fulfillmentManager.fulfillOrder({
       order,
@@ -518,7 +517,7 @@ export class OpenSeaSDK {
       recipientAddress,
       includeOptionalCreatorFees,
       overrides,
-    });
+    })
   }
 
   /**
@@ -552,12 +551,12 @@ export class OpenSeaSDK {
     domain,
     overrides,
   }: {
-    orders?: Array<OrderV2 | OrderComponents>;
-    orderHashes?: string[];
-    accountAddress: string;
-    protocolAddress?: string;
-    domain?: string;
-    overrides?: Overrides;
+    orders?: Array<OrderV2 | OrderComponents>
+    orderHashes?: string[]
+    accountAddress: string
+    protocolAddress?: string
+    domain?: string
+    overrides?: Overrides
   }): Promise<string> {
     return this._cancellationManager.cancelOrders({
       orders,
@@ -566,7 +565,7 @@ export class OpenSeaSDK {
       protocolAddress,
       domain,
       overrides,
-    });
+    })
   }
 
   /**
@@ -606,11 +605,11 @@ export class OpenSeaSDK {
     protocolAddress,
     domain,
   }: {
-    order?: OrderV2;
-    orderHash?: string;
-    accountAddress: string;
-    protocolAddress?: string;
-    domain?: string;
+    order?: OrderV2
+    orderHash?: string
+    accountAddress: string
+    protocolAddress?: string
+    domain?: string
   }) {
     return this._cancellationManager.cancelOrder({
       order,
@@ -618,7 +617,7 @@ export class OpenSeaSDK {
       accountAddress,
       protocolAddress,
       domain,
-    });
+    })
   }
 
   /**
@@ -649,7 +648,7 @@ export class OpenSeaSDK {
       chain,
       offererSignature,
       useSignerToDeriveOffererSignature,
-    );
+    )
   }
 
   /**
@@ -668,13 +667,13 @@ export class OpenSeaSDK {
     order,
     accountAddress,
   }: {
-    order: OrderV2;
-    accountAddress: string;
+    order: OrderV2
+    accountAddress: string
   }): Promise<boolean> {
     return this._fulfillmentManager.isOrderFulfillable({
       order,
       accountAddress,
-    });
+    })
   }
 
   /**
@@ -690,10 +689,10 @@ export class OpenSeaSDK {
     accountAddress,
     asset,
   }: {
-    accountAddress: string;
-    asset: AssetWithTokenStandard;
+    accountAddress: string
+    asset: AssetWithTokenStandard
   }): Promise<bigint> {
-    return this._assetsManager.getBalance({ accountAddress, asset });
+    return this._assetsManager.getBalance({ accountAddress, asset })
   }
 
   /**
@@ -712,11 +711,11 @@ export class OpenSeaSDK {
     toAddress,
     overrides,
   }: {
-    asset: AssetWithTokenStandard;
-    amount?: BigNumberish;
-    fromAddress: string;
-    toAddress: string;
-    overrides?: Overrides;
+    asset: AssetWithTokenStandard
+    amount?: BigNumberish
+    fromAddress: string
+    toAddress: string
+    overrides?: Overrides
   }): Promise<void> {
     return this._assetsManager.transfer({
       asset,
@@ -724,7 +723,7 @@ export class OpenSeaSDK {
       fromAddress,
       toAddress,
       overrides,
-    });
+    })
   }
 
   /**
@@ -747,18 +746,18 @@ export class OpenSeaSDK {
     overrides,
   }: {
     assets: Array<{
-      asset: AssetWithTokenStandard;
-      toAddress: string;
-      amount?: BigNumberish;
-    }>;
-    fromAddress: string;
-    overrides?: Overrides;
+      asset: AssetWithTokenStandard
+      toAddress: string
+      amount?: BigNumberish
+    }>
+    fromAddress: string
+    overrides?: Overrides
   }): Promise<string> {
     return this._assetsManager.bulkTransfer({
       assets,
       fromAddress,
       overrides,
-    });
+    })
   }
 
   /**
@@ -782,17 +781,17 @@ export class OpenSeaSDK {
     overrides,
   }: {
     assets: Array<{
-      asset: AssetWithTokenStandard;
-      amount?: BigNumberish;
-    }>;
-    fromAddress: string;
-    overrides?: Overrides;
+      asset: AssetWithTokenStandard
+      amount?: BigNumberish
+    }>
+    fromAddress: string
+    overrides?: Overrides
   }): Promise<string | undefined> {
     return this._assetsManager.batchApproveAssets({
       assets,
       fromAddress,
       overrides,
-    });
+    })
   }
 
   /**
@@ -806,7 +805,7 @@ export class OpenSeaSDK {
    * @throws Error if the order's protocol address is not supported by OpenSea. See {@link isValidProtocol}.
    */
   public async approveOrder(order: OrderV2, domain?: string) {
-    return this._fulfillmentManager.approveOrder(order, domain);
+    return this._fulfillmentManager.approveOrder(order, domain)
   }
 
   /**
@@ -827,7 +826,7 @@ export class OpenSeaSDK {
     return this._fulfillmentManager.validateOrderOnchain(
       orderComponents,
       accountAddress,
-    );
+    )
   }
 
   /**
@@ -862,17 +861,17 @@ export class OpenSeaSDK {
     includeOptionalCreatorFees = false,
     zone,
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    listingTime?: number;
-    expirationTime?: number;
-    buyerAddress?: string;
-    includeOptionalCreatorFees?: boolean;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    listingTime?: number
+    expirationTime?: number
+    buyerAddress?: string
+    includeOptionalCreatorFees?: boolean
+    zone?: string
   }): Promise<string> {
     return this._fulfillmentManager.createListingAndValidateOnchain({
       asset,
@@ -886,7 +885,7 @@ export class OpenSeaSDK {
       buyerAddress,
       includeOptionalCreatorFees,
       zone,
-    });
+    })
   }
 
   /**
@@ -915,14 +914,14 @@ export class OpenSeaSDK {
     expirationTime,
     zone,
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    expirationTime?: BigNumberish;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    expirationTime?: BigNumberish
+    zone?: string
   }): Promise<string> {
     return this._fulfillmentManager.createOfferAndValidateOnchain({
       asset,
@@ -933,7 +932,7 @@ export class OpenSeaSDK {
       salt,
       expirationTime,
       zone,
-    });
+    })
   }
 
   /**
@@ -947,59 +946,59 @@ export class OpenSeaSDK {
     tokenAddress: string,
     amount: BigNumberish,
   ) {
-    tokenAddress = tokenAddress.toLowerCase();
-    const isEther = tokenAddress === ethers.ZeroAddress;
-    let decimals = 18;
+    tokenAddress = tokenAddress.toLowerCase()
+    const isEther = tokenAddress === ethers.ZeroAddress
+    let decimals = 18
     if (!isEther) {
       if (tokenAddress in this._cachedPaymentTokenDecimals) {
-        decimals = this._cachedPaymentTokenDecimals[tokenAddress];
+        decimals = this._cachedPaymentTokenDecimals[tokenAddress]
       } else {
-        const paymentToken = await this.api.getPaymentToken(tokenAddress);
-        this._cachedPaymentTokenDecimals[tokenAddress] = paymentToken.decimals;
-        decimals = paymentToken.decimals;
+        const paymentToken = await this.api.getPaymentToken(tokenAddress)
+        this._cachedPaymentTokenDecimals[tokenAddress] = paymentToken.decimals
+        decimals = paymentToken.decimals
       }
     }
 
-    const amountWei = ethers.parseUnits(amount.toString(), decimals);
-    const basePrice = amountWei;
+    const amountWei = ethers.parseUnits(amount.toString(), decimals)
+    const basePrice = amountWei
 
     // Validation
     if (amount == null || amountWei < 0) {
-      throw new Error("Starting price must be a number >= 0");
+      throw new Error("Starting price must be a number >= 0")
     }
     if (isEther && orderSide === OrderSide.OFFER) {
-      throw new Error("Offers must use wrapped ETH or an ERC-20 token.");
+      throw new Error("Offers must use wrapped ETH or an ERC-20 token.")
     }
-    return { basePrice };
+    return { basePrice }
   }
 
   private _dispatch(event: EventType, data: EventData) {
-    this._emitter.emit(event, data);
+    this._emitter.emit(event, data)
   }
 
   /** Get the accounts available from the signer or provider. */
   private async _getAvailableAccounts() {
-    const availableAccounts: string[] = [];
+    const availableAccounts: string[] = []
 
     try {
       if ("address" in this._signerOrProvider) {
-        availableAccounts.push(this._signerOrProvider.address as string);
+        availableAccounts.push(this._signerOrProvider.address as string)
       } else if ("listAccounts" in this._signerOrProvider) {
         const addresses = (await this._signerOrProvider.listAccounts()).map(
-          (acct) => acct.address,
-        );
-        availableAccounts.push(...addresses);
+          acct => acct.address,
+        )
+        availableAccounts.push(...addresses)
       } else if ("getAddress" in this._signerOrProvider) {
-        availableAccounts.push(await this._signerOrProvider.getAddress());
+        availableAccounts.push(await this._signerOrProvider.getAddress())
       }
     } catch (error) {
       // If we can't get accounts (e.g., RPC error), treat as no accounts available
       this.logger(
         `Failed to get available accounts: ${error instanceof Error ? error.message : error}`,
-      );
+      )
     }
 
-    return availableAccounts;
+    return availableAccounts
   }
 
   /**
@@ -1007,18 +1006,18 @@ export class OpenSeaSDK {
    * @param accountAddress The account address to check is available.
    */
   private async _requireAccountIsAvailable(accountAddress: string) {
-    const accountAddressChecksummed = ethers.getAddress(accountAddress);
-    const availableAccounts = await this._getAvailableAccounts();
+    const accountAddressChecksummed = ethers.getAddress(accountAddress)
+    const availableAccounts = await this._getAvailableAccounts()
 
     if (availableAccounts.includes(accountAddressChecksummed)) {
-      return;
+      return
     }
 
     throw new Error(
       `Specified accountAddress is not available through wallet or provider: ${accountAddressChecksummed}. Accounts available: ${
         availableAccounts.length > 0 ? availableAccounts.join(", ") : "none"
       }`,
-    );
+    )
   }
 
   /**
@@ -1032,21 +1031,21 @@ export class OpenSeaSDK {
     event: EventType,
     description: string,
   ): Promise<void> {
-    const transactionEventData = { transactionHash, event };
-    this.logger(`Transaction started: ${description}`);
+    const transactionEventData = { transactionHash, event }
+    this.logger(`Transaction started: ${description}`)
 
     try {
-      this._dispatch(EventType.TransactionCreated, transactionEventData);
-      await this.provider.waitForTransaction(transactionHash);
-      this.logger(`Transaction succeeded: ${description}`);
-      this._dispatch(EventType.TransactionConfirmed, transactionEventData);
+      this._dispatch(EventType.TransactionCreated, transactionEventData)
+      await this.provider.waitForTransaction(transactionHash)
+      this.logger(`Transaction succeeded: ${description}`)
+      this._dispatch(EventType.TransactionConfirmed, transactionEventData)
     } catch (error) {
-      this.logger(`Transaction failed: ${description}`);
+      this.logger(`Transaction failed: ${description}`)
       this._dispatch(EventType.TransactionFailed, {
         ...transactionEventData,
         error,
-      });
-      throw error;
+      })
+      throw error
     }
   }
 }

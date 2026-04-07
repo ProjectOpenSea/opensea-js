@@ -1,40 +1,38 @@
-import { OrderComponents } from "@opensea/seaport-js/lib/types";
-import { expect } from "chai";
-import { suite, test } from "mocha";
-import * as sinon from "sinon";
-import { OffersAPI } from "../../src/api/offers";
-import {
+import type { OrderComponents } from "@opensea/seaport-js/lib/types"
+import { describe, expect, test, vi } from "vitest"
+import { OffersAPI } from "../../src/api/offers"
+import type {
   BuildOfferResponse,
+  CollectionOffer,
   GetBestOfferResponse,
   GetOffersResponse,
-  CollectionOffer,
   Offer,
-} from "../../src/api/types";
-import { ProtocolData } from "../../src/orders/types";
-import { Chain } from "../../src/types";
-import { createMockFetcher } from "../fixtures/fetcher";
+} from "../../src/api/types"
+import type { ProtocolData } from "../../src/orders/types"
+import { Chain } from "../../src/types"
+import { createMockFetcher } from "../fixtures/fetcher"
 
-suite("API: OffersAPI", () => {
-  let mockGet: sinon.SinonStub;
-  let mockPost: sinon.SinonStub;
-  let offersAPI: OffersAPI;
+describe("API: OffersAPI", () => {
+  let mockGet: ReturnType<typeof vi.fn>
+  let mockPost: ReturnType<typeof vi.fn>
+  let offersAPI: OffersAPI
 
   beforeEach(() => {
     const {
       fetcher,
       mockGet: getMock,
       mockPost: postMock,
-    } = createMockFetcher();
-    mockGet = getMock;
-    mockPost = postMock;
-    offersAPI = new OffersAPI(fetcher, Chain.Mainnet);
-  });
+    } = createMockFetcher()
+    mockGet = getMock
+    mockPost = postMock
+    offersAPI = new OffersAPI(fetcher, Chain.Mainnet)
+  })
 
   afterEach(() => {
-    sinon.restore();
-  });
+    vi.restoreAllMocks()
+  })
 
-  suite("getAllOffers", () => {
+  describe("getAllOffers", () => {
     test("fetches all offers for a collection without parameters", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [
@@ -54,98 +52,98 @@ suite("API: OffersAPI", () => {
           } as unknown as Offer,
         ],
         next: "cursor-123",
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await offersAPI.getAllOffers("test-collection");
+      const result = await offersAPI.getAllOffers("test-collection")
 
-      expect(mockGet.calledOnce).to.be.true;
-      expect(mockGet.firstCall.args[0]).to.equal(
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/offers/collection/test-collection/all",
-      );
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      )
+      expect(mockGet.mock.calls[0][1]).toEqual({
         limit: undefined,
         next: undefined,
-      });
-      expect(result.offers).to.have.length(1);
-      expect(result.next).to.equal("cursor-123");
-    });
+      })
+      expect(result.offers).toHaveLength(1)
+      expect(result.next).toBe("cursor-123")
+    })
 
     test("fetches all offers with limit parameter", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await offersAPI.getAllOffers("test-collection", 50);
+      await offersAPI.getAllOffers("test-collection", 50)
 
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      expect(mockGet.mock.calls[0][1]).toEqual({
         limit: 50,
         next: undefined,
-      });
-    });
+      })
+    })
 
     test("fetches all offers with pagination cursor", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: "cursor-456",
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await offersAPI.getAllOffers("test-collection", undefined, "cursor-123");
+      await offersAPI.getAllOffers("test-collection", undefined, "cursor-123")
 
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      expect(mockGet.mock.calls[0][1]).toEqual({
         limit: undefined,
         next: "cursor-123",
-      });
-    });
+      })
+    })
 
     test("fetches all offers with both limit and pagination", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await offersAPI.getAllOffers("test-collection", 25, "cursor-xyz");
+      await offersAPI.getAllOffers("test-collection", 25, "cursor-xyz")
 
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      expect(mockGet.mock.calls[0][1]).toEqual({
         limit: 25,
         next: "cursor-xyz",
-      });
-    });
+      })
+    })
 
     test("handles empty offers array", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await offersAPI.getAllOffers("test-collection");
+      const result = await offersAPI.getAllOffers("test-collection")
 
-      expect(result.offers).to.be.an("array").that.is.empty;
-    });
+      expect(result.offers).toEqual([])
+    })
 
     test("throws error on API failure", async () => {
-      mockGet.rejects(new Error("Collection not found"));
+      mockGet.mockRejectedValue(new Error("Collection not found"))
 
       try {
-        await offersAPI.getAllOffers("nonexistent-collection");
-        expect.fail("Expected error to be thrown");
+        await offersAPI.getAllOffers("nonexistent-collection")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Collection not found");
+        expect((error as Error).message).toContain("Collection not found")
       }
-    });
-  });
+    })
+  })
 
-  suite("getTraitOffers", () => {
+  describe("getTraitOffers", () => {
     test("fetches trait offers without optional parameters", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [
@@ -154,60 +152,55 @@ suite("API: OffersAPI", () => {
           } as unknown as Offer,
         ],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       const result = await offersAPI.getTraitOffers(
         "test-collection",
         "Background",
         "Blue",
-      );
+      )
 
-      expect(mockGet.calledOnce).to.be.true;
-      expect(mockGet.firstCall.args[0]).to.equal(
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/offers/collection/test-collection/traits",
-      );
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      )
+      expect(mockGet.mock.calls[0][1]).toEqual({
         type: "Background",
         value: "Blue",
         limit: undefined,
         next: undefined,
         float_value: undefined,
         int_value: undefined,
-      });
-      expect(result.offers).to.have.length(1);
-    });
+      })
+      expect(result.offers).toHaveLength(1)
+    })
 
     test("fetches trait offers with limit parameter", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await offersAPI.getTraitOffers(
-        "test-collection",
-        "Background",
-        "Red",
-        30,
-      );
+      await offersAPI.getTraitOffers("test-collection", "Background", "Red", 30)
 
-      expect(mockGet.firstCall.args[1]).to.deep.include({
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
         type: "Background",
         value: "Red",
         limit: 30,
-      });
-    });
+      })
+    })
 
     test("fetches trait offers with pagination cursor", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await offersAPI.getTraitOffers(
         "test-collection",
@@ -215,22 +208,22 @@ suite("API: OffersAPI", () => {
         "Laser",
         undefined,
         "cursor-abc",
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.include({
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
         type: "Eyes",
         value: "Laser",
         next: "cursor-abc",
-      });
-    });
+      })
+    })
 
     test("fetches trait offers with float value", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await offersAPI.getTraitOffers(
         "test-collection",
@@ -239,22 +232,22 @@ suite("API: OffersAPI", () => {
         undefined,
         undefined,
         95.5,
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.include({
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
         type: "Rarity",
         value: "Score",
         float_value: 95.5,
-      });
-    });
+      })
+    })
 
     test("fetches trait offers with int value", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await offersAPI.getTraitOffers(
         "test-collection",
@@ -264,22 +257,22 @@ suite("API: OffersAPI", () => {
         undefined,
         undefined,
         100,
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.include({
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
         type: "Level",
         value: "Power",
         int_value: 100,
-      });
-    });
+      })
+    })
 
     test("fetches trait offers with all parameters", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await offersAPI.getTraitOffers(
         "test-collection",
@@ -289,48 +282,48 @@ suite("API: OffersAPI", () => {
         "cursor-xyz",
         75.5,
         50,
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      expect(mockGet.mock.calls[0][1]).toEqual({
         type: "Trait",
         value: "Value",
         limit: 20,
         next: "cursor-xyz",
         float_value: 75.5,
         int_value: 50,
-      });
-    });
+      })
+    })
 
     test("handles empty offers array", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       const result = await offersAPI.getTraitOffers(
         "test-collection",
         "Type",
         "Value",
-      );
+      )
 
-      expect(result.offers).to.be.an("array").that.is.empty;
-    });
+      expect(result.offers).toEqual([])
+    })
 
     test("throws error on API failure", async () => {
-      mockGet.rejects(new Error("Trait not found"));
+      mockGet.mockRejectedValue(new Error("Trait not found"))
 
       try {
-        await offersAPI.getTraitOffers("test-collection", "Invalid", "Trait");
-        expect.fail("Expected error to be thrown");
+        await offersAPI.getTraitOffers("test-collection", "Invalid", "Trait")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Trait not found");
+        expect((error as Error).message).toContain("Trait not found")
       }
-    });
-  });
+    })
+  })
 
-  suite("getBestOffer", () => {
+  describe("getBestOffer", () => {
     test("fetches best offer with string tokenId", async () => {
       const mockResponse: GetBestOfferResponse = {
         order_hash: "0xbest123",
@@ -345,71 +338,71 @@ suite("API: OffersAPI", () => {
         },
         protocol_data: {} as unknown as ProtocolData,
         protocol_address: "0xdef456",
-      } as unknown as GetBestOfferResponse;
+      } as unknown as GetBestOfferResponse
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await offersAPI.getBestOffer("test-collection", "1234");
+      const result = await offersAPI.getBestOffer("test-collection", "1234")
 
-      expect(mockGet.calledOnce).to.be.true;
-      expect(mockGet.firstCall.args[0]).to.equal(
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/offers/collection/test-collection/nfts/1234/best",
-      );
-      expect(mockGet.firstCall.args[1]).to.be.undefined;
-      expect(result.order_hash).to.equal("0xbest123");
-    });
+      )
+      expect(mockGet.mock.calls[0][1]).toBeUndefined()
+      expect(result.order_hash).toBe("0xbest123")
+    })
 
     test("fetches best offer with number tokenId", async () => {
       const mockResponse: GetBestOfferResponse = {
         order_hash: "0xdef",
-      } as unknown as GetBestOfferResponse;
+      } as unknown as GetBestOfferResponse
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await offersAPI.getBestOffer("test-collection", 5678);
+      await offersAPI.getBestOffer("test-collection", 5678)
 
-      expect(mockGet.firstCall.args[0]).to.equal(
+      expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/offers/collection/test-collection/nfts/5678/best",
-      );
-    });
+      )
+    })
 
     test("handles large token IDs", async () => {
       const mockResponse: GetBestOfferResponse = {
         order_hash: "0x123",
-      } as unknown as GetBestOfferResponse;
+      } as unknown as GetBestOfferResponse
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const largeTokenId = "99999999999999999999";
-      await offersAPI.getBestOffer("test-collection", largeTokenId);
+      const largeTokenId = "99999999999999999999"
+      await offersAPI.getBestOffer("test-collection", largeTokenId)
 
-      expect(mockGet.firstCall.args[0]).to.include(largeTokenId);
-    });
+      expect(mockGet.mock.calls[0][0]).toContain(largeTokenId)
+    })
 
     test("throws error when no offer found", async () => {
-      mockGet.rejects(new Error("No offer found"));
+      mockGet.mockRejectedValue(new Error("No offer found"))
 
       try {
-        await offersAPI.getBestOffer("test-collection", "999");
-        expect.fail("Expected error to be thrown");
+        await offersAPI.getBestOffer("test-collection", "999")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("No offer found");
+        expect((error as Error).message).toContain("No offer found")
       }
-    });
+    })
 
     test("throws error on API failure", async () => {
-      mockGet.rejects(new Error("Server Error"));
+      mockGet.mockRejectedValue(new Error("Server Error"))
 
       try {
-        await offersAPI.getBestOffer("test-collection", "123");
-        expect.fail("Expected error to be thrown");
+        await offersAPI.getBestOffer("test-collection", "123")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Server Error");
+        expect((error as Error).message).toContain("Server Error")
       }
-    });
-  });
+    })
+  })
 
-  suite("buildOffer", () => {
+  describe("buildOffer", () => {
     test("builds collection offer without trait parameters", async () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters: {
@@ -418,44 +411,44 @@ suite("API: OffersAPI", () => {
           consideration: [],
         } as unknown as BuildOfferResponse["partialParameters"],
         criteria: { collection: { slug: "test-collection" } },
-      };
+      }
 
-      mockPost.resolves(mockResponse);
+      mockPost.mockResolvedValue(mockResponse)
 
       const result = await offersAPI.buildOffer(
         "0xofferer123",
         5,
         "test-collection",
         true,
-      );
+      )
 
-      expect(mockPost.calledOnce).to.be.true;
-      expect(mockPost.firstCall.args[0]).to.equal("/api/v2/offers/build");
-      expect(result.partialParameters).to.exist;
-    });
+      expect(mockPost).toHaveBeenCalledTimes(1)
+      expect(mockPost.mock.calls[0][0]).toBe("/api/v2/offers/build")
+      expect(result.partialParameters).toBeDefined()
+    })
 
     test("builds collection offer with offerProtectionEnabled false", async () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters:
           {} as unknown as BuildOfferResponse["partialParameters"],
         criteria: { collection: { slug: "test-collection" } },
-      };
+      }
 
-      mockPost.resolves(mockResponse);
+      mockPost.mockResolvedValue(mockResponse)
 
-      await offersAPI.buildOffer("0xofferer123", 10, "test-collection", false);
+      await offersAPI.buildOffer("0xofferer123", 10, "test-collection", false)
 
-      expect(mockPost.calledOnce).to.be.true;
-    });
+      expect(mockPost).toHaveBeenCalledTimes(1)
+    })
 
     test("builds collection offer with trait type and value", async () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters:
           {} as unknown as BuildOfferResponse["partialParameters"],
         criteria: { collection: { slug: "test-collection" } },
-      };
+      }
 
-      mockPost.resolves(mockResponse);
+      mockPost.mockResolvedValue(mockResponse)
 
       await offersAPI.buildOffer(
         "0xofferer123",
@@ -464,10 +457,10 @@ suite("API: OffersAPI", () => {
         true,
         "Background",
         "Blue",
-      );
+      )
 
-      expect(mockPost.calledOnce).to.be.true;
-    });
+      expect(mockPost).toHaveBeenCalledTimes(1)
+    })
 
     test("throws error when only traitType is provided", async () => {
       try {
@@ -478,14 +471,14 @@ suite("API: OffersAPI", () => {
           true,
           "Background",
           undefined,
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "Both traitType and traitValue must be defined if one is defined",
-        );
+        )
       }
-    });
+    })
 
     test("throws error when only traitValue is provided", async () => {
       try {
@@ -496,28 +489,28 @@ suite("API: OffersAPI", () => {
           true,
           undefined,
           "Blue",
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "Both traitType and traitValue must be defined if one is defined",
-        );
+        )
       }
-    });
+    })
 
     test("builds collection offer with multiple traits", async () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters:
           {} as unknown as BuildOfferResponse["partialParameters"],
         criteria: { collection: { slug: "test-collection" } },
-      };
+      }
 
-      mockPost.resolves(mockResponse);
+      mockPost.mockResolvedValue(mockResponse)
 
       const traits = [
         { type: "Background", value: "Blue" },
         { type: "Hat", value: "Beanie" },
-      ];
+      ]
 
       await offersAPI.buildOffer(
         "0xofferer123",
@@ -527,16 +520,16 @@ suite("API: OffersAPI", () => {
         undefined,
         undefined,
         traits,
-      );
+      )
 
-      expect(mockPost.calledOnce).to.be.true;
-    });
+      expect(mockPost).toHaveBeenCalledTimes(1)
+    })
 
     test("throws error when both traits array and traitType/traitValue are provided", async () => {
       const traits = [
         { type: "Background", value: "Blue" },
         { type: "Hat", value: "Beanie" },
-      ];
+      ]
 
       try {
         await offersAPI.buildOffer(
@@ -547,20 +540,20 @@ suite("API: OffersAPI", () => {
           "Fur",
           "Golden",
           traits,
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "Cannot use both 'traits' array and individual 'traitType'/'traitValue' parameters",
-        );
+        )
       }
-    });
+    })
 
     test("throws error when trait in array is missing type", async () => {
       const traits = [
         { type: "Background", value: "Blue" },
         { type: "", value: "Beanie" },
-      ];
+      ]
 
       try {
         await offersAPI.buildOffer(
@@ -571,20 +564,20 @@ suite("API: OffersAPI", () => {
           undefined,
           undefined,
           traits,
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "Each trait must have both 'type' and 'value' properties",
-        );
+        )
       }
-    });
+    })
 
     test("throws error when trait in array is missing value", async () => {
       const traits = [
         { type: "Background", value: "Blue" },
         { type: "Hat", value: "" },
-      ];
+      ]
 
       try {
         await offersAPI.buildOffer(
@@ -595,28 +588,28 @@ suite("API: OffersAPI", () => {
           undefined,
           undefined,
           traits,
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "Each trait must have both 'type' and 'value' properties",
-        );
+        )
       }
-    });
+    })
 
     test("builds collection offer with numeric traits", async () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters:
           {} as unknown as BuildOfferResponse["partialParameters"],
         criteria: { collection: { slug: "test-collection" } },
-      };
+      }
 
-      mockPost.resolves(mockResponse);
+      mockPost.mockResolvedValue(mockResponse)
 
       const numericTraits = [
         { type: "Level", min: 1, max: 10 },
         { type: "Power", min: 50 },
-      ];
+      ]
 
       await offersAPI.buildOffer(
         "0xofferer123",
@@ -627,22 +620,22 @@ suite("API: OffersAPI", () => {
         undefined,
         undefined,
         numericTraits,
-      );
+      )
 
-      expect(mockPost.calledOnce).to.be.true;
-    });
+      expect(mockPost).toHaveBeenCalledTimes(1)
+    })
 
     test("builds collection offer with both string traits and numeric traits", async () => {
       const mockResponse: BuildOfferResponse = {
         partialParameters:
           {} as unknown as BuildOfferResponse["partialParameters"],
         criteria: { collection: { slug: "test-collection" } },
-      };
+      }
 
-      mockPost.resolves(mockResponse);
+      mockPost.mockResolvedValue(mockResponse)
 
-      const traits = [{ type: "Background", value: "Blue" }];
-      const numericTraits = [{ type: "Level", min: 1, max: 10 }];
+      const traits = [{ type: "Background", value: "Blue" }]
+      const numericTraits = [{ type: "Level", min: 1, max: 10 }]
 
       await offersAPI.buildOffer(
         "0xofferer123",
@@ -653,13 +646,13 @@ suite("API: OffersAPI", () => {
         undefined,
         traits,
         numericTraits,
-      );
+      )
 
-      expect(mockPost.calledOnce).to.be.true;
-    });
+      expect(mockPost).toHaveBeenCalledTimes(1)
+    })
 
     test("throws error when numeric trait is missing type", async () => {
-      const numericTraits = [{ type: "", min: 1, max: 10 }];
+      const numericTraits = [{ type: "", min: 1, max: 10 }]
 
       try {
         await offersAPI.buildOffer(
@@ -671,17 +664,17 @@ suite("API: OffersAPI", () => {
           undefined,
           undefined,
           numericTraits,
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "Each numeric trait must have a 'type' property",
-        );
+        )
       }
-    });
+    })
 
     test("throws error when numeric trait has neither min nor max", async () => {
-      const numericTraits = [{ type: "Level" }];
+      const numericTraits = [{ type: "Level" }]
 
       try {
         await offersAPI.buildOffer(
@@ -693,17 +686,17 @@ suite("API: OffersAPI", () => {
           undefined,
           undefined,
           numericTraits,
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "must have at least one of 'min' or 'max'",
-        );
+        )
       }
-    });
+    })
 
     test("throws error when numeric trait min > max", async () => {
-      const numericTraits = [{ type: "Level", min: 10, max: 1 }];
+      const numericTraits = [{ type: "Level", min: 10, max: 1 }]
 
       try {
         await offersAPI.buildOffer(
@@ -715,28 +708,28 @@ suite("API: OffersAPI", () => {
           undefined,
           undefined,
           numericTraits,
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "'min' (10) must be <= 'max' (1)",
-        );
+        )
       }
-    });
+    })
 
     test("throws error on API failure", async () => {
-      mockPost.rejects(new Error("Build failed"));
+      mockPost.mockRejectedValue(new Error("Build failed"))
 
       try {
-        await offersAPI.buildOffer("0xofferer123", 5, "test-collection", true);
-        expect.fail("Expected error to be thrown");
+        await offersAPI.buildOffer("0xofferer123", 5, "test-collection", true)
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Build failed");
+        expect((error as Error).message).toContain("Build failed")
       }
-    });
-  });
+    })
+  })
 
-  suite("getCollectionOffers", () => {
+  describe("getCollectionOffers", () => {
     test("fetches collection offers for a slug without parameters", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [
@@ -748,86 +741,86 @@ suite("API: OffersAPI", () => {
           } as unknown as Offer,
         ],
         next: "cursor-123",
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await offersAPI.getCollectionOffers("test-collection");
+      const result = await offersAPI.getCollectionOffers("test-collection")
 
-      expect(mockGet.calledOnce).to.be.true;
-      expect(mockGet.firstCall.args[0]).to.equal(
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/offers/collection/test-collection",
-      );
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      )
+      expect(mockGet.mock.calls[0][1]).toEqual({
         limit: undefined,
         next: undefined,
-      });
-      expect(result.offers).to.have.length(1);
-      expect(result.next).to.equal("cursor-123");
-    });
+      })
+      expect(result.offers).toHaveLength(1)
+      expect(result.next).toBe("cursor-123")
+    })
 
     test("fetches collection offers with limit parameter", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await offersAPI.getCollectionOffers("test-collection", 50);
+      await offersAPI.getCollectionOffers("test-collection", 50)
 
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      expect(mockGet.mock.calls[0][1]).toEqual({
         limit: 50,
         next: undefined,
-      });
-    });
+      })
+    })
 
     test("fetches collection offers with pagination cursor", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: "cursor-next",
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       await offersAPI.getCollectionOffers(
         "test-collection",
         undefined,
         "cursor-prev",
-      );
+      )
 
-      expect(mockGet.firstCall.args[1]).to.deep.equal({
+      expect(mockGet.mock.calls[0][1]).toEqual({
         limit: undefined,
         next: "cursor-prev",
-      });
-    });
+      })
+    })
 
     test("handles empty offers list", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: undefined,
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await offersAPI.getCollectionOffers("test-collection");
+      const result = await offersAPI.getCollectionOffers("test-collection")
 
-      expect(result.offers).to.be.an("array").that.is.empty;
-    });
+      expect(result.offers).toEqual([])
+    })
 
     test("throws error on API failure", async () => {
-      mockGet.rejects(new Error("Collection not found"));
+      mockGet.mockRejectedValue(new Error("Collection not found"))
 
       try {
-        await offersAPI.getCollectionOffers("nonexistent-collection");
-        expect.fail("Expected error to be thrown");
+        await offersAPI.getCollectionOffers("nonexistent-collection")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Collection not found");
+        expect((error as Error).message).toContain("Collection not found")
       }
-    });
-  });
+    })
+  })
 
-  suite("postCollectionOffer", () => {
+  describe("postCollectionOffer", () => {
     test("posts collection offer without trait parameters", async () => {
       const mockOrder: ProtocolData = {
         parameters: {
@@ -836,63 +829,63 @@ suite("API: OffersAPI", () => {
           consideration: [],
         } as unknown as OrderComponents,
         signature: "0xsig123",
-      };
+      }
 
       const mockResponse: CollectionOffer = {
         protocol_data: mockOrder,
         protocol_address: "0xabc",
-      } as unknown as CollectionOffer;
+      } as unknown as CollectionOffer
 
-      mockPost.resolves(mockResponse);
+      mockPost.mockResolvedValue(mockResponse)
 
       const result = await offersAPI.postCollectionOffer(
         mockOrder,
         "test-collection",
-      );
+      )
 
-      expect(mockPost.calledOnce).to.be.true;
-      expect(mockPost.firstCall.args[0]).to.equal("/api/v2/offers");
-      expect(result).to.deep.equal(mockResponse);
-    });
+      expect(mockPost).toHaveBeenCalledTimes(1)
+      expect(mockPost.mock.calls[0][0]).toBe("/api/v2/offers")
+      expect(result).toEqual(mockResponse)
+    })
 
     test("posts collection offer with trait type and value", async () => {
       const mockOrder: ProtocolData = {
         parameters: {} as unknown as OrderComponents,
         signature: "0xsig456",
-      };
+      }
 
       const mockResponse: CollectionOffer = {
         protocol_data: mockOrder,
-      } as unknown as CollectionOffer;
+      } as unknown as CollectionOffer
 
-      mockPost.resolves(mockResponse);
+      mockPost.mockResolvedValue(mockResponse)
 
       await offersAPI.postCollectionOffer(
         mockOrder,
         "test-collection",
         "Background",
         "Red",
-      );
+      )
 
-      expect(mockPost.calledOnce).to.be.true;
-    });
+      expect(mockPost).toHaveBeenCalledTimes(1)
+    })
 
     test("posts collection offer with multiple traits", async () => {
       const mockOrder: ProtocolData = {
         parameters: {} as unknown as OrderComponents,
         signature: "0xsig789",
-      };
+      }
 
       const mockResponse: CollectionOffer = {
         protocol_data: mockOrder,
-      } as unknown as CollectionOffer;
+      } as unknown as CollectionOffer
 
-      mockPost.resolves(mockResponse);
+      mockPost.mockResolvedValue(mockResponse)
 
       const traits = [
         { type: "Background", value: "Blue" },
         { type: "Hat", value: "Beanie" },
-      ];
+      ]
 
       await offersAPI.postCollectionOffer(
         mockOrder,
@@ -900,48 +893,48 @@ suite("API: OffersAPI", () => {
         undefined,
         undefined,
         traits,
-      );
+      )
 
-      expect(mockPost.calledOnce).to.be.true;
-    });
+      expect(mockPost).toHaveBeenCalledTimes(1)
+    })
 
     test("returns null when appropriate", async () => {
       const mockOrder: ProtocolData = {
         parameters: {} as unknown as OrderComponents,
         signature: "0xsig",
-      };
+      }
 
-      mockPost.resolves(null);
+      mockPost.mockResolvedValue(null)
 
       const result = await offersAPI.postCollectionOffer(
         mockOrder,
         "test-collection",
-      );
+      )
 
-      expect(result).to.be.null;
-    });
+      expect(result).toBeNull()
+    })
 
     test("throws error on API failure", async () => {
       const mockOrder: ProtocolData = {
         parameters: {} as unknown as OrderComponents,
         signature: "0xsig",
-      };
+      }
 
-      mockPost.rejects(new Error("Post failed"));
+      mockPost.mockRejectedValue(new Error("Post failed"))
 
       try {
-        await offersAPI.postCollectionOffer(mockOrder, "test-collection");
-        expect.fail("Expected error to be thrown");
+        await offersAPI.postCollectionOffer(mockOrder, "test-collection")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("Post failed");
+        expect((error as Error).message).toContain("Post failed")
       }
-    });
+    })
 
     test("throws error when both traits array and traitType/traitValue are provided", async () => {
       const mockOrder: ProtocolData = {
         parameters: {} as unknown as OrderComponents,
         signature: "0xsig",
-      };
+      }
 
       try {
         await offersAPI.postCollectionOffer(
@@ -950,40 +943,40 @@ suite("API: OffersAPI", () => {
           "Background",
           "Blue",
           [{ type: "Background", value: "Blue" }],
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "Cannot use both 'traits' array and individual",
-        );
+        )
       }
-    });
+    })
 
     test("throws error when only traitType is provided without traitValue", async () => {
       const mockOrder: ProtocolData = {
         parameters: {} as unknown as OrderComponents,
         signature: "0xsig",
-      };
+      }
 
       try {
         await offersAPI.postCollectionOffer(
           mockOrder,
           "test-collection",
           "Background",
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "Both traitType and traitValue must be defined",
-        );
+        )
       }
-    });
+    })
 
     test("throws error when trait in array is missing type", async () => {
       const mockOrder: ProtocolData = {
         parameters: {} as unknown as OrderComponents,
         signature: "0xsig",
-      };
+      }
 
       try {
         await offersAPI.postCollectionOffer(
@@ -992,20 +985,20 @@ suite("API: OffersAPI", () => {
           undefined,
           undefined,
           [{ type: "", value: "Blue" }],
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "Each trait must have both 'type' and 'value'",
-        );
+        )
       }
-    });
+    })
 
     test("throws error when numeric trait is missing type", async () => {
       const mockOrder: ProtocolData = {
         parameters: {} as unknown as OrderComponents,
         signature: "0xsig",
-      };
+      }
 
       try {
         await offersAPI.postCollectionOffer(
@@ -1015,20 +1008,20 @@ suite("API: OffersAPI", () => {
           undefined,
           undefined,
           [{ type: "", min: 1, max: 10 }],
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "Each numeric trait must have a 'type' property",
-        );
+        )
       }
-    });
+    })
 
     test("throws error when numeric trait min > max", async () => {
       const mockOrder: ProtocolData = {
         parameters: {} as unknown as OrderComponents,
         signature: "0xsig",
-      };
+      }
 
       try {
         await offersAPI.postCollectionOffer(
@@ -1038,17 +1031,17 @@ suite("API: OffersAPI", () => {
           undefined,
           undefined,
           [{ type: "Speed", min: 100, max: 10 }],
-        );
-        expect.fail("Expected error to be thrown");
+        )
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include(
+        expect((error as Error).message).toContain(
           "'min' (100) must be <= 'max' (10)",
-        );
+        )
       }
-    });
-  });
+    })
+  })
 
-  suite("getNFTOffers", () => {
+  describe("getNFTOffers", () => {
     test("fetches offers for a specific NFT", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [
@@ -1065,75 +1058,75 @@ suite("API: OffersAPI", () => {
           } as unknown as Offer,
         ],
         next: "cursor-123",
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
       const result = await offersAPI.getNFTOffers(
         "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
         "1",
-      );
+      )
 
-      expect(mockGet.calledOnce).to.be.true;
-      expect(result.offers).to.have.length(1);
-      expect(result.next).to.equal("cursor-123");
-    });
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(result.offers).toHaveLength(1)
+      expect(result.next).toBe("cursor-123")
+    })
 
     test("fetches offers with limit parameter", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await offersAPI.getNFTOffers("0xContract", "1", 50);
+      await offersAPI.getNFTOffers("0xContract", "1", 50)
 
-      expect(mockGet.calledOnce).to.be.true;
-    });
+      expect(mockGet).toHaveBeenCalledTimes(1)
+    })
 
     test("fetches offers with pagination cursor", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: "cursor-next",
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      await offersAPI.getNFTOffers("0xContract", "1", undefined, "cursor-prev");
+      await offersAPI.getNFTOffers("0xContract", "1", undefined, "cursor-prev")
 
-      expect(mockGet.calledOnce).to.be.true;
-    });
+      expect(mockGet).toHaveBeenCalledTimes(1)
+    })
 
     test("handles empty offers array", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
-      };
+      }
 
-      mockGet.resolves(mockResponse);
+      mockGet.mockResolvedValue(mockResponse)
 
-      const result = await offersAPI.getNFTOffers("0xContract", "1");
+      const result = await offersAPI.getNFTOffers("0xContract", "1")
 
-      expect(result.offers).to.be.an("array").that.is.empty;
-    });
+      expect(result.offers).toEqual([])
+    })
 
     test("throws error on API failure", async () => {
-      mockGet.rejects(new Error("NFT not found"));
+      mockGet.mockRejectedValue(new Error("NFT not found"))
 
       try {
-        await offersAPI.getNFTOffers("0xContract", "999");
-        expect.fail("Expected error to be thrown");
+        await offersAPI.getNFTOffers("0xContract", "999")
+        throw new Error("Expected error to be thrown")
       } catch (error) {
-        expect((error as Error).message).to.include("NFT not found");
+        expect((error as Error).message).toContain("NFT not found")
       }
-    });
-  });
+    })
+  })
 
-  suite("Constructor", () => {
+  describe("Constructor", () => {
     test("initializes with get and post functions", () => {
-      const { fetcher } = createMockFetcher();
-      const api = new OffersAPI(fetcher, Chain.Mainnet);
+      const { fetcher } = createMockFetcher()
+      const api = new OffersAPI(fetcher, Chain.Mainnet)
 
-      expect(api).to.be.instanceOf(OffersAPI);
-    });
-  });
-});
+      expect(api).toBeInstanceOf(OffersAPI)
+    })
+  })
+})

@@ -25,11 +25,16 @@ Interested in purchasing for users server-side or with a bot, scheduling future 
 You can buy and transfer an item to someone else in one step! Just pass the `recipientAddress` parameter:
 
 ```typescript
+const orderHash = "0x...";
+const protocolAddress = "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC"; // Seaport 1.6
+const accountAddress = "0x..."; // Wallet that signs and pays
+const recipientAddress = "0x..."; // NFT recipient
+
 const order = await openseaSDK.api.getOrderByHash(orderHash, protocolAddress);
 await openseaSDK.fulfillOrder({
   order,
-  accountAddress, // The address of your wallet, which will sign the transaction
-  recipientAddress, // The address of the recipient, i.e. the wallet you're purchasing on behalf of
+  accountAddress,
+  recipientAddress,
 });
 ```
 
@@ -50,10 +55,11 @@ const buyerAddress = "0x123...";
 const tokenAddress = "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d";
 const tokenId =
   "115792089237316195423570985008687907832853042650384256231655107562007036952461";
+const accountAddress = "0x..."; // Seller's wallet (must own the NFT)
 
 const listing = await openseaSDK.createListing({
   asset: { tokenAddress, tokenId },
-  accountAddress: OWNERS_WALLET_ADDRESS,
+  accountAddress,
   amount: 10,
   buyerAddress,
 });

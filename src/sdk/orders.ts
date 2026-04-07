@@ -1,32 +1,32 @@
-import {
+import type {
   ConsiderationInputItem,
   CreateInputItem,
   OrderComponents,
-} from "@opensea/seaport-js/lib/types";
-import { BigNumberish, ZeroAddress } from "ethers";
-import { CollectionOffer, NFT } from "../api/types";
-import { INVERSE_BASIS_POINT } from "../constants";
-import { SDKContext } from "./context";
-import { OrderV2, ProtocolData } from "../orders/types";
+} from "@opensea/seaport-js/lib/types"
+import { type BigNumberish, ZeroAddress } from "ethers"
+import type { CollectionOffer, NFT } from "../api/types"
+import { INVERSE_BASIS_POINT } from "../constants"
+import type { OrderV2, ProtocolData } from "../orders/types"
 import {
-  Fee,
-  OpenSeaCollection,
+  type AssetWithTokenId,
+  type Fee,
+  type OpenSeaCollection,
   OrderSide,
-  TokenStandard,
-  AssetWithTokenId,
-} from "../types";
-import { oneMonthFromNowInSeconds } from "../utils/dateHelper";
-import { pluralize } from "../utils/stringHelper";
+  type TokenStandard,
+} from "../types"
+import { oneMonthFromNowInSeconds } from "../utils/dateHelper"
+import { pluralize } from "../utils/stringHelper"
 import {
-  getAssetItemType,
-  remapSharedStorefrontAddress,
   basisPointsForFee,
-  totalBasisPointsForFees,
+  getAssetItemType,
   getFeeRecipient,
   getListingPaymentToken,
   getOfferPaymentToken,
   getSignedZone,
-} from "../utils/utils";
+  remapSharedStorefrontAddress,
+  totalBasisPointsForFees,
+} from "../utils/utils"
+import type { SDKContext } from "./context"
 
 /**
  * Result type for bulk operations that may partially succeed.
@@ -34,16 +34,16 @@ import {
  */
 export interface BulkOrderResult {
   /** Successfully submitted orders */
-  successful: OrderV2[];
+  successful: OrderV2[]
   /** Failed order submissions with error information */
   failed: Array<{
     /** Index of the failed order in the original input array */
-    index: number;
+    index: number
     /** The signed order that failed to submit (undefined if order creation failed before signing) */
-    order?: ProtocolData;
+    order?: ProtocolData
     /** The error that occurred during submission */
-    error: Error;
-  }>;
+    error: Error
+  }>
 }
 
 /**
@@ -64,14 +64,14 @@ export class OrdersManager {
     amount: bigint,
     basisPoints: bigint,
   ): string {
-    return ((amount * basisPoints) / INVERSE_BASIS_POINT).toString();
+    return ((amount * basisPoints) / INVERSE_BASIS_POINT).toString()
   }
 
   private isNotMarketplaceFee(fee: Fee): boolean {
     return (
       fee.recipient.toLowerCase() !==
       getFeeRecipient(this.context.chain).toLowerCase()
-    );
+    )
   }
 
   private getNFTItems(
@@ -85,7 +85,7 @@ export class OrdersManager {
       token: remapSharedStorefrontAddress(nft.contract),
       identifier: nft.identifier ?? undefined,
       amount: quantities[index]?.toString() ?? "1",
-    }));
+    }))
   }
 
   private async getFees({
@@ -96,45 +96,45 @@ export class OrdersManager {
     includeOptionalCreatorFees = false,
     isPrivateListing = false,
   }: {
-    collection: OpenSeaCollection;
-    seller?: string;
-    paymentTokenAddress: string;
-    amount: bigint;
-    includeOptionalCreatorFees?: boolean;
-    isPrivateListing?: boolean;
+    collection: OpenSeaCollection
+    seller?: string
+    paymentTokenAddress: string
+    amount: bigint
+    includeOptionalCreatorFees?: boolean
+    isPrivateListing?: boolean
   }): Promise<ConsiderationInputItem[]> {
     let collectionFees = includeOptionalCreatorFees
       ? collection.fees
-      : collection.fees.filter((fee) => fee.required);
+      : collection.fees.filter(fee => fee.required)
     if (isPrivateListing) {
-      collectionFees = collectionFees.filter((fee) =>
+      collectionFees = collectionFees.filter(fee =>
         this.isNotMarketplaceFee(fee),
-      );
+      )
     }
-    const collectionFeesBasisPoints = totalBasisPointsForFees(collectionFees);
-    const sellerBasisPoints = INVERSE_BASIS_POINT - collectionFeesBasisPoints;
+    const collectionFeesBasisPoints = totalBasisPointsForFees(collectionFees)
+    const sellerBasisPoints = INVERSE_BASIS_POINT - collectionFeesBasisPoints
 
     const getConsiderationItem = (basisPoints: bigint, recipient?: string) => {
       return {
         token: paymentTokenAddress,
         amount: this.getAmountWithBasisPointsApplied(amount, basisPoints),
         recipient,
-      };
-    };
+      }
+    }
 
-    const considerationItems: ConsiderationInputItem[] = [];
+    const considerationItems: ConsiderationInputItem[] = []
 
     if (seller) {
-      considerationItems.push(getConsiderationItem(sellerBasisPoints, seller));
+      considerationItems.push(getConsiderationItem(sellerBasisPoints, seller))
     }
     if (collectionFeesBasisPoints > 0) {
       for (const fee of collectionFees) {
         considerationItems.push(
           getConsiderationItem(basisPointsForFee(fee), fee.recipient),
-        );
+        )
       }
     }
-    return considerationItems;
+    return considerationItems
   }
 
   /**
@@ -155,37 +155,37 @@ export class OrdersManager {
     includeOptionalCreatorFees = false,
     zone = ZeroAddress,
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    listingTime?: number;
-    expirationTime?: number;
-    buyerAddress?: string;
-    includeOptionalCreatorFees?: boolean;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    listingTime?: number
+    expirationTime?: number
+    buyerAddress?: string
+    includeOptionalCreatorFees?: boolean
+    zone?: string
   }) {
-    await this.context.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress)
 
     const { nft } = await this.context.api.getNFT(
       asset.tokenAddress,
       asset.tokenId,
-    );
-    const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)]);
+    )
+    const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)])
 
-    const collection = await this.context.api.getCollection(nft.collection);
+    const collection = await this.context.api.getCollection(nft.collection)
 
     const paymentTokenAddress =
       collection.pricingCurrencies?.listingCurrency?.address ??
-      getListingPaymentToken(this.context.chain);
+      getListingPaymentToken(this.context.chain)
 
     const { basePrice } = await this.getPriceParametersCallback(
       OrderSide.LISTING,
       paymentTokenAddress,
       amount,
-    );
+    )
 
     const considerationFeeItems = await this.getFees({
       collection,
@@ -194,18 +194,19 @@ export class OrdersManager {
       amount: basePrice,
       includeOptionalCreatorFees,
       isPrivateListing: !!buyerAddress,
-    });
+    })
 
     if (buyerAddress) {
-      const { getPrivateListingConsiderations } =
-        await import("../orders/privateListings");
+      const { getPrivateListingConsiderations } = await import(
+        "../orders/privateListings"
+      )
       considerationFeeItems.push(
         ...getPrivateListingConsiderations(offerAssetItems, buyerAddress),
-      );
+      )
     }
 
     if (collection.requiredZone) {
-      zone = collection.requiredZone;
+      zone = collection.requiredZone
     }
 
     const { executeAllActions } = await this.context.seaport.createOrder(
@@ -222,9 +223,9 @@ export class OrdersManager {
         allowPartialFills: true,
       },
       accountAddress,
-    );
+    )
 
-    return executeAllActions();
+    return executeAllActions()
   }
 
   /**
@@ -245,17 +246,17 @@ export class OrdersManager {
     includeOptionalCreatorFees = false,
     zone = ZeroAddress,
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    listingTime?: number;
-    expirationTime?: number;
-    buyerAddress?: string;
-    includeOptionalCreatorFees?: boolean;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    listingTime?: number
+    expirationTime?: number
+    buyerAddress?: string
+    includeOptionalCreatorFees?: boolean
+    zone?: string
   }): Promise<OrderComponents> {
     const order = await this._buildListingOrder({
       asset,
@@ -269,8 +270,8 @@ export class OrdersManager {
       buyerAddress,
       includeOptionalCreatorFees,
       zone,
-    });
-    return order.parameters;
+    })
+    return order.parameters
   }
 
   /**
@@ -288,46 +289,46 @@ export class OrdersManager {
     expirationTime,
     zone = getSignedZone(this.context.chain),
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    expirationTime?: BigNumberish;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    expirationTime?: BigNumberish
+    zone?: string
   }) {
-    await this.context.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress)
 
     const { nft } = await this.context.api.getNFT(
       asset.tokenAddress,
       asset.tokenId,
-    );
+    )
     const considerationAssetItems = this.getNFTItems(
       [nft],
       [BigInt(quantity ?? 1)],
-    );
+    )
 
-    const collection = await this.context.api.getCollection(nft.collection);
+    const collection = await this.context.api.getCollection(nft.collection)
 
     const paymentTokenAddress =
       collection.pricingCurrencies?.offerCurrency?.address ??
-      getOfferPaymentToken(this.context.chain);
+      getOfferPaymentToken(this.context.chain)
 
     const { basePrice } = await this.getPriceParametersCallback(
       OrderSide.OFFER,
       paymentTokenAddress,
       amount,
-    );
+    )
 
     const considerationFeeItems = await this.getFees({
       collection,
       paymentTokenAddress,
       amount: basePrice,
-    });
+    })
 
     if (collection.requiredZone) {
-      zone = collection.requiredZone;
+      zone = collection.requiredZone
     }
 
     const { executeAllActions } = await this.context.seaport.createOrder(
@@ -350,9 +351,9 @@ export class OrdersManager {
         allowPartialFills: true,
       },
       accountAddress,
-    );
+    )
 
-    return executeAllActions();
+    return executeAllActions()
   }
 
   /**
@@ -370,14 +371,14 @@ export class OrdersManager {
     expirationTime,
     zone = getSignedZone(this.context.chain),
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    expirationTime?: BigNumberish;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    expirationTime?: BigNumberish
+    zone?: string
   }): Promise<OrderComponents> {
     const order = await this._buildOfferOrder({
       asset,
@@ -388,8 +389,8 @@ export class OrdersManager {
       salt,
       expirationTime,
       zone,
-    });
-    return order.parameters;
+    })
+    return order.parameters
   }
 
   /**
@@ -420,14 +421,14 @@ export class OrdersManager {
     expirationTime,
     zone = getSignedZone(this.context.chain),
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    expirationTime?: BigNumberish;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    expirationTime?: BigNumberish
+    zone?: string
   }): Promise<OrderV2> {
     const order = await this._buildOfferOrder({
       asset,
@@ -438,13 +439,13 @@ export class OrdersManager {
       salt,
       expirationTime,
       zone,
-    });
+    })
 
     return this.context.api.postOrder(order, {
       protocol: "seaport",
       protocolAddress: this.context.seaport.contract.target as string,
       side: OrderSide.OFFER,
-    });
+    })
   }
 
   /**
@@ -480,17 +481,17 @@ export class OrdersManager {
     includeOptionalCreatorFees = false,
     zone = ZeroAddress,
   }: {
-    asset: AssetWithTokenId;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity?: BigNumberish;
-    domain?: string;
-    salt?: BigNumberish;
-    listingTime?: number;
-    expirationTime?: number;
-    buyerAddress?: string;
-    includeOptionalCreatorFees?: boolean;
-    zone?: string;
+    asset: AssetWithTokenId
+    accountAddress: string
+    amount: BigNumberish
+    quantity?: BigNumberish
+    domain?: string
+    salt?: BigNumberish
+    listingTime?: number
+    expirationTime?: number
+    buyerAddress?: string
+    includeOptionalCreatorFees?: boolean
+    zone?: string
   }): Promise<OrderV2> {
     const order = await this._buildListingOrder({
       asset,
@@ -504,13 +505,13 @@ export class OrdersManager {
       buyerAddress,
       includeOptionalCreatorFees,
       zone,
-    });
+    })
 
     return this.context.api.postOrder(order, {
       protocol: "seaport",
       protocolAddress: this.context.seaport.contract.target as string,
       side: OrderSide.LISTING,
-    });
+    })
   }
 
   /**
@@ -540,23 +541,23 @@ export class OrdersManager {
     onProgress,
   }: {
     listings: Array<{
-      asset: AssetWithTokenId;
-      amount: BigNumberish;
-      quantity?: BigNumberish;
-      domain?: string;
-      salt?: BigNumberish;
-      listingTime?: number;
-      expirationTime?: number;
-      buyerAddress?: string;
-      includeOptionalCreatorFees?: boolean;
-      zone?: string;
-    }>;
-    accountAddress: string;
-    continueOnError?: boolean;
-    onProgress?: (completed: number, total: number) => void;
+      asset: AssetWithTokenId
+      amount: BigNumberish
+      quantity?: BigNumberish
+      domain?: string
+      salt?: BigNumberish
+      listingTime?: number
+      expirationTime?: number
+      buyerAddress?: string
+      includeOptionalCreatorFees?: boolean
+      zone?: string
+    }>
+    accountAddress: string
+    continueOnError?: boolean
+    onProgress?: (completed: number, total: number) => void
   }): Promise<BulkOrderResult> {
     if (listings.length === 0) {
-      throw new Error("Listings array cannot be empty");
+      throw new Error("Listings array cannot be empty")
     }
 
     // If only one listing, use normal signature to avoid bulk signature overhead
@@ -565,11 +566,11 @@ export class OrdersManager {
         const order = await this.createListing({
           ...listings[0],
           accountAddress,
-        });
+        })
         return {
           successful: [order],
           failed: [],
-        };
+        }
       } catch (error) {
         if (continueOnError) {
           return {
@@ -581,25 +582,25 @@ export class OrdersManager {
                 error: error as Error,
               },
             ],
-          };
+          }
         }
-        throw error;
+        throw error
       }
     }
 
-    await this.context.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress)
 
     // Build metadata array for each listing
     const listingMetadata: Array<{
-      nft: NFT;
-      collection: OpenSeaCollection;
-      paymentTokenAddress: string;
-      zone: string;
-      domain?: string;
-      salt?: BigNumberish;
-      listingTime?: number;
-      expirationTime?: number;
-    }> = [];
+      nft: NFT
+      collection: OpenSeaCollection
+      paymentTokenAddress: string
+      zone: string
+      domain?: string
+      salt?: BigNumberish
+      listingTime?: number
+      expirationTime?: number
+    }> = []
 
     // Build all order inputs
     for (const listing of listings) {
@@ -614,26 +615,26 @@ export class OrdersManager {
         buyerAddress,
         includeOptionalCreatorFees = false,
         zone = ZeroAddress,
-      } = listing;
+      } = listing
 
       // Fetch NFT and collection data
       const { nft } = await this.context.api.getNFT(
         asset.tokenAddress,
         asset.tokenId,
-      );
-      const collection = await this.context.api.getCollection(nft.collection);
+      )
+      const collection = await this.context.api.getCollection(nft.collection)
 
       const paymentTokenAddress =
         collection.pricingCurrencies?.listingCurrency?.address ??
-        getListingPaymentToken(this.context.chain);
+        getListingPaymentToken(this.context.chain)
 
-      const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)]);
+      const offerAssetItems = this.getNFTItems([nft], [BigInt(quantity ?? 1)])
 
       const { basePrice } = await this.getPriceParametersCallback(
         OrderSide.LISTING,
         paymentTokenAddress,
         amount,
-      );
+      )
 
       const considerationFeeItems = await this.getFees({
         collection,
@@ -642,19 +643,20 @@ export class OrdersManager {
         amount: basePrice,
         includeOptionalCreatorFees,
         isPrivateListing: !!buyerAddress,
-      });
+      })
 
       if (buyerAddress) {
-        const { getPrivateListingConsiderations } =
-          await import("../orders/privateListings");
+        const { getPrivateListingConsiderations } = await import(
+          "../orders/privateListings"
+        )
         considerationFeeItems.push(
           ...getPrivateListingConsiderations(offerAssetItems, buyerAddress),
-        );
+        )
       }
 
-      let finalZone = zone;
+      let finalZone = zone
       if (collection.requiredZone) {
-        finalZone = collection.requiredZone;
+        finalZone = collection.requiredZone
       }
 
       listingMetadata.push({
@@ -666,7 +668,7 @@ export class OrdersManager {
         salt,
         listingTime,
         expirationTime,
-      });
+      })
     }
 
     // Create the bulk orders using seaport's createBulkOrders method
@@ -678,13 +680,13 @@ export class OrdersManager {
         expirationTime,
         buyerAddress,
         includeOptionalCreatorFees = false,
-      } = listing;
+      } = listing
 
-      const metadata = listingMetadata[index];
+      const metadata = listingMetadata[index]
       const offerAssetItems = this.getNFTItems(
         [metadata.nft],
         [BigInt(quantity ?? 1)],
-      );
+      )
 
       return this.getPriceParametersCallback(
         OrderSide.LISTING,
@@ -698,14 +700,15 @@ export class OrdersManager {
           amount: basePrice,
           includeOptionalCreatorFees,
           isPrivateListing: !!buyerAddress,
-        });
+        })
 
         if (buyerAddress) {
-          const { getPrivateListingConsiderations } =
-            await import("../orders/privateListings");
+          const { getPrivateListingConsiderations } = await import(
+            "../orders/privateListings"
+          )
           considerationFeeItems.push(
             ...getPrivateListingConsiderations(offerAssetItems, buyerAddress),
-          );
+          )
         }
 
         return {
@@ -721,75 +724,75 @@ export class OrdersManager {
             : undefined,
           restrictedByZone: metadata.zone !== ZeroAddress,
           allowPartialFills: true,
-        };
-      });
-    });
+        }
+      })
+    })
 
-    const resolvedInputs = await Promise.all(createOrderInputsForSeaport);
+    const resolvedInputs = await Promise.all(createOrderInputsForSeaport)
 
     const { executeAllActions } = await this.context.seaport.createBulkOrders(
       resolvedInputs,
       accountAddress,
-    );
+    )
 
-    const orders = await executeAllActions();
+    const orders = await executeAllActions()
 
     // Submit each order individually to the OpenSea API
     // Rate limiting is handled automatically by the API client
     this.context.logger(
       `Starting submission of ${orders.length} bulk-signed ${pluralize(orders.length, "listing")} to OpenSea API...`,
-    );
+    )
 
-    const submittedOrders: OrderV2[] = [];
-    const failedOrders: BulkOrderResult["failed"] = [];
+    const submittedOrders: OrderV2[] = []
+    const failedOrders: BulkOrderResult["failed"] = []
 
     for (let i = 0; i < orders.length; i++) {
-      this.context.logger(`Submitting listing ${i + 1}/${orders.length}...`);
+      this.context.logger(`Submitting listing ${i + 1}/${orders.length}...`)
       try {
         const submittedOrder = await this.context.api.postOrder(orders[i], {
           protocol: "seaport",
           protocolAddress: this.context.seaport.contract.target as string,
           side: OrderSide.LISTING,
-        });
-        submittedOrders.push(submittedOrder);
-        this.context.logger(`Completed listing ${i + 1}/${orders.length}`);
+        })
+        submittedOrders.push(submittedOrder)
+        this.context.logger(`Completed listing ${i + 1}/${orders.length}`)
       } catch (error) {
-        const errorMessage = (error as Error).message;
+        const errorMessage = (error as Error).message
         this.context.logger(
           `Failed listing ${i + 1}/${orders.length}: ${errorMessage}`,
-        );
+        )
         failedOrders.push({
           index: i,
           order: orders[i],
           error: error as Error,
-        });
+        })
 
         // If not continuing on error, throw immediately
         if (!continueOnError) {
-          throw error;
+          throw error
         }
       }
 
       // Call progress callback after each listing (successful or failed)
-      onProgress?.(i + 1, orders.length);
+      onProgress?.(i + 1, orders.length)
     }
 
     if (submittedOrders.length > 0) {
       this.context.logger(
         `Successfully submitted ${submittedOrders.length}/${orders.length} ${pluralize(submittedOrders.length, "listing")}`,
-      );
+      )
     }
 
     if (failedOrders.length > 0) {
       this.context.logger(
         `Failed to submit ${failedOrders.length}/${orders.length} ${pluralize(failedOrders.length, "listing")}`,
-      );
+      )
     }
 
     return {
       successful: submittedOrders,
       failed: failedOrders,
-    };
+    }
   }
 
   /**
@@ -819,20 +822,20 @@ export class OrdersManager {
     onProgress,
   }: {
     offers: Array<{
-      asset: AssetWithTokenId;
-      amount: BigNumberish;
-      quantity?: BigNumberish;
-      domain?: string;
-      salt?: BigNumberish;
-      expirationTime?: BigNumberish;
-      zone?: string;
-    }>;
-    accountAddress: string;
-    continueOnError?: boolean;
-    onProgress?: (completed: number, total: number) => void;
+      asset: AssetWithTokenId
+      amount: BigNumberish
+      quantity?: BigNumberish
+      domain?: string
+      salt?: BigNumberish
+      expirationTime?: BigNumberish
+      zone?: string
+    }>
+    accountAddress: string
+    continueOnError?: boolean
+    onProgress?: (completed: number, total: number) => void
   }): Promise<BulkOrderResult> {
     if (offers.length === 0) {
-      throw new Error("Offers array cannot be empty");
+      throw new Error("Offers array cannot be empty")
     }
 
     // If only one offer, use normal signature to avoid bulk signature overhead
@@ -841,11 +844,11 @@ export class OrdersManager {
         const order = await this.createOffer({
           ...offers[0],
           accountAddress,
-        });
+        })
         return {
           successful: [order],
           failed: [],
-        };
+        }
       } catch (error) {
         if (continueOnError) {
           return {
@@ -857,24 +860,24 @@ export class OrdersManager {
                 error: error as Error,
               },
             ],
-          };
+          }
         }
-        throw error;
+        throw error
       }
     }
 
-    await this.context.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress)
 
     // Build metadata array for each offer
     const offerMetadata: Array<{
-      nft: NFT;
-      collection: OpenSeaCollection;
-      paymentTokenAddress: string;
-      zone: string;
-      domain?: string;
-      salt?: BigNumberish;
-      expirationTime?: BigNumberish;
-    }> = [];
+      nft: NFT
+      collection: OpenSeaCollection
+      paymentTokenAddress: string
+      zone: string
+      domain?: string
+      salt?: BigNumberish
+      expirationTime?: BigNumberish
+    }> = []
 
     // Build all order inputs
     for (const offer of offers) {
@@ -884,22 +887,22 @@ export class OrdersManager {
         salt,
         expirationTime,
         zone = getSignedZone(this.context.chain),
-      } = offer;
+      } = offer
 
       // Fetch NFT and collection data
       const { nft } = await this.context.api.getNFT(
         asset.tokenAddress,
         asset.tokenId,
-      );
-      const collection = await this.context.api.getCollection(nft.collection);
+      )
+      const collection = await this.context.api.getCollection(nft.collection)
 
       const paymentTokenAddress =
         collection.pricingCurrencies?.offerCurrency?.address ??
-        getOfferPaymentToken(this.context.chain);
+        getOfferPaymentToken(this.context.chain)
 
-      let finalZone = zone;
+      let finalZone = zone
       if (collection.requiredZone) {
-        finalZone = collection.requiredZone;
+        finalZone = collection.requiredZone
       }
 
       offerMetadata.push({
@@ -910,18 +913,18 @@ export class OrdersManager {
         domain,
         salt,
         expirationTime,
-      });
+      })
     }
 
     // Create the bulk orders using seaport's createBulkOrders method
     const createOrderInputsForSeaport = offers.map((offer, index) => {
-      const { amount, quantity = 1 } = offer;
+      const { amount, quantity = 1 } = offer
 
-      const metadata = offerMetadata[index];
+      const metadata = offerMetadata[index]
       const considerationAssetItems = this.getNFTItems(
         [metadata.nft],
         [BigInt(quantity ?? 1)],
-      );
+      )
 
       return this.getPriceParametersCallback(
         OrderSide.OFFER,
@@ -932,7 +935,7 @@ export class OrdersManager {
           collection: metadata.collection,
           paymentTokenAddress: metadata.paymentTokenAddress,
           amount: basePrice,
-        });
+        })
 
         return {
           offer: [
@@ -953,75 +956,75 @@ export class OrdersManager {
             : undefined,
           restrictedByZone: metadata.zone !== ZeroAddress,
           allowPartialFills: true,
-        };
-      });
-    });
+        }
+      })
+    })
 
-    const resolvedInputs = await Promise.all(createOrderInputsForSeaport);
+    const resolvedInputs = await Promise.all(createOrderInputsForSeaport)
 
     const { executeAllActions } = await this.context.seaport.createBulkOrders(
       resolvedInputs,
       accountAddress,
-    );
+    )
 
-    const orders = await executeAllActions();
+    const orders = await executeAllActions()
 
     // Submit each order individually to the OpenSea API
     // Rate limiting is handled automatically by the API client
     this.context.logger(
       `Starting submission of ${orders.length} bulk-signed ${pluralize(orders.length, "offer")} to OpenSea API...`,
-    );
+    )
 
-    const submittedOrders: OrderV2[] = [];
-    const failedOrders: BulkOrderResult["failed"] = [];
+    const submittedOrders: OrderV2[] = []
+    const failedOrders: BulkOrderResult["failed"] = []
 
     for (let i = 0; i < orders.length; i++) {
-      this.context.logger(`Submitting offer ${i + 1}/${orders.length}...`);
+      this.context.logger(`Submitting offer ${i + 1}/${orders.length}...`)
       try {
         const submittedOrder = await this.context.api.postOrder(orders[i], {
           protocol: "seaport",
           protocolAddress: this.context.seaport.contract.target as string,
           side: OrderSide.OFFER,
-        });
-        submittedOrders.push(submittedOrder);
-        this.context.logger(`Completed offer ${i + 1}/${orders.length}`);
+        })
+        submittedOrders.push(submittedOrder)
+        this.context.logger(`Completed offer ${i + 1}/${orders.length}`)
       } catch (error) {
-        const errorMessage = (error as Error).message;
+        const errorMessage = (error as Error).message
         this.context.logger(
           `Failed offer ${i + 1}/${orders.length}: ${errorMessage}`,
-        );
+        )
         failedOrders.push({
           index: i,
           order: orders[i],
           error: error as Error,
-        });
+        })
 
         // If not continuing on error, throw immediately
         if (!continueOnError) {
-          throw error;
+          throw error
         }
       }
 
       // Call progress callback after each offer (successful or failed)
-      onProgress?.(i + 1, orders.length);
+      onProgress?.(i + 1, orders.length)
     }
 
     if (submittedOrders.length > 0) {
       this.context.logger(
         `Successfully submitted ${submittedOrders.length}/${orders.length} ${pluralize(submittedOrders.length, "offer")}`,
-      );
+      )
     }
 
     if (failedOrders.length > 0) {
       this.context.logger(
         `Failed to submit ${failedOrders.length}/${orders.length} ${pluralize(failedOrders.length, "offer")}`,
-      );
+      )
     }
 
     return {
       successful: submittedOrders,
       failed: failedOrders,
-    };
+    }
   }
 
   /**
@@ -1055,26 +1058,26 @@ export class OrdersManager {
     traits,
     numericTraits,
   }: {
-    collectionSlug: string;
-    accountAddress: string;
-    amount: BigNumberish;
-    quantity: number;
-    domain?: string;
-    salt?: BigNumberish;
-    expirationTime?: number | string;
-    offerProtectionEnabled?: boolean;
-    traitType?: string;
-    traitValue?: string;
-    traits?: Array<{ type: string; value: string }>;
-    numericTraits?: Array<{ type: string; min?: number; max?: number }>;
+    collectionSlug: string
+    accountAddress: string
+    amount: BigNumberish
+    quantity: number
+    domain?: string
+    salt?: BigNumberish
+    expirationTime?: number | string
+    offerProtectionEnabled?: boolean
+    traitType?: string
+    traitValue?: string
+    traits?: Array<{ type: string; value: string }>
+    numericTraits?: Array<{ type: string; min?: number; max?: number }>
   }): Promise<CollectionOffer | null> {
-    await this.context.requireAccountIsAvailable(accountAddress);
+    await this.context.requireAccountIsAvailable(accountAddress)
 
-    const collection = await this.context.api.getCollection(collectionSlug);
+    const collection = await this.context.api.getCollection(collectionSlug)
 
     const paymentTokenAddress =
       collection.pricingCurrencies?.offerCurrency?.address ??
-      getOfferPaymentToken(this.context.chain);
+      getOfferPaymentToken(this.context.chain)
 
     const buildOfferResult = await this.context.api.buildOffer(
       accountAddress,
@@ -1085,30 +1088,30 @@ export class OrdersManager {
       traitValue,
       traits,
       numericTraits,
-    );
-    const item = buildOfferResult.partialParameters.consideration[0];
+    )
+    const item = buildOfferResult.partialParameters.consideration[0]
     const convertedConsiderationItem = {
       itemType: item.itemType,
       token: item.token,
       identifier: item.identifierOrCriteria,
       amount: item.startAmount,
-    };
+    }
 
     const { basePrice } = await this.getPriceParametersCallback(
       OrderSide.OFFER,
       paymentTokenAddress,
       amount,
-    );
+    )
     const considerationFeeItems = await this.getFees({
       collection,
       paymentTokenAddress,
       amount: basePrice,
-    });
+    })
 
     const considerationItems = [
       convertedConsiderationItem,
       ...considerationFeeItems,
-    ];
+    ]
 
     const payload = {
       offerer: accountAddress,
@@ -1126,13 +1129,13 @@ export class OrdersManager {
       salt: BigInt(salt ?? 0).toString(),
       restrictedByZone: true,
       allowPartialFills: true,
-    };
+    }
 
     const { executeAllActions } = await this.context.seaport.createOrder(
       payload,
       accountAddress,
-    );
-    const order = await executeAllActions();
+    )
+    const order = await executeAllActions()
 
     return this.context.api.postCollectionOffer(
       order,
@@ -1141,6 +1144,6 @@ export class OrdersManager {
       traitValue,
       traits,
       numericTraits,
-    );
+    )
   }
 }

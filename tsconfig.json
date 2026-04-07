@@ -2,8 +2,10 @@
   "include": ["./src/**/*", "test"],
   "compilerOptions": {
     "outDir": "lib",
+    "rootDir": ".",
     "target": "es2020",
     "lib": ["dom", "esnext"],
+    "types": ["vitest/globals"],
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
@@ -19,6 +21,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0"
   }
 }

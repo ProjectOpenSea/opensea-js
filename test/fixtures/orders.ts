@@ -1,7 +1,7 @@
-import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
-import { OrderComponents } from "@opensea/seaport-js/lib/types";
-import { OrderV2, OrderType } from "../../src/orders/types";
-import { OrderSide } from "../../src/types";
+import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants"
+import type { OrderComponents } from "@opensea/seaport-js/lib/types"
+import { OrderType, type OrderV2 } from "../../src/orders/types"
+import { OrderSide } from "../../src/types"
 
 export const mockOrderComponents: OrderComponents = {
   offerer: "0xOfferer",
@@ -43,7 +43,7 @@ export const mockOrderComponents: OrderComponents = {
     "0x0000000000000000000000000000000000000000000000000000000000000000",
   totalOriginalConsiderationItems: 2,
   counter: "0",
-};
+}
 
 const mockPrivateListingOrderComponents: OrderComponents = {
   ...mockOrderComponents,
@@ -74,7 +74,7 @@ const mockPrivateListingOrderComponents: OrderComponents = {
     },
   ],
   totalOriginalConsiderationItems: 3,
-};
+}
 
 const mockMakerAccount = {
   address: "0xMaker",
@@ -85,7 +85,7 @@ const mockMakerAccount = {
   socialMediaAccounts: [],
   bio: "Test maker account",
   joinedDate: "2023-01-01T00:00:00Z",
-};
+}
 
 const mockTakerAccount = {
   address: "0xPrivateBuyer",
@@ -96,7 +96,7 @@ const mockTakerAccount = {
   socialMediaAccounts: [],
   bio: "Test taker account",
   joinedDate: "2023-01-01T00:00:00Z",
-};
+}
 
 export const mockOrderV2: OrderV2 = {
   createdDate: "2024-01-01T00:00:00Z",
@@ -121,12 +121,12 @@ export const mockOrderV2: OrderV2 = {
   markedInvalid: false,
   clientSignature: null,
   remainingQuantity: 1,
-};
+}
 
 export const mockOfferOrderV2: OrderV2 = {
   ...mockOrderV2,
   side: OrderSide.OFFER,
-};
+}
 
 export const mockPrivateListingOrderV2: OrderV2 = {
   ...mockOrderV2,
@@ -135,4 +135,4 @@ export const mockPrivateListingOrderV2: OrderV2 = {
     parameters: mockPrivateListingOrderComponents,
     signature: "0xSignature",
   },
-};
+}

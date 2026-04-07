@@ -1,5 +1,9 @@
-import { OpenSeaSDK } from "./sdk";
+import { OpenSeaSDK } from "./sdk"
 
+export * from "./api/types"
+export * from "./orders/types"
+export * from "./types"
+export * from "./utils"
 /**
  * @example
  * // Example Setup
@@ -15,9 +19,4 @@ import { OpenSeaSDK } from "./sdk";
 export {
   // Main SDK export
   OpenSeaSDK,
-};
-
-export * from "./types";
-export * from "./api/types";
-export * from "./orders/types";
-export * from "./utils";
+}

@@ -1,81 +1,80 @@
-import { expect } from "chai";
-import { suite, test } from "mocha";
-import { Fee } from "../../src/types";
+import { describe, expect, test } from "vitest"
+import type { Fee } from "../../src/types"
 import {
-  totalBasisPointsForFees,
   basisPointsForFee,
-} from "../../src/utils/fees";
+  totalBasisPointsForFees,
+} from "../../src/utils/fees"
 
-suite("Utils: fees", () => {
-  suite("basisPointsForFee", () => {
+describe("Utils: fees", () => {
+  describe("basisPointsForFee", () => {
     test("converts 2.5% fee to 250 basis points", () => {
       const fee: Fee = {
         fee: 2.5,
         recipient: "0x0000000000000000000000000000000000000000",
         required: false,
-      };
-      expect(basisPointsForFee(fee)).to.equal(250n);
-    });
+      }
+      expect(basisPointsForFee(fee)).toBe(250n)
+    })
 
     test("converts 0.5% fee to 50 basis points", () => {
       const fee: Fee = {
         fee: 0.5,
         recipient: "0x0000000000000000000000000000000000000000",
         required: false,
-      };
-      expect(basisPointsForFee(fee)).to.equal(50n);
-    });
+      }
+      expect(basisPointsForFee(fee)).toBe(50n)
+    })
 
     test("converts 10% fee to 1000 basis points", () => {
       const fee: Fee = {
         fee: 10,
         recipient: "0x0000000000000000000000000000000000000000",
         required: false,
-      };
-      expect(basisPointsForFee(fee)).to.equal(1000n);
-    });
+      }
+      expect(basisPointsForFee(fee)).toBe(1000n)
+    })
 
     test("converts 0% fee to 0 basis points", () => {
       const fee: Fee = {
         fee: 0,
         recipient: "0x0000000000000000000000000000000000000000",
         required: false,
-      };
-      expect(basisPointsForFee(fee)).to.equal(0n);
-    });
+      }
+      expect(basisPointsForFee(fee)).toBe(0n)
+    })
 
     test("converts 100% fee to 10000 basis points", () => {
       const fee: Fee = {
         fee: 100,
         recipient: "0x0000000000000000000000000000000000000000",
         required: false,
-      };
-      expect(basisPointsForFee(fee)).to.equal(10000n);
-    });
+      }
+      expect(basisPointsForFee(fee)).toBe(10000n)
+    })
 
     test("handles fractional percentages correctly", () => {
       const fee: Fee = {
         fee: 1.25,
         recipient: "0x0000000000000000000000000000000000000000",
         required: false,
-      };
-      expect(basisPointsForFee(fee)).to.equal(125n);
-    });
+      }
+      expect(basisPointsForFee(fee)).toBe(125n)
+    })
 
     test("handles very small percentages", () => {
       const fee: Fee = {
         fee: 0.01,
         recipient: "0x0000000000000000000000000000000000000000",
         required: false,
-      };
-      expect(basisPointsForFee(fee)).to.equal(1n);
-    });
-  });
+      }
+      expect(basisPointsForFee(fee)).toBe(1n)
+    })
+  })
 
-  suite("totalBasisPointsForFees", () => {
+  describe("totalBasisPointsForFees", () => {
     test("returns 0 for empty fees array", () => {
-      expect(totalBasisPointsForFees([])).to.equal(0n);
-    });
+      expect(totalBasisPointsForFees([])).toBe(0n)
+    })
 
     test("returns correct total for single fee", () => {
       const fees: Fee[] = [
@@ -84,9 +83,9 @@ suite("Utils: fees", () => {
           recipient: "0x0000000000000000000000000000000000000000",
           required: false,
         },
-      ];
-      expect(totalBasisPointsForFees(fees)).to.equal(250n);
-    });
+      ]
+      expect(totalBasisPointsForFees(fees)).toBe(250n)
+    })
 
     test("returns correct total for multiple fees", () => {
       const fees: Fee[] = [
@@ -105,10 +104,10 @@ suite("Utils: fees", () => {
           recipient: "0x0000000000000000000000000000000000000003",
           required: false,
         },
-      ];
+      ]
       // 250 + 100 + 50 = 400
-      expect(totalBasisPointsForFees(fees)).to.equal(400n);
-    });
+      expect(totalBasisPointsForFees(fees)).toBe(400n)
+    })
 
     test("handles mix of required and non-required fees", () => {
       const fees: Fee[] = [
@@ -122,10 +121,10 @@ suite("Utils: fees", () => {
           recipient: "0x0000000000000000000000000000000000000002",
           required: false,
         },
-      ];
+      ]
       // 500 + 250 = 750
-      expect(totalBasisPointsForFees(fees)).to.equal(750n);
-    });
+      expect(totalBasisPointsForFees(fees)).toBe(750n)
+    })
 
     test("handles all zero fees", () => {
       const fees: Fee[] = [
@@ -139,9 +138,9 @@ suite("Utils: fees", () => {
           recipient: "0x0000000000000000000000000000000000000002",
           required: false,
         },
-      ];
-      expect(totalBasisPointsForFees(fees)).to.equal(0n);
-    });
+      ]
+      expect(totalBasisPointsForFees(fees)).toBe(0n)
+    })
 
     test("handles fractional fee totals", () => {
       const fees: Fee[] = [
@@ -155,19 +154,19 @@ suite("Utils: fees", () => {
           recipient: "0x0000000000000000000000000000000000000002",
           required: false,
         },
-      ];
+      ]
       // 125 + 75 = 200
-      expect(totalBasisPointsForFees(fees)).to.equal(200n);
-    });
+      expect(totalBasisPointsForFees(fees)).toBe(200n)
+    })
 
     test("handles many fees", () => {
       const fees: Fee[] = Array.from({ length: 10 }, (_, i) => ({
         fee: 1.0,
         recipient: `0x000000000000000000000000000000000000000${i}`,
         required: i % 2 === 0,
-      }));
+      }))
       // 10 * 100 = 1000
-      expect(totalBasisPointsForFees(fees)).to.equal(1000n);
-    });
-  });
-});
+      expect(totalBasisPointsForFees(fees)).toBe(1000n)
+    })
+  })
+})

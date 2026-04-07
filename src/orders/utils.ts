@@ -1,15 +1,15 @@
-import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants";
-import {
+import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants"
+import { API_V2_PREFIX } from "../api/apiPaths"
+import { type Chain, OrderSide } from "../types"
+import { accountFromJSON, getSeaportAddress } from "../utils"
+import type {
   OrdersQueryOptions,
   OrderV2,
-  SerializedOrderV2,
   ProtocolData,
-} from "./types";
-import { Chain, OrderSide } from "../types";
-import { accountFromJSON, getSeaportAddress } from "../utils";
+  SerializedOrderV2,
+} from "./types"
 
-export const DEFAULT_SEAPORT_CONTRACT_ADDRESS =
-  CROSS_CHAIN_SEAPORT_V1_6_ADDRESS;
+export const DEFAULT_SEAPORT_CONTRACT_ADDRESS = CROSS_CHAIN_SEAPORT_V1_6_ADDRESS
 
 export const getPostCollectionOfferPayload = (
   collectionSlug: string,
@@ -26,26 +26,23 @@ export const getPostCollectionOfferPayload = (
     },
     protocol_data,
     protocol_address: getSeaportAddress(chain),
-  };
+  }
 
   // Prioritize traits array if provided
   if (traits && traits.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (payload.criteria as any).traits = traits;
+    ;(payload.criteria as any).traits = traits
   } else if (traitType && traitValue) {
     // Fallback to single trait for backward compatibility
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (payload.criteria as any).trait = {
+    ;(payload.criteria as any).trait = {
       type: traitType,
       value: traitValue,
-    };
+    }
   }
   if (numericTraits && numericTraits.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (payload.criteria as any).numericTraits = numericTraits;
+    ;(payload.criteria as any).numericTraits = numericTraits
   }
-  return payload;
-};
+  return payload
+}
 
 export const getBuildCollectionOfferPayload = (
   offererAddress: string,
@@ -68,31 +65,28 @@ export const getBuildCollectionOfferPayload = (
     },
     protocol_address: getSeaportAddress(chain),
     offer_protection_enabled: offerProtectionEnabled,
-  };
+  }
 
   // Prioritize traits array if provided
   if (traits && traits.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (payload.criteria as any).traits = traits;
+    ;(payload.criteria as any).traits = traits
   } else if (traitType && traitValue) {
     // Fallback to single trait for backward compatibility
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (payload.criteria as any).trait = {
+    ;(payload.criteria as any).trait = {
       type: traitType,
       value: traitValue,
-    };
+    }
   }
   if (numericTraits && numericTraits.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (payload.criteria as any).numericTraits = numericTraits;
+    ;(payload.criteria as any).numericTraits = numericTraits
   }
-  return payload;
-};
+  return payload
+}
 
 export const getFulfillmentDataPath = (side: OrderSide) => {
-  const sidePath = side === OrderSide.LISTING ? "listings" : "offers";
-  return `/v2/${sidePath}/fulfillment_data`;
-};
+  const sidePath = side === OrderSide.LISTING ? "listings" : "offers"
+  return `${API_V2_PREFIX}/${sidePath}/fulfillment_data`
+}
 
 export const getFulfillListingPayload = (
   fulfillerAddress: string,
@@ -107,20 +101,20 @@ export const getFulfillListingPayload = (
 ) => {
   const payload: {
     listing: {
-      hash: string;
-      chain: Chain;
-      protocol_address: string;
-    };
+      hash: string
+      chain: Chain
+      protocol_address: string
+    }
     fulfiller: {
-      address: string;
-    };
+      address: string
+    }
     consideration?: {
-      asset_contract_address: string;
-      token_id: string;
-    };
-    units_to_fill: string;
-    recipient?: string;
-    include_optional_creator_fees: boolean;
+      asset_contract_address: string
+      token_id: string
+    }
+    units_to_fill: string
+    recipient?: string
+    include_optional_creator_fees: boolean
   } = {
     listing: {
       hash: order_hash,
@@ -132,23 +126,23 @@ export const getFulfillListingPayload = (
     },
     units_to_fill: unitsToFill,
     include_optional_creator_fees: includeOptionalCreatorFees,
-  };
+  }
 
   // Add consideration for criteria listings if needed
   if (assetContractAddress && tokenId) {
     payload.consideration = {
       asset_contract_address: assetContractAddress,
       token_id: tokenId,
-    };
+    }
   }
 
   // Add optional recipient for listings
   if (recipientAddress) {
-    payload.recipient = recipientAddress;
+    payload.recipient = recipientAddress
   }
 
-  return payload;
-};
+  return payload
+}
 
 export const getFulfillOfferPayload = (
   fulfillerAddress: string,
@@ -162,19 +156,19 @@ export const getFulfillOfferPayload = (
 ) => {
   const payload: {
     offer: {
-      hash: string;
-      chain: Chain;
-      protocol_address: string;
-    };
+      hash: string
+      chain: Chain
+      protocol_address: string
+    }
     fulfiller: {
-      address: string;
-    };
+      address: string
+    }
     consideration?: {
-      asset_contract_address: string;
-      token_id: string;
-    };
-    units_to_fill: string;
-    include_optional_creator_fees: boolean;
+      asset_contract_address: string
+      token_id: string
+    }
+    units_to_fill: string
+    include_optional_creator_fees: boolean
   } = {
     offer: {
       hash: order_hash,
@@ -186,23 +180,30 @@ export const getFulfillOfferPayload = (
     },
     units_to_fill: unitsToFill,
     include_optional_creator_fees: includeOptionalCreatorFees,
-  };
+  }
 
   // Add consideration for criteria offers (e.g., collection offers)
   if (assetContractAddress && tokenId) {
     payload.consideration = {
       asset_contract_address: assetContractAddress,
       token_id: tokenId,
-    };
+    }
   }
 
-  return payload;
-};
+  return payload
+}
 
-type OrdersQueryPathOptions = "protocol" | "side";
+type OrdersQueryPathOptions = "protocol" | "side"
 export const serializeOrdersQueryOptions = (
   options: Omit<OrdersQueryOptions, OrdersQueryPathOptions>,
 ) => {
+  const tokenIds =
+    options.tokenIds && options.tokenIds.length > 0
+      ? options.tokenIds
+      : options.tokenId !== undefined
+        ? [options.tokenId]
+        : options.tokenIds
+
   return {
     limit: options.limit,
     cursor: options.cursor ?? options.next,
@@ -213,15 +214,13 @@ export const serializeOrdersQueryOptions = (
     owner: options.owner,
     listed_after: options.listedAfter,
     listed_before: options.listedBefore,
-    token_ids:
-      options.tokenIds ??
-      (options.tokenId !== undefined ? [options.tokenId] : undefined),
+    token_ids: tokenIds,
     asset_contract_address: options.assetContractAddress,
     order_by: options.orderBy,
     order_direction: options.orderDirection,
     only_english: options.onlyEnglish,
-  };
-};
+  }
+}
 
 export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
   return {
@@ -250,5 +249,5 @@ export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
     markedInvalid: order.marked_invalid,
     clientSignature: order.client_signature,
     remainingQuantity: order.remaining_quantity,
-  };
-};
+  }
+}
