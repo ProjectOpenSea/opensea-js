@@ -145,6 +145,8 @@ export enum Chain {
   MegaETH = "megaeth",
   Soneium = "soneium",
   Hyperliquid = "hyperliquid",
+  AnimeChain = "animechain",
+  Ink = "ink",
 }
 
 // Compile-time check: every ChainIdentifier from the API spec must be assignable to Chain.

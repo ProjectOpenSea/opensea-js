@@ -6,12 +6,14 @@ import {
   getListNFTsByContractPath,
   getNFTPath,
   getRefreshMetadataPath,
+  getValidateMetadataPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import type {
   GetContractResponse,
   GetNFTResponse,
   ListNFTsResponse,
+  ValidateMetadataResponse,
 } from "./types"
 
 /**
@@ -120,6 +122,23 @@ export class NFTsAPI {
     const response = await this.fetcher.get<GetContractResponse>(
       getContractPath(chain, address),
     )
+    return response
+  }
+
+  /**
+   * Validate NFT metadata by fetching and parsing it.
+   */
+  async validateMetadata(
+    address: string,
+    identifier: string,
+    chain: Chain = this.chain,
+    ignoreCachedItemUrls?: boolean,
+  ): Promise<ValidateMetadataResponse> {
+    let path = getValidateMetadataPath(chain, address, identifier)
+    if (ignoreCachedItemUrls !== undefined) {
+      path += `?ignoreCachedItemUrls=${ignoreCachedItemUrls}`
+    }
+    const response = await this.fetcher.post<ValidateMetadataResponse>(path)
     return response
   }
 }

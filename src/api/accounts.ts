@@ -1,7 +1,12 @@
 import type { Chain, OpenSeaAccount, OpenSeaPaymentToken } from "../types"
 import { accountFromJSON, paymentTokenFromJSON } from "../utils/converters"
-import { getAccountPath, getPaymentTokenPath } from "./apiPaths"
+import {
+  getAccountPath,
+  getAccountTokensPath,
+  getPaymentTokenPath,
+} from "./apiPaths"
 import type { Fetcher } from "./fetcher"
+import type { GetAccountTokensArgs, GetAccountTokensResponse } from "./types"
 
 /**
  * Account and payment token related API operations
@@ -31,5 +36,19 @@ export class AccountsAPI {
   async getAccount(address: string): Promise<OpenSeaAccount> {
     const json = await this.fetcher.get<OpenSeaAccount>(getAccountPath(address))
     return accountFromJSON(json)
+  }
+
+  /**
+   * Fetch token balances for an account.
+   */
+  async getAccountTokens(
+    address: string,
+    args?: GetAccountTokensArgs,
+  ): Promise<GetAccountTokensResponse> {
+    const response = await this.fetcher.get<GetAccountTokensResponse>(
+      getAccountTokensPath(address),
+      args,
+    )
+    return response
   }
 }

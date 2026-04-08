@@ -917,3 +917,124 @@ export type SearchResponse = {
   /** List of search results ranked by relevance */
   results: SearchResult[]
 }
+
+/**
+ * Information about a supported blockchain.
+ * @category API Models
+ */
+export type ChainInfo = {
+  /** The chain identifier slug used in API paths */
+  chain: string
+  /** Human-readable chain name */
+  name: string
+  /** Native currency symbol */
+  symbol: string
+  /** Whether token swaps are supported on this chain */
+  supports_swaps: boolean
+  /** Block explorer name */
+  block_explorer: string
+  /** Block explorer base URL */
+  block_explorer_url: string
+}
+
+/**
+ * Response from OpenSea API for listing supported chains.
+ * @category API Response Types
+ */
+export type GetChainsResponse = {
+  /** List of supported chains */
+  chains: ChainInfo[]
+}
+
+/**
+ * Token balance for a wallet address.
+ * @category API Models
+ */
+export type TokenBalance = {
+  /** Token contract address */
+  address: string
+  /** Chain the token is on */
+  chain: string
+  /** Token name */
+  name: string
+  /** Token symbol */
+  symbol: string
+  /** URL of the token image */
+  image_url?: string
+  /** Current price in USD */
+  usd_price: string
+  /** Number of decimals */
+  decimals: number
+  /** Token balance in display units */
+  quantity: string
+  /** Total USD value of the balance */
+  usd_value: string
+  /** URL to the token page on OpenSea */
+  opensea_url: string
+}
+
+/**
+ * Query args for Get Account Tokens endpoint.
+ * @category API Query Args
+ */
+export interface GetAccountTokensArgs {
+  /** Limit the number of results */
+  limit?: number
+  /** Comma-separated chain identifiers to filter by */
+  chains?: string[]
+  /** Field to sort by */
+  sort_by?: string
+  /** Sort direction */
+  sort_direction?: "asc" | "desc"
+  /** Whether to disable spam filtering */
+  disable_spam_filtering?: boolean
+  /** Cursor for pagination */
+  cursor?: string
+}
+
+/**
+ * Response from OpenSea API for fetching account token balances.
+ * @category API Response Types
+ */
+export type GetAccountTokensResponse = QueryCursorsV2 & {
+  /** List of token balances */
+  token_balances: TokenBalance[]
+}
+
+/**
+ * Response from OpenSea API for validating NFT metadata.
+ * @category API Response Types
+ */
+export type ValidateMetadataResponse = {
+  /** The asset being validated */
+  assetIdentifier: {
+    chain: string
+    contractAddress: string
+    tokenId: string
+  }
+  /** The token URI */
+  tokenUri?: string
+  /** Parsed metadata details */
+  metadata?: {
+    name?: string
+    description?: string
+    originalImageUrl?: string
+    processedImageUrl?: string
+    originalAnimationUrl?: string
+    processedAnimationUrl?: string
+    externalUrl?: string
+    backgroundColor?: string
+    attributes: {
+      traitType: string
+      value: string
+      displayType?: string
+    }[]
+  }
+  /** Error encountered during metadata ingestion */
+  error?: {
+    errorType: string
+    message: string
+    url?: string
+    statusCode?: number
+  }
+}

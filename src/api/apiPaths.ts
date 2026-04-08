@@ -166,3 +166,19 @@ export const getTokenPath = (chain: string, address: string) => {
 export const getSearchPath = () => {
   return `${API_V2_PREFIX}/search`
 }
+
+export const getChainsPath = () => {
+  return `${API_V2_PREFIX}/chains`
+}
+
+export const getAccountTokensPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/tokens`
+}
+
+export const getValidateMetadataPath = (
+  chain: Chain,
+  address: string,
+  identifier: string,
+) => {
+  return `${API_V2_PREFIX}/chain/${chain}/contract/${address}/nfts/${identifier}/validate-metadata`
+}

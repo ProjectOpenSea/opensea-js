@@ -54,6 +54,8 @@ describe("Utils: chain", () => {
       [Chain.Somnia, "5031"],
       [Chain.Monad, "143"],
       [Chain.MegaETH, "4326"],
+      [Chain.AnimeChain, "69000"],
+      [Chain.Ink, "57073"],
     ]
 
     for (const [chain, expectedId] of chainIdTests) {
@@ -108,6 +110,7 @@ describe("Utils: chain", () => {
         Chain.B3,
         Chain.Shape,
         Chain.Unichain,
+        Chain.Ink,
       ]
       const expectedAddress = "0x4200000000000000000000000000000000000006"
 
@@ -205,6 +208,7 @@ describe("Utils: chain", () => {
         Chain.Shape,
         Chain.Unichain,
         Chain.MegaETH,
+        Chain.Ink,
       ]
 
       for (const chain of ethChains) {

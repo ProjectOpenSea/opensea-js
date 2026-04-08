@@ -20,6 +20,7 @@ import {
 } from "../types"
 import { executeWithRateLimit } from "../utils/rateLimit"
 import { AccountsAPI } from "./accounts"
+import { ChainsAPI } from "./chains"
 import { CollectionsAPI } from "./collections"
 import { EventsAPI } from "./events"
 import { ListingsAPI } from "./listings"
@@ -33,8 +34,11 @@ import {
   type CancelOrderResponse,
   type CollectionOffer,
   CollectionOrderByOption,
+  type GetAccountTokensArgs,
+  type GetAccountTokensResponse,
   type GetBestListingResponse,
   type GetBestOfferResponse,
+  type GetChainsResponse,
   type GetCollectionsResponse,
   type GetContractResponse,
   type GetEventsArgs,
@@ -56,6 +60,7 @@ import {
   type Offer,
   type SearchArgs,
   type SearchResponse,
+  type ValidateMetadataResponse,
 } from "./types"
 
 /**
@@ -89,6 +94,7 @@ export class OpenSeaAPI {
   private eventsAPI: EventsAPI
   private searchAPI: SearchAPI
   private tokensAPI: TokensAPI
+  private chainsAPI: ChainsAPI
 
   /**
    * Create an instance of the OpenSeaAPI
@@ -124,6 +130,7 @@ export class OpenSeaAPI {
     this.eventsAPI = new EventsAPI(fetcher)
     this.searchAPI = new SearchAPI(fetcher)
     this.tokensAPI = new TokensAPI(fetcher)
+    this.chainsAPI = new ChainsAPI(fetcher)
   }
 
   /**
@@ -749,6 +756,49 @@ export class OpenSeaAPI {
    */
   public async search(args: SearchArgs): Promise<SearchResponse> {
     return this.searchAPI.search(args)
+  }
+
+  /**
+   * Gets the list of supported blockchains and their capabilities.
+   * @returns The {@link GetChainsResponse} returned by the API.
+   */
+  public async getChains(): Promise<GetChainsResponse> {
+    return this.chainsAPI.getChains()
+  }
+
+  /**
+   * Gets token balances for a given account.
+   * @param address The wallet address to fetch token balances for.
+   * @param args Optional query parameters for filtering and pagination.
+   * @returns The {@link GetAccountTokensResponse} returned by the API.
+   */
+  public async getAccountTokens(
+    address: string,
+    args?: GetAccountTokensArgs,
+  ): Promise<GetAccountTokensResponse> {
+    return this.accountsAPI.getAccountTokens(address, args)
+  }
+
+  /**
+   * Validate NFT metadata by fetching and parsing it.
+   * @param address The NFT contract address.
+   * @param identifier The token identifier.
+   * @param chain The chain where the NFT is located. Defaults to the chain set in the constructor.
+   * @param ignoreCachedItemUrls Whether to ignore cached item URLs and re-fetch from source.
+   * @returns The {@link ValidateMetadataResponse} returned by the API.
+   */
+  public async validateNFTMetadata(
+    address: string,
+    identifier: string,
+    chain: Chain = this.chain,
+    ignoreCachedItemUrls?: boolean,
+  ): Promise<ValidateMetadataResponse> {
+    return this.nftsAPI.validateMetadata(
+      address,
+      identifier,
+      chain,
+      ignoreCachedItemUrls,
+    )
   }
 
   /**

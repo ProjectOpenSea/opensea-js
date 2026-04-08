@@ -77,6 +77,10 @@ export const getChainId = (chain: Chain) => {
       return "143"
     case Chain.MegaETH:
       return "4326"
+    case Chain.AnimeChain:
+      return "69000"
+    case Chain.Ink:
+      return "57073"
     default:
       throw new Error(`Unknown chainId for ${chain}`)
   }
@@ -107,6 +111,7 @@ export const getOfferPaymentToken = (chain: Chain) => {
     case Chain.B3:
     case Chain.Shape:
     case Chain.Unichain:
+    case Chain.Ink:
       return "0x4200000000000000000000000000000000000006" // WETH
     case Chain.BeraChain:
       return "0x6969696969696969696969696969696969696969" // WBERA
@@ -154,6 +159,7 @@ export const getListingPaymentToken = (chain: Chain) => {
     case Chain.Unichain:
     case Chain.Monad:
     case Chain.MegaETH:
+    case Chain.Ink:
       return "0x0000000000000000000000000000000000000000" // ETH
     case Chain.Polygon:
       return "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619" // WETH
