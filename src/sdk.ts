@@ -211,7 +211,7 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the wallet making the offer.
    * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
    * @param options.quantity Number of assets to bid for. Defaults to 1.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.
@@ -260,7 +260,7 @@ export class OpenSeaSDK {
    * @param options.accountAddress  Address of the wallet making the listing
    * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
    * @param options.quantity Number of assets to list. Defaults to 1.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
@@ -319,7 +319,7 @@ export class OpenSeaSDK {
    * All listings must be from the same account address.
    *
    * Note: If only one listing is provided, this method will use a normal order signature instead of a bulk signature,
-   * as bulk signatures are more expensive to decode on-chain due to the merkle proof verification.
+   * as bulk signatures are more expensive to decode onchain due to the merkle proof verification.
    *
    * @param options
    * @param options.listings Array of listing parameters. Each listing requires asset, amount, and optionally other listing parameters.
@@ -369,7 +369,7 @@ export class OpenSeaSDK {
    * All offers must be from the same account address.
    *
    * Note: If only one offer is provided, this method will use a normal order signature instead of a bulk signature,
-   * as bulk signatures are more expensive to decode on-chain due to the merkle proof verification.
+   * as bulk signatures are more expensive to decode onchain due to the merkle proof verification.
    *
    * @param options
    * @param options.offers Array of offer parameters. Each offer requires asset, amount, and optionally other offer parameters.
@@ -417,7 +417,7 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the wallet making the offer.
    * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
    * @param options.quantity Number of assets to bid for.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time (UTC seconds).
    * @param options.offerProtectionEnabled Use signed zone for protection against disabled items. Default: true.
@@ -534,7 +534,7 @@ export class OpenSeaSDK {
    * @param options.orderHashes Optional array of order hashes to cancel. Must provide protocolAddress if using this.
    * @param options.accountAddress The account address cancelling the orders.
    * @param options.protocolAddress Required when using orderHashes. The Seaport protocol address for the orders.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in calldata.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in calldata.
    * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the cancellation.
    *
@@ -577,7 +577,7 @@ export class OpenSeaSDK {
    * @param options.orderHash Optional order hash to cancel. Must provide protocolAddress if using this.
    * @param options.accountAddress The account address that will be cancelling the order.
    * @param options.protocolAddress Required when using orderHash. The Seaport protocol address for the order.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in calldata.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in calldata.
    *
    * @throws Error if neither order nor orderHash is provided.
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -796,9 +796,9 @@ export class OpenSeaSDK {
 
   /**
    * Instead of signing an off-chain order, this method allows you to approve an order
-   * with an on-chain transaction.
+   * with an onchain transaction.
    * @param order Order to approve
-   * @param domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
+   * @param domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for onchain order attribution to assist with analytics.
    * @returns Transaction hash of the approval transaction
    *
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -837,7 +837,7 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the wallet making the listing
    * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
    * @param options.quantity Number of assets to list. Defaults to 1.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.listingTime When order becomes fulfillable (UTC seconds). Defaults to now.
    * @param options.expirationTime Expiration time (UTC seconds).
@@ -896,7 +896,7 @@ export class OpenSeaSDK {
    * @param options.accountAddress Address of the wallet making the offer.
    * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
    * @param options.quantity Number of assets to bid for. Defaults to 1.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time (UTC seconds).
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.

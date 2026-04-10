@@ -36,7 +36,7 @@ export class FulfillmentManager {
    * @param options.order The order to fulfill
    * @param options.accountAddress Address of the wallet taking the order.
    * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.
-   *                       This can be used for on-chain order attribution to assist with analytics.
+   *                       This can be used for onchain order attribution to assist with analytics.
    * @param options.overrides Transaction overrides, ignored if not set.
    * @returns Transaction hash of the order.
    */
@@ -289,9 +289,9 @@ export class FulfillmentManager {
 
   /**
    * Instead of signing an off-chain order, this method allows you to approve an order
-   * with an on-chain transaction.
+   * with an onchain transaction.
    * @param order Order to approve
-   * @param domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for on-chain order attribution to assist with analytics.
+   * @param domain An optional domain to be hashed and included at the end of fulfillment calldata.  This can be used for onchain order attribution to assist with analytics.
    * @returns Transaction hash of the approval transaction
    *
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -373,7 +373,7 @@ export class FulfillmentManager {
    * @param options.accountAddress Address of the wallet making the listing
    * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
    * @param options.quantity Number of assets to list. Defaults to 1.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.listingTime When order becomes fulfillable (UTC seconds). Defaults to now.
    * @param options.expirationTime Expiration time (UTC seconds).
@@ -435,7 +435,7 @@ export class FulfillmentManager {
    * @param options.accountAddress Address of the wallet making the offer.
    * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
    * @param options.quantity Number of assets to bid for. Defaults to 1.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time (UTC seconds).
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.

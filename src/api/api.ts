@@ -22,6 +22,7 @@ import { executeWithRateLimit } from "../utils/rateLimit"
 import { AccountsAPI } from "./accounts"
 import { ChainsAPI } from "./chains"
 import { CollectionsAPI } from "./collections"
+import { DropsAPI } from "./drops"
 import { EventsAPI } from "./events"
 import { ListingsAPI } from "./listings"
 import { NFTsAPI } from "./nfts"
@@ -34,13 +35,19 @@ import {
   type CancelOrderResponse,
   type CollectionOffer,
   CollectionOrderByOption,
+  type DropMintRequest,
+  type DropMintResponse,
   type GetAccountTokensArgs,
   type GetAccountTokensResponse,
   type GetBestListingResponse,
   type GetBestOfferResponse,
   type GetChainsResponse,
+  type GetCollectionsPaginatedResponse,
   type GetCollectionsResponse,
   type GetContractResponse,
+  type GetDropResponse,
+  type GetDropsArgs,
+  type GetDropsResponse,
   type GetEventsArgs,
   type GetEventsResponse,
   type GetListingsResponse,
@@ -52,12 +59,15 @@ import {
   type GetSwapQuoteResponse,
   type GetTokenResponse,
   type GetTokensArgs,
+  type GetTopCollectionsArgs,
   type GetTopTokensResponse,
   type GetTraitsResponse,
+  type GetTrendingCollectionsArgs,
   type GetTrendingTokensResponse,
   type Listing,
   type ListNFTsResponse,
   type Offer,
+  type ResolveAccountResponse,
   type SearchArgs,
   type SearchResponse,
   type ValidateMetadataResponse,
@@ -95,6 +105,7 @@ export class OpenSeaAPI {
   private searchAPI: SearchAPI
   private tokensAPI: TokensAPI
   private chainsAPI: ChainsAPI
+  private dropsAPI: DropsAPI
 
   /**
    * Create an instance of the OpenSeaAPI
@@ -131,6 +142,7 @@ export class OpenSeaAPI {
     this.searchAPI = new SearchAPI(fetcher)
     this.tokensAPI = new TokensAPI(fetcher)
     this.chainsAPI = new ChainsAPI(fetcher)
+    this.dropsAPI = new DropsAPI(fetcher)
   }
 
   /**
@@ -852,6 +864,70 @@ export class OpenSeaAPI {
       chain,
       includePrivateListings,
     )
+  }
+
+  /**
+   * Gets a list of drops (mints).
+   * @param args Optional query parameters for filtering and pagination.
+   * @returns The {@link GetDropsResponse} returned by the API.
+   */
+  public async getDrops(args?: GetDropsArgs): Promise<GetDropsResponse> {
+    return this.dropsAPI.getDrops(args)
+  }
+
+  /**
+   * Gets detailed drop information for a collection.
+   * @param slug The collection slug identifying the drop.
+   * @returns The {@link GetDropResponse} returned by the API.
+   */
+  public async getDrop(slug: string): Promise<GetDropResponse> {
+    return this.dropsAPI.getDrop(slug)
+  }
+
+  /**
+   * Builds a mint transaction for a drop.
+   * @param slug The collection slug identifying the drop.
+   * @param request The mint request containing minter address and quantity.
+   * @returns The {@link DropMintResponse} with ready-to-sign transaction data.
+   */
+  public async buildDropMintTransaction(
+    slug: string,
+    request: DropMintRequest,
+  ): Promise<DropMintResponse> {
+    return this.dropsAPI.buildMintTransaction(slug, request)
+  }
+
+  /**
+   * Gets trending collections sorted by sales activity.
+   * @param args Optional query parameters for timeframe, chain, category, and pagination.
+   * @returns The {@link GetCollectionsPaginatedResponse} returned by the API.
+   */
+  public async getTrendingCollections(
+    args?: GetTrendingCollectionsArgs,
+  ): Promise<GetCollectionsPaginatedResponse> {
+    return this.collectionsAPI.getTrendingCollections(args)
+  }
+
+  /**
+   * Gets top collections ranked by various stats.
+   * @param args Optional query parameters for sort_by, chain, category, and pagination.
+   * @returns The {@link GetCollectionsPaginatedResponse} returned by the API.
+   */
+  public async getTopCollections(
+    args?: GetTopCollectionsArgs,
+  ): Promise<GetCollectionsPaginatedResponse> {
+    return this.collectionsAPI.getTopCollections(args)
+  }
+
+  /**
+   * Resolve an ENS name, OpenSea username, or wallet address to canonical account info.
+   * @param identifier An ENS name (e.g. vitalik.eth), OpenSea username, or wallet address.
+   * @returns The {@link ResolveAccountResponse} returned by the API.
+   */
+  public async resolveAccount(
+    identifier: string,
+  ): Promise<ResolveAccountResponse> {
+    return this.accountsAPI.resolveAccount(identifier)
   }
 
   /**

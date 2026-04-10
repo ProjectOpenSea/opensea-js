@@ -182,3 +182,27 @@ export const getValidateMetadataPath = (
 ) => {
   return `${API_V2_PREFIX}/chain/${chain}/contract/${address}/nfts/${identifier}/validate-metadata`
 }
+
+export const getDropsPath = () => {
+  return `${API_V2_PREFIX}/drops`
+}
+
+export const getDropPath = (slug: string) => {
+  return `${API_V2_PREFIX}/drops/${slug}`
+}
+
+export const getDropMintPath = (slug: string) => {
+  return `${API_V2_PREFIX}/drops/${slug}/mint`
+}
+
+export const getTrendingCollectionsPath = () => {
+  return `${API_V2_PREFIX}/collections/trending`
+}
+
+export const getTopCollectionsPath = () => {
+  return `${API_V2_PREFIX}/collections/top`
+}
+
+export const getResolveAccountPath = (identifier: string) => {
+  return `${API_V2_PREFIX}/accounts/resolve/${identifier}`
+}

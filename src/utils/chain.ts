@@ -16,6 +16,7 @@ import {
   WPOL_ADDRESS,
 } from "../constants"
 import { Chain } from "../types"
+import { CHAIN_ID_MAP } from "./chainIds.generated"
 
 /**
  * Checks if a chain uses the alternate protocol addresses.
@@ -28,62 +29,17 @@ export const usesAlternateProtocol = (chain: Chain): boolean =>
 
 /**
  * Gets the chain ID for a given chain.
+ *
+ * Uses the generated CHAIN_ID_MAP from scripts/chain-data.json.
+ * To add a new chain, update chain-data.json and run `pnpm sync-chains`.
+ *
  * @param chain The chain to get the ID for
  * @returns The chain ID as a string
  */
-export const getChainId = (chain: Chain) => {
-  switch (chain) {
-    case Chain.Mainnet:
-      return "1"
-    case Chain.Polygon:
-      return "137"
-    case Chain.Avalanche:
-      return "43114"
-    case Chain.Arbitrum:
-      return "42161"
-    case Chain.Blast:
-      return "238"
-    case Chain.Base:
-      return "8453"
-    case Chain.Optimism:
-      return "10"
-    case Chain.Zora:
-      return "7777777"
-    case Chain.Sei:
-      return "1329"
-    case Chain.B3:
-      return "8333"
-    case Chain.BeraChain:
-      return "80094"
-    case Chain.Flow:
-      return "747"
-    case Chain.ApeChain:
-      return "33139"
-    case Chain.Ronin:
-      return "2020"
-    case Chain.Abstract:
-      return "2741"
-    case Chain.Shape:
-      return "360"
-    case Chain.Unichain:
-      return "130"
-    case Chain.Gunzilla:
-      return "43419"
-    case Chain.HyperEVM:
-      return "999"
-    case Chain.Somnia:
-      return "5031"
-    case Chain.Monad:
-      return "143"
-    case Chain.MegaETH:
-      return "4326"
-    case Chain.AnimeChain:
-      return "69000"
-    case Chain.Ink:
-      return "57073"
-    default:
-      throw new Error(`Unknown chainId for ${chain}`)
-  }
+export const getChainId = (chain: Chain): string => {
+  const id = CHAIN_ID_MAP[chain]
+  if (id === undefined) throw new Error(`Unknown chainId for ${chain}`)
+  return id
 }
 
 /**

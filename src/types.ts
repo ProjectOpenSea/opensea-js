@@ -113,8 +113,8 @@ export interface OpenSeaAPIConfig {
 
 /**
  * Each of the possible chains that OpenSea supports.
- * ⚠️NOTE: When adding to this list, also add to the following functions:
- * - `getChainId`
+ * ⚠️NOTE: When adding to this list, also update:
+ * - `scripts/chain-data.json` + run `pnpm sync-chains` (generates `getChainId` mapping)
  * - `getListingPaymentToken`
  * - `getOfferPaymentToken`
  * - `getNativeWrapTokenAddress` (if getOfferPaymentToken isn't the wrapped native asset)

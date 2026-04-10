@@ -142,7 +142,7 @@ console.log(`Account owns ${nfts.length} NFTs`);
 
 ### Refresh NFT Metadata
 
-Force a metadata refresh for an NFT. Useful after updating metadata on-chain.
+Force a metadata refresh for an NFT. Useful after updating metadata onchain.
 
 ```typescript
 await openseaSDK.api.refreshNFTMetadata(
@@ -751,7 +751,7 @@ console.log(order.protocol_data.parameters);
 
 ### Generate Fulfillment Data
 
-Generate the data needed to fulfill a listing or offer on-chain.
+Generate the data needed to fulfill a listing or offer onchain.
 
 ```typescript
 const fulfillmentData = await openseaSDK.api.generateFulfillmentData(

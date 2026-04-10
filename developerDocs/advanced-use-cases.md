@@ -67,7 +67,7 @@ const listing = await openseaSDK.createListing({
 
 **Important**
 
-> Private orders only restrict the taker address at the contract level. The order data remains public and discoverable via OpenSea APIs and on-chain indexers.
+> Private orders only restrict the taker address at the contract level. The order data remains public and discoverable via OpenSea APIs and onchain indexers.
 
 ### Canceling Orders
 
@@ -185,7 +185,7 @@ const listings = await openseaSDK.createBulkListings({
 - **Automatic rate limiting**: API submissions are handled sequentially with automatic retry on rate limits
 - **Efficient**: Uses normal signature for single listing to avoid bulk signature overhead
 
-**Performance Note:** If you only provide one listing, the method automatically uses `createListing()` internally since bulk signatures are more expensive to decode on-chain.
+**Performance Note:** If you only provide one listing, the method automatically uses `createListing()` internally since bulk signatures are more expensive to decode onchain.
 
 #### Creating Multiple Offers
 

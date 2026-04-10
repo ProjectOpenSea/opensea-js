@@ -400,7 +400,7 @@ export class OrdersManager {
    * @param options.accountAddress Address of the wallet making the offer.
    * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
    * @param options.quantity Number of assets to bid for. Defaults to 1.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.
@@ -455,7 +455,7 @@ export class OrdersManager {
    * @param options.accountAddress  Address of the wallet making the listing
    * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
    * @param options.quantity Number of assets to list. Defaults to 1.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt. This can be used for on-chain order attribution to assist with analytics.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt. This can be used for onchain order attribution to assist with analytics.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.listingTime Optional time when the order will become fulfillable, in UTC seconds. Undefined means it will start now.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
@@ -520,7 +520,7 @@ export class OrdersManager {
    * All listings must be from the same account address.
    *
    * Note: If only one listing is provided, this method will use a normal order signature instead of a bulk signature,
-   * as bulk signatures are more expensive to decode on-chain due to the merkle proof verification.
+   * as bulk signatures are more expensive to decode onchain due to the merkle proof verification.
    *
    * @param options
    * @param options.listings Array of listing parameters. Each listing requires asset, amount, and optionally other listing parameters.
@@ -801,7 +801,7 @@ export class OrdersManager {
    * All offers must be from the same account address.
    *
    * Note: If only one offer is provided, this method will use a normal order signature instead of a bulk signature,
-   * as bulk signatures are more expensive to decode on-chain due to the merkle proof verification.
+   * as bulk signatures are more expensive to decode onchain due to the merkle proof verification.
    *
    * @param options
    * @param options.offers Array of offer parameters. Each offer requires asset, amount, and optionally other offer parameters.
@@ -1034,7 +1034,7 @@ export class OrdersManager {
    * @param options.accountAddress Address of the wallet making the offer.
    * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
    * @param options.quantity Number of assets to bid for.
-   * @param options.domain Optional domain for on-chain attribution. Hashed and included in salt. This can be used for on-chain order attribution to assist with analytics.
+   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt. This can be used for onchain order attribution to assist with analytics.
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time for the order, in UTC seconds.
    * @param options.offerProtectionEnabled Use signed zone for protection against disabled items. Default: true.

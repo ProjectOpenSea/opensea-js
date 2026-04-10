@@ -36,7 +36,7 @@ describe("Utils: chain", () => {
       [Chain.Polygon, "137"],
       [Chain.Avalanche, "43114"],
       [Chain.Arbitrum, "42161"],
-      [Chain.Blast, "238"],
+      [Chain.Blast, "81457"],
       [Chain.Base, "8453"],
       [Chain.Optimism, "10"],
       [Chain.Zora, "7777777"],
@@ -54,6 +54,7 @@ describe("Utils: chain", () => {
       [Chain.Somnia, "5031"],
       [Chain.Monad, "143"],
       [Chain.MegaETH, "4326"],
+      [Chain.Soneium, "1868"],
       [Chain.AnimeChain, "69000"],
       [Chain.Ink, "57073"],
     ]

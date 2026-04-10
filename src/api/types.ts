@@ -1002,6 +1002,176 @@ export type GetAccountTokensResponse = QueryCursorsV2 & {
 }
 
 /**
+ * Drop summary returned by OpenSea API.
+ * @category API Models
+ */
+export type Drop = {
+  /** Collection slug */
+  collection_slug: string
+  /** Collection name */
+  collection_name?: string
+  /** Blockchain the drop is on */
+  chain: string
+  /** Contract address */
+  contract_address: string
+  /** Drop type */
+  drop_type: string
+  /** Whether the drop is currently minting */
+  is_minting: boolean
+  /** Collection image URL */
+  image_url?: string
+  /** OpenSea URL for the drop */
+  opensea_url: string
+}
+
+/**
+ * Drop stage information.
+ * @category API Models
+ */
+export type DropStage = {
+  /** Stage UUID */
+  uuid: string
+  /** Stage type (e.g. public_sale) */
+  stage_type: string
+  /** Stage label/name */
+  label?: string
+  /** Mint price per token in wei */
+  price?: string
+  /** Currency contract address */
+  price_currency_address: string
+  /** Stage start time (ISO 8601) */
+  start_time: string
+  /** Stage end time (ISO 8601) */
+  end_time: string
+  /** Max tokens mintable per wallet in this stage */
+  max_per_wallet: string
+}
+
+/**
+ * Detailed drop information including stages and supply.
+ * @category API Models
+ */
+export type DropDetailed = Drop & {
+  /** Drop stages (public sale, presale, etc.) */
+  stages: DropStage[]
+  /** Total minted supply */
+  total_supply?: string
+  /** Maximum supply */
+  max_supply?: string
+}
+
+/**
+ * Response from OpenSea API for fetching a list of drops.
+ * @category API Response Types
+ */
+export type GetDropsResponse = QueryCursorsV2 & {
+  /** List of {@link Drop} */
+  drops: Drop[]
+}
+
+/**
+ * Response from OpenSea API for fetching a single drop.
+ * @category API Response Types
+ */
+export type GetDropResponse = DropDetailed
+
+/**
+ * Query args for Get Drops endpoint.
+ * @category API Query Args
+ */
+export interface GetDropsArgs {
+  /** Drop calendar type: featured, upcoming, or recently_minted */
+  type?: string
+  /** Limit the number of results */
+  limit?: number
+  /** Comma-separated chains to filter by */
+  chains?: string[]
+  /** Cursor for pagination */
+  cursor?: string
+}
+
+/**
+ * Request body for building a drop mint transaction.
+ * @category API Request Types
+ */
+export type DropMintRequest = {
+  /** Wallet address that will receive the minted tokens */
+  minter: string
+  /** Number of tokens to mint (1-100) */
+  quantity: number
+}
+
+/**
+ * Response from OpenSea API for building a drop mint transaction.
+ * @category API Response Types
+ */
+export type DropMintResponse = {
+  /** Transaction target contract address */
+  to: string
+  /** Encoded transaction data (hex) */
+  data: string
+  /** Transaction value in wei (hex) */
+  value: string
+  /** Chain identifier */
+  chain: string
+}
+
+/**
+ * Query args for Get Trending Collections endpoint.
+ * @category API Query Args
+ */
+export interface GetTrendingCollectionsArgs {
+  /** Time window: one_minute, five_minutes, fifteen_minutes, one_hour, one_day, seven_days, thirty_days, one_year, all_time */
+  timeframe?: string
+  /** Blockchain(s) to filter by */
+  chains?: string[]
+  /** Category to filter by (e.g. art, gaming, pfps) */
+  category?: string
+  /** Maximum number of collections to return (1-100) */
+  limit?: number
+  /** Cursor for pagination */
+  cursor?: string
+}
+
+/**
+ * Query args for Get Top Collections endpoint.
+ * @category API Query Args
+ */
+export interface GetTopCollectionsArgs {
+  /** Sort by: one_day_volume, seven_days_volume, thirty_days_volume, floor_price, one_day_sales, etc. */
+  sort_by?: string
+  /** Blockchain(s) to filter by */
+  chains?: string[]
+  /** Category to filter by (e.g. art, gaming, pfps) */
+  category?: string
+  /** Maximum number of collections to return (1-100) */
+  limit?: number
+  /** Cursor for pagination */
+  cursor?: string
+}
+
+/**
+ * Response from OpenSea API for trending/top collections.
+ * @category API Response Types
+ */
+export type GetCollectionsPaginatedResponse = QueryCursorsV2 & {
+  collections: OpenSeaCollection[]
+}
+
+/**
+ * Response from OpenSea API for resolving an account identifier.
+ * @category API Response Types
+ */
+export type ResolveAccountResponse = {
+  /** The resolved wallet address */
+  address: string
+  /** OpenSea username, if available */
+  username?: string
+  /** Primary ENS name, if available */
+  ens_name?: string
+}
+
+/**
  * Response from OpenSea API for validating NFT metadata.
  * @category API Response Types
  */

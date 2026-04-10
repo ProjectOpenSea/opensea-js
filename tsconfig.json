@@ -1,13 +1,12 @@
 {
-  "include": ["./src/**/*", "test"],
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "lib",
     "rootDir": ".",
-    "target": "es2020",
     "lib": ["dom", "esnext"],
     "types": ["vitest/globals"],
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
     "noImplicitReturns": true,
     "noErrorTruncation": true,
     "noImplicitThis": false,
@@ -15,13 +14,7 @@
     "preserveConstEnums": true,
     "removeComments": false,
     "sourceMap": true,
-    "strict": true,
-    "declaration": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0"
-  }
+    "baseUrl": "."
+  },
+  "include": ["./src/**/*", "test"]
 }

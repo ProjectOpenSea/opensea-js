@@ -4,9 +4,14 @@ import {
   getAccountPath,
   getAccountTokensPath,
   getPaymentTokenPath,
+  getResolveAccountPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
-import type { GetAccountTokensArgs, GetAccountTokensResponse } from "./types"
+import type {
+  GetAccountTokensArgs,
+  GetAccountTokensResponse,
+  ResolveAccountResponse,
+} from "./types"
 
 /**
  * Account and payment token related API operations
@@ -48,6 +53,16 @@ export class AccountsAPI {
     const response = await this.fetcher.get<GetAccountTokensResponse>(
       getAccountTokensPath(address),
       args,
+    )
+    return response
+  }
+
+  /**
+   * Resolve an ENS name, OpenSea username, or wallet address to canonical account info.
+   */
+  async resolveAccount(identifier: string): Promise<ResolveAccountResponse> {
+    const response = await this.fetcher.get<ResolveAccountResponse>(
+      getResolveAccountPath(identifier),
     )
     return response
   }

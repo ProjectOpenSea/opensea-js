@@ -4,15 +4,20 @@ import {
   getCollectionPath,
   getCollectionStatsPath,
   getCollectionsPath,
+  getTopCollectionsPath,
   getTraitsPath,
+  getTrendingCollectionsPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import {
   CollectionOrderByOption,
   type GetCollectionResponse,
   type GetCollectionsArgs,
+  type GetCollectionsPaginatedResponse,
   type GetCollectionsResponse,
+  type GetTopCollectionsArgs,
   type GetTraitsResponse,
+  type GetTrendingCollectionsArgs,
 } from "./types"
 
 /**
@@ -72,6 +77,44 @@ export class CollectionsAPI {
   async getTraits(collectionSlug: string): Promise<GetTraitsResponse> {
     const path = getTraitsPath(collectionSlug)
     const response = await this.fetcher.get<GetTraitsResponse>(path)
+    return response
+  }
+
+  /**
+   * Fetch trending collections sorted by sales activity.
+   */
+  async getTrendingCollections(
+    args?: GetTrendingCollectionsArgs,
+  ): Promise<GetCollectionsPaginatedResponse> {
+    const response = await this.fetcher.get<GetCollectionsPaginatedResponse>(
+      getTrendingCollectionsPath(),
+      {
+        ...args,
+        chains: args?.chains?.join(","),
+      },
+    )
+    response.collections = response.collections.map(collection =>
+      collectionFromJSON(collection),
+    )
+    return response
+  }
+
+  /**
+   * Fetch top collections ranked by various stats.
+   */
+  async getTopCollections(
+    args?: GetTopCollectionsArgs,
+  ): Promise<GetCollectionsPaginatedResponse> {
+    const response = await this.fetcher.get<GetCollectionsPaginatedResponse>(
+      getTopCollectionsPath(),
+      {
+        ...args,
+        chains: args?.chains?.join(","),
+      },
+    )
+    response.collections = response.collections.map(collection =>
+      collectionFromJSON(collection),
+    )
     return response
   }
 }
