@@ -34,7 +34,9 @@ jobs:
           node-version-file: ${{ inputs.node-version-file }}
           registry-url: https://registry.npmjs.org/
 
-      - run: npm ci
+      # Use npm install (not npm ci) because package-lock.json may be
+      # out of sync after workspace protocol resolution.
+      - run: npm install
 
       - if: ${{ inputs.build-before-publish }}
         run: npm run build
