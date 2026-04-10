@@ -3,11 +3,11 @@ import type {
   CreateInputItem,
   OrderComponents,
 } from "@opensea/seaport-js/lib/types"
-import { type BigNumberish, ZeroAddress } from "ethers"
 import type { CollectionOffer, NFT } from "../api/types"
-import { INVERSE_BASIS_POINT } from "../constants"
+import { INVERSE_BASIS_POINT, ZERO_ADDRESS } from "../constants"
 import type { OrderV2, ProtocolData } from "../orders/types"
 import {
+  type Amount,
   type AssetWithTokenId,
   type Fee,
   type OpenSeaCollection,
@@ -56,7 +56,7 @@ export class OrdersManager {
     private getPriceParametersCallback: (
       orderSide: OrderSide,
       tokenAddress: string,
-      amount: BigNumberish,
+      amount: Amount,
     ) => Promise<{ basePrice: bigint }>,
   ) {}
 
@@ -153,14 +153,14 @@ export class OrdersManager {
     expirationTime,
     buyerAddress,
     includeOptionalCreatorFees = false,
-    zone = ZeroAddress,
+    zone = ZERO_ADDRESS,
   }: {
     asset: AssetWithTokenId
     accountAddress: string
-    amount: BigNumberish
-    quantity?: BigNumberish
+    amount: Amount
+    quantity?: Amount
     domain?: string
-    salt?: BigNumberish
+    salt?: Amount
     listingTime?: number
     expirationTime?: number
     buyerAddress?: string
@@ -219,7 +219,7 @@ export class OrdersManager {
         zone,
         domain,
         salt: BigInt(salt ?? 0).toString(),
-        restrictedByZone: zone !== ZeroAddress,
+        restrictedByZone: zone !== ZERO_ADDRESS,
         allowPartialFills: true,
       },
       accountAddress,
@@ -244,14 +244,14 @@ export class OrdersManager {
     expirationTime,
     buyerAddress,
     includeOptionalCreatorFees = false,
-    zone = ZeroAddress,
+    zone = ZERO_ADDRESS,
   }: {
     asset: AssetWithTokenId
     accountAddress: string
-    amount: BigNumberish
-    quantity?: BigNumberish
+    amount: Amount
+    quantity?: Amount
     domain?: string
-    salt?: BigNumberish
+    salt?: Amount
     listingTime?: number
     expirationTime?: number
     buyerAddress?: string
@@ -291,11 +291,11 @@ export class OrdersManager {
   }: {
     asset: AssetWithTokenId
     accountAddress: string
-    amount: BigNumberish
-    quantity?: BigNumberish
+    amount: Amount
+    quantity?: Amount
     domain?: string
-    salt?: BigNumberish
-    expirationTime?: BigNumberish
+    salt?: Amount
+    expirationTime?: Amount
     zone?: string
   }) {
     await this.context.requireAccountIsAvailable(accountAddress)
@@ -347,7 +347,7 @@ export class OrdersManager {
         zone,
         domain,
         salt: BigInt(salt ?? 0).toString(),
-        restrictedByZone: zone !== ZeroAddress,
+        restrictedByZone: zone !== ZERO_ADDRESS,
         allowPartialFills: true,
       },
       accountAddress,
@@ -373,11 +373,11 @@ export class OrdersManager {
   }: {
     asset: AssetWithTokenId
     accountAddress: string
-    amount: BigNumberish
-    quantity?: BigNumberish
+    amount: Amount
+    quantity?: Amount
     domain?: string
-    salt?: BigNumberish
-    expirationTime?: BigNumberish
+    salt?: Amount
+    expirationTime?: Amount
     zone?: string
   }): Promise<OrderComponents> {
     const order = await this._buildOfferOrder({
@@ -423,11 +423,11 @@ export class OrdersManager {
   }: {
     asset: AssetWithTokenId
     accountAddress: string
-    amount: BigNumberish
-    quantity?: BigNumberish
+    amount: Amount
+    quantity?: Amount
     domain?: string
-    salt?: BigNumberish
-    expirationTime?: BigNumberish
+    salt?: Amount
+    expirationTime?: Amount
     zone?: string
   }): Promise<OrderV2> {
     const order = await this._buildOfferOrder({
@@ -479,14 +479,14 @@ export class OrdersManager {
     expirationTime,
     buyerAddress,
     includeOptionalCreatorFees = false,
-    zone = ZeroAddress,
+    zone = ZERO_ADDRESS,
   }: {
     asset: AssetWithTokenId
     accountAddress: string
-    amount: BigNumberish
-    quantity?: BigNumberish
+    amount: Amount
+    quantity?: Amount
     domain?: string
-    salt?: BigNumberish
+    salt?: Amount
     listingTime?: number
     expirationTime?: number
     buyerAddress?: string
@@ -542,10 +542,10 @@ export class OrdersManager {
   }: {
     listings: Array<{
       asset: AssetWithTokenId
-      amount: BigNumberish
-      quantity?: BigNumberish
+      amount: Amount
+      quantity?: Amount
       domain?: string
-      salt?: BigNumberish
+      salt?: Amount
       listingTime?: number
       expirationTime?: number
       buyerAddress?: string
@@ -597,7 +597,7 @@ export class OrdersManager {
       paymentTokenAddress: string
       zone: string
       domain?: string
-      salt?: BigNumberish
+      salt?: Amount
       listingTime?: number
       expirationTime?: number
     }> = []
@@ -614,7 +614,7 @@ export class OrdersManager {
         expirationTime,
         buyerAddress,
         includeOptionalCreatorFees = false,
-        zone = ZeroAddress,
+        zone = ZERO_ADDRESS,
       } = listing
 
       // Fetch NFT and collection data
@@ -722,7 +722,7 @@ export class OrdersManager {
           salt: metadata.salt
             ? BigInt(metadata.salt ?? 0).toString()
             : undefined,
-          restrictedByZone: metadata.zone !== ZeroAddress,
+          restrictedByZone: metadata.zone !== ZERO_ADDRESS,
           allowPartialFills: true,
         }
       })
@@ -823,11 +823,11 @@ export class OrdersManager {
   }: {
     offers: Array<{
       asset: AssetWithTokenId
-      amount: BigNumberish
-      quantity?: BigNumberish
+      amount: Amount
+      quantity?: Amount
       domain?: string
-      salt?: BigNumberish
-      expirationTime?: BigNumberish
+      salt?: Amount
+      expirationTime?: Amount
       zone?: string
     }>
     accountAddress: string
@@ -875,8 +875,8 @@ export class OrdersManager {
       paymentTokenAddress: string
       zone: string
       domain?: string
-      salt?: BigNumberish
-      expirationTime?: BigNumberish
+      salt?: Amount
+      expirationTime?: Amount
     }> = []
 
     // Build all order inputs
@@ -954,7 +954,7 @@ export class OrdersManager {
           salt: metadata.salt
             ? BigInt(metadata.salt ?? 0).toString()
             : undefined,
-          restrictedByZone: metadata.zone !== ZeroAddress,
+          restrictedByZone: metadata.zone !== ZERO_ADDRESS,
           allowPartialFills: true,
         }
       })
@@ -1060,10 +1060,10 @@ export class OrdersManager {
   }: {
     collectionSlug: string
     accountAddress: string
-    amount: BigNumberish
+    amount: Amount
     quantity: number
     domain?: string
-    salt?: BigNumberish
+    salt?: Amount
     expirationTime?: number | string
     offerProtectionEnabled?: boolean
     traitType?: string

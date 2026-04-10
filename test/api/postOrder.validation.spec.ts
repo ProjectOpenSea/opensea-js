@@ -91,7 +91,7 @@ describe("API: postOrder validation", () => {
       await api.postOrder(mockOrder, apiOptions)
       throw new Error("Should have thrown an error")
     } catch (error: any) {
-      expect(error.message).toBe("side must be either 'ask' or 'bid'")
+      expect(error.message).toBe("side must be either 'listing' or 'offer'")
     }
   })
 

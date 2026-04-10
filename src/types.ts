@@ -1,7 +1,13 @@
 import type { ChainIdentifier } from "@opensea/api-types"
-import type { BigNumberish } from "ethers"
 import type { Listing, Offer } from "./api/types"
 import type { OrderV2 } from "./orders/types"
+
+/**
+ * Numeric type for amounts (replaces ethers BigNumberish).
+ * Prefer `string` for decimal amounts (e.g. "1.5") to avoid floating point
+ * precision issues — `number` values like `0.1 + 0.2` produce `0.30000000000000004`.
+ */
+export type Amount = string | number | bigint
 
 /**
  * Events emitted by the SDK which can be used by frontend applications
@@ -68,7 +74,7 @@ export interface EventData {
   /**
    * Amount of ETH sent when wrapping or unwrapping.
    */
-  amount?: BigNumberish
+  amount?: Amount
   /**
    * The transaction hash of the event.
    */
@@ -95,7 +101,7 @@ export interface EventData {
   assets?: Array<{
     asset: AssetWithTokenStandard
     toAddress?: string
-    amount?: BigNumberish
+    amount?: Amount
   }>
 }
 
@@ -157,11 +163,11 @@ type _AssertAPIChainsCovered = ChainIdentifier extends `${Chain}` ? true : never
 const _assertAPIChainsCovered: _AssertAPIChainsCovered = true
 
 /**
- * Order side: listing (ask) or offer (bid)
+ * Order side: listing or offer
  */
 export enum OrderSide {
-  LISTING = "ask",
-  OFFER = "bid",
+  LISTING = "listing",
+  OFFER = "offer",
 }
 
 /**

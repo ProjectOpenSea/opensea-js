@@ -1,4 +1,3 @@
-import { ethers } from "ethers"
 import { API_BASE_MAINNET } from "../constants"
 import type {
   FulfillmentDataResponse,
@@ -999,7 +998,9 @@ export class OpenSeaAPI {
    * Fetch from an API Endpoint, sending auth token in headers
    * @param url The URL to fetch
    * @param headers Additional headers to send with the request
-   * @param body Optional body to send. If set, will POST, otherwise GET
+   * @param body Optional body to send. HTTP method is inferred: POST if body is
+   *             provided (non-nullish), GET otherwise. This covers all OpenSea API
+   *             endpoints which only use GET and POST.
    * @param options Request options like timeout and abort signal
    */
   private async _fetch(
@@ -1008,61 +1009,64 @@ export class OpenSeaAPI {
     body?: object,
     options?: RequestOptions,
   ) {
-    // Create the fetch request
-    const req = new ethers.FetchRequest(url)
-
-    // Set the headers
-    headers = {
+    const mergedHeaders: Record<string, string> = {
+      // Kept as "opensea-js" for server-side analytics continuity after package rename
       "x-app-id": "opensea-js",
       ...(this.apiKey ? { "X-API-KEY": this.apiKey } : {}),
+      ...(body != null ? { "Content-Type": "application/json" } : {}),
       ...headers,
     }
-    for (const [key, value] of Object.entries(headers)) {
-      req.setHeader(key, value)
-    }
 
-    // Set the body if provided
-    if (body) {
-      req.body = body
-    }
-
-    // Apply request options
-    if (options?.timeout !== undefined) {
-      req.timeout = options.timeout
-    }
-
-    // Set up abort signal handling
-    let abortHandler: (() => void) | undefined
-    if (options?.signal) {
-      if (options.signal.aborted) {
-        throw new Error("Request aborted")
-      }
-      abortHandler = () => req.cancel()
-      options.signal.addEventListener("abort", abortHandler)
-    }
-
-    // Set the throttle params
-    req.setThrottleParams({ slotInterval: 1000 })
-
-    const sanitizedHeaders = { ...req.headers }
+    const sanitizedHeaders = { ...mergedHeaders }
     delete sanitizedHeaders["X-API-KEY"]
     this.logger(
       `Sending request: ${url} ${JSON.stringify({
-        method: body ? "POST" : "GET",
+        method: body != null ? "POST" : "GET",
         headers: sanitizedHeaders,
-        body: body ? JSON.stringify(body, null, 2) : undefined,
+        body: body != null ? JSON.stringify(body, null, 2) : undefined,
       })}`,
     )
 
-    try {
-      const response = await req.send()
-      if (!response.ok()) {
-        // Handle rate limit errors (429 Too Many Requests and 599 custom rate limit)
-        if (response.statusCode === 599 || response.statusCode === 429) {
-          throw this._createRateLimitError(response)
+    // Build abort signal (merge timeout + user-provided signal)
+    let controller: AbortController | undefined
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+    let userAbortHandler: (() => void) | undefined
+    let signal = options?.signal
+    if (options?.timeout !== undefined) {
+      controller = new AbortController()
+      timeoutId = setTimeout(() => controller!.abort(), options.timeout)
+      // If user provided their own signal, abort ours if theirs fires
+      if (options.signal) {
+        if (options.signal.aborted) {
+          clearTimeout(timeoutId)
+          throw new Error("Request aborted")
         }
-        // If an errors array is returned, throw with the error messages.
-        const errors = response.bodyJson?.errors
+        userAbortHandler = () => {
+          controller!.abort()
+          clearTimeout(timeoutId)
+        }
+        options.signal.addEventListener("abort", userAbortHandler)
+      }
+      signal = controller.signal
+    } else if (options?.signal?.aborted) {
+      throw new Error("Request aborted")
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: body != null ? "POST" : "GET",
+        headers: mergedHeaders,
+        body: body != null ? JSON.stringify(body) : undefined,
+        signal,
+      })
+
+      if (!response.ok) {
+        // Handle rate limit errors (429 Too Many Requests and 599 custom rate limit)
+        if (response.status === 599 || response.status === 429) {
+          throw await this._createRateLimitError(response)
+        }
+        const responseBody = await response.json().catch(() => ({}))
+        const errors = responseBody?.errors
         if (errors?.length > 0) {
           let errorMessage = Array.isArray(errors)
             ? errors.join(", ")
@@ -1071,17 +1075,18 @@ export class OpenSeaAPI {
             errorMessage = JSON.stringify(errors)
           }
           throw new Error(`Server Error: ${errorMessage}`)
-        } else {
-          // Otherwise, let ethers throw a SERVER_ERROR since it will include
-          // more context about the request and response.
-          response.assertOk()
         }
+        throw new Error(
+          `Server Error (${response.status}): ${response.statusText}`,
+        )
       }
-      return response.bodyJson
+      return response.json()
     } finally {
-      // Clean up abort handler
-      if (abortHandler && options?.signal) {
-        options.signal.removeEventListener("abort", abortHandler)
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId)
+      }
+      if (userAbortHandler && options?.signal) {
+        options.signal.removeEventListener("abort", userAbortHandler)
       }
     }
   }
@@ -1097,9 +1102,8 @@ export class OpenSeaAPI {
    * @param response The HTTP response object from the API
    * @returns The retry-after value in seconds (capped at 5 minutes), or undefined if not present or invalid
    */
-  private _parseRetryAfter(response: ethers.FetchResponse): number | undefined {
-    const retryAfterHeader =
-      response.headers["retry-after"] || response.headers["Retry-After"]
+  private _parseRetryAfter(response: Response): number | undefined {
+    const retryAfterHeader = response.headers.get("retry-after")
     if (retryAfterHeader) {
       const trimmed = retryAfterHeader.trim()
 
@@ -1132,21 +1136,24 @@ export class OpenSeaAPI {
 
   /**
    * Creates a rate limit error with status code and retry-after information.
+   * This is async because it attempts to parse the response body. If the body
+   * is malformed JSON, responseBody will be undefined (intentional — the error
+   * itself is more important than the body).
    * @param response The HTTP response object from the API
    * @returns An enhanced Error object with statusCode, retryAfter and responseBody properties
    */
-  private _createRateLimitError(
-    response: ethers.FetchResponse,
-  ): OpenSeaRateLimitError {
+  private async _createRateLimitError(
+    response: Response,
+  ): Promise<OpenSeaRateLimitError> {
     const retryAfter = this._parseRetryAfter(response)
     const error = new Error(
-      `${response.statusCode} ${response.statusMessage}`,
+      `${response.status} ${response.statusText}`,
     ) as OpenSeaRateLimitError
 
     // Add status code and retry-after information to the error object
-    error.statusCode = response.statusCode
+    error.statusCode = response.status
     error.retryAfter = retryAfter
-    error.responseBody = response.bodyJson
+    error.responseBody = await response.json().catch(() => undefined)
     return error
   }
 }

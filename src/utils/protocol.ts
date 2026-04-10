@@ -3,18 +3,18 @@ import {
   CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
   ItemType,
 } from "@opensea/seaport-js/lib/constants"
-import { ethers } from "ethers"
 import {
   ALTERNATE_SEAPORT_V1_6_ADDRESS,
   SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
 } from "../constants"
 import type { TokenStandard } from "../types"
+import { checksumAddress } from "./address"
 
 // Pre-compute checksummed protocol addresses for consistent comparisons
 const VALID_PROTOCOL_ADDRESSES = new Set([
-  ethers.getAddress(CROSS_CHAIN_SEAPORT_V1_6_ADDRESS),
-  ethers.getAddress(ALTERNATE_SEAPORT_V1_6_ADDRESS),
+  checksumAddress(CROSS_CHAIN_SEAPORT_V1_6_ADDRESS),
+  checksumAddress(ALTERNATE_SEAPORT_V1_6_ADDRESS),
 ])
 
 /**
@@ -49,7 +49,7 @@ export const getAssetItemType = (tokenStandard: TokenStandard) => {
  */
 export const remapSharedStorefrontAddress = (tokenAddress: string): string => {
   if (SHARED_STOREFRONT_ADDRESSES.has(tokenAddress.toLowerCase())) {
-    return ethers.getAddress(
+    return checksumAddress(
       SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
     )
   }
@@ -62,7 +62,7 @@ export const remapSharedStorefrontAddress = (tokenAddress: string): string => {
  */
 export const isValidProtocol = (protocolAddress: string): boolean => {
   try {
-    return VALID_PROTOCOL_ADDRESSES.has(ethers.getAddress(protocolAddress))
+    return VALID_PROTOCOL_ADDRESSES.has(checksumAddress(protocolAddress))
   } catch {
     return false
   }

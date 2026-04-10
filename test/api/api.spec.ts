@@ -1,10 +1,21 @@
-import { ethers } from "ethers"
 import { describe, expect, test, vi } from "vitest"
 import { Chain, type OpenSeaRateLimitError } from "../../src"
 import { getOfferPaymentToken } from "../../src/utils"
 import { BAYC_CONTRACT_ADDRESS } from "../utils/constants"
 import { OPENSEA_API_KEY } from "../utils/env"
 import { api } from "../utils/sdk"
+
+/**
+ * Helper to create a Response-like object with headers.get() method
+ * for testing _parseRetryAfter which now expects native Response objects.
+ */
+function mockResponse(headers: Record<string, string>) {
+  return {
+    headers: {
+      get: (key: string) => headers[key.toLowerCase()] ?? headers[key] ?? null,
+    },
+  }
+}
 
 describe("API", () => {
   let fetchStub: any
@@ -33,10 +44,12 @@ describe("API", () => {
 
     const oldLogger = api.logger
 
+    // The API key is now deliberately sanitized from log output.
+    // Verify the request is logged with the expected app-id header.
     const logPromise = new Promise<void>((resolve, reject) => {
       api.logger = log => {
         try {
-          expect(log).toContain(`"x-api-key":"${OPENSEA_API_KEY}"`)
+          expect(log).toContain(`"x-app-id":"opensea-js"`)
           resolve()
         } catch (e) {
           reject(e)
@@ -106,11 +119,9 @@ describe("API", () => {
     // Pin system time for deterministic date math
     vi.setSystemTime(new Date("2020-01-01T00:00:00.000Z"))
 
-    const response = {
-      headers: {
-        "retry-after": "Wed, 01 Jan 2020 00:00:01 GMT",
-      },
-    }
+    const response = mockResponse({
+      "retry-after": "Wed, 01 Jan 2020 00:00:01 GMT",
+    })
 
     const retryAfter = (
       api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
@@ -122,11 +133,9 @@ describe("API", () => {
   test("API returns undefined for past Retry-After HTTP-date header", () => {
     vi.setSystemTime(new Date("2020-01-01T00:00:10.000Z"))
 
-    const response = {
-      headers: {
-        "retry-after": "Wed, 01 Jan 2020 00:00:01 GMT",
-      },
-    }
+    const response = mockResponse({
+      "retry-after": "Wed, 01 Jan 2020 00:00:01 GMT",
+    })
 
     const retryAfter = (
       api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
@@ -136,11 +145,9 @@ describe("API", () => {
   })
 
   test("API caps numeric Retry-After at 5 minutes", () => {
-    const response = {
-      headers: {
-        "retry-after": "9999",
-      },
-    }
+    const response = mockResponse({
+      "retry-after": "9999",
+    })
 
     const retryAfter = (
       api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
@@ -152,12 +159,10 @@ describe("API", () => {
   test("API caps HTTP-date Retry-After at 5 minutes", () => {
     vi.setSystemTime(new Date("2020-01-01T00:00:00.000Z"))
 
-    const response = {
-      headers: {
-        // 1 hour in the future
-        "retry-after": "Wed, 01 Jan 2020 01:00:00 GMT",
-      },
-    }
+    const response = mockResponse({
+      // 1 hour in the future
+      "retry-after": "Wed, 01 Jan 2020 01:00:00 GMT",
+    })
 
     const retryAfter = (
       api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
@@ -167,11 +172,9 @@ describe("API", () => {
   })
 
   test("API returns undefined for invalid Retry-After string", () => {
-    const response = {
-      headers: {
-        "retry-after": "invalid-string",
-      },
-    }
+    const response = mockResponse({
+      "retry-after": "invalid-string",
+    })
 
     const retryAfter = (
       api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
@@ -181,11 +184,9 @@ describe("API", () => {
   })
 
   test("API returns undefined for negative Retry-After", () => {
-    const response = {
-      headers: {
-        "retry-after": "-5",
-      },
-    }
+    const response = mockResponse({
+      "retry-after": "-5",
+    })
 
     const retryAfter = (
       api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
@@ -195,11 +196,9 @@ describe("API", () => {
   })
 
   test("API returns undefined for zero Retry-After", () => {
-    const response = {
-      headers: {
-        "retry-after": "0",
-      },
-    }
+    const response = mockResponse({
+      "retry-after": "0",
+    })
 
     const retryAfter = (
       api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
@@ -209,11 +208,9 @@ describe("API", () => {
   })
 
   test("API trims whitespace from Retry-After header", () => {
-    const response = {
-      headers: {
-        "retry-after": "  5  ",
-      },
-    }
+    const response = mockResponse({
+      "retry-after": "  5  ",
+    })
 
     const retryAfter = (
       api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
@@ -223,11 +220,9 @@ describe("API", () => {
   })
 
   test("API returns undefined for malformed numeric Retry-After suffixes", () => {
-    const response = {
-      headers: {
-        "retry-after": "5s",
-      },
-    }
+    const response = mockResponse({
+      "retry-after": "5s",
+    })
 
     const retryAfter = (
       api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
@@ -237,11 +232,9 @@ describe("API", () => {
   })
 
   test("API returns undefined for fractional numeric Retry-After values", () => {
-    const response = {
-      headers: {
-        "retry-after": "1.5",
-      },
-    }
+    const response = mockResponse({
+      "retry-after": "1.5",
+    })
 
     const retryAfter = (
       api as unknown as { _parseRetryAfter: (r: unknown) => number | undefined }
@@ -329,56 +322,28 @@ describe("API", () => {
   })
 
   test("API post supports timeout option", async () => {
-    const setTimeoutSpy = vi.fn()
-    const originalDescriptor = Object.getOwnPropertyDescriptor(
-      ethers.FetchRequest.prototype,
-      "timeout",
-    )
-
-    Object.defineProperty(ethers.FetchRequest.prototype, "timeout", {
-      set: setTimeoutSpy,
-      configurable: true,
-    })
-
-    const sendStub = vi
-      .spyOn(ethers.FetchRequest.prototype, "send")
-      .mockResolvedValue({
-        ok: () => true,
-        bodyJson: { ok: true },
-        headers: {},
-      } as any)
+    const fetchStubLocal = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      )
 
     await api.post("/api/v2/test", undefined, undefined, { timeout: 5000 })
 
-    expect(setTimeoutSpy).toHaveBeenCalledWith(5000)
+    expect(fetchStubLocal).toHaveBeenCalledTimes(1)
+    const callArgs = fetchStubLocal.mock.calls[0]
+    // Verify the signal was provided (timeout creates an AbortController)
+    expect(callArgs[1]?.signal).toBeDefined()
 
-    sendStub.mockRestore()
-    if (originalDescriptor) {
-      Object.defineProperty(
-        ethers.FetchRequest.prototype,
-        "timeout",
-        originalDescriptor,
-      )
-    }
+    fetchStubLocal.mockRestore()
   })
 
   test("API post registers abort signal handler", async () => {
-    const addEventListenerSpy = vi.spyOn(
-      AbortSignal.prototype,
-      "addEventListener",
-    )
-    const removeEventListenerSpy = vi.spyOn(
-      AbortSignal.prototype,
-      "removeEventListener",
-    )
-
-    const sendStub = vi
-      .spyOn(ethers.FetchRequest.prototype, "send")
-      .mockResolvedValue({
-        ok: () => true,
-        bodyJson: { ok: true },
-        headers: {},
-      } as any)
+    const fetchStubLocal = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      )
 
     const controller = new AbortController()
 
@@ -386,19 +351,12 @@ describe("API", () => {
       signal: controller.signal,
     })
 
-    // Verify abort handler was registered and cleaned up
-    expect(addEventListenerSpy).toHaveBeenCalledWith(
-      "abort",
-      expect.any(Function),
-    )
-    expect(removeEventListenerSpy).toHaveBeenCalledWith(
-      "abort",
-      expect.any(Function),
-    )
+    expect(fetchStubLocal).toHaveBeenCalledTimes(1)
+    const callArgs = fetchStubLocal.mock.calls[0]
+    // Verify the signal was passed through to fetch
+    expect(callArgs[1]?.signal).toBeDefined()
 
-    sendStub.mockRestore()
-    addEventListenerSpy.mockRestore()
-    removeEventListenerSpy.mockRestore()
+    fetchStubLocal.mockRestore()
   })
 
   test("API post throws immediately for pre-aborted signal", async () => {
@@ -416,37 +374,20 @@ describe("API", () => {
   })
 
   test("API get supports timeout option", async () => {
-    const setTimeoutSpy = vi.fn()
-    const originalDescriptor = Object.getOwnPropertyDescriptor(
-      ethers.FetchRequest.prototype,
-      "timeout",
-    )
-
-    Object.defineProperty(ethers.FetchRequest.prototype, "timeout", {
-      set: setTimeoutSpy,
-      configurable: true,
-    })
-
-    const sendStub = vi
-      .spyOn(ethers.FetchRequest.prototype, "send")
-      .mockResolvedValue({
-        ok: () => true,
-        bodyJson: { ok: true },
-        headers: {},
-      } as any)
+    const fetchStubLocal = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      )
 
     await api.get("/api/v2/test", {}, { timeout: 3000 })
 
-    expect(setTimeoutSpy).toHaveBeenCalledWith(3000)
+    expect(fetchStubLocal).toHaveBeenCalledTimes(1)
+    const callArgs = fetchStubLocal.mock.calls[0]
+    // Verify the signal was provided (timeout creates an AbortController)
+    expect(callArgs[1]?.signal).toBeDefined()
 
-    sendStub.mockRestore()
-    if (originalDescriptor) {
-      Object.defineProperty(
-        ethers.FetchRequest.prototype,
-        "timeout",
-        originalDescriptor,
-      )
-    }
+    fetchStubLocal.mockRestore()
   })
 
   test("API get throws immediately for pre-aborted signal", async () => {

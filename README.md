@@ -12,8 +12,6 @@
 
 # @opensea/sdk <!-- omit in toc -->
 
-> **Note:** This package was previously published as `opensea-js`. The API is unchanged.
-
 This is the TypeScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs.
 
 It allows developers to access the official orderbook, filter it, create listings and offers, and complete trades programmatically.
@@ -21,6 +19,29 @@ It allows developers to access the official orderbook, filter it, create listing
 Get started by [requesting an API key](https://docs.opensea.io/reference/api-keys) and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders onchain, and listen to events in the process.
 
 Happy seafaring!
+
+## Quick Start
+
+### With ethers.js
+
+```typescript
+import { ethers } from "ethers";
+import { OpenSeaSDK, Chain } from "@opensea/sdk";
+
+const provider = new ethers.JsonRpcProvider("https://eth-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY");
+const sdk = new OpenSeaSDK(provider, { chain: Chain.Mainnet, apiKey: "YOUR_API_KEY" });
+```
+
+### With viem
+
+```typescript
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
+import { OpenSeaSDK, Chain } from '@opensea/sdk/viem'
+
+const publicClient = createPublicClient({ chain: mainnet, transport: http() })
+const sdk = new OpenSeaSDK({ publicClient }, { chain: Chain.Mainnet, apiKey: 'YOUR_API_KEY' })
+```
 
 ## Documentation
 
@@ -58,8 +79,8 @@ The changelog for recent versions can be found at:
 [version-link]: https://github.com/ProjectOpenSea/opensea-js/releases
 [npm-badge]: https://img.shields.io/npm/v/@opensea/sdk?color=red
 [npm-link]: https://www.npmjs.com/package/@opensea/sdk
-[ci-badge]: https://github.com/ProjectOpenSea/opensea-js/actions/workflows/code-quality.yml/badge.svg
-[ci-link]: https://github.com/ProjectOpenSea/opensea-js/actions/workflows/code-quality.yml
+[ci-badge]: https://github.com/ProjectOpenSea/opensea-js/actions/workflows/ci.yml/badge.svg
+[ci-link]: https://github.com/ProjectOpenSea/opensea-js/actions/workflows/ci.yml
 [coverage-badge]: https://coveralls.io/repos/github/ProjectOpenSea/opensea-js/badge.svg?branch=main
 [coverage-link]: https://coveralls.io/github/ProjectOpenSea/opensea-js?branch=main
 [license-badge]: https://img.shields.io/github/license/ProjectOpenSea/opensea-js

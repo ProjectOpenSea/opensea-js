@@ -1,4 +1,3 @@
-import { ethers } from "ethers"
 import { describe, expect, test, vi } from "vitest"
 import { FulfillmentManager } from "../../src/sdk/fulfillment"
 import { Chain, EventType } from "../../src/types"
@@ -127,7 +126,12 @@ describe("SDK: FulfillmentManager", () => {
       dispatch: mockDispatch,
       confirmTransaction: mockConfirmTransaction,
       requireAccountIsAvailable: mockRequireAccountIsAvailable,
-      signerOrProvider: mockSigner,
+      wallet: { signer: mockSigner, provider: {} },
+      contractCaller: {
+        encodeFunctionData: vi.fn().mockReturnValue("0xEncodedData"),
+        readContract: vi.fn(),
+        writeContract: vi.fn(),
+      },
     })
 
     // Create FulfillmentManager instance
@@ -272,27 +276,24 @@ describe("SDK: FulfillmentManager", () => {
         },
       })
 
-      const encodeStub = vi.spyOn(
-        ethers.Interface.prototype,
-        "encodeFunctionData",
+      // Get the mock contractCaller from context
+      const mockContractCaller = (fulfillmentManager as any).context
+        .contractCaller
+      mockContractCaller.encodeFunctionData.mockReturnValue("0xAliasEncoded")
+
+      const result = await fulfillmentManager.fulfillOrder({
+        order: mockOrderV2,
+        accountAddress: "0xBuyer",
+      })
+
+      expect(result).toBe("0xFulfillTxHash")
+      expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
+      expect(
+        mockContractCaller.encodeFunctionData.mock.calls[0][0],
+      ).toMatchObject({ functionName: "fulfillBasicOrder" })
+      expect(mockSigner.sendTransaction.mock.calls[0][0].data).toBe(
+        "0xAliasEncoded",
       )
-      encodeStub.mockImplementation(() => "0xAliasEncoded")
-
-      try {
-        const result = await fulfillmentManager.fulfillOrder({
-          order: mockOrderV2,
-          accountAddress: "0xBuyer",
-        })
-
-        expect(result).toBe("0xFulfillTxHash")
-        expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
-        expect(encodeStub.mock.calls[0][0]).toBe("fulfillBasicOrder")
-        expect(mockSigner.sendTransaction.mock.calls[0][0].data).toBe(
-          "0xAliasEncoded",
-        )
-      } finally {
-        encodeStub.mockRestore()
-      }
     })
 
     test("encodes fulfillOrder with exactly 2 params (no recipient)", async () => {
@@ -331,27 +332,27 @@ describe("SDK: FulfillmentManager", () => {
         },
       })
 
-      const encodeStub = vi.spyOn(
-        ethers.Interface.prototype,
-        "encodeFunctionData",
+      // Get the mock contractCaller from context
+      const mockContractCaller = (fulfillmentManager as any).context
+        .contractCaller
+      mockContractCaller.encodeFunctionData.mockReturnValue(
+        "0xFulfillOrderEncoded",
       )
-      encodeStub.mockImplementation(() => "0xFulfillOrderEncoded")
 
-      try {
-        await fulfillmentManager.fulfillOrder({
-          order: mockOrderV2,
-          accountAddress: "0xBuyer",
-        })
+      await fulfillmentManager.fulfillOrder({
+        order: mockOrderV2,
+        accountAddress: "0xBuyer",
+      })
 
-        expect(encodeStub).toHaveBeenCalledTimes(1)
-        expect(encodeStub.mock.calls[0][0]).toBe("fulfillOrder")
-        // fulfillOrder ABI only accepts 2 params: order and fulfillerConduitKey
-        // recipient must NOT be passed
-        const encodedParams = encodeStub.mock.calls[0][1] as unknown[]
-        expect(encodedParams).toHaveLength(2)
-      } finally {
-        encodeStub.mockRestore()
-      }
+      expect(mockContractCaller.encodeFunctionData).toHaveBeenCalledTimes(1)
+      expect(
+        mockContractCaller.encodeFunctionData.mock.calls[0][0],
+      ).toMatchObject({ functionName: "fulfillOrder" })
+      // fulfillOrder ABI only accepts 2 params: order and fulfillerConduitKey
+      // recipient must NOT be passed
+      const encodedArgs =
+        mockContractCaller.encodeFunctionData.mock.calls[0][0].args
+      expect(encodedArgs).toHaveLength(2)
     })
 
     test("fulfills private listing successfully", async () => {

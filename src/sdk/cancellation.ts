@@ -1,5 +1,4 @@
 import type { OrderComponents } from "@opensea/seaport-js/lib/types"
-import type { Overrides, Signer } from "ethers"
 import type { Listing, Offer } from "../api/types"
 import type { OrderV2 } from "../orders/types"
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils"
@@ -140,7 +139,7 @@ export class CancellationManager {
     accountAddress: string
     protocolAddress?: string
     domain?: string
-    overrides?: Overrides
+    overrides?: Record<string, unknown>
   }): Promise<string> {
     // Validate input before making any external calls
     if (!orders && !orderHashes) {
@@ -267,7 +266,7 @@ export class CancellationManager {
     accountAddress: string
     domain?: string
     protocolAddress?: string
-    overrides?: Overrides
+    overrides?: Record<string, unknown>
   }): Promise<string> {
     const seaport = getSeaportInstance(protocolAddress, this.context.seaport)
 
@@ -291,16 +290,14 @@ export class CancellationManager {
     const name = "Seaport"
     const version = getSeaportVersion(protocolAddress)
 
-    if (
-      typeof (this.context.signerOrProvider as Signer).signTypedData ===
-      "undefined"
-    ) {
+    const wallet = this.context.wallet
+    if (!("signer" in wallet)) {
       throw new Error(
-        "Please pass an ethers Signer into this sdk to derive an offerer signature",
+        "Please pass a Signer into this SDK to derive an offerer signature",
       )
     }
 
-    return (this.context.signerOrProvider as Signer).signTypedData(
+    return wallet.signer.signTypedData(
       { chainId, name, version, verifyingContract: protocolAddress },
       { OrderHash: [{ name: "orderHash", type: "bytes32" }] },
       { orderHash },

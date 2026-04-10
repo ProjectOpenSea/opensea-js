@@ -1,18 +1,23 @@
 import {
-  type BigNumberish,
-  Contract,
-  type ContractTransactionResponse,
-  ethers,
-  type Overrides,
-  type Signer,
-} from "ethers"
-import { MULTICALL3_ADDRESS, TRANSFER_HELPER_ADDRESS } from "../constants"
+  APPROVE_ABI,
+  ERC20_ABI,
+  ERC721_ABI,
+  ERC1155_ABI,
+  MULTICALL3_ABI,
+  SET_APPROVAL_FOR_ALL_ABI,
+  TRANSFER_HELPER_ABI,
+} from "../abi/abis"
 import {
-  ERC20__factory,
-  ERC721__factory,
-  ERC1155__factory,
-} from "../typechain/contracts"
-import { type AssetWithTokenStandard, EventType, TokenStandard } from "../types"
+  MAX_UINT256,
+  MULTICALL3_ADDRESS,
+  TRANSFER_HELPER_ADDRESS,
+} from "../constants"
+import {
+  type Amount,
+  type AssetWithTokenStandard,
+  EventType,
+  TokenStandard,
+} from "../types"
 import { getDefaultConduit } from "../utils/utils"
 import type { SDKContext } from "./context"
 
@@ -38,37 +43,39 @@ export class AssetsManager {
     accountAddress: string
     asset: AssetWithTokenStandard
   }): Promise<bigint> {
+    const cc = this.context.contractCaller
+
     switch (asset.tokenStandard) {
       case TokenStandard.ERC20: {
-        const contract = ERC20__factory.connect(
-          asset.tokenAddress,
-          this.context.provider,
-        )
-        return await contract.balanceOf.staticCall(accountAddress)
+        return (await cc.readContract({
+          address: asset.tokenAddress,
+          abi: ERC20_ABI,
+          functionName: "balanceOf",
+          args: [accountAddress],
+        })) as bigint
       }
       case TokenStandard.ERC1155: {
         if (asset.tokenId === undefined || asset.tokenId === null) {
           throw new Error("Missing ERC1155 tokenId for getBalance")
         }
-        const contract = ERC1155__factory.connect(
-          asset.tokenAddress,
-          this.context.provider,
-        )
-        return await contract.balanceOf.staticCall(
-          accountAddress,
-          asset.tokenId,
-        )
+        return (await cc.readContract({
+          address: asset.tokenAddress,
+          abi: ERC1155_ABI,
+          functionName: "balanceOf",
+          args: [accountAddress, asset.tokenId],
+        })) as bigint
       }
       case TokenStandard.ERC721: {
         if (asset.tokenId === undefined || asset.tokenId === null) {
           throw new Error("Missing ERC721 tokenId for getBalance")
         }
-        const contract = ERC721__factory.connect(
-          asset.tokenAddress,
-          this.context.provider,
-        )
         try {
-          const owner = await contract.ownerOf.staticCall(asset.tokenId)
+          const owner = (await cc.readContract({
+            address: asset.tokenAddress,
+            abi: ERC721_ABI,
+            functionName: "ownerOf",
+            args: [asset.tokenId],
+          })) as string
           return BigInt(owner.toLowerCase() === accountAddress.toLowerCase())
         } catch (error: any) {
           this.context.logger(
@@ -99,24 +106,28 @@ export class AssetsManager {
     overrides,
   }: {
     asset: AssetWithTokenStandard
-    amount?: BigNumberish
+    amount?: Amount
     fromAddress: string
     toAddress: string
-    overrides?: Overrides
+    overrides?: Record<string, unknown>
   }): Promise<void> {
-    overrides = { ...overrides, from: fromAddress }
-    let transaction: Promise<ContractTransactionResponse>
+    const cc = this.context.contractCaller
+    const txOverrides = { ...overrides, from: fromAddress }
+
+    let txPromise: Promise<{ hash: string; wait(): Promise<void> }>
 
     switch (asset.tokenStandard) {
       case TokenStandard.ERC20: {
         if (!amount) {
           throw new Error("Missing ERC20 amount for transfer")
         }
-        const contract = ERC20__factory.connect(
-          asset.tokenAddress,
-          this.context.signerOrProvider,
-        )
-        transaction = contract.transfer(toAddress, amount, overrides)
+        txPromise = cc.writeContract({
+          address: asset.tokenAddress,
+          abi: ERC20_ABI,
+          functionName: "transfer",
+          args: [toAddress, amount],
+          overrides: txOverrides,
+        })
         break
       }
       case TokenStandard.ERC1155: {
@@ -126,34 +137,26 @@ export class AssetsManager {
         if (!amount) {
           throw new Error("Missing ERC1155 amount for transfer")
         }
-        const contract = ERC1155__factory.connect(
-          asset.tokenAddress,
-          this.context.signerOrProvider,
-        )
-        transaction = contract.safeTransferFrom(
-          fromAddress,
-          toAddress,
-          asset.tokenId,
-          amount,
-          "0x",
-          overrides,
-        )
+        txPromise = cc.writeContract({
+          address: asset.tokenAddress,
+          abi: ERC1155_ABI,
+          functionName: "safeTransferFrom",
+          args: [fromAddress, toAddress, asset.tokenId, amount, "0x"],
+          overrides: txOverrides,
+        })
         break
       }
       case TokenStandard.ERC721: {
         if (asset.tokenId === undefined || asset.tokenId === null) {
           throw new Error("Missing ERC721 tokenId for transfer")
         }
-        const contract = ERC721__factory.connect(
-          asset.tokenAddress,
-          this.context.signerOrProvider,
-        )
-        transaction = contract.transferFrom(
-          fromAddress,
-          toAddress,
-          asset.tokenId,
-          overrides,
-        )
+        txPromise = cc.writeContract({
+          address: asset.tokenAddress,
+          abi: ERC721_ABI,
+          functionName: "transferFrom",
+          args: [fromAddress, toAddress, asset.tokenId],
+          overrides: txOverrides,
+        })
         break
       }
       default:
@@ -161,7 +164,7 @@ export class AssetsManager {
     }
 
     try {
-      const transactionResponse = await transaction
+      const transactionResponse = await txPromise
       await this.context.confirmTransaction(
         transactionResponse.hash,
         EventType.Transfer,
@@ -198,10 +201,10 @@ export class AssetsManager {
     assets: Array<{
       asset: AssetWithTokenStandard
       toAddress: string
-      amount?: BigNumberish
+      amount?: Amount
     }>
     fromAddress: string
-    overrides?: Overrides
+    overrides?: Record<string, unknown>
   }): Promise<string> {
     // Validate basic parameters before making any blockchain calls
     if (assets.length === 0) {
@@ -300,21 +303,19 @@ export class AssetsManager {
       )
     }
 
-    // Create TransferHelper contract instance
-    const transferHelper = this.getTransferHelperContract()
-
     this.context.dispatch(EventType.Transfer, {
       accountAddress: fromAddress,
       assets,
     })
 
     try {
-      // Use chain-specific conduit key for bulk transfers
-      const transaction = await transferHelper.bulkTransfer(
-        transferItems,
-        defaultConduit.key,
-        { ...overrides, from: fromAddress },
-      )
+      const transaction = await this.context.contractCaller.writeContract({
+        address: TRANSFER_HELPER_ADDRESS,
+        abi: TRANSFER_HELPER_ABI,
+        functionName: "bulkTransfer",
+        args: [transferItems, defaultConduit.key],
+        overrides: { ...overrides, from: fromAddress },
+      })
 
       await this.context.confirmTransaction(
         transaction.hash,
@@ -355,10 +356,10 @@ export class AssetsManager {
   }: {
     assets: Array<{
       asset: AssetWithTokenStandard
-      amount?: BigNumberish
+      amount?: Amount
     }>
     fromAddress: string
-    overrides?: Overrides
+    overrides?: Record<string, unknown>
   }): Promise<string | undefined> {
     // Validate basic parameters before making any blockchain calls
     if (assets.length === 0) {
@@ -379,6 +380,7 @@ export class AssetsManager {
 
     // Get the chain-specific default conduit
     const defaultConduit = getDefaultConduit(this.context.chain)
+    const cc = this.context.contractCaller
 
     // Check which assets need approval and build approval calldata
     const approvalsNeeded: Array<{ target: string; callData: string }> = []
@@ -404,26 +406,22 @@ export class AssetsManager {
           processedContracts.add(asset.tokenAddress.toLowerCase())
 
           // setApprovalForAll(operator, true)
-          const iface = new ethers.Interface([
-            "function setApprovalForAll(address operator, bool approved)",
-          ])
-          const callData = iface.encodeFunctionData("setApprovalForAll", [
-            defaultConduit.address,
-            true,
-          ])
+          const callData = cc.encodeFunctionData({
+            abi: SET_APPROVAL_FOR_ALL_ABI,
+            functionName: "setApprovalForAll",
+            args: [defaultConduit.address, true],
+          })
           approvalsNeeded.push({
             target: asset.tokenAddress,
             callData,
           })
         } else if (asset.tokenStandard === TokenStandard.ERC20) {
           // approve(spender, amount) - use max uint256 for unlimited
-          const iface = new ethers.Interface([
-            "function approve(address spender, uint256 amount) returns (bool)",
-          ])
-          const callData = iface.encodeFunctionData("approve", [
-            defaultConduit.address,
-            ethers.MaxUint256, // Approve max for convenience
-          ])
+          const callData = cc.encodeFunctionData({
+            abi: APPROVE_ABI,
+            functionName: "approve",
+            args: [defaultConduit.address, MAX_UINT256],
+          })
           approvalsNeeded.push({
             target: asset.tokenAddress,
             callData,
@@ -437,15 +435,18 @@ export class AssetsManager {
       return undefined
     }
 
-    // Single approval: send directly
+    // Single approval: send directly using the signer
     if (approvalsNeeded.length === 1) {
       const { target, callData } = approvalsNeeded[0]
-      const signer = this.context.signerOrProvider as Signer
-      const tx = await signer.sendTransaction({
+      const wallet = this.context.wallet
+      if (!("signer" in wallet)) {
+        throw new Error("A signer is required to approve assets")
+      }
+      const tx = await wallet.signer.sendTransaction({
         to: target,
         data: callData,
-        ...overrides,
         from: fromAddress,
+        overrides: overrides as Record<string, unknown>,
       })
 
       await this.context.confirmTransaction(
@@ -458,8 +459,6 @@ export class AssetsManager {
     }
 
     // Multiple approvals: use Multicall3
-    const multicall3 = this.getMulticall3Contract()
-
     const calls = approvalsNeeded.map(({ target, callData }) => ({
       target,
       allowFailure: false,
@@ -467,9 +466,12 @@ export class AssetsManager {
     }))
 
     try {
-      const transaction = await multicall3.aggregate3(calls, {
-        ...overrides,
-        from: fromAddress,
+      const transaction = await cc.writeContract({
+        address: MULTICALL3_ADDRESS,
+        abi: MULTICALL3_ABI,
+        functionName: "aggregate3",
+        args: [calls],
+        overrides: { ...overrides, from: fromAddress },
       })
 
       await this.context.confirmTransaction(
@@ -491,27 +493,24 @@ export class AssetsManager {
 
   /**
    * Check if an asset is approved for transfer to a specific operator (conduit).
-   * @param asset The asset to check approval for
-   * @param owner The owner address
-   * @param operator The operator address (conduit)
-   * @param amount Optional amount for ERC20 tokens
-   * @returns True if approved, false otherwise
    */
   private async checkAssetApproval(
     asset: AssetWithTokenStandard,
     owner: string,
     operator: string,
-    amount?: BigNumberish,
+    amount?: Amount,
   ): Promise<boolean> {
+    const cc = this.context.contractCaller
+
     try {
       switch (asset.tokenStandard) {
         case TokenStandard.ERC20: {
-          const contract = ERC20__factory.connect(
-            asset.tokenAddress,
-            this.context.provider,
-          )
-          const allowance = await contract.allowance.staticCall(owner, operator)
-          // Check if allowance is sufficient
+          const allowance = (await cc.readContract({
+            address: asset.tokenAddress,
+            abi: ERC20_ABI,
+            functionName: "allowance",
+            args: [owner, operator],
+          })) as bigint
           if (!amount) {
             return false
           }
@@ -519,73 +518,44 @@ export class AssetsManager {
         }
 
         case TokenStandard.ERC721: {
-          const contract = ERC721__factory.connect(
-            asset.tokenAddress,
-            this.context.provider,
-          )
-          // Check isApprovedForAll first
-          const isApprovedForAll = await contract.isApprovedForAll.staticCall(
-            owner,
-            operator,
-          )
+          const isApprovedForAll = (await cc.readContract({
+            address: asset.tokenAddress,
+            abi: ERC721_ABI,
+            functionName: "isApprovedForAll",
+            args: [owner, operator],
+          })) as boolean
           if (isApprovedForAll) {
             return true
           }
-          // Check individual token approval
           if (asset.tokenId !== undefined && asset.tokenId !== null) {
-            const approved = await contract.getApproved.staticCall(
-              asset.tokenId,
-            )
+            const approved = (await cc.readContract({
+              address: asset.tokenAddress,
+              abi: ERC721_ABI,
+              functionName: "getApproved",
+              args: [asset.tokenId],
+            })) as string
             return approved.toLowerCase() === operator.toLowerCase()
           }
           return false
         }
 
         case TokenStandard.ERC1155: {
-          const contract = ERC1155__factory.connect(
-            asset.tokenAddress,
-            this.context.provider,
-          )
-          return await contract.isApprovedForAll.staticCall(owner, operator)
+          return (await cc.readContract({
+            address: asset.tokenAddress,
+            abi: ERC1155_ABI,
+            functionName: "isApprovedForAll",
+            args: [owner, operator],
+          })) as boolean
         }
 
         default:
           return false
       }
     } catch (error) {
-      // If there's an error checking approval (e.g., contract doesn't exist), return false
       this.context.logger(
         `Error checking approval for ${asset.tokenAddress}: ${error}`,
       )
       return false
     }
-  }
-
-  /**
-   * Get a TransferHelper contract instance.
-   * @returns Contract instance for TransferHelper
-   */
-  private getTransferHelperContract(): Contract {
-    return new Contract(
-      TRANSFER_HELPER_ADDRESS,
-      [
-        "function bulkTransfer(tuple(uint8 itemType, address token, uint256 identifier, uint256 amount, address recipient)[] items, bytes32 conduitKey) external returns (bytes4)",
-      ],
-      this.context.signerOrProvider,
-    )
-  }
-
-  /**
-   * Get a Multicall3 contract instance.
-   * @returns Contract instance for Multicall3
-   */
-  private getMulticall3Contract(): Contract {
-    return new Contract(
-      MULTICALL3_ADDRESS,
-      [
-        "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)",
-      ],
-      this.context.signerOrProvider,
-    )
   }
 }

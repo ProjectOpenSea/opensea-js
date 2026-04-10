@@ -1,20 +1,9 @@
 {
-  "extends": "./tsconfig.base.json",
+  "extends": "./tsconfig.node-cjs.json",
   "compilerOptions": {
     "outDir": "lib",
-    "rootDir": ".",
-    "lib": ["dom", "esnext"],
-    "types": ["vitest/globals"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noImplicitReturns": true,
-    "noErrorTruncation": true,
-    "noImplicitThis": false,
-    "noUnusedParameters": true,
-    "preserveConstEnums": true,
-    "removeComments": false,
-    "sourceMap": true,
+    "rootDir": "./src",
     "baseUrl": "."
   },
-  "include": ["./src/**/*", "test"]
+  "include": ["./src/**/*"]
 }

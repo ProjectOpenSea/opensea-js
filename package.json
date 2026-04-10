@@ -1,6 +1,6 @@
 {
   "name": "@opensea/sdk",
-  "version": "9.0.0",
+  "version": "10.0.0",
   "description": "TypeScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs and our marketplace data",
   "license": "MIT",
   "author": "OpenSea Developers",
@@ -14,19 +14,28 @@
   },
   "type": "commonjs",
   "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./viem": {
+      "types": "./lib/viem.d.ts",
+      "default": "./lib/viem.js"
+    }
+  },
   "files": [
     "lib",
     "src"
   ],
   "scripts": {
-    "abi-type-gen": "typechain --target=ethers-v6 src/abi/*.json --out-dir=src/typechain/contracts",
-    "build": "npm run abi-type-gen && tsc -p tsconfig.build.json",
-    "check-types": "tsc --noEmit --project tsconfig.json",
+    "build": "tsc",
+    "check-types": "tsc -p tsconfig.check.json",
     "docs-build": "typedoc",
     "docs-build-md": "typedoc --plugin typedoc-plugin-markdown",
     "format": "biome format --config-path ../.. --write .",
     "format:check": "biome format --config-path ../.. .",
-    "lint": "concurrently \"npm run check-types\" \"biome check --config-path ../.. .\"",
+    "lint": "biome check --config-path ../.. .",
     "lint:fix": "biome check --config-path ../.. --write .",
     "test": "vitest run",
     "test:all": "concurrently \"npm run test\" \"npm run test:integration\"",
@@ -35,17 +44,25 @@
   },
   "types": "lib/index.d.ts",
   "dependencies": {
+    "@noble/hashes": "^2.0.1",
     "@opensea/api-types": "^0.2.0",
     "@opensea/seaport-js": "^4.0.7",
     "ethers": "^6.16.0"
   },
+  "peerDependencies": {
+    "viem": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "viem": {
+      "optional": true
+    }
+  },
   "devDependencies": {
-    "@typechain/ethers-v6": "^0.5.1",
     "@types/node": "^25.4.0",
+    "viem": "2.23.2",
     "@vitest/coverage-v8": "^3.2.4",
     "concurrently": "^9.2.1",
     "dotenv": "^17.3.1",
-    "typechain": "^8.0.0",
     "typedoc": "^0.28.17",
     "typedoc-plugin-markdown": "^4.10.0",
     "typescript": "^6.0.2",

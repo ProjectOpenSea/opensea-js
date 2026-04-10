@@ -1,6 +1,7 @@
-import { type BigNumberish, Contract, parseEther } from "ethers"
-import { EventType } from "../types"
+import { WETH_DEPOSIT_ABI, WETH_WITHDRAW_ABI } from "../abi/abis"
+import { type Amount, EventType } from "../types"
 import { getNativeWrapTokenAddress } from "../utils/chain"
+import { parseEther } from "../utils/units"
 import type { SDKContext } from "./context"
 
 /**
@@ -20,7 +21,7 @@ export class TokensManager {
     amountInEth,
     accountAddress,
   }: {
-    amountInEth: BigNumberish
+    amountInEth: Amount
     accountAddress: string
   }) {
     await this.context.requireAccountIsAvailable(accountAddress)
@@ -29,14 +30,14 @@ export class TokensManager {
 
     this.context.dispatch(EventType.WrapEth, { accountAddress, amount: value })
 
-    const wethContract = new Contract(
-      getNativeWrapTokenAddress(this.context.chain),
-      ["function deposit() payable"],
-      this.context.signerOrProvider,
-    )
-
     try {
-      const transaction = await wethContract.deposit({ value })
+      const transaction = await this.context.contractCaller.writeContract({
+        address: getNativeWrapTokenAddress(this.context.chain),
+        abi: WETH_DEPOSIT_ABI,
+        functionName: "deposit",
+        args: [],
+        value,
+      })
       await this.context.confirmTransaction(
         transaction.hash,
         EventType.WrapEth,
@@ -62,7 +63,7 @@ export class TokensManager {
     amountInEth,
     accountAddress,
   }: {
-    amountInEth: BigNumberish
+    amountInEth: Amount
     accountAddress: string
   }) {
     await this.context.requireAccountIsAvailable(accountAddress)
@@ -71,14 +72,13 @@ export class TokensManager {
 
     this.context.dispatch(EventType.UnwrapWeth, { accountAddress, amount })
 
-    const wethContract = new Contract(
-      getNativeWrapTokenAddress(this.context.chain),
-      ["function withdraw(uint wad) public"],
-      this.context.signerOrProvider,
-    )
-
     try {
-      const transaction = await wethContract.withdraw(amount)
+      const transaction = await this.context.contractCaller.writeContract({
+        address: getNativeWrapTokenAddress(this.context.chain),
+        abi: WETH_WITHDRAW_ABI,
+        functionName: "withdraw",
+        args: [amount],
+      })
       await this.context.confirmTransaction(
         transaction.hash,
         EventType.UnwrapWeth,

@@ -10,8 +10,8 @@ export interface MockContextOptions {
   dispatch?: ReturnType<typeof vi.fn>
   confirmTransaction?: ReturnType<typeof vi.fn>
   requireAccountIsAvailable?: ReturnType<typeof vi.fn>
-  signerOrProvider?: unknown
-  provider?: unknown
+  wallet?: unknown
+  contractCaller?: unknown
 }
 
 /**
@@ -23,8 +23,8 @@ export function createMockContext(
 ): SDKContext {
   return {
     chain: options.chain ?? Chain.Mainnet,
-    signerOrProvider: options.signerOrProvider ?? ({} as unknown),
-    provider: options.provider ?? ({} as unknown),
+    wallet: options.wallet ?? ({} as unknown),
+    contractCaller: options.contractCaller ?? ({} as unknown),
     api: options.api ?? ({} as unknown),
     seaport: options.seaport ?? ({} as unknown),
     logger: options.logger ?? vi.fn(),

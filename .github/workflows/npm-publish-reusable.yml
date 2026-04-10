@@ -1,0 +1,53 @@
+name: Publish npm package
+
+on:
+  workflow_call:
+    inputs:
+      build-before-publish:
+        description: Run build and test before publishing
+        type: boolean
+        default: true
+      stub-package-dir:
+        description: Path to stub package directory (e.g. packages/opensea-js-stub)
+        type: string
+        default: ""
+      node-version-file:
+        description: Path to node version file
+        type: string
+        default: .nvmrc
+    secrets:
+      OPENSEA_API_KEY:
+        required: false
+      ALCHEMY_API_KEY:
+        required: false
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ${{ inputs.node-version-file }}
+          registry-url: https://registry.npmjs.org/
+
+      - run: npm ci
+
+      - if: ${{ inputs.build-before-publish }}
+        run: npm run build
+
+      - if: ${{ inputs.build-before-publish }}
+        run: npm test
+        env:
+          OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+
+      - run: npm publish --provenance --access public
+
+      - if: ${{ inputs.stub-package-dir != '' }}
+        run: npm publish --provenance --access public
+        working-directory: ${{ inputs.stub-package-dir }}
+        continue-on-error: true

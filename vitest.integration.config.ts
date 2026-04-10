@@ -1,9 +1,13 @@
-import { defineConfig } from "vitest/config"
-export default defineConfig({
-  test: {
-    globals: true,
-    include: ["test/integration/**/*.spec.ts"],
-    testTimeout: 30000,
-    setupFiles: ["dotenv/config"],
-  },
-})
+import { defineConfig, mergeConfig } from "vitest/config"
+import baseConfig from "./vitest.config.base"
+
+export default mergeConfig(
+  baseConfig,
+  defineConfig({
+    test: {
+      include: ["test/integrati./*.spec.ts"],
+      testTimeout: 30000,
+      setupFiles: ["dotenv/config"],
+    },
+  }),
+)

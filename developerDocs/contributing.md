@@ -88,7 +88,7 @@ npm link @opensea/sdk
 
 **Generate Documentation**
 
-Generate HTML docs (also available for browsing at [https://projectopensea.github.io/@opensea/sdk](https://projectopensea.github.io/@opensea/sdk)):
+Generate HTML docs (also available for browsing at [https://projectopensea.github.io/opensea-js](https://projectopensea.github.io/opensea-js)):
 
 ```bash
 npm run docs-build
@@ -116,8 +116,7 @@ When submitting a pull request:
 The project uses:
 
 - **TypeScript** for type safety
-- **ESLint** for code linting
-- **Prettier** for code formatting
+- **Biome** for code linting and formatting
 - **Husky** for pre-commit hooks (automatically runs linting on changed files)
 
 The pre-commit hooks will automatically format your code and run linting checks. If the checks fail, the commit will be rejected until issues are fixed.
@@ -129,9 +128,11 @@ The pre-commit hooks will automatically format your code and run linting checks.
 ├── src/                   # Source code
 │   ├── api/               # API client implementation
 │   ├── orders/            # Order creation and utilities
+│   ├── provider/          # Provider abstractions (OpenSeaSigner, OpenSeaProvider, ContractCaller, OpenSeaWallet)
 │   ├── sdk/               # Core SDK functionality
 │   ├── utils/             # Utility functions
-│   └── sdk.ts             # Main SDK entry point
+│   ├── sdk.ts             # Main SDK entry point (ethers)
+│   └── viem.ts            # Viem entry point (@opensea/sdk/viem)
 ├── test/                  # Test files
 │   ├── api/               # API tests
 │   ├── fixtures/          # Test fixtures and mocks
@@ -139,6 +140,8 @@ The pre-commit hooks will automatically format your code and run linting checks.
 ├── developerDocs/         # Developer documentation
 └── lib/                   # Compiled output (generated)
 ```
+
+> **Note:** TypeChain was removed in v10. Contract interactions now use ABIs directly through the provider abstraction layer (`src/provider/`).
 
 ## Adding New Features
 
@@ -153,6 +156,6 @@ When adding new features:
 
 ## Getting Help
 
-- **Issues**: Use [GitHub Issues](https://github.com/ProjectOpenSea/@opensea/sdkissues) for bug reports and feature requests
-- **Discussions**: Use [GitHub Discussions](https://github.com/ProjectOpenSea/@opensea/sdkdiscussions) for questions and general discussion
+- **Issues**: Use [GitHub Issues](https://github.com/ProjectOpenSea/opensea-js/issues) for bug reports and feature requests
+- **Discussions**: Use [GitHub Discussions](https://github.com/ProjectOpenSea/opensea-js/discussions) for questions and general discussion
 - **Documentation**: Check the [docs](https://docs.opensea.io/reference/sdk-overview) for API and SDK guidance

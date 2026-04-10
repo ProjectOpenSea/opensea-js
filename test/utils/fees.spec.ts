@@ -61,6 +61,26 @@ describe("Utils: fees", () => {
       expect(basisPointsForFee(fee)).toBe(125n)
     })
 
+    test("handles 2.505% without floating point error", () => {
+      // Math.round(2.505 * 100) === 250 due to IEEE 754 (2.505 * 100 === 250.49999...)
+      // String-based implementation should give the correct 251
+      const fee: Fee = {
+        fee: 2.505,
+        recipient: "0x0000000000000000000000000000000000000000",
+        required: false,
+      }
+      expect(basisPointsForFee(fee)).toBe(251n)
+    })
+
+    test("handles 0.005% rounding correctly", () => {
+      const fee: Fee = {
+        fee: 0.005,
+        recipient: "0x0000000000000000000000000000000000000000",
+        required: false,
+      }
+      expect(basisPointsForFee(fee)).toBe(1n)
+    })
+
     test("handles very small percentages", () => {
       const fee: Fee = {
         fee: 0.01,

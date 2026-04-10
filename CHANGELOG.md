@@ -1,12 +1,37 @@
 # @opensea/sdk
 
+## 10.0.0
+
+### Major Changes
+
+- bc5b7b6: Add viem support via provider abstraction layer.
+
+  Breaking changes:
+
+  - `OrderSide.LISTING` value changed from `"ask"` to `"listing"`
+  - `OrderSide.OFFER` value changed from `"bid"` to `"offer"`
+  - `BigNumberish` type replaced with `Amount` (`string | number | bigint`)
+  - `Overrides` type replaced with `Record<string, unknown>`
+  - `provider` public property removed from `OpenSeaSDK` class
+  - `estimateGas` utility function removed
+  - TypeChain dependency removed (replaced with inline ABIs)
+  - `ethers.FetchRequest` replaced with native `fetch()`
+
+  New features:
+
+  - `@opensea/sdk/viem` subpath export with native viem `PublicClient`/`WalletClient` support
+  - Provider abstraction types: `OpenSeaSigner`, `OpenSeaProvider`, `ContractCaller`, `OpenSeaWallet`
+  - `ZERO_ADDRESS` and `MAX_UINT256` exported from constants
+  - `checksumAddress` utility using `@noble/hashes`
+  - `parseUnits` and `parseEther` standalone utilities
+
 ## 9.0.0
 
 ### Major Changes
 
 - Rename package from `opensea-js` to `@opensea/sdk`
 
-  The API is unchanged — only the package name. The old `opensea-js` package will be deprecated with a stub that directs users to install `@opensea/sdk` instead.
+  The old `opensea-js` package has been deprecated with a stub that directs users to install `@opensea/sdk` instead.
 
 ## 8.1.0
 

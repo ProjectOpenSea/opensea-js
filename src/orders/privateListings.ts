@@ -8,7 +8,7 @@ import type {
 } from "@opensea/seaport-js/lib/types"
 import { isCurrencyItem } from "@opensea/seaport-js/lib/utils/item"
 import { generateRandomSalt } from "@opensea/seaport-js/lib/utils/order"
-import { ZeroAddress } from "ethers"
+import { ZERO_ADDRESS } from "../constants"
 
 /**
  * Compute the native currency (ETH) value required to fulfill a private listing.
@@ -25,7 +25,7 @@ export const computePrivateListingValue = (
     .filter(
       item =>
         item.recipient.toLowerCase() !== takerAddress.toLowerCase() &&
-        item.token.toLowerCase() === ZeroAddress.toLowerCase() &&
+        item.token.toLowerCase() === ZERO_ADDRESS.toLowerCase() &&
         item.itemType === ItemType.NATIVE,
     )
     .reduce((sum, item) => sum + BigInt(item.startAmount), 0n)

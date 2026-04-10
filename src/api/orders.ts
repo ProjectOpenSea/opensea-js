@@ -207,8 +207,8 @@ export class OrdersAPI {
     }
 
     // Validate side value
-    if (side !== "ask" && side !== "bid") {
-      throw new Error("side must be either 'ask' or 'bid'")
+    if (side !== "listing" && side !== "offer") {
+      throw new Error("side must be either 'listing' or 'offer'")
     }
 
     // Validate protocolAddress format

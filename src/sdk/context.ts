@@ -1,6 +1,6 @@
 import type { Seaport } from "@opensea/seaport-js"
-import type { JsonRpcProvider, Signer } from "ethers"
 import type { OpenSeaAPI } from "../api/api"
+import type { ContractCaller, OpenSeaWallet } from "../provider/types"
 import type { Chain, EventData, EventType } from "../types"
 
 /**
@@ -10,10 +10,10 @@ import type { Chain, EventData, EventType } from "../types"
 export interface SDKContext {
   /** The blockchain chain being used */
   chain: Chain
-  /** Signer or provider for blockchain interactions */
-  signerOrProvider: Signer | JsonRpcProvider
-  /** JSON-RPC provider for read operations */
-  provider: JsonRpcProvider
+  /** Abstract wallet (signer + provider) */
+  wallet: OpenSeaWallet
+  /** Contract read/write caller */
+  contractCaller: ContractCaller
   /** OpenSea API client */
   api: OpenSeaAPI
   /** Seaport client instance */

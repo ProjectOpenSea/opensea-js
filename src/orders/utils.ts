@@ -222,6 +222,13 @@ export const serializeOrdersQueryOptions = (
   }
 }
 
+/** Map API side values ("ask"/"bid") to SDK OrderSide enum values */
+const mapApiSide = (side: string): OrderSide => {
+  if (side === "ask" || side === OrderSide.LISTING) return OrderSide.LISTING
+  if (side === "bid" || side === OrderSide.OFFER) return OrderSide.OFFER
+  return side as OrderSide
+}
+
 export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
   return {
     createdDate: order.created_date,
@@ -242,7 +249,7 @@ export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
       account: accountFromJSON(account),
       basisPoints: basis_points,
     })),
-    side: order.side,
+    side: mapApiSide(order.side as string),
     orderType: order.order_type,
     cancelled: order.cancelled,
     finalized: order.finalized,

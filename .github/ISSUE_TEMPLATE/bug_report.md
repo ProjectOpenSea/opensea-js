@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug to help us improve opensea-js
+about: Report a bug to help us improve @opensea/sdk
 labels: bug
 ---
 

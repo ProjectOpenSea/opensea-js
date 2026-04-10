@@ -1,6 +1,5 @@
 import { SeaportABI } from "@opensea/seaport-js/lib/abi/Seaport"
 import type { OrderComponents } from "@opensea/seaport-js/lib/types"
-import { type BigNumberish, ethers, type Overrides, type Signer } from "ethers"
 import type { Listing, Offer, Order } from "../api/types"
 import {
   computePrivateListingValue,
@@ -9,7 +8,12 @@ import {
 } from "../orders/privateListings"
 import { OrderType, type OrderV2 } from "../orders/types"
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../orders/utils"
-import { type AssetWithTokenId, EventType, OrderSide } from "../types"
+import {
+  type Amount,
+  type AssetWithTokenId,
+  EventType,
+  OrderSide,
+} from "../types"
 import {
   getSeaportInstance,
   hasErrorCode,
@@ -32,13 +36,6 @@ export class FulfillmentManager {
 
   /**
    * Fulfill a private order for a designated address.
-   * @param options
-   * @param options.order The order to fulfill
-   * @param options.accountAddress Address of the wallet taking the order.
-   * @param options.domain An optional domain to be hashed and included at the end of fulfillment calldata.
-   *                       This can be used for onchain order attribution to assist with analytics.
-   * @param options.overrides Transaction overrides, ignored if not set.
-   * @returns Transaction hash of the order.
    */
   private async fulfillPrivateOrder({
     order,
@@ -49,7 +46,7 @@ export class FulfillmentManager {
     order: OrderV2
     accountAddress: string
     domain?: string
-    overrides?: Overrides
+    overrides?: Record<string, unknown>
   }): Promise<string> {
     if (!order.taker?.address) {
       throw new Error(
@@ -62,8 +59,6 @@ export class FulfillmentManager {
     )
     const fulfillments = getPrivateListingFulfillments(order.protocolData)
 
-    // Compute ETH value from original order's consideration items
-    // This handles both standard private listings and zero-payment listings (e.g., rewards)
     const value = computePrivateListingValue(
       order.protocolData,
       order.taker.address,
@@ -131,10 +126,10 @@ export class FulfillmentManager {
     accountAddress: string
     assetContractAddress?: string
     tokenId?: string
-    unitsToFill?: BigNumberish
+    unitsToFill?: Amount
     recipientAddress?: string
     includeOptionalCreatorFees?: boolean
-    overrides?: Overrides
+    overrides?: Record<string, unknown>
   }): Promise<string> {
     await this.context.requireAccountIsAvailable(accountAddress)
 
@@ -186,9 +181,6 @@ export class FulfillmentManager {
     const transaction = fulfillmentData.fulfillment_data.transaction
     const inputData = transaction.input_data
 
-    // Use Seaport ABI to encode the transaction
-    const seaportInterface = new ethers.Interface(SeaportABI)
-
     // Extract function name and build parameters array in correct order
     const rawFunctionName = transaction.function.split("(")[0]
     const functionName =
@@ -226,18 +218,22 @@ export class FulfillmentManager {
       params = Object.values(inputData)
     }
 
-    const encodedData = seaportInterface.encodeFunctionData(
+    const encodedData = this.context.contractCaller.encodeFunctionData({
+      abi: SeaportABI,
       functionName,
-      params,
-    )
+      args: params,
+    })
 
-    // Send the transaction using the signer from context
-    const signer = this.context.signerOrProvider as Signer
-    const tx = await signer.sendTransaction({
+    // Send the transaction using the signer from wallet
+    const wallet = this.context.wallet
+    if (!("signer" in wallet)) {
+      throw new Error("A signer is required to fulfill orders")
+    }
+    const tx = await wallet.signer.sendTransaction({
       to: transaction.to,
-      value: transaction.value,
+      value: BigInt(transaction.value),
       data: encodedData,
-      ...overrides,
+      overrides: overrides as Record<string, unknown>,
     })
 
     await this.context.confirmTransaction(
@@ -324,15 +320,7 @@ export class FulfillmentManager {
   }
 
   /**
-   * Validates an order onchain using Seaport's validate() method. This submits the order onchain
-   * and pre-validates the order using Seaport, which makes it cheaper to fulfill since a signature
-   * is not needed to be verified during fulfillment for the order, but is not strictly required
-   * and the alternative is orders can be submitted to the API for free instead of sent onchain.
-   * @param orderComponents Order components to validate onchain
-   * @param accountAddress Address of the wallet that will pay the gas to validate the order
-   * @returns Transaction hash of the validation transaction
-   *
-   * @throws Error if the accountAddress is not available through wallet or provider.
+   * Validates an order onchain using Seaport's validate() method.
    */
   async validateOrderOnchain(
     orderComponents: OrderComponents,
@@ -366,23 +354,7 @@ export class FulfillmentManager {
   }
 
   /**
-   * Create and validate a listing onchain. Combines order building with onchain validation.
-   * Validation costs gas upfront but makes fulfillment cheaper (no signature verification needed).
-   * @param options
-   * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
-   * @param options.accountAddress Address of the wallet making the listing
-   * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
-   * @param options.quantity Number of assets to list. Defaults to 1.
-   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt.
-   * @param options.salt Arbitrary salt. Auto-generated if not provided.
-   * @param options.listingTime When order becomes fulfillable (UTC seconds). Defaults to now.
-   * @param options.expirationTime Expiration time (UTC seconds).
-   * @param options.buyerAddress Optional buyer restriction. Only this address can purchase.
-   * @param options.includeOptionalCreatorFees Include optional creator fees. Default: false.
-   * @param options.zone Zone for order protection. Defaults to no zone.
-   * @returns Transaction hash
-   *
-   * @throws Error if asset missing token id or accountAddress unavailable.
+   * Create and validate a listing onchain.
    */
   async createListingAndValidateOnchain({
     asset,
@@ -399,10 +371,10 @@ export class FulfillmentManager {
   }: {
     asset: AssetWithTokenId
     accountAddress: string
-    amount: BigNumberish
-    quantity?: BigNumberish
+    amount: Amount
+    quantity?: Amount
     domain?: string
-    salt?: BigNumberish
+    salt?: Amount
     listingTime?: number
     expirationTime?: number
     buyerAddress?: string
@@ -428,20 +400,7 @@ export class FulfillmentManager {
   }
 
   /**
-   * Create and validate an offer onchain. Combines order building with onchain validation.
-   * Validation costs gas upfront but makes fulfillment cheaper (no signature verification needed).
-   * @param options
-   * @param options.asset The asset to trade. tokenAddress and tokenId must be defined.
-   * @param options.accountAddress Address of the wallet making the offer.
-   * @param options.amount Amount in decimal format (e.g., "1.5" for 1.5 ETH, not wei). Automatically converted to base units.
-   * @param options.quantity Number of assets to bid for. Defaults to 1.
-   * @param options.domain Optional domain for onchain attribution. Hashed and included in salt.
-   * @param options.salt Arbitrary salt. Auto-generated if not provided.
-   * @param options.expirationTime Expiration time (UTC seconds).
-   * @param options.zone Zone for order protection. Defaults to chain's signed zone.
-   * @returns Transaction hash
-   *
-   * @throws Error if asset missing token id or accountAddress unavailable.
+   * Create and validate an offer onchain.
    */
   async createOfferAndValidateOnchain({
     asset,
@@ -455,11 +414,11 @@ export class FulfillmentManager {
   }: {
     asset: AssetWithTokenId
     accountAddress: string
-    amount: BigNumberish
-    quantity?: BigNumberish
+    amount: Amount
+    quantity?: Amount
     domain?: string
-    salt?: BigNumberish
-    expirationTime?: BigNumberish
+    salt?: Amount
+    expirationTime?: Amount
     zone?: string
   }): Promise<string> {
     const orderComponents = await this.ordersManager.buildOfferOrderComponents({

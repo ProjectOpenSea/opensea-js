@@ -18,7 +18,7 @@ hidden: false
 
 ## Advanced
 
-Interested in purchasing for users server-side or with a bot, scheduling future orders, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+Interested in purchasing for users server-side or with a bot, scheduling future orders, or making bids in different ERC-20 tokens? The OpenSea SDK can help with that.
 
 ### Purchasing Items for Other Users
 
@@ -38,7 +38,7 @@ await openseaSDK.fulfillOrder({
 });
 ```
 
-If the order is a listing (sell order, ask, `OrderSide.LISTING`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is an offer (buy order, bid, `OrderSide.OFFER`), the taker is the _seller_ but the bid amount will be sent to the `recipientAddress`.
+If the order is a listing (`OrderSide.LISTING`), the taker is the _buyer_ and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is an offer (`OrderSide.OFFER`), the taker is the _seller_ but the offer amount will be sent to the `recipientAddress`.
 
 This will automatically approve the assets for trading and confirm the transaction for sending them.
 

@@ -24,6 +24,7 @@ Happy seafaring! ⛵️
 - **[API Reference](api-reference.md)** - Complete reference for all SDK methods
 - **[Advanced Use Cases](advanced-use-cases.md)** - Bulk operations, canceling orders, event listening, and more
 - **[SDK Reference](https://projectopensea.github.io/opensea-js/)** - Auto-generated TypeDoc API documentation
+- **Key v10 Types**: `Amount` (`string | number | bigint`), `OpenSeaSigner`, `OpenSeaProvider`, `ContractCaller`, `OpenSeaWallet`
 - **[FAQ](faq.md)** - Frequently asked questions
 - **[Contributing](contributing.md)** - How to contribute to the SDK
 
@@ -31,7 +32,7 @@ Happy seafaring! ⛵️
 
 - Node.js 20 or higher
 - An [OpenSea API key](https://docs.opensea.io/reference/api-keys)
-- A web3 provider (ethers.js JsonRpcProvider or Wallet)
+- A web3 provider: ethers.js (`JsonRpcProvider` / `Wallet`) or viem (`publicClient` / `walletClient`)
 
 ## Key Features
 
@@ -47,11 +48,12 @@ Happy seafaring! ⛵️
 
 ## Example Usage
 
+### With ethers.js
+
 ```typescript
 import { ethers } from "ethers";
-import { OpenSeaSDK, Chain, OrderSide } from "@opensea/sdk";
+import { OpenSeaSDK, Chain } from "@opensea/sdk";
 
-// Initialize the SDK
 const provider = new ethers.JsonRpcProvider(
   "https://eth-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY",
 );
@@ -59,7 +61,25 @@ const sdk = new OpenSeaSDK(provider, {
   chain: Chain.Mainnet,
   apiKey: "your-api-key",
 });
+```
 
+### With viem
+
+```typescript
+import { createPublicClient, createWalletClient, http } from "viem";
+import { mainnet } from "viem/chains";
+import { OpenSeaSDK, Chain } from "@opensea/sdk/viem";
+
+const publicClient = createPublicClient({ chain: mainnet, transport: http() });
+const sdk = new OpenSeaSDK(
+  { publicClient },
+  { chain: Chain.Mainnet, apiKey: "your-api-key" },
+);
+```
+
+### Common usage (same for both providers)
+
+```typescript
 // Fetch an NFT
 const { nft } = await sdk.api.getNFT(contractAddress, tokenId);
 
