@@ -5,7 +5,7 @@ export default mergeConfig(
   baseConfig,
   defineConfig({
     test: {
-      include: ["test/integrati./*.spec.ts"],
+      include: ["test/integration/**/*.spec.ts"],
       testTimeout: 30000,
       setupFiles: ["dotenv/config"],
     },

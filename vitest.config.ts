@@ -5,7 +5,7 @@ export default mergeConfig(
   baseConfig,
   defineConfig({
     test: {
-      include: ["te./*.spec.ts"],
+      include: ["test/**/*.spec.ts"],
       exclude: ["test/integration/**"],
       testTimeout: 15000,
     },
