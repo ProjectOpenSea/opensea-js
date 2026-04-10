@@ -17,6 +17,7 @@ jobs:
           node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org/
       - run: npm install
+      - run: npm run build
       - run: npm test
         env:
           OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}

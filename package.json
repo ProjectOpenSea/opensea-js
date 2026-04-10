@@ -35,6 +35,7 @@
   },
   "types": "lib/index.d.ts",
   "dependencies": {
+    "@opensea/api-types": "^0.2.0",
     "@opensea/seaport-js": "^4.0.7",
     "ethers": "^6.16.0"
   },
