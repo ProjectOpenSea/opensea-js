@@ -16,6 +16,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org/
+      # Publish @opensea/sdk
       - run: npm install
       - run: npm run build
       - run: npm test
@@ -23,3 +24,8 @@ jobs:
           OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
       - run: npm publish --provenance --access public
+
+      # Publish opensea-js stub (skip if version already exists)
+      - run: npm publish --provenance --access public
+        working-directory: packages/opensea-js-stub
+        continue-on-error: true

@@ -79,16 +79,16 @@ WALLET_PRIV_KEY=your_test_wallet_private_key  # For integration tests only
 To test your changes in another project:
 
 ```bash
-# In opensea-js repo
+# In @opensea/sdk repo
 npm link
 
 # In the project where you want to test
-npm link opensea-js
+npm link @opensea/sdk
 ```
 
 **Generate Documentation**
 
-Generate HTML docs (also available for browsing at [https://projectopensea.github.io/opensea-js/](https://projectopensea.github.io/opensea-js/)):
+Generate HTML docs (also available for browsing at [https://projectopensea.github.io/@opensea/sdk](https://projectopensea.github.io/@opensea/sdk)):
 
 ```bash
 npm run docs-build
@@ -125,7 +125,7 @@ The pre-commit hooks will automatically format your code and run linting checks.
 ## Project Structure
 
 ```
-opensea-js/
+@opensea/sdk
 ├── src/                   # Source code
 │   ├── api/               # API client implementation
 │   ├── orders/            # Order creation and utilities
@@ -153,6 +153,6 @@ When adding new features:
 
 ## Getting Help
 
-- **Issues**: Use [GitHub Issues](https://github.com/ProjectOpenSea/opensea-js/issues) for bug reports and feature requests
-- **Discussions**: Use [GitHub Discussions](https://github.com/ProjectOpenSea/opensea-js/discussions) for questions and general discussion
+- **Issues**: Use [GitHub Issues](https://github.com/ProjectOpenSea/@opensea/sdkissues) for bug reports and feature requests
+- **Discussions**: Use [GitHub Discussions](https://github.com/ProjectOpenSea/@opensea/sdkdiscussions) for questions and general discussion
 - **Documentation**: Check the [docs](https://docs.opensea.io/reference/sdk-overview) for API and SDK guidance

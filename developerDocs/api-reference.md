@@ -9,7 +9,7 @@ hidden: false
 
 # OpenSea API Reference
 
-This comprehensive reference documents all OpenSea API endpoints available through the opensea-js SDK. The SDK provides convenient TypeScript methods to interact with the OpenSea API v2.
+This comprehensive reference documents all OpenSea API endpoints available through the @opensea/sdk. The SDK provides convenient TypeScript methods to interact with the OpenSea API v2.
 
 > **Note:** Your API key should only be used on a secure backend server. Never expose it in client-side code, public repositories, or browser environments. See the [Security Warning](../README.md#security-warning) in the README for more details.
 

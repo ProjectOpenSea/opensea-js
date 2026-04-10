@@ -49,7 +49,7 @@ Happy seafaring! ⛵️
 
 ```typescript
 import { ethers } from "ethers";
-import { OpenSeaSDK, Chain, OrderSide } from "opensea-js";
+import { OpenSeaSDK, Chain, OrderSide } from "@opensea/sdk";
 
 // Initialize the SDK
 const provider = new ethers.JsonRpcProvider(

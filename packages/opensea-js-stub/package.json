@@ -1,0 +1,13 @@
+{
+  "name": "opensea-js",
+  "version": "8.1.1",
+  "description": "This package has moved to @opensea/sdk",
+  "scripts": {
+    "postinstall": "node postinstall.js"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ProjectOpenSea/opensea-js"
+  }
+}

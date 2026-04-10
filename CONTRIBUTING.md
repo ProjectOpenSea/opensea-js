@@ -1,4 +1,4 @@
-# Contributing to opensea-js
+# Contributing to @opensea/sdk
 
 Thanks for your interest in contributing! We're glad you're here.
 

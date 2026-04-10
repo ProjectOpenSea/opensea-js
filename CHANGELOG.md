@@ -1,4 +1,12 @@
-# opensea-js
+# @opensea/sdk
+
+## 9.0.0
+
+### Major Changes
+
+- Rename package from `opensea-js` to `@opensea/sdk`
+
+  The API is unchanged — only the package name. The old `opensea-js` package will be deprecated with a stub that directs users to install `@opensea/sdk` instead.
 
 ## 8.1.0
 

@@ -16,9 +16,9 @@ Node.js version 20 or higher is required for the SDK. If you have Node Version M
 Then in your project, run:
 
 ```bash
-npm install --save opensea-js
+npm install --save @opensea/sdk
 # or
-yarn add opensea-js
+yarn add @opensea/sdk
 ```
 
 # Initialization
@@ -29,7 +29,7 @@ Then, create a new OpenSeaSDK client using your web3 provider:
 
 ```typescript
 import { ethers } from "ethers";
-import { OpenSeaSDK, Chain } from "opensea-js";
+import { OpenSeaSDK, Chain } from "@opensea/sdk";
 
 // This example provider won't let you make transactions, only read-only calls:
 const provider = new ethers.JsonRpcProvider(

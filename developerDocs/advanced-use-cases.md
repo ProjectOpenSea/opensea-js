@@ -156,7 +156,7 @@ The SDK provides efficient methods for creating multiple listings or offers with
 Use `createBulkListings()` to create multiple listings with a single signature:
 
 ```typescript
-import { getUnixTimestampInSeconds, TimeInSeconds } from "opensea-js";
+import { getUnixTimestampInSeconds, TimeInSeconds } from "@opensea/sdk";
 
 const listings = await openseaSDK.createBulkListings({
   listings: [
@@ -192,7 +192,7 @@ const listings = await openseaSDK.createBulkListings({
 Use `createBulkOffers()` to create multiple offers with a single signature:
 
 ```typescript
-import { getUnixTimestampInSeconds, TimeInSeconds } from "opensea-js";
+import { getUnixTimestampInSeconds, TimeInSeconds } from "@opensea/sdk";
 
 const offers = await openseaSDK.createBulkOffers({
   offers: [
@@ -283,7 +283,7 @@ This applies to all API operations, not just bulk orders. If a request fails aft
 **Example with All Options:**
 
 ```typescript
-import { getUnixTimestampInSeconds, TimeInSeconds } from "opensea-js";
+import { getUnixTimestampInSeconds, TimeInSeconds } from "@opensea/sdk";
 
 const listings = await openseaSDK.createBulkListings({
   listings: [
@@ -396,7 +396,7 @@ Events are fired whenever transactions or orders are being created, and when tra
 Our recommendation is that you "forward" OpenSea events to your own store or state management system. Here are examples of listening to the events:
 
 ```typescript
-import { OpenSeaSDK, EventType } from 'opensea-js'
+import { OpenSeaSDK, EventType } from '@opensea/sdk'
 const sdk = new OpenSeaSDK(...);
 
 function handleSDKEvents() {

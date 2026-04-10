@@ -45,7 +45,7 @@ const { nft } = await openseaSDK.api.getNFT(tokenAddress, tokenId);
 ### Checking Balances and Ownerships
 
 ```typescript
-import { TokenStandard } from "opensea-js";
+import { TokenStandard } from "@opensea/sdk";
 
 const asset = {
   // CryptoKitties contract
@@ -95,7 +95,7 @@ Note: The total value of offers must not exceed 1000x wallet balance.
 To sell an asset, call `createListing`:
 
 ```typescript
-import { getUnixTimestampInSeconds, TimeInSeconds } from "opensea-js";
+import { getUnixTimestampInSeconds, TimeInSeconds } from "@opensea/sdk";
 
 // Expire this listing one day from now
 const expirationTime = getUnixTimestampInSeconds(TimeInSeconds.DAY);
@@ -247,7 +247,7 @@ The SDK provides methods to retrieve historical events for NFTs, collections, an
 Fetch all events with optional filters:
 
 ```typescript
-import { AssetEventType } from "opensea-js";
+import { AssetEventType } from "@opensea/sdk";
 
 const { asset_events, next } = await openseaSDK.api.getEvents({
   event_type: AssetEventType.SALE, // Optional: filter by event type
@@ -301,7 +301,7 @@ const { asset_events } = await openseaSDK.api.getEventsByCollection(
 Fetch events for a specific NFT:
 
 ```typescript
-import { Chain } from "opensea-js";
+import { Chain } from "@opensea/sdk";
 
 const { asset_events } = await openseaSDK.api.getEventsByNFT(
   Chain.Mainnet, // Chain
@@ -368,7 +368,7 @@ do {
 To buy an item, you need to **fulfill a listing**. To do that, it's just one call:
 
 ```typescript
-import { OrderSide } from "opensea-js";
+import { OrderSide } from "@opensea/sdk";
 
 const order = await openseaSDK.api.getOrderByHash(
   "0x...",
@@ -391,7 +391,7 @@ If the order is a listing, the taker is the _buyer_ and this will prompt the buy
 Similar to fulfilling listings above, you need to fulfill an offer on an item you own to receive the tokens in the offer.
 
 ```typescript
-import { OrderSide } from "opensea-js";
+import { OrderSide } from "@opensea/sdk";
 
 const order = await openseaSDK.api.getOrderByHash(
   "0x...",
