@@ -33,7 +33,13 @@ npm install viem
 
 # Initialization
 
-To get started, first [request an API key](https://docs.opensea.io/reference/api-keys). Note the terms of use for using API data.
+To get started, first get an API key. You can get one instantly (no signup needed):
+
+```bash
+curl -s -X POST https://api.opensea.io/api/v2/auth/keys | jq -r '.api_key'
+```
+
+Or get a full key at [opensea.io/settings/developer](https://opensea.io/settings/developer) for higher rate limits. See [API key docs](https://docs.opensea.io/reference/api-keys) for details. Note the terms of use for using API data.
 
 Then, create a new OpenSeaSDK client using your web3 provider.
 

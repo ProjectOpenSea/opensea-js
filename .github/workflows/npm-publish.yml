@@ -7,6 +7,4 @@ on:
 jobs:
   publish:
     uses: ./.github/workflows/npm-publish-reusable.yml
-    with:
-      stub-package-dir: packages/opensea-js-stub
     secrets: inherit

@@ -13,7 +13,7 @@ It allows developers to access the official orderbook, filter it, create offers 
 
 ## Getting Started
 
-Get started by [requesting an API key](https://docs.opensea.io/reference/api-keys) and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders onchain, and listen to events in the process.
+Get started by getting an API key — instantly via API (no signup needed) or from the [developer portal](https://opensea.io/settings/developer) — and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders onchain, and listen to events in the process.
 
 Happy seafaring! ⛵️
 
@@ -31,7 +31,7 @@ Happy seafaring! ⛵️
 ## Requirements
 
 - Node.js 20 or higher
-- An [OpenSea API key](https://docs.opensea.io/reference/api-keys)
+- An OpenSea API key — get one instantly: `curl -s -X POST https://api.opensea.io/api/v2/auth/keys | jq -r '.api_key'` or from [opensea.io/settings/developer](https://opensea.io/settings/developer)
 - A web3 provider: ethers.js (`JsonRpcProvider` / `Wallet`) or viem (`publicClient` / `walletClient`)
 
 ## Key Features

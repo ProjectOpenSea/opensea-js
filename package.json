@@ -33,10 +33,10 @@
     "check-types": "tsc -p tsconfig.check.json",
     "docs-build": "typedoc",
     "docs-build-md": "typedoc --plugin typedoc-plugin-markdown",
-    "format": "biome format --config-path ../.. --write .",
-    "format:check": "biome format --config-path ../.. .",
-    "lint": "biome check --config-path ../.. .",
-    "lint:fix": "biome check --config-path ../.. --write .",
+    "format": "biome format --config-path . --write .",
+    "format:check": "biome format --config-path . .",
+    "lint": "biome check --config-path . .",
+    "lint:fix": "biome check --config-path . --write .",
     "test": "vitest run",
     "test:all": "concurrently \"npm run test\" \"npm run test:integration\"",
     "test:coverage": "vitest run --coverage",
@@ -67,7 +67,8 @@
     "typedoc-plugin-markdown": "^4.10.0",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.57.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@biomejs/biome": "^2.4.10"
   },
   "keywords": [
     "collectibles",

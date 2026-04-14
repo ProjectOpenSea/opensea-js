@@ -16,7 +16,15 @@ This is the TypeScript SDK for [OpenSea](https://opensea.io), the largest market
 
 It allows developers to access the official orderbook, filter it, create listings and offers, and complete trades programmatically.
 
-Get started by [requesting an API key](https://docs.opensea.io/reference/api-keys) and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders onchain, and listen to events in the process.
+Get started by getting an API key and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders onchain, and listen to events in the process.
+
+Get an API key instantly (no signup needed):
+
+```bash
+curl -s -X POST https://api.opensea.io/api/v2/auth/keys | jq -r '.api_key'
+```
+
+Or get a full key at [opensea.io/settings/developer](https://opensea.io/settings/developer) for higher rate limits. See [API key docs](https://docs.opensea.io/reference/api-keys) for details.
 
 Happy seafaring!
 
