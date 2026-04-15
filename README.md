@@ -12,9 +12,9 @@
 
 # @opensea/sdk <!-- omit in toc -->
 
-This is the TypeScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs.
+This is the TypeScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs and tokens.
 
-It allows developers to access the official orderbook, filter it, create listings and offers, and complete trades programmatically.
+It allows developers to access the official orderbook, filter it, create listings and offers, complete trades programmatically, and swap tokens across chains.
 
 Get started by getting an API key and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders onchain, and listen to events in the process.
 

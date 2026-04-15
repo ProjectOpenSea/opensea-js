@@ -175,7 +175,7 @@ const offer = await openseaSDK.createCollectionOffer({
 
 ## Fetching Orders
 
-To retrieve offers and listings, use the collection-based or NFT-specific endpoints:
+To retrieve offers and listings, use the collection-based or item-specific endpoints:
 
 ```typescript
 // Get all offers for a collection

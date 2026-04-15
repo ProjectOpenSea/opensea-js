@@ -7,9 +7,9 @@ hidden: false
 
 # Overview
 
-This is the TypeScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs.
+This is the TypeScript SDK for [OpenSea](https://opensea.io), the largest marketplace for NFTs and tokens.
 
-It allows developers to access the official orderbook, filter it, create offers and listings, and complete trades programmatically.
+It allows developers to access the official orderbook, filter it, create offers and listings, complete trades programmatically, and swap tokens across chains.
 
 ## Getting Started
 
@@ -20,7 +20,7 @@ Happy seafaring! ⛵️
 ## Documentation
 
 - **[Quick Start Guide](quick-start.md)** - Installation and initialization
-- **[Getting Started Guide](getting-started.md)** - Learn the basics: fetching NFTs, making offers, creating listings
+- **[Getting Started Guide](getting-started.md)** - Learn the basics: fetching NFTs, making offers, creating listings, and swapping tokens
 - **[API Reference](api-reference.md)** - Complete reference for all SDK methods
 - **[Advanced Use Cases](advanced-use-cases.md)** - Bulk operations, canceling orders, event listening, and more
 - **[SDK Reference](https://projectopensea.github.io/opensea-js/)** - Auto-generated TypeDoc API documentation
@@ -36,7 +36,7 @@ Happy seafaring! ⛵️
 
 ## Key Features
 
-- **Create Listings & Offers**: List NFTs for sale or make offers on items
+- **Create Listings & Offers**: List NFTs and tokens for sale or make offers on items
 - **Fulfill Orders**: Buy listings or accept offers programmatically
 - **Bulk Operations**: Create multiple listings/offers with a single signature
 - **Events API**: Query historical sales, transfers, and order events
