@@ -46,7 +46,7 @@
   "dependencies": {
     "@noble/hashes": "^2.0.1",
     "@opensea/api-types": "^0.2.0",
-    "@opensea/seaport-js": "^4.0.7",
+    "@opensea/seaport-js": "^4.1.1",
     "ethers": "^6.16.0"
   },
   "peerDependencies": {
@@ -59,7 +59,6 @@
   },
   "devDependencies": {
     "@types/node": "^25.4.0",
-    "viem": "2.23.2",
     "@vitest/coverage-v8": "^3.2.4",
     "concurrently": "^9.2.1",
     "dotenv": "^17.3.1",
@@ -67,6 +66,7 @@
     "typedoc-plugin-markdown": "^4.10.0",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.57.0",
+    "viem": "2.23.2",
     "vitest": "^3.2.4",
     "@biomejs/biome": "^2.4.10"
   },
