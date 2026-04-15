@@ -36,8 +36,9 @@ export class FulfillmentManager {
 
   /**
    * Fulfill a private order for a designated address.
+   * The order must have a taker address set (i.e., it is a private listing).
    */
-  private async fulfillPrivateOrder({
+  async fulfillPrivateOrder({
     order,
     accountAddress,
     domain,
@@ -48,6 +49,7 @@ export class FulfillmentManager {
     domain?: string
     overrides?: Record<string, unknown>
   }): Promise<string> {
+    await this.context.requireAccountIsAvailable(accountAddress)
     if (!order.taker?.address) {
       throw new Error(
         "Order is not a private listing - must have a taker address",

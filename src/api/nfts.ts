@@ -1,16 +1,21 @@
-import type { Chain } from "../types"
+import type { Chain, OpenSeaCollection } from "../types"
+import { collectionFromJSON } from "../utils/converters"
 import {
   getContractPath,
   getListNFTsByAccountPath,
   getListNFTsByCollectionPath,
   getListNFTsByContractPath,
+  getNFTCollectionPath,
+  getNFTMetadataPath,
   getNFTPath,
   getRefreshMetadataPath,
   getValidateMetadataPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import type {
+  GetCollectionResponse,
   GetContractResponse,
+  GetNFTMetadataResponse,
   GetNFTResponse,
   ListNFTsResponse,
   ValidateMetadataResponse,
@@ -139,6 +144,37 @@ export class NFTsAPI {
       path += `?ignoreCachedItemUrls=${ignoreCachedItemUrls}`
     }
     const response = await this.fetcher.post<ValidateMetadataResponse>(path)
+    return response
+  }
+
+  /**
+   * Get the collection that an NFT belongs to.
+   * Useful for multi-contract collections where the token ID disambiguates
+   * which collection the NFT belongs to.
+   */
+  async getNFTCollection(
+    address: string,
+    identifier: string,
+    chain: Chain = this.chain,
+  ): Promise<OpenSeaCollection> {
+    const response = await this.fetcher.get<GetCollectionResponse>(
+      getNFTCollectionPath(chain, address, identifier),
+    )
+    return collectionFromJSON(response)
+  }
+
+  /**
+   * Get detailed metadata for an NFT including name, description, image, traits,
+   * and external links.
+   */
+  async getNFTMetadata(
+    address: string,
+    tokenId: string,
+    chain: Chain = this.chain,
+  ): Promise<GetNFTMetadataResponse> {
+    const response = await this.fetcher.get<GetNFTMetadataResponse>(
+      getNFTMetadataPath(chain, address, tokenId),
+    )
     return response
   }
 }

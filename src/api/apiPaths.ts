@@ -206,3 +206,19 @@ export const getTopCollectionsPath = () => {
 export const getResolveAccountPath = (identifier: string) => {
   return `${API_V2_PREFIX}/accounts/resolve/${identifier}`
 }
+
+export const getNFTCollectionPath = (
+  chain: Chain,
+  address: string,
+  identifier: string,
+) => {
+  return `${API_V2_PREFIX}/chain/${chain}/contract/${address}/nfts/${identifier}/collection`
+}
+
+export const getNFTMetadataPath = (
+  chain: Chain,
+  contractAddress: string,
+  tokenId: string,
+) => {
+  return `${API_V2_PREFIX}/metadata/${chain}/${contractAddress}/${tokenId}`
+}

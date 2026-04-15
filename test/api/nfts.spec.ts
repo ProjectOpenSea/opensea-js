@@ -1,7 +1,9 @@
 import { describe, expect, test, vi } from "vitest"
 import { NFTsAPI } from "../../src/api/nfts"
 import type {
+  GetCollectionResponse,
   GetContractResponse,
+  GetNFTMetadataResponse,
   GetNFTResponse,
   ListNFTsResponse,
 } from "../../src/api/types"
@@ -715,6 +717,195 @@ describe("API: NFTsAPI", () => {
         throw new Error("Expected error to be thrown")
       } catch (error) {
         expect((error as Error).message).toContain("Server Error")
+      }
+    })
+  })
+
+  describe("getNFTCollection", () => {
+    test("fetches the collection an NFT belongs to", async () => {
+      const mockResponse: GetCollectionResponse = {
+        name: "Art Blocks",
+        collection: "art-blocks",
+        description: "Generative art",
+        image_url: "https://example.com/image.png",
+        banner_image_url: "",
+        owner: "0xowner",
+        safelist_status: "verified",
+        category: "art",
+        is_disabled: false,
+        is_nsfw: false,
+        trait_offers_enabled: true,
+        collection_offers_enabled: true,
+        opensea_url: "https://opensea.io/collection/art-blocks",
+        project_url: "",
+        wiki_url: "",
+        discord_url: "",
+        telegram_url: "",
+        twitter_username: "",
+        instagram_username: "",
+        contracts: [],
+        editors: [],
+        fees: [],
+        rarity: { enabled: false },
+        total_supply: 1000,
+      } as unknown as GetCollectionResponse
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      const result = await nftsAPI.getNFTCollection("0xcontract123", "42")
+
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
+        `/api/v2/chain/${Chain.Mainnet}/contract/0xcontract123/nfts/42/collection`,
+      )
+      expect(result.name).toBe("Art Blocks")
+      expect(result.collection).toBe("art-blocks")
+    })
+
+    test("applies collectionFromJSON transformation", async () => {
+      const mockResponse = {
+        name: "Test Collection",
+        collection: "test",
+        image_url: "https://example.com/img.png",
+        is_disabled: false,
+        is_nsfw: false,
+        opensea_url: "https://opensea.io/collection/test",
+        contracts: [],
+        editors: [],
+        fees: [],
+      } as unknown as GetCollectionResponse
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      const result = await nftsAPI.getNFTCollection("0xabc", "1")
+
+      // collectionFromJSON converts snake_case to camelCase
+      expect(result.imageUrl).toBe("https://example.com/img.png")
+      expect(result.isDisabled).toBe(false)
+      expect(result.isNSFW).toBe(false)
+      expect(result.openseaUrl).toBe("https://opensea.io/collection/test")
+    })
+
+    test("fetches with custom chain parameter", async () => {
+      const mockResponse = {
+        name: "Test",
+        collection: "test",
+        contracts: [],
+        editors: [],
+        fees: [],
+      } as unknown as GetCollectionResponse
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      await nftsAPI.getNFTCollection("0xabc", "1", Chain.Polygon)
+
+      expect(mockGet.mock.calls[0][0]).toBe(
+        `/api/v2/chain/${Chain.Polygon}/contract/0xabc/nfts/1/collection`,
+      )
+    })
+
+    test("uses default chain when not specified", async () => {
+      const mockResponse = {
+        name: "Test",
+        collection: "test",
+        contracts: [],
+        editors: [],
+        fees: [],
+      } as unknown as GetCollectionResponse
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      await nftsAPI.getNFTCollection("0xabc", "1")
+
+      expect(mockGet.mock.calls[0][0]).toContain(Chain.Mainnet)
+    })
+
+    test("throws error on API failure", async () => {
+      mockGet.mockRejectedValue(new Error("NFT not found"))
+
+      try {
+        await nftsAPI.getNFTCollection("0xinvalid", "999")
+        throw new Error("Expected error to be thrown")
+      } catch (error) {
+        expect((error as Error).message).toContain("NFT not found")
+      }
+    })
+  })
+
+  describe("getNFTMetadata", () => {
+    test("fetches metadata for an NFT", async () => {
+      const mockResponse: GetNFTMetadataResponse = {
+        name: "Cool NFT #42",
+        description: "A really cool NFT",
+        image: "https://example.com/nft.png",
+        external_link: "https://example.com",
+        animation_url: undefined,
+        traits: [{ trait_type: "Background", value: "Blue" }],
+      } as unknown as GetNFTMetadataResponse
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      const result = await nftsAPI.getNFTMetadata("0xcontract123", "42")
+
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
+        `/api/v2/metadata/${Chain.Mainnet}/0xcontract123/42`,
+      )
+      expect(result.name).toBe("Cool NFT #42")
+      expect(result.description).toBe("A really cool NFT")
+      expect(result.traits).toHaveLength(1)
+    })
+
+    test("fetches metadata with custom chain parameter", async () => {
+      const mockResponse = {
+        name: "Test",
+        traits: [],
+      } as unknown as GetNFTMetadataResponse
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      await nftsAPI.getNFTMetadata("0xabc", "1", Chain.Base)
+
+      expect(mockGet.mock.calls[0][0]).toBe(
+        `/api/v2/metadata/${Chain.Base}/0xabc/1`,
+      )
+    })
+
+    test("uses default chain when not specified", async () => {
+      const mockResponse = {
+        name: "Test",
+        traits: [],
+      } as unknown as GetNFTMetadataResponse
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      await nftsAPI.getNFTMetadata("0xabc", "1")
+
+      expect(mockGet.mock.calls[0][0]).toContain(Chain.Mainnet)
+    })
+
+    test("handles NFT with no optional fields", async () => {
+      const mockResponse: GetNFTMetadataResponse = {
+        traits: [],
+      } as unknown as GetNFTMetadataResponse
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      const result = await nftsAPI.getNFTMetadata("0xabc", "1")
+
+      expect(result.name).toBeUndefined()
+      expect(result.description).toBeUndefined()
+      expect(result.traits).toEqual([])
+    })
+
+    test("throws error on API failure", async () => {
+      mockGet.mockRejectedValue(new Error("Metadata not found"))
+
+      try {
+        await nftsAPI.getNFTMetadata("0xinvalid", "999")
+        throw new Error("Expected error to be thrown")
+      } catch (error) {
+        expect((error as Error).message).toContain("Metadata not found")
       }
     })
   })

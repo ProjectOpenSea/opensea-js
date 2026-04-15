@@ -316,6 +316,25 @@ export class BaseOpenSeaSDK {
     return this._fulfillmentManager.fulfillOrder(options)
   }
 
+  /**
+   * Fulfill a private listing directly using Seaport's matchOrders.
+   * The order must have a taker address set (i.e., it is a private listing).
+   * @param options
+   * @param options.order The private listing order to fulfill. Must have a taker address.
+   * @param options.accountAddress Address of the wallet fulfilling the order.
+   * @param options.domain Optional domain for onchain attribution.
+   * @param options.overrides Transaction overrides (gasLimit, maxFeePerGas, etc.).
+   * @returns Transaction hash of the fulfillment.
+   */
+  public async fulfillPrivateOrder(options: {
+    order: OrderV2
+    accountAddress: string
+    domain?: string
+    overrides?: Record<string, unknown>
+  }): Promise<string> {
+    return this._fulfillmentManager.fulfillPrivateOrder(options)
+  }
+
   /** Returns whether an order is fulfillable. */
   public async isOrderFulfillable(options: {
     order: OrderV2

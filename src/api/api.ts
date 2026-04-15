@@ -50,6 +50,7 @@ import {
   type GetEventsArgs,
   type GetEventsResponse,
   type GetListingsResponse,
+  type GetNFTMetadataResponse,
   type GetNFTResponse,
   type GetOffersResponse,
   type GetOrderByHashResponse,
@@ -927,6 +928,39 @@ export class OpenSeaAPI {
     identifier: string,
   ): Promise<ResolveAccountResponse> {
     return this.accountsAPI.resolveAccount(identifier)
+  }
+
+  /**
+   * Get the collection that an NFT belongs to.
+   * Useful for multi-contract collections where the token ID disambiguates
+   * which collection the NFT belongs to.
+   * @param address The NFT contract address.
+   * @param identifier The token identifier.
+   * @param chain The chain where the NFT is located. Defaults to the chain set in the constructor.
+   * @returns The {@link OpenSeaCollection} returned by the API.
+   */
+  public async getNFTCollection(
+    address: string,
+    identifier: string,
+    chain: Chain = this.chain,
+  ): Promise<OpenSeaCollection> {
+    return this.nftsAPI.getNFTCollection(address, identifier, chain)
+  }
+
+  /**
+   * Get detailed metadata for an NFT including name, description, image, traits,
+   * and external links.
+   * @param address The NFT contract address.
+   * @param tokenId The token identifier.
+   * @param chain The chain where the NFT is located. Defaults to the chain set in the constructor.
+   * @returns The {@link GetNFTMetadataResponse} returned by the API.
+   */
+  public async getNFTMetadata(
+    address: string,
+    tokenId: string,
+    chain: Chain = this.chain,
+  ): Promise<GetNFTMetadataResponse> {
+    return this.nftsAPI.getNFTMetadata(address, tokenId, chain)
   }
 
   /**

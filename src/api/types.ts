@@ -1,3 +1,4 @@
+import type { AssetMetadataResponse } from "@opensea/api-types"
 import type { ConsiderationItem } from "@opensea/seaport-js/lib/types"
 import type {
   OrderType,
@@ -1208,3 +1209,10 @@ export type ValidateMetadataResponse = {
     statusCode?: number
   }
 }
+
+/**
+ * Response from OpenSea API for fetching raw NFT metadata.
+ * Derived from the generated OpenAPI spec type to stay in sync automatically.
+ * @category API Response Types
+ */
+export type GetNFTMetadataResponse = AssetMetadataResponse
