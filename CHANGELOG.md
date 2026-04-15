@@ -1,5 +1,14 @@
 # @opensea/sdk
 
+## 10.1.0
+
+### Minor Changes
+
+- 497b636: Add missing API wrapper methods for full OpenAPI spec coverage:
+  - `getNFTCollection()` — get the collection an NFT belongs to
+  - `getNFTMetadata()` — get raw NFT metadata (name, description, image, traits)
+  - Expose `fulfillPrivateOrder()` as a public method on `OpenSeaSDK`
+
 ## 10.0.0
 
 ### Major Changes
