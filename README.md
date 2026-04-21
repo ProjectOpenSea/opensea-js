@@ -18,13 +18,24 @@ It allows developers to access the official orderbook, filter it, create listing
 
 Get started by getting an API key and instantiating your own OpenSea SDK instance. Then you can create orders off-chain or fulfill orders onchain, and listen to events in the process.
 
-Get an API key instantly (no signup needed):
+### Get an API key
+
+**For quick experimentation** — request a free-tier key in code, no signup needed. The returned key is valid for 30 days and the endpoint is rate-limited to 3 keys per hour per IP:
+
+```typescript
+import { OpenSeaSDK } from "@opensea/sdk";
+
+const { api_key } = await OpenSeaSDK.requestInstantApiKey();
+const sdk = new OpenSeaSDK(provider, { chain: Chain.Mainnet, apiKey: api_key });
+```
+
+Or from the shell:
 
 ```bash
 curl -s -X POST https://api.opensea.io/api/v2/auth/keys | jq -r '.api_key'
 ```
 
-Or get a full key at [opensea.io/settings/developer](https://opensea.io/settings/developer) for higher rate limits. See [API key docs](https://docs.opensea.io/reference/api-keys) for details.
+**For production** — create a permanent key at [opensea.io/settings/developer](https://opensea.io/settings/developer). These keys don't expire, get higher rate limits, and can be rotated from your account. See the [API key docs](https://docs.opensea.io/reference/api-keys) for details.
 
 Happy seafaring!
 
