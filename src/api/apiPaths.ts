@@ -222,3 +222,15 @@ export const getNFTMetadataPath = (
 ) => {
   return `${API_V2_PREFIX}/metadata/${chain}/${contractAddress}/${tokenId}`
 }
+
+export const getTokenGroupsPath = () => {
+  return `${API_V2_PREFIX}/token-groups`
+}
+
+export const getTokenGroupPath = (slug: string) => {
+  return `${API_V2_PREFIX}/token-groups/${slug}`
+}
+
+export const getInstantApiKeyPath = () => {
+  return `${API_V2_PREFIX}/auth/keys`
+}

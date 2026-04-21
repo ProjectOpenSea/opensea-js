@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from "vitest"
 import { Chain, type OpenSeaRateLimitError } from "../../src"
+import { OpenSeaAPI } from "../../src/api/api"
 import { getOfferPaymentToken } from "../../src/utils"
 import { BAYC_CONTRACT_ADDRESS } from "../utils/constants"
 import { OPENSEA_API_KEY } from "../utils/env"
@@ -499,5 +500,57 @@ describe("API", () => {
     const url = fetchStub.mock.calls[0][0] as string
     expect(url).toBe(`${api.apiBaseUrl}/api/v2/test`)
     expect(url).not.toContain("?")
+  })
+
+  describe("requestInstantApiKey (static)", () => {
+    test("POSTs to /api/v2/auth/keys without auth header", async () => {
+      const mockBody = { api_key: "test-key-123" }
+      const fetchStubLocal = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(
+          new Response(JSON.stringify(mockBody), { status: 201 }),
+        )
+
+      const result = await OpenSeaAPI.requestInstantApiKey()
+
+      expect(fetchStubLocal).toHaveBeenCalledTimes(1)
+      const [url, init] = fetchStubLocal.mock.calls[0] as [
+        string,
+        RequestInit & { headers: Record<string, string> },
+      ]
+      expect(url).toBe("https://api.opensea.io/api/v2/auth/keys")
+      expect(init.method).toBe("POST")
+      // No api-key header in any casing — endpoint is unauthenticated.
+      const headerKeys = Object.keys(init.headers).map(k => k.toLowerCase())
+      expect(headerKeys).not.toContain("x-api-key")
+      expect(result).toEqual(mockBody)
+
+      fetchStubLocal.mockRestore()
+    })
+
+    test("respects apiBaseUrl override", async () => {
+      const fetchStubLocal = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(new Response("{}", { status: 201 }))
+
+      await OpenSeaAPI.requestInstantApiKey("https://testnets-api.opensea.io")
+
+      const url = fetchStubLocal.mock.calls[0][0] as string
+      expect(url).toBe("https://testnets-api.opensea.io/api/v2/auth/keys")
+
+      fetchStubLocal.mockRestore()
+    })
+
+    test("throws on non-2xx response", async () => {
+      const fetchStubLocal = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(
+          new Response("{}", { status: 429, statusText: "Too Many Requests" }),
+        )
+
+      await expect(OpenSeaAPI.requestInstantApiKey()).rejects.toThrow(/429/)
+
+      fetchStubLocal.mockRestore()
+    })
   })
 })

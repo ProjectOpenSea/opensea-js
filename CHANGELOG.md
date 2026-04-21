@@ -1,5 +1,28 @@
 # @opensea/sdk
 
+## 10.2.0
+
+### Minor Changes
+
+- bc9c6ce: Add token-groups and instant API key endpoints.
+
+  **SDK**:
+
+  - `sdk.api.getTokenGroups({ limit?, cursor? })` and `sdk.api.getTokenGroup(slug)` for the new `/api/v2/token-groups` endpoints.
+  - `OpenSeaSDK.requestInstantApiKey()` and `OpenSeaAPI.requestInstantApiKey()` — static methods that call `POST /api/v2/auth/keys` without authentication and return a free-tier key you can pass into the SDK constructor. Rate limited to 3 keys/hour per IP; keys expire after 30 days.
+  - `OpenSeaAPI` class is now exported from the package root (`@opensea/sdk` and `@opensea/sdk/viem`).
+
+  **CLI**:
+
+  - New `opensea token-groups list` and `opensea token-groups get <slug>` commands.
+  - New `opensea auth request-key` command — works without `--api-key` / `OPENSEA_API_KEY` since the endpoint is unauthenticated.
+
+### Patch Changes
+
+- a57c63d: Update @opensea/seaport-js from ^4.0.7 to ^4.1.1
+- Updated dependencies [5b6ba13]
+  - @opensea/api-types@0.2.1
+
 ## 10.1.0
 
 ### Minor Changes

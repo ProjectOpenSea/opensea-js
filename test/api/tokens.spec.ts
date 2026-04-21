@@ -2,6 +2,8 @@ import { describe, expect, test, vi } from "vitest"
 import { TokensAPI } from "../../src/api/tokens"
 import type {
   GetSwapQuoteResponse,
+  GetTokenGroupResponse,
+  GetTokenGroupsResponse,
   GetTokenResponse,
   GetTopTokensResponse,
   GetTrendingTokensResponse,
@@ -306,6 +308,47 @@ describe("API: TokensAPI", () => {
       } catch (error) {
         expect((error as Error).message).toContain("Token not found")
       }
+    })
+  })
+
+  describe("getTokenGroups", () => {
+    test("fetches token groups without parameters", async () => {
+      const mockResponse = {
+        token_groups: [],
+        next: "cursor-xyz",
+      } as unknown as GetTokenGroupsResponse
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      const result = await tokensAPI.getTokenGroups()
+
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe("/api/v2/token-groups")
+      expect(mockGet.mock.calls[0][1]).toBeUndefined()
+      expect(result).toBe(mockResponse)
+    })
+
+    test("passes limit and cursor query args", async () => {
+      mockGet.mockResolvedValue({} as GetTokenGroupsResponse)
+
+      await tokensAPI.getTokenGroups({ limit: 10, cursor: "abc" })
+
+      expect(mockGet.mock.calls[0][1]).toEqual({ limit: 10, cursor: "abc" })
+    })
+  })
+
+  describe("getTokenGroup", () => {
+    test("fetches a single token group by slug", async () => {
+      const mockResponse = { slug: "eth" } as unknown as GetTokenGroupResponse
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      const result = await tokensAPI.getTokenGroup("eth")
+
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe("/api/v2/token-groups/eth")
+      expect(mockGet.mock.calls[0][1]).toBeUndefined()
+      expect(result).toBe(mockResponse)
     })
   })
 

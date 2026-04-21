@@ -1,3 +1,4 @@
+import { OpenSeaAPI } from "./api/api"
 import { OpenSeaSDK } from "./sdk"
 
 export * from "./api/types"
@@ -25,6 +26,9 @@ export * from "./utils"
  * ```
  */
 export {
+  // API client (for direct use or accessing static helpers like
+  // `OpenSeaAPI.requestInstantApiKey()`)
+  OpenSeaAPI,
   // Main SDK export
   OpenSeaSDK,
 }

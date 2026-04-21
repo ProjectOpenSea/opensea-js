@@ -38,6 +38,7 @@ import {
 } from "./utils/utils"
 
 // Re-export everything from the main entry point
+export { OpenSeaAPI } from "./api/api"
 export * from "./api/types"
 export * from "./constants"
 export * from "./orders/types"

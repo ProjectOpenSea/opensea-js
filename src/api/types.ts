@@ -1,4 +1,9 @@
-import type { AssetMetadataResponse } from "@opensea/api-types"
+import type {
+  AssetMetadataResponse,
+  InstantApiKeyResponse,
+  TokenGroupPaginatedResponse,
+  TokenGroupResponse,
+} from "@opensea/api-types"
 import type { ConsiderationItem } from "@opensea/seaport-js/lib/types"
 import type {
   OrderType,
@@ -801,6 +806,35 @@ export type GetSwapQuoteResponse = {
  * @category API Response Types
  */
 export type GetTokenResponse = Token
+
+/**
+ * Response from OpenSea API for fetching a token group by slug.
+ * @category API Response Types
+ */
+export type GetTokenGroupResponse = TokenGroupResponse
+
+/**
+ * Response from OpenSea API for fetching a paginated list of token groups.
+ * @category API Response Types
+ */
+export type GetTokenGroupsResponse = TokenGroupPaginatedResponse
+
+/**
+ * Query args for the Get Token Groups endpoint.
+ * @category API Query Args
+ */
+export interface GetTokenGroupsArgs {
+  /** Number of results to return (default: 50, max: 100) */
+  limit?: number
+  /** Cursor for pagination */
+  cursor?: string
+}
+
+/**
+ * Response from OpenSea API for requesting an instant API key.
+ * @category API Response Types
+ */
+export type RequestInstantApiKeyResponse = InstantApiKeyResponse
 
 /**
  * Query args for the Search endpoint.

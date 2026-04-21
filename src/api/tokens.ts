@@ -1,5 +1,7 @@
 import {
   getSwapQuotePath,
+  getTokenGroupPath,
+  getTokenGroupsPath,
   getTokenPath,
   getTopTokensPath,
   getTrendingTokensPath,
@@ -8,6 +10,9 @@ import type { Fetcher } from "./fetcher"
 import type {
   GetSwapQuoteArgs,
   GetSwapQuoteResponse,
+  GetTokenGroupResponse,
+  GetTokenGroupsArgs,
+  GetTokenGroupsResponse,
   GetTokenResponse,
   GetTokensArgs,
   GetTopTokensResponse,
@@ -63,5 +68,21 @@ export class TokensAPI {
       getTokenPath(chain, address),
     )
     return response
+  }
+
+  /**
+   * Gets a paginated list of token groups (equivalent currencies across chains).
+   */
+  async getTokenGroups(
+    args?: GetTokenGroupsArgs,
+  ): Promise<GetTokenGroupsResponse> {
+    return this.fetcher.get<GetTokenGroupsResponse>(getTokenGroupsPath(), args)
+  }
+
+  /**
+   * Gets a single token group by its slug.
+   */
+  async getTokenGroup(slug: string): Promise<GetTokenGroupResponse> {
+    return this.fetcher.get<GetTokenGroupResponse>(getTokenGroupPath(slug))
   }
 }

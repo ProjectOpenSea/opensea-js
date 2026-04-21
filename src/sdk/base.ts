@@ -2,8 +2,14 @@ import EventEmitter = require("node:events")
 
 import type { Seaport } from "@opensea/seaport-js"
 import type { OrderComponents } from "@opensea/seaport-js/lib/types"
-import type { OpenSeaAPI } from "../api/api"
-import type { CollectionOffer, Listing, Offer, Order } from "../api/types"
+import { OpenSeaAPI } from "../api/api"
+import type {
+  CollectionOffer,
+  Listing,
+  Offer,
+  Order,
+  RequestInstantApiKeyResponse,
+} from "../api/types"
 import { ZERO_ADDRESS } from "../constants"
 import type { OrderV2 } from "../orders/types"
 import type { ContractCaller, OpenSeaWallet } from "../provider/types"
@@ -101,6 +107,25 @@ export class BaseOpenSeaSDK {
       context,
       this._ordersManager,
     )
+  }
+
+  /**
+   * Request a free-tier OpenSea API key without authentication. The returned
+   * key can be passed as `apiKey` into the SDK constructor to bootstrap usage.
+   * Rate limited to 3 keys per hour per IP; keys expire after 30 days.
+   *
+   * @example
+   * ```ts
+   * const { api_key } = await OpenSeaSDK.requestInstantApiKey()
+   * const sdk = new OpenSeaSDK(provider, { apiKey: api_key })
+   * ```
+   *
+   * @param apiBaseUrl Optional base URL override (defaults to mainnet).
+   */
+  public static async requestInstantApiKey(
+    apiBaseUrl?: string,
+  ): Promise<RequestInstantApiKeyResponse> {
+    return OpenSeaAPI.requestInstantApiKey(apiBaseUrl)
   }
 
   // ─── Event Listeners ───────────────────────────────────────────────

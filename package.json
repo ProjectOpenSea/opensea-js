@@ -1,6 +1,6 @@
 {
   "name": "@opensea/sdk",
-  "version": "10.1.0",
+  "version": "10.2.0",
   "description": "TypeScript SDK for the OpenSea marketplace helps developers build new experiences using NFTs, tokens, and our marketplace data",
   "license": "MIT",
   "author": "OpenSea Developers",
@@ -45,7 +45,7 @@
   "types": "lib/index.d.ts",
   "dependencies": {
     "@noble/hashes": "^2.0.1",
-    "@opensea/api-types": "^0.2.0",
+    "@opensea/api-types": "^0.2.1",
     "@opensea/seaport-js": "^4.1.1",
     "ethers": "^6.16.0"
   },

@@ -37,7 +37,11 @@ jobs:
       # Use npm install (not npm ci) because the package-lock.json may be
       # out of sync after the sync-package workflow resolves workspace: protocols
       # and updates dependencies. npm ci requires exact lockfile match.
-      - run: npm install
+      #
+      # --legacy-peer-deps mirrors pnpm's permissive peer-dep behavior used in the
+      # monorepo. Without it, packages like api-types fail on openapi-typescript@^7
+      # which declares a strict `typescript@^5.x` peer while we ship typescript@^6.
+      - run: npm install --legacy-peer-deps
 
       - if: ${{ inputs.build-before-publish }}
         run: npm run build

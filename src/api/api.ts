@@ -19,6 +19,7 @@ import {
 } from "../types"
 import { executeWithRateLimit } from "../utils/rateLimit"
 import { AccountsAPI } from "./accounts"
+import { getInstantApiKeyPath } from "./apiPaths"
 import { ChainsAPI } from "./chains"
 import { CollectionsAPI } from "./collections"
 import { DropsAPI } from "./drops"
@@ -57,6 +58,9 @@ import {
   type GetOrdersResponse,
   type GetSwapQuoteArgs,
   type GetSwapQuoteResponse,
+  type GetTokenGroupResponse,
+  type GetTokenGroupsArgs,
+  type GetTokenGroupsResponse,
   type GetTokenResponse,
   type GetTokensArgs,
   type GetTopCollectionsArgs,
@@ -67,6 +71,7 @@ import {
   type Listing,
   type ListNFTsResponse,
   type Offer,
+  type RequestInstantApiKeyResponse,
   type ResolveAccountResponse,
   type SearchArgs,
   type SearchResponse,
@@ -761,6 +766,27 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Gets a paginated list of token groups — equivalent currencies across
+   * chains (e.g. ETH on Ethereum, Base, and Arbitrum share the "eth" group).
+   * @param args Optional query parameters (`limit`, `cursor`).
+   * @returns The {@link GetTokenGroupsResponse} returned by the API.
+   */
+  public async getTokenGroups(
+    args?: GetTokenGroupsArgs,
+  ): Promise<GetTokenGroupsResponse> {
+    return this.tokensAPI.getTokenGroups(args)
+  }
+
+  /**
+   * Gets a single token group by its slug (e.g. "eth").
+   * @param slug The token group slug.
+   * @returns The {@link GetTokenGroupResponse} returned by the API.
+   */
+  public async getTokenGroup(slug: string): Promise<GetTokenGroupResponse> {
+    return this.tokensAPI.getTokenGroup(slug)
+  }
+
+  /**
    * Search across collections, tokens, NFTs, and accounts.
    * Results are ranked by relevance.
    * @param args Query parameters including query text, optional chain/asset type filters, and limit.
@@ -1123,6 +1149,40 @@ export class OpenSeaAPI {
         options.signal.removeEventListener("abort", userAbortHandler)
       }
     }
+  }
+
+  /**
+   * Request a free-tier OpenSea API key without authentication. The returned
+   * key is valid for 30 days and can be passed into the {@link OpenSeaAPI} or
+   * {@link BaseOpenSeaSDK} constructors as `apiKey`. Rate limited to 3 keys
+   * per hour per IP.
+   *
+   * @example
+   * ```ts
+   * const { api_key } = await OpenSeaAPI.requestInstantApiKey()
+   * const api = new OpenSeaAPI({ apiKey: api_key })
+   * ```
+   *
+   * @param apiBaseUrl Optional base URL override (defaults to mainnet).
+   * @returns The {@link RequestInstantApiKeyResponse} containing the new key.
+   */
+  public static async requestInstantApiKey(
+    apiBaseUrl: string = API_BASE_MAINNET,
+  ): Promise<RequestInstantApiKeyResponse> {
+    const response = await fetch(`${apiBaseUrl}${getInstantApiKeyPath()}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": "opensea-js",
+      },
+      body: "{}",
+    })
+    if (!response.ok) {
+      throw new Error(
+        `Server Error (${response.status}): ${response.statusText}`,
+      )
+    }
+    return response.json()
   }
 
   /**
