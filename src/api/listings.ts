@@ -7,7 +7,12 @@ import {
   getOrdersAPIPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
-import type { GetBestListingResponse, GetListingsResponse } from "./types"
+import {
+  encodeTraitsParam,
+  type GetBestListingResponse,
+  type GetListingsResponse,
+  type TraitFilter,
+} from "./types"
 
 /**
  * Listing-related API operations
@@ -65,17 +70,15 @@ export class ListingsAPI {
   }
 
   /**
-   * Gets the best listings for a given collection.
-   * @param collectionSlug The collection slug
-   * @param limit The number of listings to return
-   * @param next The cursor for pagination
-   * @param includePrivateListings Whether to include private listings (default: false)
+   * Gets the best listings for a given collection. Pass `traits` to filter
+   * server-side by item traits (multiple entries are AND-combined).
    */
   async getBestListings(
     collectionSlug: string,
     limit?: number,
     next?: string,
     includePrivateListings?: boolean,
+    traits?: TraitFilter[],
   ): Promise<GetListingsResponse> {
     const response = await this.fetcher.get<GetListingsResponse>(
       getBestListingsAPIPath(collectionSlug),
@@ -85,6 +88,7 @@ export class ListingsAPI {
         ...(includePrivateListings !== undefined && {
           include_private_listings: includePrivateListings,
         }),
+        traits: encodeTraitsParam(traits),
       },
     )
     return response

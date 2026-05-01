@@ -22,7 +22,7 @@ describe("SDK: getCollectionOffers", () => {
     const encodedTokenIds = offer.criteria?.encoded_token_ids
     expect(encodedTokenIds).toBeTruthy()
 
-    const decodedTokenIds = decodeTokenIds(encodedTokenIds!)
+    const decodedTokenIds = decodeTokenIds(encodedTokenIds as string)
     expect(decodedTokenIds[0], "Decoded tokens should not be null").toBeTruthy()
   })
 })

@@ -12,13 +12,15 @@ import {
   getValidateMetadataPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
-import type {
-  GetCollectionResponse,
-  GetContractResponse,
-  GetNFTMetadataResponse,
-  GetNFTResponse,
-  ListNFTsResponse,
-  ValidateMetadataResponse,
+import {
+  encodeTraitsParam,
+  type GetCollectionResponse,
+  type GetContractResponse,
+  type GetNFTMetadataResponse,
+  type GetNFTResponse,
+  type ListNFTsResponse,
+  type TraitFilter,
+  type ValidateMetadataResponse,
 } from "./types"
 
 /**
@@ -31,19 +33,18 @@ export class NFTsAPI {
   ) {}
 
   /**
-   * Fetch multiple NFTs for a collection.
+   * Fetch multiple NFTs for a collection. Pass `traits` to filter server-side
+   * by item traits (multiple entries are AND-combined).
    */
   async getNFTsByCollection(
     slug: string,
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
+    traits: TraitFilter[] | undefined = undefined,
   ): Promise<ListNFTsResponse> {
     const response = await this.fetcher.get<ListNFTsResponse>(
       getListNFTsByCollectionPath(slug),
-      {
-        limit,
-        next,
-      },
+      { limit, next, traits: encodeTraitsParam(traits) },
     )
     return response
   }

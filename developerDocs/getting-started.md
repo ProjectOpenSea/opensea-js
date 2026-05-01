@@ -37,7 +37,7 @@ const { nft } = await openseaSDK.api.getNFT(tokenAddress, tokenId);
 
 **Additional NFT Methods:**
 
-- `getNFTsByCollection(collectionSlug, limit?, next?)` - Get all NFTs in a collection
+- `getNFTsByCollection(collectionSlug, limit?, next?, traits?)` - Get all NFTs in a collection (`traits` is an array of `{ traitType, value }` for server-side filtering — multiple entries are AND-combined)
 - `getNFTsByContract(contractAddress, limit?, next?, chain?)` - Get all NFTs for a contract
 - `getNFTsByAccount(accountAddress, limit?, next?, chain?)` - Get all NFTs owned by an account
 - `getContract(contractAddress, chain?)` - Get contract information

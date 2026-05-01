@@ -5,13 +5,13 @@
       "**/*.ts",
       "**/*.js",
       "**/*.json",
-      "!**/node_modules/**",
-      "!**/dist/**",
-      "!**/lib/**",
-      "!**/coverage/**",
-      "!**/.nyc_output/**",
-      "!packages/sdk/src/typechain/**",
-      "!**/typechain/**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/lib",
+      "!**/coverage",
+      "!**/.nyc_output",
+      "!packages/sdk/src/typechain",
+      "!**/typechain",
       "!packages/api-types/src/generated.ts",
       "!**/pnpm-lock.yaml",
       "!**/package-lock.json"
@@ -41,9 +41,10 @@
         "noExplicitAny": "off"
       },
       "correctness": {
-        "noUnusedImports": "warn"
+        "noUnusedImports": "error"
       },
       "style": {
+        "noNonNullAssertion": "error",
         "noUnusedTemplateLiteral": "off"
       }
     }
@@ -53,8 +54,8 @@
       "includes": ["**/*.test.ts", "**/*.spec.ts", "**/test/**"],
       "linter": {
         "rules": {
-          "correctness": {
-            "noUnusedImports": "off"
+          "style": {
+            "noNonNullAssertion": "off"
           }
         }
       }

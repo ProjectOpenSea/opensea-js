@@ -194,6 +194,7 @@ describe("SDK: order posting", () => {
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     // Cancel the order using self serve API key tied to the offerer
+    expect(offerResponse).not.toBeNull()
     const { protocol_address, order_hash } = offerResponse!
     const cancelResponse = await sdk.offchainCancelOrder(
       protocol_address,
@@ -228,6 +229,7 @@ describe("SDK: order posting", () => {
     await new Promise(resolve => setTimeout(resolve, 5000))
 
     // Cancel the order using the offerer signature, deriving it from the ethers signer
+    expect(offerResponse).not.toBeNull()
     const { protocol_address, order_hash } = offerResponse!
     const cancelResponse = await sdk.offchainCancelOrder(
       protocol_address,

@@ -19,7 +19,6 @@ import type {
   AssetWithTokenStandard,
   Chain,
   EventData,
-  OpenSeaAPIConfig,
 } from "../types"
 import { EventType, OrderSide } from "../types"
 import { checksumAddress } from "../utils/address"

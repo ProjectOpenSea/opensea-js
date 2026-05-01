@@ -14,6 +14,36 @@ import type {
 import type { OpenSeaCollection } from "../types"
 
 /**
+ * A single trait filter used by collection-scoped read endpoints (NFTs by
+ * collection, best listings by collection, events by collection). Multiple
+ * filters in the same query are AND-combined: returned items must match every
+ * specified trait.
+ *
+ * Distinct from {@link TraitCriteria} (`{type, value}`) which is the offer-
+ * creation shape — the wire format differs across endpoints.
+ *
+ * @category API Query Args
+ */
+export interface TraitFilter {
+  /** The trait name (e.g. "Background"). */
+  traitType: string
+  /** The trait value to match (e.g. "Red"). */
+  value: string
+}
+
+/**
+ * Encode a {@link TraitFilter} array as the JSON-string form the API expects
+ * on the `traits` query parameter, or `undefined` if the array is empty.
+ * Callers spread the result into a query object; query encoders skip
+ * undefined keys.
+ */
+export function encodeTraitsParam(
+  traits: TraitFilter[] | undefined,
+): string | undefined {
+  return traits && traits.length > 0 ? JSON.stringify(traits) : undefined
+}
+
+/**
  * Response from OpenSea API for building an offer.
  * @category API Response Types
  */
@@ -645,7 +675,11 @@ export type AssetEvent =
   | MintEvent
 
 /**
- * Query args for Get Events endpoints.
+ * Query args for the generic event endpoints (`getEvents`,
+ * `getEventsByAccount`, `getEventsByNFT`). For the collection-scoped endpoint
+ * see {@link GetEventsByCollectionArgs}, which adds server-side trait
+ * filtering on top of these fields.
+ *
  * @category API Query Args
  */
 export interface GetEventsArgs {
@@ -661,6 +695,18 @@ export interface GetEventsArgs {
   next?: string
   /** Chain to filter by */
   chain?: string
+}
+
+/**
+ * Query args for {@link EventsAPI.getEventsByCollection}. Adds server-side
+ * trait filtering on top of {@link GetEventsArgs}; multiple traits are
+ * AND-combined.
+ *
+ * @category API Query Args
+ */
+export interface GetEventsByCollectionArgs extends GetEventsArgs {
+  /** Trait filters; see {@link TraitFilter}. */
+  traits?: TraitFilter[]
 }
 
 /**

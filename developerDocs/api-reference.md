@@ -73,11 +73,12 @@ console.log(`Fetched ${nfts.length} NFTs`);
 
 **Parameters:**
 
-| Parameter | Type   | Required | Description                             |
-| --------- | ------ | -------- | --------------------------------------- |
-| `slug`    | string | Yes      | Collection slug (identifier)            |
-| `limit`   | number | No       | Number of NFTs to retrieve (1-50)       |
-| `next`    | string | No       | Pagination cursor from previous request |
+| Parameter | Type   | Required | Description                                                                                                                                    |
+| --------- | ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `slug`    | string | Yes      | Collection slug (identifier)                                                                                                                   |
+| `limit`   | number | No       | Number of NFTs to retrieve (1-50)                                                                                                              |
+| `next`    | string | No       | Pagination cursor from previous request                                                                                                        |
+| `traits`  | TraitFilter[] | No | Trait filters, e.g. `[{ traitType: "Background", value: "Red" }]`. Multiple entries are AND-combined. The SDK JSON-encodes the array for the request. |
 
 **Returns:** `ListNFTsResponse` containing:
 
@@ -405,12 +406,13 @@ const { listings, next } = await openseaSDK.api.getBestListings(
 
 **Parameters:**
 
-| Parameter                | Type    | Required | Description                               |
-| ------------------------ | ------- | -------- | ----------------------------------------- |
-| `collectionSlug`         | string  | Yes      | Collection slug                           |
-| `limit`                  | number  | No       | Number of listings (1-100)                |
-| `next`                   | string  | No       | Pagination cursor                         |
-| `includePrivateListings` | boolean | No       | Include private listings (default: false) |
+| Parameter                | Type    | Required | Description                                                                                                                                 |
+| ------------------------ | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `collectionSlug`         | string  | Yes      | Collection slug                                                                                                                             |
+| `limit`                  | number  | No       | Number of listings (1-100)                                                                                                                  |
+| `next`                   | string  | No       | Pagination cursor                                                                                                                           |
+| `includePrivateListings` | boolean | No       | Include private listings (default: false)                                                                                                   |
+| `traits`                 | TraitFilter[] | No | Trait filters, e.g. `[{ traitType: "Background", value: "Red" }]`. Multiple entries are AND-combined. The SDK JSON-encodes the array for the request. |
 
 **Returns:** `GetListingsResponse` with best listings.
 
@@ -1020,10 +1022,10 @@ asset_events.forEach((event) => {
 
 **Parameters:**
 
-| Parameter        | Type          | Required | Description             |
-| ---------------- | ------------- | -------- | ----------------------- |
-| `collectionSlug` | string        | Yes      | Collection slug         |
-| `args`           | GetEventsArgs | No       | Event filtering options |
+| Parameter        | Type          | Required | Description                                                                                                                                                       |
+| ---------------- | ------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `collectionSlug` | string        | Yes      | Collection slug                                                                                                                                                   |
+| `args`           | GetEventsArgs | No       | Event filtering options. `args.traits` is a `TraitFilter[]` (e.g. `[{ traitType: "Background", value: "Red" }]`) to scope events to NFTs matching every trait — the SDK JSON-encodes it for the request. |
 
 **Returns:** `GetEventsResponse` with collection events.
 

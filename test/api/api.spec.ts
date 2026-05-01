@@ -3,7 +3,6 @@ import { Chain, type OpenSeaRateLimitError } from "../../src"
 import { OpenSeaAPI } from "../../src/api/api"
 import { getOfferPaymentToken } from "../../src/utils"
 import { BAYC_CONTRACT_ADDRESS } from "../utils/constants"
-import { OPENSEA_API_KEY } from "../utils/env"
 import { api } from "../utils/sdk"
 
 /**

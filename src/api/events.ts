@@ -6,7 +6,12 @@ import {
   getEventsByNFTAPIPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
-import type { GetEventsArgs, GetEventsResponse } from "./types"
+import {
+  encodeTraitsParam,
+  type GetEventsArgs,
+  type GetEventsByCollectionArgs,
+  type GetEventsResponse,
+} from "./types"
 
 /**
  * Events-related API operations
@@ -40,15 +45,16 @@ export class EventsAPI {
   }
 
   /**
-   * Gets a list of events for a specific collection.
+   * Gets a list of events for a specific collection. Pass `args.traits` to
+   * filter server-side; the SDK JSON-encodes the trait array for the request.
    */
   async getEventsByCollection(
     collectionSlug: string,
-    args?: GetEventsArgs,
+    args?: GetEventsByCollectionArgs,
   ): Promise<GetEventsResponse> {
     const response = await this.fetcher.get<GetEventsResponse>(
       getEventsByCollectionAPIPath(collectionSlug),
-      args,
+      encodeArgs(args),
     )
     return response
   }
@@ -68,4 +74,14 @@ export class EventsAPI {
     )
     return response
   }
+}
+
+// Returns `undefined` (not `{}`) when no args were passed so the fetcher
+// receives the same shape as before `traits` existed — preserves the
+// pre-feature query string for callers that don't set any args.
+function encodeArgs(args?: GetEventsByCollectionArgs) {
+  if (!args) return args
+  const { traits, ...rest } = args
+  const encoded = encodeTraitsParam(traits)
+  return encoded === undefined ? rest : { ...rest, traits: encoded }
 }

@@ -49,6 +49,7 @@ import {
   type GetDropsArgs,
   type GetDropsResponse,
   type GetEventsArgs,
+  type GetEventsByCollectionArgs,
   type GetEventsResponse,
   type GetListingsResponse,
   type GetNFTMetadataResponse,
@@ -75,6 +76,7 @@ import {
   type ResolveAccountResponse,
   type SearchArgs,
   type SearchResponse,
+  type TraitFilter,
   type ValidateMetadataResponse,
 } from "./types"
 
@@ -298,6 +300,7 @@ export class OpenSeaAPI {
    * @param limit The number of listings to return. Must be between 1 and 100. Default: 100
    * @param next The cursor for the next page of results. This is returned from a previous request.
    * @param includePrivateListings Whether to include private listings (default: false)
+   * @param traits Optional {@link TraitFilter} array. Returns 400 if a single trait matches more than 1000 items.
    * @returns The {@link GetListingsResponse} returned by the API.
    */
   public async getBestListings(
@@ -305,12 +308,14 @@ export class OpenSeaAPI {
     limit?: number,
     next?: string,
     includePrivateListings?: boolean,
+    traits?: TraitFilter[],
   ): Promise<GetListingsResponse> {
     return this.listingsAPI.getBestListings(
       collectionSlug,
       limit,
       next,
       includePrivateListings,
+      traits,
     )
   }
 
@@ -473,14 +478,16 @@ export class OpenSeaAPI {
    * @param slug The slug (identifier) of the collection
    * @param limit The number of NFTs to retrieve. Must be greater than 0 and less than 51.
    * @param next Cursor to retrieve the next page of NFTs
+   * @param traits Optional {@link TraitFilter} array. Returns 400 if a single trait matches more than 1000 items.
    * @returns The {@link ListNFTsResponse} returned by the API.
    */
   public async getNFTsByCollection(
     slug: string,
     limit: number | undefined = undefined,
     next: string | undefined = undefined,
+    traits: TraitFilter[] | undefined = undefined,
   ): Promise<ListNFTsResponse> {
-    return this.nftsAPI.getNFTsByCollection(slug, limit, next)
+    return this.nftsAPI.getNFTsByCollection(slug, limit, next, traits)
   }
 
   /**
@@ -668,14 +675,15 @@ export class OpenSeaAPI {
   }
 
   /**
-   * Gets a list of events for a specific collection.
+   * Gets a list of events for a specific collection. Pass `args.traits` to
+   * filter server-side by item traits (multiple entries are AND-combined).
    * @param collectionSlug The slug (identifier) of the collection.
-   * @param args Query parameters for filtering events.
+   * @param args Query parameters; see {@link GetEventsByCollectionArgs}.
    * @returns The {@link GetEventsResponse} returned by the API.
    */
   public async getEventsByCollection(
     collectionSlug: string,
-    args?: GetEventsArgs,
+    args?: GetEventsByCollectionArgs,
   ): Promise<GetEventsResponse> {
     return this.eventsAPI.getEventsByCollection(collectionSlug, args)
   }
@@ -1093,8 +1101,9 @@ export class OpenSeaAPI {
     let userAbortHandler: (() => void) | undefined
     let signal = options?.signal
     if (options?.timeout !== undefined) {
-      controller = new AbortController()
-      timeoutId = setTimeout(() => controller!.abort(), options.timeout)
+      const ctrl = new AbortController()
+      controller = ctrl
+      timeoutId = setTimeout(() => ctrl.abort(), options.timeout)
       // If user provided their own signal, abort ours if theirs fires
       if (options.signal) {
         if (options.signal.aborted) {
@@ -1102,7 +1111,7 @@ export class OpenSeaAPI {
           throw new Error("Request aborted")
         }
         userAbortHandler = () => {
-          controller!.abort()
+          ctrl.abort()
           clearTimeout(timeoutId)
         }
         options.signal.addEventListener("abort", userAbortHandler)

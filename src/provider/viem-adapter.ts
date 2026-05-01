@@ -60,11 +60,16 @@ function createViemSigner(
     },
 
     async sendTransaction(tx) {
+      if (!walletClient.account) {
+        throw new Error(
+          "WalletClient must have an account. Use `createWalletClient` with an `account` parameter.",
+        )
+      }
       const hash = await walletClient.sendTransaction({
         to: tx.to as `0x${string}`,
         data: tx.data as `0x${string}` | undefined,
         value: tx.value,
-        account: walletClient.account!,
+        account: walletClient.account,
         chain: walletClient.chain,
         ...(tx.overrides as any),
       })
@@ -77,6 +82,11 @@ function createViemSigner(
     },
 
     async signTypedData(domain, types, value) {
+      if (!walletClient.account) {
+        throw new Error(
+          "WalletClient must have an account. Use `createWalletClient` with an `account` parameter.",
+        )
+      }
       return walletClient.signTypedData({
         domain: {
           chainId: Number(domain.chainId),
@@ -89,7 +99,7 @@ function createViemSigner(
           Object.keys(types).find(key => key !== "EIP712Domain") ||
           Object.keys(types)[0],
         message: value,
-        account: walletClient.account!,
+        account: walletClient.account,
       })
     },
   }
@@ -134,13 +144,18 @@ export function createViemContractCaller(
       if (!walletClient) {
         throw new Error("A WalletClient is required for write operations")
       }
+      if (!walletClient.account) {
+        throw new Error(
+          "WalletClient must have an account. Use `createWalletClient` with an `account` parameter.",
+        )
+      }
       const hash = await walletClient.writeContract({
         address: address as `0x${string}`,
         abi: abi as any,
         functionName,
         args: args as any,
         value,
-        account: walletClient.account!,
+        account: walletClient.account,
         chain: walletClient.chain,
         ...(overrides as any),
       })

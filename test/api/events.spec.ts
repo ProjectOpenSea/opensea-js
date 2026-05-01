@@ -380,6 +380,31 @@ describe("API: EventsAPI", () => {
         expect((error as Error).message).toContain("Collection not found")
       }
     })
+
+    test("JSON-encodes args.traits into the query", async () => {
+      mockGet.mockResolvedValue({ asset_events: [], next: undefined })
+
+      await eventsAPI.getEventsByCollection("test-collection", {
+        limit: 5,
+        traits: [{ traitType: "Background", value: "Red" }],
+      })
+
+      expect(mockGet.mock.calls[0][1]).toEqual({
+        limit: 5,
+        traits: '[{"traitType":"Background","value":"Red"}]',
+      })
+    })
+
+    test("omits traits when args.traits is an empty array", async () => {
+      mockGet.mockResolvedValue({ asset_events: [], next: undefined })
+
+      await eventsAPI.getEventsByCollection("test-collection", {
+        limit: 5,
+        traits: [],
+      })
+
+      expect(mockGet.mock.calls[0][1]).toEqual({ limit: 5 })
+    })
   })
 
   describe("getEventsByNFT", () => {

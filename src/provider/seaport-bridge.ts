@@ -115,12 +115,16 @@ class ViemEthersSigner extends AbstractSigner {
     })
 
     // Return an ethers-compatible TransactionResponse by fetching from the provider
-    const response = await this.provider!.getTransaction(hash)
+    const provider = this.provider
+    if (!provider) {
+      throw new Error("Provider is required to fetch transaction response")
+    }
+    const response = await provider.getTransaction(hash)
     if (!response) {
       // Fallback: construct minimal response if the tx isn't indexed yet
       return {
         hash,
-        wait: () => this.provider!.waitForTransaction(hash),
+        wait: () => provider.waitForTransaction(hash),
       } as unknown as TransactionResponse
     }
     return response

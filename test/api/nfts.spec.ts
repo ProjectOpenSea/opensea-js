@@ -129,6 +129,39 @@ describe("API: NFTsAPI", () => {
         expect((error as Error).message).toContain("Collection not found")
       }
     })
+
+    test("JSON-encodes the traits array into the query", async () => {
+      mockGet.mockResolvedValue({ nfts: [], next: undefined })
+
+      await nftsAPI.getNFTsByCollection(
+        "test-collection",
+        undefined,
+        undefined,
+        [{ traitType: "Background", value: "Red" }],
+      )
+
+      expect(mockGet.mock.calls[0][1]).toEqual({
+        limit: undefined,
+        next: undefined,
+        traits: '[{"traitType":"Background","value":"Red"}]',
+      })
+    })
+
+    test("omits traits param when array is empty", async () => {
+      mockGet.mockResolvedValue({ nfts: [], next: undefined })
+
+      await nftsAPI.getNFTsByCollection(
+        "test-collection",
+        undefined,
+        undefined,
+        [],
+      )
+
+      expect(mockGet.mock.calls[0][1]).toEqual({
+        limit: undefined,
+        next: undefined,
+      })
+    })
   })
 
   describe("getNFTsByContract", () => {
