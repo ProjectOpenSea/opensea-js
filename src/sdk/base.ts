@@ -359,6 +359,46 @@ export class BaseOpenSeaSDK {
     return this._fulfillmentManager.fulfillPrivateOrder(options)
   }
 
+  /**
+   * Get cross-chain fulfillment data for one or more listings.
+   * Supports same-chain, cross-token, and cross-chain purchases (up to 50 listings).
+   * All listings must be EVM (Seaport orders). Payment can be from any chain (EVM or SVM).
+   * Returns an ordered list of transactions to sign and submit.
+   * @param options
+   * @param options.listings Array of listings to fulfill (order hash, chain, protocol address)
+   * @param options.fulfillerAddress The buyer's wallet address
+   * @param options.paymentChain Chain slug of the payment token (EVM or SVM)
+   * @param options.paymentTokenAddress Payment token contract address (0x0...0 for native)
+   * @param options.recipientAddress Optional different recipient for the NFTs
+   */
+  public async getCrossChainFulfillmentData(options: {
+    listings: Array<{
+      hash: string
+      chain: string
+      protocolAddress: string
+    }>
+    fulfillerAddress: string
+    paymentChain: string
+    paymentTokenAddress: string
+    recipientAddress?: string
+  }) {
+    return this.api.getCrossChainFulfillmentData({
+      listings: options.listings.map(l => ({
+        hash: l.hash,
+        chain: l.chain,
+        protocol_address: l.protocolAddress,
+      })),
+      fulfiller: { address: options.fulfillerAddress },
+      payment: {
+        chain: options.paymentChain,
+        token_address: options.paymentTokenAddress,
+      },
+      ...(options.recipientAddress
+        ? { recipient: options.recipientAddress }
+        : {}),
+    })
+  }
+
   /** Returns whether an order is fulfillable. */
   public async isOrderFulfillable(options: {
     order: OrderV2

@@ -231,6 +231,10 @@ export const getTokenGroupPath = (slug: string) => {
   return `${API_V2_PREFIX}/token-groups/${slug}`
 }
 
+export const getCrossChainFulfillmentDataPath = () => {
+  return `${API_V2_PREFIX}/listings/cross_chain_fulfillment_data`
+}
+
 export const getInstantApiKeyPath = () => {
   return `${API_V2_PREFIX}/auth/keys`
 }

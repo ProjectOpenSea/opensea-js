@@ -35,6 +35,8 @@ import {
   type CancelOrderResponse,
   type CollectionOffer,
   CollectionOrderByOption,
+  type CrossChainFulfillmentDataRequest,
+  type CrossChainFulfillmentDataResponse,
   type DropMintRequest,
   type DropMintResponse,
   type GetAccountTokensArgs,
@@ -317,6 +319,19 @@ export class OpenSeaAPI {
       includePrivateListings,
       traits,
     )
+  }
+
+  /**
+   * Get cross-chain fulfillment data for one or more listings.
+   * Supports same-chain, cross-token, and cross-chain purchases (up to 50 listings).
+   * All listings must be EVM (Seaport orders). Payment can be from any chain (EVM or SVM).
+   * @param request The cross-chain fulfillment request containing listings, fulfiller, payment, and optional recipient
+   * @returns The {@link CrossChainFulfillmentDataResponse} with ordered transactions to sign and submit
+   */
+  public async getCrossChainFulfillmentData(
+    request: CrossChainFulfillmentDataRequest,
+  ): Promise<CrossChainFulfillmentDataResponse> {
+    return this.listingsAPI.getCrossChainFulfillmentData(request)
   }
 
   /**

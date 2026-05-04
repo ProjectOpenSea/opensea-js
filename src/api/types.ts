@@ -1296,3 +1296,62 @@ export type ValidateMetadataResponse = {
  * @category API Response Types
  */
 export type GetNFTMetadataResponse = AssetMetadataResponse
+
+// ─── Cross-chain fulfillment types ──────────────────────────────────
+
+/**
+ * A single listing to fulfill in a cross-chain fulfillment request.
+ * @category API Models
+ */
+export type CrossChainListing = {
+  /** Order hash (66 chars, starts with 0x) */
+  hash: string
+  /** Chain slug where the listing lives (must be EVM) */
+  chain: string
+  /** Seaport contract address */
+  protocol_address: string
+}
+
+/**
+ * Request body for the cross-chain fulfillment endpoint.
+ * @category API Query Args
+ */
+export type CrossChainFulfillmentDataRequest = {
+  /** Array of listings to fulfill (up to 50) */
+  listings: CrossChainListing[]
+  /** The buyer's wallet */
+  fulfiller: { address: string }
+  /** Payment token details */
+  payment: {
+    /** Chain slug of the payment token (EVM or SVM) */
+    chain: string
+    /** Payment token contract address (0x0...0 for native, Base58 for Solana) */
+    token_address: string
+  }
+  /** Optional: different recipient address for the NFTs */
+  recipient?: string
+}
+
+/**
+ * A single transaction returned by the cross-chain fulfillment endpoint.
+ * @category API Response Types
+ */
+export type CrossChainTransaction = {
+  /** Chain slug for the transaction */
+  chain: string
+  /** Contract address to call */
+  to: string
+  /** Encoded calldata */
+  data: string
+  /** Wei amount as string */
+  value: string
+}
+
+/**
+ * Response from the cross-chain fulfillment endpoint.
+ * @category API Response Types
+ */
+export type CrossChainFulfillmentDataResponse = {
+  /** Ordered list of transactions to sign and submit */
+  transactions: CrossChainTransaction[]
+}

@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from "vitest"
 import { ListingsAPI } from "../../src/api/listings"
 import type {
+  CrossChainFulfillmentDataResponse,
   GetBestListingResponse,
   GetListingsResponse,
   Listing,
@@ -11,11 +12,17 @@ import { createMockFetcher } from "../fixtures/fetcher"
 
 describe("API: ListingsAPI", () => {
   let mockGet: ReturnType<typeof vi.fn>
+  let mockPost: ReturnType<typeof vi.fn>
   let listingsAPI: ListingsAPI
 
   beforeEach(() => {
-    const { fetcher, mockGet: getMock } = createMockFetcher()
+    const {
+      fetcher,
+      mockGet: getMock,
+      mockPost: postMock,
+    } = createMockFetcher()
     mockGet = getMock
+    mockPost = postMock
     listingsAPI = new ListingsAPI(fetcher, Chain.Mainnet)
   })
 
@@ -718,6 +725,127 @@ describe("API: ListingsAPI", () => {
       const result = await listingsAPI.getBestListings("test-collection")
 
       expect(result.listings[0].remaining_quantity).toBe(3)
+    })
+  })
+
+  describe("getCrossChainFulfillmentData", () => {
+    test("posts to the correct endpoint with the full request body", async () => {
+      const mockResponse: CrossChainFulfillmentDataResponse = {
+        transactions: [
+          { chain: "ethereum", to: "0xabc", data: "0x123", value: "0" },
+        ],
+      }
+
+      mockPost.mockResolvedValue(mockResponse)
+
+      const result = await listingsAPI.getCrossChainFulfillmentData({
+        listings: [
+          {
+            hash: "0xorderhash",
+            chain: "ethereum",
+            protocol_address: "0xseaport",
+          },
+        ],
+        fulfiller: { address: "0xbuyer" },
+        payment: {
+          chain: "base",
+          token_address: "0x0000000000000000000000000000000000000000",
+        },
+      })
+
+      expect(mockPost).toHaveBeenCalledWith(
+        "/api/v2/listings/cross_chain_fulfillment_data",
+        {
+          listings: [
+            {
+              hash: "0xorderhash",
+              chain: "ethereum",
+              protocol_address: "0xseaport",
+            },
+          ],
+          fulfiller: { address: "0xbuyer" },
+          payment: {
+            chain: "base",
+            token_address: "0x0000000000000000000000000000000000000000",
+          },
+        },
+      )
+      expect(result.transactions).toHaveLength(1)
+      expect(result.transactions[0].chain).toBe("ethereum")
+    })
+
+    test("includes optional recipient in request", async () => {
+      mockPost.mockResolvedValue({ transactions: [] })
+
+      await listingsAPI.getCrossChainFulfillmentData({
+        listings: [
+          {
+            hash: "0xhash",
+            chain: "ethereum",
+            protocol_address: "0xseaport",
+          },
+        ],
+        fulfiller: { address: "0xbuyer" },
+        payment: {
+          chain: "base",
+          token_address: "0x0000000000000000000000000000000000000000",
+        },
+        recipient: "0xrecipient",
+      })
+
+      expect(mockPost).toHaveBeenCalledWith(
+        "/api/v2/listings/cross_chain_fulfillment_data",
+        expect.objectContaining({
+          recipient: "0xrecipient",
+        }),
+      )
+    })
+
+    test("supports multiple listings for sweep", async () => {
+      mockPost.mockResolvedValue({
+        transactions: [
+          { chain: "ethereum", to: "0xabc", data: "0x111", value: "0" },
+          { chain: "ethereum", to: "0xabc", data: "0x222", value: "0" },
+        ],
+      })
+
+      const result = await listingsAPI.getCrossChainFulfillmentData({
+        listings: [
+          {
+            hash: "0xhash1",
+            chain: "ethereum",
+            protocol_address: "0xseaport",
+          },
+          {
+            hash: "0xhash2",
+            chain: "ethereum",
+            protocol_address: "0xseaport",
+          },
+        ],
+        fulfiller: { address: "0xbuyer" },
+        payment: {
+          chain: "base",
+          token_address: "0x0000000000000000000000000000000000000000",
+        },
+      })
+
+      expect(result.transactions).toHaveLength(2)
+      expect(mockPost.mock.calls[0][1].listings).toHaveLength(2)
+    })
+
+    test("throws on API error", async () => {
+      mockPost.mockRejectedValue(new Error("Bad Request"))
+
+      await expect(
+        listingsAPI.getCrossChainFulfillmentData({
+          listings: [],
+          fulfiller: { address: "0xbuyer" },
+          payment: {
+            chain: "base",
+            token_address: "0x0000000000000000000000000000000000000000",
+          },
+        }),
+      ).rejects.toThrow("Bad Request")
     })
   })
 })

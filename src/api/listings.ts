@@ -4,10 +4,13 @@ import {
   getAllListingsAPIPath,
   getBestListingAPIPath,
   getBestListingsAPIPath,
+  getCrossChainFulfillmentDataPath,
   getOrdersAPIPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import {
+  type CrossChainFulfillmentDataRequest,
+  type CrossChainFulfillmentDataResponse,
   encodeTraitsParam,
   type GetBestListingResponse,
   type GetListingsResponse,
@@ -126,5 +129,19 @@ export class ListingsAPI {
       },
     )
     return response
+  }
+
+  /**
+   * Get cross-chain fulfillment data for one or more listings.
+   * Supports same-chain, cross-token, and cross-chain purchases.
+   * @param request The cross-chain fulfillment request
+   */
+  async getCrossChainFulfillmentData(
+    request: CrossChainFulfillmentDataRequest,
+  ): Promise<CrossChainFulfillmentDataResponse> {
+    return this.fetcher.post<CrossChainFulfillmentDataResponse>(
+      getCrossChainFulfillmentDataPath(),
+      request,
+    )
   }
 }
