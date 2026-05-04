@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from "vitest"
 import { ListingsAPI } from "../../src/api/listings"
 import type {
-  CrossChainFulfillmentDataResponse,
+  CrossChainFulfillmentResponse,
   GetBestListingResponse,
   GetListingsResponse,
   Listing,
@@ -730,7 +730,7 @@ describe("API: ListingsAPI", () => {
 
   describe("getCrossChainFulfillmentData", () => {
     test("posts to the correct endpoint with the full request body", async () => {
-      const mockResponse: CrossChainFulfillmentDataResponse = {
+      const mockResponse: CrossChainFulfillmentResponse = {
         transactions: [
           { chain: "ethereum", to: "0xabc", data: "0x123", value: "0" },
         ],

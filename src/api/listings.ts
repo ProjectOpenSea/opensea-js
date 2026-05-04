@@ -9,8 +9,8 @@ import {
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import {
-  type CrossChainFulfillmentDataRequest,
-  type CrossChainFulfillmentDataResponse,
+  type CrossChainFulfillmentRequest,
+  type CrossChainFulfillmentResponse,
   encodeTraitsParam,
   type GetBestListingResponse,
   type GetListingsResponse,
@@ -137,9 +137,9 @@ export class ListingsAPI {
    * @param request The cross-chain fulfillment request
    */
   async getCrossChainFulfillmentData(
-    request: CrossChainFulfillmentDataRequest,
-  ): Promise<CrossChainFulfillmentDataResponse> {
-    return this.fetcher.post<CrossChainFulfillmentDataResponse>(
+    request: CrossChainFulfillmentRequest,
+  ): Promise<CrossChainFulfillmentResponse> {
+    return this.fetcher.post<CrossChainFulfillmentResponse>(
       getCrossChainFulfillmentDataPath(),
       request,
     )

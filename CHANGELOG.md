@@ -1,5 +1,34 @@
 # @opensea/sdk
 
+## 10.3.1
+
+### Patch Changes
+
+- 961f2c5: fix(api): consume cross-chain fulfillment types from `@opensea/api-types`
+
+  The cross-chain fulfillment types added in the previous release were hand-rolled in `packages/sdk/src/api/types.ts` and `packages/cli/src/types/api.ts` rather than generated from the OpenAPI spec. This release pulls them from `@opensea/api-types` (the source of truth) so future spec changes flow through automatically.
+
+  **`@opensea/api-types`**: Adds named exports for `CrossChainFulfillmentRequest`, `CrossChainFulfillmentResponse`, `CrossChainPaymentToken`, `FulfillerObject`, and `ListingObject` schemas (regenerated from the production OpenAPI spec).
+
+  **`@opensea/sdk`** _(type rename — minimal-impact since the prior release shipped <1 day ago)_:
+
+  - `CrossChainListing` → `ListingObject`
+  - `CrossChainFulfillmentDataRequest` → `CrossChainFulfillmentRequest`
+  - `CrossChainFulfillmentDataResponse` → `CrossChainFulfillmentResponse`
+  - `CrossChainTransaction` → `SwapTransactionResponse`
+
+  The runtime call signature on `BaseOpenSeaSDK.getCrossChainFulfillmentData()` is unchanged.
+
+  **`@opensea/cli`** _(type rename — same minimal impact)_:
+
+  - `CrossChainFulfillmentTransaction` → `SwapTransactionResponse`
+  - `CrossChainFulfillmentDataResponse` → `CrossChainFulfillmentResponse`
+
+  Adds a new blocking CI check (`pnpm check-api-paths`) that fails when an `/api/v2/...` URL referenced in SDK or CLI source is not present in `packages/api-types/opensea-api.json`. AGENTS docs updated to make the api-types-first flow explicit for new endpoints.
+
+- Updated dependencies [961f2c5]
+  - @opensea/api-types@0.2.3
+
 ## 10.3.0
 
 ### Minor Changes

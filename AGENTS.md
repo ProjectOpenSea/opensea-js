@@ -43,7 +43,7 @@ When reviewing changes to this package, verify:
 
 2. **Dual provider support**: Both `OpenSeaSDK` (ethers) and `OpenSeaViemSDK` (viem) must work. Changes to `BaseOpenSeaSDK` affect both. If adding provider-specific logic, ensure both adapters in `src/provider/` are updated.
 
-3. **`@opensea/api-types` dependency**: The SDK imports types from the workspace `@opensea/api-types` package. If the OpenAPI spec changes, rebuild api-types first (`pnpm --filter @opensea/api-types run build`) before testing the SDK.
+3. **`@opensea/api-types` dependency**: The SDK imports types from the workspace `@opensea/api-types` package. If the OpenAPI spec changes, rebuild api-types first (`pnpm --filter @opensea/api-types run build`) before testing the SDK. **Never hand-roll API request/response types in `src/api/types.ts`** — always import from `@opensea/api-types` (or re-export through `src/api/types.ts`) using the canonical OpenAPI schema names. The `pnpm check-api-paths` CI guardrail will fail the build if `src/api/apiPaths.ts` references a URL that isn't in `packages/api-types/opensea-api.json`. See the top-level [AGENTS.md → "Adding a new OpenSea API endpoint"](../../AGENTS.md#adding-a-new-opensea-api-endpoint-to-the-sdk-or-cli) for the full flow.
 
 4. **Seaport integration**: Order creation and fulfillment flows use `@opensea/seaport-js`. Changes to order parameters, consideration items, or fulfillment logic must be tested against the Seaport contract behavior.
 
