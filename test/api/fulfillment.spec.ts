@@ -5,40 +5,36 @@ import { api } from "../utils/sdk"
 
 describe("Generating fulfillment data", () => {
   test(`Generate fulfillment data for listing`, async () => {
-    const order = await api.getOrder({
-      protocol: "seaport",
-      side: OrderSide.LISTING,
-    })
+    const { listings } = await api.getAllListings("boredapeyachtclub", 1)
+    const listing = listings?.[0]
 
-    if (order.orderHash == null) {
+    if (!listing?.order_hash) {
       return
     }
 
     const fulfillment = await api.generateFulfillmentData(
       ethers.Wallet.createRandom().address,
-      order.orderHash,
-      order.protocolAddress,
-      order.side,
+      listing.order_hash,
+      listing.protocol_address,
+      OrderSide.LISTING,
     )
 
     expect(fulfillment.fulfillment_data.orders[0].signature).toBeDefined()
   })
 
   test(`Generate fulfillment data for offer`, async () => {
-    const order = await api.getOrder({
-      protocol: "seaport",
-      side: OrderSide.OFFER,
-    })
+    const { offers } = await api.getAllOffers("boredapeyachtclub", 1)
+    const offer = offers?.[0]
 
-    if (order.orderHash == null) {
+    if (!offer?.order_hash) {
       return
     }
 
     const fulfillment = await api.generateFulfillmentData(
       ethers.Wallet.createRandom().address,
-      order.orderHash,
-      order.protocolAddress,
-      order.side,
+      offer.order_hash,
+      offer.protocol_address,
+      OrderSide.OFFER,
     )
 
     expect(fulfillment.fulfillment_data.orders[0].signature).toBeDefined()

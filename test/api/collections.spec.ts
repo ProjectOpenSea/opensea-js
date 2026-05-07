@@ -319,9 +319,7 @@ describe("API: CollectionsAPI", () => {
         total: {
           volume: 1000,
           sales: 500,
-          average_price: 2,
           num_owners: 250,
-          market_cap: 5000,
           floor_price: 1.5,
           floor_price_symbol: "ETH",
         },
@@ -329,11 +327,7 @@ describe("API: CollectionsAPI", () => {
           {
             interval: "one_day",
             volume: 100,
-            volume_diff: 10,
-            volume_change: 0.1,
             sales: 50,
-            sales_diff: 5,
-            average_price: 2,
           },
         ],
       }
@@ -356,9 +350,7 @@ describe("API: CollectionsAPI", () => {
         total: {
           volume: 0,
           sales: 0,
-          average_price: 0,
           num_owners: 0,
-          market_cap: 0,
           floor_price: 0,
           floor_price_symbol: "ETH",
         },
@@ -379,9 +371,7 @@ describe("API: CollectionsAPI", () => {
         total: {
           volume: 0,
           sales: 0,
-          average_price: 0,
           num_owners: 0,
-          market_cap: 0,
           floor_price: 0,
           floor_price_symbol: "ETH",
         },

@@ -65,10 +65,15 @@ describe("SDK: OrdersManager", () => {
     mockAPI = {
       getNFT: vi.fn().mockResolvedValue({ nft: mockNFT }),
       getCollection: vi.fn().mockResolvedValue(mockCollection),
-      postOrder: vi.fn().mockResolvedValue({
-        orderHash: "0xOrderHash",
-        protocolData: mockOrder,
-        protocolAddress: "0xProtocol",
+      postOffer: vi.fn().mockResolvedValue({
+        order_hash: "0xOrderHash",
+        protocol_data: mockOrder,
+        protocol_address: "0xProtocol",
+      }),
+      postListing: vi.fn().mockResolvedValue({
+        order_hash: "0xOrderHash",
+        protocol_data: mockOrder,
+        protocol_address: "0xProtocol",
       }),
       buildOffer: vi.fn().mockResolvedValue({
         partialParameters: {
@@ -126,8 +131,8 @@ describe("SDK: OrdersManager", () => {
       expect(mockAPI.getNFT).toHaveBeenCalledTimes(1)
       expect(mockAPI.getCollection).toHaveBeenCalledTimes(1)
       expect(mockSeaport.createOrder).toHaveBeenCalledTimes(1)
-      expect(mockAPI.postOrder).toHaveBeenCalledTimes(1)
-      expect(result.orderHash).toBe("0xOrderHash")
+      expect(mockAPI.postOffer).toHaveBeenCalledTimes(1)
+      expect(result.order_hash).toBe("0xOrderHash")
     })
 
     test("creates offer with custom quantity", async () => {
@@ -270,8 +275,8 @@ describe("SDK: OrdersManager", () => {
       expect(mockAPI.getNFT).toHaveBeenCalledTimes(1)
       expect(mockAPI.getCollection).toHaveBeenCalledTimes(1)
       expect(mockSeaport.createOrder).toHaveBeenCalledTimes(1)
-      expect(mockAPI.postOrder).toHaveBeenCalledTimes(1)
-      expect(result.orderHash).toBe("0xOrderHash")
+      expect(mockAPI.postListing).toHaveBeenCalledTimes(1)
+      expect(result.order_hash).toBe("0xOrderHash")
     })
 
     test("creates listing with buyer address (private listing)", async () => {
@@ -706,7 +711,8 @@ describe("SDK: OrdersManager", () => {
         amount: "1000000000000000000",
       })
 
-      expect(mockAPI.postOrder).not.toHaveBeenCalled()
+      expect(mockAPI.postOffer).not.toHaveBeenCalled()
+      expect(mockAPI.postListing).not.toHaveBeenCalled()
     })
   })
 
@@ -754,7 +760,8 @@ describe("SDK: OrdersManager", () => {
         amount: "1000000000000000000",
       })
 
-      expect(mockAPI.postOrder).not.toHaveBeenCalled()
+      expect(mockAPI.postOffer).not.toHaveBeenCalled()
+      expect(mockAPI.postListing).not.toHaveBeenCalled()
     })
   })
 
@@ -796,7 +803,7 @@ describe("SDK: OrdersManager", () => {
       expect(mockAPI.getNFT).toHaveBeenCalledTimes(2)
       expect(mockAPI.getCollection).toHaveBeenCalledTimes(2)
       expect(mockSeaport.createBulkOrders).toHaveBeenCalledTimes(1)
-      expect(mockAPI.postOrder).toHaveBeenCalledTimes(2)
+      expect(mockAPI.postListing).toHaveBeenCalledTimes(2)
       expect(result.successful).toHaveLength(2)
       expect(result.failed).toHaveLength(0)
     })
@@ -815,7 +822,7 @@ describe("SDK: OrdersManager", () => {
       // Should use createListing, not createBulkOrders
       expect(mockSeaport.createOrder).toHaveBeenCalledTimes(1)
       expect(mockSeaport.createBulkOrders).toBeUndefined()
-      expect(mockAPI.postOrder).toHaveBeenCalledTimes(1)
+      expect(mockAPI.postListing).toHaveBeenCalledTimes(1)
       expect(result.successful).toHaveLength(1)
       expect(result.failed).toHaveLength(0)
     })
@@ -881,7 +888,7 @@ describe("SDK: OrdersManager", () => {
       expect(result.successful).toHaveLength(3)
       expect(result.failed).toHaveLength(0)
       expect(mockSeaport.createBulkOrders).toHaveBeenCalledTimes(1)
-      expect(mockAPI.postOrder).toHaveBeenCalledTimes(3)
+      expect(mockAPI.postListing).toHaveBeenCalledTimes(3)
     })
 
     test("creates bulk listings with different parameters", async () => {
@@ -1016,7 +1023,7 @@ describe("SDK: OrdersManager", () => {
       expect(result.successful).toHaveLength(25)
       expect(result.failed).toHaveLength(0)
       expect(mockSeaport.createBulkOrders).toHaveBeenCalledTimes(1)
-      expect(mockAPI.postOrder.mock.calls.length).toBe(25)
+      expect(mockAPI.postListing.mock.calls.length).toBe(25)
     })
 
     test("handles network failures during bulk submission", async () => {
@@ -1046,7 +1053,7 @@ describe("SDK: OrdersManager", () => {
       })
 
       // Make the second API call fail
-      mockAPI.postOrder
+      mockAPI.postListing
         .mockResolvedValueOnce({
           orderHash: "0xOrderHash1",
           protocolData: mockOrder,
@@ -1081,7 +1088,7 @@ describe("SDK: OrdersManager", () => {
       } catch (error) {
         expect((error as Error).message).toContain("Network error")
         // Should have called postOrder twice before failing
-        expect(mockAPI.postOrder.mock.calls.length).toBe(2)
+        expect(mockAPI.postListing.mock.calls.length).toBe(2)
       }
     })
   })
@@ -1124,7 +1131,7 @@ describe("SDK: OrdersManager", () => {
       expect(mockAPI.getNFT).toHaveBeenCalledTimes(2)
       expect(mockAPI.getCollection).toHaveBeenCalledTimes(2)
       expect(mockSeaport.createBulkOrders).toHaveBeenCalledTimes(1)
-      expect(mockAPI.postOrder).toHaveBeenCalledTimes(2)
+      expect(mockAPI.postOffer).toHaveBeenCalledTimes(2)
       expect(result.successful).toHaveLength(2)
       expect(result.failed).toHaveLength(0)
     })
@@ -1143,7 +1150,7 @@ describe("SDK: OrdersManager", () => {
       // Should use createOffer, not createBulkOrders
       expect(mockSeaport.createOrder).toHaveBeenCalledTimes(1)
       expect(mockSeaport.createBulkOrders).toBeUndefined()
-      expect(mockAPI.postOrder).toHaveBeenCalledTimes(1)
+      expect(mockAPI.postOffer).toHaveBeenCalledTimes(1)
       expect(result.successful).toHaveLength(1)
       expect(result.failed).toHaveLength(0)
     })
@@ -1209,7 +1216,7 @@ describe("SDK: OrdersManager", () => {
       expect(result.successful).toHaveLength(3)
       expect(result.failed).toHaveLength(0)
       expect(mockSeaport.createBulkOrders).toHaveBeenCalledTimes(1)
-      expect(mockAPI.postOrder).toHaveBeenCalledTimes(3)
+      expect(mockAPI.postOffer).toHaveBeenCalledTimes(3)
     })
 
     test("creates bulk offers with different parameters", async () => {
@@ -1384,7 +1391,7 @@ describe("SDK: OrdersManager", () => {
       expect(result.successful).toHaveLength(25)
       expect(result.failed).toHaveLength(0)
       expect(mockSeaport.createBulkOrders).toHaveBeenCalledTimes(1)
-      expect(mockAPI.postOrder.mock.calls.length).toBe(25)
+      expect(mockAPI.postOffer.mock.calls.length).toBe(25)
     })
 
     test("handles network failures during bulk submission", async () => {
@@ -1414,7 +1421,7 @@ describe("SDK: OrdersManager", () => {
       })
 
       // Make the second API call fail
-      mockAPI.postOrder
+      mockAPI.postOffer
         .mockResolvedValueOnce({
           orderHash: "0xOrderHash1",
           protocolData: mockOrder,
@@ -1449,7 +1456,7 @@ describe("SDK: OrdersManager", () => {
       } catch (error) {
         expect((error as Error).message).toContain("Network error")
         // Should have called postOrder twice before failing
-        expect(mockAPI.postOrder.mock.calls.length).toBe(2)
+        expect(mockAPI.postOffer.mock.calls.length).toBe(2)
       }
     })
   })

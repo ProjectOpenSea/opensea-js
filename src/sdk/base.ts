@@ -207,7 +207,7 @@ export class BaseOpenSeaSDK {
    * @param options.salt Arbitrary salt. Auto-generated if not provided.
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.
-   * @returns The {@link OrderV2} that was created.
+   * @returns The {@link Offer} that was created.
    */
   public async createOffer(options: {
     asset: AssetWithTokenId
@@ -218,7 +218,7 @@ export class BaseOpenSeaSDK {
     salt?: Amount
     expirationTime?: Amount
     zone?: string
-  }): Promise<OrderV2> {
+  }): Promise<Offer> {
     return this._ordersManager.createOffer(options)
   }
 
@@ -236,7 +236,7 @@ export class BaseOpenSeaSDK {
    * @param options.buyerAddress Optional address that's allowed to purchase this item.
    * @param options.includeOptionalCreatorFees If true, optional creator fees will be included. Default: false.
    * @param options.zone Zone for order protection. Defaults to no zone.
-   * @returns The {@link OrderV2} that was created.
+   * @returns The {@link Listing} that was created.
    */
   public async createListing(options: {
     asset: AssetWithTokenId
@@ -250,7 +250,7 @@ export class BaseOpenSeaSDK {
     buyerAddress?: string
     includeOptionalCreatorFees?: boolean
     zone?: string
-  }): Promise<OrderV2> {
+  }): Promise<Listing> {
     return this._ordersManager.createListing(options)
   }
 
@@ -271,7 +271,7 @@ export class BaseOpenSeaSDK {
     accountAddress: string
     continueOnError?: boolean
     onProgress?: (completed: number, total: number) => void
-  }): Promise<BulkOrderResult> {
+  }): Promise<BulkOrderResult<Listing>> {
     return this._ordersManager.createBulkListings(options)
   }
 
@@ -289,7 +289,7 @@ export class BaseOpenSeaSDK {
     accountAddress: string
     continueOnError?: boolean
     onProgress?: (completed: number, total: number) => void
-  }): Promise<BulkOrderResult> {
+  }): Promise<BulkOrderResult<Offer>> {
     return this._ordersManager.createBulkOffers(options)
   }
 

@@ -23,7 +23,7 @@ describe("API: ListingsAPI", () => {
     } = createMockFetcher()
     mockGet = getMock
     mockPost = postMock
-    listingsAPI = new ListingsAPI(fetcher, Chain.Mainnet)
+    listingsAPI = new ListingsAPI(fetcher)
   })
 
   afterEach(() => {
@@ -475,187 +475,32 @@ describe("API: ListingsAPI", () => {
     })
   })
 
-  describe("getNFTListings", () => {
-    test("fetches listings for a specific NFT", async () => {
-      const mockResponse: GetListingsResponse = {
-        listings: [
-          {
-            order_hash: "0xabc123",
-            chain: Chain.Mainnet,
-            type: "basic",
-            price: {
-              current: {
-                currency: "ETH",
-                decimals: 18,
-                value: "1000000000000000000",
-              },
-            },
-            protocol_data: {} as unknown as OrderV2,
-            protocol_address: "0xprotocol",
-          } as unknown as Listing,
-        ],
-        next: "cursor-123",
-      }
+  describe("sweepCollection", () => {
+    test("posts sweep request to /listings/sweep", async () => {
+      const mockResponse = { steps: [] } as unknown as Awaited<
+        ReturnType<typeof listingsAPI.sweepCollection>
+      >
+      mockPost.mockResolvedValue(mockResponse)
 
-      mockGet.mockResolvedValue(mockResponse)
+      const request = {
+        collection_slug: "azuki",
+        max_items: 5,
+        max_price_per_item: "1000000000000000000",
+        buyer: "0xBuyer",
+        payment: {} as unknown,
+      } as unknown as Parameters<typeof listingsAPI.sweepCollection>[0]
+      await listingsAPI.sweepCollection(request)
 
-      const result = await listingsAPI.getNFTListings(
-        "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
-        "1",
-      )
-
-      expect(mockGet).toHaveBeenCalledTimes(1)
-      expect(mockGet.mock.calls[0][0]).toBe(
-        "/api/v2/orders/ethereum/seaport/listings",
-      )
-      expect(mockGet.mock.calls[0][1]).toMatchObject({
-        asset_contract_address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
-        token_ids: ["1"],
-      })
-      expect(result.listings).toHaveLength(1)
-      expect(result.listings[0].order_hash).toBe("0xabc123")
-      expect(result.next).toBe("cursor-123")
-    })
-
-    test("fetches listings with limit parameter", async () => {
-      const mockResponse: GetListingsResponse = {
-        listings: [],
-        next: undefined,
-      }
-
-      mockGet.mockResolvedValue(mockResponse)
-
-      await listingsAPI.getNFTListings("0xContract", "100", 50)
-
-      expect(mockGet.mock.calls[0][1]).toMatchObject({
-        asset_contract_address: "0xContract",
-        token_ids: ["100"],
-        limit: 50,
-      })
-    })
-
-    test("fetches listings with pagination cursor", async () => {
-      const mockResponse: GetListingsResponse = {
-        listings: [
-          {
-            order_hash: "0xdef456",
-          } as unknown as Listing,
-        ],
-        next: "cursor-next",
-      }
-
-      mockGet.mockResolvedValue(mockResponse)
-
-      await listingsAPI.getNFTListings(
-        "0xContract",
-        "200",
-        undefined,
-        "cursor-prev",
-      )
-
-      expect(mockGet.mock.calls[0][1]).toMatchObject({
-        asset_contract_address: "0xContract",
-        token_ids: ["200"],
-        cursor: "cursor-prev",
-      })
-    })
-
-    test("fetches listings with custom chain parameter", async () => {
-      const mockResponse: GetListingsResponse = {
-        listings: [],
-        next: undefined,
-      }
-
-      mockGet.mockResolvedValue(mockResponse)
-
-      await listingsAPI.getNFTListings(
-        "0xContract",
-        "1",
-        undefined,
-        undefined,
-        Chain.Polygon,
-      )
-
-      expect(mockGet.mock.calls[0][0]).toBe(
-        "/api/v2/orders/polygon/seaport/listings",
-      )
-    })
-
-    test("fetches listings with all parameters", async () => {
-      const mockResponse: GetListingsResponse = {
-        listings: [
-          { order_hash: "0x111" } as unknown as Listing,
-          { order_hash: "0x222" } as unknown as Listing,
-        ],
-        next: "cursor-abc",
-      }
-
-      mockGet.mockResolvedValue(mockResponse)
-
-      await listingsAPI.getNFTListings(
-        "0xContract",
-        "999",
-        20,
-        "cursor-xyz",
-        Chain.Arbitrum,
-      )
-
-      expect(mockGet.mock.calls[0][0]).toBe(
-        "/api/v2/orders/arbitrum/seaport/listings",
-      )
-      expect(mockGet.mock.calls[0][1]).toMatchObject({
-        asset_contract_address: "0xContract",
-        token_ids: ["999"],
-        limit: 20,
-        cursor: "cursor-xyz",
-      })
-    })
-
-    test("handles empty listings array", async () => {
-      const mockResponse: GetListingsResponse = {
-        listings: [],
-        next: undefined,
-      }
-
-      mockGet.mockResolvedValue(mockResponse)
-
-      const result = await listingsAPI.getNFTListings("0xContract", "1")
-
-      expect(result.listings).toEqual([])
-    })
-
-    test("handles large token IDs", async () => {
-      const mockResponse: GetListingsResponse = {
-        listings: [],
-        next: undefined,
-      }
-
-      mockGet.mockResolvedValue(mockResponse)
-
-      const largeTokenId = "999999999999999999999999"
-      await listingsAPI.getNFTListings("0xContract", largeTokenId)
-
-      expect(mockGet.mock.calls[0][1]).toMatchObject({
-        token_ids: [largeTokenId],
-      })
-    })
-
-    test("throws error on API failure", async () => {
-      mockGet.mockRejectedValue(new Error("API Error"))
-
-      try {
-        await listingsAPI.getNFTListings("0xContract", "1")
-        throw new Error("Expected error to be thrown")
-      } catch (error) {
-        expect((error as Error).message).toContain("API Error")
-      }
+      expect(mockPost).toHaveBeenCalledTimes(1)
+      expect(mockPost.mock.calls[0][0]).toBe("/api/v2/listings/sweep")
+      expect(mockPost.mock.calls[0][1]).toBe(request)
     })
   })
 
   describe("Constructor", () => {
-    test("initializes with get function and chain", () => {
+    test("initializes with fetcher", () => {
       const { fetcher } = createMockFetcher()
-      const api = new ListingsAPI(fetcher, Chain.Mainnet)
+      const api = new ListingsAPI(fetcher)
 
       expect(api).toBeInstanceOf(ListingsAPI)
     })

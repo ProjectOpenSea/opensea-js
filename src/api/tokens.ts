@@ -1,4 +1,5 @@
 import {
+  getSwapExecutePath,
   getSwapQuotePath,
   getTokenGroupPath,
   getTokenGroupsPath,
@@ -17,6 +18,8 @@ import type {
   GetTokensArgs,
   GetTopTokensResponse,
   GetTrendingTokensResponse,
+  SwapExecuteRequest,
+  SwapExecuteResponse,
 } from "./types"
 
 /**
@@ -58,6 +61,14 @@ export class TokensAPI {
       args,
     )
     return response
+  }
+
+  /**
+   * Get executable transactions for a token swap.
+   * Supports same-chain and cross-chain swaps with multiple from/to assets.
+   */
+  async executeSwap(request: SwapExecuteRequest): Promise<SwapExecuteResponse> {
+    return this.fetcher.post<SwapExecuteResponse>(getSwapExecutePath(), request)
   }
 
   /**

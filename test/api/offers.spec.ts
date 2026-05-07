@@ -1041,7 +1041,7 @@ describe("API: OffersAPI", () => {
     })
   })
 
-  describe("getNFTOffers", () => {
+  describe("getOffersByNFT", () => {
     test("fetches offers for a specific NFT", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [
@@ -1062,29 +1062,17 @@ describe("API: OffersAPI", () => {
 
       mockGet.mockResolvedValue(mockResponse)
 
-      const result = await offersAPI.getNFTOffers(
-        "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
-        "1",
-      )
+      const result = await offersAPI.getOffersByNFT("azuki", "1")
 
       expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
+        "/api/v2/offers/collection/azuki/nfts/1",
+      )
       expect(result.offers).toHaveLength(1)
       expect(result.next).toBe("cursor-123")
     })
 
-    test("fetches offers with limit parameter", async () => {
-      const mockResponse: GetOffersResponse = {
-        offers: [],
-      }
-
-      mockGet.mockResolvedValue(mockResponse)
-
-      await offersAPI.getNFTOffers("0xContract", "1", 50)
-
-      expect(mockGet).toHaveBeenCalledTimes(1)
-    })
-
-    test("fetches offers with pagination cursor", async () => {
+    test("fetches offers with limit and pagination", async () => {
       const mockResponse: GetOffersResponse = {
         offers: [],
         next: "cursor-next",
@@ -1092,32 +1080,20 @@ describe("API: OffersAPI", () => {
 
       mockGet.mockResolvedValue(mockResponse)
 
-      await offersAPI.getNFTOffers("0xContract", "1", undefined, "cursor-prev")
+      await offersAPI.getOffersByNFT("azuki", "1", 50, "cursor-prev")
 
-      expect(mockGet).toHaveBeenCalledTimes(1)
-    })
-
-    test("handles empty offers array", async () => {
-      const mockResponse: GetOffersResponse = {
-        offers: [],
-      }
-
-      mockGet.mockResolvedValue(mockResponse)
-
-      const result = await offersAPI.getNFTOffers("0xContract", "1")
-
-      expect(result.offers).toEqual([])
+      expect(mockGet.mock.calls[0][1]).toMatchObject({
+        limit: 50,
+        next: "cursor-prev",
+      })
     })
 
     test("throws error on API failure", async () => {
       mockGet.mockRejectedValue(new Error("NFT not found"))
 
-      try {
-        await offersAPI.getNFTOffers("0xContract", "999")
-        throw new Error("Expected error to be thrown")
-      } catch (error) {
-        expect((error as Error).message).toContain("NFT not found")
-      }
+      await expect(offersAPI.getOffersByNFT("azuki", "999")).rejects.toThrow(
+        "NFT not found",
+      )
     })
   })
 

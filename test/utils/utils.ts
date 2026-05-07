@@ -1,28 +1,16 @@
 import { randomBytes } from "node:crypto"
 import { expect } from "vitest"
-import type { OrderV2 } from "../../src/orders/types"
+import type { Listing, Offer } from "../../src/api/types"
 import { getCurrentUnixTimestamp, TimeInSeconds } from "../../src/utils"
 
-export const expectValidOrder = (order: OrderV2) => {
+export const expectValidOrder = (order: Offer | Listing) => {
   const requiredFields = [
-    "createdDate",
-    "closingDate",
-    "listingTime",
-    "expirationTime",
-    "orderHash",
-    "maker",
-    "taker",
-    "protocolData",
-    "protocolAddress",
-    "currentPrice",
-    "makerFees",
-    "takerFees",
-    "side",
-    "orderType",
-    "cancelled",
-    "finalized",
-    "markedInvalid",
-    "remainingQuantity",
+    "order_hash",
+    "chain",
+    "protocol_data",
+    "protocol_address",
+    "price",
+    "status",
   ]
   for (const field of requiredFields) {
     expect(field in order).toBe(true)

@@ -3,9 +3,9 @@ import type {
   CreateInputItem,
   OrderComponents,
 } from "@opensea/seaport-js/lib/types"
-import type { CollectionOffer, NFT } from "../api/types"
+import type { CollectionOffer, Listing, NFT, Offer } from "../api/types"
 import { INVERSE_BASIS_POINT, ZERO_ADDRESS } from "../constants"
-import type { OrderV2, ProtocolData } from "../orders/types"
+import type { ProtocolData } from "../orders/types"
 import {
   type Amount,
   type AssetWithTokenId,
@@ -31,10 +31,13 @@ import type { SDKContext } from "./context"
 /**
  * Result type for bulk operations that may partially succeed.
  * Contains successfully submitted orders and any failures with error information.
+ *
+ * Generic in the success type so listing-side callers see {@link Listing}[] and
+ * offer-side callers see {@link Offer}[].
  */
-export interface BulkOrderResult {
+export interface BulkOrderResult<T extends Listing | Offer = Listing | Offer> {
   /** Successfully submitted orders */
-  successful: OrderV2[]
+  successful: T[]
   /** Failed order submissions with error information */
   failed: Array<{
     /** Index of the failed order in the original input array */
@@ -405,7 +408,7 @@ export class OrdersManager {
    * @param options.expirationTime Expiration time for the order, in UTC seconds
    * @param options.zone Zone for order protection. Defaults to chain's signed zone.
    *
-   * @returns The {@link OrderV2} that was created.
+   * @returns The {@link Offer} that was created.
    *
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -429,7 +432,7 @@ export class OrdersManager {
     salt?: Amount
     expirationTime?: Amount
     zone?: string
-  }): Promise<OrderV2> {
+  }): Promise<Offer> {
     const order = await this._buildOfferOrder({
       asset,
       accountAddress,
@@ -441,11 +444,10 @@ export class OrdersManager {
       zone,
     })
 
-    return this.context.api.postOrder(order, {
-      protocol: "seaport",
-      protocolAddress: this.context.seaport.contract.target as string,
-      side: OrderSide.OFFER,
-    })
+    return this.context.api.postOffer(
+      order,
+      this.context.seaport.contract.target as string,
+    )
   }
 
   /**
@@ -462,7 +464,7 @@ export class OrdersManager {
    * @param options.buyerAddress Optional address that's allowed to purchase this item. If specified, no other address will be able to take the order, unless its value is the null address.
    * @param options.includeOptionalCreatorFees If true, optional creator fees will be included in the listing. Default: false.
    * @param options.zone Zone for order protection. Defaults to no zone.
-   * @returns The {@link OrderV2} that was created.
+   * @returns The {@link Listing} that was created.
    *
    * @throws Error if the asset does not contain a token id.
    * @throws Error if the accountAddress is not available through wallet or provider.
@@ -492,7 +494,7 @@ export class OrdersManager {
     buyerAddress?: string
     includeOptionalCreatorFees?: boolean
     zone?: string
-  }): Promise<OrderV2> {
+  }): Promise<Listing> {
     const order = await this._buildListingOrder({
       asset,
       accountAddress,
@@ -507,11 +509,10 @@ export class OrdersManager {
       zone,
     })
 
-    return this.context.api.postOrder(order, {
-      protocol: "seaport",
-      protocolAddress: this.context.seaport.contract.target as string,
-      side: OrderSide.LISTING,
-    })
+    return this.context.api.postListing(
+      order,
+      this.context.seaport.contract.target as string,
+    )
   }
 
   /**
@@ -555,7 +556,7 @@ export class OrdersManager {
     accountAddress: string
     continueOnError?: boolean
     onProgress?: (completed: number, total: number) => void
-  }): Promise<BulkOrderResult> {
+  }): Promise<BulkOrderResult<Listing>> {
     if (listings.length === 0) {
       throw new Error("Listings array cannot be empty")
     }
@@ -743,17 +744,16 @@ export class OrdersManager {
       `Starting submission of ${orders.length} bulk-signed ${pluralize(orders.length, "listing")} to OpenSea API...`,
     )
 
-    const submittedOrders: OrderV2[] = []
+    const submittedOrders: Listing[] = []
     const failedOrders: BulkOrderResult["failed"] = []
 
     for (let i = 0; i < orders.length; i++) {
       this.context.logger(`Submitting listing ${i + 1}/${orders.length}...`)
       try {
-        const submittedOrder = await this.context.api.postOrder(orders[i], {
-          protocol: "seaport",
-          protocolAddress: this.context.seaport.contract.target as string,
-          side: OrderSide.LISTING,
-        })
+        const submittedOrder = await this.context.api.postListing(
+          orders[i],
+          this.context.seaport.contract.target as string,
+        )
         submittedOrders.push(submittedOrder)
         this.context.logger(`Completed listing ${i + 1}/${orders.length}`)
       } catch (error) {
@@ -833,7 +833,7 @@ export class OrdersManager {
     accountAddress: string
     continueOnError?: boolean
     onProgress?: (completed: number, total: number) => void
-  }): Promise<BulkOrderResult> {
+  }): Promise<BulkOrderResult<Offer>> {
     if (offers.length === 0) {
       throw new Error("Offers array cannot be empty")
     }
@@ -975,17 +975,16 @@ export class OrdersManager {
       `Starting submission of ${orders.length} bulk-signed ${pluralize(orders.length, "offer")} to OpenSea API...`,
     )
 
-    const submittedOrders: OrderV2[] = []
+    const submittedOrders: Offer[] = []
     const failedOrders: BulkOrderResult["failed"] = []
 
     for (let i = 0; i < orders.length; i++) {
       this.context.logger(`Submitting offer ${i + 1}/${orders.length}...`)
       try {
-        const submittedOrder = await this.context.api.postOrder(orders[i], {
-          protocol: "seaport",
-          protocolAddress: this.context.seaport.contract.target as string,
-          side: OrderSide.OFFER,
-        })
+        const submittedOrder = await this.context.api.postOffer(
+          orders[i],
+          this.context.seaport.contract.target as string,
+        )
         submittedOrders.push(submittedOrder)
         this.context.logger(`Completed offer ${i + 1}/${orders.length}`)
       } catch (error) {

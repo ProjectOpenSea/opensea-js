@@ -2,15 +2,14 @@ import type { ProtocolData } from "../orders/types"
 import {
   getBuildCollectionOfferPayload,
   getPostCollectionOfferPayload,
-  serializeOrdersQueryOptions,
 } from "../orders/utils"
-import { type Chain, OrderSide } from "../types"
+import type { Chain } from "../types"
 import {
   getAllOffersAPIPath,
   getBestOfferAPIPath,
   getBuildOfferPath,
   getCollectionOffersPath,
-  getOrdersAPIPath,
+  getOffersByNFTPath,
   getPostCollectionOfferPath,
   getTraitOffersPath,
 } from "./apiPaths"
@@ -221,22 +220,15 @@ export class OffersAPI {
   /**
    * Gets all active offers for a specific NFT.
    */
-  async getNFTOffers(
-    assetContractAddress: string,
-    tokenId: string,
+  async getOffersByNFT(
+    collectionSlug: string,
+    identifier: string | number,
     limit?: number,
     next?: string,
-    chain: Chain = this.chain,
   ): Promise<GetOffersResponse> {
-    const response = await this.fetcher.get<GetOffersResponse>(
-      getOrdersAPIPath(chain, "seaport", OrderSide.OFFER),
-      serializeOrdersQueryOptions({
-        assetContractAddress,
-        tokenIds: [tokenId],
-        limit,
-        next,
-      }),
+    return this.fetcher.get<GetOffersResponse>(
+      getOffersByNFTPath(collectionSlug, identifier),
+      { limit, next },
     )
-    return response
   }
 }

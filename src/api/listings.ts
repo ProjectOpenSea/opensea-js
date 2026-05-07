@@ -1,11 +1,9 @@
-import { serializeOrdersQueryOptions } from "../orders/utils"
-import { type Chain, OrderSide } from "../types"
 import {
   getAllListingsAPIPath,
   getBestListingAPIPath,
   getBestListingsAPIPath,
   getCrossChainFulfillmentDataPath,
-  getOrdersAPIPath,
+  getSweepListingsPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import {
@@ -14,6 +12,8 @@ import {
   encodeTraitsParam,
   type GetBestListingResponse,
   type GetListingsResponse,
+  type SweepCollectionRequest,
+  type SweepCollectionResponse,
   type TraitFilter,
 } from "./types"
 
@@ -21,10 +21,7 @@ import {
  * Listing-related API operations
  */
 export class ListingsAPI {
-  constructor(
-    private fetcher: Fetcher,
-    private chain: Chain,
-  ) {}
+  constructor(private fetcher: Fetcher) {}
 
   /**
    * Gets all listings for a given collection.
@@ -98,40 +95,6 @@ export class ListingsAPI {
   }
 
   /**
-   * Gets all active listings for a specific NFT.
-   * @param assetContractAddress The NFT contract address
-   * @param tokenId The token ID
-   * @param limit The number of listings to return
-   * @param next The cursor for pagination
-   * @param chain The blockchain chain
-   * @param includePrivateListings Whether to include private listings (default: false)
-   */
-  async getNFTListings(
-    assetContractAddress: string,
-    tokenId: string,
-    limit?: number,
-    next?: string,
-    chain: Chain = this.chain,
-    includePrivateListings?: boolean,
-  ): Promise<GetListingsResponse> {
-    const response = await this.fetcher.get<GetListingsResponse>(
-      getOrdersAPIPath(chain, "seaport", OrderSide.LISTING),
-      {
-        ...serializeOrdersQueryOptions({
-          assetContractAddress,
-          tokenIds: [tokenId],
-          limit,
-          next,
-        }),
-        ...(includePrivateListings !== undefined && {
-          include_private_listings: includePrivateListings,
-        }),
-      },
-    )
-    return response
-  }
-
-  /**
    * Get cross-chain fulfillment data for one or more listings.
    * Supports same-chain, cross-token, and cross-chain purchases.
    * @param request The cross-chain fulfillment request
@@ -141,6 +104,21 @@ export class ListingsAPI {
   ): Promise<CrossChainFulfillmentResponse> {
     return this.fetcher.post<CrossChainFulfillmentResponse>(
       getCrossChainFulfillmentDataPath(),
+      request,
+    )
+  }
+
+  /**
+   * Bulk-buy items from a collection.
+   * If a requested item becomes unavailable, the system can automatically
+   * substitute it with the next cheapest listing from the same collection
+   * (enabled by default). Returns an ordered list of transactions to execute.
+   */
+  async sweepCollection(
+    request: SweepCollectionRequest,
+  ): Promise<SweepCollectionResponse> {
+    return this.fetcher.post<SweepCollectionResponse>(
+      getSweepListingsPath(),
       request,
     )
   }

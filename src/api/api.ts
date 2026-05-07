@@ -1,11 +1,5 @@
 import { API_BASE_MAINNET } from "../constants"
-import type {
-  FulfillmentDataResponse,
-  OrderAPIOptions,
-  OrdersQueryOptions,
-  OrderV2,
-  ProtocolData,
-} from "../orders/types"
+import type { FulfillmentDataResponse, ProtocolData } from "../orders/types"
 import {
   Chain,
   type OpenSeaAccount,
@@ -30,6 +24,7 @@ import { OffersAPI } from "./offers"
 import { OrdersAPI } from "./orders"
 import { SearchAPI } from "./search"
 import { TokensAPI } from "./tokens"
+import { TransactionsAPI } from "./transactions"
 import {
   type BuildOfferResponse,
   type CancelOrderResponse,
@@ -58,7 +53,6 @@ import {
   type GetNFTResponse,
   type GetOffersResponse,
   type GetOrderByHashResponse,
-  type GetOrdersResponse,
   type GetSwapQuoteArgs,
   type GetSwapQuoteResponse,
   type GetTokenGroupResponse,
@@ -78,7 +72,13 @@ import {
   type ResolveAccountResponse,
   type SearchArgs,
   type SearchResponse,
+  type SwapExecuteRequest,
+  type SwapExecuteResponse,
+  type SweepCollectionRequest,
+  type SweepCollectionResponse,
   type TraitFilter,
+  type TransactionReceiptRequest,
+  type TransactionReceiptResponse,
   type ValidateMetadataResponse,
 } from "./types"
 
@@ -115,6 +115,7 @@ export class OpenSeaAPI {
   private tokensAPI: TokensAPI
   private chainsAPI: ChainsAPI
   private dropsAPI: DropsAPI
+  private transactionsAPI: TransactionsAPI
 
   /**
    * Create an instance of the OpenSeaAPI
@@ -143,7 +144,7 @@ export class OpenSeaAPI {
     // Initialize specialized API clients
     this.ordersAPI = new OrdersAPI(fetcher, this.chain)
     this.offersAPI = new OffersAPI(fetcher, this.chain)
-    this.listingsAPI = new ListingsAPI(fetcher, this.chain)
+    this.listingsAPI = new ListingsAPI(fetcher)
     this.collectionsAPI = new CollectionsAPI(fetcher)
     this.nftsAPI = new NFTsAPI(fetcher, this.chain)
     this.accountsAPI = new AccountsAPI(fetcher, this.chain)
@@ -152,20 +153,7 @@ export class OpenSeaAPI {
     this.tokensAPI = new TokensAPI(fetcher)
     this.chainsAPI = new ChainsAPI(fetcher)
     this.dropsAPI = new DropsAPI(fetcher)
-  }
-
-  /**
-   * Gets an order from API based on query options.
-   * @deprecated Use collection-based endpoints instead: getAllOffers, getAllListings, getBestOffer, getBestListing.
-   * @param options Query options for fetching an order
-   * @returns The first {@link OrderV2} returned by the API
-   *
-   * @throws An error if there are no matching orders.
-   */
-  public async getOrder(
-    options: Omit<OrdersQueryOptions, "limit">,
-  ): Promise<OrderV2> {
-    return this.ordersAPI.getOrder(options)
+    this.transactionsAPI = new TransactionsAPI(fetcher)
   }
 
   /**
@@ -182,18 +170,6 @@ export class OpenSeaAPI {
     chain: Chain = this.chain,
   ): Promise<GetOrderByHashResponse> {
     return this.ordersAPI.getOrderByHash(orderHash, protocolAddress, chain)
-  }
-
-  /**
-   * Gets a list of orders from API based on query options.
-   * @deprecated Use collection-based endpoints instead: getAllOffers, getAllListings, getBestOffer, getBestListing.
-   * @param options Query options for fetching orders
-   * @returns The {@link GetOrdersResponse} returned by the API.
-   */
-  public async getOrders(
-    options: Omit<OrdersQueryOptions, "limit">,
-  ): Promise<GetOrdersResponse> {
-    return this.ordersAPI.getOrders({ ...options, pageSize: this.pageSize })
   }
 
   /**
@@ -369,20 +345,6 @@ export class OpenSeaAPI {
       recipientAddress,
       includeOptionalCreatorFees,
     )
-  }
-
-  /**
-   * Post an order to OpenSea.
-   * @deprecated Use postListing or postOffer instead.
-   * @param order The order to post
-   * @param apiOptions API options for the order
-   * @returns The {@link OrderV2} posted to the API.
-   */
-  public async postOrder(
-    order: ProtocolData,
-    apiOptions: OrderAPIOptions,
-  ): Promise<OrderV2> {
-    return this.ordersAPI.postOrder(order, apiOptions)
   }
 
   /**
@@ -864,55 +826,61 @@ export class OpenSeaAPI {
 
   /**
    * Gets all active offers for a specific NFT (not just the best offer).
-   * @param assetContractAddress The NFT contract address.
-   * @param tokenId The token identifier.
-   * @param limit The number of offers to return. Must be between 1 and 100.
-   * @param next The cursor for the next page of results. This is returned from a previous request.
-   * @param chain The chain where the NFT is located. Defaults to the chain set in the constructor.
+   * @param collectionSlug The collection slug.
+   * @param identifier The NFT token id.
+   * @param limit The number of offers to return. Must be between 1 and 200.
+   * @param next The cursor for the next page of results.
    * @returns The {@link GetOffersResponse} returned by the API.
    */
-  public async getNFTOffers(
-    assetContractAddress: string,
-    tokenId: string,
+  public async getOffersByNFT(
+    collectionSlug: string,
+    identifier: string | number,
     limit?: number,
     next?: string,
-    chain: Chain = this.chain,
   ): Promise<GetOffersResponse> {
-    return this.offersAPI.getNFTOffers(
-      assetContractAddress,
-      tokenId,
+    return this.offersAPI.getOffersByNFT(
+      collectionSlug,
+      identifier,
       limit,
       next,
-      chain,
     )
   }
 
   /**
-   * Gets all active listings for a specific NFT (not just the best listing).
-   * @param assetContractAddress The NFT contract address.
-   * @param tokenId The token identifier.
-   * @param limit The number of listings to return. Must be between 1 and 100.
-   * @param next The cursor for the next page of results. This is returned from a previous request.
-   * @param chain The chain where the NFT is located. Defaults to the chain set in the constructor.
-   * @param includePrivateListings Whether to include private listings (default: false)
-   * @returns The {@link GetListingsResponse} returned by the API.
+   * Bulk-buy items from a collection using any payment token, including
+   * cross-chain. Returns an ordered list of transactions to execute.
+   * @param request The sweep request containing buyer, collection, payment, and item caps.
+   * @returns The {@link SweepCollectionResponse} returned by the API.
    */
-  public async getNFTListings(
-    assetContractAddress: string,
-    tokenId: string,
-    limit?: number,
-    next?: string,
-    chain: Chain = this.chain,
-    includePrivateListings?: boolean,
-  ): Promise<GetListingsResponse> {
-    return this.listingsAPI.getNFTListings(
-      assetContractAddress,
-      tokenId,
-      limit,
-      next,
-      chain,
-      includePrivateListings,
-    )
+  public async sweepCollection(
+    request: SweepCollectionRequest,
+  ): Promise<SweepCollectionResponse> {
+    return this.listingsAPI.sweepCollection(request)
+  }
+
+  /**
+   * Get executable transactions for a token swap. Companion to
+   * {@link OpenSeaAPI.getSwapQuote} — quote first, then execute.
+   * @param request The swap execution request.
+   * @returns The {@link SwapExecuteResponse} with transactions and a quote.
+   */
+  public async executeSwap(
+    request: SwapExecuteRequest,
+  ): Promise<SwapExecuteResponse> {
+    return this.tokensAPI.executeSwap(request)
+  }
+
+  /**
+   * Get the receipt/status for a submitted transaction. Works for all transaction
+   * types: listing fulfillments, cross-chain buys, sweeps, offer fulfillments,
+   * and token swaps. Poll this endpoint to check completion status.
+   * @param request The transaction receipt request.
+   * @returns The {@link TransactionReceiptResponse} returned by the API.
+   */
+  public async getTransactionReceipt(
+    request: TransactionReceiptRequest,
+  ): Promise<TransactionReceiptResponse> {
+    return this.transactionsAPI.getTransactionReceipt(request)
   }
 
   /**

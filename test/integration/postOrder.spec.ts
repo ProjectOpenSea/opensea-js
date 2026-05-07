@@ -37,11 +37,12 @@ describe("SDK: order posting", () => {
     }
     const order = await sdk.createOffer(offer)
     expectValidOrder(order)
-    expect(order.expirationTime).toBe(expirationTime)
-    expect(order.protocolData.parameters.endTime).toBe(
+    expect(order.protocol_data.parameters.endTime).toBe(
       expirationTime.toString(),
     )
-    expect(order.currentPrice).toBe(BigInt(parseFloat(OFFER_AMOUNT) * 10 ** 18))
+    expect(BigInt(order.price.value)).toBe(
+      BigInt(parseFloat(OFFER_AMOUNT) * 10 ** 18),
+    )
   })
 
   test("Post Offer - Polygon", async function () {
@@ -167,7 +168,7 @@ describe("SDK: order posting", () => {
         fee => fee.required,
       ).length
       expect(
-        order.protocolData.parameters.consideration.length,
+        order.protocol_data.parameters.consideration.length,
       ).toBeGreaterThan(1 + requiredFeesCount)
     }
   })
@@ -259,9 +260,8 @@ describe("SDK: order posting", () => {
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest)
     expect(offerResponse).toBeDefined()
     expect(offerResponse).toHaveProperty("protocol_data")
-    expect(offerResponse?.criteria.trait).toEqual({
-      type: "face",
-      value: "tvface bobross",
-    })
+    expect(offerResponse?.criteria.traits).toEqual([
+      { type: "face", value: "tvface bobross" },
+    ])
   })
 })

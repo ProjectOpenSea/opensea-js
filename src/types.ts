@@ -243,11 +243,7 @@ export interface AssetWithTokenStandard extends Asset {
 interface OpenSeaCollectionStatsIntervalData {
   interval: "one_day" | "seven_day" | "thirty_day"
   volume: number
-  volume_diff: number
-  volume_change: number
   sales: number
-  sales_diff: number
-  average_price: number
 }
 
 /**
@@ -258,9 +254,7 @@ export interface OpenSeaCollectionStats {
   total: {
     volume: number
     sales: number
-    average_price: number
     num_owners: number
-    market_cap: number
     floor_price: number
     floor_price_symbol: string
   }

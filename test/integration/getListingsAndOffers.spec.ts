@@ -173,11 +173,11 @@ describe("SDK: getTraitOffers", () => {
         "Criteria should not be null for trait offers",
       ).toBeTruthy()
       expect(
-        offer.criteria?.trait,
+        offer.criteria?.traits?.[0],
         "Trait criteria should not be null",
       ).toBeTruthy()
-      expect(offer.criteria?.trait?.type).toBe(type)
-      expect(offer.criteria?.trait?.value).toBe(value)
+      expect(offer.criteria?.traits?.[0]?.type).toBe(type)
+      expect(offer.criteria?.traits?.[0]?.value).toBe(value)
     }
   })
 

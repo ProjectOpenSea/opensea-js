@@ -1,13 +1,8 @@
 import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants"
 import { API_V2_PREFIX } from "../api/apiPaths"
 import { type Chain, OrderSide } from "../types"
-import { accountFromJSON, getSeaportAddress } from "../utils"
-import type {
-  OrdersQueryOptions,
-  OrderV2,
-  ProtocolData,
-  SerializedOrderV2,
-} from "./types"
+import { getSeaportAddress } from "../utils"
+import type { ProtocolData } from "./types"
 
 export const DEFAULT_SEAPORT_CONTRACT_ADDRESS = CROSS_CHAIN_SEAPORT_V1_6_ADDRESS
 
@@ -191,70 +186,4 @@ export const getFulfillOfferPayload = (
   }
 
   return payload
-}
-
-type OrdersQueryPathOptions = "protocol" | "side"
-export const serializeOrdersQueryOptions = (
-  options: Omit<OrdersQueryOptions, OrdersQueryPathOptions>,
-) => {
-  const tokenIds =
-    options.tokenIds && options.tokenIds.length > 0
-      ? options.tokenIds
-      : options.tokenId !== undefined
-        ? [options.tokenId]
-        : options.tokenIds
-
-  return {
-    limit: options.limit,
-    cursor: options.cursor ?? options.next,
-
-    payment_token_address: options.paymentTokenAddress,
-    maker: options.maker,
-    taker: options.taker,
-    owner: options.owner,
-    listed_after: options.listedAfter,
-    listed_before: options.listedBefore,
-    token_ids: tokenIds,
-    asset_contract_address: options.assetContractAddress,
-    order_by: options.orderBy,
-    order_direction: options.orderDirection,
-    only_english: options.onlyEnglish,
-  }
-}
-
-/** Map API side values ("ask"/"bid") to SDK OrderSide enum values */
-const mapApiSide = (side: string): OrderSide => {
-  if (side === "ask" || side === OrderSide.LISTING) return OrderSide.LISTING
-  if (side === "bid" || side === OrderSide.OFFER) return OrderSide.OFFER
-  return side as OrderSide
-}
-
-export const deserializeOrder = (order: SerializedOrderV2): OrderV2 => {
-  return {
-    createdDate: order.created_date,
-    closingDate: order.closing_date,
-    listingTime: order.listing_time,
-    expirationTime: order.expiration_time,
-    orderHash: order.order_hash,
-    maker: accountFromJSON(order.maker),
-    taker: order.taker ? accountFromJSON(order.taker) : null,
-    protocolData: order.protocol_data,
-    protocolAddress: order.protocol_address,
-    currentPrice: BigInt(order.current_price),
-    makerFees: (order.maker_fees ?? []).map(({ account, basis_points }) => ({
-      account: accountFromJSON(account),
-      basisPoints: basis_points,
-    })),
-    takerFees: (order.taker_fees ?? []).map(({ account, basis_points }) => ({
-      account: accountFromJSON(account),
-      basisPoints: basis_points,
-    })),
-    side: mapApiSide(order.side as string),
-    orderType: order.order_type,
-    cancelled: order.cancelled,
-    finalized: order.finalized,
-    markedInvalid: order.marked_invalid,
-    clientSignature: order.client_signature,
-    remainingQuantity: order.remaining_quantity,
-  }
 }

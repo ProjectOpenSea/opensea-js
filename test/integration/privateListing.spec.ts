@@ -47,9 +47,9 @@ describe(`SDK: Private Listings Integration - ${normalizeChainName(CREATE_LISTIN
     const order = await sdk.createListing(privateListing)
     expectValidOrder(order)
 
-    expect(order.protocolData.parameters.consideration).toBeDefined()
+    expect(order.protocol_data.parameters.consideration).toBeDefined()
 
-    const hasMarketplaceFee = order.protocolData.parameters.consideration.some(
+    const hasMarketplaceFee = order.protocol_data.parameters.consideration.some(
       (item: { recipient?: string }) =>
         item.recipient?.toLowerCase() ===
         getFeeRecipient(Chain.Mainnet).toLowerCase(),
@@ -84,8 +84,8 @@ describe(`SDK: Private Listings Integration - ${normalizeChainName(CREATE_LISTIN
     const order = await sdk2.createListing(regularListing)
     expectValidOrder(order)
 
-    expect(order.protocolData.parameters.consideration).toBeDefined()
-    expect(order.protocolData.parameters.consideration.length).toBeGreaterThan(
+    expect(order.protocol_data.parameters.consideration).toBeDefined()
+    expect(order.protocol_data.parameters.consideration.length).toBeGreaterThan(
       0,
     )
   })

@@ -1,16 +1,15 @@
 import type { OrderProtocol } from "../orders/types"
-import { type Chain, OrderSide } from "../types"
+import type { Chain } from "../types"
 
 /** Base path prefix for all OpenSea API v2 endpoints. */
 export const API_V2_PREFIX = "/api/v2"
 
-export const getOrdersAPIPath = (
-  chain: Chain,
-  protocol: OrderProtocol,
-  side: OrderSide,
-) => {
-  const sidePath = side === OrderSide.LISTING ? "listings" : "offers"
-  return `${API_V2_PREFIX}/orders/${chain}/${protocol}/${sidePath}`
+export const getPostListingPath = (chain: Chain, protocol: OrderProtocol) => {
+  return `${API_V2_PREFIX}/orders/${chain}/${protocol}/listings`
+}
+
+export const getPostOfferPath = (chain: Chain, protocol: OrderProtocol) => {
+  return `${API_V2_PREFIX}/orders/${chain}/${protocol}/offers`
 }
 
 export const getAllOffersAPIPath = (collectionSlug: string) => {
@@ -117,6 +116,25 @@ export const getCancelOrderPath = (
 
 export const getTraitOffersPath = (collectionSlug: string) => {
   return `${API_V2_PREFIX}/offers/collection/${collectionSlug}/traits`
+}
+
+export const getOffersByNFTPath = (
+  collectionSlug: string,
+  identifier: string | number,
+) => {
+  return `${API_V2_PREFIX}/offers/collection/${collectionSlug}/nfts/${identifier}`
+}
+
+export const getSweepListingsPath = () => {
+  return `${API_V2_PREFIX}/listings/sweep`
+}
+
+export const getSwapExecutePath = () => {
+  return `${API_V2_PREFIX}/swap/execute`
+}
+
+export const getTransactionReceiptPath = () => {
+  return `${API_V2_PREFIX}/transactions/receipt`
 }
 
 export const getEventsAPIPath = () => {

@@ -1,16 +1,17 @@
 import type {
+  SwapExecuteRequest as ApiSwapExecuteRequest,
+  SwapExecuteResponse as ApiSwapExecuteResponse,
+  SweepCollectionRequest as ApiSweepCollectionRequest,
+  SweepCollectionResponse as ApiSweepCollectionResponse,
+  TransactionReceiptRequest as ApiTransactionReceiptRequest,
+  TransactionReceiptResponse as ApiTransactionReceiptResponse,
   AssetMetadataResponse,
   InstantApiKeyResponse,
   TokenGroupPaginatedResponse,
   TokenGroupResponse,
 } from "@opensea/api-types"
 import type { ConsiderationItem } from "@opensea/seaport-js/lib/types"
-import type {
-  OrderType,
-  OrderV2,
-  ProtocolData,
-  QueryCursors,
-} from "../orders/types"
+import type { OrderType, ProtocolData } from "../orders/types"
 import type { OpenSeaCollection } from "../types"
 
 /**
@@ -261,15 +262,6 @@ export type GetNFTResponse = {
 }
 
 /**
- * Response from OpenSea API for fetching Orders.
- * @category API Response Types
- */
-export type GetOrdersResponse = QueryCursors & {
-  /** List of {@link OrderV2} */
-  orders: OrderV2[]
-}
-
-/**
  * Base query cursors response from OpenSea API.
  * @category API Response Types
  */
@@ -319,6 +311,42 @@ export type GetOrderByHashResponse = Offer | Listing
 export type CancelOrderResponse = {
   last_signature_issued_valid_until: string | null
 }
+
+/**
+ * Request body for sweeping (bulk-buying) items from a collection.
+ * @category API Query Args
+ */
+export type SweepCollectionRequest = ApiSweepCollectionRequest
+
+/**
+ * Response from sweeping a collection.
+ * @category API Response Types
+ */
+export type SweepCollectionResponse = ApiSweepCollectionResponse
+
+/**
+ * Request body for executing a token swap.
+ * @category API Query Args
+ */
+export type SwapExecuteRequest = ApiSwapExecuteRequest
+
+/**
+ * Response from executing a token swap.
+ * @category API Response Types
+ */
+export type SwapExecuteResponse = ApiSwapExecuteResponse
+
+/**
+ * Request body for fetching a transaction receipt.
+ * @category API Query Args
+ */
+export type TransactionReceiptRequest = ApiTransactionReceiptRequest
+
+/**
+ * Response from fetching a transaction receipt.
+ * @category API Response Types
+ */
+export type TransactionReceiptResponse = ApiTransactionReceiptResponse
 
 /**
  * NFT type returned by OpenSea API.

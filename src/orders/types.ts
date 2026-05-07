@@ -3,7 +3,6 @@ import type {
   AdvancedOrder,
   OrderWithCounter,
 } from "@opensea/seaport-js/lib/types"
-import type { Listing, Offer } from "../api/types"
 import type { OpenSeaAccount, OrderSide } from "../types"
 
 // Protocol data
@@ -112,80 +111,7 @@ type Transaction = {
 }
 
 // API query types
-type OpenOrderOrderingOption = "created_date" | "eth_price"
-type OrderByDirection = "asc" | "desc"
-
-export type OrderAPIOptions = {
-  protocol?: OrderProtocol
-  protocolAddress?: string
-  side: OrderSide
-}
-
-export type OrdersQueryOptions = OrderAPIOptions & {
-  limit?: number
-  cursor?: string
-  next?: string
-
-  paymentTokenAddress?: string
-  maker?: string
-  taker?: string
-  owner?: string
-  listedAfter?: number | string
-  listedBefore?: number | string
-  tokenId?: string
-  tokenIds?: string[]
-  assetContractAddress?: string
-  orderBy?: OpenOrderOrderingOption
-  orderDirection?: OrderByDirection
-  onlyEnglish?: boolean
-}
-
-export type SerializedOrderV2 = {
-  created_date: string
-  closing_date: string | null
-  listing_time: number
-  expiration_time: number
-  order_hash: string | null
-  maker: unknown
-  taker: unknown | null
-  protocol_data: ProtocolData
-  protocol_address: string
-  current_price: string
-  maker_fees: {
-    account: unknown
-    basis_points: string
-  }[]
-  taker_fees: {
-    account: unknown
-    basis_points: string
-  }[]
-  side: OrderSide
-  order_type: OrderType
-  cancelled: boolean
-  finalized: boolean
-  marked_invalid: boolean
-  client_signature: string | null
-  remaining_quantity: number
-}
-
 export type QueryCursors = {
   next: string | null
   previous: string | null
-}
-
-export type OrdersQueryResponse = QueryCursors & {
-  orders: SerializedOrderV2[]
-}
-
-/** @deprecated Use ListingPostQueryResponse or OfferPostQueryResponse instead. */
-export type OrdersPostQueryResponse = { order: SerializedOrderV2 }
-
-export type ListingPostQueryResponse = {
-  order: SerializedOrderV2
-  listing: Listing
-}
-
-export type OfferPostQueryResponse = {
-  order: SerializedOrderV2
-  offer: Offer
 }
