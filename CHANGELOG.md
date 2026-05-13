@@ -1,5 +1,28 @@
 # @opensea/sdk
 
+## 10.5.0
+
+### Minor Changes
+
+- 051b558: Surface 22 new endpoints added in `@opensea/api-types` 0.4.0 as SDK methods and CLI commands.
+
+  **`@opensea/sdk`** — new methods on `OpenSeaAPI` (and the underlying domain clients):
+
+  - `getTokensBatch`, `getNFTsBatch`, `getCollectionsBatch` — batch lookups
+  - `createListingActions` — ordered approval + Seaport-sign actions for new listings
+  - `deployDropContract`, `getDeployContractReceipt` — drop contract deployment
+  - `transferAssets` — build transactions to transfer NFTs or tokens
+  - `getCollectionOfferAggregates`, `getCollectionHolders`, `getCollectionFloorPrices` — collection analytics
+  - `getTokenPriceHistory`, `getTokenOhlcv`, `getTokenActivity` — token analytics
+  - `getNFTOwners`, `getNFTAnalytics` — NFT analytics
+  - `getPortfolioStats`, `getPortfolioHistory`, `getProfileOffers`, `getProfileOffersReceived`, `getProfileListings`, `getProfileFavorites`, `getProfileCollections` — account profile
+
+  New internal `AssetsAPI` client; new request/response types re-exported through `@opensea/sdk` (from `@opensea/api-types`).
+
+  **`@opensea/cli`** — new commands on the existing `accounts`, `collections`, `nfts`, `tokens`, `listings`, `drops` subcommands, plus a new `assets transfer` subcommand. SDK class methods mirroring the same surface added to `OpenSeaCLI`.
+
+  No removed endpoints; pure additive release.
+
 ## 10.4.0
 
 ### Minor Changes

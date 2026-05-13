@@ -1,14 +1,20 @@
+import type { Chain } from "../types"
 import {
+  getBatchTokensPath,
   getSwapExecutePath,
   getSwapQuotePath,
+  getTokenActivityPath,
   getTokenGroupPath,
   getTokenGroupsPath,
+  getTokenOhlcvPath,
   getTokenPath,
+  getTokenPriceHistoryPath,
   getTopTokensPath,
   getTrendingTokensPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import type {
+  BatchTokensRequest,
   GetSwapQuoteArgs,
   GetSwapQuoteResponse,
   GetTokenGroupResponse,
@@ -18,8 +24,14 @@ import type {
   GetTokensArgs,
   GetTopTokensResponse,
   GetTrendingTokensResponse,
+  OhlcvResponse,
+  PriceHistoryResponse,
   SwapExecuteRequest,
   SwapExecuteResponse,
+  TokenActivityArgs,
+  TokenBatchResponse,
+  TokenSwapActivityPaginatedResponse,
+  TokenTimeSeriesArgs,
 } from "./types"
 
 /**
@@ -95,5 +107,58 @@ export class TokensAPI {
    */
   async getTokenGroup(slug: string): Promise<GetTokenGroupResponse> {
     return this.fetcher.get<GetTokenGroupResponse>(getTokenGroupPath(slug))
+  }
+
+  /**
+   * Fetch multiple tokens in a single request by chain + contract address.
+   */
+  async getTokensBatch(
+    request: BatchTokensRequest,
+  ): Promise<TokenBatchResponse> {
+    return this.fetcher.post<TokenBatchResponse>(getBatchTokensPath(), request)
+  }
+
+  /**
+   * Fetch the price history of a token. `start_time` is required and the
+   * default `end_time` is "now".
+   */
+  async getTokenPriceHistory(
+    chain: Chain,
+    address: string,
+    args: TokenTimeSeriesArgs,
+  ): Promise<PriceHistoryResponse> {
+    return this.fetcher.get<PriceHistoryResponse>(
+      getTokenPriceHistoryPath(chain, address),
+      args,
+    )
+  }
+
+  /**
+   * Fetch OHLCV (open / high / low / close / volume) candles for a token.
+   * `start_time` and `bucket_size` are required.
+   */
+  async getTokenOhlcv(
+    chain: Chain,
+    address: string,
+    args: TokenTimeSeriesArgs & { bucket_size: string },
+  ): Promise<OhlcvResponse> {
+    return this.fetcher.get<OhlcvResponse>(
+      getTokenOhlcvPath(chain, address),
+      args,
+    )
+  }
+
+  /**
+   * Fetch recent swap activity for a token.
+   */
+  async getTokenActivity(
+    chain: Chain,
+    address: string,
+    args?: TokenActivityArgs,
+  ): Promise<TokenSwapActivityPaginatedResponse> {
+    return this.fetcher.get<TokenSwapActivityPaginatedResponse>(
+      getTokenActivityPath(chain, address),
+      args,
+    )
   }
 }

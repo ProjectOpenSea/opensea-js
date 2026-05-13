@@ -1,24 +1,32 @@
 import type { Chain, OpenSeaCollection } from "../types"
 import { collectionFromJSON } from "../utils/converters"
 import {
+  getBatchNFTsPath,
   getContractPath,
   getListNFTsByAccountPath,
   getListNFTsByCollectionPath,
   getListNFTsByContractPath,
+  getNFTAnalyticsPath,
   getNFTCollectionPath,
   getNFTMetadataPath,
+  getNFTOwnersPath,
   getNFTPath,
   getRefreshMetadataPath,
   getValidateMetadataPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import {
+  type BatchNftsRequest,
   encodeTraitsParam,
   type GetCollectionResponse,
   type GetContractResponse,
   type GetNFTMetadataResponse,
   type GetNFTResponse,
   type ListNFTsResponse,
+  type NFTOwnersArgs,
+  type NftAnalyticsResponse,
+  type NftBatchResponse,
+  type OwnersPaginatedResponse,
   type TraitFilter,
   type ValidateMetadataResponse,
 } from "./types"
@@ -177,5 +185,41 @@ export class NFTsAPI {
       getNFTMetadataPath(chain, address, tokenId),
     )
     return response
+  }
+
+  /**
+   * Fetch multiple NFTs in a single request by chain + contract + token id.
+   */
+  async getNFTsBatch(request: BatchNftsRequest): Promise<NftBatchResponse> {
+    return this.fetcher.post<NftBatchResponse>(getBatchNFTsPath(), request)
+  }
+
+  /**
+   * Fetch owners of an NFT. For ERC-721s this is a single owner; for
+   * ERC-1155s it can be a paginated list with per-owner quantities.
+   */
+  async getNFTOwners(
+    address: string,
+    identifier: string,
+    chain: Chain = this.chain,
+    args?: NFTOwnersArgs,
+  ): Promise<OwnersPaginatedResponse> {
+    return this.fetcher.get<OwnersPaginatedResponse>(
+      getNFTOwnersPath(chain, address, identifier),
+      args,
+    )
+  }
+
+  /**
+   * Fetch analytics for an NFT — historical sale points used for charting.
+   */
+  async getNFTAnalytics(
+    address: string,
+    identifier: string,
+    chain: Chain = this.chain,
+  ): Promise<NftAnalyticsResponse> {
+    return this.fetcher.get<NftAnalyticsResponse>(
+      getNFTAnalyticsPath(chain, address, identifier),
+    )
   }
 }

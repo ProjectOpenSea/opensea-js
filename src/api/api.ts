@@ -14,6 +14,7 @@ import {
 import { executeWithRateLimit } from "../utils/rateLimit"
 import { AccountsAPI } from "./accounts"
 import { getInstantApiKeyPath } from "./apiPaths"
+import { AssetsAPI } from "./assets"
 import { ChainsAPI } from "./chains"
 import { CollectionsAPI } from "./collections"
 import { DropsAPI } from "./drops"
@@ -26,14 +27,28 @@ import { SearchAPI } from "./search"
 import { TokensAPI } from "./tokens"
 import { TransactionsAPI } from "./transactions"
 import {
+  type BatchCollectionsRequest,
+  type BatchNftsRequest,
+  type BatchTokensRequest,
   type BuildOfferResponse,
   type CancelOrderResponse,
+  type CollectionBatchResponse,
+  type CollectionFloorPricesArgs,
+  type CollectionHoldersArgs,
+  type CollectionHoldersPaginatedResponse,
   type CollectionOffer,
+  type CollectionOfferAggregatesPaginatedResponse,
   CollectionOrderByOption,
+  type CreateListingActionsRequest,
+  type CreateListingActionsResponse,
   type CrossChainFulfillmentRequest,
   type CrossChainFulfillmentResponse,
+  type DropDeployReceiptResponse,
+  type DropDeployRequest,
+  type DropDeployResponse,
   type DropMintRequest,
   type DropMintResponse,
+  type FloorPriceHistoryResponse,
   type GetAccountTokensArgs,
   type GetAccountTokensResponse,
   type GetBestListingResponse,
@@ -67,7 +82,24 @@ import {
   type GetTrendingTokensResponse,
   type Listing,
   type ListNFTsResponse,
+  type NFTOwnersArgs,
+  type NftAnalyticsResponse,
+  type NftBatchResponse,
   type Offer,
+  type OhlcvResponse,
+  type OwnersPaginatedResponse,
+  type PaginatedAnalyticsArgs,
+  type PortfolioArgs,
+  type PortfolioHistoryResponse,
+  type PortfolioStatsResponse,
+  type PriceHistoryResponse,
+  type ProfileCollectionsArgs,
+  type ProfileCollectionsResponse,
+  type ProfileFavoritesArgs,
+  type ProfileFavoritesResponse,
+  type ProfileListingsResponse,
+  type ProfileOffersResponse,
+  type ProfileOrdersArgs,
   type RequestInstantApiKeyResponse,
   type ResolveAccountResponse,
   type SearchArgs,
@@ -76,9 +108,15 @@ import {
   type SwapExecuteResponse,
   type SweepCollectionRequest,
   type SweepCollectionResponse,
+  type TokenActivityArgs,
+  type TokenBatchResponse,
+  type TokenSwapActivityPaginatedResponse,
+  type TokenTimeSeriesArgs,
   type TraitFilter,
   type TransactionReceiptRequest,
   type TransactionReceiptResponse,
+  type TransferRequest,
+  type TransferResponse,
   type ValidateMetadataResponse,
 } from "./types"
 
@@ -116,6 +154,7 @@ export class OpenSeaAPI {
   private chainsAPI: ChainsAPI
   private dropsAPI: DropsAPI
   private transactionsAPI: TransactionsAPI
+  private assetsAPI: AssetsAPI
 
   /**
    * Create an instance of the OpenSeaAPI
@@ -154,6 +193,7 @@ export class OpenSeaAPI {
     this.chainsAPI = new ChainsAPI(fetcher)
     this.dropsAPI = new DropsAPI(fetcher)
     this.transactionsAPI = new TransactionsAPI(fetcher)
+    this.assetsAPI = new AssetsAPI(fetcher)
   }
 
   /**
@@ -978,6 +1018,236 @@ export class OpenSeaAPI {
     chain: Chain = this.chain,
   ): Promise<GetNFTMetadataResponse> {
     return this.nftsAPI.getNFTMetadata(address, tokenId, chain)
+  }
+
+  /**
+   * Fetch multiple tokens in a single request.
+   * @param request Batch request listing chain + contract address pairs.
+   * @returns The {@link TokenBatchResponse} with detailed token info.
+   */
+  public async getTokensBatch(
+    request: BatchTokensRequest,
+  ): Promise<TokenBatchResponse> {
+    return this.tokensAPI.getTokensBatch(request)
+  }
+
+  /**
+   * Fetch the price history of a token.
+   * @param chain Chain the token lives on.
+   * @param address Token contract address.
+   * @param args Time-series window — `start_time` required, `end_time` defaults to now.
+   * @returns The {@link PriceHistoryResponse} returned by the API.
+   */
+  public async getTokenPriceHistory(
+    chain: Chain,
+    address: string,
+    args: TokenTimeSeriesArgs,
+  ): Promise<PriceHistoryResponse> {
+    return this.tokensAPI.getTokenPriceHistory(chain, address, args)
+  }
+
+  /**
+   * Fetch OHLCV candles for a token.
+   * @param chain Chain the token lives on.
+   * @param address Token contract address.
+   * @param args Time-series window plus candle `bucket_size` (required).
+   * @returns The {@link OhlcvResponse} returned by the API.
+   */
+  public async getTokenOhlcv(
+    chain: Chain,
+    address: string,
+    args: TokenTimeSeriesArgs & { bucket_size: string },
+  ): Promise<OhlcvResponse> {
+    return this.tokensAPI.getTokenOhlcv(chain, address, args)
+  }
+
+  /**
+   * Fetch recent swap activity for a token.
+   */
+  public async getTokenActivity(
+    chain: Chain,
+    address: string,
+    args?: TokenActivityArgs,
+  ): Promise<TokenSwapActivityPaginatedResponse> {
+    return this.tokensAPI.getTokenActivity(chain, address, args)
+  }
+
+  /**
+   * Fetch multiple NFTs in a single request.
+   */
+  public async getNFTsBatch(
+    request: BatchNftsRequest,
+  ): Promise<NftBatchResponse> {
+    return this.nftsAPI.getNFTsBatch(request)
+  }
+
+  /**
+   * Fetch owners of an NFT.
+   */
+  public async getNFTOwners(
+    address: string,
+    identifier: string,
+    chain: Chain = this.chain,
+    args?: NFTOwnersArgs,
+  ): Promise<OwnersPaginatedResponse> {
+    return this.nftsAPI.getNFTOwners(address, identifier, chain, args)
+  }
+
+  /**
+   * Fetch analytics (historical sale points) for an NFT.
+   */
+  public async getNFTAnalytics(
+    address: string,
+    identifier: string,
+    chain: Chain = this.chain,
+  ): Promise<NftAnalyticsResponse> {
+    return this.nftsAPI.getNFTAnalytics(address, identifier, chain)
+  }
+
+  /**
+   * Fetch multiple collections in a single request by slug.
+   */
+  public async getCollectionsBatch(
+    request: BatchCollectionsRequest,
+  ): Promise<CollectionBatchResponse> {
+    return this.collectionsAPI.getCollectionsBatch(request)
+  }
+
+  /**
+   * Fetch top offers for a collection grouped by price level.
+   */
+  public async getCollectionOfferAggregates(
+    slug: string,
+    args?: PaginatedAnalyticsArgs,
+  ): Promise<CollectionOfferAggregatesPaginatedResponse> {
+    return this.collectionsAPI.getCollectionOfferAggregates(slug, args)
+  }
+
+  /**
+   * Fetch holders of a collection.
+   */
+  public async getCollectionHolders(
+    slug: string,
+    args?: CollectionHoldersArgs,
+  ): Promise<CollectionHoldersPaginatedResponse> {
+    return this.collectionsAPI.getCollectionHolders(slug, args)
+  }
+
+  /**
+   * Fetch the floor-price history of a collection.
+   */
+  public async getCollectionFloorPrices(
+    slug: string,
+    args?: CollectionFloorPricesArgs,
+  ): Promise<FloorPriceHistoryResponse> {
+    return this.collectionsAPI.getCollectionFloorPrices(slug, args)
+  }
+
+  /**
+   * Get ordered approval + sign actions to create one or more listings.
+   */
+  public async createListingActions(
+    request: CreateListingActionsRequest,
+  ): Promise<CreateListingActionsResponse> {
+    return this.listingsAPI.createListingActions(request)
+  }
+
+  /**
+   * Build a deploy-contract transaction for a new drop.
+   */
+  public async deployDropContract(
+    request: DropDeployRequest,
+  ): Promise<DropDeployResponse> {
+    return this.dropsAPI.deployDropContract(request)
+  }
+
+  /**
+   * Get the receipt of a previously submitted drop-deploy transaction.
+   */
+  public async getDeployContractReceipt(
+    chain: Chain,
+    txHash: string,
+  ): Promise<DropDeployReceiptResponse> {
+    return this.dropsAPI.getDeployReceipt(chain, txHash)
+  }
+
+  /**
+   * Build transactions to transfer NFTs or tokens between wallets.
+   */
+  public async transferAssets(
+    request: TransferRequest,
+  ): Promise<TransferResponse> {
+    return this.assetsAPI.transferAssets(request)
+  }
+
+  /**
+   * Get portfolio stats (net worth, P&L) for an account.
+   */
+  public async getPortfolioStats(
+    address: string,
+    args?: PortfolioArgs,
+  ): Promise<PortfolioStatsResponse> {
+    return this.accountsAPI.getPortfolioStats(address, args)
+  }
+
+  /**
+   * Get portfolio net-worth history for an account.
+   */
+  public async getPortfolioHistory(
+    address: string,
+    args?: PortfolioArgs,
+  ): Promise<PortfolioHistoryResponse> {
+    return this.accountsAPI.getPortfolioHistory(address, args)
+  }
+
+  /**
+   * Get offers received by an account.
+   */
+  public async getProfileOffersReceived(
+    address: string,
+    args?: ProfileOrdersArgs,
+  ): Promise<ProfileOffersResponse> {
+    return this.accountsAPI.getProfileOffersReceived(address, args)
+  }
+
+  /**
+   * Get active offers made by an account.
+   */
+  public async getProfileOffers(
+    address: string,
+    args?: ProfileOrdersArgs,
+  ): Promise<ProfileOffersResponse> {
+    return this.accountsAPI.getProfileOffers(address, args)
+  }
+
+  /**
+   * Get active listings for an account.
+   */
+  public async getProfileListings(
+    address: string,
+    args?: ProfileOrdersArgs,
+  ): Promise<ProfileListingsResponse> {
+    return this.accountsAPI.getProfileListings(address, args)
+  }
+
+  /**
+   * Get items favorited by an account.
+   */
+  public async getProfileFavorites(
+    address: string,
+    args?: ProfileFavoritesArgs,
+  ): Promise<ProfileFavoritesResponse> {
+    return this.accountsAPI.getProfileFavorites(address, args)
+  }
+
+  /**
+   * Get collections owned by an account.
+   */
+  public async getProfileCollections(
+    address: string,
+    args?: ProfileCollectionsArgs,
+  ): Promise<ProfileCollectionsResponse> {
+    return this.accountsAPI.getProfileCollections(address, args)
   }
 
   /**

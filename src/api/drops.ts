@@ -1,6 +1,16 @@
-import { getDropMintPath, getDropPath, getDropsPath } from "./apiPaths"
+import type { Chain } from "../types"
+import {
+  getDeployDropPath,
+  getDeployDropReceiptPath,
+  getDropMintPath,
+  getDropPath,
+  getDropsPath,
+} from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import type {
+  DropDeployReceiptResponse,
+  DropDeployRequest,
+  DropDeployResponse,
   DropMintRequest,
   DropMintResponse,
   GetDropResponse,
@@ -45,5 +55,28 @@ export class DropsAPI {
       request,
     )
     return response
+  }
+
+  /**
+   * Builds a deploy-contract transaction for a new drop. Returns
+   * ready-to-sign transaction data — caller submits onchain and then polls
+   * `getDeployReceipt` until the contract address is available.
+   */
+  async deployDropContract(
+    request: DropDeployRequest,
+  ): Promise<DropDeployResponse> {
+    return this.fetcher.post<DropDeployResponse>(getDeployDropPath(), request)
+  }
+
+  /**
+   * Get the receipt of a previously submitted drop-deploy transaction.
+   */
+  async getDeployReceipt(
+    chain: Chain,
+    txHash: string,
+  ): Promise<DropDeployReceiptResponse> {
+    return this.fetcher.get<DropDeployReceiptResponse>(
+      getDeployDropReceiptPath(chain, txHash),
+    )
   }
 }

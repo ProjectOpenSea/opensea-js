@@ -1,6 +1,10 @@
 import type { Chain, OpenSeaCollection, OpenSeaCollectionStats } from "../types"
 import { collectionFromJSON } from "../utils/converters"
 import {
+  getBatchCollectionsPath,
+  getCollectionFloorPricesPath,
+  getCollectionHoldersPath,
+  getCollectionOfferAggregatesPath,
   getCollectionPath,
   getCollectionStatsPath,
   getCollectionsPath,
@@ -10,7 +14,14 @@ import {
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import {
+  type BatchCollectionsRequest,
+  type CollectionBatchResponse,
+  type CollectionFloorPricesArgs,
+  type CollectionHoldersArgs,
+  type CollectionHoldersPaginatedResponse,
+  type CollectionOfferAggregatesPaginatedResponse,
   CollectionOrderByOption,
+  type FloorPriceHistoryResponse,
   type GetCollectionResponse,
   type GetCollectionsArgs,
   type GetCollectionsPaginatedResponse,
@@ -18,6 +29,7 @@ import {
   type GetTopCollectionsArgs,
   type GetTraitsResponse,
   type GetTrendingCollectionsArgs,
+  type PaginatedAnalyticsArgs,
 } from "./types"
 
 /**
@@ -116,5 +128,58 @@ export class CollectionsAPI {
       collectionFromJSON(collection),
     )
     return response
+  }
+
+  /**
+   * Fetch multiple collections in a single request by slug.
+   */
+  async getCollectionsBatch(
+    request: BatchCollectionsRequest,
+  ): Promise<CollectionBatchResponse> {
+    return this.fetcher.post<CollectionBatchResponse>(
+      getBatchCollectionsPath(),
+      request,
+    )
+  }
+
+  /**
+   * Fetch aggregated offer information for a collection — top offers grouped
+   * by price level. Useful for displaying offer-book depth.
+   */
+  async getCollectionOfferAggregates(
+    slug: string,
+    args?: PaginatedAnalyticsArgs,
+  ): Promise<CollectionOfferAggregatesPaginatedResponse> {
+    return this.fetcher.get<CollectionOfferAggregatesPaginatedResponse>(
+      getCollectionOfferAggregatesPath(slug),
+      args,
+    )
+  }
+
+  /**
+   * Fetch holders of a collection, ranked by quantity owned. Optionally
+   * filter to a single owner via `args.owned_by`.
+   */
+  async getCollectionHolders(
+    slug: string,
+    args?: CollectionHoldersArgs,
+  ): Promise<CollectionHoldersPaginatedResponse> {
+    return this.fetcher.get<CollectionHoldersPaginatedResponse>(
+      getCollectionHoldersPath(slug),
+      args,
+    )
+  }
+
+  /**
+   * Fetch the floor-price history of a collection.
+   */
+  async getCollectionFloorPrices(
+    slug: string,
+    args?: CollectionFloorPricesArgs,
+  ): Promise<FloorPriceHistoryResponse> {
+    return this.fetcher.get<FloorPriceHistoryResponse>(
+      getCollectionFloorPricesPath(slug),
+      args,
+    )
   }
 }

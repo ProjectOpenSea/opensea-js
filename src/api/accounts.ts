@@ -4,14 +4,35 @@ import {
   getAccountPath,
   getAccountTokensPath,
   getPaymentTokenPath,
+  getPortfolioHistoryPath,
+  getPortfolioStatsPath,
+  getProfileCollectionsPath,
+  getProfileFavoritesPath,
+  getProfileListingsPath,
+  getProfileOffersPath,
+  getProfileOffersReceivedPath,
   getResolveAccountPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import type {
   GetAccountTokensArgs,
   GetAccountTokensResponse,
+  PortfolioArgs,
+  PortfolioHistoryResponse,
+  PortfolioStatsResponse,
+  ProfileCollectionsArgs,
+  ProfileCollectionsResponse,
+  ProfileFavoritesArgs,
+  ProfileFavoritesResponse,
+  ProfileListingsResponse,
+  ProfileOffersResponse,
+  ProfileOrdersArgs,
   ResolveAccountResponse,
 } from "./types"
+
+function joinArray(value: string[] | undefined): string | undefined {
+  return value && value.length > 0 ? value.join(",") : undefined
+}
 
 /**
  * Account and payment token related API operations
@@ -65,5 +86,114 @@ export class AccountsAPI {
       getResolveAccountPath(identifier),
     )
     return response
+  }
+
+  /**
+   * Get portfolio stats (net worth, P&L) for an account.
+   */
+  async getPortfolioStats(
+    address: string,
+    args?: PortfolioArgs,
+  ): Promise<PortfolioStatsResponse> {
+    return this.fetcher.get<PortfolioStatsResponse>(
+      getPortfolioStatsPath(address),
+      args,
+    )
+  }
+
+  /**
+   * Get portfolio net-worth history for an account.
+   */
+  async getPortfolioHistory(
+    address: string,
+    args?: PortfolioArgs,
+  ): Promise<PortfolioHistoryResponse> {
+    return this.fetcher.get<PortfolioHistoryResponse>(
+      getPortfolioHistoryPath(address),
+      args,
+    )
+  }
+
+  /**
+   * Get offers received by an account, scoped by collection/chain.
+   */
+  async getProfileOffersReceived(
+    address: string,
+    args?: ProfileOrdersArgs,
+  ): Promise<ProfileOffersResponse> {
+    return this.fetcher.get<ProfileOffersResponse>(
+      getProfileOffersReceivedPath(address),
+      {
+        ...args,
+        collection_slugs: joinArray(args?.collection_slugs),
+        chains: joinArray(args?.chains),
+      },
+    )
+  }
+
+  /**
+   * Get active offers made by an account.
+   */
+  async getProfileOffers(
+    address: string,
+    args?: ProfileOrdersArgs,
+  ): Promise<ProfileOffersResponse> {
+    return this.fetcher.get<ProfileOffersResponse>(
+      getProfileOffersPath(address),
+      {
+        ...args,
+        collection_slugs: joinArray(args?.collection_slugs),
+        chains: joinArray(args?.chains),
+      },
+    )
+  }
+
+  /**
+   * Get active listings for an account.
+   */
+  async getProfileListings(
+    address: string,
+    args?: ProfileOrdersArgs,
+  ): Promise<ProfileListingsResponse> {
+    return this.fetcher.get<ProfileListingsResponse>(
+      getProfileListingsPath(address),
+      {
+        ...args,
+        collection_slugs: joinArray(args?.collection_slugs),
+        chains: joinArray(args?.chains),
+      },
+    )
+  }
+
+  /**
+   * Get items favorited by an account.
+   */
+  async getProfileFavorites(
+    address: string,
+    args?: ProfileFavoritesArgs,
+  ): Promise<ProfileFavoritesResponse> {
+    return this.fetcher.get<ProfileFavoritesResponse>(
+      getProfileFavoritesPath(address),
+      {
+        ...args,
+        chains: joinArray(args?.chains),
+      },
+    )
+  }
+
+  /**
+   * Get collections owned by an account.
+   */
+  async getProfileCollections(
+    address: string,
+    args?: ProfileCollectionsArgs,
+  ): Promise<ProfileCollectionsResponse> {
+    return this.fetcher.get<ProfileCollectionsResponse>(
+      getProfileCollectionsPath(address),
+      {
+        ...args,
+        chains: joinArray(args?.chains),
+      },
+    )
   }
 }

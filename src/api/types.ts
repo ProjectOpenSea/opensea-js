@@ -7,6 +7,9 @@ import type {
   TransactionReceiptResponse as ApiTransactionReceiptResponse,
   AssetMetadataResponse,
   InstantApiKeyResponse,
+  ListingsResponse,
+  NftListResponse,
+  OffersResponse,
   TokenGroupPaginatedResponse,
   TokenGroupResponse,
 } from "@opensea/api-types"
@@ -1338,3 +1341,162 @@ export type {
   ListingObject,
   SwapTransactionResponse,
 } from "@opensea/api-types"
+
+// ─── New endpoint types (api-types 0.4.0) ───────────────────────────
+// Request bodies for POST endpoints and response shapes for analytics /
+// profile / batch / drops-deploy / transfer endpoints. All re-exported
+// from @opensea/api-types — see packages/api-types/src/index.ts.
+
+export type {
+  BatchCollectionsRequest,
+  BatchNftsRequest,
+  BatchTokensRequest,
+  CollectionBatchResponse,
+  CollectionHoldersPaginatedResponse,
+  CollectionOfferAggregatesPaginatedResponse,
+  CreateListingActionsRequest,
+  CreateListingActionsResponse,
+  DropDeployReceiptResponse,
+  DropDeployRequest,
+  DropDeployResponse,
+  FloorPriceHistoryResponse,
+  NftAnalyticsResponse,
+  NftBatchResponse,
+  OhlcvResponse,
+  OwnersPaginatedResponse,
+  PortfolioHistoryResponse,
+  PortfolioStatsResponse,
+  PriceHistoryResponse,
+  ProfileCollectionsResponse,
+  TokenBatchResponse,
+  TokenSwapActivityPaginatedResponse,
+  TransferRequest,
+  TransferResponse,
+} from "@opensea/api-types"
+
+/**
+ * Query args for paginated collection-analytics endpoints (offer aggregates,
+ * holders). All fields are optional; `cursor` paginates forward.
+ * @category API Query Args
+ */
+export interface PaginatedAnalyticsArgs {
+  limit?: number
+  cursor?: string
+  sort_direction?: "asc" | "desc"
+}
+
+/**
+ * Query args for the collection holders endpoint — adds optional `owned_by`
+ * filter on top of {@link PaginatedAnalyticsArgs}.
+ * @category API Query Args
+ */
+export interface CollectionHoldersArgs extends PaginatedAnalyticsArgs {
+  owned_by?: string
+}
+
+/**
+ * Query args for the collection floor-price history endpoint.
+ * @category API Query Args
+ */
+export interface CollectionFloorPricesArgs {
+  /** Time window: one_minute, five_minutes, fifteen_minutes, one_hour, one_day, seven_days, thirty_days, one_year, all_time */
+  timeframe?: string
+  /** Number of data points to return */
+  resolution?: number
+}
+
+/**
+ * Query args for token price-history and OHLCV endpoints.
+ * @category API Query Args
+ */
+export interface TokenTimeSeriesArgs {
+  /** Start time (ISO 8601, required by the API). */
+  start_time: string
+  /** End time (ISO 8601, defaults to now). */
+  end_time?: string
+  /** Candle bucket size: 1s, 1m, 5m, 15m, 1h, 4h, 1d. */
+  bucket_size?: string
+  /** Whether to fill empty time windows with zero-volume candles (OHLCV only). */
+  fill_time_window?: boolean
+}
+
+/**
+ * Query args for the token swap-activity endpoint.
+ * @category API Query Args
+ */
+export interface TokenActivityArgs {
+  limit?: number
+  cursor?: string
+}
+
+/**
+ * Query args for the NFT owners endpoint (paginated with `next` cursor).
+ * @category API Query Args
+ */
+export interface NFTOwnersArgs {
+  limit?: number
+  next?: string
+}
+
+/**
+ * Query args for the account portfolio and portfolio history endpoints.
+ * @category API Query Args
+ */
+export interface PortfolioArgs {
+  /** Timeframe for P&L / net-worth history calculation. */
+  timeframe?: "HOUR" | "DAY" | "WEEK" | "MONTH"
+}
+
+/**
+ * Query args shared by the account profile listing-and-offer endpoints
+ * (offers, offers_received, listings).
+ * @category API Query Args
+ */
+export interface ProfileOrdersArgs {
+  after?: string
+  limit?: number
+  collection_slugs?: string[]
+  chains?: string[]
+  sort_by?: string
+  sort_direction?: "asc" | "desc"
+}
+
+/**
+ * Query args for the account profile favorites endpoint.
+ * @category API Query Args
+ */
+export interface ProfileFavoritesArgs {
+  after?: string
+  limit?: number
+  sort_by?: string
+  sort_direction?: "asc" | "desc"
+  chains?: string[]
+}
+
+/**
+ * Query args for the account profile collections endpoint.
+ * @category API Query Args
+ */
+export interface ProfileCollectionsArgs {
+  after?: string
+  limit?: number
+  chains?: string[]
+}
+
+/**
+ * Response from the account favorites endpoint — favorited NFTs.
+ * @category API Response Types
+ */
+export type ProfileFavoritesResponse = NftListResponse
+
+/**
+ * Response from the account profile listings endpoint.
+ * @category API Response Types
+ */
+export type ProfileListingsResponse = ListingsResponse
+
+/**
+ * Response from the account profile offers / offers_received endpoints.
+ * @category API Response Types
+ */
+export type ProfileOffersResponse = OffersResponse

@@ -2,11 +2,14 @@ import {
   getAllListingsAPIPath,
   getBestListingAPIPath,
   getBestListingsAPIPath,
+  getCreateListingActionsPath,
   getCrossChainFulfillmentDataPath,
   getSweepListingsPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import {
+  type CreateListingActionsRequest,
+  type CreateListingActionsResponse,
   type CrossChainFulfillmentRequest,
   type CrossChainFulfillmentResponse,
   encodeTraitsParam,
@@ -119,6 +122,21 @@ export class ListingsAPI {
   ): Promise<SweepCollectionResponse> {
     return this.fetcher.post<SweepCollectionResponse>(
       getSweepListingsPath(),
+      request,
+    )
+  }
+
+  /**
+   * Get an ordered list of blockchain actions required to create one or more
+   * listings — token approvals + a final action containing the Seaport order
+   * to sign. Useful for clients that prefer the server to compute the
+   * approval graph.
+   */
+  async createListingActions(
+    request: CreateListingActionsRequest,
+  ): Promise<CreateListingActionsResponse> {
+    return this.fetcher.post<CreateListingActionsResponse>(
+      getCreateListingActionsPath(),
       request,
     )
   }

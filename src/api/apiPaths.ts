@@ -256,3 +256,115 @@ export const getCrossChainFulfillmentDataPath = () => {
 export const getInstantApiKeyPath = () => {
   return `${API_V2_PREFIX}/auth/keys`
 }
+
+// ── Batch lookups ───────────────────────────────────────────────────
+
+export const getBatchTokensPath = () => {
+  return `${API_V2_PREFIX}/tokens/batch`
+}
+
+export const getBatchNFTsPath = () => {
+  return `${API_V2_PREFIX}/nfts/batch`
+}
+
+export const getBatchCollectionsPath = () => {
+  return `${API_V2_PREFIX}/collections/batch`
+}
+
+// ── Listings actions ────────────────────────────────────────────────
+
+export const getCreateListingActionsPath = () => {
+  return `${API_V2_PREFIX}/listings/actions`
+}
+
+// ── Drops deploy ────────────────────────────────────────────────────
+
+export const getDeployDropPath = () => {
+  return `${API_V2_PREFIX}/drops/deploy`
+}
+
+export const getDeployDropReceiptPath = (chain: Chain, txHash: string) => {
+  return `${API_V2_PREFIX}/drops/deploy/${chain}/${txHash}/receipt`
+}
+
+// ── Assets transfer ─────────────────────────────────────────────────
+
+export const getTransferAssetsPath = () => {
+  return `${API_V2_PREFIX}/assets/transfer`
+}
+
+// ── Collection analytics ────────────────────────────────────────────
+
+export const getCollectionOfferAggregatesPath = (slug: string) => {
+  return `${API_V2_PREFIX}/collections/${slug}/offer_aggregates`
+}
+
+export const getCollectionHoldersPath = (slug: string) => {
+  return `${API_V2_PREFIX}/collections/${slug}/holders`
+}
+
+export const getCollectionFloorPricesPath = (slug: string) => {
+  return `${API_V2_PREFIX}/collections/${slug}/floor_prices`
+}
+
+// ── Token analytics ─────────────────────────────────────────────────
+
+export const getTokenPriceHistoryPath = (chain: Chain, address: string) => {
+  return `${API_V2_PREFIX}/chain/${chain}/token/${address}/price_history`
+}
+
+export const getTokenOhlcvPath = (chain: Chain, address: string) => {
+  return `${API_V2_PREFIX}/chain/${chain}/token/${address}/ohlcv`
+}
+
+export const getTokenActivityPath = (chain: Chain, address: string) => {
+  return `${API_V2_PREFIX}/chain/${chain}/token/${address}/activity`
+}
+
+// ── NFT analytics ───────────────────────────────────────────────────
+
+export const getNFTOwnersPath = (
+  chain: Chain,
+  address: string,
+  identifier: string,
+) => {
+  return `${API_V2_PREFIX}/chain/${chain}/contract/${address}/nfts/${identifier}/owners`
+}
+
+export const getNFTAnalyticsPath = (
+  chain: Chain,
+  address: string,
+  identifier: string,
+) => {
+  return `${API_V2_PREFIX}/chain/${chain}/contract/${address}/nfts/${identifier}/analytics`
+}
+
+// ── Account portfolio / profile ─────────────────────────────────────
+
+export const getPortfolioStatsPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/portfolio`
+}
+
+export const getPortfolioHistoryPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/portfolio/history`
+}
+
+export const getProfileOffersReceivedPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/offers_received`
+}
+
+export const getProfileOffersPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/offers`
+}
+
+export const getProfileListingsPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/listings`
+}
+
+export const getProfileFavoritesPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/favorites`
+}
+
+export const getProfileCollectionsPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/collections`
+}
