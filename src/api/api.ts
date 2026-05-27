@@ -116,6 +116,10 @@ import {
   type SweepCollectionResponse,
   type TokenActivityArgs,
   type TokenBatchResponse,
+  type TokenHoldersArgs,
+  type TokenHoldersResponse,
+  type TokenLiquidityPoolsArgs,
+  type TokenLiquidityPoolsResponse,
   type TokenSwapActivityPaginatedResponse,
   type TokenTimeSeriesArgs,
   type TraitFilter,
@@ -1076,6 +1080,30 @@ export class OpenSeaAPI {
     args?: TokenActivityArgs,
   ): Promise<TokenSwapActivityPaginatedResponse> {
     return this.tokensAPI.getTokenActivity(chain, address, args)
+  }
+
+  /**
+   * Fetch paginated holders for a token, including quantity held, USD value,
+   * and aggregate distribution health (STRONG | HEALTHY | CONCERNING | BAD).
+   */
+  public async getTokenHolders(
+    chain: Chain,
+    address: string,
+    args?: TokenHoldersArgs,
+  ): Promise<TokenHoldersResponse> {
+    return this.tokensAPI.getTokenHolders(chain, address, args)
+  }
+
+  /**
+   * Fetch liquidity pools for a token (pool type, USD reserves, and
+   * bonding-curve progress / graduation flag where applicable).
+   */
+  public async getTokenLiquidityPools(
+    chain: Chain,
+    address: string,
+    args?: TokenLiquidityPoolsArgs,
+  ): Promise<TokenLiquidityPoolsResponse> {
+    return this.tokensAPI.getTokenLiquidityPools(chain, address, args)
   }
 
   /**

@@ -321,6 +321,14 @@ export const getTokenActivityPath = (chain: Chain, address: string) => {
   return `${API_V2_PREFIX}/chain/${chain}/token/${address}/activity`
 }
 
+export const getTokenHoldersPath = (chain: Chain, address: string) => {
+  return `${API_V2_PREFIX}/chain/${chain}/token/${address}/holders`
+}
+
+export const getTokenLiquidityPoolsPath = (chain: Chain, address: string) => {
+  return `${API_V2_PREFIX}/chain/${chain}/token/${address}/liquidity-pools`
+}
+
 // ── NFT analytics ───────────────────────────────────────────────────
 
 export const getNFTOwnersPath = (

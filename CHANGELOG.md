@@ -1,5 +1,39 @@
 # @opensea/sdk
 
+## 11.1.0
+
+### Minor Changes
+
+- 8fa9fb5: Expose the new `token/{chain}/{address}/holders` and `token/{chain}/{address}/liquidity-pools` endpoints across SDK, CLI, and skill.
+
+  ## SDK (`@opensea/sdk`)
+
+  - `OpenSeaAPI.getTokenHolders(chain, address, args?)` → `TokenHoldersResponse` — paginated holders (`limit`, `cursor`, `sortBy: "QUANTITY"`, `sortDirection`) plus aggregate distribution health (`STRONG | HEALTHY | CONCERNING | BAD`).
+  - `OpenSeaAPI.getTokenLiquidityPools(chain, address, args?)` → `TokenLiquidityPoolsResponse` — pools with pool type, USD reserves, bonding-curve progress, graduation flag.
+  - New type exports: `TokenHoldersResponse`, `TokenHoldersArgs`, `TokenLiquidityPoolsResponse`, `TokenLiquidityPoolsArgs`.
+  - New path helpers in `apiPaths.ts`: `getTokenHoldersPath`, `getTokenLiquidityPoolsPath`.
+
+  ## CLI (`@opensea/cli`)
+
+  - `opensea tokens holders <chain> <address> [--limit] [--next] [--sort-by] [--sort-direction]`
+  - `opensea tokens liquidity-pools <chain> <address> [--limit]`
+  - SDK class additions: `OpenSeaCLI.tokens.holders(...)`, `OpenSeaCLI.tokens.liquidityPools(...)`.
+  - New type re-exports: `TokenHoldersResponse`, `TokenLiquidityPoolsResponse`.
+
+  ## Skill (`@opensea/skill`)
+
+  - `tokens/opensea-token-holders.sh <chain> <address> [limit] [cursor] [sort_by] [sort_direction]`
+  - `tokens/opensea-token-liquidity-pools.sh <chain> <address> [limit]`
+  - Documentation: added rows to `SKILL.md` (Investigation Scripts) and `references/rest-api.md` (Tokens).
+
+  Bumps consume `@opensea/api-types` 0.4.3 (released alongside, see the spec-sync PR for full schema details).
+
+### Patch Changes
+
+- Updated dependencies [96928f4]
+- Updated dependencies [90702a7]
+  - @opensea/api-types@0.4.3
+
 ## 11.0.0
 
 ### Major Changes

@@ -1193,6 +1193,8 @@ import type {
   ProfileCollectionsResponse as ApiProfileCollectionsResponse,
   SwapTransactionResponse as ApiSwapTransactionResponse,
   TokenBatchResponse as ApiTokenBatchResponse,
+  TokenHoldersResponse as ApiTokenHoldersResponse,
+  TokenLiquidityPoolsResponse as ApiTokenLiquidityPoolsResponse,
   TokenSwapActivityPaginatedResponse as ApiTokenSwapActivityPaginatedResponse,
   TransferRequest as ApiTransferRequest,
   TransferResponse as ApiTransferResponse,
@@ -1236,6 +1238,9 @@ export type PriceHistoryResponse = Camelize<ApiPriceHistoryResponse>
 export type ProfileCollectionsResponse = Camelize<ApiProfileCollectionsResponse>
 export type SwapTransactionResponse = Camelize<ApiSwapTransactionResponse>
 export type TokenBatchResponse = Camelize<ApiTokenBatchResponse>
+export type TokenHoldersResponse = Camelize<ApiTokenHoldersResponse>
+export type TokenLiquidityPoolsResponse =
+  Camelize<ApiTokenLiquidityPoolsResponse>
 export type TokenSwapActivityPaginatedResponse =
   Camelize<ApiTokenSwapActivityPaginatedResponse>
 export type TransferResponse = Camelize<ApiTransferResponse>
@@ -1293,6 +1298,26 @@ export interface TokenTimeSeriesArgs {
 export interface TokenActivityArgs {
   limit?: number
   cursor?: string
+}
+
+/**
+ * Query args for the token holders endpoint (paginated with `cursor`,
+ * sortable by `QUANTITY`).
+ * @category API Query Args
+ */
+export interface TokenHoldersArgs {
+  limit?: number
+  cursor?: string
+  sortBy?: "QUANTITY"
+  sortDirection?: "asc" | "desc"
+}
+
+/**
+ * Query args for the token liquidity-pools endpoint.
+ * @category API Query Args
+ */
+export interface TokenLiquidityPoolsArgs {
+  limit?: number
 }
 
 /**

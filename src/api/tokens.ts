@@ -6,6 +6,8 @@ import {
   getTokenActivityPath,
   getTokenGroupPath,
   getTokenGroupsPath,
+  getTokenHoldersPath,
+  getTokenLiquidityPoolsPath,
   getTokenOhlcvPath,
   getTokenPath,
   getTokenPriceHistoryPath,
@@ -30,6 +32,10 @@ import type {
   SwapExecuteResponse,
   TokenActivityArgs,
   TokenBatchResponse,
+  TokenHoldersArgs,
+  TokenHoldersResponse,
+  TokenLiquidityPoolsArgs,
+  TokenLiquidityPoolsResponse,
   TokenSwapActivityPaginatedResponse,
   TokenTimeSeriesArgs,
 } from "./types"
@@ -158,6 +164,37 @@ export class TokensAPI {
   ): Promise<TokenSwapActivityPaginatedResponse> {
     return this.fetcher.get<TokenSwapActivityPaginatedResponse>(
       getTokenActivityPath(chain, address),
+      args,
+    )
+  }
+
+  /**
+   * Fetch paginated holders for a token, including quantity held, USD value,
+   * and an aggregate distribution health label (STRONG | HEALTHY |
+   * CONCERNING | BAD).
+   */
+  async getTokenHolders(
+    chain: Chain,
+    address: string,
+    args?: TokenHoldersArgs,
+  ): Promise<TokenHoldersResponse> {
+    return this.fetcher.get<TokenHoldersResponse>(
+      getTokenHoldersPath(chain, address),
+      args,
+    )
+  }
+
+  /**
+   * Fetch liquidity pools for a token (pool type, reserves in USD, and
+   * bonding-curve progress / graduation flag where applicable).
+   */
+  async getTokenLiquidityPools(
+    chain: Chain,
+    address: string,
+    args?: TokenLiquidityPoolsArgs,
+  ): Promise<TokenLiquidityPoolsResponse> {
+    return this.fetcher.get<TokenLiquidityPoolsResponse>(
+      getTokenLiquidityPoolsPath(chain, address),
       args,
     )
   }

@@ -9,6 +9,7 @@ import type {
   GetTrendingTokensResponse,
   Token,
 } from "../../src/api/types"
+import { Chain } from "../../src/types"
 import { createMockFetcher } from "../fixtures/fetcher"
 
 const mockToken: Token = {
@@ -349,6 +350,68 @@ describe("API: TokensAPI", () => {
       expect(mockGet.mock.calls[0][0]).toBe("/api/v2/token-groups/eth")
       expect(mockGet.mock.calls[0][1]).toBeUndefined()
       expect(result).toBe(mockResponse)
+    })
+  })
+
+  describe("getTokenHolders", () => {
+    test("fetches token holders without args", async () => {
+      mockGet.mockResolvedValue({ holders: [] })
+
+      await tokensAPI.getTokenHolders(
+        Chain.Mainnet,
+        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      )
+
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
+        "/api/v2/chain/ethereum/token/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/holders",
+      )
+      expect(mockGet.mock.calls[0][1]).toBeUndefined()
+    })
+
+    test("passes limit/cursor/sortBy/sortDirection query args", async () => {
+      mockGet.mockResolvedValue({ holders: [] })
+
+      await tokensAPI.getTokenHolders(Chain.Mainnet, "0xabc", {
+        limit: 50,
+        cursor: "page-2",
+        sortBy: "QUANTITY",
+        sortDirection: "desc",
+      })
+
+      expect(mockGet.mock.calls[0][1]).toEqual({
+        limit: 50,
+        cursor: "page-2",
+        sortBy: "QUANTITY",
+        sortDirection: "desc",
+      })
+    })
+  })
+
+  describe("getTokenLiquidityPools", () => {
+    test("fetches token liquidity pools without args", async () => {
+      mockGet.mockResolvedValue({ pools: [] })
+
+      await tokensAPI.getTokenLiquidityPools(
+        Chain.Mainnet,
+        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      )
+
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
+        "/api/v2/chain/ethereum/token/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/liquidity-pools",
+      )
+      expect(mockGet.mock.calls[0][1]).toBeUndefined()
+    })
+
+    test("passes limit query arg", async () => {
+      mockGet.mockResolvedValue({ pools: [] })
+
+      await tokensAPI.getTokenLiquidityPools(Chain.Mainnet, "0xabc", {
+        limit: 50,
+      })
+
+      expect(mockGet.mock.calls[0][1]).toEqual({ limit: 50 })
     })
   })
 
