@@ -12,10 +12,10 @@ import { createMockFetcher } from "../fixtures/fetcher"
 const mockCollectionResult: CollectionSearchResult = {
   collection: "bored-ape-yacht-club",
   name: "Bored Ape Yacht Club",
-  image_url: "https://example.com/bayc.png",
-  is_disabled: false,
-  is_nsfw: false,
-  opensea_url: "https://opensea.io/collection/bored-ape-yacht-club",
+  imageUrl: "https://example.com/bayc.png",
+  isDisabled: false,
+  isNsfw: false,
+  openseaUrl: "https://opensea.io/collection/bored-ape-yacht-club",
 }
 
 const mockTokenResult: TokenSearchResult = {
@@ -23,10 +23,10 @@ const mockTokenResult: TokenSearchResult = {
   chain: "ethereum",
   name: "Wrapped Ether",
   symbol: "WETH",
-  image_url: "https://example.com/weth.png",
-  usd_price: "3500.00",
+  imageUrl: "https://example.com/weth.png",
+  usdPrice: "3500.00",
   decimals: 18,
-  opensea_url:
+  openseaUrl:
     "https://opensea.io/token/ethereum/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
 }
 
@@ -35,16 +35,16 @@ const mockNftResult: NftSearchResult = {
   collection: "bored-ape-yacht-club",
   contract: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
   name: "Bored Ape #1234",
-  image_url: "https://example.com/ape1234.png",
-  opensea_url:
+  imageUrl: "https://example.com/ape1234.png",
+  openseaUrl:
     "https://opensea.io/assets/ethereum/0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D/1234",
 }
 
 const mockAccountResult: AccountSearchResult = {
   address: "0x1234567890abcdef1234567890abcdef12345678",
   username: "testuser",
-  profile_image_url: "https://example.com/avatar.png",
-  opensea_url: "https://opensea.io/testuser",
+  profileImageUrl: "https://example.com/avatar.png",
+  openseaUrl: "https://opensea.io/testuser",
 }
 
 describe("API: SearchAPI", () => {
@@ -102,12 +102,12 @@ describe("API: SearchAPI", () => {
 
       await searchAPI.search({
         query: "test",
-        asset_types: ["collection", "nft"],
+        assetTypes: ["collection", "nft"],
       })
 
       expect(mockGet.mock.calls[0][1]).toEqual({
         query: "test",
-        asset_types: ["collection", "nft"],
+        assetTypes: ["collection", "nft"],
       })
     })
 
@@ -130,14 +130,14 @@ describe("API: SearchAPI", () => {
       await searchAPI.search({
         query: "ape",
         chains: ["ethereum"],
-        asset_types: ["collection", "nft", "token", "account"],
+        assetTypes: ["collection", "nft", "token", "account"],
         limit: 50,
       })
 
       expect(mockGet.mock.calls[0][1]).toEqual({
         query: "ape",
         chains: ["ethereum"],
-        asset_types: ["collection", "nft", "token", "account"],
+        assetTypes: ["collection", "nft", "token", "account"],
         limit: 50,
       })
     })

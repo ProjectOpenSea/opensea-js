@@ -11,6 +11,11 @@ import {
   type OrderSide,
   type RequestOptions,
 } from "../types"
+import {
+  type Camelize,
+  camelizeKeysDeep,
+  snakeizeKeysDeep,
+} from "../utils/case"
 import { executeWithRateLimit } from "../utils/rateLimit"
 import { AccountsAPI } from "./accounts"
 import { getInstantApiKeyPath } from "./apiPaths"
@@ -19,6 +24,7 @@ import { ChainsAPI } from "./chains"
 import { CollectionsAPI } from "./collections"
 import { DropsAPI } from "./drops"
 import { EventsAPI } from "./events"
+import type { PostOptions } from "./fetcher"
 import { ListingsAPI } from "./listings"
 import { NFTsAPI } from "./nfts"
 import { OffersAPI } from "./offers"
@@ -373,7 +379,7 @@ export class OpenSeaAPI {
     unitsToFill?: string,
     recipientAddress?: string,
     includeOptionalCreatorFees: boolean = false,
-  ): Promise<FulfillmentDataResponse> {
+  ): Promise<Camelize<FulfillmentDataResponse>> {
     return this.ordersAPI.generateFulfillmentData(
       fulfillerAddress,
       orderHash,
@@ -637,7 +643,7 @@ export class OpenSeaAPI {
     address: string,
     identifier: string,
     chain: Chain = this.chain,
-  ): Promise<Response> {
+  ): Promise<Record<string, unknown>> {
     return this.nftsAPI.refreshNFTMetadata(address, identifier, chain)
   }
 
@@ -1050,13 +1056,13 @@ export class OpenSeaAPI {
    * Fetch OHLCV candles for a token.
    * @param chain Chain the token lives on.
    * @param address Token contract address.
-   * @param args Time-series window plus candle `bucket_size` (required).
+   * @param args Time-series window plus candle `bucketSize` (required).
    * @returns The {@link OhlcvResponse} returned by the API.
    */
   public async getTokenOhlcv(
     chain: Chain,
     address: string,
-    args: TokenTimeSeriesArgs & { bucket_size: string },
+    args: TokenTimeSeriesArgs & { bucketSize: string },
   ): Promise<OhlcvResponse> {
     return this.tokensAPI.getTokenOhlcv(chain, address, args)
   }
@@ -1261,14 +1267,17 @@ export class OpenSeaAPI {
     apiPath: string,
     query: object = {},
     options?: RequestOptions,
-  ): Promise<T> {
+  ): Promise<Camelize<T>> {
     return executeWithRateLimit(
       async () => {
-        const qs = this.objectToSearchParams(query)
+        // Snakeize query keys so consumers can pass camelCase args even
+        // though the API expects snake_case URL params.
+        const qs = this.objectToSearchParams(snakeizeKeysDeep(query))
         const url = qs
           ? `${this.apiBaseUrl}${apiPath}?${qs}`
           : `${this.apiBaseUrl}${apiPath}`
-        return await this._fetch(url, undefined, undefined, options)
+        const raw = await this._fetch(url, undefined, undefined, options)
+        return camelizeKeysDeep(raw) as Camelize<T>
       },
       { logger: this.logger },
     )
@@ -1279,19 +1288,30 @@ export class OpenSeaAPI {
    * @param apiPath Path to URL endpoint under API
    * @param body Data to send.
    * @param headers Additional headers to send with the request.
-   * @param options Request options like timeout and abort signal.
+   * @param options Request options. Includes the {@link PostOptions.snakeizeBody}
+   *                opt-out (defaults to `true`) for callers that need to emit
+   *                the body in exact wire shape (e.g. Seaport-shaped POSTs
+   *                whose inner keys are camelCase on the wire).
    * @returns @typeParam T The response from the API.
    */
   public async post<T>(
     apiPath: string,
     body?: object,
     headers?: object,
-    options?: RequestOptions,
-  ): Promise<T> {
+    options?: PostOptions,
+  ): Promise<Camelize<T>> {
     return executeWithRateLimit(
       async () => {
         const url = `${this.apiBaseUrl}${apiPath}`
-        return await this._fetch(url, headers, body, options)
+        // Snakeize the body so consumers can pass camelCase even though the
+        // API expects snake_case JSON. Opt-out via `snakeizeBody: false` for
+        // Seaport-shaped bodies whose inner keys must remain camelCase on the
+        // wire (the OpenSea OpenAPI spec uses mixed casing for these).
+        const shouldSnakeize = options?.snakeizeBody !== false
+        const wireBody =
+          body == null || !shouldSnakeize ? body : snakeizeKeysDeep(body)
+        const raw = await this._fetch(url, headers, wireBody, options)
+        return camelizeKeysDeep(raw) as Camelize<T>
       },
       { logger: this.logger },
     )
@@ -1387,15 +1407,26 @@ export class OpenSeaAPI {
         if (response.status === 599 || response.status === 429) {
           throw await this._createRateLimitError(response)
         }
-        const responseBody = await response.json().catch(() => ({}))
-        const errors = responseBody?.errors
-        if (errors?.length > 0) {
-          let errorMessage = Array.isArray(errors)
-            ? errors.join(", ")
-            : String(errors)
-          if (errorMessage === "[object Object]") {
-            errorMessage = JSON.stringify(errors)
-          }
+        const rawBody = await response.json().catch(() => ({}))
+        const responseBody = camelizeKeysDeep(rawBody) as {
+          errors?: { length?: number } | unknown[]
+        }
+        const errors = responseBody?.errors as
+          | { length?: number }
+          | unknown[]
+          | undefined
+        if (errors?.length !== undefined && errors.length > 0) {
+          // Handle both string entries (`["not found"]`) and structured ones
+          // (`[{code: "invalid_param", message: "..."}]`) — String() on an
+          // object yields "[object Object]", so JSON-stringify any non-string
+          // element individually before joining.
+          const errorMessage = Array.isArray(errors)
+            ? errors
+                .map(e => (typeof e === "string" ? e : JSON.stringify(e)))
+                .join(", ")
+            : typeof errors === "string"
+              ? errors
+              : JSON.stringify(errors)
           throw new Error(`Server Error: ${errorMessage}`)
         }
         throw new Error(
@@ -1421,12 +1452,13 @@ export class OpenSeaAPI {
    *
    * @example
    * ```ts
-   * const { api_key } = await OpenSeaAPI.requestInstantApiKey()
-   * const api = new OpenSeaAPI({ apiKey: api_key })
+   * const { apiKey } = await OpenSeaAPI.requestInstantApiKey()
+   * const api = new OpenSeaAPI({ apiKey })
    * ```
    *
    * @param apiBaseUrl Optional base URL override (defaults to mainnet).
-   * @returns The {@link RequestInstantApiKeyResponse} containing the new key.
+   * @returns The {@link RequestInstantApiKeyResponse} containing the new key,
+   *          with response keys camelized to match SDK conventions.
    */
   public static async requestInstantApiKey(
     apiBaseUrl: string = API_BASE_MAINNET,
@@ -1444,7 +1476,8 @@ export class OpenSeaAPI {
         `Server Error (${response.status}): ${response.statusText}`,
       )
     }
-    return response.json()
+    const raw = await response.json()
+    return camelizeKeysDeep(raw) as RequestInstantApiKeyResponse
   }
 
   /**
@@ -1509,7 +1542,9 @@ export class OpenSeaAPI {
     // Add status code and retry-after information to the error object
     error.statusCode = response.status
     error.retryAfter = retryAfter
-    error.responseBody = await response.json().catch(() => undefined)
+    const rawBody = await response.json().catch(() => undefined)
+    error.responseBody =
+      rawBody === undefined ? undefined : camelizeKeysDeep(rawBody)
     return error
   }
 }

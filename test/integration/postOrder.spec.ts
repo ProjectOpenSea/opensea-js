@@ -37,7 +37,7 @@ describe("SDK: order posting", () => {
     }
     const order = await sdk.createOffer(offer)
     expectValidOrder(order)
-    expect(order.protocol_data.parameters.endTime).toBe(
+    expect(order.protocolData!.parameters.endTime).toBe(
       expirationTime.toString(),
     )
     expect(BigInt(order.price.value)).toBe(
@@ -168,7 +168,7 @@ describe("SDK: order posting", () => {
         fee => fee.required,
       ).length
       expect(
-        order.protocol_data.parameters.consideration.length,
+        order.protocolData!.parameters.consideration.length,
       ).toBeGreaterThan(1 + requiredFeesCount)
     }
   })
@@ -187,25 +187,25 @@ describe("SDK: order posting", () => {
     }
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest)
     expect(offerResponse).toBeDefined()
-    expect(offerResponse).toHaveProperty("protocol_address")
-    expect(offerResponse).toHaveProperty("protocol_data")
-    expect(offerResponse).toHaveProperty("order_hash")
+    expect(offerResponse).toHaveProperty("protocolAddress")
+    expect(offerResponse).toHaveProperty("protocolData")
+    expect(offerResponse).toHaveProperty("orderHash")
 
     // Wait to ensure the order is indexed
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     // Cancel the order using self serve API key tied to the offerer
     expect(offerResponse).not.toBeNull()
-    const { protocol_address, order_hash } = offerResponse!
+    const { protocolAddress, orderHash } = offerResponse!
     const cancelResponse = await sdk.offchainCancelOrder(
-      protocol_address,
-      order_hash,
+      protocolAddress!,
+      orderHash,
       undefined,
       undefined,
       true,
     )
     expect(cancelResponse).toBeDefined()
-    expect(cancelResponse).toHaveProperty("last_signature_issued_valid_until")
+    expect(cancelResponse).toHaveProperty("lastSignatureIssuedValidUntil")
   })
 
   test("Post Collection Offer - Polygon", async () => {
@@ -222,25 +222,25 @@ describe("SDK: order posting", () => {
     }
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest)
     expect(offerResponse).toBeDefined()
-    expect(offerResponse).toHaveProperty("protocol_address")
-    expect(offerResponse).toHaveProperty("protocol_data")
-    expect(offerResponse).toHaveProperty("order_hash")
+    expect(offerResponse).toHaveProperty("protocolAddress")
+    expect(offerResponse).toHaveProperty("protocolData")
+    expect(offerResponse).toHaveProperty("orderHash")
 
     // Wait to ensure the order is indexed
     await new Promise(resolve => setTimeout(resolve, 5000))
 
     // Cancel the order using the offerer signature, deriving it from the ethers signer
     expect(offerResponse).not.toBeNull()
-    const { protocol_address, order_hash } = offerResponse!
+    const { protocolAddress, orderHash } = offerResponse!
     const cancelResponse = await sdk.offchainCancelOrder(
-      protocol_address,
-      order_hash,
+      protocolAddress!,
+      orderHash,
       undefined,
       undefined,
       true,
     )
     expect(cancelResponse).toBeDefined()
-    expect(cancelResponse).toHaveProperty("last_signature_issued_valid_until")
+    expect(cancelResponse).toHaveProperty("lastSignatureIssuedValidUntil")
   })
 
   test("Post Trait Offer - Ethereum", async () => {
@@ -259,7 +259,7 @@ describe("SDK: order posting", () => {
     }
     const offerResponse = await sdk.createCollectionOffer(postOrderRequest)
     expect(offerResponse).toBeDefined()
-    expect(offerResponse).toHaveProperty("protocol_data")
+    expect(offerResponse).toHaveProperty("protocolData")
     expect(offerResponse?.criteria.traits).toEqual([
       { type: "face", value: "tvface bobross" },
     ])

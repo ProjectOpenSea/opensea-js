@@ -1,5 +1,108 @@
 # @opensea/sdk
 
+## 11.0.0
+
+### Major Changes
+
+- e7deba3: Rebuild the SDK's type layer on `@opensea/api-types` with automatic case translation at the fetcher boundary. Consumer API stays camelCase; underneath, the fetcher snakeizes outgoing query params and POST bodies and camelizes responses, so the SDK no longer ships hand-rolled response shapes.
+
+  ## What changed
+
+  ### Types are sourced from `@opensea/api-types`
+
+  The Order family, NFT/Trait, Drop family, Collection, Account, Payment, Chain, Token, and event response shapes now derive directly from the generated OpenAPI types via a generic `Camelize<T>` mapper. When the API spec gains a field, the SDK type picks it up automatically — no per-endpoint converter to keep in sync. The old `utils/converters.ts` is gone.
+
+  ### Case translation at the fetcher boundary
+
+  `utils/case.ts` ships two utilities:
+
+  - `camelizeKeysDeep<T>` / `Camelize<T>` — walks the API response and rewrites snake_case keys to camelCase.
+  - `snakeizeKeysDeep<T>` / `Snakeize<T>` — the inverse, applied to query params and POST bodies on the way out.
+
+  Consumers always see camelCase; the API always sees snake_case. No converter drift, no field-name typos.
+
+  ### Narrowing intersections preserved
+
+  Where the OpenAPI spec is too loose, the SDK still narrows:
+
+  - `Listing.type` is the `OrderType` enum (spec ships plain `string`).
+  - `Listing.status` / `Offer.status` are the `OrderStatus` enum.
+  - `Order` / `Offer` / `Listing` `.protocolData` is the seaport-js `OrderWithCounter` (the SDK passes it directly to Seaport).
+
+  ### Shape changes consumers should know about
+
+  These come from aligning with what the API actually returns:
+
+  - `Order.protocolData` and `Order.protocolAddress` are **optional**. They're populated on every endpoint except the profile listings/offers endpoints, where the API intentionally returns null for performance. Code that reads them unconditionally needs a guard.
+  - `Order` base type no longer carries `price` — only `Offer` and `Listing` do (matching the API).
+  - `Offer` and `Listing` gain `remainingQuantity` (required), `orderCreatedAt`, and `asset?: OrderAsset` (the field added in ProjectOpenSea/os2-core#42022 for profile endpoints).
+  - `NFT` is now `NftDetailed` — gains `displayImageUrl`, `displayAnimationUrl`, `originalImageUrl`, `originalAnimationUrl`, `animationUrl`, `isSuspicious`, `subscription`, `owner.quantityString`. Drops stale `rarity.{score,calculatedAt,maxRank,tokensScored,rankingFeatures}` that weren't actually in the spec.
+  - `TokenBalance` gains optional `status`, `baseTokenLiquidityUsd`, `quoteTokenLiquidityUsd`.
+  - `RarityStrategy` is now `Camelize<Rarity>` from api-types — `{ strategyId, strategyVersion, rank? }`. The previous extra fields (`calculatedAt`, `maxRank`, `tokensScored`) were spec-incomplete patches.
+  - `GetCollectionResponse` is now an alias for `OpenSeaCollection` — the previous `{ collection: OpenSeaCollection }` wrapper never matched the actual API response.
+  - Acronym casing follows generic snake→camel rules: `is_nsfw` → `isNsfw` (not `isNSFW`).
+  - `PaymentToken.image` (was `imageUrl`) — the spec uses `image`; the previous converter renamed it. Code reading `paymentToken.imageUrl` should switch to `paymentToken.image`.
+
+  ### Removed
+
+  - `utils/converters.ts` (`collectionFromJSON`, `accountFromJSON`, `paymentTokenFromJSON`, `feeFromJSON`, `rarityFromJSON`, `pricingCurrenciesFromJSON`) and the corresponding test file.
+
+  ### Surfaces the new `Order.asset` field
+
+  Profile endpoints (`/account/{address}/listings`, `/offers`, `/offers_received`) now expose `asset: { identifier?: string; contract: string }`, so consumers no longer have to parse Seaport `protocolData.parameters.offer[0]` to identify the NFT.
+
+### Patch Changes
+
+- fb03c09: Source `EventPayment`, `EventAsset`, `GetNFTResponse`, `BuildOfferResponse`, and `CancelOrderResponse` from `@opensea/api-types` instead of hand-rolling them. Same shapes consumers see today (after camelize at the fetcher), now auto-tracking the OpenAPI spec.
+
+  - `EventPayment` → `Camelize<Payment>`
+  - `EventAsset` → `Camelize<Nft>` (gains `original_image_url`, `original_animation_url`, and `traits` fields the API also returns)
+  - `GetNFTResponse` → `Camelize<NftResponse>`
+  - `BuildOfferResponse` → `Camelize<BuildOfferResponse>` (api-types ships this with camelCase keys natively)
+  - `CancelOrderResponse` → `Camelize<CancelResponse>`
+
+  The narrow event types (`ListingEvent`, `OfferEvent`, `TraitOfferEvent`, `CollectionOfferEvent`, `OrderEvent`, `MintEvent`, `SaleEvent`, `TransferEvent`) and `AssetEvent` union keep their existing SDK definitions — they're refinements that narrow `eventType` to specific enum values, which the api-types `OrderEvent`/`SaleEvent`/`TransferEvent` schemas don't model.
+
+- 68b07cb: Fix critical bugs introduced by the api-types migration where unconditional body snakeize corrupted Seaport-shaped POST payloads.
+
+  ## What was broken
+
+  The OpenSea OpenAPI spec is **mixed-casing**: outer envelope keys are snake_case (`protocol_address`, `protocol_data`, `order_hash`) but inner Seaport struct keys are camelCase to mirror the on-chain struct (`parameters.startTime`, `parameters.endTime`, `parameters.orderType`, `parameters.zoneHash`, `parameters.conduitKey`, `parameters.totalOriginalConsiderationItems`, `parameters.offer[].itemType`, `parameters.offer[].identifierOrCriteria`, etc.). A few top-level request fields are also camelCase per spec: `CancelRequest.offererSignature`, `CriteriaObject.numericTraits`.
+
+  The blanket `snakeizeKeysDeep(body)` at the fetcher boundary recursively rewrote every inner key to snake_case, breaking:
+
+  - `postListing` / `postOffer` — Seaport `parameters` sent with snake_case keys the API rejected (or that no longer matched the EIP-712 signature digest).
+  - `offchainCancelOrder` — `offererSignature` shipped as `offerer_signature`, silently dropping the cancel signature.
+  - `buildOffer` / `postCollectionOffer` — `criteria.numericTraits` shipped as `numeric_traits`, broadening trait offers to the whole collection.
+
+  ## Fix
+
+  Added `snakeizeBody?: boolean` (default `true`) to the public `Fetcher.post()` method. Internal callsites whose wire bodies contain camelCase keys now pass `snakeizeBody: false` and emit bodies in exact wire shape:
+
+  - `OrdersAPI.postListing`, `OrdersAPI.postOffer` — outer `protocol_address` snake_case; inner `parameters` preserved camelCase via spread of the Seaport `OrderWithCounter`.
+  - `OrdersAPI.offchainCancelOrder` — body `{ offererSignature }` preserved.
+  - `OffersAPI.buildOffer`, `OffersAPI.postCollectionOffer` — outer `protocol_address` / `protocol_data` / `offer_protection_enabled` snake_case; `criteria.numericTraits` preserved camelCase.
+
+  The default behavior (snakeize-all) is unchanged for any caller of `api.post()` that doesn't hit a mixed-casing endpoint.
+
+  ## Other related fixes
+
+  - `OpenSeaAPI.requestInstantApiKey` (and the `OpenSeaSDK` passthrough) now camelizes its response — previously it called `fetch()` directly and returned snake_case despite the typed surface promising `{ apiKey, expiresAt, ... }`. JSDoc examples on both methods corrected.
+  - `OpenSeaRateLimitError.responseBody` is now camelized to match the rest of the boundary contract.
+  - `_fetch` error envelope is camelized before reading `.errors`, so nested snake_case keys no longer leak into thrown Error messages.
+  - `camelToSnake` no longer emits a leading underscore for PascalCase / acronym keys (`URL` → `url`, `MyKey` → `my_key`). The corresponding `Snakeize<T>` type was updated to match the runtime.
+  - `OpenSeaAccount.socialMediaAccounts` defends against the wire returning `null` (the previous hand-rolled converter did `?? []`; the new pipeline did not).
+  - Dead-code OrderV2/Order casts dropped in `fulfillment.ts` — both branches read the same camelCase property after the migration.
+
+  ## Tests
+
+  Added 11 unit tests covering `snakeizeKeysDeep` (flat + nested objects, array walking, multi-segment, primitives, null/undefined, Date passthrough, top-level `offererSignature`/`protocolAddress` rewrite, position-0 guard). The previous test file imported only `camelizeKeysDeep` — the entire outbound translator had zero unit coverage, which is how these bugs slipped through.
+
+  A new CI workflow (`.github/workflows/sdk-integration.yml`) runs the SDK integration suite nightly and on PRs labeled `run-integration`, so future fetcher-boundary regressions are caught against the live API.
+
+- Updated dependencies [fb03c09]
+  - @opensea/api-types@0.4.2
+
 ## 10.5.0
 
 ### Minor Changes

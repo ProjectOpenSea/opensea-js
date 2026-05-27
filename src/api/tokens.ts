@@ -135,12 +135,12 @@ export class TokensAPI {
 
   /**
    * Fetch OHLCV (open / high / low / close / volume) candles for a token.
-   * `start_time` and `bucket_size` are required.
+   * `startTime` and `bucketSize` are required.
    */
   async getTokenOhlcv(
     chain: Chain,
     address: string,
-    args: TokenTimeSeriesArgs & { bucket_size: string },
+    args: TokenTimeSeriesArgs & { bucketSize: string },
   ): Promise<OhlcvResponse> {
     return this.fetcher.get<OhlcvResponse>(
       getTokenOhlcvPath(chain, address),

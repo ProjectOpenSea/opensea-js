@@ -39,7 +39,7 @@ const { nft } = await openseaSDK.api.getNFT(
 );
 
 console.log(nft.name);
-console.log(nft.image_url);
+console.log(nft.imageUrl);
 console.log(nft.traits);
 ```
 
@@ -349,7 +349,7 @@ const { listings, next } = await openseaSDK.api.getAllListings(
 listings.forEach((listing) => {
   console.log(`Price: ${listing.price.current.value}`);
   console.log(
-    `Token ID: ${listing.protocol_data.parameters.offer[0].identifierOrCriteria}`,
+    `Token ID: ${listing.protocolData.parameters.offer[0].identifierOrCriteria}`,
   );
 });
 ```
@@ -378,7 +378,7 @@ Get the best (lowest price) active listing for a specific NFT.
 const listing = await openseaSDK.api.getBestListing("boredapeyachtclub", "1");
 
 console.log(`Best price: ${listing.price.current.value}`);
-console.log(`Seller: ${listing.protocol_data.parameters.offerer}`);
+console.log(`Seller: ${listing.protocolData.parameters.offerer}`);
 ```
 
 **Parameters:**
@@ -539,7 +539,7 @@ Get the highest active offer for a specific NFT.
 const offer = await openseaSDK.api.getBestOffer("boredapeyachtclub", "1");
 
 console.log(`Best offer: ${offer.price.value}`);
-console.log(`Offerer: ${offer.protocol_data.parameters.offerer}`);
+console.log(`Offerer: ${offer.protocolData.parameters.offerer}`);
 ```
 
 **Parameters:**
@@ -572,7 +572,7 @@ offers.forEach((offer) => {
   const price = offer.price.value;
   const decimals = offer.price.decimals;
   const priceInEth = parseFloat(price) / Math.pow(10, decimals);
-  const offerer = offer.protocol_data.parameters.offerer;
+  const offerer = offer.protocolData.parameters.offerer;
   console.log(`${priceInEth} ETH from ${offerer}`);
 });
 ```
@@ -730,7 +730,7 @@ const order = await openseaSDK.api.getOrderByHash(
   Chain.Mainnet, // Optional: chain
 );
 
-console.log(order.protocol_data.parameters);
+console.log(order.protocolData.parameters);
 ```
 
 **Parameters:**
@@ -844,7 +844,7 @@ const result = await openseaSDK.api.offchainCancelOrder(
 );
 
 console.log(
-  `Last signature valid until: ${result.last_signature_issued_valid_until}`,
+  `Last signature valid until: ${result.lastSignatureIssuedValidUntil}`,
 );
 ```
 
@@ -930,7 +930,7 @@ Fetch all events with optional filtering.
 
 ```typescript
 const { asset_events, next } = await openseaSDK.api.getEvents({
-  event_type: AssetEventType.SALE,
+  eventType: AssetEventType.SALE,
   limit: 50,
   after: 1672531200, // Unix timestamp
   before: 1675209600, // Unix timestamp
@@ -938,7 +938,7 @@ const { asset_events, next } = await openseaSDK.api.getEvents({
 });
 
 asset_events.forEach((event) => {
-  if (event.event_type === "sale") {
+  if (event.eventType === "sale") {
     console.log(`Sale: ${event.payment.quantity} at ${event.event_timestamp}`);
   }
 });
@@ -948,7 +948,7 @@ asset_events.forEach((event) => {
 
 | Parameter    | Type                     | Required | Description                  |
 | ------------ | ------------------------ | -------- | ---------------------------- |
-| `event_type` | AssetEventType \| string | No       | Filter by event type         |
+| `eventType`  | AssetEventType \| string | No       | Filter by event type         |
 | `after`      | number                   | No       | Events after Unix timestamp  |
 | `before`     | number                   | No       | Events before Unix timestamp |
 | `limit`      | number                   | No       | Number of events to return   |
@@ -980,7 +980,7 @@ Fetch events for a specific account.
 const { asset_events } = await openseaSDK.api.getEventsByAccount(
   "0xfBa662e1a8e91a350702cF3b87D0C2d2Fb4BA57F",
   {
-    event_type: AssetEventType.SALE,
+    eventType: AssetEventType.SALE,
     limit: 100,
   },
 );
@@ -1005,7 +1005,7 @@ Fetch events for a specific collection.
 const { asset_events } = await openseaSDK.api.getEventsByCollection(
   "boredapeyachtclub",
   {
-    event_type: AssetEventType.SALE,
+    eventType: AssetEventType.SALE,
     limit: 100,
     after: Math.floor(Date.now() / 1000) - 86400, // Last 24 hours
   },
@@ -1014,7 +1014,7 @@ const { asset_events } = await openseaSDK.api.getEventsByCollection(
 // Calculate total volume in last 24 hours
 let totalVolume = 0n;
 asset_events.forEach((event) => {
-  if (event.event_type === "sale") {
+  if (event.eventType === "sale") {
     totalVolume += BigInt(event.payment.quantity);
   }
 });
@@ -1041,13 +1041,13 @@ const { asset_events } = await openseaSDK.api.getEventsByNFT(
   "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
   "1",
   {
-    event_type: AssetEventType.SALE,
+    eventType: AssetEventType.SALE,
   },
 );
 
 // Show sale history
 asset_events.forEach((event) => {
-  if (event.event_type === "sale") {
+  if (event.eventType === "sale") {
     const price = event.payment.quantity;
     const date = new Date(event.event_timestamp * 1000);
     console.log(`Sold for ${price} on ${date.toLocaleDateString()}`);
@@ -1074,7 +1074,7 @@ asset_events.forEach((event) => {
 
 ```typescript
 {
-  event_type: "sale",
+  eventType: "sale",
   event_timestamp: 1234567890,
   chain: "ethereum",
   transaction: "0x...",
@@ -1094,8 +1094,8 @@ asset_events.forEach((event) => {
 
 ```typescript
 {
-  event_type: "order",
-  order_type: "listing" | "item_offer" | "collection_offer" | "trait_offer",
+  eventType: "order",
+  orderType: "listing" | "item_offer" | "collection_offer" | "trait_offer",
   event_timestamp: 1234567890,
   maker: "0x...",
   taker: "0x...",
@@ -1110,7 +1110,7 @@ asset_events.forEach((event) => {
 
 ```typescript
 {
-  event_type: "transfer",
+  eventType: "transfer",
   event_timestamp: 1234567890,
   transaction: "0x...",
   from_address: "0x...",

@@ -5,6 +5,7 @@ import {
   getFulfillOfferPayload,
 } from "../orders/utils"
 import { type Chain, OrderSide } from "../types"
+import type { Camelize } from "../utils/case"
 import {
   getCancelOrderPath,
   getOrderByHashPath,
@@ -56,7 +57,7 @@ export class OrdersAPI {
     unitsToFill?: string,
     recipientAddress?: string,
     includeOptionalCreatorFees: boolean = false,
-  ): Promise<FulfillmentDataResponse> {
+  ): Promise<Camelize<FulfillmentDataResponse>> {
     const payload =
       side === OrderSide.LISTING
         ? getFulfillListingPayload(
@@ -88,6 +89,12 @@ export class OrdersAPI {
 
   /**
    * Post a listing to OpenSea.
+   *
+   * The body uses mixed casing per the OpenSea OpenAPI spec: the outer
+   * envelope (`protocol_address`) is snake_case, but the inner Seaport
+   * struct (`parameters.startTime`, `parameters.orderType`, `offer[].itemType`,
+   * etc.) mirrors the on-chain struct names and must stay camelCase on the
+   * wire. We pass `snakeizeBody: false` and emit the body in exact wire shape.
    */
   async postListing(
     order: ProtocolData,
@@ -106,11 +113,18 @@ export class OrdersAPI {
         ...order,
         protocol_address: protocolAddress,
       },
+      undefined,
+      { snakeizeBody: false },
     )
   }
 
   /**
    * Post an offer to OpenSea.
+   *
+   * Same mixed-casing wire shape as {@link postListing}: outer
+   * `protocol_address` is snake_case but the inner Seaport struct stays
+   * camelCase. We opt out of automatic snakeize so `parameters` is sent
+   * verbatim.
    */
   async postOffer(
     order: ProtocolData,
@@ -123,14 +137,22 @@ export class OrdersAPI {
       throw new Error("Invalid protocol address format")
     }
 
-    return this.fetcher.post<Offer>(getPostOfferPath(this.chain, "seaport"), {
-      ...order,
-      protocol_address: protocolAddress,
-    })
+    return this.fetcher.post<Offer>(
+      getPostOfferPath(this.chain, "seaport"),
+      {
+        ...order,
+        protocol_address: protocolAddress,
+      },
+      undefined,
+      { snakeizeBody: false },
+    )
   }
 
   /**
    * Offchain cancel an order, offer or listing, by its order hash when protected by the SignedZone.
+   *
+   * The OpenSea OpenAPI `CancelRequest` schema uses camelCase
+   * `offererSignature`, so we opt out of automatic snakeize.
    */
   async offchainCancelOrder(
     protocolAddress: string,
@@ -141,6 +163,8 @@ export class OrdersAPI {
     return this.fetcher.post<CancelOrderResponse>(
       getCancelOrderPath(chain, protocolAddress, orderHash),
       { offererSignature },
+      undefined,
+      { snakeizeBody: false },
     )
   }
 }

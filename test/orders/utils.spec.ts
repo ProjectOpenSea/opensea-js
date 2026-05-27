@@ -358,13 +358,13 @@ describe("Orders: utils", () => {
         listing: {
           hash: "0xOrderHash",
           chain: Chain.Mainnet,
-          protocol_address: "0xProtocol",
+          protocolAddress: "0xProtocol",
         },
         fulfiller: {
           address: "0xFulfiller",
         },
-        units_to_fill: "1",
-        include_optional_creator_fees: false,
+        unitsToFill: "1",
+        includeOptionalCreatorFees: false,
       })
       expect(result.consideration).toBeUndefined()
     })
@@ -382,7 +382,7 @@ describe("Orders: utils", () => {
         true,
       )
 
-      expect(result.include_optional_creator_fees).toBe(true)
+      expect(result.includeOptionalCreatorFees).toBe(true)
     })
 
     test("should add consideration for criteria listings", () => {
@@ -396,8 +396,8 @@ describe("Orders: utils", () => {
       )
 
       expect(result.consideration).toEqual({
-        asset_contract_address: "0xAssetContract",
-        token_id: "123",
+        assetContractAddress: "0xAssetContract",
+        tokenId: "123",
       })
     })
 
@@ -440,13 +440,13 @@ describe("Orders: utils", () => {
         offer: {
           hash: "0xOrderHash",
           chain: Chain.Polygon,
-          protocol_address: "0xProtocol",
+          protocolAddress: "0xProtocol",
         },
         fulfiller: {
           address: "0xFulfiller",
         },
-        units_to_fill: "1",
-        include_optional_creator_fees: false,
+        unitsToFill: "1",
+        includeOptionalCreatorFees: false,
       })
       expect(result.consideration).toBeUndefined()
     })
@@ -462,8 +462,8 @@ describe("Orders: utils", () => {
       )
 
       expect(result.consideration).toEqual({
-        asset_contract_address: "0xAssetContract",
-        token_id: "456",
+        assetContractAddress: "0xAssetContract",
+        tokenId: "456",
       })
     })
 
@@ -479,7 +479,7 @@ describe("Orders: utils", () => {
         true,
       )
 
-      expect(result.include_optional_creator_fees).toBe(true)
+      expect(result.includeOptionalCreatorFees).toBe(true)
     })
   })
 })

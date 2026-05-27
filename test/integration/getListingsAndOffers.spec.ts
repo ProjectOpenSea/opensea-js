@@ -9,16 +9,16 @@ describe("SDK: getAllOffers", () => {
 
     expect(response, "Response should not be null").toBeTruthy()
     expect(
-      response.offers[0].order_hash,
+      response.offers[0].orderHash,
       "Order hash should not be null",
     ).toBeTruthy()
     expect(response.offers[0].chain, "Chain should not be null").toBeTruthy()
     expect(
-      response.offers[0].protocol_address,
+      response.offers[0].protocolAddress,
       "Protocol address should not be null",
     ).toBeTruthy()
     expect(
-      response.offers[0].protocol_data,
+      response.offers[0].protocolData,
       "Protocol data should not be null",
     ).toBeTruthy()
   })
@@ -33,16 +33,16 @@ describe("SDK: getAllListings", () => {
 
     expect(response, "Response should not be null").toBeTruthy()
     expect(
-      response.listings[0].order_hash,
+      response.listings[0].orderHash,
       "Order hash should not be null",
     ).toBeTruthy()
     expect(response.listings[0].chain, "Chain should not be null").toBeTruthy()
     expect(
-      response.listings[0].protocol_address,
+      response.listings[0].protocolAddress,
       "Protocol address should not be null",
     ).toBeTruthy()
     expect(
-      response.listings[0].protocol_data,
+      response.listings[0].protocolData,
       "Protocol data should not be null",
     ).toBeTruthy()
     // Verify listing has nested price.current structure
@@ -80,14 +80,14 @@ describe("SDK: getBestOffer", () => {
     expect(typeof response.price.value).toBe("string")
 
     expect(response, "Response should not be null").toBeTruthy()
-    expect(response.order_hash, "Order hash should not be null").toBeTruthy()
+    expect(response.orderHash, "Order hash should not be null").toBeTruthy()
     expect(response.chain, "Chain should not be null").toBeTruthy()
     expect(
-      response.protocol_address,
+      response.protocolAddress,
       "Protocol address should not be null",
     ).toBeTruthy()
     expect(
-      response.protocol_data,
+      response.protocolData,
       "Protocol data should not be null",
     ).toBeTruthy()
   })
@@ -100,22 +100,25 @@ describe("SDK: getBestListing", () => {
       slug,
     )
     const listing = listings[0]
+    // Could read `listing.asset?.identifier` instead now (api-types 0.4.1),
+    // but the protocol_data path is still populated on collection-listings
+    // and the test still validates round-tripping through getBestListing.
     const tokenId =
-      listing.protocol_data.parameters.offer[0].identifierOrCriteria
+      listing.protocolData!.parameters.offer[0].identifierOrCriteria
     const response = await getSdkForChain(Chain.Mainnet).api.getBestListing(
       slug,
       tokenId,
     )
 
     expect(response, "Response should not be null").toBeTruthy()
-    expect(response.order_hash, "Order hash should not be null").toBeTruthy()
+    expect(response.orderHash, "Order hash should not be null").toBeTruthy()
     expect(response.chain, "Chain should not be null").toBeTruthy()
     expect(
-      response.protocol_address,
+      response.protocolAddress,
       "Protocol address should not be null",
     ).toBeTruthy()
     expect(
-      response.protocol_data,
+      response.protocolData,
       "Protocol data should not be null",
     ).toBeTruthy()
     // Verify listing has nested price.current structure
@@ -124,8 +127,8 @@ describe("SDK: getBestListing", () => {
     expect(typeof response.price.current.currency).toBe("string")
     expect(typeof response.price.current.decimals).toBe("number")
     expect(typeof response.price.current.value).toBe("string")
-    expect(listing.order_hash).toBe(response.order_hash)
-    expect(listing.protocol_address).toBe(response.protocol_address)
+    expect(listing.orderHash).toBe(response.orderHash)
+    expect(listing.protocolAddress).toBe(response.protocolAddress)
   })
 })
 
@@ -158,14 +161,14 @@ describe("SDK: getTraitOffers", () => {
 
     if (response.offers.length > 0) {
       const offer = response.offers[0]
-      expect(offer.order_hash, "Order hash should not be null").toBeTruthy()
+      expect(offer.orderHash, "Order hash should not be null").toBeTruthy()
       expect(offer.chain, "Chain should not be null").toBeTruthy()
       expect(
-        offer.protocol_address,
+        offer.protocolAddress,
         "Protocol address should not be null",
       ).toBeTruthy()
       expect(
-        offer.protocol_data,
+        offer.protocolData,
         "Protocol data should not be null",
       ).toBeTruthy()
       expect(

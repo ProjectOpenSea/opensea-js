@@ -1,5 +1,4 @@
 import type { Chain, OpenSeaCollection, OpenSeaCollectionStats } from "../types"
-import { collectionFromJSON } from "../utils/converters"
 import {
   getBatchCollectionsPath,
   getCollectionFloorPricesPath,
@@ -43,8 +42,7 @@ export class CollectionsAPI {
    */
   async getCollection(slug: string): Promise<OpenSeaCollection> {
     const path = getCollectionPath(slug)
-    const response = await this.fetcher.get<GetCollectionResponse>(path)
-    return collectionFromJSON(response)
+    return this.fetcher.get<GetCollectionResponse>(path)
   }
 
   /**
@@ -60,18 +58,14 @@ export class CollectionsAPI {
   ): Promise<GetCollectionsResponse> {
     const path = getCollectionsPath()
     const args: GetCollectionsArgs = {
-      order_by: orderBy,
+      orderBy,
       chain,
-      creator_username: creatorUsername,
-      include_hidden: includeHidden,
+      creatorUsername,
+      includeHidden,
       limit,
       next,
     }
-    const response = await this.fetcher.get<GetCollectionsResponse>(path, args)
-    response.collections = response.collections.map(collection =>
-      collectionFromJSON(collection),
-    )
-    return response
+    return this.fetcher.get<GetCollectionsResponse>(path, args)
   }
 
   /**
@@ -98,17 +92,13 @@ export class CollectionsAPI {
   async getTrendingCollections(
     args?: GetTrendingCollectionsArgs,
   ): Promise<GetCollectionsPaginatedResponse> {
-    const response = await this.fetcher.get<GetCollectionsPaginatedResponse>(
+    return this.fetcher.get<GetCollectionsPaginatedResponse>(
       getTrendingCollectionsPath(),
       {
         ...args,
         chains: args?.chains?.join(","),
       },
     )
-    response.collections = response.collections.map(collection =>
-      collectionFromJSON(collection),
-    )
-    return response
   }
 
   /**
@@ -117,17 +107,13 @@ export class CollectionsAPI {
   async getTopCollections(
     args?: GetTopCollectionsArgs,
   ): Promise<GetCollectionsPaginatedResponse> {
-    const response = await this.fetcher.get<GetCollectionsPaginatedResponse>(
+    return this.fetcher.get<GetCollectionsPaginatedResponse>(
       getTopCollectionsPath(),
       {
         ...args,
         chains: args?.chains?.join(","),
       },
     )
-    response.collections = response.collections.map(collection =>
-      collectionFromJSON(collection),
-    )
-    return response
   }
 
   /**

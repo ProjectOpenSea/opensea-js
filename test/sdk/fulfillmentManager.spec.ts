@@ -43,13 +43,13 @@ describe("SDK: FulfillmentManager", () => {
     // Mock OpenSeaAPI with full transaction data
     mockAPI = {
       generateFulfillmentData: vi.fn().mockResolvedValue({
-        fulfillment_data: {
+        fulfillmentData: {
           transaction: {
             to: "0xSeaportAddress",
             value: 0,
             function:
               "fulfillAdvancedOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256),uint120,uint120,bytes,bytes),(uint256,uint8,uint256,uint256,bytes32[])[],bytes32,address)",
-            input_data: {
+            inputData: {
               advancedOrder: {
                 parameters: {
                   offerer: "0xfba662e1a8e91a350702cf3b87d0c2d2fb4ba57f",
@@ -182,13 +182,13 @@ describe("SDK: FulfillmentManager", () => {
 
     test("includes extraData when order has offer protection", async () => {
       mockAPI.generateFulfillmentData.mockResolvedValue({
-        fulfillment_data: {
+        fulfillmentData: {
           transaction: {
             to: "0xSeaportAddress",
             value: 0,
             function:
               "fulfillAdvancedOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256),uint120,uint120,bytes,bytes),(uint256,uint8,uint256,uint256,bytes32[])[],bytes32,address)",
-            input_data: {
+            inputData: {
               advancedOrder: {
                 parameters: {
                   offerer: "0xfba662e1a8e91a350702cf3b87d0c2d2fb4ba57f",
@@ -260,12 +260,12 @@ describe("SDK: FulfillmentManager", () => {
 
     test("encodes fulfillBasicOrder alias using supported fragment", async () => {
       mockAPI.generateFulfillmentData.mockResolvedValue({
-        fulfillment_data: {
+        fulfillmentData: {
           transaction: {
             to: "0xSeaportAddress",
             value: 0,
             function: "fulfillBasicOrder_efficient_6GL6yc((uint256))",
-            input_data: {
+            inputData: {
               basicOrderParameters: {
                 offerer: "0xOfferer",
                 zone: "0x0000000000000000000000000000000000000000",
@@ -298,13 +298,13 @@ describe("SDK: FulfillmentManager", () => {
 
     test("encodes fulfillOrder with exactly 2 params (no recipient)", async () => {
       mockAPI.generateFulfillmentData.mockResolvedValue({
-        fulfillment_data: {
+        fulfillmentData: {
           transaction: {
             to: "0xSeaportAddress",
             value: 0,
             function:
               "fulfillOrder(((address,address,(uint8,address,uint256,uint256,uint256)[],(uint8,address,uint256,uint256,uint256,address)[],uint8,uint256,uint256,bytes32,uint256,bytes32,uint256),bytes),bytes32)",
-            input_data: {
+            inputData: {
               order: {
                 parameters: {
                   offerer: "0xOfferer",
@@ -447,23 +447,26 @@ describe("SDK: FulfillmentManager", () => {
     })
 
     test("passes unitsToFill when specified", async () => {
-      const orderWithoutRemainingQty = {
-        order_hash: "0x789",
+      const order = {
+        orderHash: "0x789",
         chain: "ethereum",
-        protocol_data: {
+        protocolData: {
           parameters: mockOrderComponents,
           signature: "0xSignature",
         },
-        protocol_address: mockOrderV2.protocolAddress,
+        protocolAddress: mockOrderV2.protocolAddress,
         price: {
           currency: "ETH",
           decimals: 18,
           value: "1000000000000000000",
         },
+        // Set high so we can verify the explicit unitsToFill (5) is what
+        // the SDK forwards to the API, not this value.
+        remainingQuantity: 999,
       }
 
       await fulfillmentManager.fulfillOrder({
-        order: orderWithoutRemainingQty,
+        order,
         accountAddress: "0xBuyer",
         unitsToFill: 5,
       })

@@ -45,7 +45,7 @@ export class ListingsAPI {
         limit,
         next,
         ...(includePrivateListings !== undefined && {
-          include_private_listings: includePrivateListings,
+          includePrivateListings,
         }),
       },
     )
@@ -66,7 +66,7 @@ export class ListingsAPI {
     const response = await this.fetcher.get<GetBestListingResponse>(
       getBestListingAPIPath(collectionSlug, tokenId),
       includePrivateListings !== undefined
-        ? { include_private_listings: includePrivateListings }
+        ? { includePrivateListings }
         : undefined,
     )
     return response
@@ -89,7 +89,7 @@ export class ListingsAPI {
         limit,
         next,
         ...(includePrivateListings !== undefined && {
-          include_private_listings: includePrivateListings,
+          includePrivateListings,
         }),
         traits: encodeTraitsParam(traits),
       },

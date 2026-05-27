@@ -4,7 +4,7 @@ import { OrderType } from "../../src/orders/types"
 import { mockOrderComponents } from "./orders"
 
 export const mockListing: Listing = {
-  order_hash: "0x123",
+  orderHash: "0x123",
   chain: "ethereum",
   type: OrderType.BASIC,
   price: {
@@ -14,22 +14,22 @@ export const mockListing: Listing = {
       value: "1000000000000000000",
     },
   },
-  protocol_data: {
+  protocolData: {
     parameters: mockOrderComponents,
     signature: "0xSignature",
   },
-  protocol_address: CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
-  remaining_quantity: 1,
+  protocolAddress: CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
+  remainingQuantity: 1,
   status: OrderStatus.ACTIVE,
 }
 
 export const mockListingPartiallyFilled: Listing = {
   ...mockListing,
-  order_hash: "0x456",
-  remaining_quantity: 3,
+  orderHash: "0x456",
+  remainingQuantity: 3,
 }
 
-export const mockListingMinimal: Partial<Listing> &
-  Pick<Listing, "order_hash"> = {
-  order_hash: "0x1",
-}
+export const mockListingMinimal: Partial<Listing> & Pick<Listing, "orderHash"> =
+  {
+    orderHash: "0x1",
+  }

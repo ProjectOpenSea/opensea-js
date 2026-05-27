@@ -57,7 +57,9 @@ describe("SDK: NFTs", () => {
       Chain.Polygon,
     )
     expect(response, "Response should exist.").toBeTruthy()
-    expect(response).toContain(`contract ${tokenAddress}`)
-    expect(response).toContain(`token_id ${identifier}`)
+    expect(response).toMatchObject({
+      contract: tokenAddress,
+      tokenId: identifier,
+    })
   })
 })

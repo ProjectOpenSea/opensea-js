@@ -1,5 +1,4 @@
 import type { Chain, OpenSeaCollection } from "../types"
-import { collectionFromJSON } from "../utils/converters"
 import {
   getBatchNFTsPath,
   getContractPath,
@@ -117,13 +116,11 @@ export class NFTsAPI {
     address: string,
     identifier: string,
     chain: Chain = this.chain,
-  ): Promise<Response> {
-    const response = await this.fetcher.post<Response>(
+  ): Promise<Record<string, unknown>> {
+    return this.fetcher.post<Record<string, unknown>>(
       getRefreshMetadataPath(chain, address, identifier),
       {},
     )
-
-    return response
   }
 
   /**
@@ -166,10 +163,9 @@ export class NFTsAPI {
     identifier: string,
     chain: Chain = this.chain,
   ): Promise<OpenSeaCollection> {
-    const response = await this.fetcher.get<GetCollectionResponse>(
+    return this.fetcher.get<GetCollectionResponse>(
       getNFTCollectionPath(chain, address, identifier),
     )
-    return collectionFromJSON(response)
   }
 
   /**

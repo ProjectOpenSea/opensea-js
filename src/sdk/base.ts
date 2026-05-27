@@ -115,8 +115,8 @@ export class BaseOpenSeaSDK {
    *
    * @example
    * ```ts
-   * const { api_key } = await OpenSeaSDK.requestInstantApiKey()
-   * const sdk = new OpenSeaSDK(provider, { apiKey: api_key })
+   * const { apiKey } = await OpenSeaSDK.requestInstantApiKey()
+   * const sdk = new OpenSeaSDK(provider, { apiKey })
    * ```
    *
    * @param apiBaseUrl Optional base URL override (defaults to mainnet).
@@ -386,12 +386,12 @@ export class BaseOpenSeaSDK {
       listings: options.listings.map(l => ({
         hash: l.hash,
         chain: l.chain,
-        protocol_address: l.protocolAddress,
+        protocolAddress: l.protocolAddress,
       })),
       fulfiller: { address: options.fulfillerAddress },
       payment: {
         chain: options.paymentChain,
-        token_address: options.paymentTokenAddress,
+        tokenAddress: options.paymentTokenAddress,
       },
       ...(options.recipientAddress
         ? { recipient: options.recipientAddress }

@@ -84,18 +84,18 @@ describe("SDK: bulk order posting", () => {
 
     // Validate each order
     result.successful.forEach((order, index) => {
-      console.log(`Order ${index + 1} hash:`, order.order_hash)
-      if (order.protocol_data.signature) {
+      console.log(`Order ${index + 1} hash:`, order.orderHash)
+      if (order.protocolData!.signature) {
         console.log(
           `Order ${index + 1} signature length:`,
-          order.protocol_data.signature.length,
+          order.protocolData!.signature.length,
         )
       }
       expectValidOrder(order)
-      expect(Number(order.protocol_data.parameters.endTime)).toBe(
+      expect(Number(order.protocolData!.parameters.endTime)).toBe(
         expirationTime,
       )
-      expect(order.protocol_data.parameters.offerer.toLowerCase()).toBe(
+      expect(order.protocolData!.parameters.offerer.toLowerCase()).toBe(
         walletAddress.toLowerCase(),
       )
     })
@@ -177,7 +177,7 @@ describe("SDK: bulk order posting", () => {
     // Validate successful orders
     result.successful.forEach(order => {
       expectValidOrder(order)
-      expect(Number(order.protocol_data.parameters.endTime)).toBe(
+      expect(Number(order.protocolData!.parameters.endTime)).toBe(
         expirationTime,
       )
     })
@@ -267,18 +267,18 @@ describe("SDK: bulk order posting", () => {
 
     // Validate each order
     result.successful.forEach((order, index) => {
-      console.log(`Listing ${index + 1} hash:`, order.order_hash)
-      if (order.protocol_data.signature) {
+      console.log(`Listing ${index + 1} hash:`, order.orderHash)
+      if (order.protocolData!.signature) {
         console.log(
           `Listing ${index + 1} signature length:`,
-          order.protocol_data.signature.length,
+          order.protocolData!.signature.length,
         )
       }
       expectValidOrder(order)
-      expect(Number(order.protocol_data.parameters.endTime)).toBe(
+      expect(Number(order.protocolData!.parameters.endTime)).toBe(
         expirationTime,
       )
-      expect(order.protocol_data.parameters.offerer.toLowerCase()).toBe(
+      expect(order.protocolData!.parameters.offerer.toLowerCase()).toBe(
         walletAddress.toLowerCase(),
       )
     })
@@ -361,9 +361,9 @@ describe("SDK: bulk order posting", () => {
     result.successful.forEach((order, index) => {
       expectValidOrder(order)
       console.log(`Listing ${index + 1}:`, {
-        hash: order.order_hash,
-        expirationTime: order.protocol_data.parameters.endTime,
-        signatureLength: order.protocol_data.signature?.length || "N/A",
+        hash: order.orderHash,
+        expirationTime: order.protocolData!.parameters.endTime,
+        signatureLength: order.protocolData!.signature?.length || "N/A",
       })
     })
 
@@ -418,8 +418,8 @@ describe("SDK: bulk order posting", () => {
     // Normal signature should be shorter than bulk signature (no merkle proof)
     // Normal compact signature: 130 chars (0x + 128 hex chars)
     // Bulk signature: 130 + 6 (index) + merkle proof encoding
-    if (order.protocol_data.signature) {
-      const signatureLength = order.protocol_data.signature.length
+    if (order.protocolData!.signature) {
+      const signatureLength = order.protocolData!.signature.length
       console.log("Single order signature length:", signatureLength)
 
       // For single orders, the bulk API should use normal signature to save gas
@@ -490,9 +490,9 @@ describe("SDK: bulk order posting", () => {
 
     // Analyze signature structure
     result.successful.forEach((order, index) => {
-      const signature = order.protocol_data.signature
+      const signature = order.protocolData!.signature
       console.log(`\nOrder ${index}:`)
-      console.log(`  Order hash: ${order.order_hash}`)
+      console.log(`  Order hash: ${order.orderHash}`)
 
       if (signature) {
         console.log(`  Signature length: ${signature.length} chars`)

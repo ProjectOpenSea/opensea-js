@@ -1,5 +1,4 @@
 import type { Chain, OpenSeaAccount, OpenSeaPaymentToken } from "../types"
-import { accountFromJSON, paymentTokenFromJSON } from "../utils/converters"
 import {
   getAccountPath,
   getAccountTokensPath,
@@ -50,18 +49,25 @@ export class AccountsAPI {
     address: string,
     chain = this.chain,
   ): Promise<OpenSeaPaymentToken> {
-    const json = await this.fetcher.get<OpenSeaPaymentToken>(
+    return this.fetcher.get<OpenSeaPaymentToken>(
       getPaymentTokenPath(chain, address),
     )
-    return paymentTokenFromJSON(json)
   }
 
   /**
    * Fetch account for an address.
    */
   async getAccount(address: string): Promise<OpenSeaAccount> {
-    const json = await this.fetcher.get<OpenSeaAccount>(getAccountPath(address))
-    return accountFromJSON(json)
+    const response = await this.fetcher.get<OpenSeaAccount>(
+      getAccountPath(address),
+    )
+    // The api-types schema marks `social_media_accounts` as a required
+    // non-nullable array, but the live API returns `null` for accounts that
+    // haven't linked any socials. Normalize to `[]` so callers can safely map.
+    return {
+      ...response,
+      socialMediaAccounts: response.socialMediaAccounts ?? [],
+    }
   }
 
   /**
@@ -125,7 +131,7 @@ export class AccountsAPI {
       getProfileOffersReceivedPath(address),
       {
         ...args,
-        collection_slugs: joinArray(args?.collection_slugs),
+        collectionSlugs: joinArray(args?.collectionSlugs),
         chains: joinArray(args?.chains),
       },
     )
@@ -142,7 +148,7 @@ export class AccountsAPI {
       getProfileOffersPath(address),
       {
         ...args,
-        collection_slugs: joinArray(args?.collection_slugs),
+        collectionSlugs: joinArray(args?.collectionSlugs),
         chains: joinArray(args?.chains),
       },
     )
@@ -159,7 +165,7 @@ export class AccountsAPI {
       getProfileListingsPath(address),
       {
         ...args,
-        collection_slugs: joinArray(args?.collection_slugs),
+        collectionSlugs: joinArray(args?.collectionSlugs),
         chains: joinArray(args?.chains),
       },
     )

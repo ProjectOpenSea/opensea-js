@@ -114,18 +114,10 @@ export class OffersAPI {
     floatValue?: number,
     intValue?: number,
   ): Promise<GetOffersResponse> {
-    const response = await this.fetcher.get<GetOffersResponse>(
+    return this.fetcher.get<GetOffersResponse>(
       getTraitOffersPath(collectionSlug),
-      {
-        type,
-        value,
-        limit,
-        next,
-        float_value: floatValue,
-        int_value: intValue,
-      },
+      { type, value, limit, next, floatValue, intValue },
     )
-    return response
   }
 
   /**
@@ -143,6 +135,12 @@ export class OffersAPI {
 
   /**
    * Build a OpenSea collection offer.
+   *
+   * The body uses mixed casing per the OpenSea OpenAPI spec: the outer
+   * envelope (`protocol_address`, `offer_protection_enabled`) is snake_case,
+   * but `criteria.numericTraits` keeps its camelCase key on the wire per
+   * the {@link CriteriaObject} schema. Opt out of automatic snakeize and
+   * emit the body in exact wire shape.
    */
   async buildOffer(
     offererAddress: string,
@@ -169,6 +167,8 @@ export class OffersAPI {
     const response = await this.fetcher.post<BuildOfferResponse>(
       getBuildOfferPath(),
       payload,
+      undefined,
+      { snakeizeBody: false },
     )
     return response
   }
@@ -192,6 +192,11 @@ export class OffersAPI {
 
   /**
    * Post a collection offer to OpenSea.
+   *
+   * Mixed-casing body: outer `protocol_address`, `protocol_data` are
+   * snake_case, but `protocol_data.parameters` (Seaport struct) and
+   * `criteria.numericTraits` keep their camelCase keys on the wire. Opt out
+   * of automatic snakeize and emit the body in exact wire shape.
    */
   async postCollectionOffer(
     order: ProtocolData,
@@ -214,6 +219,8 @@ export class OffersAPI {
     return await this.fetcher.post<CollectionOffer>(
       getPostCollectionOfferPath(),
       payload,
+      undefined,
+      { snakeizeBody: false },
     )
   }
 

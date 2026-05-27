@@ -6,9 +6,18 @@ import type { ProtocolData } from "./types"
 
 export const DEFAULT_SEAPORT_CONTRACT_ADDRESS = CROSS_CHAIN_SEAPORT_V1_6_ADDRESS
 
+/**
+ * Build the POST /api/v2/offers body for a collection offer.
+ *
+ * The OpenSea OpenAPI spec uses mixed casing here: the outer envelope
+ * (`protocol_address`, `protocol_data`) is snake_case, but the Seaport
+ * `parameters` inside `protocol_data` and `numericTraits` inside `criteria`
+ * keep their camelCase keys on the wire. Emit the body in exact wire shape
+ * so callers can pass `snakeizeBody: false`.
+ */
 export const getPostCollectionOfferPayload = (
   collectionSlug: string,
-  protocol_data: ProtocolData,
+  protocolData: ProtocolData,
   chain: Chain,
   traitType?: string,
   traitValue?: string,
@@ -18,27 +27,32 @@ export const getPostCollectionOfferPayload = (
   const payload = {
     criteria: {
       collection: { slug: collectionSlug },
+    } as {
+      collection: { slug: string }
+      traits?: Array<{ type: string; value: string }>
+      trait?: { type: string; value: string }
+      numericTraits?: Array<{ type: string; min?: number; max?: number }>
     },
-    protocol_data,
+    protocol_data: protocolData,
     protocol_address: getSeaportAddress(chain),
   }
 
-  // Prioritize traits array if provided
   if (traits && traits.length > 0) {
-    ;(payload.criteria as any).traits = traits
+    payload.criteria.traits = traits
   } else if (traitType && traitValue) {
-    // Fallback to single trait for backward compatibility
-    ;(payload.criteria as any).trait = {
-      type: traitType,
-      value: traitValue,
-    }
+    payload.criteria.trait = { type: traitType, value: traitValue }
   }
   if (numericTraits && numericTraits.length > 0) {
-    ;(payload.criteria as any).numericTraits = numericTraits
+    payload.criteria.numericTraits = numericTraits
   }
   return payload
 }
 
+/**
+ * Build the POST /api/v2/offers/build body. Same mixed-casing rules as
+ * {@link getPostCollectionOfferPayload}: outer `protocol_address` and
+ * `offer_protection_enabled` are snake_case, `numericTraits` stays camelCase.
+ */
 export const getBuildCollectionOfferPayload = (
   offererAddress: string,
   quantity: number,
@@ -54,26 +68,24 @@ export const getBuildCollectionOfferPayload = (
     offerer: offererAddress,
     quantity,
     criteria: {
-      collection: {
-        slug: collectionSlug,
-      },
+      collection: { slug: collectionSlug },
+    } as {
+      collection: { slug: string }
+      traits?: Array<{ type: string; value: string }>
+      trait?: { type: string; value: string }
+      numericTraits?: Array<{ type: string; min?: number; max?: number }>
     },
     protocol_address: getSeaportAddress(chain),
     offer_protection_enabled: offerProtectionEnabled,
   }
 
-  // Prioritize traits array if provided
   if (traits && traits.length > 0) {
-    ;(payload.criteria as any).traits = traits
+    payload.criteria.traits = traits
   } else if (traitType && traitValue) {
-    // Fallback to single trait for backward compatibility
-    ;(payload.criteria as any).trait = {
-      type: traitType,
-      value: traitValue,
-    }
+    payload.criteria.trait = { type: traitType, value: traitValue }
   }
   if (numericTraits && numericTraits.length > 0) {
-    ;(payload.criteria as any).numericTraits = numericTraits
+    payload.criteria.numericTraits = numericTraits
   }
   return payload
 }
@@ -85,7 +97,7 @@ export const getFulfillmentDataPath = (side: OrderSide) => {
 
 export const getFulfillListingPayload = (
   fulfillerAddress: string,
-  order_hash: string,
+  orderHash: string,
   protocolAddress: string,
   chain: Chain,
   assetContractAddress?: string,
@@ -95,53 +107,35 @@ export const getFulfillListingPayload = (
   includeOptionalCreatorFees: boolean = false,
 ) => {
   const payload: {
-    listing: {
-      hash: string
-      chain: Chain
-      protocol_address: string
-    }
-    fulfiller: {
-      address: string
-    }
-    consideration?: {
-      asset_contract_address: string
-      token_id: string
-    }
-    units_to_fill: string
+    listing: { hash: string; chain: Chain; protocolAddress: string }
+    fulfiller: { address: string }
+    consideration?: { assetContractAddress: string; tokenId: string }
+    unitsToFill: string
     recipient?: string
-    include_optional_creator_fees: boolean
+    includeOptionalCreatorFees: boolean
   } = {
     listing: {
-      hash: order_hash,
+      hash: orderHash,
       chain,
-      protocol_address: protocolAddress,
+      protocolAddress,
     },
-    fulfiller: {
-      address: fulfillerAddress,
-    },
-    units_to_fill: unitsToFill,
-    include_optional_creator_fees: includeOptionalCreatorFees,
+    fulfiller: { address: fulfillerAddress },
+    unitsToFill,
+    includeOptionalCreatorFees,
   }
 
-  // Add consideration for criteria listings if needed
   if (assetContractAddress && tokenId) {
-    payload.consideration = {
-      asset_contract_address: assetContractAddress,
-      token_id: tokenId,
-    }
+    payload.consideration = { assetContractAddress, tokenId }
   }
-
-  // Add optional recipient for listings
   if (recipientAddress) {
     payload.recipient = recipientAddress
   }
-
   return payload
 }
 
 export const getFulfillOfferPayload = (
   fulfillerAddress: string,
-  order_hash: string,
+  orderHash: string,
   protocolAddress: string,
   chain: Chain,
   assetContractAddress?: string,
@@ -150,40 +144,24 @@ export const getFulfillOfferPayload = (
   includeOptionalCreatorFees: boolean = false,
 ) => {
   const payload: {
-    offer: {
-      hash: string
-      chain: Chain
-      protocol_address: string
-    }
-    fulfiller: {
-      address: string
-    }
-    consideration?: {
-      asset_contract_address: string
-      token_id: string
-    }
-    units_to_fill: string
-    include_optional_creator_fees: boolean
+    offer: { hash: string; chain: Chain; protocolAddress: string }
+    fulfiller: { address: string }
+    consideration?: { assetContractAddress: string; tokenId: string }
+    unitsToFill: string
+    includeOptionalCreatorFees: boolean
   } = {
     offer: {
-      hash: order_hash,
+      hash: orderHash,
       chain,
-      protocol_address: protocolAddress,
+      protocolAddress,
     },
-    fulfiller: {
-      address: fulfillerAddress,
-    },
-    units_to_fill: unitsToFill,
-    include_optional_creator_fees: includeOptionalCreatorFees,
+    fulfiller: { address: fulfillerAddress },
+    unitsToFill,
+    includeOptionalCreatorFees,
   }
 
-  // Add consideration for criteria offers (e.g., collection offers)
   if (assetContractAddress && tokenId) {
-    payload.consideration = {
-      asset_contract_address: assetContractAddress,
-      token_id: tokenId,
-    }
+    payload.consideration = { assetContractAddress, tokenId }
   }
-
   return payload
 }

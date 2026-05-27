@@ -26,10 +26,10 @@ describe("API: OrdersAPI.getOrderByHash", () => {
 
   test("returns an Offer type response", async () => {
     const mockOffer: Offer = {
-      order_hash:
+      orderHash:
         "0x143be64aaf5d170c61e56ceb37dff0f8494e2630a7eae3eb24c8edbef09af9d5",
       chain: "ethereum",
-      protocol_data: {
+      protocolData: {
         parameters: {
           offerer: "0xaf68f720d7e51b88a76ec35aab2b1694f8f0892a",
           offer: [
@@ -56,7 +56,7 @@ describe("API: OrdersAPI.getOrderByHash", () => {
         },
         signature: null,
       } as unknown as ProtocolData,
-      protocol_address: "0x0000000000000068f116a894984e2db1123eb395",
+      protocolAddress: "0x0000000000000068f116a894984e2db1123eb395",
       price: {
         currency: "WETH",
         decimals: 18,
@@ -66,6 +66,7 @@ describe("API: OrdersAPI.getOrderByHash", () => {
         collection: { slug: "boredapeyachtclub" },
         contract: { address: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d" },
       },
+      remainingQuantity: 1,
       status: OrderStatus.ACTIVE,
     }
 
@@ -82,26 +83,26 @@ describe("API: OrdersAPI.getOrderByHash", () => {
     )
 
     // Verify it returns the raw API response (Offer type)
-    expect(result.order_hash).toBe(
+    expect(result.orderHash).toBe(
       "0x143be64aaf5d170c61e56ceb37dff0f8494e2630a7eae3eb24c8edbef09af9d5",
     )
-    expect(result.protocol_address).toBe(
+    expect(result.protocolAddress).toBe(
       "0x0000000000000068f116a894984e2db1123eb395",
     )
-    expect(result.protocol_data.parameters.offerer).toBe(
+    expect(result.protocolData!.parameters.offerer).toBe(
       "0xaf68f720d7e51b88a76ec35aab2b1694f8f0892a",
     )
-    expect((result as Offer).criteria?.collection.slug).toBe(
+    expect((result as Offer).criteria?.collection?.slug).toBe(
       "boredapeyachtclub",
     )
   })
 
   test("returns a Listing type response", async () => {
     const mockListing: Listing = {
-      order_hash:
+      orderHash:
         "0xabc123def456789012345678901234567890123456789012345678901234abcd",
       chain: "ethereum",
-      protocol_data: {
+      protocolData: {
         parameters: {
           offerer: "0x1234567890123456789012345678901234567890",
           offer: [
@@ -128,7 +129,7 @@ describe("API: OrdersAPI.getOrderByHash", () => {
         },
         signature: "0xsignature",
       } as unknown as ProtocolData,
-      protocol_address: "0x0000000000000068f116a894984e2db1123eb395",
+      protocolAddress: "0x0000000000000068f116a894984e2db1123eb395",
       type: OrderType.BASIC,
       price: {
         current: {
@@ -137,7 +138,7 @@ describe("API: OrdersAPI.getOrderByHash", () => {
           value: "1000000000000000000",
         },
       },
-      remaining_quantity: 1,
+      remainingQuantity: 1,
       status: OrderStatus.ACTIVE,
     }
 
@@ -149,21 +150,21 @@ describe("API: OrdersAPI.getOrderByHash", () => {
     )
 
     // Verify it returns the raw API response (Listing type)
-    expect(result.order_hash).toBe(
+    expect(result.orderHash).toBe(
       "0xabc123def456789012345678901234567890123456789012345678901234abcd",
     )
-    expect(result.protocol_address).toBe(
+    expect(result.protocolAddress).toBe(
       "0x0000000000000068f116a894984e2db1123eb395",
     )
-    expect((result as Listing).remaining_quantity).toBe(1)
+    expect((result as Listing).remainingQuantity).toBe(1)
     expect((result as Listing).type).toBe(OrderType.BASIC)
   })
 
   test("response can be used for order cancellation", async () => {
     const mockOffer: Offer = {
-      order_hash: "0x123",
+      orderHash: "0x123",
       chain: "ethereum",
-      protocol_data: {
+      protocolData: {
         parameters: {
           offerer: "0xofferer",
           offer: [],
@@ -180,12 +181,13 @@ describe("API: OrdersAPI.getOrderByHash", () => {
         },
         signature: null,
       } as unknown as ProtocolData,
-      protocol_address: "0xprotocol",
+      protocolAddress: "0xprotocol",
       price: {
         currency: "ETH",
         decimals: 18,
         value: "1000000000000000000",
       },
+      remainingQuantity: 1,
       status: OrderStatus.ACTIVE,
     }
 
@@ -197,10 +199,10 @@ describe("API: OrdersAPI.getOrderByHash", () => {
     )
 
     // Verify the response has the fields needed for cancellation
-    expect(result.protocol_address).toBe("0xprotocol")
-    expect(result.protocol_data).toBeDefined()
-    expect(result.protocol_data.parameters).toBeDefined()
-    expect(result.protocol_data.parameters.offerer).toBe("0xofferer")
+    expect(result.protocolAddress).toBe("0xprotocol")
+    expect(result.protocolData).toBeDefined()
+    expect(result.protocolData!.parameters).toBeDefined()
+    expect(result.protocolData!.parameters.offerer).toBe("0xofferer")
   })
 
   test("passes chain parameter correctly", async () => {
@@ -209,9 +211,9 @@ describe("API: OrdersAPI.getOrderByHash", () => {
     const polygonOrdersAPI = new OrdersAPI(fetcher, Chain.Polygon)
 
     const mockOffer: Offer = {
-      order_hash: "0x123",
+      orderHash: "0x123",
       chain: "polygon",
-      protocol_data: {
+      protocolData: {
         parameters: {
           offerer: "0x1",
           offer: [],
@@ -228,12 +230,13 @@ describe("API: OrdersAPI.getOrderByHash", () => {
         },
         signature: null,
       } as unknown as ProtocolData,
-      protocol_address: "0xprotocol",
+      protocolAddress: "0xprotocol",
       price: {
         currency: "ETH",
         decimals: 18,
         value: "1000000000000000000",
       },
+      remainingQuantity: 1,
       status: OrderStatus.ACTIVE,
     }
 

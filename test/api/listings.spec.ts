@@ -35,7 +35,7 @@ describe("API: ListingsAPI", () => {
       const mockResponse: GetListingsResponse = {
         listings: [
           {
-            order_hash: "0x123",
+            orderHash: "0x123",
             chain: Chain.Mainnet,
             type: "basic",
             price: {
@@ -45,8 +45,8 @@ describe("API: ListingsAPI", () => {
                 value: "1000000000000000000",
               },
             },
-            protocol_data: {} as unknown as OrderV2,
-            protocol_address: "0xabc",
+            protocolData: {} as unknown as OrderV2,
+            protocolAddress: "0xabc",
           } as unknown as Listing,
         ],
         next: "cursor-123",
@@ -151,9 +151,9 @@ describe("API: ListingsAPI", () => {
     test("handles multiple listings in response", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [
-          { order_hash: "0x1" } as unknown as Listing,
-          { order_hash: "0x2" } as unknown as Listing,
-          { order_hash: "0x3" } as unknown as Listing,
+          { orderHash: "0x1" } as unknown as Listing,
+          { orderHash: "0x2" } as unknown as Listing,
+          { orderHash: "0x3" } as unknown as Listing,
         ],
         next: undefined,
       }
@@ -191,7 +191,7 @@ describe("API: ListingsAPI", () => {
   describe("getBestListing", () => {
     test("fetches best listing for a token with string tokenId", async () => {
       const mockResponse: GetBestListingResponse = {
-        order_hash: "0xabc123",
+        orderHash: "0xabc123",
         chain: Chain.Mainnet,
         type: "basic",
         price: {
@@ -201,8 +201,8 @@ describe("API: ListingsAPI", () => {
             value: "1500000000000000000",
           },
         },
-        protocol_data: {} as unknown as OrderV2,
-        protocol_address: "0xdef456",
+        protocolData: {} as unknown as OrderV2,
+        protocolAddress: "0xdef456",
       } as unknown as Listing
 
       mockGet.mockResolvedValue(mockResponse)
@@ -214,12 +214,12 @@ describe("API: ListingsAPI", () => {
         "/api/v2/listings/collection/test-collection/nfts/1234/best",
       )
       expect(mockGet.mock.calls[0][1]).toBeUndefined()
-      expect(result.order_hash).toBe("0xabc123")
+      expect(result.orderHash).toBe("0xabc123")
     })
 
     test("fetches best listing for a token with number tokenId", async () => {
       const mockResponse: GetBestListingResponse = {
-        order_hash: "0xdef",
+        orderHash: "0xdef",
       } as unknown as Listing
 
       mockGet.mockResolvedValue(mockResponse)
@@ -233,7 +233,7 @@ describe("API: ListingsAPI", () => {
 
     test("handles large token IDs", async () => {
       const mockResponse: GetBestListingResponse = {
-        order_hash: "0x123",
+        orderHash: "0x123",
       } as unknown as Listing
 
       mockGet.mockResolvedValue(mockResponse)
@@ -246,7 +246,7 @@ describe("API: ListingsAPI", () => {
 
     test("handles collection slug with special characters", async () => {
       const mockResponse: GetBestListingResponse = {
-        order_hash: "0x456",
+        orderHash: "0x456",
       } as unknown as Listing
 
       mockGet.mockResolvedValue(mockResponse)
@@ -286,7 +286,7 @@ describe("API: ListingsAPI", () => {
       const mockResponse: GetListingsResponse = {
         listings: [
           {
-            order_hash: "0x111",
+            orderHash: "0x111",
             price: {
               current: {
                 value: "1000000000000000000",
@@ -294,7 +294,7 @@ describe("API: ListingsAPI", () => {
             },
           } as unknown as Listing,
           {
-            order_hash: "0x222",
+            orderHash: "0x222",
             price: {
               current: {
                 value: "1100000000000000000",
@@ -402,7 +402,7 @@ describe("API: ListingsAPI", () => {
 
     test("handles response with pagination cursor", async () => {
       const mockResponse: GetListingsResponse = {
-        listings: [{ order_hash: "0x1" } as unknown as Listing],
+        listings: [{ orderHash: "0x1" } as unknown as Listing],
         next: "next-cursor-value",
       }
 
@@ -483,9 +483,9 @@ describe("API: ListingsAPI", () => {
       mockPost.mockResolvedValue(mockResponse)
 
       const request = {
-        collection_slug: "azuki",
-        max_items: 5,
-        max_price_per_item: "1000000000000000000",
+        collectionSlug: "azuki",
+        maxItems: 5,
+        maxPricePerItem: "1000000000000000000",
         buyer: "0xBuyer",
         payment: {} as unknown,
       } as unknown as Parameters<typeof listingsAPI.sweepCollection>[0]
@@ -509,7 +509,7 @@ describe("API: ListingsAPI", () => {
   describe("remaining_quantity field", () => {
     test("getBestListing includes remaining_quantity in response", async () => {
       const mockResponse: GetBestListingResponse = {
-        order_hash: "0xabc123",
+        orderHash: "0xabc123",
         chain: Chain.Mainnet,
         type: "basic",
         price: {
@@ -519,28 +519,28 @@ describe("API: ListingsAPI", () => {
             value: "1500000000000000000",
           },
         },
-        protocol_data: {} as unknown as OrderV2,
-        protocol_address: "0xdef456",
-        remaining_quantity: 1,
+        protocolData: {} as unknown as OrderV2,
+        protocolAddress: "0xdef456",
+        remainingQuantity: 1,
       } as unknown as Listing
 
       mockGet.mockResolvedValue(mockResponse)
 
       const result = await listingsAPI.getBestListing("test-collection", "1234")
 
-      expect(result.remaining_quantity).toBe(1)
+      expect(result.remainingQuantity).toBe(1)
     })
 
     test("getAllListings includes remaining_quantity for each listing", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [
           {
-            order_hash: "0x111",
-            remaining_quantity: 1,
+            orderHash: "0x111",
+            remainingQuantity: 1,
           } as unknown as Listing,
           {
-            order_hash: "0x222",
-            remaining_quantity: 5,
+            orderHash: "0x222",
+            remainingQuantity: 5,
           } as unknown as Listing,
         ],
         next: undefined,
@@ -550,16 +550,16 @@ describe("API: ListingsAPI", () => {
 
       const result = await listingsAPI.getAllListings("test-collection")
 
-      expect(result.listings[0].remaining_quantity).toBe(1)
-      expect(result.listings[1].remaining_quantity).toBe(5)
+      expect(result.listings[0].remainingQuantity).toBe(1)
+      expect(result.listings[1].remainingQuantity).toBe(5)
     })
 
     test("getBestListings includes remaining_quantity for partially filled orders", async () => {
       const mockResponse: GetListingsResponse = {
         listings: [
           {
-            order_hash: "0x333",
-            remaining_quantity: 3,
+            orderHash: "0x333",
+            remainingQuantity: 3,
           } as unknown as Listing,
         ],
         next: undefined,
@@ -569,7 +569,7 @@ describe("API: ListingsAPI", () => {
 
       const result = await listingsAPI.getBestListings("test-collection")
 
-      expect(result.listings[0].remaining_quantity).toBe(3)
+      expect(result.listings[0].remainingQuantity).toBe(3)
     })
   })
 
@@ -588,13 +588,13 @@ describe("API: ListingsAPI", () => {
           {
             hash: "0xorderhash",
             chain: "ethereum",
-            protocol_address: "0xseaport",
+            protocolAddress: "0xseaport",
           },
         ],
         fulfiller: { address: "0xbuyer" },
         payment: {
           chain: "base",
-          token_address: "0x0000000000000000000000000000000000000000",
+          tokenAddress: "0x0000000000000000000000000000000000000000",
         },
       })
 
@@ -605,13 +605,13 @@ describe("API: ListingsAPI", () => {
             {
               hash: "0xorderhash",
               chain: "ethereum",
-              protocol_address: "0xseaport",
+              protocolAddress: "0xseaport",
             },
           ],
           fulfiller: { address: "0xbuyer" },
           payment: {
             chain: "base",
-            token_address: "0x0000000000000000000000000000000000000000",
+            tokenAddress: "0x0000000000000000000000000000000000000000",
           },
         },
       )
@@ -627,13 +627,13 @@ describe("API: ListingsAPI", () => {
           {
             hash: "0xhash",
             chain: "ethereum",
-            protocol_address: "0xseaport",
+            protocolAddress: "0xseaport",
           },
         ],
         fulfiller: { address: "0xbuyer" },
         payment: {
           chain: "base",
-          token_address: "0x0000000000000000000000000000000000000000",
+          tokenAddress: "0x0000000000000000000000000000000000000000",
         },
         recipient: "0xrecipient",
       })
@@ -659,18 +659,18 @@ describe("API: ListingsAPI", () => {
           {
             hash: "0xhash1",
             chain: "ethereum",
-            protocol_address: "0xseaport",
+            protocolAddress: "0xseaport",
           },
           {
             hash: "0xhash2",
             chain: "ethereum",
-            protocol_address: "0xseaport",
+            protocolAddress: "0xseaport",
           },
         ],
         fulfiller: { address: "0xbuyer" },
         payment: {
           chain: "base",
-          token_address: "0x0000000000000000000000000000000000000000",
+          tokenAddress: "0x0000000000000000000000000000000000000000",
         },
       })
 
@@ -687,7 +687,7 @@ describe("API: ListingsAPI", () => {
           fulfiller: { address: "0xbuyer" },
           payment: {
             chain: "base",
-            token_address: "0x0000000000000000000000000000000000000000",
+            tokenAddress: "0x0000000000000000000000000000000000000000",
           },
         }),
       ).rejects.toThrow("Bad Request")

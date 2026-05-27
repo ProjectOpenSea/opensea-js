@@ -5,10 +5,10 @@ import { getCurrentUnixTimestamp, TimeInSeconds } from "../../src/utils"
 
 export const expectValidOrder = (order: Offer | Listing) => {
   const requiredFields = [
-    "order_hash",
+    "orderHash",
     "chain",
-    "protocol_data",
-    "protocol_address",
+    "protocolData",
+    "protocolAddress",
     "price",
     "status",
   ]

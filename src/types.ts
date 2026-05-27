@@ -1,6 +1,17 @@
-import type { ChainIdentifier } from "@opensea/api-types"
+import type {
+  AccountResponse,
+  Fee as ApiFee,
+  PricingCurrencies as ApiPricingCurrencies,
+  Rarity as ApiRarity,
+  SocialMediaAccount as ApiSocialMediaAccount,
+  ChainIdentifier,
+  CollectionDetailedResponse,
+  CollectionStatsResponse,
+  PaymentToken,
+} from "@opensea/api-types"
 import type { Listing, Offer } from "./api/types"
 import type { OrderV2 } from "./orders/types"
+import type { Camelize } from "./utils/case"
 
 /**
  * Numeric type for amounts (replaces ethers BigNumberish).
@@ -199,11 +210,7 @@ export enum SafelistStatus {
  * Collection fees
  * @category API Models
  */
-export interface Fee {
-  fee: number
-  recipient: string
-  required: boolean
-}
+export type Fee = Camelize<ApiFee>
 
 /**
  * Generic Blockchain Asset.
@@ -240,143 +247,49 @@ export interface AssetWithTokenStandard extends Asset {
   tokenStandard: TokenStandard
 }
 
-interface OpenSeaCollectionStatsIntervalData {
-  interval: "one_day" | "seven_day" | "thirty_day"
-  volume: number
-  sales: number
-}
-
 /**
- * OpenSea Collection Stats
+ * OpenSea Collection Stats — sourced from api-types `CollectionStatsResponse`.
  * @category API Models
  */
-export interface OpenSeaCollectionStats {
-  total: {
-    volume: number
-    sales: number
-    num_owners: number
-    floor_price: number
-    floor_price_symbol: string
-  }
-  intervals: OpenSeaCollectionStatsIntervalData[]
-}
-
-export interface RarityStrategy {
-  strategyId: string
-  strategyVersion: string
-  calculatedAt: string
-  maxRank: number
-  tokensScored: number
-}
+export type OpenSeaCollectionStats = Camelize<CollectionStatsResponse>
 
 /**
- * OpenSea collection metadata.
+ * Rarity strategy for a collection. Camelized from api-types `Rarity`.
  * @category API Models
  */
-export interface OpenSeaCollection {
-  /** Name of the collection */
-  name: string
-  /** The identifier (slug) of the collection */
-  collection: string
-  /** Description of the collection */
-  description: string
-  /** Image for the collection */
-  imageUrl: string
-  /** Banner image for the collection */
-  bannerImageUrl: string
-  /** Owner address of the collection */
-  owner: string
-  /** The collection's safelist status */
-  safelistStatus: SafelistStatus
-  /** The category of the collection */
-  category: string
-  /** If the collection is disabled */
-  isDisabled: boolean
-  /** If the collection is NSFW (not safe for work) */
-  isNSFW: boolean
-  /** If trait offers are enabled */
-  traitOffersEnabled: boolean
-  /** If collection offers are enabled */
-  collectionOffersEnabled: boolean
-  /** The OpenSea url for the collection */
-  openseaUrl: string
-  /** The project url for the collection */
-  projectUrl: string
-  /** The wiki url for the collection */
-  wikiUrl: string
-  /** The discord url for the collection */
-  discordUrl: string
-  /** The telegram url for the collection */
-  telegramUrl: string
-  /** The twitter username for the collection */
-  twitterUsername: string
-  /** The instagram username for the collection */
-  instagramUsername: string
-  /** The contracts for the collection */
-  contracts: { address: string; chain: Chain }[]
-  /** Accounts allowed to edit this collection */
-  editors: string[]
-  /** The fees for the collection */
-  fees: Fee[]
-  /** The rarity strategy for the collection */
-  rarity: RarityStrategy | null
-  /** Pricing currencies for listings and offers in this collection */
-  pricingCurrencies?: PricingCurrencies
-  /** The total supply of the collection (minted minus burned) */
-  totalSupply: number
-  /** The number of unique items in the collection */
-  uniqueItemCount: number
-  /** The created date of the collection */
-  createdDate: string
-  /** When defined, the zone required for orders for the collection */
-  requiredZone?: string
-}
+export type RarityStrategy = Camelize<ApiRarity>
 
 /**
- * Full annotated Fungible Token spec with OpenSea metadata
+ * OpenSea collection metadata. Camelized from api-types `CollectionDetailedResponse`.
+ * @category API Models
  */
-export interface OpenSeaPaymentToken {
-  name: string
-  symbol: string
-  decimals: number
-  address: string
-  chain: Chain
-  imageUrl?: string
-  ethPrice?: string
-  usdPrice?: string
-}
+export type OpenSeaCollection = Camelize<CollectionDetailedResponse>
+
+/**
+ * Full annotated Fungible Token spec with OpenSea metadata.
+ * Sourced from api-types `PaymentToken`.
+ * @category API Models
+ */
+export type OpenSeaPaymentToken = Camelize<PaymentToken>
 
 /**
  * Pricing currencies for a collection, defining default currencies for listings and offers.
+ * Sourced from api-types `PricingCurrencies`.
  * @category API Models
  */
-export interface PricingCurrencies {
-  listingCurrency?: OpenSeaPaymentToken
-  offerCurrency?: OpenSeaPaymentToken
-}
+export type PricingCurrencies = Camelize<ApiPricingCurrencies>
 
 /**
- * OpenSea Account
+ * OpenSea Account. Sourced from api-types `AccountResponse`.
  * @category API Models
  */
-export interface OpenSeaAccount {
-  address: string
-  username: string
-  profileImageUrl: string
-  bannerImageUrl: string
-  website: string
-  socialMediaAccounts: SocialMediaAccount[]
-  bio: string
-  joinedDate: string
-}
+export type OpenSeaAccount = Camelize<AccountResponse>
+
 /**
- * Social media account
+ * Social media account. Sourced from api-types `SocialMediaAccount`.
  * @category API Models
  */
-export interface SocialMediaAccount {
-  platform: string
-  username: string
-}
+export type SocialMediaAccount = Camelize<ApiSocialMediaAccount>
 
 /**
  * Enhanced Error type for rate limit errors that includes retry-after information

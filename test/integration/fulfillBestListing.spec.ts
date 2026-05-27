@@ -40,8 +40,8 @@ describe("SDK: fulfill best listing", () => {
     const listing = await sdkClient.api.getBestListing(slug, tokenId, true)
     expect(listing).toBeDefined()
     expect(listing.chain).toBe(chain)
-    expect(typeof listing.order_hash).toBe("string")
-    expect(typeof listing.protocol_address).toBe("string")
+    expect(typeof listing.orderHash).toBe("string")
+    expect(typeof listing.protocolAddress).toBe("string")
 
     const observedEvents: { type: EventType; data: EventData }[] = []
     const listeners = [

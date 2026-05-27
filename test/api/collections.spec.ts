@@ -33,29 +33,29 @@ describe("API: CollectionsAPI", () => {
         collection: "test-collection",
         name: "Test Collection",
         description: "A test collection",
-        image_url: "https://example.com/image.png",
-        banner_image_url: "https://example.com/banner.png",
+        imageUrl: "https://example.com/image.png",
+        bannerImageUrl: "https://example.com/banner.png",
         owner: "0x1234567890123456789012345678901234567890",
-        safelist_status: "verified",
+        safelistStatus: "verified",
         category: "art",
-        is_disabled: false,
-        is_nsfw: false,
-        trait_offers_enabled: true,
-        collection_offers_enabled: true,
-        opensea_url: "https://opensea.io/collection/test-collection",
-        project_url: "https://example.com",
-        wiki_url: "https://wiki.example.com",
-        discord_url: "https://discord.gg/example",
-        telegram_url: "https://t.me/example",
-        twitter_username: "testcollection",
-        instagram_username: "testcollection",
+        isDisabled: false,
+        isNsfw: false,
+        traitOffersEnabled: true,
+        collectionOffersEnabled: true,
+        openseaUrl: "https://opensea.io/collection/test-collection",
+        projectUrl: "https://example.com",
+        wikiUrl: "https://wiki.example.com",
+        discordUrl: "https://discord.gg/example",
+        telegramUrl: "https://t.me/example",
+        twitterUsername: "testcollection",
+        instagramUsername: "testcollection",
         contracts: [],
         editors: [],
         fees: [],
         rarity: null,
-        pricing_currencies: null,
-        total_supply: 10000,
-        created_date: "2024-01-01T00:00:00Z",
+        pricingCurrencies: null,
+        totalSupply: 10000,
+        createdDate: "2024-01-01T00:00:00Z",
       } as unknown as GetCollectionResponse
 
       mockGet.mockResolvedValue(mockResponse)
@@ -66,7 +66,7 @@ describe("API: CollectionsAPI", () => {
       expect(mockGet.mock.calls[0][0]).toBe(
         "/api/v2/collections/test-collection",
       )
-      // Verify the collection was transformed from snake_case to camelCase
+      // Verify the response is returned raw (snake_case from api-types)
       expect(result.collection).toBe("test-collection")
       expect(result.name).toBe("Test Collection")
       expect(result.imageUrl).toBe("https://example.com/image.png")
@@ -123,10 +123,10 @@ describe("API: CollectionsAPI", () => {
       expect(mockGet).toHaveBeenCalledTimes(1)
       expect(mockGet.mock.calls[0][0]).toBe("/api/v2/collections")
       expect(mockGet.mock.calls[0][1]).toEqual({
-        order_by: CollectionOrderByOption.CREATED_DATE,
+        orderBy: CollectionOrderByOption.CREATED_DATE,
         chain: undefined,
-        creator_username: undefined,
-        include_hidden: false,
+        creatorUsername: undefined,
+        includeHidden: false,
         limit: undefined,
         next: undefined,
       })
@@ -144,7 +144,7 @@ describe("API: CollectionsAPI", () => {
       await collectionsAPI.getCollections(CollectionOrderByOption.MARKET_CAP)
 
       expect(mockGet.mock.calls[0][1]).toMatchObject({
-        order_by: CollectionOrderByOption.MARKET_CAP,
+        orderBy: CollectionOrderByOption.MARKET_CAP,
       })
     })
 
@@ -179,7 +179,7 @@ describe("API: CollectionsAPI", () => {
       )
 
       expect(mockGet.mock.calls[0][1]).toMatchObject({
-        creator_username: "test-creator",
+        creatorUsername: "test-creator",
       })
     })
 
@@ -198,7 +198,7 @@ describe("API: CollectionsAPI", () => {
       )
 
       expect(mockGet.mock.calls[0][1]).toMatchObject({
-        include_hidden: true,
+        includeHidden: true,
       })
     })
 
@@ -261,10 +261,10 @@ describe("API: CollectionsAPI", () => {
       )
 
       expect(mockGet.mock.calls[0][1]).toEqual({
-        order_by: CollectionOrderByOption.SEVEN_DAY_VOLUME,
+        orderBy: CollectionOrderByOption.SEVEN_DAY_VOLUME,
         chain: Chain.Mainnet,
-        creator_username: "creator-username",
-        include_hidden: true,
+        creatorUsername: "creator-username",
+        includeHidden: true,
         limit: 25,
         next: "cursor-xyz",
       })
@@ -319,9 +319,9 @@ describe("API: CollectionsAPI", () => {
         total: {
           volume: 1000,
           sales: 500,
-          num_owners: 250,
-          floor_price: 1.5,
-          floor_price_symbol: "ETH",
+          numOwners: 250,
+          floorPrice: 1.5,
+          floorPriceSymbol: "ETH",
         },
         intervals: [
           {
@@ -350,9 +350,9 @@ describe("API: CollectionsAPI", () => {
         total: {
           volume: 0,
           sales: 0,
-          num_owners: 0,
-          floor_price: 0,
-          floor_price_symbol: "ETH",
+          numOwners: 0,
+          floorPrice: 0,
+          floorPriceSymbol: "ETH",
         },
         intervals: [],
       }
@@ -371,9 +371,9 @@ describe("API: CollectionsAPI", () => {
         total: {
           volume: 0,
           sales: 0,
-          num_owners: 0,
-          floor_price: 0,
-          floor_price_symbol: "ETH",
+          numOwners: 0,
+          floorPrice: 0,
+          floorPriceSymbol: "ETH",
         },
         intervals: [],
       }

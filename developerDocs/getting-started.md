@@ -250,7 +250,7 @@ Fetch all events with optional filters:
 import { AssetEventType } from "@opensea/sdk";
 
 const { asset_events, next } = await openseaSDK.api.getEvents({
-  event_type: AssetEventType.SALE, // Optional: filter by event type
+  eventType: AssetEventType.SALE, // Optional: filter by event type
   limit: 50, // Optional: limit results (default: 50)
   after: 1672531200, // Optional: filter events after timestamp
   before: 1675209600, // Optional: filter events before timestamp
@@ -277,7 +277,7 @@ Fetch events for a specific account address:
 const { asset_events } = await openseaSDK.api.getEventsByAccount(
   "0x...", // Account address
   {
-    event_type: AssetEventType.SALE,
+    eventType: AssetEventType.SALE,
     limit: 20,
   },
 );
@@ -308,7 +308,7 @@ const { asset_events } = await openseaSDK.api.getEventsByNFT(
   "0x...", // Contract address
   "1", // Token ID
   {
-    event_type: AssetEventType.SALE,
+    eventType: AssetEventType.SALE,
   },
 );
 ```
@@ -317,7 +317,7 @@ const { asset_events } = await openseaSDK.api.getEventsByNFT(
 
 Each event includes:
 
-- `event_type`: Type of event (sale, transfer, order, etc.)
+- `eventType`: Type of event (sale, transfer, order, etc.)
 - `event_timestamp`: When the event occurred (Unix timestamp)
 - `chain`: Which blockchain the event occurred on
 - `quantity`: Number of items involved
@@ -331,7 +331,7 @@ For **sale events**, additional fields include:
 
 For **order events** (listings/offers), additional fields include:
 
-- `order_type`: "listing", "item_offer", "collection_offer", or "trait_offer"
+- `orderType`: "listing", "item_offer", "collection_offer", or "trait_offer"
 - `maker` and `taker`: Wallet addresses
 - `payment`: Offer/listing amount
 - `expiration_date`: When the order expires
@@ -353,7 +353,7 @@ const allEvents = [];
 
 do {
   const response = await openseaSDK.api.getEvents({
-    event_type: AssetEventType.SALE,
+    eventType: AssetEventType.SALE,
     limit: 50,
     next: cursor,
   });

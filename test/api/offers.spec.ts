@@ -37,7 +37,7 @@ describe("API: OffersAPI", () => {
       const mockResponse: GetOffersResponse = {
         offers: [
           {
-            order_hash: "0x123",
+            orderHash: "0x123",
             chain: Chain.Mainnet,
             type: "basic",
             price: {
@@ -47,8 +47,8 @@ describe("API: OffersAPI", () => {
                 value: "500000000000000000",
               },
             },
-            protocol_data: {} as unknown as ProtocolData,
-            protocol_address: "0xabc",
+            protocolData: {} as unknown as ProtocolData,
+            protocolAddress: "0xabc",
           } as unknown as Offer,
         ],
         next: "cursor-123",
@@ -148,7 +148,7 @@ describe("API: OffersAPI", () => {
       const mockResponse: GetOffersResponse = {
         offers: [
           {
-            order_hash: "0xabc",
+            orderHash: "0xabc",
           } as unknown as Offer,
         ],
         next: undefined,
@@ -171,8 +171,8 @@ describe("API: OffersAPI", () => {
         value: "Blue",
         limit: undefined,
         next: undefined,
-        float_value: undefined,
-        int_value: undefined,
+        floatValue: undefined,
+        intValue: undefined,
       })
       expect(result.offers).toHaveLength(1)
     })
@@ -237,7 +237,7 @@ describe("API: OffersAPI", () => {
       expect(mockGet.mock.calls[0][1]).toMatchObject({
         type: "Rarity",
         value: "Score",
-        float_value: 95.5,
+        floatValue: 95.5,
       })
     })
 
@@ -262,7 +262,7 @@ describe("API: OffersAPI", () => {
       expect(mockGet.mock.calls[0][1]).toMatchObject({
         type: "Level",
         value: "Power",
-        int_value: 100,
+        intValue: 100,
       })
     })
 
@@ -289,8 +289,8 @@ describe("API: OffersAPI", () => {
         value: "Value",
         limit: 20,
         next: "cursor-xyz",
-        float_value: 75.5,
-        int_value: 50,
+        floatValue: 75.5,
+        intValue: 50,
       })
     })
 
@@ -326,7 +326,7 @@ describe("API: OffersAPI", () => {
   describe("getBestOffer", () => {
     test("fetches best offer with string tokenId", async () => {
       const mockResponse: GetBestOfferResponse = {
-        order_hash: "0xbest123",
+        orderHash: "0xbest123",
         chain: Chain.Mainnet,
         type: "basic",
         price: {
@@ -336,8 +336,8 @@ describe("API: OffersAPI", () => {
             value: "750000000000000000",
           },
         },
-        protocol_data: {} as unknown as ProtocolData,
-        protocol_address: "0xdef456",
+        protocolData: {} as unknown as ProtocolData,
+        protocolAddress: "0xdef456",
       } as unknown as GetBestOfferResponse
 
       mockGet.mockResolvedValue(mockResponse)
@@ -349,12 +349,12 @@ describe("API: OffersAPI", () => {
         "/api/v2/offers/collection/test-collection/nfts/1234/best",
       )
       expect(mockGet.mock.calls[0][1]).toBeUndefined()
-      expect(result.order_hash).toBe("0xbest123")
+      expect(result.orderHash).toBe("0xbest123")
     })
 
     test("fetches best offer with number tokenId", async () => {
       const mockResponse: GetBestOfferResponse = {
-        order_hash: "0xdef",
+        orderHash: "0xdef",
       } as unknown as GetBestOfferResponse
 
       mockGet.mockResolvedValue(mockResponse)
@@ -368,7 +368,7 @@ describe("API: OffersAPI", () => {
 
     test("handles large token IDs", async () => {
       const mockResponse: GetBestOfferResponse = {
-        order_hash: "0x123",
+        orderHash: "0x123",
       } as unknown as GetBestOfferResponse
 
       mockGet.mockResolvedValue(mockResponse)
@@ -734,10 +734,10 @@ describe("API: OffersAPI", () => {
       const mockResponse: GetOffersResponse = {
         offers: [
           {
-            order_hash: "0x123",
+            orderHash: "0x123",
             chain: Chain.Mainnet,
-            protocol_data: {} as unknown as ProtocolData,
-            protocol_address: "0xabc",
+            protocolData: {} as unknown as ProtocolData,
+            protocolAddress: "0xabc",
           } as unknown as Offer,
         ],
         next: "cursor-123",
@@ -832,8 +832,8 @@ describe("API: OffersAPI", () => {
       }
 
       const mockResponse: CollectionOffer = {
-        protocol_data: mockOrder,
-        protocol_address: "0xabc",
+        protocolData: mockOrder,
+        protocolAddress: "0xabc",
       } as unknown as CollectionOffer
 
       mockPost.mockResolvedValue(mockResponse)
@@ -855,7 +855,7 @@ describe("API: OffersAPI", () => {
       }
 
       const mockResponse: CollectionOffer = {
-        protocol_data: mockOrder,
+        protocolData: mockOrder,
       } as unknown as CollectionOffer
 
       mockPost.mockResolvedValue(mockResponse)
@@ -877,7 +877,7 @@ describe("API: OffersAPI", () => {
       }
 
       const mockResponse: CollectionOffer = {
-        protocol_data: mockOrder,
+        protocolData: mockOrder,
       } as unknown as CollectionOffer
 
       mockPost.mockResolvedValue(mockResponse)
@@ -1046,10 +1046,10 @@ describe("API: OffersAPI", () => {
       const mockResponse: GetOffersResponse = {
         offers: [
           {
-            order_hash: "0x123",
+            orderHash: "0x123",
             chain: Chain.Mainnet,
-            protocol_data: {} as unknown as ProtocolData,
-            protocol_address: "0xabc",
+            protocolData: {} as unknown as ProtocolData,
+            protocolAddress: "0xabc",
             price: {
               currency: "WETH",
               decimals: 18,

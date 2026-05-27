@@ -1,7 +1,6 @@
 export * from "./address"
 export * from "./chain"
 // Re-export all utilities from specialized modules
-export * from "./converters"
 export * from "./fees"
 export * from "./protocol"
 export * from "./units"

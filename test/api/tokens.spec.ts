@@ -17,8 +17,8 @@ const mockToken: Token = {
   name: "Wrapped Ether",
   symbol: "WETH",
   decimals: 18,
-  image_url: "https://example.com/weth.png",
-  opensea_url:
+  imageUrl: "https://example.com/weth.png",
+  openseaUrl:
     "https://opensea.io/tokens/ethereum/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
 }
 
@@ -193,16 +193,16 @@ describe("API: TokensAPI", () => {
 
   describe("getSwapQuote", () => {
     test("fetches swap quote with required parameters", async () => {
-      const mockResponse: GetSwapQuoteResponse = {
+      const mockResponse = {
         price: "1.5",
         route: "direct",
-      }
+      } as unknown as GetSwapQuoteResponse
 
       mockGet.mockResolvedValue(mockResponse)
 
       const args = {
-        token_in: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-        token_out: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        tokenIn: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        tokenOut: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         amount: "1000000000000000000",
         chain: "ethereum",
       }
@@ -216,18 +216,18 @@ describe("API: TokensAPI", () => {
     })
 
     test("fetches swap quote with optional parameters", async () => {
-      const mockResponse: GetSwapQuoteResponse = {
+      const mockResponse = {
         price: "1.5",
-      }
+      } as unknown as GetSwapQuoteResponse
 
       mockGet.mockResolvedValue(mockResponse)
 
       const args = {
-        token_in: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-        token_out: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        tokenIn: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        tokenOut: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         amount: "1000000000000000000",
         chain: "ethereum",
-        taker_address: "0x1234567890123456789012345678901234567890",
+        takerAddress: "0x1234567890123456789012345678901234567890",
         slippage: 0.5,
       }
 
@@ -241,8 +241,8 @@ describe("API: TokensAPI", () => {
 
       try {
         await tokensAPI.getSwapQuote({
-          token_in: "0x123",
-          token_out: "0x456",
+          tokenIn: "0x123",
+          tokenOut: "0x456",
           amount: "1000",
           chain: "ethereum",
         })
@@ -289,14 +289,14 @@ describe("API: TokensAPI", () => {
     test("handles token with null image_url", async () => {
       const mockResponse: GetTokenResponse = {
         ...mockToken,
-        image_url: null,
+        imageUrl: null,
       }
 
       mockGet.mockResolvedValue(mockResponse)
 
       const result = await tokensAPI.getToken("ethereum", "0x123")
 
-      expect(result.image_url).toBeNull()
+      expect(result.imageUrl).toBeNull()
     })
 
     test("throws error on API failure", async () => {
@@ -314,7 +314,7 @@ describe("API: TokensAPI", () => {
   describe("getTokenGroups", () => {
     test("fetches token groups without parameters", async () => {
       const mockResponse = {
-        token_groups: [],
+        tokenGroups: [],
         next: "cursor-xyz",
       } as unknown as GetTokenGroupsResponse
 

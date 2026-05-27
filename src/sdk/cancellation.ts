@@ -75,9 +75,14 @@ export class CancellationManager {
         protocolAddress,
         this.context.chain,
       )
-      requireValidProtocol(fetchedOrder.protocol_address)
-      effectiveProtocolAddress = fetchedOrder.protocol_address
-      orderComponents = fetchedOrder.protocol_data.parameters
+      if (!fetchedOrder.protocolAddress || !fetchedOrder.protocolData) {
+        throw new Error(
+          `Order ${orderHash} is missing protocolAddress or protocolData — cannot cancel.`,
+        )
+      }
+      requireValidProtocol(fetchedOrder.protocolAddress)
+      effectiveProtocolAddress = fetchedOrder.protocolAddress
+      orderComponents = fetchedOrder.protocolData.parameters
       this.context.dispatch(EventType.CancelOrder, {
         order: fetchedOrder,
         accountAddress,
@@ -209,9 +214,14 @@ export class CancellationManager {
 
       // Extract OrderComponents from the fetched orders
       orderComponents = fetchedOrders.map(fetched => {
-        requireValidProtocol(fetched.protocol_address)
-        effectiveProtocolAddress = fetched.protocol_address
-        return fetched.protocol_data.parameters
+        if (!fetched.protocolAddress || !fetched.protocolData) {
+          throw new Error(
+            `Order ${fetched.orderHash} is missing protocolAddress or protocolData — cannot cancel.`,
+          )
+        }
+        requireValidProtocol(fetched.protocolAddress)
+        effectiveProtocolAddress = fetched.protocolAddress
+        return fetched.protocolData.parameters
       })
 
       // Dispatch event for the first fetched order

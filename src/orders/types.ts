@@ -70,7 +70,7 @@ export type OrderV2 = {
 
 export type FulfillmentDataResponse = {
   protocol: string
-  fulfillment_data: FulfillmentData
+  fulfillmentData: FulfillmentData
 }
 
 type FulfillmentData = {
@@ -83,7 +83,7 @@ type Transaction = {
   chain: number
   to: string
   value: string
-  input_data:
+  inputData:
     | {
         // For fulfillAdvancedOrder
         advancedOrder: AdvancedOrder

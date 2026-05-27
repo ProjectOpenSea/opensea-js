@@ -20,25 +20,25 @@ describe("SDK: getOrderByHash", () => {
     expect(offersResponse.offers.length).toBeGreaterThan(0)
 
     const offer = offersResponse.offers[0]
-    const orderHash = offer.order_hash
-    const protocolAddress = offer.protocol_address
+    const orderHash = offer.orderHash
+    const protocolAddress = offer.protocolAddress!
 
     // Now fetch the same order by hash
     const response = await sdk.api.getOrderByHash(orderHash, protocolAddress)
 
     expect(response, "Response should not be null").toBeTruthy()
-    expect(response.order_hash).toBe(orderHash)
-    expect(response.protocol_address).toBe(protocolAddress)
+    expect(response.orderHash).toBe(orderHash)
+    expect(response.protocolAddress).toBe(protocolAddress)
     expect(
-      response.protocol_data,
+      response.protocolData,
       "Protocol data should not be null",
     ).toBeTruthy()
     expect(
-      response.protocol_data.parameters,
+      response.protocolData!.parameters,
       "Protocol data parameters should not be null",
     ).toBeTruthy()
     expect(
-      response.protocol_data.parameters.offerer,
+      response.protocolData!.parameters.offerer,
       "Offerer should not be null",
     ).toBeTruthy()
   })
@@ -51,21 +51,21 @@ describe("SDK: getOrderByHash", () => {
     expect(listingsResponse.listings.length).toBeGreaterThan(0)
 
     const listing = listingsResponse.listings[0]
-    const orderHash = listing.order_hash
-    const protocolAddress = listing.protocol_address
+    const orderHash = listing.orderHash
+    const protocolAddress = listing.protocolAddress!
 
     // Now fetch the same order by hash
     const response = await sdk.api.getOrderByHash(orderHash, protocolAddress)
 
     expect(response).toBeTruthy()
-    expect(response.order_hash).toBe(orderHash)
-    expect(response.protocol_address).toBe(protocolAddress)
+    expect(response.orderHash).toBe(orderHash)
+    expect(response.protocolAddress).toBe(protocolAddress)
     expect(
-      response.protocol_data,
+      response.protocolData,
       "Protocol data should not be null",
     ).toBeTruthy()
     expect(
-      response.protocol_data.parameters,
+      response.protocolData!.parameters,
       "Protocol data parameters should not be null",
     ).toBeTruthy()
   })
@@ -81,33 +81,33 @@ describe("SDK: getOrderByHash", () => {
 
     // Fetch by hash
     const response = await sdk.api.getOrderByHash(
-      offer.order_hash,
-      offer.protocol_address,
+      offer.orderHash,
+      offer.protocolAddress!,
     )
 
     // Verify the response has fields needed for cancellation
     expect(
-      response.protocol_address,
-      "protocol_address is required for cancel",
+      response.protocolAddress,
+      "protocolAddress is required for cancel",
     ).toBeTruthy()
     expect(
-      response.protocol_data,
-      "protocol_data is required for cancel",
+      response.protocolData,
+      "protocolData is required for cancel",
     ).toBeTruthy()
     expect(
-      response.protocol_data.parameters,
-      "protocol_data.parameters is required for cancel",
+      response.protocolData!.parameters,
+      "protocolData.parameters is required for cancel",
     ).toBeTruthy()
     expect(
-      response.protocol_data.parameters.offerer,
+      response.protocolData!.parameters.offerer,
       "offerer is required for cancel",
     ).toBeTruthy()
     expect(
-      Array.isArray(response.protocol_data.parameters.offer),
+      Array.isArray(response.protocolData!.parameters.offer),
       "offer array is required for cancel",
     ).toBe(true)
     expect(
-      Array.isArray(response.protocol_data.parameters.consideration),
+      Array.isArray(response.protocolData!.parameters.consideration),
       "consideration array is required for cancel",
     ).toBe(true)
   })

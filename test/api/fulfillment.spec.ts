@@ -8,36 +8,36 @@ describe("Generating fulfillment data", () => {
     const { listings } = await api.getAllListings("boredapeyachtclub", 1)
     const listing = listings?.[0]
 
-    if (!listing?.order_hash) {
+    if (!listing?.orderHash) {
       return
     }
 
     const fulfillment = await api.generateFulfillmentData(
       ethers.Wallet.createRandom().address,
-      listing.order_hash,
-      listing.protocol_address,
+      listing.orderHash,
+      listing.protocolAddress!,
       OrderSide.LISTING,
     )
 
-    expect(fulfillment.fulfillment_data.orders[0].signature).toBeDefined()
+    expect(fulfillment.fulfillmentData.orders[0].signature).toBeDefined()
   })
 
   test(`Generate fulfillment data for offer`, async () => {
-    const { offers } = await api.getAllOffers("boredapeyachtclub", 1)
-    const offer = offers?.[0]
+    const { offers } = await api.getAllOffers("boredapeyachtclub", 10)
+    const offer = offers?.find(o => !o.criteria)
 
-    if (!offer?.order_hash) {
+    if (!offer?.orderHash) {
       return
     }
 
     const fulfillment = await api.generateFulfillmentData(
       ethers.Wallet.createRandom().address,
-      offer.order_hash,
-      offer.protocol_address,
+      offer.orderHash,
+      offer.protocolAddress!,
       OrderSide.OFFER,
     )
 
-    expect(fulfillment.fulfillment_data.orders[0].signature).toBeDefined()
+    expect(fulfillment.fulfillmentData.orders[0].signature).toBeDefined()
   })
 
   test(`Generate fulfillment data for collection offer with consideration parameters`, async () => {
@@ -52,7 +52,7 @@ describe("Generating fulfillment data", () => {
     // Find a criteria offer (collection or trait offer)
     const collectionOffer = offers.offers.find(offer => offer.criteria)
 
-    if (!collectionOffer?.order_hash) {
+    if (!collectionOffer?.orderHash) {
       // Skip if no collection offers available
       return
     }
@@ -61,14 +61,14 @@ describe("Generating fulfillment data", () => {
       // Test with consideration parameters for criteria offers
       const fulfillment = await api.generateFulfillmentData(
         ethers.Wallet.createRandom().address,
-        collectionOffer.order_hash,
-        collectionOffer.protocol_address,
+        collectionOffer.orderHash,
+        collectionOffer.protocolAddress!,
         OrderSide.OFFER,
         "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D", // BAYC contract
         "1", // Token ID
       )
 
-      expect(fulfillment.fulfillment_data.orders[0].signature).toBeDefined()
+      expect(fulfillment.fulfillmentData.orders[0].signature).toBeDefined()
       expect(fulfillment.protocol).toBe("seaport")
     } catch (error) {
       // Order may no longer be active/valid, or the token may not match

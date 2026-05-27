@@ -135,12 +135,13 @@ export class FulfillmentManager {
   }): Promise<string> {
     await this.context.requireAccountIsAvailable(accountAddress)
 
-    const protocolAddress =
-      (order as OrderV2).protocolAddress ?? (order as Order).protocol_address
+    const protocolAddress = order.protocolAddress
+    if (!protocolAddress) {
+      throw new Error("Order protocol address is required")
+    }
     requireValidProtocol(protocolAddress)
 
-    const orderHash =
-      (order as OrderV2).orderHash ?? (order as Order).order_hash
+    const orderHash = order.orderHash
 
     const side =
       (order as OrderV2).side ??
@@ -180,8 +181,8 @@ export class FulfillmentManager {
     )
 
     // Use the transaction data returned by the API
-    const transaction = fulfillmentData.fulfillment_data.transaction
-    const inputData = transaction.input_data
+    const transaction = fulfillmentData.fulfillmentData.transaction
+    const inputData = transaction.inputData
 
     // Extract function name and build parameters array in correct order
     const rawFunctionName = transaction.function.split("(")[0]

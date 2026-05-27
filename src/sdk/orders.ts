@@ -83,7 +83,7 @@ export class OrdersManager {
   ): CreateInputItem[] {
     return nfts.map((nft, index) => ({
       itemType: getAssetItemType(
-        nft.token_standard.toUpperCase() as TokenStandard,
+        nft.tokenStandard.toUpperCase() as TokenStandard,
       ),
       token: remapSharedStorefrontAddress(nft.contract),
       identifier: nft.identifier ?? undefined,

@@ -1,21 +1,46 @@
 import type {
+  BuildOfferResponse as ApiBuildOfferResponse,
+  CancelResponse as ApiCancelResponse,
+  Listing as ApiListing,
+  Nft as ApiNft,
+  Offer as ApiOffer,
+  Order as ApiOrder,
+  OrderAsset as ApiOrderAsset,
+  Payment as ApiPayment,
+  Price as ApiPrice,
   SwapExecuteRequest as ApiSwapExecuteRequest,
   SwapExecuteResponse as ApiSwapExecuteResponse,
+  SwapQuoteResponse as ApiSwapQuoteResponse,
   SweepCollectionRequest as ApiSweepCollectionRequest,
   SweepCollectionResponse as ApiSweepCollectionResponse,
+  Trait as ApiTrait,
   TransactionReceiptRequest as ApiTransactionReceiptRequest,
   TransactionReceiptResponse as ApiTransactionReceiptResponse,
   AssetMetadataResponse,
+  ChainResponse,
+  DropDetailedResponse,
+  DropResponse,
+  DropStageResponse,
   InstantApiKeyResponse,
   ListingsResponse,
+  NftDetailed,
   NftListResponse,
+  NftResponse,
   OffersResponse,
+  TokenBalanceResponse,
   TokenGroupPaginatedResponse,
   TokenGroupResponse,
 } from "@opensea/api-types"
-import type { ConsiderationItem } from "@opensea/seaport-js/lib/types"
 import type { OrderType, ProtocolData } from "../orders/types"
 import type { OpenSeaCollection } from "../types"
+import type { Camelize } from "../utils/case"
+
+// The Order family. Sourced from @opensea/api-types and camelized for the
+// SDK consumer view (the fetcher camelizes responses at the boundary; see
+// utils/case.ts). Narrowing intersections preserve `OrderType`/`OrderStatus`
+// enums and the seaport-js `OrderWithCounter` shape on `protocolData`.
+export type OrderAsset = Camelize<ApiOrderAsset>
+export type Price = Camelize<ApiPrice>
 
 /**
  * A single trait filter used by collection-scoped read endpoints (NFTs by
@@ -48,49 +73,21 @@ export function encodeTraitsParam(
 }
 
 /**
- * Response from OpenSea API for building an offer.
+ * Response from OpenSea API for building an offer. Camelized from api-types
+ * `BuildOfferResponse` (the spec already ships camelCase keys here, so the
+ * camelize at the fetcher is a no-op).
  * @category API Response Types
  */
-export type BuildOfferResponse = {
-  /** A portion of the parameters needed to submit a criteria offer, i.e. collection offer. */
-  partialParameters: PartialParameters
-  /** Criteria echoed back from the build request. Includes collection and trait info. */
-  criteria: BuildOfferCriteria
-}
+export type BuildOfferResponse = Camelize<ApiBuildOfferResponse>
 
 /**
- * Criteria returned by the build offer endpoint.
- * Subset of {@link Criteria} — only collection and trait fields.
+ * Criteria returned by the build offer endpoint. Subset of the wire-format
+ * criteria — only collection and trait fields.
  * @category API Response Types
  */
 export type BuildOfferCriteria = {
   collection: CollectionCriteria
   traits?: TraitCriteria[]
-  numericTraits?: NumericTraitCriteria[]
-}
-
-type PartialParameters = {
-  consideration: ConsiderationItem[]
-  zone: string
-  zoneHash: string
-}
-
-/**
- * Criteria for collection or trait offers.
- * @category API Response Types
- */
-type Criteria = {
-  /** The collection for the criteria */
-  collection: CollectionCriteria
-  /** The contract for the criteria */
-  contract: ContractCriteria
-  /** Represents a list of token ids which can be used to fulfill the criteria offer. */
-  encoded_token_ids?: string
-  /** The trait for the criteria (single trait) */
-  trait?: TraitCriteria
-  /** Multiple traits for the criteria (multi-trait offers) */
-  traits?: TraitCriteria[]
-  /** Numeric traits for the criteria (numeric trait offers) */
   numericTraits?: NumericTraitCriteria[]
 }
 
@@ -118,31 +115,25 @@ type CollectionCriteria = {
   slug: string
 }
 
-type ContractCriteria = {
-  address: string
-}
-
 /**
  * Query args for Get Collections
  * @category API Query Args
  */
 export interface GetCollectionsArgs {
-  order_by?: string
+  orderBy?: string
   limit?: number
   next?: string
   chain?: string
-  creator_username?: string
-  include_hidden?: boolean
+  creatorUsername?: string
+  includeHidden?: boolean
 }
 
 /**
  * Response from OpenSea API for fetching a single collection.
+ * Bare collection object (the response is not wrapped). See {@link OpenSeaCollection}.
  * @category API Response Types
  */
-export type GetCollectionResponse = {
-  /** Collection object. See {@link OpenSeaCollection} */
-  collection: OpenSeaCollection
-}
+export type GetCollectionResponse = OpenSeaCollection
 
 /**
  * Response from OpenSea API for fetching a list of collections.
@@ -175,63 +166,46 @@ export enum OrderStatus {
 }
 
 /**
- * Base Order type shared between Listings and Offers.
+ * Base Order shape — camelized from `@opensea/api-types`, with `protocolData`
+ * narrowed to the seaport-js `OrderWithCounter` type (a.k.a. {@link ProtocolData})
+ * since SDK callers pass this directly to Seaport.
  * @category API Models
  */
-export type Order = {
-  /** Offer Identifier */
-  order_hash: string
-  /** Chain the offer exists on */
-  chain: string
-  /** The protocol data for the order. Only 'seaport' is currently supported. */
-  protocol_data: ProtocolData
-  /** The contract address of the protocol. */
-  protocol_address: string
-  /** The price of the order. */
-  price: Price
+export type Order = Camelize<Omit<ApiOrder, "protocol_data">> & {
+  protocolData?: ProtocolData
 }
 
 /**
- * Offer type.
+ * Offer type. Camelized from `@opensea/api-types`, with `protocolData` narrowed
+ * to seaport-js {@link ProtocolData} and `status` narrowed to the
+ * {@link OrderStatus} enum (the OpenAPI spec ships status as a string union).
  * @category API Models
  */
-export type Offer = Order & {
-  /** The criteria for the offer if it is a collection or trait offer. */
-  criteria?: Criteria
-  /** The status of the offer. */
+export type Offer = Camelize<Omit<ApiOffer, "protocol_data" | "status">> & {
+  protocolData?: ProtocolData
   status: OrderStatus
 }
 
 /**
- * Collection Offer type.
+ * Collection Offer type — an {@link Offer} with `criteria` guaranteed present.
  * @category API Models
  */
-export type CollectionOffer = Required<Pick<Offer, "criteria">> & Offer
-
-/**
- * Price response.
- * @category API Models
- */
-export type Price = {
-  currency: string
-  decimals: number
-  value: string
+export type CollectionOffer = Offer & {
+  criteria: NonNullable<Offer["criteria"]>
 }
 
 /**
- * Listing order type.
+ * Listing order type. Camelized from `@opensea/api-types`, with `protocolData`
+ * narrowed to seaport-js {@link ProtocolData}, `type` narrowed to the
+ * {@link OrderType} enum, and `status` narrowed to the {@link OrderStatus}
+ * enum (the OpenAPI spec ships type and status as plain strings).
  * @category API Models
  */
-export type Listing = Omit<Order, "price"> & {
-  /** The order type of the listing. */
+export type Listing = Camelize<
+  Omit<ApiListing, "protocol_data" | "type" | "status">
+> & {
+  protocolData?: ProtocolData
   type: OrderType
-  /** The price of the listing with current price nested. */
-  price: {
-    current: Price
-  }
-  /** The remaining quantity available for the listing. This is important for partially filled orders. */
-  remaining_quantity: number
-  /** The status of the listing. */
   status: OrderStatus
 }
 
@@ -257,12 +231,10 @@ export type ListNFTsResponse = {
 
 /**
  * Response from OpenSea API for fetching a single NFT.
+ * Camelized from api-types `NftResponse`.
  * @category API Response Types
  */
-export type GetNFTResponse = {
-  /** See {@link NFT} */
-  nft: NFT
-}
+export type GetNFTResponse = Camelize<NftResponse>
 
 /**
  * Base query cursors response from OpenSea API.
@@ -309,118 +281,63 @@ export type GetOrderByHashResponse = Offer | Listing
 
 /**
  * Response from OpenSea API for offchain canceling an order.
+ * Camelized from api-types `CancelResponse`.
  * @category API Response Types
  */
-export type CancelOrderResponse = {
-  last_signature_issued_valid_until: string | null
-}
+export type CancelOrderResponse = Camelize<ApiCancelResponse>
 
 /**
  * Request body for sweeping (bulk-buying) items from a collection.
  * @category API Query Args
  */
-export type SweepCollectionRequest = ApiSweepCollectionRequest
+export type SweepCollectionRequest = Camelize<ApiSweepCollectionRequest>
 
 /**
  * Response from sweeping a collection.
  * @category API Response Types
  */
-export type SweepCollectionResponse = ApiSweepCollectionResponse
+export type SweepCollectionResponse = Camelize<ApiSweepCollectionResponse>
 
 /**
  * Request body for executing a token swap.
  * @category API Query Args
  */
-export type SwapExecuteRequest = ApiSwapExecuteRequest
+export type SwapExecuteRequest = Camelize<ApiSwapExecuteRequest>
 
 /**
  * Response from executing a token swap.
  * @category API Response Types
  */
-export type SwapExecuteResponse = ApiSwapExecuteResponse
+export type SwapExecuteResponse = Camelize<ApiSwapExecuteResponse>
 
 /**
  * Request body for fetching a transaction receipt.
  * @category API Query Args
  */
-export type TransactionReceiptRequest = ApiTransactionReceiptRequest
+export type TransactionReceiptRequest = Camelize<ApiTransactionReceiptRequest>
 
 /**
  * Response from fetching a transaction receipt.
  * @category API Response Types
  */
-export type TransactionReceiptResponse = ApiTransactionReceiptResponse
+export type TransactionReceiptResponse = Camelize<ApiTransactionReceiptResponse>
 
 /**
- * NFT type returned by OpenSea API.
+ * NFT type returned by OpenSea API. Sourced from api-types `NftDetailed`.
  * @category API Models
  */
-export type NFT = {
-  /** NFT Identifier (also commonly referred to as tokenId) */
-  identifier: string
-  /** Slug identifier of collection */
-  collection: string
-  /** Address of contract */
-  contract: string
-  /** Token standard, i.e. ERC721, ERC1155, etc. */
-  token_standard: string
-  /** Name of NFT */
-  name: string
-  /** Description of NFT */
-  description: string
-  /** URL of image */
-  image_url: string
-  /** URL of metadata */
-  metadata_url: string
-  /** URL on OpenSea */
-  opensea_url: string
-  /** Date of latest NFT update */
-  updated_at: string
-  /** Whether NFT is disabled for trading on OpenSea */
-  is_disabled: boolean
-  /** Whether NFT is NSFW (Not Safe For Work) */
-  is_nsfw: boolean
-  /** Traits for the NFT, returns null if the NFT has than 50 traits */
-  traits: Trait[] | null
-  /** Creator of the NFT */
-  creator: string
-  /** Owners of the NFT */
-  owners: {
-    address: string
-    quantity: number
-  }[]
-  /** Rarity of the NFT */
-  rarity: null | {
-    strategy_id: string | null
-    strategy_version: string | null
-    rank: number | null
-    score: number | null
-    calculated_at: string
-    max_rank: number | null
-    tokens_scored: number | null
-    ranking_features: null | {
-      unique_attribute_count: number
-    }
-  }
-}
+export type NFT = Camelize<NftDetailed>
 
 /**
- * Trait type returned by OpenSea API.
+ * Trait type returned by OpenSea API. Sourced from api-types `Trait`.
+ * For numeric traits, `value` arrives as a string — callers parse as needed.
  * @category API Models
  */
-export type Trait = {
-  /** The name of the trait category (e.g. 'Background') */
-  trait_type: string
-  /** A field indicating how to display. None is used for string traits. */
-  display_type: TraitDisplayType
-  /** Ceiling for possible numeric trait values */
-  max_value: string
-  /** The value of the trait (e.g. 'Red') */
-  value: string | number | Date
-}
+export type Trait = Camelize<ApiTrait>
 
 /**
- * Trait display type returned by OpenSea API.
+ * Trait display type returned by OpenSea API. Kept as an enum value for
+ * convenience; api-types models the wire field as a plain string.
  * @category API Models
  */
 export enum TraitDisplayType {
@@ -460,40 +377,16 @@ export enum OrderEventType {
 }
 
 /**
- * Payment information for an event.
+ * Payment information for an event. Camelized from api-types `Payment`.
  * @category API Models
  */
-export type EventPayment = {
-  /** Quantity of the payment token */
-  quantity: string
-  /** Address of the payment token (0x0...0 for ETH) */
-  token_address: string
-  /** Decimals of the payment token */
-  decimals: number
-  /** Symbol of the payment token */
-  symbol: string
-}
+export type EventPayment = Camelize<ApiPayment>
 
 /**
- * Asset information in an event.
+ * Asset information in an event. Camelized from api-types `Nft`.
  * @category API Models
  */
-export type EventAsset = {
-  identifier: string
-  collection: string
-  contract: string
-  token_standard: string
-  name: string
-  description: string
-  image_url: string
-  display_image_url: string
-  display_animation_url: string | null
-  metadata_url: string
-  opensea_url: string
-  updated_at: string
-  is_disabled: boolean
-  is_nsfw: boolean
-}
+export type EventAsset = Camelize<ApiNft>
 
 /**
  * Base event type.
@@ -501,9 +394,9 @@ export type EventAsset = {
  */
 type BaseEvent = {
   /** Type of the event */
-  event_type: AssetEventType | string
+  eventType: AssetEventType | string
   /** Timestamp of the event */
-  event_timestamp: number
+  eventTimestamp: number
   /** Chain the event occurred on */
   chain: string
   /** Quantity involved in the event */
@@ -515,13 +408,13 @@ type BaseEvent = {
  * @category API Models
  */
 export type ListingEvent = BaseEvent & {
-  event_type: AssetEventType.LISTING | "listing"
+  eventType: AssetEventType.LISTING | "listing"
   /** Payment information */
   payment: EventPayment
   /** Start date of the listing */
-  start_date: number | null
+  startDate: number | null
   /** Expiration date of the listing */
-  expiration_date: number
+  expirationDate: number
   /** Asset involved in the listing */
   asset: EventAsset
   /** Maker of the listing */
@@ -529,11 +422,11 @@ export type ListingEvent = BaseEvent & {
   /** Taker of the listing */
   taker: string
   /** Whether the listing is private */
-  is_private_listing: boolean
+  isPrivateListing: boolean
   /** Order hash (optional) */
-  order_hash?: string
+  orderHash?: string
   /** Protocol address (optional) */
-  protocol_address?: string
+  protocolAddress?: string
 }
 
 /**
@@ -541,13 +434,13 @@ export type ListingEvent = BaseEvent & {
  * @category API Models
  */
 export type OfferEvent = BaseEvent & {
-  event_type: AssetEventType.OFFER | "offer"
+  eventType: AssetEventType.OFFER | "offer"
   /** Payment information */
   payment: EventPayment
   /** Start date of the offer */
-  start_date: number | null
+  startDate: number | null
   /** Expiration date of the offer */
-  expiration_date: number
+  expirationDate: number
   /** Asset involved in the offer */
   asset: EventAsset
   /** Maker of the offer */
@@ -555,9 +448,9 @@ export type OfferEvent = BaseEvent & {
   /** Taker of the offer */
   taker: string
   /** Order hash (optional) */
-  order_hash?: string
+  orderHash?: string
   /** Protocol address (optional) */
-  protocol_address?: string
+  protocolAddress?: string
 }
 
 /**
@@ -565,13 +458,13 @@ export type OfferEvent = BaseEvent & {
  * @category API Models
  */
 export type TraitOfferEvent = BaseEvent & {
-  event_type: AssetEventType.TRAIT_OFFER | "trait_offer"
+  eventType: AssetEventType.TRAIT_OFFER | "trait_offer"
   /** Payment information */
   payment: EventPayment
   /** Start date of the offer */
-  start_date: number | null
+  startDate: number | null
   /** Expiration date of the offer */
-  expiration_date: number
+  expirationDate: number
   /** Criteria for trait offers */
   criteria: Record<string, unknown>
   /** Maker of the offer */
@@ -579,9 +472,9 @@ export type TraitOfferEvent = BaseEvent & {
   /** Taker of the offer */
   taker: string
   /** Order hash (optional) */
-  order_hash?: string
+  orderHash?: string
   /** Protocol address (optional) */
-  protocol_address?: string
+  protocolAddress?: string
 }
 
 /**
@@ -589,13 +482,13 @@ export type TraitOfferEvent = BaseEvent & {
  * @category API Models
  */
 export type CollectionOfferEvent = BaseEvent & {
-  event_type: AssetEventType.COLLECTION_OFFER | "collection_offer"
+  eventType: AssetEventType.COLLECTION_OFFER | "collection_offer"
   /** Payment information */
   payment: EventPayment
   /** Start date of the offer */
-  start_date: number | null
+  startDate: number | null
   /** Expiration date of the offer */
-  expiration_date: number
+  expirationDate: number
   /** Criteria for collection offers */
   criteria: Record<string, unknown>
   /** Maker of the offer */
@@ -603,9 +496,9 @@ export type CollectionOfferEvent = BaseEvent & {
   /** Taker of the offer */
   taker: string
   /** Order hash (optional) */
-  order_hash?: string
+  orderHash?: string
   /** Protocol address (optional) */
-  protocol_address?: string
+  protocolAddress?: string
 }
 
 /**
@@ -614,13 +507,13 @@ export type CollectionOfferEvent = BaseEvent & {
  * @category API Models
  */
 export type OrderEvent = BaseEvent & {
-  event_type: AssetEventType.ORDER | "order"
+  eventType: AssetEventType.ORDER | "order"
   /** Payment information */
   payment: EventPayment
   /** Start date of the order */
-  start_date: number | null
+  startDate: number | null
   /** Expiration date of the order */
-  expiration_date: number
+  expirationDate: number
   /** Asset involved in the order (optional, not present for collection/trait offers) */
   asset?: EventAsset
   /** Criteria for collection/trait offers (optional) */
@@ -630,11 +523,11 @@ export type OrderEvent = BaseEvent & {
   /** Taker of the order */
   taker: string
   /** Order hash (optional) */
-  order_hash?: string
+  orderHash?: string
   /** Protocol address (optional) */
-  protocol_address?: string
+  protocolAddress?: string
   /** Order type providing more detail */
-  order_type?: OrderEventType
+  orderType?: OrderEventType
 }
 
 /**
@@ -642,11 +535,11 @@ export type OrderEvent = BaseEvent & {
  * @category API Models
  */
 export type MintEvent = BaseEvent & {
-  event_type: AssetEventType.MINT | "mint"
+  eventType: AssetEventType.MINT | "mint"
   /** Transaction hash */
   transaction: string
   /** Address the NFT was minted to */
-  to_address: string
+  toAddress: string
   /** NFT that was minted */
   nft: EventAsset
 }
@@ -656,17 +549,17 @@ export type MintEvent = BaseEvent & {
  * @category API Models
  */
 export type SaleEvent = BaseEvent & {
-  event_type: AssetEventType.SALE | "sale"
+  eventType: AssetEventType.SALE | "sale"
   /** Transaction hash */
   transaction: string
   /** Order hash */
-  order_hash: string
+  orderHash: string
   /** Protocol address */
-  protocol_address: string
+  protocolAddress: string
   /** Payment information */
   payment: EventPayment
   /** Closing date of the sale */
-  closing_date: number
+  closingDate: number
   /** Seller address */
   seller: string
   /** Buyer address */
@@ -680,13 +573,13 @@ export type SaleEvent = BaseEvent & {
  * @category API Models
  */
 export type TransferEvent = BaseEvent & {
-  event_type: AssetEventType.TRANSFER | "transfer"
+  eventType: AssetEventType.TRANSFER | "transfer"
   /** Transaction hash */
   transaction: string
   /** Address the NFT was transferred from */
-  from_address: string
+  fromAddress: string
   /** Address the NFT was transferred to */
-  to_address: string
+  toAddress: string
   /** NFT involved in the transfer */
   nft: EventAsset
 }
@@ -715,7 +608,7 @@ export type AssetEvent =
  */
 export interface GetEventsArgs {
   /** Type of event to filter by */
-  event_type?: AssetEventType | string
+  eventType?: AssetEventType | string
   /** Filter events after this timestamp */
   after?: number
   /** Filter events before this timestamp */
@@ -746,7 +639,7 @@ export interface GetEventsByCollectionArgs extends GetEventsArgs {
  */
 export type GetEventsResponse = QueryCursorsV2 & {
   /** List of {@link AssetEvent} */
-  asset_events: AssetEvent[]
+  assetEvents: AssetEvent[]
 }
 
 /**
@@ -758,12 +651,17 @@ export type Contract = {
   address: string
   /** Chain the contract is deployed on */
   chain: string
-  /** Associated collection slug (if any) */
+  /**
+   * Associated collection slug. `null` for contracts without an associated
+   * collection on OpenSea. TODO(api-types): the OpenAPI spec marks this as
+   * required non-null, but the live API returns null for standalone contracts —
+   * swap to `Camelize<ContractResponse>` once the spec is updated.
+   */
   collection: string | null
   /** Contract name */
   name: string
   /** Contract standard (e.g., erc721, erc1155) */
-  contract_standard: string
+  contractStandard: string
 }
 
 /**
@@ -803,6 +701,11 @@ export type GetTraitsResponse = {
 
 /**
  * Token model returned by OpenSea API.
+ *
+ * TODO(api-types): swap to `Camelize<TokenResponse>` once the OpenAPI spec
+ * marks `image_url` as nullable (the live API returns `null` for tokens
+ * without an image). Currently the spec models it as optional non-null.
+ *
  * @category API Models
  */
 export type Token = {
@@ -816,10 +719,10 @@ export type Token = {
   symbol: string
   /** Number of decimals */
   decimals: number
-  /** URL of the token image */
-  image_url: string | null
+  /** URL of the token image (null when the token has no image) */
+  imageUrl: string | null
   /** URL on OpenSea */
-  opensea_url: string
+  openseaUrl: string
 }
 
 /**
@@ -857,26 +760,25 @@ export interface GetTokensArgs {
  */
 export interface GetSwapQuoteArgs {
   /** Address of the input token */
-  token_in: string
+  tokenIn: string
   /** Address of the output token */
-  token_out: string
+  tokenOut: string
   /** Amount of input token */
   amount: string
   /** Chain for the swap */
   chain: string
   /** Address of the taker */
-  taker_address?: string
+  takerAddress?: string
   /** Slippage tolerance */
   slippage?: number
 }
 
 /**
  * Response from OpenSea API for fetching a swap quote.
+ * Camelized from api-types `SwapQuoteResponse`.
  * @category API Response Types
  */
-export type GetSwapQuoteResponse = {
-  [key: string]: unknown
-}
+export type GetSwapQuoteResponse = Camelize<ApiSwapQuoteResponse>
 
 /**
  * Response from OpenSea API for fetching token details.
@@ -888,13 +790,13 @@ export type GetTokenResponse = Token
  * Response from OpenSea API for fetching a token group by slug.
  * @category API Response Types
  */
-export type GetTokenGroupResponse = TokenGroupResponse
+export type GetTokenGroupResponse = Camelize<TokenGroupResponse>
 
 /**
  * Response from OpenSea API for fetching a paginated list of token groups.
  * @category API Response Types
  */
-export type GetTokenGroupsResponse = TokenGroupPaginatedResponse
+export type GetTokenGroupsResponse = Camelize<TokenGroupPaginatedResponse>
 
 /**
  * Query args for the Get Token Groups endpoint.
@@ -911,7 +813,7 @@ export interface GetTokenGroupsArgs {
  * Response from OpenSea API for requesting an instant API key.
  * @category API Response Types
  */
-export type RequestInstantApiKeyResponse = InstantApiKeyResponse
+export type RequestInstantApiKeyResponse = Camelize<InstantApiKeyResponse>
 
 /**
  * Query args for the Search endpoint.
@@ -923,7 +825,7 @@ export interface SearchArgs {
   /** Filter by blockchain(s) */
   chains?: string[]
   /** Filter by asset type(s): collection, nft, token, account */
-  asset_types?: string[]
+  assetTypes?: string[]
   /** Number of results to return (default: 20, max: 50) */
   limit?: number
 }
@@ -938,13 +840,13 @@ export type CollectionSearchResult = {
   /** The collection name */
   name: string
   /** URL of the collection image */
-  image_url: string | null
+  imageUrl: string | null
   /** Whether trading is disabled for this collection */
-  is_disabled: boolean
+  isDisabled: boolean
   /** Whether this collection is marked as NSFW */
-  is_nsfw: boolean
+  isNsfw: boolean
   /** URL to the collection on OpenSea */
-  opensea_url: string
+  openseaUrl: string
 }
 
 /**
@@ -961,13 +863,13 @@ export type TokenSearchResult = {
   /** Token symbol */
   symbol: string
   /** URL of the token image */
-  image_url: string | null
+  imageUrl: string | null
   /** Current USD price of the token */
-  usd_price: string
+  usdPrice: string
   /** Number of decimal places for the token */
   decimals: number
   /** URL to the token on OpenSea */
-  opensea_url: string
+  openseaUrl: string
 }
 
 /**
@@ -984,9 +886,9 @@ export type NftSearchResult = {
   /** Name of the NFT */
   name: string | null
   /** URL of the NFT image */
-  image_url: string | null
+  imageUrl: string | null
   /** URL to the NFT on OpenSea */
-  opensea_url: string
+  openseaUrl: string
 }
 
 /**
@@ -999,9 +901,9 @@ export type AccountSearchResult = {
   /** Username of the account */
   username: string | null
   /** URL of the account's profile image */
-  profile_image_url: string | null
+  profileImageUrl: string | null
   /** URL to the account on OpenSea */
-  opensea_url: string
+  openseaUrl: string
 }
 
 /**
@@ -1031,23 +933,11 @@ export type SearchResponse = {
 }
 
 /**
- * Information about a supported blockchain.
+ * Information about a supported blockchain. Sourced from `@opensea/api-types`
+ * (the SDK previously hand-rolled this with the same shape).
  * @category API Models
  */
-export type ChainInfo = {
-  /** The chain identifier slug used in API paths */
-  chain: string
-  /** Human-readable chain name */
-  name: string
-  /** Native currency symbol */
-  symbol: string
-  /** Whether token swaps are supported on this chain */
-  supports_swaps: boolean
-  /** Block explorer name */
-  block_explorer: string
-  /** Block explorer base URL */
-  block_explorer_url: string
-}
+export type ChainInfo = Camelize<ChainResponse>
 
 /**
  * Response from OpenSea API for listing supported chains.
@@ -1059,31 +949,12 @@ export type GetChainsResponse = {
 }
 
 /**
- * Token balance for a wallet address.
+ * Token balance for a wallet address. Sourced from `@opensea/api-types`
+ * (`TokenBalanceResponse`). Gains optional `status`, `base_token_liquidity_usd`,
+ * and `quote_token_liquidity_usd` fields the hand-rolled version didn't expose.
  * @category API Models
  */
-export type TokenBalance = {
-  /** Token contract address */
-  address: string
-  /** Chain the token is on */
-  chain: string
-  /** Token name */
-  name: string
-  /** Token symbol */
-  symbol: string
-  /** URL of the token image */
-  image_url?: string
-  /** Current price in USD */
-  usd_price: string
-  /** Number of decimals */
-  decimals: number
-  /** Token balance in display units */
-  quantity: string
-  /** Total USD value of the balance */
-  usd_value: string
-  /** URL to the token page on OpenSea */
-  opensea_url: string
-}
+export type TokenBalance = Camelize<TokenBalanceResponse>
 
 /**
  * Query args for Get Account Tokens endpoint.
@@ -1095,11 +966,11 @@ export interface GetAccountTokensArgs {
   /** Comma-separated chain identifiers to filter by */
   chains?: string[]
   /** Field to sort by */
-  sort_by?: string
+  sortBy?: string
   /** Sort direction */
-  sort_direction?: "asc" | "desc"
+  sortDirection?: "asc" | "desc"
   /** Whether to disable spam filtering */
-  disable_spam_filtering?: boolean
+  disableSpamFiltering?: boolean
   /** Cursor for pagination */
   cursor?: string
 }
@@ -1110,67 +981,27 @@ export interface GetAccountTokensArgs {
  */
 export type GetAccountTokensResponse = QueryCursorsV2 & {
   /** List of token balances */
-  token_balances: TokenBalance[]
+  tokenBalances: TokenBalance[]
 }
 
 /**
- * Drop summary returned by OpenSea API.
+ * Drop summary returned by OpenSea API. Sourced from api-types `DropResponse`.
  * @category API Models
  */
-export type Drop = {
-  /** Collection slug */
-  collection_slug: string
-  /** Collection name */
-  collection_name?: string
-  /** Blockchain the drop is on */
-  chain: string
-  /** Contract address */
-  contract_address: string
-  /** Drop type */
-  drop_type: string
-  /** Whether the drop is currently minting */
-  is_minting: boolean
-  /** Collection image URL */
-  image_url?: string
-  /** OpenSea URL for the drop */
-  opensea_url: string
-}
+export type Drop = Camelize<DropResponse>
 
 /**
- * Drop stage information.
+ * Drop stage information. Sourced from api-types `DropStageResponse`.
  * @category API Models
  */
-export type DropStage = {
-  /** Stage UUID */
-  uuid: string
-  /** Stage type (e.g. public_sale) */
-  stage_type: string
-  /** Stage label/name */
-  label?: string
-  /** Mint price per token in wei */
-  price?: string
-  /** Currency contract address */
-  price_currency_address: string
-  /** Stage start time (ISO 8601) */
-  start_time: string
-  /** Stage end time (ISO 8601) */
-  end_time: string
-  /** Max tokens mintable per wallet in this stage */
-  max_per_wallet: string
-}
+export type DropStage = Camelize<DropStageResponse>
 
 /**
  * Detailed drop information including stages and supply.
+ * Sourced from api-types `DropDetailedResponse`.
  * @category API Models
  */
-export type DropDetailed = Drop & {
-  /** Drop stages (public sale, presale, etc.) */
-  stages: DropStage[]
-  /** Total minted supply */
-  total_supply?: string
-  /** Maximum supply */
-  max_supply?: string
-}
+export type DropDetailed = Camelize<DropDetailedResponse>
 
 /**
  * Response from OpenSea API for fetching a list of drops.
@@ -1251,7 +1082,7 @@ export interface GetTrendingCollectionsArgs {
  */
 export interface GetTopCollectionsArgs {
   /** Sort by: one_day_volume, seven_days_volume, thirty_days_volume, floor_price, one_day_sales, etc. */
-  sort_by?: string
+  sortBy?: string
   /** Blockchain(s) to filter by */
   chains?: string[]
   /** Category to filter by (e.g. art, gaming, pfps) */
@@ -1280,7 +1111,7 @@ export type ResolveAccountResponse = {
   /** OpenSea username, if available */
   username?: string
   /** Primary ENS name, if available */
-  ens_name?: string
+  ensName?: string
 }
 
 /**
@@ -1326,53 +1157,88 @@ export type ValidateMetadataResponse = {
  * Derived from the generated OpenAPI spec type to stay in sync automatically.
  * @category API Response Types
  */
-export type GetNFTMetadataResponse = AssetMetadataResponse
+export type GetNFTMetadataResponse = Camelize<AssetMetadataResponse>
 
-// ─── Cross-chain fulfillment types ──────────────────────────────────
-// Re-exported from @opensea/api-types so consumers can keep importing them
-// from @opensea/sdk. See packages/api-types — these are generated from the
-// OpenSea v2 OpenAPI spec.
+// ─── Cross-chain fulfillment + new endpoint types ───────────────────────
+// Sourced from @opensea/api-types. Response shapes are camelized for the
+// consumer view (the fetcher camelizes responses; see utils/case.ts).
+// Request shapes stay snake_case to match the API wire format — they're
+// sent as POST bodies and need to hit the API in its native format.
 
-export type {
-  CrossChainFulfillmentRequest,
-  CrossChainFulfillmentResponse,
-  CrossChainPaymentToken,
-  FulfillerObject,
-  ListingObject,
-  SwapTransactionResponse,
+import type {
+  BatchCollectionsRequest as ApiBatchCollectionsRequest,
+  BatchNftsRequest as ApiBatchNftsRequest,
+  BatchTokensRequest as ApiBatchTokensRequest,
+  CollectionBatchResponse as ApiCollectionBatchResponse,
+  CollectionHoldersPaginatedResponse as ApiCollectionHoldersPaginatedResponse,
+  CollectionOfferAggregatesPaginatedResponse as ApiCollectionOfferAggregatesPaginatedResponse,
+  CreateListingActionsRequest as ApiCreateListingActionsRequest,
+  CreateListingActionsResponse as ApiCreateListingActionsResponse,
+  CrossChainFulfillmentRequest as ApiCrossChainFulfillmentRequest,
+  CrossChainFulfillmentResponse as ApiCrossChainFulfillmentResponse,
+  CrossChainPaymentToken as ApiCrossChainPaymentToken,
+  DropDeployReceiptResponse as ApiDropDeployReceiptResponse,
+  DropDeployRequest as ApiDropDeployRequest,
+  DropDeployResponse as ApiDropDeployResponse,
+  FloorPriceHistoryResponse as ApiFloorPriceHistoryResponse,
+  FulfillerObject as ApiFulfillerObject,
+  ListingObject as ApiListingObject,
+  NftAnalyticsResponse as ApiNftAnalyticsResponse,
+  NftBatchResponse as ApiNftBatchResponse,
+  OhlcvResponse as ApiOhlcvResponse,
+  OwnersPaginatedResponse as ApiOwnersPaginatedResponse,
+  PortfolioHistoryResponse as ApiPortfolioHistoryResponse,
+  PortfolioStatsResponse as ApiPortfolioStatsResponse,
+  PriceHistoryResponse as ApiPriceHistoryResponse,
+  ProfileCollectionsResponse as ApiProfileCollectionsResponse,
+  SwapTransactionResponse as ApiSwapTransactionResponse,
+  TokenBatchResponse as ApiTokenBatchResponse,
+  TokenSwapActivityPaginatedResponse as ApiTokenSwapActivityPaginatedResponse,
+  TransferRequest as ApiTransferRequest,
+  TransferResponse as ApiTransferResponse,
 } from "@opensea/api-types"
 
-// ─── New endpoint types (api-types 0.4.0) ───────────────────────────
-// Request bodies for POST endpoints and response shapes for analytics /
-// profile / batch / drops-deploy / transfer endpoints. All re-exported
-// from @opensea/api-types — see packages/api-types/src/index.ts.
+// Request types — camelized consumer view. The fetcher snakeizes the body on
+// the way out (see `api.ts`), so passing camelCase here hits the API correctly.
+export type BatchCollectionsRequest = Camelize<ApiBatchCollectionsRequest>
+export type BatchNftsRequest = Camelize<ApiBatchNftsRequest>
+export type BatchTokensRequest = Camelize<ApiBatchTokensRequest>
+export type CreateListingActionsRequest =
+  Camelize<ApiCreateListingActionsRequest>
+export type CrossChainFulfillmentRequest =
+  Camelize<ApiCrossChainFulfillmentRequest>
+export type DropDeployRequest = Camelize<ApiDropDeployRequest>
+export type FulfillerObject = Camelize<ApiFulfillerObject>
+export type ListingObject = Camelize<ApiListingObject>
+export type TransferRequest = Camelize<ApiTransferRequest>
 
-export type {
-  BatchCollectionsRequest,
-  BatchNftsRequest,
-  BatchTokensRequest,
-  CollectionBatchResponse,
-  CollectionHoldersPaginatedResponse,
-  CollectionOfferAggregatesPaginatedResponse,
-  CreateListingActionsRequest,
-  CreateListingActionsResponse,
-  DropDeployReceiptResponse,
-  DropDeployRequest,
-  DropDeployResponse,
-  FloorPriceHistoryResponse,
-  NftAnalyticsResponse,
-  NftBatchResponse,
-  OhlcvResponse,
-  OwnersPaginatedResponse,
-  PortfolioHistoryResponse,
-  PortfolioStatsResponse,
-  PriceHistoryResponse,
-  ProfileCollectionsResponse,
-  TokenBatchResponse,
-  TokenSwapActivityPaginatedResponse,
-  TransferRequest,
-  TransferResponse,
-} from "@opensea/api-types"
+// Response types — camelized for the consumer view.
+export type CollectionBatchResponse = Camelize<ApiCollectionBatchResponse>
+export type CollectionHoldersPaginatedResponse =
+  Camelize<ApiCollectionHoldersPaginatedResponse>
+export type CollectionOfferAggregatesPaginatedResponse =
+  Camelize<ApiCollectionOfferAggregatesPaginatedResponse>
+export type CreateListingActionsResponse =
+  Camelize<ApiCreateListingActionsResponse>
+export type CrossChainFulfillmentResponse =
+  Camelize<ApiCrossChainFulfillmentResponse>
+export type CrossChainPaymentToken = Camelize<ApiCrossChainPaymentToken>
+export type DropDeployReceiptResponse = Camelize<ApiDropDeployReceiptResponse>
+export type DropDeployResponse = Camelize<ApiDropDeployResponse>
+export type FloorPriceHistoryResponse = Camelize<ApiFloorPriceHistoryResponse>
+export type NftAnalyticsResponse = Camelize<ApiNftAnalyticsResponse>
+export type NftBatchResponse = Camelize<ApiNftBatchResponse>
+export type OhlcvResponse = Camelize<ApiOhlcvResponse>
+export type OwnersPaginatedResponse = Camelize<ApiOwnersPaginatedResponse>
+export type PortfolioHistoryResponse = Camelize<ApiPortfolioHistoryResponse>
+export type PortfolioStatsResponse = Camelize<ApiPortfolioStatsResponse>
+export type PriceHistoryResponse = Camelize<ApiPriceHistoryResponse>
+export type ProfileCollectionsResponse = Camelize<ApiProfileCollectionsResponse>
+export type SwapTransactionResponse = Camelize<ApiSwapTransactionResponse>
+export type TokenBatchResponse = Camelize<ApiTokenBatchResponse>
+export type TokenSwapActivityPaginatedResponse =
+  Camelize<ApiTokenSwapActivityPaginatedResponse>
+export type TransferResponse = Camelize<ApiTransferResponse>
 
 /**
  * Query args for paginated collection-analytics endpoints (offer aggregates,
@@ -1382,7 +1248,7 @@ export type {
 export interface PaginatedAnalyticsArgs {
   limit?: number
   cursor?: string
-  sort_direction?: "asc" | "desc"
+  sortDirection?: "asc" | "desc"
 }
 
 /**
@@ -1391,7 +1257,7 @@ export interface PaginatedAnalyticsArgs {
  * @category API Query Args
  */
 export interface CollectionHoldersArgs extends PaginatedAnalyticsArgs {
-  owned_by?: string
+  ownedBy?: string
 }
 
 /**
@@ -1411,13 +1277,13 @@ export interface CollectionFloorPricesArgs {
  */
 export interface TokenTimeSeriesArgs {
   /** Start time (ISO 8601, required by the API). */
-  start_time: string
+  startTime: string
   /** End time (ISO 8601, defaults to now). */
-  end_time?: string
+  endTime?: string
   /** Candle bucket size: 1s, 1m, 5m, 15m, 1h, 4h, 1d. */
-  bucket_size?: string
+  bucketSize?: string
   /** Whether to fill empty time windows with zero-volume candles (OHLCV only). */
-  fill_time_window?: boolean
+  fillTimeWindow?: boolean
 }
 
 /**
@@ -1455,10 +1321,10 @@ export interface PortfolioArgs {
 export interface ProfileOrdersArgs {
   after?: string
   limit?: number
-  collection_slugs?: string[]
+  collectionSlugs?: string[]
   chains?: string[]
-  sort_by?: string
-  sort_direction?: "asc" | "desc"
+  sortBy?: string
+  sortDirection?: "asc" | "desc"
 }
 
 /**
@@ -1468,8 +1334,8 @@ export interface ProfileOrdersArgs {
 export interface ProfileFavoritesArgs {
   after?: string
   limit?: number
-  sort_by?: string
-  sort_direction?: "asc" | "desc"
+  sortBy?: string
+  sortDirection?: "asc" | "desc"
   chains?: string[]
 }
 
@@ -1487,16 +1353,16 @@ export interface ProfileCollectionsArgs {
  * Response from the account favorites endpoint — favorited NFTs.
  * @category API Response Types
  */
-export type ProfileFavoritesResponse = NftListResponse
+export type ProfileFavoritesResponse = Camelize<NftListResponse>
 
 /**
  * Response from the account profile listings endpoint.
  * @category API Response Types
  */
-export type ProfileListingsResponse = ListingsResponse
+export type ProfileListingsResponse = Camelize<ListingsResponse>
 
 /**
  * Response from the account profile offers / offers_received endpoints.
  * @category API Response Types
  */
-export type ProfileOffersResponse = OffersResponse
+export type ProfileOffersResponse = Camelize<OffersResponse>

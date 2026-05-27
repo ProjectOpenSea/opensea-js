@@ -21,6 +21,8 @@ pnpm run check-types   # TypeScript type checking (stricter tsconfig)
 |-----------|------|
 | `src/sdk.ts` | `OpenSeaSDK` — main ethers entry point |
 | `src/viem.ts` | `OpenSeaViemSDK` — viem entry point |
+| `src/types.ts` | Public types: `Chain` enum, `Amount`, order/event types |
+| `src/constants.ts` | Math and Ethereum constants (basis points, addresses, etc.) |
 | `src/sdk/base.ts` | `BaseOpenSeaSDK` — shared logic for both providers |
 | `src/sdk/fulfillment.ts` | Order fulfillment (buy, sell, match) via Seaport |
 | `src/sdk/orders.ts` | Create and manage listings and offers |

@@ -88,10 +88,10 @@ describe("API", () => {
     const successResponse = {
       address: "0x0000000000000000000000000000000000000000",
       decimals: 18,
-      eth_price: "1",
+      ethPrice: "1",
       name: "Ether",
       symbol: "ETH",
-      usd_price: "1800",
+      usdPrice: "1800",
     }
 
     // First call fails with rate limit, second call succeeds
@@ -255,10 +255,10 @@ describe("API", () => {
     const successResponse = {
       address: "0x0000000000000000000000000000000000000000",
       decimals: 18,
-      eth_price: "1",
+      ethPrice: "1",
       name: "Ether",
       symbol: "ETH",
-      usd_price: "1800",
+      usdPrice: "1800",
     }
 
     // First call fails with 599, second call succeeds
@@ -294,10 +294,10 @@ describe("API", () => {
     const successResponse = {
       address: "0x0000000000000000000000000000000000000000",
       decimals: 18,
-      eth_price: "1",
+      ethPrice: "1",
       name: "Ether",
       symbol: "ETH",
-      usd_price: "1800",
+      usdPrice: "1800",
     }
 
     // First call fails, second call succeeds (tests exponential backoff)
@@ -503,6 +503,9 @@ describe("API", () => {
 
   describe("requestInstantApiKey (static)", () => {
     test("POSTs to /api/v2/auth/keys without auth header", async () => {
+      // Wire body uses snake_case `api_key`; the SDK camelizes it to `apiKey`
+      // before returning so consumers see the camelCase shape declared by
+      // RequestInstantApiKeyResponse.
       const mockBody = { api_key: "test-key-123" }
       const fetchStubLocal = vi
         .spyOn(globalThis, "fetch")
@@ -522,7 +525,7 @@ describe("API", () => {
       // No api-key header in any casing — endpoint is unauthenticated.
       const headerKeys = Object.keys(init.headers).map(k => k.toLowerCase())
       expect(headerKeys).not.toContain("x-api-key")
-      expect(result).toEqual(mockBody)
+      expect(result).toEqual({ apiKey: "test-key-123" })
 
       fetchStubLocal.mockRestore()
     })

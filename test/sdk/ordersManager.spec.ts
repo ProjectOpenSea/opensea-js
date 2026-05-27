@@ -20,7 +20,7 @@ describe("SDK: OrdersManager", () => {
     identifier: "1234",
     collection: "test-collection",
     contract: "0xNFTContract",
-    token_standard: "erc721",
+    tokenStandard: "erc721",
     name: "Test NFT",
   }
 
@@ -66,14 +66,14 @@ describe("SDK: OrdersManager", () => {
       getNFT: vi.fn().mockResolvedValue({ nft: mockNFT }),
       getCollection: vi.fn().mockResolvedValue(mockCollection),
       postOffer: vi.fn().mockResolvedValue({
-        order_hash: "0xOrderHash",
-        protocol_data: mockOrder,
-        protocol_address: "0xProtocol",
+        orderHash: "0xOrderHash",
+        protocolData: mockOrder,
+        protocolAddress: "0xProtocol",
       }),
       postListing: vi.fn().mockResolvedValue({
-        order_hash: "0xOrderHash",
-        protocol_data: mockOrder,
-        protocol_address: "0xProtocol",
+        orderHash: "0xOrderHash",
+        protocolData: mockOrder,
+        protocolAddress: "0xProtocol",
       }),
       buildOffer: vi.fn().mockResolvedValue({
         partialParameters: {
@@ -91,8 +91,8 @@ describe("SDK: OrdersManager", () => {
         criteria: { collection: { slug: "test-collection" } },
       }),
       postCollectionOffer: vi.fn().mockResolvedValue({
-        protocol_data: mockOrder,
-        protocol_address: "0xProtocol",
+        protocolData: mockOrder,
+        protocolAddress: "0xProtocol",
       }),
     }
 
@@ -132,7 +132,7 @@ describe("SDK: OrdersManager", () => {
       expect(mockAPI.getCollection).toHaveBeenCalledTimes(1)
       expect(mockSeaport.createOrder).toHaveBeenCalledTimes(1)
       expect(mockAPI.postOffer).toHaveBeenCalledTimes(1)
-      expect(result.order_hash).toBe("0xOrderHash")
+      expect(result.orderHash).toBe("0xOrderHash")
     })
 
     test("creates offer with custom quantity", async () => {
@@ -276,7 +276,7 @@ describe("SDK: OrdersManager", () => {
       expect(mockAPI.getCollection).toHaveBeenCalledTimes(1)
       expect(mockSeaport.createOrder).toHaveBeenCalledTimes(1)
       expect(mockAPI.postListing).toHaveBeenCalledTimes(1)
-      expect(result.order_hash).toBe("0xOrderHash")
+      expect(result.orderHash).toBe("0xOrderHash")
     })
 
     test("creates listing with buyer address (private listing)", async () => {

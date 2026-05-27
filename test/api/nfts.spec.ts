@@ -599,7 +599,7 @@ describe("API: NFTsAPI", () => {
         chain: "ethereum",
         collection: "boredapeyachtclub",
         name: "Bored Ape Yacht Club",
-        contract_standard: "erc721",
+        contractStandard: "erc721",
       }
 
       mockGet.mockResolvedValue(mockResponse)
@@ -615,7 +615,7 @@ describe("API: NFTsAPI", () => {
       expect(result.address).toBe("0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d")
       expect(result.collection).toBe("boredapeyachtclub")
       expect(result.name).toBe("Bored Ape Yacht Club")
-      expect(result.contract_standard).toBe("erc721")
+      expect(result.contractStandard).toBe("erc721")
     })
 
     test("fetches contract with custom chain parameter", async () => {
@@ -624,7 +624,7 @@ describe("API: NFTsAPI", () => {
         chain: "polygon",
         collection: "test-collection",
         name: "Test Contract",
-        contract_standard: "erc1155",
+        contractStandard: "erc1155",
       }
 
       mockGet.mockResolvedValue(mockResponse)
@@ -643,7 +643,7 @@ describe("API: NFTsAPI", () => {
         chain: "ethereum",
         collection: null,
         name: "Test",
-        contract_standard: "erc721",
+        contractStandard: "erc721",
       }
 
       mockGet.mockResolvedValue(mockResponse)
@@ -659,7 +659,7 @@ describe("API: NFTsAPI", () => {
         chain: "ethereum",
         collection: null,
         name: "Standalone Contract",
-        contract_standard: "erc721",
+        contractStandard: "erc721",
       }
 
       mockGet.mockResolvedValue(mockResponse)
@@ -676,14 +676,14 @@ describe("API: NFTsAPI", () => {
         chain: "ethereum",
         collection: "multi-token-collection",
         name: "Multi Token Contract",
-        contract_standard: "erc1155",
+        contractStandard: "erc1155",
       }
 
       mockGet.mockResolvedValue(mockResponse)
 
       const result = await nftsAPI.getContract("0xerc1155")
 
-      expect(result.contract_standard).toBe("erc1155")
+      expect(result.contractStandard).toBe("erc1155")
     })
 
     test("handles different chains", async () => {
@@ -702,7 +702,7 @@ describe("API: NFTsAPI", () => {
           chain: chain.toLowerCase(),
           collection: "test",
           name: "Test",
-          contract_standard: "erc721",
+          contractStandard: "erc721",
         }
 
         mockGet.mockResolvedValue(mockResponse)
@@ -721,7 +721,7 @@ describe("API: NFTsAPI", () => {
         chain: "ethereum",
         collection: "test",
         name: "Test",
-        contract_standard: "erc721",
+        contractStandard: "erc721",
       }
 
       mockGet.mockResolvedValue(mockResponse)
@@ -760,27 +760,27 @@ describe("API: NFTsAPI", () => {
         name: "Art Blocks",
         collection: "art-blocks",
         description: "Generative art",
-        image_url: "https://example.com/image.png",
-        banner_image_url: "",
+        imageUrl: "https://example.com/image.png",
+        bannerImageUrl: "",
         owner: "0xowner",
-        safelist_status: "verified",
+        safelistStatus: "verified",
         category: "art",
-        is_disabled: false,
-        is_nsfw: false,
-        trait_offers_enabled: true,
-        collection_offers_enabled: true,
-        opensea_url: "https://opensea.io/collection/art-blocks",
-        project_url: "",
-        wiki_url: "",
-        discord_url: "",
-        telegram_url: "",
-        twitter_username: "",
-        instagram_username: "",
+        isDisabled: false,
+        isNsfw: false,
+        traitOffersEnabled: true,
+        collectionOffersEnabled: true,
+        openseaUrl: "https://opensea.io/collection/art-blocks",
+        projectUrl: "",
+        wikiUrl: "",
+        discordUrl: "",
+        telegramUrl: "",
+        twitterUsername: "",
+        instagramUsername: "",
         contracts: [],
         editors: [],
         fees: [],
         rarity: { enabled: false },
-        total_supply: 1000,
+        totalSupply: 1000,
       } as unknown as GetCollectionResponse
 
       mockGet.mockResolvedValue(mockResponse)
@@ -799,10 +799,10 @@ describe("API: NFTsAPI", () => {
       const mockResponse = {
         name: "Test Collection",
         collection: "test",
-        image_url: "https://example.com/img.png",
-        is_disabled: false,
-        is_nsfw: false,
-        opensea_url: "https://opensea.io/collection/test",
+        imageUrl: "https://example.com/img.png",
+        isDisabled: false,
+        isNsfw: false,
+        openseaUrl: "https://opensea.io/collection/test",
         contracts: [],
         editors: [],
         fees: [],
@@ -812,10 +812,10 @@ describe("API: NFTsAPI", () => {
 
       const result = await nftsAPI.getNFTCollection("0xabc", "1")
 
-      // collectionFromJSON converts snake_case to camelCase
+      // Response is returned raw (snake_case from api-types)
       expect(result.imageUrl).toBe("https://example.com/img.png")
       expect(result.isDisabled).toBe(false)
-      expect(result.isNSFW).toBe(false)
+      expect(result.isNsfw).toBe(false)
       expect(result.openseaUrl).toBe("https://opensea.io/collection/test")
     })
 
@@ -872,8 +872,8 @@ describe("API: NFTsAPI", () => {
         description: "A really cool NFT",
         image: "https://example.com/nft.png",
         external_link: "https://example.com",
-        animation_url: undefined,
-        traits: [{ trait_type: "Background", value: "Blue" }],
+        animationUrl: undefined,
+        traits: [{ traitType: "Background", value: "Blue" }],
       } as unknown as GetNFTMetadataResponse
 
       mockGet.mockResolvedValue(mockResponse)

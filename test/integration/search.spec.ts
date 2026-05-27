@@ -6,7 +6,7 @@ describe("SDK: search", () => {
   test("Search for collections by name", async () => {
     const response = await getSdkForChain(Chain.Mainnet).api.search({
       query: "bored ape",
-      asset_types: ["collection"],
+      assetTypes: ["collection"],
       limit: 5,
     })
 
@@ -22,7 +22,7 @@ describe("SDK: search", () => {
       "Collection name should exist",
     ).toBeTruthy()
     expect(
-      response.results[0].collection?.opensea_url,
+      response.results[0].collection?.openseaUrl,
       "Collection opensea_url should exist",
     ).toBeTruthy()
   })
@@ -30,7 +30,7 @@ describe("SDK: search", () => {
   test("Search across all asset types", async () => {
     const response = await getSdkForChain(Chain.Mainnet).api.search({
       query: "ethereum",
-      asset_types: ["collection", "token"],
+      assetTypes: ["collection", "token"],
       limit: 10,
     })
 
