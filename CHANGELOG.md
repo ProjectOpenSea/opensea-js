@@ -1,5 +1,11 @@
 # @opensea/sdk
 
+## 11.1.1
+
+### Patch Changes
+
+- fix: correct `GetSwapQuoteArgs` to match the swap quote endpoint. `getSwapQuote` now takes `{ fromChain, fromAddress, toChain, toAddress, quantity, address, slippage?, recipient? }`, matching `GET /api/v2/swap/quote` (the previous `{ tokenIn, tokenOut, amount, chain }` shape did not map to the endpoint's query params).
+
 ## 11.1.0
 
 ### Minor Changes

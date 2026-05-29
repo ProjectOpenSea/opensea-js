@@ -202,10 +202,12 @@ describe("API: TokensAPI", () => {
       mockGet.mockResolvedValue(mockResponse)
 
       const args = {
-        tokenIn: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-        tokenOut: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        amount: "1000000000000000000",
-        chain: "ethereum",
+        fromChain: "ethereum",
+        fromAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        toChain: "ethereum",
+        toAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        quantity: "1000000000000000000",
+        address: "0x1234567890123456789012345678901234567890",
       }
 
       const result = await tokensAPI.getSwapQuote(args)
@@ -224,12 +226,14 @@ describe("API: TokensAPI", () => {
       mockGet.mockResolvedValue(mockResponse)
 
       const args = {
-        tokenIn: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-        tokenOut: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        amount: "1000000000000000000",
-        chain: "ethereum",
-        takerAddress: "0x1234567890123456789012345678901234567890",
+        fromChain: "ethereum",
+        fromAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        toChain: "base",
+        toAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        quantity: "1000000000000000000",
+        address: "0x1234567890123456789012345678901234567890",
         slippage: 0.5,
+        recipient: "0x9876543210987654321098765432109876543210",
       }
 
       await tokensAPI.getSwapQuote(args)
@@ -242,10 +246,12 @@ describe("API: TokensAPI", () => {
 
       try {
         await tokensAPI.getSwapQuote({
-          tokenIn: "0x123",
-          tokenOut: "0x456",
-          amount: "1000",
-          chain: "ethereum",
+          fromChain: "ethereum",
+          fromAddress: "0x123",
+          toChain: "ethereum",
+          toAddress: "0x456",
+          quantity: "1000",
+          address: "0x789",
         })
         throw new Error("Expected error to be thrown")
       } catch (error) {

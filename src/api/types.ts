@@ -759,18 +759,22 @@ export interface GetTokensArgs {
  * @category API Query Args
  */
 export interface GetSwapQuoteArgs {
-  /** Address of the input token */
-  tokenIn: string
-  /** Address of the output token */
-  tokenOut: string
-  /** Amount of input token */
-  amount: string
-  /** Chain for the swap */
-  chain: string
-  /** Address of the taker */
-  takerAddress?: string
-  /** Slippage tolerance */
+  /** Chain of the token to swap from */
+  fromChain: string
+  /** Contract address of the token to swap from */
+  fromAddress: string
+  /** Chain of the token to swap to */
+  toChain: string
+  /** Contract address of the token to swap to */
+  toAddress: string
+  /** Amount to swap in the smallest unit of the token (e.g. wei for ETH) */
+  quantity: string
+  /** Wallet address executing the swap */
+  address: string
+  /** Slippage tolerance, 0.0 to 0.5 (default 0.01) */
   slippage?: number
+  /** Recipient address (defaults to the sender address) */
+  recipient?: string
 }
 
 /**

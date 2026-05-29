@@ -1185,27 +1185,32 @@ Get a swap quote for exchanging tokens.
 
 ```typescript
 const quote = await openseaSDK.api.getSwapQuote({
-  token_in: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
-  token_out: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
-  amount: "1000000000000000000", // 1 WETH in wei
-  chain: "ethereum",
-  taker_address: "0x...", // Optional
-  slippage: 0.5, // Optional: slippage tolerance
+  fromChain: "ethereum",
+  fromAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // WETH
+  toChain: "ethereum",
+  toAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC
+  quantity: "1000000000000000000", // 1 WETH in wei
+  address: "0x...", // Wallet executing the swap
+  slippage: 0.05, // Optional: slippage tolerance (0.0 to 0.5)
 });
 ```
 
 **Parameters:**
 
-| Parameter       | Type   | Required | Description                 |
-| --------------- | ------ | -------- | --------------------------- |
-| `token_in`      | string | Yes      | Address of the input token  |
-| `token_out`     | string | Yes      | Address of the output token |
-| `amount`        | string | Yes      | Amount of input token       |
-| `chain`         | string | Yes      | Chain for the swap          |
-| `taker_address` | string | No       | Address of the taker        |
-| `slippage`      | number | No       | Slippage tolerance          |
+| Parameter     | Type   | Required | Description                                       |
+| ------------- | ------ | -------- | ------------------------------------------------- |
+| `fromChain`   | string | Yes      | Chain of the token to swap from                   |
+| `fromAddress` | string | Yes      | Contract address of the token to swap from        |
+| `toChain`     | string | Yes      | Chain of the token to swap to                     |
+| `toAddress`   | string | Yes      | Contract address of the token to swap to          |
+| `quantity`    | string | Yes      | Amount to swap in the token's smallest unit (wei) |
+| `address`     | string | Yes      | Wallet address executing the swap                 |
+| `slippage`    | number | No       | Slippage tolerance, 0.0 to 0.5 (default 0.01)     |
+| `recipient`   | string | No       | Recipient address (defaults to sender)            |
 
-**Returns:** `GetSwapQuoteResponse` with swap quote data.
+Set `fromChain` and `toChain` to different chains for cross-chain swaps.
+
+**Returns:** `GetSwapQuoteResponse` with the swap quote and the transactions to execute.
 
 ---
 
