@@ -1,5 +1,5 @@
 import { ethers } from "ethers"
-import { describe, expect, test } from "vitest"
+import { describe, expect, it, test } from "vitest"
 import {
   SHARED_STOREFRONT_ADDRESSES,
   SHARED_STOREFRONT_LAZY_MINT_ADAPTER_CROSS_CHAIN_ADDRESS,
@@ -170,6 +170,31 @@ describe("SDK: misc", () => {
         "10000000000000000000000001",
         "10000000000000000000000002",
       ])
+    })
+  })
+})
+  describe("_getPriceParameters: null/negative amount guards", () => {
+    it("throws before calling parseUnits when amount is null", async () => {
+      // Previously the null check came AFTER amount.toString() was called,
+      // causing a TypeError before the guard could fire.
+      // The fix moves validation before parseUnits.
+      const wallet = ethers.Wallet.createRandom()
+      const accountAddress = wallet.address
+      const asset = {} as any
+
+      try {
+        // null amount passed as any to bypass TypeScript
+        await sdk.createListing({
+          asset,
+          amount: null as any,
+          accountAddress,
+        })
+        throw new Error("should have thrown")
+      } catch (e: any) {
+        // Should throw the validated message, not a TypeError from .toString()
+        expect(e.message).not.toMatch(/Cannot read properties of null/)
+        expect(e.message).not.toMatch(/TypeError/)
+      }
     })
   })
 })
