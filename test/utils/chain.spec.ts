@@ -112,6 +112,8 @@ describe("Utils: chain", () => {
         Chain.Shape,
         Chain.Unichain,
         Chain.Ink,
+        Chain.Soneium,
+        Chain.AnimeChain,
       ]
       const expectedAddress = "0x4200000000000000000000000000000000000006"
 
@@ -210,6 +212,8 @@ describe("Utils: chain", () => {
         Chain.Unichain,
         Chain.MegaETH,
         Chain.Ink,
+        Chain.Soneium,
+        Chain.AnimeChain,
       ]
 
       for (const chain of ethChains) {

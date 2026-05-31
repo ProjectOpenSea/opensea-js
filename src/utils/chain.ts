@@ -59,8 +59,10 @@ export const getOfferPaymentToken = (chain: Chain) => {
       return "0x82af49447d8a07e3bd95bd0d56f35241523fbab1" // WETH
     case Chain.Blast:
       return "0x4300000000000000000000000000000000000004" // WETH
-    // MegaETH and OP Chains have WETH at the same address
+    // MegaETH, Soneium, AnimeChain, and OP Chains have WETH at the same address
     case Chain.MegaETH:
+    case Chain.Soneium:
+    case Chain.AnimeChain:
     case Chain.Base:
     case Chain.Optimism:
     case Chain.Zora:
@@ -115,6 +117,8 @@ export const getListingPaymentToken = (chain: Chain) => {
     case Chain.Unichain:
     case Chain.Monad:
     case Chain.MegaETH:
+    case Chain.Soneium:
+    case Chain.AnimeChain:
     case Chain.Ink:
       return "0x0000000000000000000000000000000000000000" // ETH
     case Chain.Polygon:
