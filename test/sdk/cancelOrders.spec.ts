@@ -1,6 +1,7 @@
 import type { OrderComponents } from "@opensea/seaport-js/lib/types"
 import { ethers } from "ethers"
 import { describe, expect, test } from "vitest"
+import { ALTERNATE_SEAPORT_V1_6_ADDRESS } from "../../src/constants"
 import type { OrderV2 } from "../../src/orders/types"
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../../src/orders/utils"
 import { sdk } from "../utils/sdk"
@@ -81,6 +82,43 @@ describe("SDK: cancelOrders", () => {
       expect((e as Error).message).toContain(
         "Cannot provide both orders and orderHashes",
       )
+    }
+  })
+
+  test("Should throw when orders span different protocol addresses", async () => {
+    const mockOrderComponents: OrderComponents = {
+      offerer: "0x0000000000000000000000000000000000000001",
+      zone: "0x0000000000000000000000000000000000000000",
+      offer: [],
+      consideration: [],
+      orderType: 0,
+      startTime: "0",
+      endTime: "0",
+      zoneHash:
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      salt: "0",
+      conduitKey:
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      totalOriginalConsiderationItems: 0,
+      counter: 0,
+    }
+    const makeOrderV2 = (protocolAddress: string) =>
+      ({
+        protocolData: { parameters: mockOrderComponents },
+        protocolAddress,
+      }) as unknown as OrderV2
+
+    try {
+      await sdk.cancelOrders({
+        orders: [
+          makeOrderV2(DEFAULT_SEAPORT_CONTRACT_ADDRESS),
+          makeOrderV2(ALTERNATE_SEAPORT_V1_6_ADDRESS),
+        ],
+        accountAddress,
+      })
+      throw new Error("should have thrown")
+    } catch (e) {
+      expect((e as Error).message).toContain("same protocolAddress")
     }
   })
 

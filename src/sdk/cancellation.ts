@@ -167,6 +167,23 @@ export class CancellationManager {
       throw new Error("At least one order hash must be provided")
     }
 
+    // Cancellation is a single transaction to one Seaport contract, so every
+    // order must live on the same protocol. Mixing protocol addresses would
+    // send the others to the wrong contract and silently leave them live.
+    if (orders) {
+      const protocols = new Set(
+        orders
+          .filter(order => "protocolData" in order)
+          .map(order => (order as OrderV2).protocolAddress.toLowerCase()),
+      )
+      if (protocols.size > 1) {
+        throw new Error(
+          "All orders must use the same protocolAddress to be cancelled in one call. " +
+            "Cancel orders from different protocols separately.",
+        )
+      }
+    }
+
     requireValidProtocol(protocolAddress)
 
     // Check account availability after parameter validation
