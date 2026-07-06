@@ -121,11 +121,14 @@ export interface EventData {
  * @param chain `Chain` to use. Defaults to Ethereum Mainnet (`Chain.Mainnet`)
  * @param apiKey API key to use
  * @param apiBaseUrl Optional base URL to use for the API
+ * @param authToken Scoped JWT token for wallet-authenticated endpoints
  */
 export interface OpenSeaAPIConfig {
   chain?: Chain
   apiKey?: string
   apiBaseUrl?: string
+  /** Scoped JWT token for wallet-authenticated endpoints. */
+  authToken?: string
 }
 
 /**
@@ -164,6 +167,7 @@ export enum Chain {
   Hyperliquid = "hyperliquid",
   AnimeChain = "animechain",
   Ink = "ink",
+  Robinhood = "robinhood",
 }
 
 // Compile-time check: every ChainIdentifier from the API spec must be assignable to Chain.

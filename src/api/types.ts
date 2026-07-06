@@ -1173,6 +1173,7 @@ import type {
   BatchCollectionsRequest as ApiBatchCollectionsRequest,
   BatchNftsRequest as ApiBatchNftsRequest,
   BatchTokensRequest as ApiBatchTokensRequest,
+  ClosedPositionsResponse as ApiClosedPositionsResponse,
   CollectionBatchResponse as ApiCollectionBatchResponse,
   CollectionHoldersPaginatedResponse as ApiCollectionHoldersPaginatedResponse,
   CollectionOfferAggregatesPaginatedResponse as ApiCollectionOfferAggregatesPaginatedResponse,
@@ -1193,6 +1194,7 @@ import type {
   OwnersPaginatedResponse as ApiOwnersPaginatedResponse,
   PortfolioHistoryResponse as ApiPortfolioHistoryResponse,
   PortfolioStatsResponse as ApiPortfolioStatsResponse,
+  PositionTokenTransfersResponse as ApiPositionTokenTransfersResponse,
   PriceHistoryResponse as ApiPriceHistoryResponse,
   ProfileCollectionsResponse as ApiProfileCollectionsResponse,
   SwapTransactionResponse as ApiSwapTransactionResponse,
@@ -1202,6 +1204,7 @@ import type {
   TokenSwapActivityPaginatedResponse as ApiTokenSwapActivityPaginatedResponse,
   TransferRequest as ApiTransferRequest,
   TransferResponse as ApiTransferResponse,
+  WalletPnlResponse as ApiWalletPnlResponse,
 } from "@opensea/api-types"
 
 // Request types — camelized consumer view. The fetcher snakeizes the body on
@@ -1238,6 +1241,10 @@ export type OhlcvResponse = Camelize<ApiOhlcvResponse>
 export type OwnersPaginatedResponse = Camelize<ApiOwnersPaginatedResponse>
 export type PortfolioHistoryResponse = Camelize<ApiPortfolioHistoryResponse>
 export type PortfolioStatsResponse = Camelize<ApiPortfolioStatsResponse>
+export type WalletPnlResponse = Camelize<ApiWalletPnlResponse>
+export type ClosedPositionsResponse = Camelize<ApiClosedPositionsResponse>
+export type PositionTokenTransfersResponse =
+  Camelize<ApiPositionTokenTransfersResponse>
 export type PriceHistoryResponse = Camelize<ApiPriceHistoryResponse>
 export type ProfileCollectionsResponse = Camelize<ApiProfileCollectionsResponse>
 export type SwapTransactionResponse = Camelize<ApiSwapTransactionResponse>
@@ -1366,6 +1373,35 @@ export interface ProfileFavoritesArgs {
   sortBy?: string
   sortDirection?: "asc" | "desc"
   chains?: string[]
+}
+
+/**
+ * Query args for the wallet closed-positions (realized P&L) endpoint.
+ * @category API Query Args
+ */
+export interface WalletClosedPositionsArgs {
+  /** Sort field for the returned positions. */
+  sortBy?: string
+  /** Max number of positions to return (default 20). */
+  limit?: number
+  /** Cursor for the next page of results. */
+  next?: string
+}
+
+/**
+ * Query args for the wallet position token-transfers endpoint. `contractAddress`
+ * and `chain` identify the currency position to inspect and are required.
+ * @category API Query Args
+ */
+export interface WalletTokenTransfersArgs {
+  /** Contract address of the currency whose position transfers to fetch. */
+  contractAddress: string
+  /** Chain the currency lives on (e.g. `ethereum`, `base`). */
+  chain: string
+  /** Max number of transfers to return (default 20). */
+  limit?: number
+  /** Cursor for the next page of results. */
+  next?: string
 }
 
 /**

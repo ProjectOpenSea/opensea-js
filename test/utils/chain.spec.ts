@@ -30,6 +30,38 @@ import {
 } from "../../src/utils/chain"
 
 describe("Utils: chain", () => {
+  describe("chain helper exhaustiveness", () => {
+    // No Seaport deployment — payment-token helpers throw by design
+    const SEAPORT_UNSUPPORTED_CHAINS = [
+      Chain.Solana,
+      Chain.Hyperliquid,
+      Chain.Robinhood,
+    ]
+    // Non-EVM chains with no numeric chain id
+    const NO_CHAIN_ID_CHAINS = [Chain.Solana, Chain.Hyperliquid]
+    const EVM_ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/
+    const NUMERIC_CHAIN_ID_RE = /^\d+$/
+
+    for (const chain of Object.values(Chain) as Chain[]) {
+      test(`covers ${chain}`, () => {
+        if (SEAPORT_UNSUPPORTED_CHAINS.includes(chain)) {
+          expect(() => getOfferPaymentToken(chain)).toThrow()
+          expect(() => getListingPaymentToken(chain)).toThrow()
+        } else {
+          expect(getOfferPaymentToken(chain)).toMatch(EVM_ADDRESS_RE)
+          expect(getListingPaymentToken(chain)).toMatch(EVM_ADDRESS_RE)
+          expect(getNativeWrapTokenAddress(chain)).toMatch(EVM_ADDRESS_RE)
+        }
+
+        if (NO_CHAIN_ID_CHAINS.includes(chain)) {
+          expect(() => getChainId(chain)).toThrow()
+        } else {
+          expect(getChainId(chain)).toMatch(NUMERIC_CHAIN_ID_RE)
+        }
+      })
+    }
+  })
+
   describe("getChainId", () => {
     const chainIdTests: Array<[Chain, string]> = [
       [Chain.Mainnet, "1"],
@@ -68,6 +100,15 @@ describe("Utils: chain", () => {
     test("throws for unknown chain", () => {
       expect(() => getChainId("UNKNOWN_CHAIN" as Chain)).toThrow(
         "Unknown chainId for UNKNOWN_CHAIN",
+      )
+    })
+
+    test("throws for Solana and Hyperliquid", () => {
+      expect(() => getChainId(Chain.Solana)).toThrow(
+        "Chain solana has no EVM chain ID for OpenSea Seaport operations",
+      )
+      expect(() => getChainId(Chain.Hyperliquid)).toThrow(
+        "Chain hyperliquid has no EVM chain ID for OpenSea Seaport operations",
       )
     })
   })
@@ -112,6 +153,7 @@ describe("Utils: chain", () => {
         Chain.Shape,
         Chain.Unichain,
         Chain.Ink,
+        Chain.Soneium,
       ]
       const expectedAddress = "0x4200000000000000000000000000000000000006"
 
@@ -180,6 +222,24 @@ describe("Utils: chain", () => {
       )
     })
 
+    test("returns WANIME for AnimeChain", () => {
+      expect(getOfferPaymentToken(Chain.AnimeChain)).toBe(
+        "0x164906a76f1a2ea933366c446ae0ec6a37062c42",
+      )
+    })
+
+    test("throws for Solana", () => {
+      expect(() => getOfferPaymentToken(Chain.Solana)).toThrow(
+        "Chain solana is not supported for OpenSea Seaport offers",
+      )
+    })
+
+    test("throws for Hyperliquid", () => {
+      expect(() => getOfferPaymentToken(Chain.Hyperliquid)).toThrow(
+        "Chain hyperliquid is not supported for OpenSea Seaport offers",
+      )
+    })
+
     test("throws for unknown chain", () => {
       expect(() => getOfferPaymentToken("UNKNOWN_CHAIN" as Chain)).toThrow(
         "Unknown offer currency for UNKNOWN_CHAIN",
@@ -198,6 +258,7 @@ describe("Utils: chain", () => {
       const ethChains = [
         Chain.Mainnet,
         Chain.Somnia,
+        Chain.Soneium,
         Chain.HyperEVM,
         Chain.Arbitrum,
         Chain.Blast,
@@ -217,6 +278,12 @@ describe("Utils: chain", () => {
           "0x0000000000000000000000000000000000000000",
         )
       }
+    })
+
+    test("returns ANIME (0x0) for AnimeChain", () => {
+      expect(getListingPaymentToken(Chain.AnimeChain)).toBe(
+        "0x0000000000000000000000000000000000000000",
+      )
     })
 
     test("returns WETH for Polygon", () => {
@@ -264,6 +331,18 @@ describe("Utils: chain", () => {
     test("returns GUN (0x0) for Gunzilla", () => {
       expect(getListingPaymentToken(Chain.Gunzilla)).toBe(
         "0x0000000000000000000000000000000000000000",
+      )
+    })
+
+    test("throws for Solana", () => {
+      expect(() => getListingPaymentToken(Chain.Solana)).toThrow(
+        "Chain solana is not supported for OpenSea Seaport listings",
+      )
+    })
+
+    test("throws for Hyperliquid", () => {
+      expect(() => getListingPaymentToken(Chain.Hyperliquid)).toThrow(
+        "Chain hyperliquid is not supported for OpenSea Seaport listings",
       )
     })
 

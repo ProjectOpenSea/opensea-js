@@ -38,7 +38,14 @@ export const usesAlternateProtocol = (chain: Chain): boolean =>
  */
 export const getChainId = (chain: Chain): string => {
   const id = CHAIN_ID_MAP[chain]
-  if (id === undefined) throw new Error(`Unknown chainId for ${chain}`)
+  if (id === undefined) {
+    if (Object.values(Chain).includes(chain)) {
+      throw new Error(
+        `Chain ${chain} has no EVM chain ID for OpenSea Seaport operations`,
+      )
+    }
+    throw new Error(`Unknown chainId for ${chain}`)
+  }
   return id
 }
 
@@ -68,7 +75,10 @@ export const getOfferPaymentToken = (chain: Chain) => {
     case Chain.Shape:
     case Chain.Unichain:
     case Chain.Ink:
+    case Chain.Soneium:
       return "0x4200000000000000000000000000000000000006" // WETH
+    case Chain.AnimeChain:
+      return "0x164906a76f1a2ea933366c446ae0ec6a37062c42" // WANIME
     case Chain.BeraChain:
       return "0x6969696969696969696969696969696969696969" // WBERA
     case Chain.Sei:
@@ -89,8 +99,17 @@ export const getOfferPaymentToken = (chain: Chain) => {
       return "0x046ede9564a72571df6f5e44d0405360c0f4dcab" // WSOMI
     case Chain.Monad:
       return "0x3bd359c1119da7da1d913d1c4d2b7c461115433a" // WMON
-    default:
-      throw new Error(`Unknown offer currency for ${chain}`)
+    // Chains without Seaport deployment
+    case Chain.Robinhood:
+    case Chain.Solana:
+    case Chain.Hyperliquid:
+      throw new Error(
+        `Chain ${chain} is not supported for OpenSea Seaport offers`,
+      )
+    default: {
+      const exhaustiveChain: never = chain
+      throw new Error(`Unknown offer currency for ${exhaustiveChain}`)
+    }
   }
 }
 
@@ -102,6 +121,7 @@ export const getOfferPaymentToken = (chain: Chain) => {
 export const getListingPaymentToken = (chain: Chain) => {
   switch (chain) {
     case Chain.Mainnet:
+    case Chain.Soneium:
     case Chain.Somnia:
     case Chain.HyperEVM:
     case Chain.Arbitrum:
@@ -133,8 +153,19 @@ export const getListingPaymentToken = (chain: Chain) => {
       return "0xe514d9deb7966c8be0ca922de8a064264ea6bcd4" // WETH
     case Chain.Gunzilla:
       return "0x0000000000000000000000000000000000000000" // GUN
-    default:
-      throw new Error(`Unknown listing currency for ${chain}`)
+    case Chain.AnimeChain:
+      return "0x0000000000000000000000000000000000000000" // ANIME
+    // Chains without Seaport deployment
+    case Chain.Robinhood:
+    case Chain.Solana:
+    case Chain.Hyperliquid:
+      throw new Error(
+        `Chain ${chain} is not supported for OpenSea Seaport listings`,
+      )
+    default: {
+      const exhaustiveChain: never = chain
+      throw new Error(`Unknown listing currency for ${exhaustiveChain}`)
+    }
   }
 }
 

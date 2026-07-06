@@ -373,6 +373,18 @@ export const getProfileFavoritesPath = (address: string) => {
   return `${API_V2_PREFIX}/account/${address}/favorites`
 }
 
+export const getWalletPnlPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/pnl`
+}
+
+export const getWalletClosedPositionsPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/pnl/closed-positions`
+}
+
+export const getWalletTokenTransfersPath = (address: string) => {
+  return `${API_V2_PREFIX}/account/${address}/pnl/token-transfers`
+}
+
 export const getProfileCollectionsPath = (address: string) => {
   return `${API_V2_PREFIX}/account/${address}/collections`
 }

@@ -38,6 +38,7 @@ import {
   type BatchTokensRequest,
   type BuildOfferResponse,
   type CancelOrderResponse,
+  type ClosedPositionsResponse,
   type CollectionBatchResponse,
   type CollectionFloorPricesArgs,
   type CollectionHoldersArgs,
@@ -98,6 +99,7 @@ import {
   type PortfolioArgs,
   type PortfolioHistoryResponse,
   type PortfolioStatsResponse,
+  type PositionTokenTransfersResponse,
   type PriceHistoryResponse,
   type ProfileCollectionsArgs,
   type ProfileCollectionsResponse,
@@ -128,6 +130,9 @@ import {
   type TransferRequest,
   type TransferResponse,
   type ValidateMetadataResponse,
+  type WalletClosedPositionsArgs,
+  type WalletPnlResponse,
+  type WalletTokenTransfersArgs,
 } from "./types"
 
 /**
@@ -149,6 +154,7 @@ export class OpenSeaAPI {
   public logger: (arg: string) => void
 
   private apiKey: string | undefined
+  private authToken: string | undefined
   private chain: Chain
 
   // Specialized API clients
@@ -173,6 +179,7 @@ export class OpenSeaAPI {
    */
   constructor(config: OpenSeaAPIConfig, logger?: (arg: string) => void) {
     this.apiKey = config.apiKey
+    this.authToken = config.authToken
     this.chain = config.chain ?? Chain.Mainnet
 
     if (config.apiBaseUrl) {
@@ -1285,6 +1292,33 @@ export class OpenSeaAPI {
   }
 
   /**
+   * Get aggregated trading P&L (realized + unrealized) for an account.
+   */
+  public async getWalletPnl(address: string): Promise<WalletPnlResponse> {
+    return this.accountsAPI.getWalletPnl(address)
+  }
+
+  /**
+   * Get closed (realized) trading positions for an account.
+   */
+  public async getWalletClosedPositions(
+    address: string,
+    args?: WalletClosedPositionsArgs,
+  ): Promise<ClosedPositionsResponse> {
+    return this.accountsAPI.getWalletClosedPositions(address, args)
+  }
+
+  /**
+   * Get the token transfers contributing to a wallet's position in a currency.
+   */
+  public async getWalletTokenTransfers(
+    address: string,
+    args: WalletTokenTransfersArgs,
+  ): Promise<PositionTokenTransfersResponse> {
+    return this.accountsAPI.getWalletTokenTransfers(address, args)
+  }
+
+  /**
    * Generic fetch method for any API endpoint with automatic rate limit retry
    * @param apiPath Path to URL endpoint under API
    * @param query URL query params. Will be used to create a URLSearchParams object.
@@ -1382,12 +1416,14 @@ export class OpenSeaAPI {
       // Kept as "opensea-js" for server-side analytics continuity after package rename
       "x-app-id": "opensea-js",
       ...(this.apiKey ? { "X-API-KEY": this.apiKey } : {}),
+      ...(this.authToken ? { Authorization: `Bearer ${this.authToken}` } : {}),
       ...(body != null ? { "Content-Type": "application/json" } : {}),
       ...headers,
     }
 
     const sanitizedHeaders = { ...mergedHeaders }
     delete sanitizedHeaders["X-API-KEY"]
+    delete sanitizedHeaders.Authorization
     this.logger(
       `Sending request: ${url} ${JSON.stringify({
         method: body != null ? "POST" : "GET",

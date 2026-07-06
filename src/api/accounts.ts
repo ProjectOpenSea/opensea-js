@@ -11,14 +11,19 @@ import {
   getProfileOffersPath,
   getProfileOffersReceivedPath,
   getResolveAccountPath,
+  getWalletClosedPositionsPath,
+  getWalletPnlPath,
+  getWalletTokenTransfersPath,
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import type {
+  ClosedPositionsResponse,
   GetAccountTokensArgs,
   GetAccountTokensResponse,
   PortfolioArgs,
   PortfolioHistoryResponse,
   PortfolioStatsResponse,
+  PositionTokenTransfersResponse,
   ProfileCollectionsArgs,
   ProfileCollectionsResponse,
   ProfileFavoritesArgs,
@@ -27,6 +32,9 @@ import type {
   ProfileOffersResponse,
   ProfileOrdersArgs,
   ResolveAccountResponse,
+  WalletClosedPositionsArgs,
+  WalletPnlResponse,
+  WalletTokenTransfersArgs,
 } from "./types"
 
 function joinArray(value: string[] | undefined): string | undefined {
@@ -184,6 +192,39 @@ export class AccountsAPI {
         ...args,
         chains: joinArray(args?.chains),
       },
+    )
+  }
+
+  /**
+   * Get aggregated trading P&L (realized + unrealized) for an account.
+   */
+  async getWalletPnl(address: string): Promise<WalletPnlResponse> {
+    return this.fetcher.get<WalletPnlResponse>(getWalletPnlPath(address))
+  }
+
+  /**
+   * Get closed (realized) trading positions for an account.
+   */
+  async getWalletClosedPositions(
+    address: string,
+    args?: WalletClosedPositionsArgs,
+  ): Promise<ClosedPositionsResponse> {
+    return this.fetcher.get<ClosedPositionsResponse>(
+      getWalletClosedPositionsPath(address),
+      args,
+    )
+  }
+
+  /**
+   * Get the token transfers contributing to a wallet's position in a currency.
+   */
+  async getWalletTokenTransfers(
+    address: string,
+    args: WalletTokenTransfersArgs,
+  ): Promise<PositionTokenTransfersResponse> {
+    return this.fetcher.get<PositionTokenTransfersResponse>(
+      getWalletTokenTransfersPath(address),
+      args,
     )
   }
 

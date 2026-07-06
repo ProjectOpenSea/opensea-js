@@ -1,5 +1,35 @@
 # @opensea/sdk
 
+## 11.2.0
+
+### Minor Changes
+
+- ef89be8: Add SIWE authentication helpers: `OpenSeaAuth` class with authenticate, getValidToken, and revoke methods. Support `authToken` and `authBaseUrl` in `OpenSeaAPIConfig` for wallet-authenticated endpoints.
+- e61a57c: Add `OpenSeaOAuth` OAuth 2.1 helper (authorization-code + PKCE, device authorization grant, refresh, and revoke) for keyless login against the OpenSea authorization server. Exposes `OpenSeaOAuthConfig`, `OAuthToken`, and related types, plus a `decodeJwtPayload` utility for reading token claims.
+- ef89be8: Add `OPENSEA_SCOPES`, `OpenSeaScope`, and `ALL_SCOPES` exports — scope constants derived from the OpenAPI spec's `AuthScope` schema (via `@opensea/api-types`), with compile-time assertions that fail the build if they drift from the spec.
+- c460fc1: Add wallet trading P&L methods to `OpenSeaAPI`: `getWalletPnl`,
+  `getWalletClosedPositions`, and `getWalletTokenTransfers`, with camelized
+  `WalletPnlResponse`, `ClosedPositionsResponse`, and
+  `PositionTokenTransfersResponse` types plus `WalletClosedPositionsArgs` /
+  `WalletTokenTransfersArgs` query args.
+
+### Patch Changes
+
+- b816727: Add missing chain payment-token mappings for Soneium and AnimeChain, and make Solana/Hyperliquid fail fast with clear unsupported-chain errors for OpenSea Seaport offer/listing helpers. This fixes the chain helper drift tracked in ProjectOpenSea/opensea-js#1975.
+- c9d8cb1: Recreate the community fixes from ProjectOpenSea/opensea-js#1974 and ProjectOpenSea/opensea-js#1976: validate `amount` before `parseUnits` in `_getPriceParameters`, and reject `cancelOrders` batches that mix protocol addresses. Also add a runtime chain-helper exhaustiveness guard so new `Chain` values are consciously categorized.
+- e59df7f: Sync OpenAPI spec: add tool activity endpoint, `robinhood` chain, `source`/`collection` search filters, `calldata_suffix` on fulfillment, SIWX wallet-link endpoint (`POST /api/v2/accounts/wallets/siwx` with `LinkWalletSiwxRequest`/`WalletLinkResponse`), re-published `GET /api/v2/account/{address}/favorites`, and the new `write:wallets` auth scope (also added to the SDK's `OPENSEA_SCOPES`)
+- Updated dependencies [e59df7f]
+- Updated dependencies [c460fc1]
+- Updated dependencies [ef89be8]
+  - @opensea/api-types@0.6.0
+
+## 11.1.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @opensea/api-types@0.5.0
+
 ## 11.1.1
 
 ### Patch Changes

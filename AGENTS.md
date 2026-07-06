@@ -23,6 +23,8 @@ pnpm run check-types   # TypeScript type checking (stricter tsconfig)
 | `src/viem.ts` | `OpenSeaViemSDK` — viem entry point |
 | `src/types.ts` | Public types: `Chain` enum, `Amount`, order/event types |
 | `src/constants.ts` | Math and Ethereum constants (basis points, addresses, etc.) |
+| `src/auth/` | `OpenSeaAuth` — SIWE-based wallet authentication (nonce, sign-in, scoped JWTs, auto-refresh) |
+| `src/scopes.ts` | `OPENSEA_SCOPES` — OAuth-style API scope string constants |
 | `src/sdk/base.ts` | `BaseOpenSeaSDK` — shared logic for both providers |
 | `src/sdk/fulfillment.ts` | Order fulfillment (buy, sell, match) via Seaport |
 | `src/sdk/orders.ts` | Create and manage listings and offers |
@@ -41,7 +43,7 @@ pnpm run check-types   # TypeScript type checking (stricter tsconfig)
 
 When reviewing changes to this package, verify:
 
-1. **Chain enum sync**: The `Chain` enum in `src/types.ts` has a compile-time check (`_AssertAPIChainsCovered`) ensuring every `ChainIdentifier` from `@opensea/api-types` maps to a `Chain` value. When adding a chain, also update `scripts/chain-data.json` at the **monorepo root**, run `pnpm sync-chains` from the monorepo root, and update `getListingPaymentToken` / `getOfferPaymentToken` / `getNativeWrapTokenAddress`.
+1. **Chain enum sync**: The `Chain` enum in `src/types.ts` has a compile-time check (`_AssertAPIChainsCovered`) ensuring every `ChainIdentifier` from `@opensea/api-types` maps to a `Chain` value. `getOfferPaymentToken` and `getListingPaymentToken` use exhaustive `switch` statements whose `default` branch assigns `chain` to a `never` binding, so `pnpm check-types` fails if a new `Chain` is added without a payment-token case — either map it to a real token or mark it unsupported explicitly (like `Chain.Solana` / `Chain.Hyperliquid`, which throw a clear "not supported" error). `getNativeWrapTokenAddress` delegates to `getOfferPaymentToken` except for `Chain.Polygon`, so it is covered automatically unless the wrap token differs from the offer token. `test/utils/chain.spec.ts` also iterates every `Chain` value at runtime as a second guard and runs in `pnpm test`. When adding a chain, also update `scripts/chain-data.json` at the **monorepo root** and run `pnpm sync-chains` from the monorepo root.
 
 2. **Dual provider support**: Both `OpenSeaSDK` (ethers) and `OpenSeaViemSDK` (viem) must work. Changes to `BaseOpenSeaSDK` affect both. If adding provider-specific logic, ensure both adapters in `src/provider/` are updated.
 

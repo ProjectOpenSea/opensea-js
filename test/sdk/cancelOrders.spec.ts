@@ -1,8 +1,12 @@
+import { CROSS_CHAIN_SEAPORT_V1_6_ADDRESS } from "@opensea/seaport-js/lib/constants"
 import type { OrderComponents } from "@opensea/seaport-js/lib/types"
 import { ethers } from "ethers"
-import { describe, expect, test } from "vitest"
+import { describe, expect, test, vi } from "vitest"
+import { ALTERNATE_SEAPORT_V1_6_ADDRESS } from "../../src/constants"
 import type { OrderV2 } from "../../src/orders/types"
 import { DEFAULT_SEAPORT_CONTRACT_ADDRESS } from "../../src/orders/utils"
+import { CancellationManager } from "../../src/sdk/cancellation"
+import { createMockContext } from "../fixtures/context"
 import { sdk } from "../utils/sdk"
 
 describe("SDK: cancelOrders", () => {
@@ -191,6 +195,136 @@ describe("SDK: cancelOrders", () => {
           msg.includes("Must be authenticated"),
       )
     }
+  })
+
+  test("Should reject mixed protocol addresses before account availability check", async () => {
+    const requireAccountIsAvailable = vi
+      .fn()
+      .mockRejectedValue(new Error("account check should not run"))
+    const cancellationManager = new CancellationManager(
+      createMockContext({
+        requireAccountIsAvailable,
+      }),
+    )
+    const mockOrder = (protocolAddress: string): OrderV2 =>
+      ({
+        orderHash: "0x123",
+        chain: "ethereum",
+        type: "basic",
+        price: {
+          current: {
+            currency: "0x0000000000000000000000000000000000000000",
+            decimals: 18,
+            value: "1000000000000000000",
+          },
+        },
+        protocolAddress,
+        protocolData: {
+          parameters: {
+            offerer: "0x0000000000000000000000000000000000000001",
+            zone: "0x0000000000000000000000000000000000000000",
+            offer: [],
+            consideration: [],
+            orderType: 0,
+            startTime: "0",
+            endTime: "0",
+            zoneHash:
+              "0x0000000000000000000000000000000000000000000000000000000000000000",
+            salt: "0",
+            conduitKey:
+              "0x0000000000000000000000000000000000000000000000000000000000000000",
+            totalOriginalConsiderationItems: 0,
+            counter: 0,
+          },
+          signature: "0x",
+        },
+      }) as unknown as OrderV2
+
+    await expect(
+      cancellationManager.cancelOrders({
+        orders: [
+          mockOrder(CROSS_CHAIN_SEAPORT_V1_6_ADDRESS),
+          mockOrder(ALTERNATE_SEAPORT_V1_6_ADDRESS),
+        ],
+        accountAddress,
+      }),
+    ).rejects.toThrow(
+      "All orders in a cancelOrders batch must share the same protocolAddress. Cancel each protocol separately.",
+    )
+    expect(requireAccountIsAvailable).not.toHaveBeenCalled()
+  })
+
+  test("Should reject mixed protocol order hashes before account availability check", async () => {
+    const requireAccountIsAvailable = vi
+      .fn()
+      .mockRejectedValue(new Error("account check should not run"))
+    const getOrderByHash = vi
+      .fn()
+      .mockResolvedValueOnce({
+        orderHash: "0x111",
+        protocolAddress: CROSS_CHAIN_SEAPORT_V1_6_ADDRESS,
+        protocolData: {
+          parameters: {
+            offerer: "0x0000000000000000000000000000000000000001",
+            zone: "0x0000000000000000000000000000000000000000",
+            offer: [],
+            consideration: [],
+            orderType: 0,
+            startTime: "0",
+            endTime: "0",
+            zoneHash:
+              "0x0000000000000000000000000000000000000000000000000000000000000000",
+            salt: "0",
+            conduitKey:
+              "0x0000000000000000000000000000000000000000000000000000000000000000",
+            totalOriginalConsiderationItems: 0,
+            counter: 0,
+          },
+          signature: "0x",
+        },
+      })
+      .mockResolvedValueOnce({
+        orderHash: "0x222",
+        protocolAddress: ALTERNATE_SEAPORT_V1_6_ADDRESS,
+        protocolData: {
+          parameters: {
+            offerer: "0x0000000000000000000000000000000000000001",
+            zone: "0x0000000000000000000000000000000000000000",
+            offer: [],
+            consideration: [],
+            orderType: 0,
+            startTime: "0",
+            endTime: "0",
+            zoneHash:
+              "0x0000000000000000000000000000000000000000000000000000000000000000",
+            salt: "0",
+            conduitKey:
+              "0x0000000000000000000000000000000000000000000000000000000000000000",
+            totalOriginalConsiderationItems: 0,
+            counter: 0,
+          },
+          signature: "0x",
+        },
+      })
+    const cancellationManager = new CancellationManager(
+      createMockContext({
+        api: {
+          getOrderByHash,
+        },
+        requireAccountIsAvailable,
+      }),
+    )
+
+    await expect(
+      cancellationManager.cancelOrders({
+        orderHashes: ["0x111", "0x222"],
+        accountAddress,
+        protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+      }),
+    ).rejects.toThrow(
+      "All orders in a cancelOrders batch must share the same protocolAddress. Cancel each protocol separately.",
+    )
+    expect(requireAccountIsAvailable).not.toHaveBeenCalled()
   })
 })
 

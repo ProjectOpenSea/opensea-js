@@ -167,39 +167,35 @@ export class CancellationManager {
       throw new Error("At least one order hash must be provided")
     }
 
+    let orderComponents: OrderComponents[]
+    const protocolAddresses = new Set<string>()
+    let firstOrderV2: OrderV2 | undefined
+    let firstFetchedOrder: Offer | Listing | undefined
+
     requireValidProtocol(protocolAddress)
 
-    // Check account availability after parameter validation
-    await this.context.requireAccountIsAvailable(accountAddress)
-
-    let orderComponents: OrderComponents[]
-    let effectiveProtocolAddress = protocolAddress
+    const addProtocolAddress = (value: string) => {
+      requireValidProtocol(value)
+      protocolAddresses.add(value)
+    }
 
     if (orders) {
       // Extract OrderComponents from either OrderV2 objects or use OrderComponents directly
-      let firstOrderV2: OrderV2 | undefined
       orderComponents = orders.map(order => {
         if ("protocolData" in order) {
           // It's an OrderV2 object
           const orderV2 = order as OrderV2
-          requireValidProtocol(orderV2.protocolAddress)
-          effectiveProtocolAddress = orderV2.protocolAddress
+          addProtocolAddress(orderV2.protocolAddress)
           if (!firstOrderV2) {
             firstOrderV2 = orderV2
           }
           return orderV2.protocolData.parameters
         } else {
           // It's already OrderComponents
+          addProtocolAddress(protocolAddress)
           return order as OrderComponents
         }
       })
-      // Dispatch event for the first OrderV2 if available
-      if (firstOrderV2) {
-        this.context.dispatch(EventType.CancelOrder, {
-          orderV2: firstOrderV2,
-          accountAddress,
-        })
-      }
     } else if (orderHashes) {
       // Fetch orders from the API using order hashes
       const fetchedOrders: (Offer | Listing)[] = []
@@ -219,21 +215,39 @@ export class CancellationManager {
             `Order ${fetched.orderHash} is missing protocolAddress or protocolData — cannot cancel.`,
           )
         }
-        requireValidProtocol(fetched.protocolAddress)
-        effectiveProtocolAddress = fetched.protocolAddress
+        addProtocolAddress(fetched.protocolAddress)
         return fetched.protocolData.parameters
       })
-
-      // Dispatch event for the first fetched order
-      if (fetchedOrders.length > 0) {
-        this.context.dispatch(EventType.CancelOrder, {
-          order: fetchedOrders[0],
-          accountAddress,
-        })
-      }
+      firstFetchedOrder = fetchedOrders[0]
     } else {
       // Should never reach here due to earlier validation
       throw new Error("Invalid input")
+    }
+
+    if (protocolAddresses.size > 1) {
+      throw new Error(
+        "All orders in a cancelOrders batch must share the same protocolAddress. Cancel each protocol separately.",
+      )
+    }
+
+    const effectiveProtocolAddress = protocolAddresses.values().next().value
+    if (effectiveProtocolAddress == null) {
+      throw new Error("Invalid input")
+    }
+
+    // Check account availability after parameter validation
+    await this.context.requireAccountIsAvailable(accountAddress)
+
+    if (firstOrderV2) {
+      this.context.dispatch(EventType.CancelOrder, {
+        orderV2: firstOrderV2,
+        accountAddress,
+      })
+    } else if (firstFetchedOrder) {
+      this.context.dispatch(EventType.CancelOrder, {
+        order: firstFetchedOrder,
+        accountAddress,
+      })
     }
 
     // Transact and get the transaction hash

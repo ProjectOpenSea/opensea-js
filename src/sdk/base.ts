@@ -585,14 +585,16 @@ export class BaseOpenSeaSDK {
       }
     }
 
-    const amountWei = parseUnits(amount.toString(), decimals)
-    const basePrice = amountWei
-
-    if (amount == null || amountWei < 0) {
+    if (amount == null) {
       throw new Error("Starting price must be a number >= 0")
     }
     if (isEther && orderSide === OrderSide.OFFER) {
       throw new Error("Offers must use wrapped ETH or an ERC-20 token.")
+    }
+    const amountWei = parseUnits(amount.toString(), decimals)
+    const basePrice = amountWei
+    if (amountWei < 0) {
+      throw new Error("Starting price must be a number >= 0")
     }
     return { basePrice }
   }

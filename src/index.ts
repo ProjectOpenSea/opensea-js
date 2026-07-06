@@ -1,7 +1,12 @@
 import { OpenSeaAPI } from "./api/api"
+import { OpenSeaAuth } from "./auth"
+import { OpenSeaOAuth } from "./auth/oauth"
 import { OpenSeaSDK } from "./sdk"
 
 export * from "./api/types"
+export * from "./auth"
+export * from "./auth/oauth"
+export * from "./auth/oauth-types"
 export * from "./constants"
 export * from "./orders/types"
 export type {
@@ -11,6 +16,7 @@ export type {
   OpenSeaWallet,
   TransactionResponse,
 } from "./provider/types"
+export * from "./scopes"
 export * from "./types"
 export * from "./utils"
 /**
@@ -29,6 +35,10 @@ export {
   // API client (for direct use or accessing static helpers like
   // `OpenSeaAPI.requestInstantApiKey()`)
   OpenSeaAPI,
+  // Auth helper for SIWE-based wallet authentication
+  OpenSeaAuth,
+  // OAuth 2.1 (code + PKCE / device) helper for keyless login
+  OpenSeaOAuth,
   // Main SDK export
   OpenSeaSDK,
 }

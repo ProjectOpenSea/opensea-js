@@ -19,6 +19,7 @@ export const CHAIN_ID_MAP: Record<string, string> = {
   ronin: "2020",
   abstract: "2741",
   megaeth: "4326",
+  robinhood: "4663",
   somnia: "5031",
   b3: "8333",
   base: "8453",

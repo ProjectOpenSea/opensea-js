@@ -1,0 +1,39 @@
+import type { AuthScope } from "@opensea/api-types"
+
+/**
+ * OAuth-style scopes recognized by the OpenSea API.
+ *
+ * The set of valid scopes is defined by the `AuthScope` schema in the
+ * OpenAPI spec (via `@opensea/api-types`). The compile-time assertions
+ * below fail the build if this runtime constant drifts from the spec
+ * in either direction.
+ * @category Auth
+ */
+export const OPENSEA_SCOPES = {
+  READ_ELIGIBILITY: "read:eligibility",
+  READ_FAVORITES: "read:favorites",
+  READ_REWARDS: "read:rewards",
+  WRITE_ORDERS: "write:orders",
+  WRITE_DROPS: "write:drops",
+  WRITE_WALLETS: "write:wallets",
+} as const satisfies Record<string, AuthScope>
+
+/**
+ * Union of all valid OpenSea API scope strings, derived from the
+ * OpenAPI spec's `AuthScope` schema.
+ * @category Auth
+ */
+export type OpenSeaScope = AuthScope
+
+type _AssertAllAuthScopesCovered =
+  AuthScope extends (typeof OPENSEA_SCOPES)[keyof typeof OPENSEA_SCOPES]
+    ? true
+    : never
+
+const _assertAllAuthScopesCovered: _AssertAllAuthScopesCovered = true
+
+/**
+ * All OpenSea API scopes as a readonly list.
+ * @category Auth
+ */
+export const ALL_SCOPES: readonly OpenSeaScope[] = Object.values(OPENSEA_SCOPES)
