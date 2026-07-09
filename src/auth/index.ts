@@ -8,6 +8,20 @@ import type {
 } from "./types"
 
 export type {
+  AccountType,
+  ChainArch,
+  CreateSiwxMessageOptions,
+  LinkWalletWithSiwxOptions,
+  ParseSiwxMessageResult,
+} from "./siwx"
+export {
+  chainArchToAccountType,
+  createSiwxMessage,
+  linkWalletWithSiwx,
+  parseSiwxMessage,
+  requestSiwxNonce,
+} from "./siwx"
+export type {
   AuthenticateOptions,
   AuthNonceResponse,
   AuthSigner,

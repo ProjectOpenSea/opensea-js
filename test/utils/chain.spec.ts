@@ -32,11 +32,7 @@ import {
 describe("Utils: chain", () => {
   describe("chain helper exhaustiveness", () => {
     // No Seaport deployment — payment-token helpers throw by design
-    const SEAPORT_UNSUPPORTED_CHAINS = [
-      Chain.Solana,
-      Chain.Hyperliquid,
-      Chain.Robinhood,
-    ]
+    const SEAPORT_UNSUPPORTED_CHAINS = [Chain.Solana, Chain.Hyperliquid]
     // Non-EVM chains with no numeric chain id
     const NO_CHAIN_ID_CHAINS = [Chain.Solana, Chain.Hyperliquid]
     const EVM_ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/
@@ -89,6 +85,7 @@ describe("Utils: chain", () => {
       [Chain.Soneium, "1868"],
       [Chain.AnimeChain, "69000"],
       [Chain.Ink, "57073"],
+      [Chain.Robinhood, "4663"],
     ]
 
     for (const [chain, expectedId] of chainIdTests) {
@@ -225,6 +222,12 @@ describe("Utils: chain", () => {
     test("returns WANIME for AnimeChain", () => {
       expect(getOfferPaymentToken(Chain.AnimeChain)).toBe(
         "0x164906a76f1a2ea933366c446ae0ec6a37062c42",
+      )
+    })
+
+    test("returns WETH for Robinhood", () => {
+      expect(getOfferPaymentToken(Chain.Robinhood)).toBe(
+        "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
       )
     })
 
@@ -368,6 +371,12 @@ describe("Utils: chain", () => {
 
     test("returns conduit 2 for HyperEVM", () => {
       const result = getDefaultConduit(Chain.HyperEVM)
+      expect(result.key).toBe(OPENSEA_CONDUIT_KEY_2)
+      expect(result.address).toBe(OPENSEA_CONDUIT_ADDRESS_2)
+    })
+
+    test("returns conduit 2 for Robinhood", () => {
+      const result = getDefaultConduit(Chain.Robinhood)
       expect(result.key).toBe(OPENSEA_CONDUIT_KEY_2)
       expect(result.address).toBe(OPENSEA_CONDUIT_ADDRESS_2)
     })

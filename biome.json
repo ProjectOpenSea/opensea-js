@@ -1,20 +1,23 @@
 {
   "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
   "files": {
     "includes": [
       "**/*.ts",
       "**/*.js",
       "**/*.json",
-      "!**/node_modules",
-      "!**/dist",
-      "!**/lib",
-      "!**/coverage",
-      "!**/.nyc_output",
-      "!packages/sdk/src/typechain",
+      "!**/.claude",
       "!**/typechain",
-      "!packages/api-types/src/generated.ts",
-      "!**/pnpm-lock.yaml",
-      "!**/package-lock.json"
+      "!**/dist",
+      "!**/coverage",
+      "!**/.vercel",
+      "!**/package-lock.json",
+      "!**/src/generated.ts",
+      "!**/src/*-generated.ts"
     ]
   },
   "formatter": {
@@ -35,7 +38,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "suspicious": {
         "noConsole": "off",
         "noExplicitAny": "off"

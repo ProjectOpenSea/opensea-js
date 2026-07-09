@@ -1,5 +1,18 @@
 # @opensea/sdk
 
+## 11.3.0
+
+### Minor Changes
+
+- df2b152: Add public SIWX wallet-link support for agents: export nonce generation, message signing, and wallet-link verification helpers (`generateSiwxNonce`, `generateSiwxMessage`, and `verifyWalletLink` functions) from `src/auth/siwx.ts` for integrating keyless wallet-link flows in autonomous agent environments.
+
+### Patch Changes
+
+- 0df96eb: Enable Seaport support for Robinhood chain (4663): canonical Seaport 1.6 is now configured for Robinhood, enabling payment-token helpers and offer/listing generation. Robinhood uses WETH `0x0bd7d308f8e1639fab988df18a8011f41eacad73` for offers, native ETH for listings, and the same default conduit as Abstract, HyperEVM, and Monad.
+- ba30caf: Fix `parseUnits` to correctly handle string inputs with scientific notation (e.g., `"1e-8"`, `"1E6"`). Previously only number-type values were normalized, causing SyntaxError for string scientific notation. Fixes ProjectOpenSea/opensea-js#1978.
+- Updated dependencies [df2b152]
+  - @opensea/api-types@0.7.0
+
 ## 11.2.0
 
 ### Minor Changes

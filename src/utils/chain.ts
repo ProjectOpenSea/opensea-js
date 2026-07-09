@@ -55,6 +55,11 @@ export const getChainId = (chain: Chain): string => {
  * @returns The token address for offers
  */
 export const getOfferPaymentToken = (chain: Chain) => {
+  if (chain === Chain.Solana || chain === Chain.Hyperliquid) {
+    throw new Error(
+      `Chain ${chain} is not supported for OpenSea Seaport offers`,
+    )
+  }
   switch (chain) {
     case Chain.Mainnet:
       return "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" // WETH
@@ -99,13 +104,8 @@ export const getOfferPaymentToken = (chain: Chain) => {
       return "0x046ede9564a72571df6f5e44d0405360c0f4dcab" // WSOMI
     case Chain.Monad:
       return "0x3bd359c1119da7da1d913d1c4d2b7c461115433a" // WMON
-    // Chains without Seaport deployment
     case Chain.Robinhood:
-    case Chain.Solana:
-    case Chain.Hyperliquid:
-      throw new Error(
-        `Chain ${chain} is not supported for OpenSea Seaport offers`,
-      )
+      return "0x0bd7d308f8e1639fab988df18a8011f41eacad73" // WETH
     default: {
       const exhaustiveChain: never = chain
       throw new Error(`Unknown offer currency for ${exhaustiveChain}`)
@@ -119,6 +119,11 @@ export const getOfferPaymentToken = (chain: Chain) => {
  * @returns The token address for listings
  */
 export const getListingPaymentToken = (chain: Chain) => {
+  if (chain === Chain.Solana || chain === Chain.Hyperliquid) {
+    throw new Error(
+      `Chain ${chain} is not supported for OpenSea Seaport listings`,
+    )
+  }
   switch (chain) {
     case Chain.Mainnet:
     case Chain.Soneium:
@@ -155,13 +160,8 @@ export const getListingPaymentToken = (chain: Chain) => {
       return "0x0000000000000000000000000000000000000000" // GUN
     case Chain.AnimeChain:
       return "0x0000000000000000000000000000000000000000" // ANIME
-    // Chains without Seaport deployment
     case Chain.Robinhood:
-    case Chain.Solana:
-    case Chain.Hyperliquid:
-      throw new Error(
-        `Chain ${chain} is not supported for OpenSea Seaport listings`,
-      )
+      return "0x0000000000000000000000000000000000000000" // ETH
     default: {
       const exhaustiveChain: never = chain
       throw new Error(`Unknown listing currency for ${exhaustiveChain}`)
@@ -181,6 +181,7 @@ export const getDefaultConduit = (
     case Chain.Abstract:
     case Chain.HyperEVM:
     case Chain.Monad:
+    case Chain.Robinhood:
       return {
         key: OPENSEA_CONDUIT_KEY_2,
         address: OPENSEA_CONDUIT_ADDRESS_2,

@@ -23,7 +23,7 @@ pnpm run check-types   # TypeScript type checking (stricter tsconfig)
 | `src/viem.ts` | `OpenSeaViemSDK` — viem entry point |
 | `src/types.ts` | Public types: `Chain` enum, `Amount`, order/event types |
 | `src/constants.ts` | Math and Ethereum constants (basis points, addresses, etc.) |
-| `src/auth/` | `OpenSeaAuth` — SIWE-based wallet authentication (nonce, sign-in, scoped JWTs, auto-refresh) |
+| `src/auth/` | `OpenSeaAuth` (SIWE-based wallet authentication) and `OpenSeaOAuth` (OAuth 2.1 authorization-code + PKCE for keyless login) |
 | `src/scopes.ts` | `OPENSEA_SCOPES` — OAuth-style API scope string constants |
 | `src/sdk/base.ts` | `BaseOpenSeaSDK` — shared logic for both providers |
 | `src/sdk/fulfillment.ts` | Order fulfillment (buy, sell, match) via Seaport |
