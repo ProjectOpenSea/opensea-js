@@ -40,6 +40,7 @@ import {
 // Re-export everything from the main entry point
 export { OpenSeaAPI } from "./api/api"
 export * from "./api/types"
+export * from "./api/walletAuth"
 export * from "./auth"
 export * from "./constants"
 export * from "./orders/types"

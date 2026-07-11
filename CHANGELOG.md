@@ -1,5 +1,21 @@
 # @opensea/sdk
 
+## 11.4.0
+
+### Minor Changes
+
+- df2b152: Add SIWX wallet-link helpers for nonce, message, and link flows.
+- 4bef9a5: Add typed `api.walletAuth` helpers for all 29 scoped wallet operations.
+
+### Patch Changes
+
+- 2459068: Align wallet-auth scope metadata with the production OpenAPI specification.
+- 0df96eb: Enable Seaport support for Robinhood chain. Canonical Seaport 1.6 is deployed on Robinhood (chain id 4663) and configured in the marketplace backend, so the payment-token helpers no longer throw for it: offers use WETH `0x0bd7d308f8e1639fab988df18a8011f41eacad73`, listings use native ETH, and the chain uses the same default conduit as Abstract, HyperEVM, and Monad.
+- Updated dependencies [df2b152]
+- Updated dependencies [2459068]
+- Updated dependencies [4bef9a5]
+  - @opensea/api-types@0.8.0
+
 ## 11.3.0
 
 ### Minor Changes

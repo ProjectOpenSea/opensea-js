@@ -41,4 +41,9 @@ describe("Root exports", () => {
     expect(typeof createSiwxMessage).toBe("function")
     expect(typeof parseSiwxMessage).toBe("function")
   })
+
+  test("exports wallet-auth API helpers", async () => {
+    const { WalletAuthAPI } = await import("../src")
+    expect(typeof WalletAuthAPI).toBe("function")
+  })
 })

@@ -24,7 +24,7 @@ import { ChainsAPI } from "./chains"
 import { CollectionsAPI } from "./collections"
 import { DropsAPI } from "./drops"
 import { EventsAPI } from "./events"
-import type { PostOptions } from "./fetcher"
+import type { HttpMethod, PostOptions } from "./fetcher"
 import { ListingsAPI } from "./listings"
 import { NFTsAPI } from "./nfts"
 import { OffersAPI } from "./offers"
@@ -134,6 +134,7 @@ import {
   type WalletPnlResponse,
   type WalletTokenTransfersArgs,
 } from "./types"
+import { WalletAuthAPI } from "./walletAuth"
 
 /**
  * The API class for the OpenSea SDK.
@@ -171,6 +172,8 @@ export class OpenSeaAPI {
   private dropsAPI: DropsAPI
   private transactionsAPI: TransactionsAPI
   private assetsAPI: AssetsAPI
+  /** Wallet-authenticated scoped REST helpers. */
+  public readonly walletAuth: WalletAuthAPI
 
   /**
    * Create an instance of the OpenSeaAPI
@@ -195,6 +198,7 @@ export class OpenSeaAPI {
     const fetcher = {
       get: this.get.bind(this),
       post: this.post.bind(this),
+      request: this.request.bind(this),
     }
 
     // Initialize specialized API clients
@@ -211,6 +215,7 @@ export class OpenSeaAPI {
     this.dropsAPI = new DropsAPI(fetcher)
     this.transactionsAPI = new TransactionsAPI(fetcher)
     this.assetsAPI = new AssetsAPI(fetcher)
+    this.walletAuth = new WalletAuthAPI(fetcher)
   }
 
   /**
@@ -1338,7 +1343,7 @@ export class OpenSeaAPI {
         const url = qs
           ? `${this.apiBaseUrl}${apiPath}?${qs}`
           : `${this.apiBaseUrl}${apiPath}`
-        const raw = await this._fetch(url, undefined, undefined, options)
+        const raw = await this._fetch(url, "GET", undefined, undefined, options)
         return camelizeKeysDeep(raw) as Camelize<T>
       },
       { logger: this.logger },
@@ -1362,6 +1367,17 @@ export class OpenSeaAPI {
     headers?: object,
     options?: PostOptions,
   ): Promise<Camelize<T>> {
+    return this.request("POST", apiPath, body, headers, options)
+  }
+
+  /** Send a typed JSON request to a write endpoint. */
+  public async request<T>(
+    method: HttpMethod,
+    apiPath: string,
+    body?: object,
+    headers?: object,
+    options?: PostOptions,
+  ): Promise<Camelize<T>> {
     return executeWithRateLimit(
       async () => {
         const url = `${this.apiBaseUrl}${apiPath}`
@@ -1372,7 +1388,7 @@ export class OpenSeaAPI {
         const shouldSnakeize = options?.snakeizeBody !== false
         const wireBody =
           body == null || !shouldSnakeize ? body : snakeizeKeysDeep(body)
-        const raw = await this._fetch(url, headers, wireBody, options)
+        const raw = await this._fetch(url, method, headers, wireBody, options)
         return camelizeKeysDeep(raw) as Camelize<T>
       },
       { logger: this.logger },
@@ -1400,14 +1416,14 @@ export class OpenSeaAPI {
   /**
    * Fetch from an API Endpoint, sending auth token in headers
    * @param url The URL to fetch
+   * @param method HTTP method to use.
    * @param headers Additional headers to send with the request
-   * @param body Optional body to send. HTTP method is inferred: POST if body is
-   *             provided (non-nullish), GET otherwise. This covers all OpenSea API
-   *             endpoints which only use GET and POST.
+   * @param body Optional JSON body to send.
    * @param options Request options like timeout and abort signal
    */
   private async _fetch(
     url: string,
+    method: "GET" | HttpMethod,
     headers?: object,
     body?: object,
     options?: RequestOptions,
@@ -1426,7 +1442,7 @@ export class OpenSeaAPI {
     delete sanitizedHeaders.Authorization
     this.logger(
       `Sending request: ${url} ${JSON.stringify({
-        method: body != null ? "POST" : "GET",
+        method,
         headers: sanitizedHeaders,
         body: body != null ? JSON.stringify(body, null, 2) : undefined,
       })}`,
@@ -1460,7 +1476,7 @@ export class OpenSeaAPI {
 
     try {
       const response = await fetch(url, {
-        method: body != null ? "POST" : "GET",
+        method,
         headers: mergedHeaders,
         body: body != null ? JSON.stringify(body) : undefined,
         signal,
@@ -1497,7 +1513,14 @@ export class OpenSeaAPI {
           `Server Error (${response.status}): ${response.statusText}`,
         )
       }
-      return response.json()
+      if (
+        response.status === 204 ||
+        response.headers.get("content-length") === "0"
+      ) {
+        return undefined
+      }
+      const text = await response.text()
+      return text.length > 0 ? JSON.parse(text) : undefined
     } finally {
       if (timeoutId !== undefined) {
         clearTimeout(timeoutId)

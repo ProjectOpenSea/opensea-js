@@ -4,6 +4,7 @@ import { OpenSeaOAuth } from "./auth/oauth"
 import { OpenSeaSDK } from "./sdk"
 
 export * from "./api/types"
+export * from "./api/walletAuth"
 export * from "./auth"
 export * from "./auth/oauth"
 export * from "./auth/oauth-types"

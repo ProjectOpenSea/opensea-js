@@ -38,6 +38,44 @@ describe("API", () => {
     expect(api.apiBaseUrl).toBe("https://api.opensea.io")
   })
 
+  test("request supports scoped write methods and camelizes responses", async () => {
+    vi.useRealTimers()
+    fetchStub = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ shelf_id: "shelf-1" }), { status: 200 }),
+      )
+    const localApi = new OpenSeaAPI({ apiKey: "key", authToken: "jwt" })
+
+    const result = await localApi.request<{ shelf_id: string }>(
+      "PATCH",
+      "/api/v2/profile/shelves/shelf-1",
+      { title: "Updated" },
+    )
+
+    expect(result).toEqual({ shelfId: "shelf-1" })
+    expect(fetchStub).toHaveBeenCalledWith(
+      "https://api.opensea.io/api/v2/profile/shelves/shelf-1",
+      expect.objectContaining({
+        method: "PATCH",
+        headers: expect.objectContaining({ Authorization: "Bearer jwt" }),
+        body: JSON.stringify({ title: "Updated" }),
+      }),
+    )
+  })
+
+  test("request accepts empty successful responses", async () => {
+    vi.useRealTimers()
+    fetchStub = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(null, { status: 204 }))
+    const localApi = new OpenSeaAPI({ apiKey: "key", authToken: "jwt" })
+
+    await expect(
+      localApi.request("DELETE", "/api/v2/profile/shelves/shelf-1"),
+    ).resolves.toBeUndefined()
+  })
+
   test("Includes API key in request", async () => {
     // Restore real timers for this test since it makes a real API call
     vi.useRealTimers()

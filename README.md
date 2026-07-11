@@ -39,6 +39,29 @@ curl -s -X POST https://api.opensea.io/api/v2/auth/keys | jq -r '.api_key'
 
 Happy seafaring!
 
+### Wallet-authenticated API helpers
+
+Pass an exchanged scoped JWT as `authToken`, then use the generated
+`walletAuth` helpers. Server-side allowlist and scope enforcement still apply.
+
+```typescript
+import { OpenSeaAPI } from "@opensea/sdk"
+
+const api = new OpenSeaAPI({
+  apiKey: process.env.OPENSEA_API_KEY,
+  authToken: process.env.OPENSEA_AUTH_TOKEN,
+})
+
+const favorites = await api.walletAuth.getFavorites("0xYOUR_WALLET", {
+  limit: 10,
+})
+await api.walletAuth.updateProfileSettings({ bio: "Building with OpenSea" })
+```
+
+The helper request and response types are generated from the deployed OpenAPI
+operations. Drops, collections, profile shelves, favorites/watchlists, order
+cancellation, and wallet link/unlink are covered.
+
 ## Quick Start
 
 ### With ethers.js

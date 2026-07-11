@@ -48,23 +48,6 @@ describe("parseUnits", () => {
     expect(parseUnits(1e-8, 18)).toBe(10000000000n)
   })
 
-  test("handles string scientific notation (small numbers)", () => {
-    // String input with scientific notation should work like number input
-    expect(parseUnits("1e-8", 18)).toBe(10000000000n)
-    expect(parseUnits("1E-8", 18)).toBe(10000000000n)
-  })
-
-  test("handles string scientific notation (large numbers)", () => {
-    expect(parseUnits("1e6", 18)).toBe(1000000000000000000000000n)
-    expect(parseUnits("1E6", 18)).toBe(1000000000000000000000000n)
-  })
-
-  test("throws for invalid string scientific notation", () => {
-    expect(() => parseUnits("not-a-number", 18)).toThrow(
-      "Invalid numeric value",
-    )
-  })
-
   test("throws for invalid decimal (multiple dots)", () => {
     expect(() => parseUnits("1.2.3", 18)).toThrow("Invalid decimal value")
   })

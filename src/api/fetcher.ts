@@ -25,6 +25,8 @@ export interface PostOptions extends RequestOptions {
   snakeizeBody?: boolean
 }
 
+export type HttpMethod = "POST" | "PUT" | "PATCH" | "DELETE"
+
 /**
  * Fetcher context interface for making HTTP requests to the OpenSea API.
  * This interface abstracts the HTTP methods used by specialized API clients.
@@ -58,6 +60,17 @@ export interface Fetcher {
    * @returns The camelCase view of the API response.
    */
   post<T>(
+    apiPath: string,
+    body?: object,
+    headers?: object,
+    options?: PostOptions,
+  ): Promise<Camelize<T>>
+}
+
+/** Fetcher used by scoped wallet helpers that need every write verb. */
+export interface WalletAuthFetcher extends Fetcher {
+  request<T>(
+    method: HttpMethod,
     apiPath: string,
     body?: object,
     headers?: object,
