@@ -1,7 +1,7 @@
 import { ethers } from "ethers"
 import { describe, expect, test } from "vitest"
 import { TokenStandard } from "../../src/types"
-import { sdk } from "../utils/sdk"
+import { sdk } from "../utils/liveSdk"
 
 describe("SDK: getBalance", () => {
   const accountAddress = "0x000000000000000000000000000000000000dEaD"

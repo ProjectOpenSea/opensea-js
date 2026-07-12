@@ -77,13 +77,26 @@ describe("API", () => {
   })
 
   test("Includes API key in request", async () => {
-    // Restore real timers for this test since it makes a real API call
     vi.useRealTimers()
+    fetchStub = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          address: getOfferPaymentToken(Chain.Mainnet),
+          decimals: 18,
+          eth_price: "1",
+          name: "Wrapped Ether",
+          symbol: "WETH",
+          usd_price: "1",
+        }),
+        { status: 200 },
+      ),
+    )
 
     const oldLogger = api.logger
 
     // The API key is now deliberately sanitized from log output.
     // Verify the request is logged with the expected app-id header.
+    const offerPaymentToken = getOfferPaymentToken(Chain.Mainnet)
     const logPromise = new Promise<void>((resolve, reject) => {
       api.logger = log => {
         try {
@@ -95,23 +108,23 @@ describe("API", () => {
           api.logger = oldLogger
         }
       }
-      const offerPaymentToken = getOfferPaymentToken(Chain.Mainnet)
-      api.getPaymentToken(offerPaymentToken)
     })
 
-    await logPromise
+    await Promise.all([logPromise, api.getPaymentToken(offerPaymentToken)])
   })
 
   test("API handles errors", async () => {
-    // Restore real timers for this test since it makes a real API call
     vi.useRealTimers()
+    fetchStub = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ errors: ["not found"] }), {
+        status: 404,
+        statusText: "Not Found",
+      }),
+    )
 
-    // 404 Not found for random token id
-    try {
-      await api.getNFT(BAYC_CONTRACT_ADDRESS, "404040")
-    } catch (error) {
-      expect((error as Error).message).toContain("not found")
-    }
+    await expect(api.getNFT(BAYC_CONTRACT_ADDRESS, "404040")).rejects.toThrow(
+      "not found",
+    )
   })
 
   test("API handles rate limit errors with retry-after", async () => {

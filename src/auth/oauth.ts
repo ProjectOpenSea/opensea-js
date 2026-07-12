@@ -151,7 +151,7 @@ export class OpenSeaOAuth {
       refresh_token: refreshToken,
       client_id: this.clientId,
     })
-    return toOAuthToken(response)
+    return toOAuthToken(response, refreshToken)
   }
 
   /** Revoke an access or refresh token. */
@@ -376,15 +376,22 @@ function tokenOpenSeaScopes(response: OAuthTokenResponse): string[] {
     : extractOpenSeaScopes(response.access_token)
 }
 
-function toOAuthToken(response: OAuthTokenResponse): OAuthToken {
+function toOAuthToken(
+  response: OAuthTokenResponse,
+  previousRefreshToken?: string,
+): OAuthToken {
   const expiresIn =
     typeof response.expires_in === "number" &&
     Number.isFinite(response.expires_in)
       ? response.expires_in
       : DEFAULT_EXPIRES_IN_SECONDS
+  const refreshToken = response.refresh_token || previousRefreshToken
+  if (!refreshToken) {
+    throw new Error("OAuth token response is missing a refresh token")
+  }
   return {
     accessToken: response.access_token,
-    refreshToken: response.refresh_token,
+    refreshToken,
     idToken: response.id_token,
     expiresAt: new Date(Date.now() + expiresIn * 1000),
     scopes: tokenOpenSeaScopes(response),
@@ -393,19 +400,16 @@ function toOAuthToken(response: OAuthTokenResponse): OAuthToken {
 
 /**
  * Read the wallet address from decoded JWT claims. Zitadel injects it as a
- * top-level `wallet` claim (plaintext) via the `inject_wallet_claim` action —
- * the same claim `opensea-mcp` and the os2-core REST API read. `sub` is the
- * fallback identifier (the Zitadel account id) when no wallet claim is present.
- * Returns `undefined` if neither is available.
+ * top-level `wallet` claim (plaintext) via the `inject_wallet_claim` action,
+ * the same claim `opensea-mcp` and the os2-core REST API read. The `sub` claim
+ * is an account identifier, not a wallet address, so it must never be used as
+ * a fallback. Returns `undefined` when the wallet claim is absent.
  */
 export function extractWalletAddress(
   claims: Record<string, unknown>,
 ): string | undefined {
   if (typeof claims.wallet === "string" && claims.wallet.length > 0) {
     return claims.wallet
-  }
-  if (typeof claims.sub === "string" && claims.sub.length > 0) {
-    return claims.sub
   }
   return undefined
 }

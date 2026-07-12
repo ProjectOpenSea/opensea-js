@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { sdk } from "../utils/sdk"
+import { sdk } from "../utils/liveSdk"
 
 describe("SDK: orders", () => {
   test("Fungible tokens filter", async () => {

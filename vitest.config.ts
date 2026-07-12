@@ -7,6 +7,7 @@ export default mergeConfig(
     test: {
       include: ["test/**/*.spec.ts"],
       exclude: ["test/integration/**"],
+      setupFiles: ["test/utils/setupUnit.ts"],
       testTimeout: 15000,
     },
   }),

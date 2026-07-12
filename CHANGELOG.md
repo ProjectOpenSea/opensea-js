@@ -1,5 +1,17 @@
 # @opensea/sdk
 
+## 11.4.3
+
+### Patch Changes
+
+- b64a4d5: Require complete OAuth wallet sessions, retain refresh tokens during rotation, validate the CLI auth store, and preserve case-sensitive wallet addresses.
+
+## 11.4.2
+
+### Patch Changes
+
+- 5966017: Keep the default SDK test suite offline by blocking unmocked network requests and running live API and RPC checks through the integration suite.
+
 ## 11.4.1
 
 ### Patch Changes

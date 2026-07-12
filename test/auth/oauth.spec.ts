@@ -191,6 +191,28 @@ describe("OpenSeaOAuth", () => {
     ).rejects.toThrow(/Token request failed/)
   })
 
+  test("exchangeCode requires the refresh token requested by offline_access", async () => {
+    mockDiscovery(fetchMock)
+    fetchMock.mockImplementationOnce(() =>
+      Promise.resolve(
+        jsonResponse({
+          access_token: "at",
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
+      ),
+    )
+    const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
+
+    await expect(
+      oauth.exchangeCode({
+        code: "the-code",
+        codeVerifier: "the-verifier",
+        redirectUri: "http://127.0.0.1:8151/callback",
+      }),
+    ).rejects.toThrow("missing a refresh token")
+  })
+
   test("reads OpenSea scopes from the access token when scope is omitted", async () => {
     mockDiscovery(fetchMock)
     fetchMock.mockImplementationOnce(() =>
@@ -225,6 +247,7 @@ describe("OpenSeaOAuth", () => {
           access_token: jwt({
             opensea_scopes: ["write:favorites", "read:favorites"],
           }),
+          refresh_token: "rt",
           token_type: "Bearer",
           expires_in: 3600,
         }),
@@ -247,6 +270,7 @@ describe("OpenSeaOAuth", () => {
       Promise.resolve(
         jsonResponse({
           access_token: "opaque-token",
+          refresh_token: "rt",
           token_type: "Bearer",
           expires_in: 3600,
           scope: "read:eligibility read:rewards unknown:scope",
@@ -276,6 +300,7 @@ describe("OpenSeaOAuth", () => {
       Promise.resolve(
         jsonResponse({
           access_token: accessToken,
+          refresh_token: "rt",
           token_type: "Bearer",
           expires_in: 3600,
         }),
@@ -310,7 +335,26 @@ describe("OpenSeaOAuth", () => {
     const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
     const token = await oauth.refresh("old-rt")
     expect(token.accessToken).toBe("at2")
+    expect(token.refreshToken).toBe("rt2")
     expect(token.scopes).toEqual([])
+  })
+
+  test("refresh retains the previous token when rotation omits one", async () => {
+    mockDiscovery(fetchMock)
+    fetchMock.mockImplementationOnce(() =>
+      Promise.resolve(
+        jsonResponse({
+          access_token: "at2",
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
+      ),
+    )
+    const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
+
+    const token = await oauth.refresh("old-rt")
+
+    expect(token.refreshToken).toBe("old-rt")
   })
 
   test("revoke posts the token to the revocation endpoint", async () => {
@@ -394,6 +438,7 @@ describe("OpenSeaOAuth", () => {
         Promise.resolve(
           jsonResponse({
             access_token: "device-at",
+            refresh_token: "device-rt",
             token_type: "Bearer",
             expires_in: 3600,
             scope: "read:eligibility",
@@ -460,8 +505,8 @@ describe("extractWalletAddress", () => {
     )
   })
 
-  test("falls back to sub when no wallet claim is present", () => {
-    expect(extractWalletAddress({ sub: "acct-1" })).toBe("acct-1")
+  test("does not treat the account subject as a wallet address", () => {
+    expect(extractWalletAddress({ sub: "acct-1" })).toBeUndefined()
   })
 
   test("returns undefined when neither claim is present", () => {

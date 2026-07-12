@@ -23,8 +23,8 @@ export interface OpenSeaOAuthConfig {
 export interface OAuthToken {
   /** JWT access token (bearer credential for the OpenSea API). */
   accessToken: string
-  /** Refresh token for obtaining a new access token, if granted. */
-  refreshToken?: string
+  /** Refresh token for obtaining a new access token. */
+  refreshToken: string
   /** OIDC ID token, if `openid` scope was granted. */
   idToken?: string
   /** When the access token expires. */

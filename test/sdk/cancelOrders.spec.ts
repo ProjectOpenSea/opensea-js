@@ -89,24 +89,23 @@ describe("SDK: cancelOrders", () => {
   })
 
   test("Should attempt to fetch orders from API when using orderHashes", async () => {
-    try {
-      await sdk.cancelOrders({
+    const getOrder = vi
+      .spyOn(sdk.api, "getOrderByHash")
+      .mockRejectedValueOnce(new Error("Not found"))
+
+    await expect(
+      sdk.cancelOrders({
         orderHashes: ["0x123"],
         accountAddress,
         protocolAddress: DEFAULT_SEAPORT_CONTRACT_ADDRESS,
-      })
-      throw new Error("should have thrown")
-    } catch (e) {
-      // Should fail when trying to fetch the order from the API
-      // Either "Not found" or network error depending on the API state
-      expect((e as Error).message).toSatisfy(
-        (msg: string) =>
-          msg.includes("Not found") ||
-          msg.includes("Server Error") ||
-          msg.includes("Unauthorized") ||
-          msg.includes("accountAddress is not available"),
-      )
-    }
+      }),
+    ).rejects.toThrow("Not found")
+    expect(getOrder).toHaveBeenCalledWith(
+      "0x123",
+      DEFAULT_SEAPORT_CONTRACT_ADDRESS,
+      "ethereum",
+    )
+    getOrder.mockRestore()
   })
 
   test("Should throw an error when using cancelOrders without wallet", async () => {

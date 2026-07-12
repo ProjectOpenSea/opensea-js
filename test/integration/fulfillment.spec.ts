@@ -1,7 +1,7 @@
 import { ethers } from "ethers"
 import { describe, expect, test } from "vitest"
 import { OrderSide } from "../../src/types"
-import { api } from "../utils/sdk"
+import { api } from "../utils/liveSdk"
 
 describe("Generating fulfillment data", () => {
   test(`Generate fulfillment data for listing`, async () => {

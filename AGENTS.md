@@ -53,6 +53,8 @@ When reviewing changes to this package, verify:
 
 5. **No secret leakage**: API keys are passed via `OpenSeaAPIConfig.apiKey`. Never log or expose them. Integration tests read keys from environment variables.
 
+6. **OAuth session contract**: `OpenSeaOAuth` requests `offline_access`, so successful code and device flows must return a refresh token. Refresh responses may omit rotation; retain the previous refresh token in that case. The top-level `wallet` JWT claim is the only wallet identity source. Never substitute `sub`, which is an account identifier.
+
 ## Conventions
 
 - CommonJS (`"type": "commonjs"`). The SDK is consumed by both CJS and ESM projects.

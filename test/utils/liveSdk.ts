@@ -1,15 +1,11 @@
-import { ethers } from "ethers"
 import { OpenSeaSDK } from "../../src"
 import { OpenSeaAPI } from "../../src/api"
 import { Chain } from "../../src/types"
 import { OPENSEA_API_KEY } from "./env"
-
-const offlineProvider = new ethers.JsonRpcProvider("http://127.0.0.1:1", 1, {
-  staticNetwork: true,
-})
+import { alchemyProvider } from "./providers"
 
 export const sdk = new OpenSeaSDK(
-  ethers.Wallet.createRandom().connect(offlineProvider),
+  alchemyProvider(Chain.Mainnet),
   {
     chain: Chain.Mainnet,
     apiKey: OPENSEA_API_KEY,
