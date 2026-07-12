@@ -1,5 +1,11 @@
 # @opensea/sdk
 
+## 11.4.1
+
+### Patch Changes
+
+- 71ae9ee: Keep OAuth scope status aligned with the OpenAPI scope catalog when the token endpoint omits its `scope` field.
+
 ## 11.4.0
 
 ### Minor Changes

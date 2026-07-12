@@ -33,6 +33,13 @@ function mockDiscovery(fetchMock: ReturnType<typeof vi.fn>) {
   )
 }
 
+function jwt(payload: Record<string, unknown>): string {
+  const encoded = Buffer.from(JSON.stringify(payload))
+    .toString("base64url")
+    .replace(/=+$/, "")
+  return `header.${encoded}.signature`
+}
+
 let fetchMock: ReturnType<typeof vi.fn>
 
 beforeEach(() => {
@@ -182,6 +189,107 @@ describe("OpenSeaOAuth", () => {
         redirectUri: "http://127.0.0.1:8151/callback",
       }),
     ).rejects.toThrow(/Token request failed/)
+  })
+
+  test("reads OpenSea scopes from the access token when scope is omitted", async () => {
+    mockDiscovery(fetchMock)
+    fetchMock.mockImplementationOnce(() =>
+      Promise.resolve(
+        jsonResponse({
+          access_token: jwt({
+            opensea_scopes:
+              "write:orders read:eligibility read:rewards unknown:scope",
+          }),
+          refresh_token: "rt",
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
+      ),
+    )
+
+    const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
+    const token = await oauth.exchangeCode({
+      code: "the-code",
+      codeVerifier: "the-verifier",
+      redirectUri: "http://127.0.0.1:8151/callback",
+    })
+
+    expect(token.scopes).toEqual(["read:eligibility", "write:orders"])
+  })
+
+  test("reads array OpenSea scope claims in canonical API order", async () => {
+    mockDiscovery(fetchMock)
+    fetchMock.mockImplementationOnce(() =>
+      Promise.resolve(
+        jsonResponse({
+          access_token: jwt({
+            opensea_scopes: ["write:favorites", "read:favorites"],
+          }),
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
+      ),
+    )
+
+    const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
+    const token = await oauth.exchangeCode({
+      code: "the-code",
+      codeVerifier: "the-verifier",
+      redirectUri: "http://127.0.0.1:8151/callback",
+    })
+
+    expect(token.scopes).toEqual(["read:favorites", "write:favorites"])
+  })
+
+  test("filters token response scopes through the OpenAPI catalog", async () => {
+    mockDiscovery(fetchMock)
+    fetchMock.mockImplementationOnce(() =>
+      Promise.resolve(
+        jsonResponse({
+          access_token: "opaque-token",
+          token_type: "Bearer",
+          expires_in: 3600,
+          scope: "read:eligibility read:rewards unknown:scope",
+        }),
+      ),
+    )
+
+    const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
+    const token = await oauth.exchangeCode({
+      code: "the-code",
+      codeVerifier: "the-verifier",
+      redirectUri: "http://127.0.0.1:8151/callback",
+    })
+
+    expect(token.scopes).toEqual(["read:eligibility"])
+  })
+
+  test.each([
+    ["a JWT without the claim", jwt({ wallet: "0xabc" })],
+    [
+      "a JWT with only unknown claims",
+      jwt({ opensea_scopes: "unknown:scope" }),
+    ],
+  ])("returns no scopes for %s", async (_label, accessToken) => {
+    mockDiscovery(fetchMock)
+    fetchMock.mockImplementationOnce(() =>
+      Promise.resolve(
+        jsonResponse({
+          access_token: accessToken,
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
+      ),
+    )
+
+    const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
+    const token = await oauth.exchangeCode({
+      code: "the-code",
+      codeVerifier: "the-verifier",
+      redirectUri: "http://127.0.0.1:8151/callback",
+    })
+
+    expect(token.scopes).toEqual([])
   })
 
   test("refresh uses the refresh_token grant", async () => {

@@ -1,3 +1,4 @@
+import { AUTH_SCOPES } from "@opensea/api-types"
 import type {
   DeviceAuthorizationResponse,
   OAuthDiscoveryDocument,
@@ -337,6 +338,44 @@ function buildScopeParam(scopes?: string[]): string {
 /** Fallback access-token lifetime when the server omits `expires_in`. */
 const DEFAULT_EXPIRES_IN_SECONDS = 3600
 
+const OPENAPI_AUTH_SCOPE_NAMES = AUTH_SCOPES.map(({ name }) => name)
+
+function canonicalOpenSeaScopes(scopes: string[]): string[] {
+  const granted = new Set(scopes)
+  return OPENAPI_AUTH_SCOPE_NAMES.filter(scope => granted.has(scope))
+}
+
+/**
+ * Read OpenSea API scopes from a JWT access token for client-side display and
+ * persistence. This does not verify the token and must not be used to make an
+ * authorization decision.
+ */
+export function extractOpenSeaScopes(accessToken: string): string[] {
+  try {
+    const claim = decodeJwtPayload(accessToken).opensea_scopes
+    if (typeof claim === "string") {
+      return canonicalOpenSeaScopes(claim.split(/\s+/).filter(Boolean))
+    }
+    if (Array.isArray(claim)) {
+      return canonicalOpenSeaScopes(
+        claim.filter((scope): scope is string => typeof scope === "string"),
+      )
+    }
+  } catch {
+    // Opaque access tokens cannot provide a scope fallback.
+  }
+  return []
+}
+
+function tokenOpenSeaScopes(response: OAuthTokenResponse): string[] {
+  const responseScopes = response.scope
+    ? canonicalOpenSeaScopes(response.scope.split(/\s+/).filter(Boolean))
+    : []
+  return responseScopes.length > 0
+    ? responseScopes
+    : extractOpenSeaScopes(response.access_token)
+}
+
 function toOAuthToken(response: OAuthTokenResponse): OAuthToken {
   const expiresIn =
     typeof response.expires_in === "number" &&
@@ -348,7 +387,7 @@ function toOAuthToken(response: OAuthTokenResponse): OAuthToken {
     refreshToken: response.refresh_token,
     idToken: response.id_token,
     expiresAt: new Date(Date.now() + expiresIn * 1000),
-    scopes: response.scope ? response.scope.split(" ") : [],
+    scopes: tokenOpenSeaScopes(response),
   }
 }
 
