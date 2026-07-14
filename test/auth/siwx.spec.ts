@@ -119,9 +119,9 @@ describe("SIWX wallet-link helpers", () => {
 
     const result = await linkWalletWithSiwx(signer, {
       authToken: "token-123",
+      apiKey: "api-key",
       chainArch: "EVM",
       chainId: 1,
-      authBaseUrl: "https://auth.opensea.io",
       apiBaseUrl: "https://api.opensea.io",
     })
 
@@ -129,7 +129,8 @@ describe("SIWX wallet-link helpers", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2)
 
     const [nonceUrl] = fetchSpy.mock.calls[0] as [string]
-    expect(nonceUrl).toBe("https://auth.opensea.io/api/nonce")
+    expect(nonceUrl).toBe("https://api.opensea.io/api/v2/auth/siwe/nonce")
+    expect(fetchSpy.mock.calls[0][1]).toMatchObject({ method: "POST" })
 
     const [linkUrl, linkInit] = fetchSpy.mock.calls[1] as [
       string,
@@ -138,6 +139,7 @@ describe("SIWX wallet-link helpers", () => {
     expect(linkUrl).toBe("https://api.opensea.io/api/v2/accounts/wallets/siwx")
     expect(linkInit.method).toBe("POST")
     expect(linkInit.headers.Authorization).toBe("Bearer token-123")
+    expect(linkInit.headers["X-API-KEY"]).toBe("api-key")
 
     const body = JSON.parse(linkInit.body as string) as {
       message: {
@@ -164,14 +166,17 @@ describe("SIWX wallet-link helpers", () => {
         new Response(JSON.stringify({ nonce: "nonce-123" }), { status: 200 }),
       )
 
-    await expect(requestSiwxNonce("https://auth.opensea.io/")).resolves.toBe(
+    await expect(requestSiwxNonce("https://api.opensea.io/")).resolves.toBe(
       "nonce-123",
     )
 
-    expect(fetchSpy).toHaveBeenCalledWith("https://auth.opensea.io/api/nonce", {
-      method: "GET",
-      headers: { Accept: "application/json" },
-    })
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "https://api.opensea.io/api/v2/auth/siwe/nonce",
+      {
+        method: "POST",
+        headers: { Accept: "application/json" },
+      },
+    )
   })
 
   it("rejects empty auth tokens", async () => {
@@ -214,7 +219,6 @@ describe("SIWX wallet-link helpers", () => {
       authToken: "token-123",
       chainArch: "EVM",
       chainId: 1,
-      authBaseUrl: "https://auth.opensea.io",
       apiBaseUrl: "https://api.opensea.io",
       expirationTime: new Date("2026-01-02T00:00:00.000Z"),
       notBefore: new Date("2026-01-01T12:00:00.000Z"),

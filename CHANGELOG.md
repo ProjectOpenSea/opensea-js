@@ -1,5 +1,11 @@
 # @opensea/sdk
 
+## 11.4.4
+
+### Patch Changes
+
+- d846160: Use the current OpenSea API endpoints for SIWE login, scoped-token exchange, refresh, revocation, and wallet-link nonces.
+
 ## 11.4.3
 
 ### Patch Changes

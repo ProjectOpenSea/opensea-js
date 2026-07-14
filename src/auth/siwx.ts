@@ -5,7 +5,6 @@ import type {
 import { getAddress } from "ethers"
 import type { AuthSigner } from "./types"
 
-const DEFAULT_AUTH_BASE_URL = "https://auth.opensea.io"
 const DEFAULT_API_BASE_URL = "https://api.opensea.io"
 const DEFAULT_STATEMENT =
   "Click to sign in and accept the OpenSea Terms of Service (https://opensea.io/tos) and Privacy Policy (https://opensea.io/privacy)."
@@ -49,8 +48,10 @@ export interface ParseSiwxMessageResult {
 
 export interface LinkWalletWithSiwxOptions
   extends Omit<CreateSiwxMessageOptions, "address" | "chainId" | "nonce"> {
+  /** @deprecated Nonces now come from apiBaseUrl. */
   authBaseUrl?: string
   apiBaseUrl?: string
+  apiKey?: string
   authToken: string
   chainArch: ChainArch
   chainId: number
@@ -251,15 +252,18 @@ export function parseSiwxMessage(message: string): ParseSiwxMessageResult {
 }
 
 /**
- * Request a single-use nonce from the auth service.
+ * Request a single-use nonce from the OpenSea API.
  */
 export async function requestSiwxNonce(
-  authBaseUrl = DEFAULT_AUTH_BASE_URL,
+  apiBaseUrl = DEFAULT_API_BASE_URL,
 ): Promise<string> {
-  const response = await fetch(`${stripTrailingSlash(authBaseUrl)}/api/nonce`, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-  })
+  const response = await fetch(
+    `${stripTrailingSlash(apiBaseUrl)}/api/v2/auth/siwe/nonce`,
+    {
+      method: "POST",
+      headers: { Accept: "application/json" },
+    },
+  )
   if (!response.ok) {
     throw new Error(
       `Auth server error (${response.status}): ${response.statusText}`,
@@ -283,13 +287,10 @@ export async function linkWalletWithSiwx(
     throw new Error("authToken is required to link a wallet")
   }
 
-  const authBaseUrl = stripTrailingSlash(
-    options.authBaseUrl ?? DEFAULT_AUTH_BASE_URL,
-  )
   const apiBaseUrl = stripTrailingSlash(
     options.apiBaseUrl ?? DEFAULT_API_BASE_URL,
   )
-  const nonce = await requestSiwxNonce(authBaseUrl)
+  const nonce = await requestSiwxNonce(apiBaseUrl)
   const address = await signer.getAddress()
   const message = createSiwxMessage({
     address,
@@ -319,6 +320,7 @@ export async function linkWalletWithSiwx(
     headers: {
       Authorization: `Bearer ${options.authToken}`,
       "Content-Type": "application/json",
+      ...(options.apiKey ? { "X-API-KEY": options.apiKey } : {}),
     },
     body: JSON.stringify(payload),
   })
