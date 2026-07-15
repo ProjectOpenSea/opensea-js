@@ -330,15 +330,36 @@ function assertSecureUrl(value: string | undefined, label: string): void {
  * and `offline_access` for a refresh token.
  */
 const BASE_OIDC_SCOPES = ["openid", "offline_access"]
+const ZITADEL_PROJECT_ROLE_SCOPE_PREFIX = "urn:zitadel:iam:org:project:role:"
+const OPENAPI_AUTH_SCOPE_NAMES = AUTH_SCOPES.map(({ name }) => name)
+const OPENAPI_AUTH_SCOPE_NAME_SET = new Set<string>(OPENAPI_AUTH_SCOPE_NAMES)
 
 function buildScopeParam(scopes?: string[]): string {
-  return [...BASE_OIDC_SCOPES, ...(scopes ?? [])].join(" ")
+  if (scopes?.length === 0) {
+    throw new Error(
+      "OpenSea OAuth scopes cannot be empty; omit scopes to request all default scopes",
+    )
+  }
+  const requestedScopes = [...new Set(scopes ?? OPENAPI_AUTH_SCOPE_NAMES)]
+  const unknownScopes = requestedScopes.filter(
+    scope => !OPENAPI_AUTH_SCOPE_NAME_SET.has(scope),
+  )
+  if (unknownScopes.length > 0) {
+    throw new Error(`Unknown OpenSea OAuth scopes: ${unknownScopes.join(", ")}`)
+  }
+  // Zitadel treats project roles as reserved URN scopes. Without at least one
+  // role-specific scope it expands the request to every role in the project.
+  // Keep the public OpenSea scope names too so OAuth diagnostics stay useful.
+  const projectRoleScopes = requestedScopes.map(
+    scope => `${ZITADEL_PROJECT_ROLE_SCOPE_PREFIX}${scope}`,
+  )
+  return [...BASE_OIDC_SCOPES, ...requestedScopes, ...projectRoleScopes].join(
+    " ",
+  )
 }
 
 /** Fallback access-token lifetime when the server omits `expires_in`. */
 const DEFAULT_EXPIRES_IN_SECONDS = 3600
-
-const OPENAPI_AUTH_SCOPE_NAMES = AUTH_SCOPES.map(({ name }) => name)
 
 function canonicalOpenSeaScopes(scopes: string[]): string[] {
   const granted = new Set(scopes)

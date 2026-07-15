@@ -135,11 +135,62 @@ describe("OpenSeaOAuth", () => {
     expect(url.searchParams.get("code_challenge_method")).toBe("S256")
     expect(url.searchParams.get("code_challenge")).toBeTruthy()
     expect(url.searchParams.get("state")).toBe(req.state)
-    const scope = url.searchParams.get("scope") ?? ""
-    expect(scope).toContain("openid")
-    expect(scope).toContain("offline_access")
-    expect(scope).toContain("read:eligibility")
+    const scope = url.searchParams.get("scope")?.split(" ")
+    expect(scope).toEqual([
+      "openid",
+      "offline_access",
+      "read:eligibility",
+      "urn:zitadel:iam:org:project:role:read:eligibility",
+    ])
     expect(req.codeVerifier.length).toBeGreaterThan(20)
+  })
+
+  test("createAuthorizationRequest rejects unknown OpenSea scopes", async () => {
+    mockDiscovery(fetchMock)
+    const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
+
+    await expect(
+      oauth.createAuthorizationRequest({
+        redirectUri: "http://127.0.0.1:8151/callback",
+        scopes: ["admin:everything"],
+      }),
+    ).rejects.toThrow("Unknown OpenSea OAuth scopes: admin:everything")
+  })
+
+  test("createAuthorizationRequest rejects an explicit empty scope list", async () => {
+    mockDiscovery(fetchMock)
+    const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
+
+    await expect(
+      oauth.createAuthorizationRequest({
+        redirectUri: "http://127.0.0.1:8151/callback",
+        scopes: [],
+      }),
+    ).rejects.toThrow(
+      "OpenSea OAuth scopes cannot be empty; omit scopes to request all default scopes",
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  test("createAuthorizationRequest explicitly requests every role by default", async () => {
+    mockDiscovery(fetchMock)
+    const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
+
+    const req = await oauth.createAuthorizationRequest({
+      redirectUri: "http://127.0.0.1:8151/callback",
+    })
+
+    const scopes = new URL(req.url).searchParams.get("scope")?.split(" ") ?? []
+    const roleScopes = scopes.filter(scope =>
+      scope.startsWith("urn:zitadel:iam:org:project:role:"),
+    )
+    expect(roleScopes).toHaveLength(8)
+    expect(roleScopes).toContain(
+      "urn:zitadel:iam:org:project:role:read:favorites",
+    )
+    expect(roleScopes).toContain(
+      "urn:zitadel:iam:org:project:role:write:wallets",
+    )
   })
 
   test("exchangeCode posts the code + verifier and normalizes the token", async () => {
@@ -408,8 +459,15 @@ describe("OpenSeaOAuth", () => {
 
   test("requestDeviceAuthorization returns the device response", async () => {
     mockDiscovery(fetchMock)
-    fetchMock.mockImplementationOnce(() =>
-      Promise.resolve(
+    fetchMock.mockImplementationOnce((_url: string, init: RequestInit) => {
+      const body = new URLSearchParams(init.body as string)
+      expect(body.get("scope")?.split(" ")).toEqual([
+        "openid",
+        "offline_access",
+        "read:eligibility",
+        "urn:zitadel:iam:org:project:role:read:eligibility",
+      ])
+      return Promise.resolve(
         jsonResponse({
           device_code: "dc",
           user_code: "WXYZ-1234",
@@ -418,14 +476,26 @@ describe("OpenSeaOAuth", () => {
           expires_in: 600,
           interval: 5,
         }),
-      ),
-    )
+      )
+    })
     const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
     const device = await oauth.requestDeviceAuthorization({
       scopes: ["read:eligibility"],
     })
     expect(device.user_code).toBe("WXYZ-1234")
     expect(device.device_code).toBe("dc")
+  })
+
+  test("requestDeviceAuthorization rejects an explicit empty scope list", async () => {
+    mockDiscovery(fetchMock)
+    const oauth = new OpenSeaOAuth({ clientId: CLIENT_ID, issuer: ISSUER })
+
+    await expect(
+      oauth.requestDeviceAuthorization({ scopes: [] }),
+    ).rejects.toThrow(
+      "OpenSea OAuth scopes cannot be empty; omit scopes to request all default scopes",
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   test("pollDeviceToken waits through authorization_pending then succeeds", async () => {

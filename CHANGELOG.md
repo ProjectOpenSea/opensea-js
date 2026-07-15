@@ -1,5 +1,17 @@
 # @opensea/sdk
 
+## 11.4.7
+
+### Patch Changes
+
+- b6abc18: Reject explicit empty OAuth scope lists to prevent the authorization server from expanding them to every account role.
+
+## 11.4.6
+
+### Patch Changes
+
+- a410930: Request Zitadel's role-specific scopes so OAuth tokens are limited to the OpenSea scopes the client asked for.
+
 ## 11.4.5
 
 ### Patch Changes
