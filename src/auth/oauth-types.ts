@@ -31,6 +31,8 @@ export interface OAuthToken {
   expiresAt: Date
   /** Scopes granted to this token. */
   scopes: string[]
+  /** Source of the scopes exposed to consumers. */
+  scopeSource: "authorization_server" | "jwt_claim"
 }
 
 /**

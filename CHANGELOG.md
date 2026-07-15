@@ -1,5 +1,14 @@
 # @opensea/sdk
 
+## 11.4.5
+
+### Patch Changes
+
+- d10626b: Add an `opensea whoami` command that displays the current wallet identity,
+  scope source, and expiry, with unverified JWT diagnostics available through an
+  explicit flag. Expose whether OAuth scopes came from the authorization-server
+  response or a JWT fallback.
+
 ## 11.4.4
 
 ### Patch Changes

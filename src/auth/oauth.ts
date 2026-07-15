@@ -367,13 +367,19 @@ export function extractOpenSeaScopes(accessToken: string): string[] {
   return []
 }
 
-function tokenOpenSeaScopes(response: OAuthTokenResponse): string[] {
+function tokenOpenSeaScopes(response: OAuthTokenResponse): {
+  scopes: string[]
+  scopeSource: OAuthToken["scopeSource"]
+} {
   const responseScopes = response.scope
     ? canonicalOpenSeaScopes(response.scope.split(/\s+/).filter(Boolean))
     : []
   return responseScopes.length > 0
-    ? responseScopes
-    : extractOpenSeaScopes(response.access_token)
+    ? { scopes: responseScopes, scopeSource: "authorization_server" }
+    : {
+        scopes: extractOpenSeaScopes(response.access_token),
+        scopeSource: "jwt_claim",
+      }
 }
 
 function toOAuthToken(
@@ -389,12 +395,14 @@ function toOAuthToken(
   if (!refreshToken) {
     throw new Error("OAuth token response is missing a refresh token")
   }
+  const { scopes, scopeSource } = tokenOpenSeaScopes(response)
   return {
     accessToken: response.access_token,
     refreshToken,
     idToken: response.id_token,
     expiresAt: new Date(Date.now() + expiresIn * 1000),
-    scopes: tokenOpenSeaScopes(response),
+    scopes,
+    scopeSource,
   }
 }
 

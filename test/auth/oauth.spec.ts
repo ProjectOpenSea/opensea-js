@@ -171,6 +171,7 @@ describe("OpenSeaOAuth", () => {
     expect(token.accessToken).toBe("at")
     expect(token.refreshToken).toBe("rt")
     expect(token.scopes).toEqual(["read:eligibility", "write:orders"])
+    expect(token.scopeSource).toBe("authorization_server")
     expect(token.expiresAt.getTime()).toBeGreaterThan(Date.now())
   })
 
@@ -237,6 +238,7 @@ describe("OpenSeaOAuth", () => {
     })
 
     expect(token.scopes).toEqual(["read:eligibility", "write:orders"])
+    expect(token.scopeSource).toBe("jwt_claim")
   })
 
   test("reads array OpenSea scope claims in canonical API order", async () => {
@@ -262,6 +264,7 @@ describe("OpenSeaOAuth", () => {
     })
 
     expect(token.scopes).toEqual(["read:favorites", "write:favorites"])
+    expect(token.scopeSource).toBe("jwt_claim")
   })
 
   test("filters token response scopes through the OpenAPI catalog", async () => {
@@ -286,6 +289,7 @@ describe("OpenSeaOAuth", () => {
     })
 
     expect(token.scopes).toEqual(["read:eligibility"])
+    expect(token.scopeSource).toBe("authorization_server")
   })
 
   test.each([
@@ -315,6 +319,7 @@ describe("OpenSeaOAuth", () => {
     })
 
     expect(token.scopes).toEqual([])
+    expect(token.scopeSource).toBe("jwt_claim")
   })
 
   test("refresh uses the refresh_token grant", async () => {
@@ -337,6 +342,7 @@ describe("OpenSeaOAuth", () => {
     expect(token.accessToken).toBe("at2")
     expect(token.refreshToken).toBe("rt2")
     expect(token.scopes).toEqual([])
+    expect(token.scopeSource).toBe("jwt_claim")
   })
 
   test("refresh retains the previous token when rotation omits one", async () => {
