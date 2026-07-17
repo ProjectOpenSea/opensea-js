@@ -12,7 +12,9 @@ import type { AuthScope } from "@opensea/api-types"
 export const OPENSEA_SCOPES = {
   READ_ELIGIBILITY: "read:eligibility",
   READ_FAVORITES: "read:favorites",
+  READ_SOCIAL: "read:social",
   WRITE_FAVORITES: "write:favorites",
+  WRITE_SOCIAL: "write:social",
   WRITE_ORDERS: "write:orders",
   WRITE_DROPS: "write:drops",
   WRITE_COLLECTIONS: "write:collections",

@@ -1,5 +1,16 @@
 # @opensea/sdk
 
+## 11.4.8
+
+### Patch Changes
+
+- fa2a24e: Add the canonical `read:social` and `write:social` wallet-auth scopes.
+- Updated dependencies [66396b6]
+- Updated dependencies [fa2a24e]
+- Updated dependencies [333104e]
+- Updated dependencies [d7a44df]
+  - @opensea/api-types@0.8.1
+
 ## 11.4.7
 
 ### Patch Changes

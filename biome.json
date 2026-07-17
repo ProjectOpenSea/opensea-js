@@ -12,6 +12,7 @@
       "**/*.json",
       "!**/.claude",
       "!**/typechain",
+      "!lib",
       "!**/dist",
       "!**/coverage",
       "!**/.vercel",

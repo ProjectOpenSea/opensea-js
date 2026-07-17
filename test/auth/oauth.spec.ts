@@ -184,9 +184,13 @@ describe("OpenSeaOAuth", () => {
     const roleScopes = scopes.filter(scope =>
       scope.startsWith("urn:zitadel:iam:org:project:role:"),
     )
-    expect(roleScopes).toHaveLength(8)
+    expect(roleScopes).toHaveLength(10)
     expect(roleScopes).toContain(
       "urn:zitadel:iam:org:project:role:read:favorites",
+    )
+    expect(roleScopes).toContain("urn:zitadel:iam:org:project:role:read:social")
+    expect(roleScopes).toContain(
+      "urn:zitadel:iam:org:project:role:write:social",
     )
     expect(roleScopes).toContain(
       "urn:zitadel:iam:org:project:role:write:wallets",

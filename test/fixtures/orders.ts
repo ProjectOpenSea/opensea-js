@@ -85,6 +85,9 @@ const mockMakerAccount = {
   socialMediaAccounts: [],
   bio: "Test maker account",
   joinedDate: "2023-01-01T00:00:00Z",
+  isVerified: false,
+  followerCount: 0,
+  followingCount: 0,
 }
 
 const mockTakerAccount = {
@@ -96,6 +99,9 @@ const mockTakerAccount = {
   socialMediaAccounts: [],
   bio: "Test taker account",
   joinedDate: "2023-01-01T00:00:00Z",
+  isVerified: false,
+  followerCount: 0,
+  followingCount: 0,
 }
 
 export const mockOrderV2: OrderV2 = {
