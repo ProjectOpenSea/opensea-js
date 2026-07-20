@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from "vitest"
 import { TokensAPI } from "../../src/api/tokens"
 import type {
+  GetAccountTokenActivityResponse,
   GetSwapQuoteResponse,
   GetTokenGroupResponse,
   GetTokenGroupsResponse,
@@ -18,6 +19,8 @@ const mockToken: Token = {
   name: "Wrapped Ether",
   symbol: "WETH",
   decimals: 18,
+  usdPrice: "1",
+  isVerified: true,
   imageUrl: "https://example.com/weth.png",
   openseaUrl:
     "https://opensea.io/tokens/ethereum/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
@@ -262,7 +265,7 @@ describe("API: TokensAPI", () => {
 
   describe("getToken", () => {
     test("fetches token details", async () => {
-      const mockResponse: GetTokenResponse = mockToken
+      const mockResponse: GetTokenResponse = { ...mockToken, status: "OK" }
 
       mockGet.mockResolvedValue(mockResponse)
 
@@ -284,6 +287,7 @@ describe("API: TokensAPI", () => {
       const mockResponse: GetTokenResponse = {
         ...mockToken,
         chain: "polygon",
+        status: "OK",
       }
 
       mockGet.mockResolvedValue(mockResponse)
@@ -296,6 +300,7 @@ describe("API: TokensAPI", () => {
     test("handles token with null image_url", async () => {
       const mockResponse: GetTokenResponse = {
         ...mockToken,
+        status: "OK",
         imageUrl: null,
       }
 
@@ -418,6 +423,47 @@ describe("API: TokensAPI", () => {
       })
 
       expect(mockGet.mock.calls[0][1]).toEqual({ limit: 50 })
+    })
+  })
+
+  describe("getAccountTokenActivity", () => {
+    test("fetches account token activity without args", async () => {
+      const mockResponse: GetAccountTokenActivityResponse = {
+        activities: [],
+      }
+
+      mockGet.mockResolvedValue(mockResponse)
+
+      const result = await tokensAPI.getAccountTokenActivity(
+        "0x1234567890123456789012345678901234567890",
+      )
+
+      expect(mockGet).toHaveBeenCalledTimes(1)
+      expect(mockGet.mock.calls[0][0]).toBe(
+        "/api/v2/account/0x1234567890123456789012345678901234567890/token-activity",
+      )
+      expect(mockGet.mock.calls[0][1]).toBeUndefined()
+      expect(result.activities).toEqual([])
+    })
+
+    test("passes chain/token/type/limit/next query args", async () => {
+      mockGet.mockResolvedValue({ activities: [] })
+
+      await tokensAPI.getAccountTokenActivity("0xabc", {
+        chains: ["ethereum", "base"],
+        tokens: ["0x111", "0x222"],
+        type: ["swap", "wrap"],
+        limit: 25,
+        next: "page-1",
+      })
+
+      expect(mockGet.mock.calls[0][1]).toEqual({
+        chains: ["ethereum", "base"],
+        tokens: ["0x111", "0x222"],
+        type: ["swap", "wrap"],
+        limit: 25,
+        next: "page-1",
+      })
     })
   })
 

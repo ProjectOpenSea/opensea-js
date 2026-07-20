@@ -68,6 +68,90 @@ export class WalletAuthAPI {
     )
   }
 
+  getAccountRelationship(addressOrUsername: string) {
+    return this.fetcher.get<OperationResponse<"get_account_relationship">>(
+      `/api/v2/accounts/${segment(addressOrUsername)}/relationship`,
+    )
+  }
+
+  getAccountFollowing(
+    addressOrUsername: string,
+    query?: WalletAuthQuery<"get_account_following">,
+  ) {
+    return this.fetcher.get<OperationResponse<"get_account_following">>(
+      `/api/v2/accounts/${segment(addressOrUsername)}/following`,
+      query,
+    )
+  }
+
+  getAccountFollowers(
+    addressOrUsername: string,
+    query?: WalletAuthQuery<"get_account_followers">,
+  ) {
+    return this.fetcher.get<OperationResponse<"get_account_followers">>(
+      `/api/v2/accounts/${segment(addressOrUsername)}/followers`,
+      query,
+    )
+  }
+
+  followAccount(addressOrUsername: string) {
+    return this.fetcher.request<OperationResponse<"follow_account">>(
+      "POST",
+      `/api/v2/accounts/${segment(addressOrUsername)}/follow`,
+    )
+  }
+
+  unfollowAccount(addressOrUsername: string) {
+    return this.fetcher.request<OperationResponse<"unfollow_account">>(
+      "DELETE",
+      `/api/v2/accounts/${segment(addressOrUsername)}/follow`,
+    )
+  }
+
+  watchAccount(addressOrUsername: string) {
+    return this.fetcher.request<OperationResponse<"watch_account">>(
+      "POST",
+      `/api/v2/accounts/${segment(addressOrUsername)}/watch`,
+    )
+  }
+
+  unwatchAccount(addressOrUsername: string) {
+    return this.fetcher.request<OperationResponse<"unwatch_account">>(
+      "DELETE",
+      `/api/v2/accounts/${segment(addressOrUsername)}/watch`,
+    )
+  }
+
+  listSavedTools(query?: WalletAuthQuery<"list_saved_tools">) {
+    return this.fetcher.get<OperationResponse<"list_saved_tools">>(
+      "/api/v2/saved-tools",
+      query,
+    )
+  }
+
+  saveTool(body: WalletAuthRequest<"save_tool">) {
+    return this.fetcher.request<OperationResponse<"save_tool">>(
+      "POST",
+      "/api/v2/saved-tools",
+      body,
+    )
+  }
+
+  removeSavedTool(query: WalletAuthQuery<"unsave_tool">) {
+    const params = new URLSearchParams({
+      tool_id: query.toolId,
+      registry_chain: query.registryChain,
+      registry_addr: query.registryAddr,
+    })
+    if (query.toolkitName != null) {
+      params.set("toolkit_name", query.toolkitName)
+    }
+    return this.fetcher.request<OperationResponse<"unsave_tool">>(
+      "DELETE",
+      `/api/v2/saved-tools?${params}`,
+    )
+  }
+
   cancelOrder(
     chain: string,
     protocolAddress: string,

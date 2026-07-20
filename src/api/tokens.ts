@@ -1,5 +1,6 @@
 import type { Chain } from "../types"
 import {
+  getAccountTokenActivityPath,
   getBatchTokensPath,
   getSwapExecutePath,
   getSwapQuotePath,
@@ -17,6 +18,8 @@ import {
 import type { Fetcher } from "./fetcher"
 import type {
   BatchTokensRequest,
+  GetAccountTokenActivityArgs,
+  GetAccountTokenActivityResponse,
   GetSwapQuoteArgs,
   GetSwapQuoteResponse,
   GetTokenGroupResponse,
@@ -164,6 +167,20 @@ export class TokensAPI {
   ): Promise<TokenSwapActivityPaginatedResponse> {
     return this.fetcher.get<TokenSwapActivityPaginatedResponse>(
       getTokenActivityPath(chain, address),
+      args,
+    )
+  }
+
+  /**
+   * Fetch paginated fungible token activity (transfers, swaps, wraps, and
+   * unwraps) for an account across all chains.
+   */
+  async getAccountTokenActivity(
+    address: string,
+    args?: GetAccountTokenActivityArgs,
+  ): Promise<GetAccountTokenActivityResponse> {
+    return this.fetcher.get<GetAccountTokenActivityResponse>(
+      getAccountTokenActivityPath(address),
       args,
     )
   }

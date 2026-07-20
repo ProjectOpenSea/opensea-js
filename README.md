@@ -41,41 +41,35 @@ Happy seafaring!
 
 ### Wallet-authenticated API helpers
 
-For a server-side EVM signer, `OpenSeaAuth` runs the current SIWE session,
-scoped-token creation, and token-exchange flow. It re-exchanges the scoped token
-when the JWT expires and uses the wallet session for revocation.
+For a server-side EVM signer, `OpenSeaAuth` signs in with SIWE, creates a scoped
+personal access token (PAT), and exchanges it for the short-lived JWT used by
+REST and MCP.
 
 ```typescript
-import { OpenSeaAuth } from "@opensea/sdk"
+import { Wallet } from "ethers"
+import { OpenSeaAPI, OpenSeaAuth } from "@opensea/sdk"
 
+const signer = new Wallet(process.env.OPENSEA_PRIVATE_KEY!)
 const auth = new OpenSeaAuth()
-const token = await auth.authenticate(signer, {
-  scopes: ["read:favorites", "write:orders"],
-})
-const freshToken = await auth.getValidToken()
-await auth.revoke(freshToken.accessToken)
+let token = await auth.authenticate(signer, { scopes: ["read:favorites"] })
+
+try {
+  token = await auth.getValidToken()
+  const api = new OpenSeaAPI({
+    apiKey: process.env.OPENSEA_API_KEY,
+    authToken: token.accessToken,
+  })
+  await api.walletAuth.getFavorites(await signer.getAddress(), { limit: 10 })
+} finally {
+  await auth.revoke(token.accessToken)
+}
 ```
 
-Pass an exchanged scoped JWT as `authToken`, then use the generated
-`walletAuth` helpers. Server-side scope enforcement still applies.
-
-```typescript
-import { OpenSeaAPI } from "@opensea/sdk"
-
-const api = new OpenSeaAPI({
-  apiKey: process.env.OPENSEA_API_KEY,
-  authToken: process.env.OPENSEA_AUTH_TOKEN,
-})
-
-const favorites = await api.walletAuth.getFavorites("0xYOUR_WALLET", {
-  limit: 10,
-})
-await api.walletAuth.updateProfileSettings({ bio: "Building with OpenSea" })
-```
-
-The helper request and response types are generated from the deployed OpenAPI
-operations. Drops, collections, profile shelves, favorites/watchlists, order
-cancellation, and wallet link/unlink are covered.
+Keep the same `OpenSeaAuth` instance through revocation because it holds the
+SIWE session. `revoke()` accepts the current JWT as a guard, revokes its backing
+PAT, and clears the in-memory auth state. `walletAuth` provides typed helpers
+for every deployed scoped operation; request only the scopes the task needs. See the
+[wallet-auth guide](https://docs.opensea.io/reference/auth).
 
 ## Quick Start
 

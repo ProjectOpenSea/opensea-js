@@ -1,23 +1,32 @@
 import type {
+  AccountSearchResponse as ApiAccountSearchResponse,
   BuildOfferResponse as ApiBuildOfferResponse,
   CancelResponse as ApiCancelResponse,
+  CollectionSearchResponse as ApiCollectionSearchResponse,
   Listing as ApiListing,
   Nft as ApiNft,
+  NftSearchResponse as ApiNftSearchResponse,
   Offer as ApiOffer,
   Order as ApiOrder,
   OrderAsset as ApiOrderAsset,
   Payment as ApiPayment,
   Price as ApiPrice,
+  SearchResponse as ApiSearchResponse,
+  SearchResultResponse as ApiSearchResultResponse,
   SwapExecuteRequest as ApiSwapExecuteRequest,
   SwapExecuteResponse as ApiSwapExecuteResponse,
   SwapQuoteResponse as ApiSwapQuoteResponse,
   SweepCollectionRequest as ApiSweepCollectionRequest,
   SweepCollectionResponse as ApiSweepCollectionResponse,
+  TokenDetailedResponse as ApiTokenDetailedResponse,
+  TokenResponse as ApiTokenResponse,
+  TokenSearchResponse as ApiTokenSearchResponse,
   Trait as ApiTrait,
   TransactionReceiptRequest as ApiTransactionReceiptRequest,
   TransactionReceiptResponse as ApiTransactionReceiptResponse,
   AssetMetadataResponse,
   ChainResponse,
+  ContractResponse,
   DropDetailedResponse,
   DropResponse,
   DropStageResponse,
@@ -27,9 +36,12 @@ import type {
   NftListResponse,
   NftResponse,
   OffersResponse,
+  TokenAccountActivityPaginatedResponse,
+  TokenBalancePaginatedResponse,
   TokenBalanceResponse,
   TokenGroupPaginatedResponse,
   TokenGroupResponse,
+  TokenPaginatedResponse,
 } from "@opensea/api-types"
 import type { OrderType, ProtocolData } from "../orders/types"
 import type { OpenSeaCollection } from "../types"
@@ -643,25 +655,15 @@ export type GetEventsResponse = QueryCursorsV2 & {
 }
 
 /**
- * Contract information returned by OpenSea API.
+ * Contract information returned by OpenSea API. Sourced from
+ * `@opensea/api-types` (`ContractResponse`) with `collection` widened to
+ * `string | null` because the live API returns `null` for contracts without an
+ * associated collection even though the spec models it as required non-null.
  * @category API Models
  */
-export type Contract = {
-  /** Contract address */
-  address: string
-  /** Chain the contract is deployed on */
-  chain: string
-  /**
-   * Associated collection slug. `null` for contracts without an associated
-   * collection on OpenSea. TODO(api-types): the OpenAPI spec marks this as
-   * required non-null, but the live API returns null for standalone contracts —
-   * swap to `Camelize<ContractResponse>` once the spec is updated.
-   */
+export type Contract = Camelize<Omit<ContractResponse, "collection">> & {
+  /** Associated collection slug (null when the contract has no collection) */
   collection: string | null
-  /** Contract name */
-  name: string
-  /** Contract standard (e.g., erc721, erc1155) */
-  contractStandard: string
 }
 
 /**
@@ -700,45 +702,41 @@ export type GetTraitsResponse = {
 }
 
 /**
- * Token model returned by OpenSea API.
+ * Token model returned by OpenSea API token list endpoints.
  *
- * TODO(api-types): swap to `Camelize<TokenResponse>` once the OpenAPI spec
- * marks `image_url` as nullable (the live API returns `null` for tokens
- * without an image). Currently the spec models it as optional non-null.
+ * Camelized from `@opensea/api-types` `TokenResponse`. `imageUrl` is widened
+ * to `string | null` because the live API returns `null` for tokens without
+ * an image even though the spec models it as optional non-null.
  *
  * @category API Models
  */
-export type Token = {
-  /** Token contract address */
-  address: string
-  /** Chain the token is on */
-  chain: string
-  /** Token name */
-  name: string
-  /** Token symbol */
-  symbol: string
-  /** Number of decimals */
-  decimals: number
+export type Token = Camelize<Omit<ApiTokenResponse, "image_url">> & {
   /** URL of the token image (null when the token has no image) */
-  imageUrl: string | null
-  /** URL on OpenSea */
-  openseaUrl: string
+  imageUrl?: string | null
 }
 
 /**
- * Response from OpenSea API for fetching trending tokens.
+ * Response from OpenSea API for fetching trending tokens. Sourced from
+ * `@opensea/api-types` (`TokenPaginatedResponse`) with `tokens` overridden to
+ * use the SDK's nullable-image `Token` type.
  * @category API Response Types
  */
-export type GetTrendingTokensResponse = QueryCursorsV2 & {
+export type GetTrendingTokensResponse = Camelize<
+  Omit<TokenPaginatedResponse, "tokens">
+> & {
   /** List of {@link Token} */
   tokens: Token[]
 }
 
 /**
- * Response from OpenSea API for fetching top tokens.
+ * Response from OpenSea API for fetching top tokens. Sourced from
+ * `@opensea/api-types` (`TokenPaginatedResponse`) with `tokens` overridden to
+ * use the SDK's nullable-image `Token` type.
  * @category API Response Types
  */
-export type GetTopTokensResponse = QueryCursorsV2 & {
+export type GetTopTokensResponse = Camelize<
+  Omit<TokenPaginatedResponse, "tokens">
+> & {
   /** List of {@link Token} */
   tokens: Token[]
 }
@@ -788,7 +786,12 @@ export type GetSwapQuoteResponse = Camelize<ApiSwapQuoteResponse>
  * Response from OpenSea API for fetching token details.
  * @category API Response Types
  */
-export type GetTokenResponse = Token
+export type GetTokenResponse = Camelize<
+  Omit<ApiTokenDetailedResponse, "image_url">
+> & {
+  /** URL of the token image (null when the token has no image) */
+  imageUrl?: string | null
+}
 
 /**
  * Response from OpenSea API for fetching a token group by slug.
@@ -835,88 +838,70 @@ export interface SearchArgs {
 }
 
 /**
- * Collection search result.
+ * Collection search result. Sourced from `@opensea/api-types`
+ * (`CollectionSearchResponse`). `imageUrl` is widened to `string | null` to
+ * match the live API response for collections without an image.
  * @category API Models
  */
-export type CollectionSearchResult = {
-  /** The collection slug */
-  collection: string
-  /** The collection name */
-  name: string
-  /** URL of the collection image */
-  imageUrl: string | null
-  /** Whether trading is disabled for this collection */
-  isDisabled: boolean
-  /** Whether this collection is marked as NSFW */
-  isNsfw: boolean
-  /** URL to the collection on OpenSea */
-  openseaUrl: string
+export type CollectionSearchResult = Camelize<
+  Omit<ApiCollectionSearchResponse, "image_url">
+> & {
+  /** URL of the collection image (null when no image) */
+  imageUrl?: string | null
 }
 
 /**
- * Token (currency) search result.
+ * Token (currency) search result. Sourced from `@opensea/api-types`
+ * (`TokenSearchResponse`). `imageUrl` is widened to `string | null` to match
+ * the live API response for tokens without an image.
  * @category API Models
  */
-export type TokenSearchResult = {
-  /** Contract address of the token */
-  address: string
-  /** Blockchain the token is on */
-  chain: string
-  /** Token name */
-  name: string
-  /** Token symbol */
-  symbol: string
-  /** URL of the token image */
-  imageUrl: string | null
-  /** Current USD price of the token */
-  usdPrice: string
-  /** Number of decimal places for the token */
-  decimals: number
-  /** URL to the token on OpenSea */
-  openseaUrl: string
+export type TokenSearchResult = Camelize<
+  Omit<ApiTokenSearchResponse, "image_url">
+> & {
+  /** URL of the token image (null when no image) */
+  imageUrl?: string | null
 }
 
 /**
- * NFT search result.
+ * NFT search result. Sourced from `@opensea/api-types`
+ * (`NftSearchResponse`). `name` and `imageUrl` are widened to `string | null`
+ * to match the live API response.
  * @category API Models
  */
-export type NftSearchResult = {
-  /** Token ID of the NFT */
-  identifier: string
-  /** Collection slug the NFT belongs to */
-  collection: string
-  /** Contract address of the NFT */
-  contract: string
-  /** Name of the NFT */
-  name: string | null
-  /** URL of the NFT image */
-  imageUrl: string | null
-  /** URL to the NFT on OpenSea */
-  openseaUrl: string
+export type NftSearchResult = Camelize<
+  Omit<ApiNftSearchResponse, "image_url" | "name">
+> & {
+  /** Name of the NFT (null when not named) */
+  name?: string | null
+  /** URL of the NFT image (null when no image) */
+  imageUrl?: string | null
 }
 
 /**
- * Account search result.
+ * Account search result. Sourced from `@opensea/api-types`
+ * (`AccountSearchResponse`). `username` and `profileImageUrl` are widened to
+ * `string | null` to match the live API response.
  * @category API Models
  */
-export type AccountSearchResult = {
-  /** Primary wallet address of the account */
-  address: string
-  /** Username of the account */
-  username: string | null
-  /** URL of the account's profile image */
-  profileImageUrl: string | null
-  /** URL to the account on OpenSea */
-  openseaUrl: string
+export type AccountSearchResult = Camelize<
+  Omit<ApiAccountSearchResponse, "username" | "profile_image_url">
+> & {
+  /** Username of the account (null when not set) */
+  username?: string | null
+  /** URL of the account's profile image (null when not set) */
+  profileImageUrl?: string | null
 }
 
 /**
- * A single search result with a type discriminator and the corresponding typed object.
+ * A single search result with a type discriminator and the corresponding typed
+ * object. Built from `@opensea/api-types` (`SearchResultResponse`) with nested
+ * search-result types using the SDK's nullable-image overrides.
  * @category API Models
  */
-export type SearchResult = {
-  /** The type of search result */
-  type: string
+export type SearchResult = Camelize<
+  Omit<ApiSearchResultResponse, "collection" | "token" | "nft" | "account">
+> & {
   /** Collection details, present when type is 'collection' */
   collection?: CollectionSearchResult
   /** Token details, present when type is 'token' */
@@ -928,10 +913,11 @@ export type SearchResult = {
 }
 
 /**
- * Response from OpenSea API for search.
+ * Response from OpenSea API for search. Built from `@opensea/api-types`
+ * (`SearchResponse`) with the SDK's `SearchResult` type.
  * @category API Response Types
  */
-export type SearchResponse = {
+export type SearchResponse = Camelize<Omit<ApiSearchResponse, "results">> & {
   /** List of search results ranked by relevance */
   results: SearchResult[]
 }
@@ -954,11 +940,17 @@ export type GetChainsResponse = {
 
 /**
  * Token balance for a wallet address. Sourced from `@opensea/api-types`
- * (`TokenBalanceResponse`). Gains optional `status`, `base_token_liquidity_usd`,
- * and `quote_token_liquidity_usd` fields the hand-rolled version didn't expose.
+ * (`TokenBalanceResponse`). Gains optional `status`, `baseTokenLiquidityUsd`,
+ * and `quoteTokenLiquidityUsd` fields the hand-rolled version didn't expose.
+ * `imageUrl` is widened to `string | null` because the live API returns `null`
+ * for tokens without an image even though the spec models it as optional
+ * non-null.
  * @category API Models
  */
-export type TokenBalance = Camelize<TokenBalanceResponse>
+export type TokenBalance = Camelize<Omit<TokenBalanceResponse, "image_url">> & {
+  /** URL of the token image (null when the token has no image) */
+  imageUrl?: string | null
+}
 
 /**
  * Query args for Get Account Tokens endpoint.
@@ -980,10 +972,14 @@ export interface GetAccountTokensArgs {
 }
 
 /**
- * Response from OpenSea API for fetching account token balances.
+ * Response from OpenSea API for fetching account token balances. Sourced from
+ * `@opensea/api-types` (`TokenBalancePaginatedResponse`) with `token_balances`
+ * overridden to use the SDK's nullable-image `TokenBalance` type.
  * @category API Response Types
  */
-export type GetAccountTokensResponse = QueryCursorsV2 & {
+export type GetAccountTokensResponse = Camelize<
+  Omit<TokenBalancePaginatedResponse, "token_balances">
+> & {
   /** List of token balances */
   tokenBalances: TokenBalance[]
 }
@@ -1310,6 +1306,30 @@ export interface TokenActivityArgs {
   limit?: number
   cursor?: string
 }
+
+/**
+ * Query args for the account token activity endpoint.
+ * @category API Query Args
+ */
+export interface GetAccountTokenActivityArgs {
+  /** Chain(s) to filter by. Repeat for multiple chains. */
+  chains?: string[]
+  /** Token contract address(es) to filter by. */
+  tokens?: string[]
+  /** Activity types to include (send, receive, swap, wrap, unwrap). */
+  type?: string[]
+  /** Number of items to return per page. */
+  limit?: number
+  /** Pagination cursor for the next page. */
+  next?: string
+}
+
+/**
+ * Response from OpenSea API for fetching account token activity.
+ * @category API Response Types
+ */
+export type GetAccountTokenActivityResponse =
+  Camelize<TokenAccountActivityPaginatedResponse>
 
 /**
  * Query args for the token holders endpoint (paginated with `cursor`,

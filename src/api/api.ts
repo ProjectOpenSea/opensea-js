@@ -56,6 +56,8 @@ import {
   type DropMintRequest,
   type DropMintResponse,
   type FloorPriceHistoryResponse,
+  type GetAccountTokenActivityArgs,
+  type GetAccountTokenActivityResponse,
   type GetAccountTokensArgs,
   type GetAccountTokensResponse,
   type GetBestListingResponse,
@@ -1092,6 +1094,17 @@ export class OpenSeaAPI {
     args?: TokenActivityArgs,
   ): Promise<TokenSwapActivityPaginatedResponse> {
     return this.tokensAPI.getTokenActivity(chain, address, args)
+  }
+
+  /**
+   * Fetch paginated fungible token activity (transfers, swaps, wraps, and
+   * unwraps) for an account across all chains.
+   */
+  public async getAccountTokenActivity(
+    address: string,
+    args?: GetAccountTokenActivityArgs,
+  ): Promise<GetAccountTokenActivityResponse> {
+    return this.tokensAPI.getAccountTokenActivity(address, args)
   }
 
   /**

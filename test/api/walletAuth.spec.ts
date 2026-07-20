@@ -22,6 +22,38 @@ describe("WalletAuthAPI", () => {
       ["DELETE", "/api/v2/watchlist", () => api.removeWatchlistEntry(body)],
       [
         "POST",
+        "/api/v2/accounts/alice%2Fexample/follow",
+        () => api.followAccount("alice/example"),
+      ],
+      [
+        "DELETE",
+        "/api/v2/accounts/alice%2Fexample/follow",
+        () => api.unfollowAccount("alice/example"),
+      ],
+      [
+        "POST",
+        "/api/v2/accounts/alice%2Fexample/watch",
+        () => api.watchAccount("alice/example"),
+      ],
+      [
+        "DELETE",
+        "/api/v2/accounts/alice%2Fexample/watch",
+        () => api.unwatchAccount("alice/example"),
+      ],
+      ["POST", "/api/v2/saved-tools", () => api.saveTool(body)],
+      [
+        "DELETE",
+        "/api/v2/saved-tools?tool_id=tool%2F1&registry_chain=base&registry_addr=0xabc&toolkit_name=my+tools",
+        () =>
+          api.removeSavedTool({
+            toolId: "tool/1",
+            registryChain: "base",
+            registryAddr: "0xabc",
+            toolkitName: "my tools",
+          }),
+      ],
+      [
+        "POST",
         "/api/v2/orders/chain/base/protocol/0xabc/order-1/cancel",
         () => api.cancelOrder("base", "0xabc", "order-1", body),
       ],
@@ -150,5 +182,27 @@ describe("WalletAuthAPI", () => {
     expect(get).toHaveBeenLastCalledWith(
       "/api/v2/account/0xabc/perpetual_watchlist",
     )
+
+    await api.getAccountRelationship("alice/example")
+    expect(get).toHaveBeenLastCalledWith(
+      "/api/v2/accounts/alice%2Fexample/relationship",
+    )
+
+    await api.getAccountFollowing("alice", { limit: 10, cursor: "next" })
+    expect(get).toHaveBeenLastCalledWith("/api/v2/accounts/alice/following", {
+      limit: 10,
+      cursor: "next",
+    })
+
+    await api.getAccountFollowers("alice", { limit: 20 })
+    expect(get).toHaveBeenLastCalledWith("/api/v2/accounts/alice/followers", {
+      limit: 20,
+    })
+
+    await api.listSavedTools({ toolkitName: "trading", limit: 5 })
+    expect(get).toHaveBeenLastCalledWith("/api/v2/saved-tools", {
+      toolkitName: "trading",
+      limit: 5,
+    })
   })
 })

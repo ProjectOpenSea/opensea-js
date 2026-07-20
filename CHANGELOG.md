@@ -1,5 +1,16 @@
 # @opensea/sdk
 
+## 11.5.0
+
+### Minor Changes
+
+- bf5874d: Add `getAccountTokenActivity` to `TokensAPI` and `OpenSeaAPI` for `GET /api/v2/account/{address}/token-activity`. Derive `Contract`, `TokenBalance`, `GetTrendingTokensResponse`, `GetTopTokensResponse`, `GetAccountTokensResponse`, `CollectionSearchResult`, `TokenSearchResult`, `NftSearchResult`, `AccountSearchResult`, `SearchResult`, and `SearchResponse` from `@opensea/api-types` schemas with nullable-field overrides where the live API returns `null` for optional fields.
+- bf5874d: Update `Token` and `GetTokenResponse` to derive from the OpenAPI `TokenResponse` and `TokenDetailedResponse` schemas, exposing new fields including `usdPrice`, `isVerified`, `marketCapUsd`, `volume24h`, `priceChange24h`, `holdersCount`, `createdAt`, `genesisDate`, `description`, `stats`, `socials`, and `status`.
+
+### Patch Changes
+
+- 9bc9708: Require explicit scopes for private-key CLI login, and add typed SDK helpers for the wallet-authenticated social and saved-tools REST endpoints.
+
 ## 11.4.9
 
 ### Patch Changes
