@@ -1,5 +1,14 @@
 # @opensea/sdk
 
+## 11.4.9
+
+### Patch Changes
+
+- 06e96e1: Use the current SIWE session, scoped-token creation, token-exchange, session refresh, and session-only revocation endpoints in the SDK and CLI.
+- feb1446: Sync OpenAPI spec: add `/api/v2/saved-tools` (GET/POST/DELETE) beta endpoints and `read:tools`/`write:tools` auth scopes, new saved-tool schemas, and additive token fields (`is_verified`, `holders_count`, `created_at`, `genesis_date`, `description_source`, `subreddit_identifier`). Adds `OPENSEA_SCOPES.READ_TOOLS`/`WRITE_TOOLS` to the SDK.
+- Updated dependencies [feb1446]
+  - @opensea/api-types@0.8.2
+
 ## 11.4.8
 
 ### Patch Changes

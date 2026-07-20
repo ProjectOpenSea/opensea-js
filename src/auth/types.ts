@@ -4,7 +4,7 @@
 export interface AuthToken {
   /** JWT access token */
   accessToken: string
-  /** Refresh token for obtaining a new access token */
+  /** Scoped token (PAT) used to exchange for a new access token */
   refreshToken: string
   /** When the access token expires */
   expiresAt: Date
@@ -24,7 +24,9 @@ export interface AuthenticateOptions {
  * Configuration for the {@link OpenSeaAuth} class.
  */
 export interface OpenSeaAuthConfig {
-  /** Auth server base URL. Defaults to `https://auth.opensea.io`. */
+  /** OpenSea API base URL. Defaults to `https://api.opensea.io`. */
+  apiBaseUrl?: string
+  /** @deprecated Use `apiBaseUrl`. */
   authBaseUrl?: string
 }
 
@@ -38,7 +40,8 @@ export interface AuthSigner {
 }
 
 /**
- * Raw token response from the auth server `/api/token` and `/api/refresh` endpoints.
+ * Legacy auth response shape retained for source compatibility.
+ * @deprecated The public wallet-auth API now returns scoped-token and exchange responses.
  */
 export interface AuthTokenResponse {
   access_token: string
@@ -48,7 +51,7 @@ export interface AuthTokenResponse {
 }
 
 /**
- * Nonce response from the auth server `/api/nonce` endpoint.
+ * Response from the SIWE nonce endpoint.
  */
 export interface AuthNonceResponse {
   nonce: string

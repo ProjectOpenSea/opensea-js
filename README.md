@@ -41,8 +41,23 @@ Happy seafaring!
 
 ### Wallet-authenticated API helpers
 
+For a server-side EVM signer, `OpenSeaAuth` runs the current SIWE session,
+scoped-token creation, and token-exchange flow. It re-exchanges the scoped token
+when the JWT expires and uses the wallet session for revocation.
+
+```typescript
+import { OpenSeaAuth } from "@opensea/sdk"
+
+const auth = new OpenSeaAuth()
+const token = await auth.authenticate(signer, {
+  scopes: ["read:favorites", "write:orders"],
+})
+const freshToken = await auth.getValidToken()
+await auth.revoke(freshToken.accessToken)
+```
+
 Pass an exchanged scoped JWT as `authToken`, then use the generated
-`walletAuth` helpers. Server-side allowlist and scope enforcement still apply.
+`walletAuth` helpers. Server-side scope enforcement still applies.
 
 ```typescript
 import { OpenSeaAPI } from "@opensea/sdk"

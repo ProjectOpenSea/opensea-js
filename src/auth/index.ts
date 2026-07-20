@@ -1,3 +1,4 @@
+import { createSiwxMessage, parseSiwxMessage } from "./siwx"
 import type {
   AuthenticateOptions,
   AuthNonceResponse,
@@ -30,16 +31,33 @@ export type {
   OpenSeaAuthConfig,
 }
 
-const DEFAULT_AUTH_BASE_URL = "https://auth.opensea.io"
-
-/** Buffer (in ms) before expiry at which auto-refresh triggers. */
+const DEFAULT_API_BASE_URL = "https://api.opensea.io"
+const DEFAULT_TOKEN_TTL_SECONDS = 3600
+const SCOPED_TOKEN_CLEANUP_ATTEMPTS = 2
 const REFRESH_BUFFER_MS = 60_000
+const SIWE_STATEMENT =
+  "Click to sign in and accept the OpenSea Terms of Service (https://opensea.io/tos) and Privacy Policy (https://opensea.io/privacy)."
+const SESSION_COOKIE_NAMES = ["access_token", "refresh_token"]
+
+interface ScopedTokenCreatedResponse {
+  id: string
+  token: string
+  scopes: string[]
+}
+
+interface ScopedTokenExchangeResponse {
+  accessToken: string
+  expiresIn?: number
+  tokenScopes?: string[]
+}
 
 /**
  * SIWE-based authentication helper for OpenSea.
  *
- * Handles the full sign-in flow: nonce request, EIP-4361 message generation,
- * signature exchange, token caching, and automatic refresh.
+ * Establishes a browser-style wallet session, creates a one-day scoped token,
+ * and exchanges that token for the short-lived JWT used by REST and MCP. Token
+ * management remains bound to the wallet session, while automatic JWT refresh
+ * uses the scoped token.
  *
  * @example
  * ```ts
@@ -49,62 +67,58 @@ const REFRESH_BUFFER_MS = 60_000
  * const token = await auth.authenticate(signer, {
  *   scopes: ["read:eligibility", "write:orders"],
  * })
- *
- * // Auto-refresh before expiry
  * const freshToken = await auth.getValidToken()
- *
- * // Revoke
- * await auth.revoke(token.accessToken)
+ * await auth.revoke(freshToken.accessToken)
  * ```
  *
  * @category Authentication
  */
 export class OpenSeaAuth {
-  private readonly authBaseUrl: string
+  private readonly apiBaseUrl: string
   private cachedToken: AuthToken | undefined
+  private scopedTokenId: string | undefined
+  private sessionCookies: string | undefined
 
   constructor(config: OpenSeaAuthConfig = {}) {
-    this.authBaseUrl = (config.authBaseUrl ?? DEFAULT_AUTH_BASE_URL).replace(
-      /\/$/,
-      "",
-    )
+    this.apiBaseUrl = (
+      config.apiBaseUrl ??
+      config.authBaseUrl ??
+      DEFAULT_API_BASE_URL
+    ).replace(/\/$/, "")
   }
 
-  /**
-   * Run the full SIWE authentication flow:
-   * 1. Request a nonce from the auth server
-   * 2. Build an EIP-4361 SIWE message
-   * 3. Sign it with the provided signer
-   * 4. Exchange the signature for a scoped JWT token
-   *
-   * The returned token is cached in memory and will be auto-refreshed
-   * by {@link getValidToken}.
-   */
+  /** Run the current SIWE, scoped-token creation, and token-exchange flow. */
   async authenticate(
     signer: AuthSigner,
     options: AuthenticateOptions = {},
   ): Promise<AuthToken> {
+    const scopes = options.scopes ?? []
     const address = await signer.getAddress()
     const { nonce } = await this.requestNonce()
-    const message = generateSiweMessage(
-      address,
-      options.scopes ?? [],
-      nonce,
-      this.authBaseUrl,
-    )
+    // Webauth uses SIWE only to establish the wallet session. Including PAT
+    // scopes here does not round-trip through its signature reconstruction;
+    // scope entitlement is enforced by the session-authorized token request.
+    const message = generateSiweMessage(address, [], nonce, this.apiBaseUrl)
     const signature = await signer.signMessage(message)
-    const tokenResponse = await this.exchangeSignature(message, signature)
-    const token = toAuthToken(tokenResponse)
+    const cookie = await this.verifySignature(message, signature)
+    const scopedToken = await this.createScopedToken(cookie, scopes)
+
+    let exchange: ScopedTokenExchangeResponse
+    try {
+      exchange = await this.exchangeScopedToken(scopedToken.token)
+    } catch (error) {
+      await this.cleanupScopedToken(cookie, scopedToken.id)
+      throw error
+    }
+
+    const token = toAuthToken(exchange, scopedToken)
     this.cachedToken = token
+    this.scopedTokenId = scopedToken.id
+    this.sessionCookies = cookie
     return token
   }
 
-  /**
-   * Return a valid access token, refreshing automatically if the cached
-   * token is expired or about to expire.
-   *
-   * @throws If no token has been obtained yet via {@link authenticate}.
-   */
+  /** Return a valid JWT, exchanging the stored scoped token when needed. */
   async getValidToken(): Promise<AuthToken> {
     if (!this.cachedToken) {
       throw new Error(
@@ -113,132 +127,213 @@ export class OpenSeaAuth {
     }
 
     if (this.cachedToken.expiresAt.getTime() - Date.now() < REFRESH_BUFFER_MS) {
-      const tokenResponse = await this.refreshToken(
+      const exchange = await this.exchangeScopedToken(
         this.cachedToken.refreshToken,
       )
-      this.cachedToken = toAuthToken(tokenResponse)
+      this.cachedToken = toAuthToken(exchange, {
+        id: this.scopedTokenId ?? "",
+        token: this.cachedToken.refreshToken,
+        scopes: this.cachedToken.scopes,
+      })
     }
 
     return this.cachedToken
   }
 
-  /**
-   * Revoke an access token.
-   */
+  /** Revoke the scoped token backing the current JWT. */
   async revoke(accessToken: string): Promise<void> {
-    const response = await fetch(`${this.authBaseUrl}/api/revoke`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: accessToken }),
-    })
-    if (!response.ok) {
+    if (
+      !this.cachedToken ||
+      !this.scopedTokenId ||
+      !this.sessionCookies ||
+      this.cachedToken.accessToken !== accessToken
+    ) {
       throw new Error(
-        `Auth server error (${response.status}): ${response.statusText}`,
+        "The access token is not managed by this OpenSeaAuth instance",
       )
     }
-    if (this.cachedToken?.accessToken === accessToken) {
-      this.cachedToken = undefined
-    }
+
+    const refreshedCookies = await this.refreshSession(this.sessionCookies)
+    // The refresh token rotates, so retain the replacement if DELETE needs a
+    // retry after a transient failure.
+    this.sessionCookies = refreshedCookies
+    const response = await fetch(
+      `${this.apiBaseUrl}/api/v2/auth/tokens/${this.scopedTokenId}`,
+      { method: "DELETE", headers: { Cookie: refreshedCookies } },
+    )
+    await requireOk(response, "Scoped token revocation")
+    this.cachedToken = undefined
+    this.scopedTokenId = undefined
+    this.sessionCookies = undefined
   }
 
-  /** Request a nonce from the auth server. */
+  /** Request a single-use SIWE nonce. */
   async requestNonce(): Promise<AuthNonceResponse> {
-    const response = await fetch(`${this.authBaseUrl}/api/nonce`, {
-      method: "GET",
+    const response = await fetch(`${this.apiBaseUrl}/api/v2/auth/siwe/nonce`, {
+      method: "POST",
       headers: { Accept: "application/json" },
     })
-    if (!response.ok) {
-      throw new Error(
-        `Auth server error (${response.status}): ${response.statusText}`,
-      )
-    }
+    await requireOk(response, "Nonce request")
     return response.json() as Promise<AuthNonceResponse>
   }
 
-  /** Exchange a signed SIWE message for a JWT token. */
-  private async exchangeSignature(
+  private async verifySignature(
     message: string,
     signature: string,
-  ): Promise<AuthTokenResponse> {
-    const response = await fetch(`${this.authBaseUrl}/api/token`, {
+  ): Promise<string> {
+    const response = await fetch(`${this.apiBaseUrl}/api/v2/auth/siwe/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, signature }),
+      body: JSON.stringify({
+        message: parseSiwxMessage(message),
+        signature,
+        chainArch: "EVM",
+      }),
     })
-    if (!response.ok) {
-      throw new Error(
-        `Auth server error (${response.status}): ${response.statusText}`,
-      )
-    }
-    return response.json() as Promise<AuthTokenResponse>
+    await requireOk(response, "SIWE verification")
+    return extractSessionCookies(response.headers)
   }
 
-  /** Refresh an access token using a refresh token. */
-  private async refreshToken(
-    refreshTokenValue: string,
-  ): Promise<AuthTokenResponse> {
-    const response = await fetch(`${this.authBaseUrl}/api/refresh`, {
+  private async createScopedToken(
+    cookie: string,
+    scopes: string[],
+  ): Promise<ScopedTokenCreatedResponse> {
+    const response = await fetch(`${this.apiBaseUrl}/api/v2/auth/tokens`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh_token: refreshTokenValue }),
+      headers: { "Content-Type": "application/json", Cookie: cookie },
+      body: JSON.stringify({
+        label: `opensea-sdk-${Date.now()}`,
+        scopes,
+        expiresInDays: 1,
+      }),
     })
-    if (!response.ok) {
-      throw new Error(
-        `Auth server error (${response.status}): ${response.statusText}`,
-      )
+    await requireOk(response, "Scoped token creation")
+    return response.json() as Promise<ScopedTokenCreatedResponse>
+  }
+
+  private async exchangeScopedToken(
+    scopedToken: string,
+  ): Promise<ScopedTokenExchangeResponse> {
+    const response = await fetch(
+      `${this.apiBaseUrl}/api/v2/auth/tokens/exchange`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subjectToken: scopedToken,
+          subjectTokenType: "ACCESS_TOKEN",
+        }),
+      },
+    )
+    await requireOk(response, "Token exchange")
+    return response.json() as Promise<ScopedTokenExchangeResponse>
+  }
+
+  private async cleanupScopedToken(cookie: string, id: string): Promise<void> {
+    for (let attempt = 0; attempt < SCOPED_TOKEN_CLEANUP_ATTEMPTS; attempt++) {
+      try {
+        const response = await fetch(
+          `${this.apiBaseUrl}/api/v2/auth/tokens/${id}`,
+          { method: "DELETE", headers: { Cookie: cookie } },
+        )
+        if (response.ok || response.status === 404) return
+      } catch {
+        // Retry once, then preserve the original exchange failure.
+      }
     }
-    return response.json() as Promise<AuthTokenResponse>
+  }
+
+  private async refreshSession(cookie: string): Promise<string> {
+    const response = await fetch(
+      `${this.apiBaseUrl}/api/v2/auth/session/refresh`,
+      { method: "POST", headers: { Cookie: cookie } },
+    )
+    await requireOk(response, "Session refresh")
+    return extractSessionCookies(response.headers)
   }
 }
 
-/** Validity window (in ms) for a generated SIWE message. */
-const SIWE_MESSAGE_VALIDITY_MS = 10 * 60_000
-
 /**
- * Build an EIP-4361 (SIWE) message for OpenSea authentication.
- *
- * @see https://eips.ethereum.org/EIPS/eip-4361
+ * Build the SIWE message accepted by the current OpenSea wallet-auth API.
+ * The scopes argument remains for compatibility; webauth authorizes PAT scopes
+ * on token creation and does not accept them in this session proof.
  */
 export function generateSiweMessage(
   address: string,
-  scopes: string[],
+  _scopes: string[],
   nonce: string,
-  authBaseUrl: string,
+  _apiBaseUrl: string,
   chainId = 1,
 ): string {
-  const url = new URL(authBaseUrl)
-  const domain = url.host
-  const uri = `${authBaseUrl}/api/token`
-  const now = Date.now()
-  const issuedAt = new Date(now).toISOString()
-  const expirationTime = new Date(now + SIWE_MESSAGE_VALIDITY_MS).toISOString()
-  const resources =
-    scopes.length > 0
-      ? `\nResources:${scopes.map(s => `\n- ${s}`).join("")}`
-      : ""
-
-  return [
-    `${domain} wants you to sign in with your Ethereum account:`,
+  return createSiwxMessage({
     address,
-    "",
-    "Sign in to OpenSea",
-    "",
-    `URI: ${uri}`,
-    "Version: 1",
-    `Chain ID: ${chainId}`,
-    `Nonce: ${nonce}`,
-    `Issued At: ${issuedAt}`,
-    `Expiration Time: ${expirationTime}`,
-    ...(resources ? [resources] : []),
-  ].join("\n")
+    chainArch: "EVM",
+    chainId,
+    nonce,
+    statement: SIWE_STATEMENT,
+    issuedAt: new Date(),
+  })
 }
 
-/** Convert a raw auth server response to a typed AuthToken. */
-function toAuthToken(response: AuthTokenResponse): AuthToken {
+async function requireOk(response: Response, operation: string): Promise<void> {
+  if (response.ok) return
+  const body = await response.text().catch(() => "")
+  throw new Error(`${operation} failed (${response.status}): ${body}`)
+}
+
+function splitSetCookieHeader(header: string): string[] {
+  const segments = header.split(", ")
+  const cookies: string[] = []
+  let current = ""
+  for (const segment of segments) {
+    const trimmed = segment.trim()
+    const equals = trimmed.indexOf("=")
+    const name = equals > 0 ? trimmed.slice(0, equals).trim() : ""
+    if (SESSION_COOKIE_NAMES.includes(name) && current) {
+      cookies.push(current)
+      current = trimmed
+    } else if (SESSION_COOKIE_NAMES.includes(name)) {
+      current = trimmed
+    } else {
+      current = current ? `${current}, ${trimmed}` : trimmed
+    }
+  }
+  if (current) cookies.push(current)
+  return cookies
+}
+
+function extractSessionCookies(headers: Headers): string {
+  const getSetCookie = (headers as Headers & { getSetCookie?: () => string[] })
+    .getSetCookie
+  const raw =
+    getSetCookie?.call(headers) ??
+    splitSetCookieHeader(headers.get("set-cookie") ?? "")
+  const cookies = new Map<string, string>()
+  for (const cookie of raw) {
+    const pair = cookie.split(";")[0]
+    const equals = pair.indexOf("=")
+    if (equals < 0) continue
+    const name = pair.slice(0, equals).trim()
+    if (SESSION_COOKIE_NAMES.includes(name)) {
+      cookies.set(name, pair.slice(equals + 1).trim())
+    }
+  }
+  if (!cookies.has("access_token") || !cookies.has("refresh_token")) {
+    throw new Error("SIWE verification did not create a session")
+  }
+  return [...cookies].map(([name, value]) => `${name}=${value}`).join("; ")
+}
+
+function toAuthToken(
+  exchange: ScopedTokenExchangeResponse,
+  scopedToken: ScopedTokenCreatedResponse,
+): AuthToken {
   return {
-    accessToken: response.access_token,
-    refreshToken: response.refresh_token,
-    expiresAt: new Date(Date.now() + response.expires_in * 1000),
-    scopes: response.scopes,
+    accessToken: exchange.accessToken,
+    refreshToken: scopedToken.token,
+    expiresAt: new Date(
+      Date.now() + (exchange.expiresIn ?? DEFAULT_TOKEN_TTL_SECONDS) * 1000,
+    ),
+    scopes: exchange.tokenScopes ?? scopedToken.scopes,
   }
 }
