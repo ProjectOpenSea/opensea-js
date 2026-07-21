@@ -156,7 +156,7 @@ export class WalletAuthAPI {
     chain: string,
     protocolAddress: string,
     orderHash: string,
-    body: WalletAuthRequest<"cancel_order">,
+    body?: WalletAuthRequest<"cancel_order">,
   ) {
     return this.fetcher.request<OperationResponse<"cancel_order">>(
       "POST",
@@ -285,10 +285,15 @@ export class WalletAuthAPI {
     )
   }
 
-  createCollectionImageUpload(slug: string, imageType: string) {
+  createCollectionImageUpload(
+    slug: string,
+    imageType: string,
+    contentType: WalletAuthQuery<"upload_collection_image">["contentType"],
+  ) {
+    const query = new URLSearchParams({ content_type: contentType })
     return this.fetcher.request<OperationResponse<"upload_collection_image">>(
       "POST",
-      `/api/v2/collections/${segment(slug)}/images/${segment(imageType)}`,
+      `/api/v2/collections/${segment(slug)}/images/${segment(imageType)}?${query}`,
     )
   }
 
@@ -313,6 +318,21 @@ export class WalletAuthAPI {
       "POST",
       "/api/v2/profile/images",
       body,
+    )
+  }
+
+  setProfileNftPfp(body: WalletAuthRequest<"set_profile_nft_pfp">) {
+    return this.fetcher.request<OperationResponse<"set_profile_nft_pfp">>(
+      "POST",
+      "/api/v2/profile/nft-pfp",
+      body,
+    )
+  }
+
+  clearProfileNftPfp() {
+    return this.fetcher.request<OperationResponse<"clear_profile_nft_pfp">>(
+      "DELETE",
+      "/api/v2/profile/nft-pfp",
     )
   }
 

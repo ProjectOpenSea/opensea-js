@@ -59,6 +59,11 @@ describe("WalletAuthAPI", () => {
       ],
       [
         "POST",
+        "/api/v2/orders/chain/base/protocol/0xabc/order-1/cancel",
+        () => api.cancelOrder("base", "0xabc", "order-1"),
+      ],
+      [
+        "POST",
         "/api/v2/drops/my%20drop",
         () => api.saveDropEdits("my drop", body),
       ],
@@ -119,8 +124,9 @@ describe("WalletAuthAPI", () => {
       ],
       [
         "POST",
-        "/api/v2/collections/collection/images/banner",
-        () => api.createCollectionImageUpload("collection", "banner"),
+        "/api/v2/collections/collection/images/banner?content_type=image%2Fpng",
+        () =>
+          api.createCollectionImageUpload("collection", "banner", "image/png"),
       ],
       ["PATCH", "/api/v2/profile", () => api.updateProfileSettings(body)],
       [
@@ -133,6 +139,8 @@ describe("WalletAuthAPI", () => {
         "/api/v2/profile/images",
         () => api.createProfileImageUpload(body),
       ],
+      ["POST", "/api/v2/profile/nft-pfp", () => api.setProfileNftPfp(body)],
+      ["DELETE", "/api/v2/profile/nft-pfp", () => api.clearProfileNftPfp()],
       ["POST", "/api/v2/profile/shelves", () => api.createProfileShelf(body)],
       [
         "PATCH",
@@ -162,6 +170,30 @@ describe("WalletAuthAPI", () => {
       await run()
       expect(request.mock.calls[0]?.slice(0, 2)).toEqual([method, path])
     }
+  })
+
+  it("forwards the request body and returns the response for nft pfp helpers", async () => {
+    const settings = {
+      contract_address: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+      token_id: "1",
+      chain: "ethereum",
+    }
+    request.mockResolvedValueOnce(settings)
+    await expect(api.setProfileNftPfp(settings as never)).resolves.toBe(
+      settings,
+    )
+    expect(request).toHaveBeenLastCalledWith(
+      "POST",
+      "/api/v2/profile/nft-pfp",
+      settings,
+    )
+
+    request.mockResolvedValueOnce({ success: true })
+    await expect(api.clearProfileNftPfp()).resolves.toEqual({ success: true })
+    expect(request).toHaveBeenLastCalledWith(
+      "DELETE",
+      "/api/v2/profile/nft-pfp",
+    )
   })
 
   it("routes scoped reads with query support", async () => {

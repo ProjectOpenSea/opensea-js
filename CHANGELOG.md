@@ -1,5 +1,12 @@
 # @opensea/sdk
 
+## 11.5.1
+
+### Patch Changes
+
+- 8df1f43: Require the collection image MIME type in `walletAuth.createCollectionImageUpload` and allow body-less `walletAuth.cancelOrder` calls when no offerer signature is needed.
+- 14fcba5: Add `walletAuth.setProfileNftPfp` and `walletAuth.clearProfileNftPfp` helpers for the new `POST`/`DELETE /api/v2/profile/nft-pfp` endpoints, letting an authenticated wallet set or clear an owned NFT as its profile picture.
+
 ## 11.5.0
 
 ### Minor Changes

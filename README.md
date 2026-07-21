@@ -39,6 +39,29 @@ curl -s -X POST https://api.opensea.io/api/v2/auth/keys | jq -r '.api_key'
 
 Happy seafaring!
 
+## Quick Start
+
+### With ethers.js
+
+```typescript
+import { ethers } from "ethers";
+import { OpenSeaSDK, Chain } from "@opensea/sdk";
+
+const provider = new ethers.JsonRpcProvider("https://eth-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY");
+const sdk = new OpenSeaSDK(provider, { chain: Chain.Mainnet, apiKey: "YOUR_API_KEY" });
+```
+
+### With viem
+
+```typescript
+import { createPublicClient, createWalletClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
+import { OpenSeaSDK, Chain } from '@opensea/sdk/viem'
+
+const publicClient = createPublicClient({ chain: mainnet, transport: http() })
+const sdk = new OpenSeaSDK({ publicClient }, { chain: Chain.Mainnet, apiKey: 'YOUR_API_KEY' })
+```
+
 ### Wallet-authenticated API helpers
 
 For a server-side EVM signer, `OpenSeaAuth` signs in with SIWE, creates a scoped
@@ -70,29 +93,6 @@ SIWE session. `revoke()` accepts the current JWT as a guard, revokes its backing
 PAT, and clears the in-memory auth state. `walletAuth` provides typed helpers
 for every deployed scoped operation; request only the scopes the task needs. See the
 [wallet-auth guide](https://docs.opensea.io/reference/auth).
-
-## Quick Start
-
-### With ethers.js
-
-```typescript
-import { ethers } from "ethers";
-import { OpenSeaSDK, Chain } from "@opensea/sdk";
-
-const provider = new ethers.JsonRpcProvider("https://eth-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY");
-const sdk = new OpenSeaSDK(provider, { chain: Chain.Mainnet, apiKey: "YOUR_API_KEY" });
-```
-
-### With viem
-
-```typescript
-import { createPublicClient, createWalletClient, http } from 'viem'
-import { mainnet } from 'viem/chains'
-import { OpenSeaSDK, Chain } from '@opensea/sdk/viem'
-
-const publicClient = createPublicClient({ chain: mainnet, transport: http() })
-const sdk = new OpenSeaSDK({ publicClient }, { chain: Chain.Mainnet, apiKey: 'YOUR_API_KEY' })
-```
 
 ## Documentation
 
