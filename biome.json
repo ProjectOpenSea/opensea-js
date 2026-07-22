@@ -10,6 +10,7 @@
       "**/*.ts",
       "**/*.js",
       "**/*.json",
+      "!packages/tool-registry/lib",
       "!**/.claude",
       "!**/typechain",
       "!lib",

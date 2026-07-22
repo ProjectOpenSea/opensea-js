@@ -13,9 +13,9 @@ export class TransactionsAPI {
 
   /**
    * Get the receipt/status for a submitted transaction.
-   * Works for all transaction types: listing fulfillments, cross-chain buys,
-   * sweeps, offer fulfillments, and token swaps. Poll this endpoint to check
-   * completion status.
+   * Works for all transaction types: listing fulfillments, cross-chain buys and
+   * mints, sweeps, offer fulfillments, and token swaps. Poll this endpoint to
+   * check completion status.
    */
   async getTransactionReceipt(
     request: TransactionReceiptRequest,

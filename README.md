@@ -94,6 +94,26 @@ PAT, and clears the in-memory auth state. `walletAuth` provides typed helpers
 for every deployed scoped operation; request only the scopes the task needs. See the
 [wallet-auth guide](https://docs.opensea.io/reference/auth).
 
+### Cross-chain drop minting
+
+Build the ordered transactions for paying on one chain and minting a drop on
+another through the typed API client:
+
+```typescript
+const mint = await sdk.api.buildCrossChainDropMintTransactions("pyro-on-ape", {
+  payer: "0x1111111111111111111111111111111111111111",
+  minter: "0x1111111111111111111111111111111111111111",
+  quantity: 1,
+  payment: {
+    chain: "base",
+    tokenAddress: "0x0000000000000000000000000000000000000000",
+  },
+})
+
+// Submit mint.transactions in order, then poll the exact returned request.
+const receipt = await sdk.api.getTransactionReceipt(mint.receiptRequest)
+```
+
 ## Documentation
 
 - [Quick Start Guide](developerDocs/quick-start.md)

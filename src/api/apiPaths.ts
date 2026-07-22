@@ -213,6 +213,10 @@ export const getDropMintPath = (slug: string) => {
   return `${API_V2_PREFIX}/drops/${slug}/mint`
 }
 
+export const getCrossChainDropMintPath = (slug: string) => {
+  return `${API_V2_PREFIX}/drops/${slug}/cross_chain_mint`
+}
+
 export const getTrendingCollectionsPath = () => {
   return `${API_V2_PREFIX}/collections/trending`
 }

@@ -1,5 +1,6 @@
 import type { Chain } from "../types"
 import {
+  getCrossChainDropMintPath,
   getDeployDropPath,
   getDeployDropReceiptPath,
   getDropMintPath,
@@ -8,6 +9,8 @@ import {
 } from "./apiPaths"
 import type { Fetcher } from "./fetcher"
 import type {
+  CrossChainDropMintRequest,
+  CrossChainDropMintResponse,
   DropDeployReceiptResponse,
   DropDeployRequest,
   DropDeployResponse,
@@ -55,6 +58,21 @@ export class DropsAPI {
       request,
     )
     return response
+  }
+
+  /**
+   * Builds ordered transactions for paying on one chain and minting on
+   * another. Submit each transaction in order, then poll the returned
+   * `receiptRequest` with `getTransactionReceipt` until it is terminal.
+   */
+  async buildCrossChainMintTransactions(
+    slug: string,
+    request: CrossChainDropMintRequest,
+  ): Promise<CrossChainDropMintResponse> {
+    return this.fetcher.post<CrossChainDropMintResponse>(
+      getCrossChainDropMintPath(slug),
+      request,
+    )
   }
 
   /**

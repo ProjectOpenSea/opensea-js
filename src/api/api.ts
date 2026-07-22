@@ -48,6 +48,8 @@ import {
   CollectionOrderByOption,
   type CreateListingActionsRequest,
   type CreateListingActionsResponse,
+  type CrossChainDropMintRequest,
+  type CrossChainDropMintResponse,
   type CrossChainFulfillmentRequest,
   type CrossChainFulfillmentResponse,
   type DropDeployReceiptResponse,
@@ -936,8 +938,8 @@ export class OpenSeaAPI {
 
   /**
    * Get the receipt/status for a submitted transaction. Works for all transaction
-   * types: listing fulfillments, cross-chain buys, sweeps, offer fulfillments,
-   * and token swaps. Poll this endpoint to check completion status.
+   * types: listing fulfillments, cross-chain buys and mints, sweeps, offer
+   * fulfillments, and token swaps. Poll this endpoint to check completion status.
    * @param request The transaction receipt request.
    * @returns The {@link TransactionReceiptResponse} returned by the API.
    */
@@ -976,6 +978,22 @@ export class OpenSeaAPI {
     request: DropMintRequest,
   ): Promise<DropMintResponse> {
     return this.dropsAPI.buildMintTransaction(slug, request)
+  }
+
+  /**
+   * Builds ordered transactions for paying on one chain and minting a drop on
+   * another. Submit each transaction in order, then pass the returned
+   * `receiptRequest` unchanged to {@link OpenSeaAPI.getTransactionReceipt}
+   * until the status is terminal.
+   * @param slug The collection slug identifying the drop.
+   * @param request The payer, minter, quantity, and source payment asset.
+   * @returns Transactions to submit and the request used to poll their receipt.
+   */
+  public async buildCrossChainDropMintTransactions(
+    slug: string,
+    request: CrossChainDropMintRequest,
+  ): Promise<CrossChainDropMintResponse> {
+    return this.dropsAPI.buildCrossChainMintTransactions(slug, request)
   }
 
   /**

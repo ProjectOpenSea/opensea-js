@@ -1159,11 +1159,9 @@ export type ValidateMetadataResponse = {
  */
 export type GetNFTMetadataResponse = Camelize<AssetMetadataResponse>
 
-// ─── Cross-chain fulfillment + new endpoint types ───────────────────────
-// Sourced from @opensea/api-types. Response shapes are camelized for the
-// consumer view (the fetcher camelizes responses; see utils/case.ts).
-// Request shapes stay snake_case to match the API wire format — they're
-// sent as POST bodies and need to hit the API in its native format.
+// ─── API-derived endpoint types ─────────────────────────────────────────
+// Sourced from @opensea/api-types and camelized for the SDK consumer view.
+// The fetcher snakeizes request bodies and camelizes responses at the boundary.
 
 import type {
   BatchCollectionsRequest as ApiBatchCollectionsRequest,
@@ -1175,6 +1173,8 @@ import type {
   CollectionOfferAggregatesPaginatedResponse as ApiCollectionOfferAggregatesPaginatedResponse,
   CreateListingActionsRequest as ApiCreateListingActionsRequest,
   CreateListingActionsResponse as ApiCreateListingActionsResponse,
+  CrossChainDropMintRequest as ApiCrossChainDropMintRequest,
+  CrossChainDropMintResponse as ApiCrossChainDropMintResponse,
   CrossChainFulfillmentRequest as ApiCrossChainFulfillmentRequest,
   CrossChainFulfillmentResponse as ApiCrossChainFulfillmentResponse,
   CrossChainPaymentToken as ApiCrossChainPaymentToken,
@@ -1210,6 +1210,7 @@ export type BatchNftsRequest = Camelize<ApiBatchNftsRequest>
 export type BatchTokensRequest = Camelize<ApiBatchTokensRequest>
 export type CreateListingActionsRequest =
   Camelize<ApiCreateListingActionsRequest>
+export type CrossChainDropMintRequest = Camelize<ApiCrossChainDropMintRequest>
 export type CrossChainFulfillmentRequest =
   Camelize<ApiCrossChainFulfillmentRequest>
 export type DropDeployRequest = Camelize<ApiDropDeployRequest>
@@ -1225,6 +1226,7 @@ export type CollectionOfferAggregatesPaginatedResponse =
   Camelize<ApiCollectionOfferAggregatesPaginatedResponse>
 export type CreateListingActionsResponse =
   Camelize<ApiCreateListingActionsResponse>
+export type CrossChainDropMintResponse = Camelize<ApiCrossChainDropMintResponse>
 export type CrossChainFulfillmentResponse =
   Camelize<ApiCrossChainFulfillmentResponse>
 export type CrossChainPaymentToken = Camelize<ApiCrossChainPaymentToken>

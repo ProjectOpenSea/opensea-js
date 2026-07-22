@@ -1,5 +1,16 @@
 # @opensea/sdk
 
+## 11.6.0
+
+### Minor Changes
+
+- cba26dd: Add typed SDK and CLI support for building cross-chain drop mint transactions and polling the returned receipt request.
+
+### Patch Changes
+
+- Updated dependencies [cba26dd]
+  - @opensea/api-types@0.8.4
+
 ## 11.5.1
 
 ### Patch Changes
