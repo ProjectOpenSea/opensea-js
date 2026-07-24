@@ -478,14 +478,17 @@ export class BaseOpenSeaSDK {
     return this._cancellationManager.cancelOrders(options)
   }
 
-  /** Cancel an order onchain, preventing it from ever being fulfilled. */
+  /**
+   * Cancel an order onchain, preventing it from ever being fulfilled.
+   * @returns Transaction hash of the cancellation.
+   */
   public async cancelOrder(options: {
     order?: OrderV2
     orderHash?: string
     accountAddress: string
     protocolAddress?: string
     domain?: string
-  }) {
+  }): Promise<string> {
     return this._cancellationManager.cancelOrder(options)
   }
 
