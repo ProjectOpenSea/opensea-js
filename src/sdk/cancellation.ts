@@ -44,7 +44,7 @@ export class CancellationManager {
     accountAddress: string
     protocolAddress?: string
     domain?: string
-  }) {
+  }): Promise<string> {
     // Validate input
     if (!order && !orderHash) {
       throw new Error(
@@ -106,6 +106,7 @@ export class CancellationManager {
       EventType.CancelOrder,
       "Cancelling order",
     )
+    return transactionHash
   }
 
   /**
