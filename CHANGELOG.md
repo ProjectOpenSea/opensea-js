@@ -1,5 +1,18 @@
 # @opensea/sdk
 
+## 11.7.0
+
+### Minor Changes
+
+- a093a89: Add first-class SDK and CLI access to materialized token activity stats, with typed window selection and response models.
+
+### Patch Changes
+
+- 954d547: Add typed account agent status fields and helpers to mark or clear registered
+  agent wallets from the SDK and CLI.
+- Updated dependencies [954d547]
+  - @opensea/api-types@0.8.6
+
 ## 11.6.0
 
 ### Minor Changes

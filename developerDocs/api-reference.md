@@ -1238,6 +1238,35 @@ console.log(`${token.name} (${token.symbol})`);
 
 ---
 
+### Get Token Activity Stats
+
+Fetch materialized trade count, USD volume, and average trade size for a token.
+
+```typescript
+const activity = await openseaSDK.api.getTokenActivityStats(
+  "base",
+  "0x4200000000000000000000000000000000000006",
+  { windows: ["1h", "24h"] },
+);
+
+console.log(activity.computedAt);
+console.log(activity.windows["24h"]?.volumeUsd);
+```
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `chain` | string | Yes | The chain the token is on |
+| `address` | string | Yes | Token contract address |
+| `args.windows` | `("5m" \| "1h" \| "4h" \| "24h")[]` | No | Materialized windows to return. Defaults to all available windows |
+
+**Returns:** `TokenActivityStatsResponse` with `computedAt` and a `windows` map.
+Each window contains `trades`, `volumeUsd`, and `averageTradeUsd`. A requested
+window is absent when the token has no swaps in that period.
+
+---
+
 ## Search Endpoint
 
 ### Search

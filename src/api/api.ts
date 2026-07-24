@@ -121,6 +121,8 @@ import {
   type SweepCollectionRequest,
   type SweepCollectionResponse,
   type TokenActivityArgs,
+  type TokenActivityStatsArgs,
+  type TokenActivityStatsResponse,
   type TokenBatchResponse,
   type TokenHoldersArgs,
   type TokenHoldersResponse,
@@ -1112,6 +1114,18 @@ export class OpenSeaAPI {
     args?: TokenActivityArgs,
   ): Promise<TokenSwapActivityPaginatedResponse> {
     return this.tokensAPI.getTokenActivity(chain, address, args)
+  }
+
+  /**
+   * Fetch materialized trade count, USD volume, and average trade size for a
+   * token across the requested windows.
+   */
+  public async getTokenActivityStats(
+    chain: Chain,
+    address: string,
+    args?: TokenActivityStatsArgs,
+  ): Promise<TokenActivityStatsResponse> {
+    return this.tokensAPI.getTokenActivityStats(chain, address, args)
   }
 
   /**

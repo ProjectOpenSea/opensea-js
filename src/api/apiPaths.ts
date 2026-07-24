@@ -325,6 +325,10 @@ export const getTokenActivityPath = (chain: Chain, address: string) => {
   return `${API_V2_PREFIX}/chain/${chain}/token/${address}/activity`
 }
 
+export const getTokenActivityStatsPath = (chain: Chain, address: string) => {
+  return `${API_V2_PREFIX}/chain/${chain}/token/${address}/activity/stats`
+}
+
 export const getAccountTokenActivityPath = (address: string) => {
   return `${API_V2_PREFIX}/account/${address}/token-activity`
 }

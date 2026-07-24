@@ -9,6 +9,7 @@ import type {
   GetTopTokensResponse,
   GetTrendingTokensResponse,
   Token,
+  TokenActivityStatsResponse,
 } from "../../src/api/types"
 import { Chain } from "../../src/types"
 import { createMockFetcher } from "../fixtures/fetcher"
@@ -320,6 +321,53 @@ describe("API: TokensAPI", () => {
       } catch (error) {
         expect((error as Error).message).toContain("Token not found")
       }
+    })
+  })
+
+  describe("getTokenActivityStats", () => {
+    test("fetches all materialized windows by default", async () => {
+      const mockResponse: TokenActivityStatsResponse = {
+        chain: "base",
+        address: "0x4200000000000000000000000000000000000006",
+        computedAt: "2026-07-23T00:52:11.879132Z",
+        windows: {
+          "24h": {
+            trades: 5714,
+            volumeUsd: "710410.75",
+            averageTradeUsd: "124.33",
+          },
+        },
+      }
+      mockGet.mockResolvedValue(mockResponse)
+
+      const result = await tokensAPI.getTokenActivityStats(
+        Chain.Base,
+        mockResponse.address,
+      )
+
+      expect(mockGet).toHaveBeenCalledWith(
+        `/api/v2/chain/base/token/${mockResponse.address}/activity/stats`,
+        undefined,
+      )
+      expect(result.computedAt).toBe("2026-07-23T00:52:11.879132Z")
+      expect(result.windows["24h"]?.volumeUsd).toBe("710410.75")
+    })
+
+    test("serializes selected windows as a comma-separated query", async () => {
+      mockGet.mockResolvedValue({
+        chain: "ethereum",
+        address: "0xabc",
+        windows: {},
+      })
+
+      await tokensAPI.getTokenActivityStats(Chain.Mainnet, "0xabc", {
+        windows: ["1h", "24h"],
+      })
+
+      expect(mockGet).toHaveBeenCalledWith(
+        "/api/v2/chain/ethereum/token/0xabc/activity/stats",
+        { windows: "1h,24h" },
+      )
     })
   })
 

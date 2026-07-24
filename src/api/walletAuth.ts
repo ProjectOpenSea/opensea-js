@@ -384,4 +384,17 @@ export class WalletAuthAPI {
       `/api/v2/accounts/wallets/${segment(wallet)}`,
     )
   }
+
+  markWalletAsAgent(wallet: string) {
+    return this.fetcher.request<OperationResponse<"mark_wallet_as_agent">>(
+      "PUT",
+      `/api/v2/accounts/wallets/${segment(wallet)}/agent`,
+    )
+  }
+
+  removeWalletAgentDesignation(wallet: string) {
+    return this.fetcher.request<
+      OperationResponse<"remove_wallet_agent_designation">
+    >("DELETE", `/api/v2/accounts/wallets/${segment(wallet)}/agent`)
+  }
 }

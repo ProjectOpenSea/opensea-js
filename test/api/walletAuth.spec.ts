@@ -163,6 +163,16 @@ describe("WalletAuthAPI", () => {
         "/api/v2/accounts/wallets/0xabc",
         () => api.unlinkWallet("0xabc"),
       ],
+      [
+        "PUT",
+        "/api/v2/accounts/wallets/agent%2Fwallet/agent",
+        () => api.markWalletAsAgent("agent/wallet"),
+      ],
+      [
+        "DELETE",
+        "/api/v2/accounts/wallets/agent%2Fwallet/agent",
+        () => api.removeWalletAgentDesignation("agent/wallet"),
+      ],
     ]
 
     for (const [method, path, run] of cases) {
@@ -170,6 +180,18 @@ describe("WalletAuthAPI", () => {
       await run()
       expect(request.mock.calls[0]?.slice(0, 2)).toEqual([method, path])
     }
+  })
+
+  it("returns the updated wallet agent status", async () => {
+    request.mockResolvedValueOnce({
+      address: "0xabc",
+      isAgent: true,
+    })
+
+    await expect(api.markWalletAsAgent("0xabc")).resolves.toEqual({
+      address: "0xabc",
+      isAgent: true,
+    })
   })
 
   it("forwards the request body and returns the response for nft pfp helpers", async () => {

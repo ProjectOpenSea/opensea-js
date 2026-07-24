@@ -5,6 +5,7 @@ import {
   getSwapExecutePath,
   getSwapQuotePath,
   getTokenActivityPath,
+  getTokenActivityStatsPath,
   getTokenGroupPath,
   getTokenGroupsPath,
   getTokenHoldersPath,
@@ -34,6 +35,8 @@ import type {
   SwapExecuteRequest,
   SwapExecuteResponse,
   TokenActivityArgs,
+  TokenActivityStatsArgs,
+  TokenActivityStatsResponse,
   TokenBatchResponse,
   TokenHoldersArgs,
   TokenHoldersResponse,
@@ -168,6 +171,21 @@ export class TokensAPI {
     return this.fetcher.get<TokenSwapActivityPaginatedResponse>(
       getTokenActivityPath(chain, address),
       args,
+    )
+  }
+
+  /**
+   * Fetch materialized trade count, USD volume, and average trade size for a
+   * token across the requested windows.
+   */
+  async getTokenActivityStats(
+    chain: Chain,
+    address: string,
+    args?: TokenActivityStatsArgs,
+  ): Promise<TokenActivityStatsResponse> {
+    return this.fetcher.get<TokenActivityStatsResponse>(
+      getTokenActivityStatsPath(chain, address),
+      args ? { windows: args.windows?.join(",") } : undefined,
     )
   }
 

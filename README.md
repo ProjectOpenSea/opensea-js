@@ -83,6 +83,8 @@ try {
     authToken: token.accessToken,
   })
   await api.walletAuth.getFavorites(await signer.getAddress(), { limit: 10 })
+  await api.walletAuth.markWalletAsAgent(await signer.getAddress())
+  await api.walletAuth.removeWalletAgentDesignation(await signer.getAddress())
 } finally {
   await auth.revoke(token.accessToken)
 }
@@ -113,6 +115,25 @@ const mint = await sdk.api.buildCrossChainDropMintTransactions("pyro-on-ape", {
 // Submit mint.transactions in order, then poll the exact returned request.
 const receipt = await sdk.api.getTransactionReceipt(mint.receiptRequest)
 ```
+
+### Token activity stats
+
+Read materialized trade count and USD volume for a token without aggregating
+raw events:
+
+```typescript
+const activity = await sdk.api.getTokenActivityStats(
+  Chain.Base,
+  "0x4200000000000000000000000000000000000006",
+  { windows: ["1h", "24h"] },
+)
+
+console.log(activity.windows["24h"]?.trades)
+console.log(activity.windows["24h"]?.volumeUsd)
+```
+
+The SDK exposes camel-cased fields. A requested window is absent when the token
+has no swaps in that period.
 
 ## Documentation
 

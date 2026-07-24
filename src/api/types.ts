@@ -1194,6 +1194,8 @@ import type {
   PriceHistoryResponse as ApiPriceHistoryResponse,
   ProfileCollectionsResponse as ApiProfileCollectionsResponse,
   SwapTransactionResponse as ApiSwapTransactionResponse,
+  TokenActivityStatsResponse as ApiTokenActivityStatsResponse,
+  TokenActivityWindowStatsResponse as ApiTokenActivityWindowStatsResponse,
   TokenBatchResponse as ApiTokenBatchResponse,
   TokenHoldersResponse as ApiTokenHoldersResponse,
   TokenLiquidityPoolsResponse as ApiTokenLiquidityPoolsResponse,
@@ -1246,6 +1248,9 @@ export type PositionTokenTransfersResponse =
 export type PriceHistoryResponse = Camelize<ApiPriceHistoryResponse>
 export type ProfileCollectionsResponse = Camelize<ApiProfileCollectionsResponse>
 export type SwapTransactionResponse = Camelize<ApiSwapTransactionResponse>
+export type TokenActivityStatsResponse = Camelize<ApiTokenActivityStatsResponse>
+export type TokenActivityWindowStatsResponse =
+  Camelize<ApiTokenActivityWindowStatsResponse>
 export type TokenBatchResponse = Camelize<ApiTokenBatchResponse>
 export type TokenHoldersResponse = Camelize<ApiTokenHoldersResponse>
 export type TokenLiquidityPoolsResponse =
@@ -1307,6 +1312,18 @@ export interface TokenTimeSeriesArgs {
 export interface TokenActivityArgs {
   limit?: number
   cursor?: string
+}
+
+/** Supported materialized windows for token activity stats. */
+export type TokenActivityStatsWindow = "5m" | "1h" | "4h" | "24h"
+
+/**
+ * Query args for materialized token activity stats.
+ * @category API Query Args
+ */
+export interface TokenActivityStatsArgs {
+  /** Windows to return. Defaults to all supported windows. */
+  windows?: TokenActivityStatsWindow[]
 }
 
 /**

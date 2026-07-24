@@ -86,6 +86,7 @@ const mockMakerAccount = {
   bio: "Test maker account",
   joinedDate: "2023-01-01T00:00:00Z",
   isVerified: false,
+  isAgent: false,
   followerCount: 0,
   followingCount: 0,
 }
@@ -100,6 +101,7 @@ const mockTakerAccount = {
   bio: "Test taker account",
   joinedDate: "2023-01-01T00:00:00Z",
   isVerified: false,
+  isAgent: false,
   followerCount: 0,
   followingCount: 0,
 }
